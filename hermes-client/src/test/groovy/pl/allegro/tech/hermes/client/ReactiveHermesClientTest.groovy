@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.client
 
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import reactor.test.StepVerifier
+import reactor.test.scheduler.VirtualTimeScheduler
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -64,7 +66,7 @@ class ReactiveHermesClientTest extends Specification {
     @Unroll
     def "should interpret message as failed for status different than 201 or 202"() {
         given:
-        ReactiveHermesClient client = hermesClient({uri, msg -> statusFuture(msg, status)})
+        ReactiveHermesClient client = hermesClient({ uri, msg -> statusFuture(msg, status) })
                 .withURI(create(HERMES_URI))
                 .withRetrySleep(0)
                 .build()
@@ -136,7 +138,7 @@ class ReactiveHermesClientTest extends Specification {
         given:
         CountDownLatch latch = new CountDownLatch(2)
         ReactiveHermesClient client = hermesClient(getCountDownSender(latch, 503))
-                .withRetries(5, {false})
+                .withRetries(5, { false })
                 .build()
 
         when:
@@ -149,7 +151,7 @@ class ReactiveHermesClientTest extends Specification {
     def "should not retry when one of the attempts succeeds to send"() {
         given:
         CountDownLatch latch = new CountDownLatch(5)
-        ReactiveHermesClient client = hermesClient(getCountDownSender(latch, {latch.getCount() > 2 ? 408 : 201}))
+        ReactiveHermesClient client = hermesClient(getCountDownSender(latch, { latch.getCount() > 2 ? 408 : 201 }))
                 .withRetries(5)
                 .withRetrySleep(0)
                 .build()
@@ -203,8 +205,8 @@ class ReactiveHermesClientTest extends Specification {
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT)
-            .subscribeOn(Schedulers.elastic())
-            .subscribe()
+                .subscribeOn(Schedulers.elastic())
+                .subscribe()
 
         and:
         client.closeAsync(50).block(Duration.ofSeconds(1))
@@ -217,9 +219,9 @@ class ReactiveHermesClientTest extends Specification {
         given:
         Map<String, String> headers = [:]
         ReactiveHermesClient client = hermesClient(getHeaderScrapingSender(headers))
-            .withDefaultContentType('my/content')
-            .withDefaultHeaderValue('Header', 'Value')
-            .build()
+                .withDefaultContentType('my/content')
+                .withDefaultHeaderValue('Header', 'Value')
+                .build()
 
         when:
         client.publish(HermesMessage.hermesMessage(TOPIC, CONTENT).build()).block()
@@ -250,17 +252,17 @@ class ReactiveHermesClientTest extends Specification {
 
     def "should retry on sender exception when retry sleep is provided"() {
         given:
-            CountDownLatch latch = new CountDownLatch(2)
-            ReactiveHermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch))
-                    .withRetries(2)
-                    .withRetrySleep(10)
-                    .build()
+        CountDownLatch latch = new CountDownLatch(2)
+        ReactiveHermesClient client = hermesClient(getExceptionallyFailingCountDownSender(latch))
+                .withRetries(2)
+                .withRetrySleep(10)
+                .build()
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT).block()
 
         then:
-            latch.count == 0
+        latch.count == 0
     }
 
     def "should retry when sender throws exception"() {
@@ -277,6 +279,53 @@ class ReactiveHermesClientTest extends Specification {
         then:
         thrown(RuntimeException)
         latch.count == 0
+    }
+
+    def "should use exponential backoff if retry sleep was defined"() {
+        given:
+        def retrySleepInMillis = 1000
+        def retrySleepDuration = Duration.ofMillis(retrySleepInMillis)
+        def timeScheduler = VirtualTimeScheduler.getOrSet(true)
+
+        and:
+        CountDownLatch latch = new CountDownLatch(5)
+        ReactiveHermesClient client = hermesClient(getThrowingCountDownSender(latch))
+                .withRetries(4)
+                .withRetrySleep(retrySleepInMillis, retrySleepInMillis * 100)
+                .withScheduler(timeScheduler)
+                .build()
+
+        expect:
+        StepVerifier.withVirtualTime({ client.publish(TOPIC, CONTENT_TYPE, CONTENT) })
+                .expectSubscription()
+                .then { assert latch.count == 4 }
+                .expectNoEvent(retrySleepDuration.multipliedBy(2))
+                .then { assert latch.count == 3 }
+                .expectNoEvent(retrySleepDuration.multipliedBy(4))
+                .then { assert latch.count == 2 }
+                .expectNoEvent(retrySleepDuration.multipliedBy(8))
+                .then { assert latch.count == 1 }
+                .thenCancel()
+                .verify()
+    }
+
+    def "should not delay retries if retry sleep time is zero"() {
+        given:
+        def timeScheduler = VirtualTimeScheduler.getOrSet(true)
+
+        and:
+        CountDownLatch latch = new CountDownLatch(5)
+        ReactiveHermesClient client = hermesClient(getThrowingCountDownSender(latch))
+                .withRetries(4)
+                .withRetrySleep(0)
+                .withScheduler(timeScheduler)
+                .build()
+
+        expect:
+        StepVerifier.withVirtualTime({ client.publish(TOPIC, CONTENT_TYPE, CONTENT) })
+                .expectSubscription()
+                .then { assert latch.count == 0 }
+                .verifyError()
     }
 
     private ReactiveHermesSender getExceptionallyFailingCountDownSender(CountDownLatch latch, long delay) {
@@ -319,7 +368,7 @@ class ReactiveHermesClientTest extends Specification {
 
     private ReactiveHermesSender getCountDownSender(CountDownLatch latch, Supplier<Integer> status) {
         { uri, msg ->
-            Mono.fromCallable  {
+            Mono.fromCallable {
                 latch.countDown()
                 return HermesResponseBuilder.hermesResponse(msg).withHttpStatus(status.get()).build()
             }

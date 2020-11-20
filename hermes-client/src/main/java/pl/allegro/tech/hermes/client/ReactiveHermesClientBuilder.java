@@ -2,13 +2,14 @@ package pl.allegro.tech.hermes.client;
 
 import pl.allegro.tech.hermes.client.metrics.MetricsMessageDeliveryListener;
 import pl.allegro.tech.hermes.client.metrics.MetricsProvider;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -21,7 +22,7 @@ public class ReactiveHermesClientBuilder {
     private Predicate<HermesResponse> retryCondition = new HermesClientBasicRetryCondition();
     private long retrySleepInMillis = 100;
     private long maxRetrySleepInMillis = 300;
-    private Supplier<ScheduledExecutorService> schedulerFactory = Executors::newSingleThreadScheduledExecutor;
+    private Supplier<Scheduler> schedulerFactory = () -> Schedulers.fromExecutor(Executors.newSingleThreadScheduledExecutor());
     private Optional<MetricsProvider> metrics = Optional.empty();
 
     public ReactiveHermesClientBuilder(ReactiveHermesSender sender) {
@@ -85,7 +86,7 @@ public class ReactiveHermesClientBuilder {
         return this;
     }
 
-    public ReactiveHermesClientBuilder withScheduler(ScheduledExecutorService scheduler) {
+    public ReactiveHermesClientBuilder withScheduler(Scheduler scheduler) {
         this.schedulerFactory = () -> scheduler;
         return this;
     }

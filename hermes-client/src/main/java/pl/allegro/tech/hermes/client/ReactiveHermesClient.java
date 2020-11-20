@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
 import java.net.URI;
@@ -15,12 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
+import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesFailureResponse;
 import static reactor.core.Exceptions.isRetryExhausted;
 
 
@@ -47,7 +45,7 @@ public class ReactiveHermesClient {
                          Predicate<HermesResponse> retryCondition,
                          long retrySleepInMillis,
                          long maxRetrySleepInMillis,
-                         ScheduledExecutorService scheduler) {
+                         Scheduler scheduler) {
         this.sender = sender;
         this.uri = createUri(uri);
         this.defaultHeaders = Collections.unmodifiableMap(new HashMap<>(defaultHeaders));
@@ -55,7 +53,7 @@ public class ReactiveHermesClient {
         this.retryCondition = retryCondition;
         this.retrySleep = Duration.ofMillis(retrySleepInMillis);
         this.maxRetrySleep = Duration.ofMillis(maxRetrySleepInMillis);
-        this.scheduler = Schedulers.fromExecutor(scheduler);
+        this.scheduler = scheduler;
         this.messageDeliveryListeners = new ArrayList<>();
     }
 
@@ -108,40 +106,44 @@ public class ReactiveHermesClient {
         currentlySending.incrementAndGet();
         Mono<Result> sendOnceResult = sendOnce(message)
                 .flatMap(this::testRetryCondition)
-                .onErrorResume(this::mapExceptionToFailedAttempt)
+                .onErrorResume(exception -> mapExceptionToFailedAttempt(exception, message))
                 .subscribeOn(scheduler);
 
-        return retry(message, sendOnceResult)
+        return retry(sendOnceResult)
                 .doOnSuccess(hr -> {
-                    if (hr.response.isSuccess()) {
-                        handleSuccessfulRetry(message, hr.getAttempt());
+                    if (hr.response.isSuccess() || !hr.matchesRetryPolicy) {
+                        handleSuccessfulRetry(hr.response, hr.attempt);
                     } else {
-                        handleFailure(message, hr.getAttempt());
+                        handleFailure(hr.response, hr.attempt);
                     }
                 })
                 .map(result -> result.response)
                 .doFinally(s -> currentlySending.decrementAndGet());
     }
 
-    private Mono<Attempt> retry(HermesMessage message, Mono<Result> sendOnceResult) {
-        Retry retrySpec = prepareRetrySpec(message);
+    private Mono<Attempt> retry(Mono<Result> sendOnceResult) {
+        Retry retrySpec = prepareRetrySpec();
         return sendOnceResult
                 .flatMap(this::unwrapFailedAttemptAsException)
                 .retryWhen(retrySpec)
                 .subscriberContext(ctx -> ctx.put(RETRY_CONTEXT_KEY, HermesRetryContext.emptyRetryContext()))
-                .onErrorResume(Exception.class, exception -> unwrapRetryExhaustedException(message, exception));
+                .onErrorResume(Exception.class, this::unwrapRetryExhaustedException);
     }
 
-    private Mono<Attempt> unwrapRetryExhaustedException(HermesMessage message, Exception exception) {
+    private Mono<Attempt> unwrapRetryExhaustedException(Exception exception) {
         if (isRetryExhausted(exception)) {
             RetryFailedException rfe = (RetryFailedException) (exception.getCause());
-            handleMaxRetriesExceeded(message, rfe.attempt);
+            Failed failedAttempt = rfe.failed;
+            HermesResponse hermesResponse = failedAttempt.hermesResponse;
+            handleMaxRetriesExceeded(hermesResponse, failedAttempt.attempt);
             Throwable cause = rfe.getCause();
             if (cause instanceof ShouldRetryException) {
                 ShouldRetryException sre = (ShouldRetryException) cause;
-                return Mono.just((Attempt) Result.attempt(sre.hermesResponse, rfe.attempt));
+                return Mono.just((Attempt) Result.attempt(sre.hermesResponse, failedAttempt.attempt, true));
             }
-            handleFailure(message, rfe.getAttempt());
+            if (hermesResponse.isFailure()) {
+                handleFailure(hermesResponse, failedAttempt.attempt);
+            }
         }
         return Mono.error(exception);
     }
@@ -149,40 +151,41 @@ public class ReactiveHermesClient {
     private Mono<Attempt> unwrapFailedAttemptAsException(Result result) {
         if (result instanceof Failed) {
             Failed failed = (Failed) result;
-            return Mono.error(new RetryFailedException(failed.attempt, failed.cause));
+            return Mono.error(new RetryFailedException(failed));
         } else {
             return Mono.just((Attempt) result);
         }
     }
 
-    private Mono<Result> mapExceptionToFailedAttempt(Throwable throwable) {
-        return getNextAttempt().map(attempt -> Result.failure(throwable, attempt));
+    private Mono<Result> mapExceptionToFailedAttempt(Throwable throwable, HermesMessage hermesMessage) {
+        return getNextAttempt().map(attempt -> Result.failure(hermesFailureResponse(throwable, hermesMessage), throwable, attempt));
     }
 
     private Mono<Result> testRetryCondition(HermesResponse response) {
         return getNextAttempt()
                 .map(attempt -> {
                     if (retryCondition.test(response)) {
-                        return Result.failure(new ShouldRetryException(response), attempt);
+                        return Result.failure(response, new ShouldRetryException(response), attempt);
                     } else {
-                        return Result.attempt(response, attempt);
+                        return Result.attempt(response, attempt, false);
                     }
                 });
     }
 
-    private Retry prepareRetrySpec(HermesMessage message) {
-        if (!retrySleep.isZero()) {
+    private Retry prepareRetrySpec() {
+        if (retrySleep.isZero()) {
             return Retry.max(maxRetries)
-                    .doAfterRetry(handleRetryAttempt(message));
+                    .doAfterRetry(this::handleRetryAttempt);
         } else {
             return Retry.backoff(maxRetries, retrySleep)
                     .maxBackoff(maxRetrySleep)
-                    .doAfterRetry(handleRetryAttempt(message));
+                    .doAfterRetry(this::handleRetryAttempt);
         }
     }
 
-    private Consumer<Retry.RetrySignal> handleRetryAttempt(HermesMessage message) {
-        return signal -> handleFailedAttempt(message, signal.totalRetries() + 1);
+    private void handleRetryAttempt(Retry.RetrySignal retrySignal) {
+        RetryFailedException failedException = (RetryFailedException) retrySignal.failure();
+        handleFailedAttempt(failedException.failed.hermesResponse, retrySignal.totalRetries() + 1);
     }
 
     private Mono<Integer> getNextAttempt() {
@@ -197,11 +200,12 @@ public class ReactiveHermesClient {
                     long startTime = System.nanoTime();
                     try {
                         return sender.sendReactively(URI.create(uri + message.getTopic()), message)
-                                .onErrorResume(e -> Mono.just(HermesResponseBuilder.hermesFailureResponse(e, message)))
+                                .onErrorResume(e -> Mono.just(hermesFailureResponse(e, message)))
                                 .doOnNext(resp -> {
                                     long latency = System.nanoTime() - startTime;
                                     messageDeliveryListeners.forEach(l -> l.onSend(resp, latency));
                                 });
+
                     } catch (Exception e) {
                         return Mono.error(e);
                     }
@@ -225,22 +229,22 @@ public class ReactiveHermesClient {
         closeAsync(pollInterval).block(Duration.ofMillis(timeout));
     }
 
-    private void handleMaxRetriesExceeded(HermesMessage message, int attemptCount) {
-        messageDeliveryListeners.forEach(l -> l.onMaxRetriesExceeded(message, attemptCount));
+    private void handleMaxRetriesExceeded(HermesResponse response, int attemptCount) {
+        messageDeliveryListeners.forEach(l -> l.onMaxRetriesExceeded(response, attemptCount));
         logger.error("Failed to send message to topic {} after {} attempts",
-                message.getTopic(), attemptCount);
+                response.getHermesMessage().getTopic(), attemptCount);
     }
 
-    private void handleFailedAttempt(HermesMessage message, long attemptCount) {
-        messageDeliveryListeners.forEach(l -> l.onFailedRetry(message, (int) attemptCount));
+    private void handleFailedAttempt(HermesResponse response, long attemptCount) {
+        messageDeliveryListeners.forEach(l -> l.onFailedRetry(response, (int) attemptCount));
     }
 
-    private void handleFailure(HermesMessage message, long attemptCount) {
-        messageDeliveryListeners.forEach(l -> l.onFailure(message, (int) attemptCount));
+    private void handleFailure(HermesResponse response, long attemptCount) {
+        messageDeliveryListeners.forEach(l -> l.onFailure(response, (int) attemptCount));
     }
 
-    private void handleSuccessfulRetry(HermesMessage message, long attemptCount) {
-        messageDeliveryListeners.forEach(l -> l.onSuccessfulRetry(message, (int) attemptCount));
+    private void handleSuccessfulRetry(HermesResponse response, long attemptCount) {
+        messageDeliveryListeners.forEach(l -> l.onSuccessfulRetry(response, (int) attemptCount));
     }
 
     private static class ShouldRetryException extends Exception {
@@ -256,53 +260,49 @@ public class ReactiveHermesClient {
     }
 
     private static class RetryFailedException extends Exception {
-        private final int attempt;
+        private final Failed failed;
 
-        public RetryFailedException(int attempt, Throwable cause) {
-            super(cause);
-            this.attempt = attempt;
+        public RetryFailedException(Failed failed) {
+            super(failed.cause);
+            this.failed = failed;
         }
 
-        public long getAttempt() {
-            return attempt;
+        public Failed getFailed() {
+            return failed;
         }
     }
 
     private interface Result {
-        static Result attempt(HermesResponse response, int attempt) {
-            return new Attempt(response, attempt);
+        static Result attempt(HermesResponse response, int attempt, boolean qualifiedForRetry) {
+            return new Attempt(response, attempt, qualifiedForRetry);
         }
 
-        static Result failure(Throwable cause, int attempt) {
-            return new Failed(attempt, cause);
+        static Result failure(HermesResponse response, Throwable cause, int attempt) {
+            return new Failed(response, attempt, cause); // TODO response.getFailureCause().get() ?
         }
     }
 
     private static class Attempt implements Result {
         private final HermesResponse response;
         private final int attempt;
+        private final boolean matchesRetryPolicy;
 
-        private Attempt(HermesResponse response, int attempt) {
+        private Attempt(HermesResponse response, int attempt, boolean matchesRetryPolicy) {
             this.response = response;
             this.attempt = attempt;
-        }
-
-        public long getAttempt() {
-            return attempt;
-        }
-
-        public HermesResponse getMessage() {
-            return response;
+            this.matchesRetryPolicy = matchesRetryPolicy;
         }
     }
 
     private static class Failed implements Result {
         private final int attempt;
         private final Throwable cause;
+        private final HermesResponse hermesResponse;
 
-        private Failed(int attempt, Throwable cause) {
+        private Failed(HermesResponse hermesResponse, int attempt, Throwable cause) {
             this.attempt = attempt;
             this.cause = cause;
+            this.hermesResponse = hermesResponse;
         }
 
         public long getRetries() {
@@ -312,17 +312,21 @@ public class ReactiveHermesClient {
         public Throwable getCause() {
             return cause;
         }
+
+        public HermesResponse getHermesResponse() {
+            return hermesResponse;
+        }
     }
 
     private static class HermesRetryContext {
+        static HermesRetryContext emptyRetryContext() {
+            return new HermesRetryContext();
+        }
+
         private int attempt;
 
         HermesRetryContext() {
             attempt = 1;
-        }
-
-        static HermesRetryContext emptyRetryContext() {
-            return new HermesRetryContext();
         }
 
         int getAndIncrementAttempt() {

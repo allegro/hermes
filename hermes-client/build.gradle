@@ -24,4 +24,6 @@ dependencies {
     testCompile group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testCompile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
     testCompile group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.8.10.RELEASE'
+    testCompile group: 'io.projectreactor', name: 'reactor-test', version: '3.3.4.RELEASE'
+
 }
