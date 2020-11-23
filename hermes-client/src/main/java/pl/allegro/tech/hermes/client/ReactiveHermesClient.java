@@ -158,14 +158,14 @@ public class ReactiveHermesClient {
     }
 
     private Mono<Result> mapExceptionToFailedAttempt(Throwable throwable, HermesMessage hermesMessage) {
-        return getNextAttempt().map(attempt -> Result.failure(hermesFailureResponse(throwable, hermesMessage), throwable, attempt));
+        return getNextAttempt().map(attempt -> Result.failureByException(throwable, hermesMessage, attempt));
     }
 
     private Mono<Result> testRetryCondition(HermesResponse response) {
         return getNextAttempt()
                 .map(attempt -> {
                     if (retryCondition.test(response)) {
-                        return Result.failure(response, new ShouldRetryException(response), attempt);
+                        return Result.retryableFailure(response, attempt);
                     } else {
                         return Result.attempt(response, attempt, false);
                     }
@@ -266,10 +266,6 @@ public class ReactiveHermesClient {
             super(failed.cause);
             this.failed = failed;
         }
-
-        public Failed getFailed() {
-            return failed;
-        }
     }
 
     private interface Result {
@@ -277,8 +273,12 @@ public class ReactiveHermesClient {
             return new Attempt(response, attempt, qualifiedForRetry);
         }
 
-        static Result failure(HermesResponse response, Throwable cause, int attempt) {
-            return new Failed(response, attempt, cause); // TODO response.getFailureCause().get() ?
+        static Result retryableFailure(HermesResponse response, int attempt) {
+            return new Failed(response, attempt, new ShouldRetryException(response));
+        }
+
+        static Result failureByException(Throwable throwable, HermesMessage hermesMessage, int attempt) {
+            return new Failed(hermesFailureResponse(throwable, hermesMessage), attempt, throwable);
         }
     }
 
@@ -295,26 +295,14 @@ public class ReactiveHermesClient {
     }
 
     private static class Failed implements Result {
+        private final HermesResponse hermesResponse;
         private final int attempt;
         private final Throwable cause;
-        private final HermesResponse hermesResponse;
 
         private Failed(HermesResponse hermesResponse, int attempt, Throwable cause) {
             this.attempt = attempt;
             this.cause = cause;
             this.hermesResponse = hermesResponse;
-        }
-
-        public long getRetries() {
-            return attempt;
-        }
-
-        public Throwable getCause() {
-            return cause;
-        }
-
-        public HermesResponse getHermesResponse() {
-            return hermesResponse;
         }
     }
 
