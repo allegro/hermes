@@ -22,6 +22,7 @@ public class ReactiveHermesClientBuilder {
     private Predicate<HermesResponse> retryCondition = new HermesClientBasicRetryCondition();
     private long retrySleepInMillis = 100;
     private long maxRetrySleepInMillis = 300;
+    private double jitterFactor = 0.5d;
     private Supplier<Scheduler> schedulerFactory = () -> Schedulers.fromExecutor(Executors.newSingleThreadScheduledExecutor());
     private Optional<MetricsProvider> metrics = Optional.empty();
 
@@ -36,7 +37,7 @@ public class ReactiveHermesClientBuilder {
 
     public ReactiveHermesClient build() {
         ReactiveHermesClient hermesClient = new ReactiveHermesClient(sender, uri, defaultHeaders, retries, retryCondition,
-                retrySleepInMillis, maxRetrySleepInMillis, schedulerFactory.get());
+                retrySleepInMillis, maxRetrySleepInMillis, jitterFactor, schedulerFactory.get());
 
         metrics.ifPresent((metricsProvider) -> {
             hermesClient.addMessageDeliveryListener(new MetricsMessageDeliveryListener(metricsProvider));
@@ -88,6 +89,11 @@ public class ReactiveHermesClientBuilder {
 
     public ReactiveHermesClientBuilder withScheduler(Scheduler scheduler) {
         this.schedulerFactory = () -> scheduler;
+        return this;
+    }
+
+    public ReactiveHermesClientBuilder withJitter(Double jitterFactor) {
+        this.jitterFactor = jitterFactor;
         return this;
     }
 }

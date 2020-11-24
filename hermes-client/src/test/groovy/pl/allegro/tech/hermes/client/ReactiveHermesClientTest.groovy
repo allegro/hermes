@@ -292,6 +292,7 @@ class ReactiveHermesClientTest extends Specification {
         ReactiveHermesClient client = hermesClient(getThrowingCountDownSender(latch))
                 .withRetries(4)
                 .withRetrySleep(retrySleepInMillis, retrySleepInMillis * 100)
+                .withJitter(0)
                 .withScheduler(timeScheduler)
                 .build()
 

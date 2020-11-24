@@ -34,6 +34,7 @@ public class ReactiveHermesClient {
     private final Predicate<HermesResponse> retryCondition;
     private final Duration retrySleep;
     private final Duration maxRetrySleep;
+    private final Double jitterFactor;
     private final Scheduler scheduler;
     private volatile boolean shutdown = false;
     private final List<MessageDeliveryListener> messageDeliveryListeners;
@@ -45,6 +46,7 @@ public class ReactiveHermesClient {
                          Predicate<HermesResponse> retryCondition,
                          long retrySleepInMillis,
                          long maxRetrySleepInMillis,
+                         double jitterFactor,
                          Scheduler scheduler) {
         this.sender = sender;
         this.uri = createUri(uri);
@@ -53,6 +55,7 @@ public class ReactiveHermesClient {
         this.retryCondition = retryCondition;
         this.retrySleep = Duration.ofMillis(retrySleepInMillis);
         this.maxRetrySleep = Duration.ofMillis(maxRetrySleepInMillis);
+        this.jitterFactor = jitterFactor;
         this.scheduler = scheduler;
         this.messageDeliveryListeners = new ArrayList<>();
     }
@@ -179,6 +182,7 @@ public class ReactiveHermesClient {
         } else {
             return Retry.backoff(maxRetries, retrySleep)
                     .maxBackoff(maxRetrySleep)
+                    .jitter(jitterFactor)
                     .doAfterRetry(this::handleRetryAttempt);
         }
     }
