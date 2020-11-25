@@ -50,8 +50,8 @@ import java.util.function.Function;
  * <p>
  * Second phase is calculating the offsets:
  * <p>
- * * calculate maximal committed offset for each subscription & partition
- * * calculate minimal inflight offset for each subscription & partition
+ * * calculate maximal committed offset for each subscription and partition
+ * * calculate minimal inflight offset for each subscription and partition
  * <p>
  * Third phase is choosing which offset to commit for each subscription/partition. This is the minimal value of
  * * maximum committed offset

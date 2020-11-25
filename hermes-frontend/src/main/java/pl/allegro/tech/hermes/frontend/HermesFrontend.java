@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.frontend.di.FrontendBinder;
+import pl.allegro.tech.hermes.frontend.di.LoggerConfiguration;
 import pl.allegro.tech.hermes.frontend.di.PersistentBufferExtension;
 import pl.allegro.tech.hermes.frontend.di.TrackersBinder;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerAcknowledgeListener;
@@ -40,6 +41,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_WAIT_KAFKA_ENABLED;
@@ -87,6 +89,9 @@ public final class HermesFrontend {
         hooksHandler.addShutdownHook(defaultShutdownHook());
         if (flushLogsShutdownHookEnabled) {
             hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
+        }
+        if (!config.getBooleanProperty(FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED)) {
+            LoggerConfiguration.disableResponseErrorLogger();
         }
     }
 

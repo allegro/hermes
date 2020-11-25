@@ -45,7 +45,7 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     @Override
     public void save(Message message, Topic topic) {
-        map.put(message.getId(), new ChronicleMapEntryValue(message.getData(), message.getTimestamp(), topic.getQualifiedName()));
+        map.put(message.getId(), new ChronicleMapEntryValue(message.getData(), message.getTimestamp(), topic.getQualifiedName(), message.getPartitionKey()));
     }
 
     @Override
@@ -64,6 +64,6 @@ public class ChronicleMapMessageRepository implements MessageRepository {
     }
 
     private BackupMessage toBackupMessage(String id, ChronicleMapEntryValue entryValue) {
-        return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(), entryValue.getQualifiedTopicName());
+        return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(), entryValue.getQualifiedTopicName(), entryValue.getPartitionKey());
     }
 }

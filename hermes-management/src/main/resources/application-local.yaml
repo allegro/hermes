@@ -21,6 +21,7 @@ console:
   topic:
     messagePreviewEnabled: true
     offlineClientsEnabled: false
+    readOnlyModeEnabled: false
   subscription:
     showHeadersFilter: true
     deliveryTypes:

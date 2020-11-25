@@ -4,11 +4,11 @@ public interface MessageDeliveryListener {
 
     void onSend(HermesResponse response, long latency);
 
-    void onFailure(HermesMessage message, int attemptCount);
+    void onFailure(HermesResponse message, int attemptCount);
 
-    void onFailedRetry(HermesMessage message, int attemptCount);
+    void onFailedRetry(HermesResponse message, int attemptCount);
 
-    void onSuccessfulRetry(HermesMessage message, int attemptCount);
+    void onSuccessfulRetry(HermesResponse message, int attemptCount);
 
-    void onMaxRetriesExceeded(HermesMessage message, int attemptCount);
+    void onMaxRetriesExceeded(HermesResponse message, int attemptCount);
 }

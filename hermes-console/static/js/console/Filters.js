@@ -9,3 +9,13 @@ filters.filter('readableSize', function () {
         return ""
     }
 });
+
+filters.filter('prettyJson', function () {
+
+    return function (jsonString) {
+        if (jsonString) {
+            return JSON.stringify(JSON.parse(jsonString), null, 2);
+        }
+        return "null";
+    }
+});

@@ -22,6 +22,7 @@ public class ConsoleProperties {
     private Owner owner = new Owner();
     private TopicView topic = new TopicView();
     private SubscriptionView subscription = new SubscriptionView();
+    private ConsistencyView consistency = new ConsistencyView();
 
     public Dashboard getDashboard() {
         return dashboard;
@@ -61,6 +62,14 @@ public class ConsoleProperties {
 
     public void setConsole(Console console) {
         this.console = console;
+    }
+
+    public ConsistencyView getConsistency() {
+        return consistency;
+    }
+
+    public void setConsistency(ConsistencyView consistency) {
+        this.consistency = consistency;
     }
 
     public static final class Console {
@@ -310,6 +319,7 @@ public class ConsoleProperties {
                 new TopicContentType("AVRO", "AVRO"),
                 new TopicContentType("JSON", "JSON")
         );
+        private boolean readOnlyModeEnabled = false;
         private Set<String> allowedTopicLabels = Collections.emptySet();
 
         public boolean isMessagePreviewEnabled() {
@@ -380,6 +390,14 @@ public class ConsoleProperties {
 
         public void setSchemaIdAwareSerializationEnabled(boolean schemaIdAwareSerializationEnabled) {
             this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
+        }
+
+        public boolean isReadOnlyModeEnabled() {
+            return readOnlyModeEnabled;
+        }
+
+        public void setReadOnlyModeEnabled(boolean readOnlyModeEnabled) {
+            this.readOnlyModeEnabled = readOnlyModeEnabled;
         }
     }
 
@@ -629,5 +647,16 @@ public class ConsoleProperties {
             this.label = label;
         }
     }
-}
 
+    public static final class ConsistencyView {
+        private int maxGroupBatchSize = 10;
+
+        public int getMaxGroupBatchSize() {
+            return maxGroupBatchSize;
+        }
+
+        public void setMaxGroupBatchSize(int maxGroupBatchSize) {
+            this.maxGroupBatchSize = maxGroupBatchSize;
+        }
+    }
+}

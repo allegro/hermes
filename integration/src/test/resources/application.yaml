@@ -78,3 +78,6 @@ topicOwnerCache:
 
 subscriptionOwnerCache:
   refreshRateInSeconds: 300
+
+consistencyChecker:
+  threadPoolSize: 2
