@@ -2,6 +2,18 @@
 
 ...
 
+## 1.8.0 (01.12.2020)
+
+### Enhancements
+
+#### ([1258](https://github.com/allegro/hermes/pull/1258)) Introduce Reactive Hermes Client
+
+Thanks to @wjur for this contribution!
+
+#### ([1293](https://github.com/allegro/hermes/pull/1293)) Added possibility to tag topics with defined labels
+
+Thanks to @kacperb333 for this contribution!
+
 ## 1.7.0 (18.11.2020)
 
 ### Enhancements
