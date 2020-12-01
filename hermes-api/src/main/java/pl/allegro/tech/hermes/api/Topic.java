@@ -12,7 +12,9 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
 @JsonIgnoreProperties(value = {"createdAt", "modifiedAt"}, allowGetters = true)
 public class Topic {
@@ -65,6 +67,9 @@ public class Topic {
 
     private final TopicDataOfflineStorage offlineStorage;
 
+    @Valid
+    private Set<TopicLabel> labels;
+
     private Instant createdAt;
 
     private Instant modifiedAt;
@@ -73,7 +78,7 @@ public class Topic {
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
                  @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
-                 TopicDataOfflineStorage offlineStorage, Instant createdAt, Instant modifiedAt) {
+                 TopicDataOfflineStorage offlineStorage, Set<TopicLabel> labels, Instant createdAt, Instant modifiedAt) {
         this.name = name;
         this.description = description;
         this.owner = owner;
@@ -88,6 +93,7 @@ public class Topic {
         this.publishingAuth = publishingAuth;
         this.subscribingRestricted = subscribingRestricted;
         this.offlineStorage = offlineStorage;
+        this.labels = labels;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
     }
@@ -108,6 +114,7 @@ public class Topic {
             @JsonProperty("auth") PublishingAuth publishingAuth,
             @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
             @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
+            @JsonProperty("labels") Set<TopicLabel> labels,
             @JsonProperty("createdAt") Instant createdAt,
             @JsonProperty("modifiedAt") Instant modifiedAt
     ) {
@@ -117,6 +124,7 @@ public class Topic {
                 publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
                 subscribingRestricted,
                 offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage,
+                labels,
                 createdAt, modifiedAt
         );
     }
@@ -129,7 +137,7 @@ public class Topic {
     public int hashCode() {
         return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
                 jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled, maxMessageSize,
-                publishingAuth, subscribingRestricted, offlineStorage);
+                publishingAuth, subscribingRestricted, offlineStorage, labels);
     }
 
     @Override
@@ -155,7 +163,8 @@ public class Topic {
                 && Objects.equals(this.maxMessageSize, other.maxMessageSize)
                 && Objects.equals(this.subscribingRestricted, other.subscribingRestricted)
                 && Objects.equals(this.publishingAuth, other.publishingAuth)
-                && Objects.equals(this.offlineStorage, other.offlineStorage);
+                && Objects.equals(this.offlineStorage, other.offlineStorage)
+                && Objects.equals(this.labels, other.labels);
     }
 
     @JsonProperty("name")
@@ -236,6 +245,10 @@ public class Topic {
 
     public TopicDataOfflineStorage getOfflineStorage() {
         return offlineStorage;
+    }
+
+    public Set<TopicLabel> getLabels() {
+        return Collections.unmodifiableSet(labels);
     }
 
     public Instant getCreatedAt() {

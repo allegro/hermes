@@ -40,6 +40,11 @@ management:
 
 audit.enabled: false
 
+topic:
+  allowedTopicLabels: &ALLOWED_LABELS
+    - internal
+    - deprecated
+
 topicOwnerCache:
   refreshRateInSeconds: 300 # 5 minutes
 
@@ -49,3 +54,5 @@ subscriptionOwnerCache:
 console:
   configurationLocation: console/config-local.json
   configurationType: classpath_resource
+  topic:
+    allowedTopicLabels: *ALLOWED_LABELS

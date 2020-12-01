@@ -1,18 +1,20 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator
 
-import org.apache.avro.Schema
+
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.TopicLabel
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
+import pl.allegro.tech.hermes.management.config.TopicProperties
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidationException
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
 import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
-import pl.allegro.tech.hermes.schema.SchemaId
 import pl.allegro.tech.hermes.schema.SchemaRepository
-import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import spock.lang.Specification
+import spock.lang.Subject
+import spock.lang.Unroll
 
 import javax.validation.ConstraintViolationException
 
@@ -23,11 +25,25 @@ class TopicValidatorTest extends Specification {
     static MANAGABLE = { true }
     static NOT_MANAGABLE = { false }
 
+    static Set<TopicLabel> allowedLabels
+
     def schemaRepository = Stub(SchemaRepository)
     def ownerDescriptorValidator = Stub(OwnerIdValidator)
     def contentTypeWhitelistValidator = Stub(ContentTypeValidator)
     def apiPreconditions = Stub(ApiPreconditions)
-    def topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, schemaRepository, apiPreconditions)
+    def topicLabelsValidator
+
+    @Subject
+    TopicValidator topicValidator
+
+    def setup() {
+        allowedLabels = []
+        TopicProperties topicProperties = new TopicProperties()
+        topicProperties.setAllowedTopicLabels(allowedLabels)
+        topicLabelsValidator = new TopicLabelsValidator(topicProperties)
+
+        topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, topicLabelsValidator, schemaRepository, apiPreconditions)
+    }
 
     def "topic with basic properties when creating should be valid"() {
         when:
@@ -162,12 +178,127 @@ class TopicValidatorTest extends Specification {
 
         when:
         topicValidator.ensureUpdatedTopicIsValid(
-                topic('group.topic').build(),
-                topic('group.topic').withDescription("updated").build()
+            topic('group.topic').withDescription("updated").build(),
+            topic('group.topic').build()
         )
 
         then:
         thrown OwnerIdValidationException
     }
 
+    @Unroll
+    def "topic with allowed labels should be valid during creation"() {
+        given:
+        allowedLabels.addAll(givenAllowedLabels)
+
+        when:
+        topicValidator.ensureCreatedTopicIsValid(
+            topic('group.topic').withLabels(createdTopicLabels as Set).build(),
+            MANAGABLE
+        )
+
+        then:
+        noExceptionThrown()
+
+        where:
+        givenAllowedLabels                         | createdTopicLabels
+        []                                         | []
+        [l('label-1')]                             | []
+        [l('label-1')]                             | [l('label-1')]
+        [l('label-1'), l('label-2')]               | []
+        [l('label-1'), l('label-2')]               | [l('label-1')]
+        [l('label-1'), l('label-2')]               | [l('label-1'), l('label-2')]
+        [l('label-1'), l('label-2'), l('label-3')] | []
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('label-2')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('label-2'), l('label-3')]
+    }
+
+    @Unroll
+    def "topic with at least one disallowed label should not be valid during creation"() {
+        given:
+        allowedLabels.addAll(givenAllowedLabels)
+
+        when:
+        topicValidator.ensureCreatedTopicIsValid(
+            topic('group.topic').withLabels(createdTopicLabels as Set).build(),
+            MANAGABLE
+        )
+
+        then:
+        thrown TopicValidationException
+
+        where:
+        givenAllowedLabels                         | createdTopicLabels
+        []                                         | [l('some-random-label')]
+        [l('label-1')]                             | [l('some-random-label')]
+        [l('label-1')]                             | [l('label-1'), l('some-random-label')]
+        [l('label-1'), l('label-2')]               | [l('some-random-label')]
+        [l('label-1'), l('label-2')]               | [l('label-1'), l('some-random-label')]
+        [l('label-1'), l('label-2')]               | [l('label-1'), l('label-2'), l('some-random-label')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('some-random-label')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('some-random-label')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('label-2'), l('some-random-label')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('label-2'), l('label-3'), l('some-random-label')]
+    }
+
+    @Unroll
+    def "topic with allowed labels should be valid during update"() {
+        given:
+        allowedLabels.addAll(givenAllowedLabels)
+
+        when:
+        topicValidator.ensureUpdatedTopicIsValid(
+            topic('group.topic').withLabels(updatedTopicLabels as Set).build(),
+            topic('group.topic').build()
+        )
+
+        then:
+        noExceptionThrown()
+
+        where:
+        givenAllowedLabels                         | updatedTopicLabels
+        []                                         | []
+        [l('label-1')]                             | []
+        [l('label-1')]                             | [l('label-1')]
+        [l('label-1'), l('label-2')]               | []
+        [l('label-1'), l('label-2')]               | [l('label-1')]
+        [l('label-1'), l('label-2')]               | [l('label-1'), l('label-2')]
+        [l('label-1'), l('label-2'), l('label-3')] | []
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('label-2')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('label-2'), l('label-3')]
+    }
+
+    @Unroll
+    def "topic with at least one disallowed label should not be valid during update"() {
+        given:
+        allowedLabels.addAll(givenAllowedLabels)
+
+        when:
+        topicValidator.ensureUpdatedTopicIsValid(
+            topic('group.topic').withLabels(updatedTopicLabels as Set).build(),
+            topic('group.topic').build()
+        )
+
+        then:
+        thrown TopicValidationException
+
+        where:
+        givenAllowedLabels                         | updatedTopicLabels
+        []                                         | [l('some-random-label')]
+        [l('label-1')]                             | [l('some-random-label')]
+        [l('label-1')]                             | [l('label-1'), l('some-random-label')]
+        [l('label-1'), l('label-2')]               | [l('some-random-label')]
+        [l('label-1'), l('label-2')]               | [l('label-1'), l('some-random-label')]
+        [l('label-1'), l('label-2')]               | [l('label-1'), l('label-2'), l('some-random-label')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('some-random-label')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('some-random-label')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('label-2'), l('some-random-label')]
+        [l('label-1'), l('label-2'), l('label-3')] | [l('label-1'), l('label-2'), l('label-3'), l('some-random-label')]
+    }
+
+    private static l(String value) {
+        return new TopicLabel(value)
+    }
 }
