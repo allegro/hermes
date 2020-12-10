@@ -124,7 +124,7 @@ public class Topic {
                 publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
                 subscribingRestricted,
                 offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage,
-                labels,
+                labels == null ? Collections.emptySet() : labels,
                 createdAt, modifiedAt
         );
     }
