@@ -256,7 +256,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
             var topic = _.cloneDeep($scope.topic);
             delete topic.shortName;
 
-            topic.labels = $scope.topic.labelValues.map(function(labelValue) { return {value: labelValue}} );
+            topic.labels = ($scope.topic.labelValues || []).map(function(labelValue) { return {value: labelValue}} );
             if (operation === 'ADD') {
                 topic.name = groupName + '.' + $scope.topic.shortName;
                 $scope.topic.name = topic.name;
