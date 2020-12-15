@@ -2,6 +2,12 @@
 
 ...
 
+## 1.8.1 (01.12.2020)
+
+### Fixes
+
+#### ([1313](https://github.com/allegro/hermes/pull/1313)) Defined labels UI fix
+
 ## 1.8.0 (01.12.2020)
 
 ### Enhancements
