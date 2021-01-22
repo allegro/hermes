@@ -156,6 +156,9 @@ public enum Configs {
     FRONTEND_AUTHENTICATION_ENABLED("frontend.authentication.enabled", false),
     FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),
 
+    FRONTEND_HEADER_PROPAGATION_ENABLED("frontend.header.propagation.enabled", false),
+    FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER("frontend.header.propagation.allow.filter", ""),
+
     FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
     FRONTEND_MESSAGE_PREVIEW_MAX_SIZE_KB("frontend.message.preview.max.size.kb", 10),
     FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),
