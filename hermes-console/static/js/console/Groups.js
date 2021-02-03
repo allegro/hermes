@@ -41,6 +41,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
     function (groupRepository, topicFactory, $scope, $location, $stateParams, $modal, toaster, confirmationModal, passwordService) {
         $scope.fetching = true;
         var groupName = $scope.groupName = $stateParams.groupName;
+        var topicDraft = topicFactory.create();
 
         $scope.group = groupRepository.get(groupName);
         $scope.topics = [];
@@ -68,14 +69,15 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                         return groupName;
                     },
                     topic: function () {
-                        return topicFactory.create();
+                        return topicDraft;
                     },
                     messageSchema: function() {
                         return null;
                     }
                 }
             }).result.then(function(){
-                    loadTopics();
+                loadTopics();
+                topicDraft = topicFactory.create();
             });
 
 

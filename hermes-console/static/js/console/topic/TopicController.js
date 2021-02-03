@@ -16,6 +16,8 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
               subscriptionFactory, subscriptionConfig, offlineClientsRepository) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
+        var topicDraft;
+        var subscriptionDraft = subscriptionFactory.create(topicName);
 
         $scope.subscriptionsFetching = true;
         $scope.offlineClientsFetching = true;
@@ -42,6 +44,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 console.error('Could not parse topic schema: ', e);
                 $scope.messageSchema = '[schema parsing failure]';
             }
+            topicDraft = _($scope.topic).clone();
         });
 
         $scope.metricsUrls = topicMetrics.metricsUrls(groupName, topicName);
@@ -87,7 +90,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                         return 'EDIT';
                     },
                     topic: function () {
-                        return $scope.topic;
+                        return topicDraft;
                     },
                     messageSchema: function() {
                         return $scope.messageSchema;
@@ -97,6 +100,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     }
                 }
             }).result.then(function (result) {
+                topicDraft = _(result.topic).clone();
                 $scope.topic = result.topic;
                 $scope.messageSchema = result.messageSchema;
             });
@@ -209,7 +213,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                         return topicName;
                     },
                     subscription: function () {
-                        return subscriptionFactory.create(topicName);
+                        return subscriptionDraft;
                     },
                     endpointAddressResolverMetadataConfig: function() {
                         return subscriptionConfig.endpointAddressResolverMetadata;
@@ -223,6 +227,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 }
             }).result.then(function () {
                 loadSubscriptions();
+                subscriptionDraft = subscriptionFactory.create(topicName);
             });
         };
 
@@ -243,7 +248,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
     function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
         $scope.config = topicConfig;
 
-        $scope.topic = _(topic).clone();
+        $scope.topic = topic;
         $scope.messageSchema = messageSchema;
         $scope.groupName = groupName;
         $scope.operation = operation;
