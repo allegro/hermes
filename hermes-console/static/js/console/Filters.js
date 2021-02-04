@@ -6,8 +6,8 @@ filters.filter('readableSize', function () {
             var i = Math.floor(Math.log(size)/Math.log(1024));
             return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
         }
-        return ""
-    }
+        return "";
+    };
 });
 
 filters.filter('prettyJson', function () {
@@ -17,5 +17,5 @@ filters.filter('prettyJson', function () {
             return JSON.stringify(JSON.parse(jsonString), null, 2);
         }
         return "null";
-    }
+    };
 });

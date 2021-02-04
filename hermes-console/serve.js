@@ -52,7 +52,7 @@ function readConfiguration(source, callback) {
     console.log('Reading default configuration from file: ' + DEFAULT_CONFIG);
     var defaultConfig = JSON.parse(fs.readFileSync(DEFAULT_CONFIG, 'utf8'));
 
-    if (source.indexOf('htt') == 0) {
+    if (source.indexOf('htt') === 0) {
         console.log('Reading configuration from remote source: ' + source);
         request.get(source, (error, res, body) => { callback(mergeConfig(defaultConfig, JSON.parse(body))); });
     }

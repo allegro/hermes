@@ -147,7 +147,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                                 toaster.pop('warning', 'Topic schema was not removed',
                                     'Note that schema was not removed for this topic. Schema is persisted in an external registry ' +
                                     'and its removal is disabled in this environment. Before creating topic with the same name make sure ' +
-                                    'it\'s manually removed by the schema registry operator.')
+                                    'it\'s manually removed by the schema registry operator.');
                             }
                             $location.path('/groups/' + groupName).replace();
                         })
