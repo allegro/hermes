@@ -23,11 +23,11 @@ angular.module('hermes.filters.debugger', ['hermes.filters.repository'])
                     .finally(function () {
                         $scope.verificationInProgress = false;
                     });
-            }
+            };
 
             $scope.updateFilters = function () {
                 $modal.close({messageFilters: $scope.messageFilters});
-            }
+            };
 
             function resetVerificationState() {
                 $scope.verificationStatus = '';

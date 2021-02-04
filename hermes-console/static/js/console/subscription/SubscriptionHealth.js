@@ -9,7 +9,7 @@ health.factory('SubscriptionHealth', ['DiscoveryService', '$resource',
                 return health.get({topicName: topicName, subscriptionName: subscriptionName})
                     .$promise.then(function (health) {
                         var problemOccurs = function (problemCode) {
-                            return _.some(health.problems, {code: problemCode})
+                            return _.some(health.problems, {code: problemCode});
                         };
 
                         return {
