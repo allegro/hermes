@@ -13,6 +13,11 @@ import spock.lang.Specification
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
 import javax.ws.rs.core.Response
+import java.time.Duration
+import java.time.Instant
+
+import static java.time.Instant.now
+import static pl.allegro.tech.hermes.mock.Response.Builder.aResponse
 
 class HermesMockAvroTest extends Specification {
 
@@ -45,6 +50,21 @@ class HermesMockAvroTest extends Specification {
             hermes.expect().singleMessageOnTopic(topicName)
             hermes.expect().singleAvroMessageOnTopic(topicName, schema)
             response.status == HttpStatus.SC_CREATED
+    }
+
+    def "should respond with a delay"() {
+        given:
+        def topicName = "my-test-avro-topic"
+        Duration fixedDelay = Duration.ofMillis(500)
+        hermes.define().avroTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
+        Instant start = now()
+
+        when:
+        publish(topicName)
+
+        then:
+        hermes.expect().singleMessageOnTopic(topicName)
+        Duration.between(start, now()) >= fixedDelay
     }
 
     def "should get all messages as avro"() {

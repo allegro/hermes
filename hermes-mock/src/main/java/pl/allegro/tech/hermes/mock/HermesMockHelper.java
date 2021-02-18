@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
@@ -18,6 +19,7 @@ import pl.allegro.tech.hermes.mock.matching.StartsWithPattern;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,13 +71,18 @@ public class HermesMockHelper {
     }
 
     public void addStub(String topicName, Response response, String contentType) {
+        ResponseDefinitionBuilder responseDefBuilder = aResponse()
+                .withStatus(response.getStatusCode())
+                .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
+                .withFixedDelay(getMilliseconds(response.getFixedDelay()));
         wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
                 .withHeader("Content-Type", startsWith(contentType))
-                .willReturn(aResponse()
-                        .withStatus(response.getStatusCode())
-                        .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
-                )
+                .willReturn(responseDefBuilder)
         );
+    }
+
+    private static Integer getMilliseconds(Duration duration) {
+        return duration == null ? null : Math.toIntExact(duration.toMillis());
     }
 
     public static StringValuePattern startsWith(String value) {

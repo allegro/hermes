@@ -1,19 +1,27 @@
 package pl.allegro.tech.hermes.mock;
 
+import java.time.Duration;
+
 public class Response {
     private final int statusCode;
+    private final Duration fixedDelay;
 
-    private Response(int statusCode) {
+    public Response(int statusCode, Duration fixedDelay) {
         this.statusCode = statusCode;
+        this.fixedDelay = fixedDelay;
     }
 
     public int getStatusCode() {
         return statusCode;
     }
 
+    public Duration getFixedDelay() {
+        return fixedDelay;
+    }
 
     public static final class Builder {
-        private int statusCode = 200;
+        private int statusCode;
+        private Duration fixedDelay;
 
         private Builder() {
         }
@@ -27,8 +35,13 @@ public class Response {
             return this;
         }
 
+        public Builder withFixedDelay(Duration fixedDelay) {
+            this.fixedDelay = fixedDelay;
+            return this;
+        }
+
         public Response build() {
-            return new Response(statusCode);
+            return new Response(statusCode, fixedDelay);
         }
     }
 }
