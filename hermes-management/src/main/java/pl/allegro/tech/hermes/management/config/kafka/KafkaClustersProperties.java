@@ -10,6 +10,7 @@ import java.util.List;
 public class KafkaClustersProperties {
     private List<KafkaProperties> clusters = new ArrayList<>();
     private String defaultNamespace = "";
+    private String namespaceSeparator = "_";
 
     public List<KafkaProperties> getClusters() {
         return clusters;
@@ -25,5 +26,13 @@ public class KafkaClustersProperties {
 
     public void setDefaultNamespace(String defaultNamespace) {
         this.defaultNamespace = defaultNamespace;
+    }
+
+    public String getNamespaceSeparator() {
+        return namespaceSeparator;
+    }
+
+    public void setNamespaceSeparator(String namespaceSeparator) {
+        this.namespaceSeparator = namespaceSeparator;
     }
 }

@@ -32,6 +32,7 @@ import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubs
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
+import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Component
 public class SubscriptionService {
@@ -63,6 +65,7 @@ public class SubscriptionService {
     private final SubscriptionValidator subscriptionValidator;
     private final Auditor auditor;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDCAwareService multiDCAwareService;
     private final RepositoryManager repositoryManager;
 
     @Autowired
@@ -75,6 +78,7 @@ public class SubscriptionService {
                                SubscriptionValidator subscriptionValidator,
                                Auditor auditor,
                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+                               MultiDCAwareService multiDCAwareService,
                                RepositoryManager repositoryManager) {
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionOwnerCache = subscriptionOwnerCache;
@@ -85,6 +89,7 @@ public class SubscriptionService {
         this.subscriptionValidator = subscriptionValidator;
         this.auditor = auditor;
         this.multiDcExecutor = multiDcExecutor;
+        this.multiDCAwareService = multiDCAwareService;
         this.repositoryManager = repositoryManager;
     }
 
@@ -109,8 +114,13 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights) {
+    public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights, String qualifiedTopicName) {
+        auditor.beforeObjectCreation(createdBy, subscription);
         subscriptionValidator.checkCreation(subscription, creatorRights);
+
+        Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+        multiDCAwareService.createConsumerGroups(topic, subscription);
+
         multiDcExecutor.execute(new CreateSubscriptionRepositoryCommand(subscription));
         auditor.objectCreated(createdBy, subscription);
         subscriptionOwnerCache.onCreatedSubscription(subscription);
@@ -157,6 +167,7 @@ public class SubscriptionService {
     }
 
     public void removeSubscription(TopicName topicName, String subscriptionName, String removedBy) {
+        auditor.beforeObjectRemoval(removedBy, Subscription.class.getSimpleName(), subscriptionName);
         multiDcExecutor.execute(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName));
         auditor.objectRemoved(removedBy, Subscription.class.getSimpleName(), subscriptionName);
         subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
@@ -166,6 +177,8 @@ public class SubscriptionService {
                                    String subscriptionName,
                                    PatchData patch,
                                    String modifiedBy) {
+        auditor.beforeObjectUpdate(modifiedBy, Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patch);
+
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription.State oldState = retrieved.getState();
         Subscription updated = Patch.apply(retrieved, patch);
@@ -186,11 +199,15 @@ public class SubscriptionService {
     }
 
     public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state, String modifiedBy) {
-        Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
-        if (state != Subscription.State.PENDING && !retrieved.getState().equals(state)) {
-            Subscription updated = Patch.apply(retrieved, PatchData.patchData().set("state", state).build());
-            multiDcExecutor.execute(new UpdateSubscriptionRepositoryCommand(updated));
-            auditor.objectUpdated(modifiedBy, retrieved, updated);
+        if (state != Subscription.State.PENDING) {
+            PatchData patchData = PatchData.patchData().set("state", state).build();
+            auditor.beforeObjectUpdate(modifiedBy, Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patchData);
+            Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+            if (!retrieved.getState().equals(state)) {
+                Subscription updated = Patch.apply(retrieved, patchData);
+                multiDcExecutor.execute(new UpdateSubscriptionRepositoryCommand(updated));
+                auditor.objectUpdated(modifiedBy, retrieved, updated);
+            }
         }
     }
 
@@ -237,7 +254,9 @@ public class SubscriptionService {
     }
 
     public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(Query<SubscriptionNameWithMetrics> query) {
-        return query.filter(getSubscriptionsMetrics())
+        List<Subscription> filteredSubscriptions = query.filterNames(getAllSubscriptions())
+                .collect(toList());
+        return query.filter(getSubscriptionsMetrics(filteredSubscriptions))
                 .collect(toList());
     }
 
@@ -311,8 +330,8 @@ public class SubscriptionService {
         return subscriptionHealthChecker.checkHealth(subscription, topicMetrics, subscriptionMetrics);
     }
 
-    private List<SubscriptionNameWithMetrics> getSubscriptionsMetrics() {
-        return getAllSubscriptions().stream()
+    private List<SubscriptionNameWithMetrics> getSubscriptionsMetrics(List<Subscription> subscriptions) {
+        return subscriptions.stream()
                 .map(s -> {
                     SubscriptionMetrics metrics = metricsRepository.loadMetrics(s.getTopicName(), s.getName());
                     return SubscriptionNameWithMetrics.from(metrics, s.getName(), s.getQualifiedTopicName());

@@ -27,16 +27,19 @@ public enum Configs {
     ZOOKEEPER_CACHE_THREAD_POOL_SIZE("zookeeper.cache.thread.pool.size", 5),
     ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE("zookeeper.cache.processing.thread.pool.size", 5),
 
-    KAFKA_ZOOKEEPER_CONNECT_STRING("kafka.zookeeper.connect.string", "localhost:2181"),
-
     ENVIRONMENT_NAME("environment.name", "dev"),
     HOSTNAME("hostname", new InetAddressHostnameResolver().resolve()),
 
     KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary-dc"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
     KAFKA_NAMESPACE("kafka.namespace", ""),
+    KAFKA_NAMESPACE_SEPARATOR("kafka.namespace.separator", "_"),
 
-    KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG("kafka.consumer.auto.offset.reset", "latest"),
+    KAFKA_HEADER_NAME_MESSAGE_ID("kafka.header.name.message.id", "id"),
+    KAFKA_HEADER_NAME_TIMESTAMP("kafka.header.name.timestamp", "ts"),
+    KAFKA_HEADER_NAME_SCHEMA_VERSION("kafka.header.name.schema.version", "sv"),
+    KAFKA_HEADER_NAME_SCHEMA_ID("kafka.header.name.schema.id", "sid"),
+    KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG("kafka.consumer.auto.offset.reset", "earliest"),
     KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG("kafka.consumer.session.timeout.ms", 200_000),
     KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG("kafka.consumer.heartbeat.interval.ms", 3000),
     KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG("kafka.consumer.metadata.max.age.ms", 5 * 60 * 1000),
@@ -83,6 +86,12 @@ public enum Configs {
     KAFKA_PRODUCER_REPORT_NODE_METRICS("kafka.producer.report.node.metrics", false),
     KAFKA_STREAM_COUNT("kafka.stream.count", 1),
 
+    KAFKA_AUTHORIZATION_ENABLED("kafka.authorization.enabled", false),
+    KAFKA_AUTHORIZATION_MECHANISM("kafka.authorization.mechanism", "PLAIN"),
+    KAFKA_AUTHORIZATION_PROTOCOL("kafka.authorization.protocol", "SASL_PLAINTEXT"),
+    KAFKA_AUTHORIZATION_USERNAME("kafka.authorization.username", "username"),
+    KAFKA_AUTHORIZATION_PASSWORD("kafka.authorization.password", "password"),
+
     FRONTEND_PORT("frontend.port", 8080),
     FRONTEND_HOST("frontend.host", "0.0.0.0"),
     FRONTEND_IDLE_TIMEOUT("frontend.idle.timeout", 65),
@@ -111,6 +120,7 @@ public enum Configs {
     FRONTEND_THROUGHPUT_DYNAMIC_DESIRED("frontend.throughput.dynamic.desired", Long.MAX_VALUE),
     FRONTEND_THROUGHPUT_DYNAMIC_IDLE("frontend.throughput.dynamic.idle", 0.5),
     FRONTEND_THROUGHPUT_DYNAMIC_CHECK_INTERVAL("frontend.throughput.dynamic.interval.seconds", 30),
+    FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED("frontend.response.error.logger.enabled", false),
 
     FRONTEND_KEEP_ALIVE_HEADER_ENABLED("frontend.keep.alive.header.enabled", false),
     FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS("frontend.keep.alive.header.timeout.seconds", 1),
@@ -119,24 +129,35 @@ public enum Configs {
     FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
     FRONTEND_SSL_CLIENT_AUTH_MODE("frontend.ssl.client.auth.mode", "not_requested"),
     FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
+
+    FRONTEND_SSL_KEYSTORE_SOURCE("frontend.ssl.keystore.source", "jre"),
     FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
     FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
     FRONTEND_SSL_KEYSTORE_FORMAT("frontend.ssl.keystore.format", "JKS"),
+
+    FRONTEND_SSL_TRUSTSTORE_SOURCE("frontend.ssl.truststore.source", "jre"),
     FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 
-    CONSUMER_SSL_ENABLED("consumer.ssl.enabled", false),
+    CONSUMER_SSL_ENABLED("consumer.ssl.enabled", true),
     CONSUMER_SSL_PROTOCOL("consumer.ssl.protocol", "TLS"),
+
+    CONSUMER_SSL_KEYSTORE_SOURCE("consumer.ssl.keystore.source", "jre"),
     CONSUMER_SSL_KEYSTORE_LOCATION("consumer.ssl.keystore.location", "classpath:client.keystore"),
     CONSUMER_SSL_KEYSTORE_PASSWORD("consumer.ssl.keystore.password", "password"),
     CONSUMER_SSL_KEYSTORE_FORMAT("consumer.ssl.keystore.format", "JKS"),
+
+    CONSUMER_SSL_TRUSTSTORE_SOURCE("consumer.ssl.truststore.source", "jre"),
     CONSUMER_SSL_TRUSTSTORE_LOCATION("consumer.ssl.truststore.location", "classpath:client.truststore"),
     CONSUMER_SSL_TRUSTSTORE_PASSWORD("consumer.ssl.truststore.password", "password"),
     CONSUMER_SSL_TRUSTSTORE_FORMAT("consumer.ssl.truststore.format", "JKS"),
 
     FRONTEND_AUTHENTICATION_ENABLED("frontend.authentication.enabled", false),
     FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),
+
+    FRONTEND_HEADER_PROPAGATION_ENABLED("frontend.header.propagation.enabled", false),
+    FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER("frontend.header.propagation.allow.filter", ""),
 
     FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
     FRONTEND_MESSAGE_PREVIEW_MAX_SIZE_KB("frontend.message.preview.max.size.kb", 10),
@@ -185,18 +206,23 @@ public enum Configs {
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
     CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING("consumer.sender.async.timeout.thread.pool.monitoring", false),
     CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
+    CONSUMER_HTTP_CLIENT_CONNECTION_POOL_MONITORING_ENABLED("consumer.http.client.connection.pool.monitoring.enabled", false),
+    CONSUMER_HTTP_CLIENT_REQUEST_QUEUE_MONITORING_ENABLED("consumer.http.client.request.queue.monitoring.enabled", true),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
     CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING("consumer.http.client.thread.pool.monitoring", false),
+    CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS("consumer.http.client.follow.redirects", false),
     CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION("consumer.http.client.max.connections.per.destination", 100),
     CONSUMER_HTTP_CLIENT_VALIDATE_CERTS("consumer.http.client.validate.certs", true),
     CONSUMER_HTTP_CLIENT_VALIDATE_PEER_CERTS("consumer.http.client.validate.peer.certs", true),
     CONSUMER_HTTP_CLIENT_ENABLE_CRLDP("consumer.http.client.enable.crldp", true),
     CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT("consumer.http.client.idle.timeout", 0),
+    CONSUMER_HTTP_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION("consumer.http.client.max.requests.queued.per.destination", 100),
 
     CONSUMER_HTTP2_ENABLED("consumer.http2.enabled", true),
     CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE("consumer.http2.client.thread.pool.size", 10),
     CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING("consumer.http2.client.thread.pool.monitoring", false),
     CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT("consumer.http2.client.idle.timeout", 0),
+    CONSUMER_HTTP2_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION("consumer.http2.client.max.requests.queued.per.destination", 100),
 
     CONSUMER_INFLIGHT_SIZE("consumer.inflight.size", 100),
     CONSUMER_RATE_LIMITER_SUPERVISOR_PERIOD("consumer.rate.limiter.supervisor.period", 30),
@@ -219,7 +245,6 @@ public enum Configs {
     CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT("consumer.maxrate.min.significant.update.percent", 9.0),
 
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
-    CONSUMER_WORKLOAD_ALGORITHM("consumer.workload.algorithm", "selective"),
     CONSUMER_WORKLOAD_REGISTRY_TYPE("consumer.workload.registry.type", "hierarchical"),
     CONSUMER_WORKLOAD_REGISTRY_BINARY_ENCODER_ASSIGNMENTS_BUFFER_SIZE_BYTES("consumer.workload.registry.binary.encoder.assignments.buffer.size.bytes", 100_000),
     CONSUMER_WORKLOAD_REBALANCE_INTERVAL("consumer.workload.rebalance.interval.seconds", 30),
@@ -277,12 +302,16 @@ public enum Configs {
     SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
     SCHEMA_CACHE_ENABLED("schema.cache.enabled", true),
     SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE("schema.cache.compiled.maximum.size", 2000),
-    SCHEMA_REPOSITORY_TYPE("schema.repository.type", "schema_registry"),
     SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:8888/"),
     SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS("schema.repository.http.read.timeout.ms", 2000),
     SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS("schema.repository.http.connect.timeout.ms", 2000),
     SCHEMA_REPOSITORY_ONLINE_CHECK_PERMITS_PER_SECOND("schema.repository.online.check.permits.per.second", 100.0),
     SCHEMA_REPOSITORY_ONLINE_CHECK_ACQUIRE_WAIT_MS("schema.repository.online.check.acquire.wait.ms", 500),
+    SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED("schema.repository.subject.suffix.enabled", false),
+    SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED("schema.repository.subject.namespace.enabled", false),
+    SCHEMA_ID_HEADER_ENABLED ("schema.id.header.enabled", false),
+    SCHEMA_ID_SERIALIZATION_ENABLED("schema.id.serialization.enabled", false),
+    SCHEMA_VERSION_TRUNCATION_ENABLED("schema.version.truncation.enabled", false),
 
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 

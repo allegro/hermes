@@ -54,7 +54,6 @@ public class HermesMockExpect {
     }
 
     private <T> void assertMessages(String topicName, int count, Supplier<List<T>> messages) {
-        expectMessages(topicName, count);
         expectSpecificMessages(count, messages.get());
     }
 

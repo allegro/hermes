@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.api;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
+import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 
@@ -42,13 +43,18 @@ public class UnhealthyEndpoint {
             @QueryParam("subscriptionNames") List<String> subscriptionNames,
             @QueryParam("qualifiedTopicNames") List<String> qualifiedTopicNames) {
 
-        Optional<OwnerId> ownerId = resolveOwnerId(ownerSourceName, id);
-        List<UnhealthySubscription> unhealthySubscriptions = ownerId.isPresent()
-                ? subscriptionService.getUnhealthyForOwner(ownerId.get(), respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
-                : subscriptionService.getAllUnhealthy(respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
+        List<UnhealthySubscription> unhealthySubscriptions = areEmpty(ownerSourceName, id)
+                ? subscriptionService.getAllUnhealthy(respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
+                : resolveOwnerId(ownerSourceName, id)
+                .map(ownerId -> subscriptionService.getUnhealthyForOwner(ownerId, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames))
+                .orElseThrow(() -> new OwnerSource.OwnerNotFound(ownerSourceName, id));
         return Response.ok()
                 .entity(new GenericEntity<List<UnhealthySubscription>>(unhealthySubscriptions){})
                 .build();
+    }
+
+    private boolean areEmpty(String ownerSourceName, String id) {
+        return ownerSourceName == null && id == null;
     }
 
     private Optional<OwnerId> resolveOwnerId(String ownerSourceName, String id) {

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.schema;
 
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.List;
@@ -8,9 +9,11 @@ import java.util.Optional;
 
 public interface RawSchemaClient {
 
-    Optional<RawSchema> getSchema(TopicName topic, SchemaVersion version);
+    Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version);
 
-    Optional<RawSchema> getLatestSchema(TopicName topic);
+    Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic);
+
+    Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId);
 
     List<SchemaVersion> getVersions(TopicName topic);
 

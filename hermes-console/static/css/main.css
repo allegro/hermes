@@ -1,3 +1,8 @@
+body {
+    position: relative;
+    padding-bottom: 5rem;
+    min-height: 100vh;
+}
 
 .logo-mini {
     margin-top: -12px;
@@ -7,6 +12,10 @@
 .hero-box {
     margin-bottom: 4em;
     margin-top: 4em;
+}
+
+.margin-right-4 {
+    margin-right: 4px;
 }
 
 .margin-top-10 {
@@ -88,4 +97,21 @@ a.navbar-brand.console-title {
     padding: 9px 14px;
     border: 1px solid rgba(0,0,0,.2);
     border-radius: 6px;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 1rem;
+
+    background-color: #f8f8f8;
+    border: 1px solid #e7e7e7;
+
+    text-align: center;
+    color: #b9b9b9;
+}
+
+.full-width {
+    display: block;
 }

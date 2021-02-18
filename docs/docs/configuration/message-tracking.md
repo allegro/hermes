@@ -35,7 +35,7 @@ in Frontend, Consumers and Management.
 * set log repository via `HermesFrontend.Builder#withLogRepository`
 * add shutdown hook to cleanup the driver
 
-Example of usage with *example* configuration (there are no `config.get*` methods out of box!):
+Example of usage with *example* configuration (there are no `config.get*` methods out of the box!):
 
 ```java
 ElasticsearchClientFactory elasticFactory = new ElasticsearchClientFactory(

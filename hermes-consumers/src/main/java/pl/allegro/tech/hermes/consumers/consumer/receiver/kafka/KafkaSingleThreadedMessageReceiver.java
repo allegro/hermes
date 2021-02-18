@@ -10,15 +10,12 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.InterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -44,7 +41,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaSingleThreadedMessageReceiver.class);
 
     private KafkaConsumer<byte[], byte[]> consumer;
-    private final MessageContentWrapper messageContentWrapper;
+    private final MessageContentReader messageContentReader;
     private final Clock clock;
 
     private final BlockingQueue<Message> readQueue;
@@ -60,7 +57,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
 
     public KafkaSingleThreadedMessageReceiver(KafkaConsumer<byte[], byte[]> consumer,
-                                              MessageContentWrapper messageContentWrapper,
+                                              MessageContentReader messageContentReader,
                                               HermesMetrics metrics,
                                               KafkaNamesMapper kafkaNamesMapper,
                                               Topic topic,
@@ -77,7 +74,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         this.topics = getKafkaTopics(topic, kafkaNamesMapper).stream()
                 .collect(Collectors.toMap(t -> t.name().asString(), Function.identity()));
         this.consumer = consumer;
-        this.messageContentWrapper = messageContentWrapper;
+        this.messageContentReader = messageContentReader;
         this.clock = clock;
         this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
         this.offsetMover = new KafkaConsumerOffsetMover(subscription.getQualifiedName(), consumer);
@@ -130,7 +127,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     private Message convertToMessage(ConsumerRecord<byte[], byte[]> record) {
         KafkaTopic kafkaTopic = topics.get(record.topic());
-        UnwrappedMessageContent unwrappedContent = getUnwrappedMessageContent(record, kafkaTopic.contentType());
+        UnwrappedMessageContent unwrappedContent = messageContentReader.read(record, kafkaTopic.contentType());
         long currentTerm = partitionAssignmentState.currentTerm(subscription.getQualifiedName());
         return new Message(
                 unwrappedContent.getMessageMetadata().getId(),
@@ -147,16 +144,6 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                 subscription.getName(),
                 subscription.isSubscriptionIdentityHeadersEnabled()
         );
-    }
-
-    private UnwrappedMessageContent getUnwrappedMessageContent(ConsumerRecord<byte[], byte[]> message,
-                                                               ContentType contentType) {
-        if (contentType == ContentType.AVRO) {
-            return messageContentWrapper.unwrapAvro(message.value(), topic);
-        } else if (contentType == ContentType.JSON) {
-            return messageContentWrapper.unwrapJson(message.value());
-        }
-        throw new UnsupportedContentTypeException(topic);
     }
 
     @Override

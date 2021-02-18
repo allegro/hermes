@@ -123,12 +123,12 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
         rawSchemaClient.getVersions(topic.getName()) >>> [[v1], [v0]]
 
         expect:
-        versionsRepository.versions(topic, false) == [v1]
+        versionsRepository.versions(topic, false).get() == [v1]
 
         when:
         versionsRepository.removeFromCache(topic)
 
         then:
-        versionsRepository.versions(topic, false) == [v0]
+        versionsRepository.versions(topic, false).get() == [v0]
     }
 }

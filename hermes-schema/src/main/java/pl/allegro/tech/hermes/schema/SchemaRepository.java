@@ -26,10 +26,24 @@ public class SchemaRepository {
     }
 
     public CompiledSchema<Schema> getAvroSchema(Topic topic, SchemaVersion version) {
-        if (!schemaVersionsRepository.schemaVersionExists(topic, version)) {
+        SchemaVersionsResult result = schemaVersionsRepository.versions(topic);
+        if (result.isFailure()) {
             throw new SchemaNotFoundException(topic, version);
         }
+        if (!result.versionExists(version)) {
+            throw new SchemaVersionDoesNotExistException(topic, version);
+        }
         return getCompiledSchemaAtVersion(topic, version);
+    }
+
+    public CompiledSchema<Schema> getAvroSchema(Topic topic, SchemaId id) {
+        CompiledSchema<Schema> schema = compiledAvroSchemaRepository.getSchema(topic, id);
+
+        if (schema == null) {
+            throw new SchemaNotFoundException(id);
+        }
+
+        return schema;
     }
 
     /**
@@ -53,6 +67,6 @@ public class SchemaRepository {
     }
 
     public List<SchemaVersion> getVersions(Topic topic, boolean online) {
-        return schemaVersionsRepository.versions(topic, online);
+        return schemaVersionsRepository.versions(topic, online).get();
     }
 }

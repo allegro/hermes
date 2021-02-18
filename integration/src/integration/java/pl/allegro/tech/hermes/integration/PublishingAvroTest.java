@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -30,7 +29,6 @@ import static java.util.Collections.singletonMap;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
@@ -192,17 +190,45 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldGetBadRequestForJsonNotMachingWithAvroSchema() {
+    public void shouldGetBadRequestForJsonNotMachingWithAvroSchemaAndAvroContentType() {
         // given
-        Topic topic = randomTopic("avro.topic", "forinvalidjson").withContentType(AVRO).build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, "{\"type\" : \"record\",\"name\" : \"testSchema\",\"fields\" : [{\"name\" : \"field_integer\",\"type\" : \"int\"}]}\n"));
+        Topic topic = randomTopic("pl.allegro", "User").withContentType(AVRO).build();
+        Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
 
         // when
-        Response response = publisher.publish(topic.getQualifiedName(), "{\"__metadata\":null,\"field_integer\": \"foobar\"}", singletonMap("Content-Type", AVRO_JSON));
+        String message = "{\"__metadata\":null,\"name\":\"john\",\"age\":\"string instead of int\"}";
+        Response response = publisher.publish(topic.getQualifiedName(), message, singletonMap("Content-Type", AVRO_JSON));
 
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
-        assertThat(response.readEntity(String.class)).isEqualTo("{\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\",\"code\":\"VALIDATION_ERROR\"}");
+        assertThat(response.readEntity(String.class)).isEqualTo(
+                "{" +
+                "\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\"," +
+                "\"code\":\"VALIDATION_ERROR\"" +
+                "}"
+        );
+    }
+
+    @Test
+    public void shouldGetBadRequestForJsonNotMachingWithAvroSchemaAndJsonContentType() {
+        // given
+        Topic topic = randomTopic("pl.allegro", "User").withContentType(AVRO).build();
+        Schema schema = AvroUserSchemaLoader.load("/schema/user.avsc");
+        operations.buildTopicWithSchema(topicWithSchema(topic, schema.toString()));
+
+        // when
+        String message = "{\"name\":\"john\",\"age\":\"string instead of int\"}";
+        Response response = publisher.publish(topic.getQualifiedName(), message, singletonMap("Content-Type", "application/json"));
+
+        // then
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+        assertThat(response.readEntity(String.class)).isEqualTo(
+                "{" +
+                "\"message\":\"Invalid message: Failed to convert JSON to Avro: Field age is expected to be type: java.lang.Number\"," +
+                "\"code\":\"VALIDATION_ERROR\"" +
+                "}"
+        );
     }
 
     @Test
@@ -218,7 +244,7 @@ public class PublishingAvroTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnServerInternalErrorResponseOnMissingSchemaAtSpecifiedVersion() {
+    public void shouldReturnBadRequestOnMissingSchemaAtSpecifiedVersion() {
         Topic topic = randomTopic("avro", "topicWithoutSchemaAtSpecifiedVersion").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
 
@@ -230,7 +256,9 @@ public class PublishingAvroTest extends IntegrationTest {
         Response response = publisher.publishAvro(topic.getQualifiedName(), message.getBody(), message.getHeaders());
 
         // then
-        assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.getStatusCode());
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
+        assertThat(response.readEntity(String.class))
+                .isEqualTo("{\"message\":\"Given schema version '2' does not exist\",\"code\":\"SCHEMA_VERSION_DOES_NOT_EXIST\"}");
     }
 
     @Test
@@ -340,7 +368,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // given
         Topic topic = randomTopic("explicitSchemaVersion", "topic")
                 .withContentType(AVRO)
-                .withSchemaVersionAwareSerialization()
+                .withSchemaIdAwareSerialization()
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
@@ -366,7 +394,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // given
         Topic topic = randomTopic("explicitSchemaVersion", "topic")
                 .withContentType(AVRO)
-                .withSchemaVersionAwareSerialization()
+                .withSchemaIdAwareSerialization()
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
@@ -404,7 +432,7 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.reset();
 
         Schema schemaV2 = load("/schema/user_v2.avsc");
-        AvroUser userV2 = new AvroUser(new CompiledSchema<>(schemaV2, SchemaVersion.valueOf(2)), "Bob", 50, "blue");
+        AvroUser userV2 = new AvroUser(CompiledSchema.of(schemaV2, 2, 2), "Bob", 50, "blue");
         HermesMessage messageV2 = hermesMessage(topic.getQualifiedName(), userV2.asBytes()).withContentType(AVRO_BINARY).build();
 
         // when

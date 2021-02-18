@@ -26,5 +26,12 @@ public class Gauges {
             MAX_RATE_ACTUAL_RATE_VALUE =
                     "consumers-rate.max-rate.node." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".rate",
             RUNNING_CONSUMER_PROCESSES_COUNT = "consumer-processes.running-consumer-processes.count",
-            DYING_CONSUMER_PROCESSES_COUNT = "consumer-processes.dying-consumer-processes.count";
+            DYING_CONSUMER_PROCESSES_COUNT = "consumer-processes.dying-consumer-processes.count",
+            CONSUMER_SENDER_REQUEST_QUEUE_SIZE = "http-clients.request-queue-size",
+            CONSUMER_SENDER_HTTP_1_REQUEST_QUEUE_SIZE = "http-clients.http1.request-queue-size",
+            CONSUMER_SENDER_HTTP_1_ACTIVE_CONNECTIONS = "http-clients.http1.active-connections",
+            CONSUMER_SENDER_HTTP_1_IDLE_CONNECTIONS = "http-clients.http1.idle-connections",
+            CONSUMER_SENDER_HTTP_2_REQUEST_QUEUE_SIZE = "http-clients.http2.request-queue-size",
+            CONSUMER_SENDER_HTTP_2_CONNECTIONS = "http-clients.http2.connections",
+            CONSUMER_SENDER_HTTP_2_PENDING_CONNECTIONS = "http-clients.http2.pending-connections";
 }

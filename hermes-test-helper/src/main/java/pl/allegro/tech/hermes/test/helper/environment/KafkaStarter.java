@@ -96,7 +96,7 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
         return kafka;
     }
 
-    private void cleanLogs()  {
+    private void cleanLogs() {
         try {
             FileUtils.deleteDirectory(new File(kafkaConfig.logDirs().head()));
         } catch (IOException e) {
@@ -107,9 +107,9 @@ public class KafkaStarter implements Starter<KafkaServerStartable> {
 
     private CuratorFramework startZookeeperClient(String connectString) throws InterruptedException {
         CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-            .connectString(connectString)
-            .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-            .build();
+                .connectString(connectString)
+                .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                .build();
         zookeeperClient.start();
         zookeeperClient.blockUntilConnected();
         return zookeeperClient;

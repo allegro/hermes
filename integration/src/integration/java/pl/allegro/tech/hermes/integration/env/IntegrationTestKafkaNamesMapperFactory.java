@@ -12,6 +12,6 @@ public class IntegrationTestKafkaNamesMapperFactory {
     }
 
     public KafkaNamesMapper create() {
-        return new JsonToAvroMigrationKafkaNamesMapper(namespace);
+        return new JsonToAvroMigrationKafkaNamesMapper(namespace, "_");
     }
 }

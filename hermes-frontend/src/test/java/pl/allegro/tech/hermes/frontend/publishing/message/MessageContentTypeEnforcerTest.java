@@ -22,8 +22,8 @@ public class MessageContentTypeEnforcerTest {
 
     private Topic topic = TopicBuilder.topic("test.Topic").withContentType(ContentType.AVRO).build();
     private AvroUser avroMessage = new AvroUser("Bob", 30, "black");
-    private CompiledSchema<Schema> schema = new CompiledSchema<>(avroMessage.getSchema(), SchemaVersion.valueOf(0));
-    private CompiledSchema<Schema> testSchema = new CompiledSchema<>(AvroUserSchemaLoader.load(), SchemaVersion.valueOf(1));
+    private CompiledSchema<Schema> schema = CompiledSchema.of(avroMessage.getSchema(), 1, 0);
+    private CompiledSchema<Schema> testSchema = CompiledSchema.of(AvroUserSchemaLoader.load(), 1, 0);
 
     @Test
     public void shouldConvertToAvroWhenReceivedJSONOnAvroTopic() throws IOException {

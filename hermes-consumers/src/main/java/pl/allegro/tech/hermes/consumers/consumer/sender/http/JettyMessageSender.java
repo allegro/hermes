@@ -1,28 +1,45 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import org.eclipse.jetty.client.api.Request;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData.HttpRequestDataBuilder;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 
+import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
 public class JettyMessageSender extends CompletableFutureAwareMessageSender {
 
     private final HttpRequestFactory requestFactory;
-    private final ResolvableEndpointAddress endpoint;
+    private final ResolvableEndpointAddress addressResolver;
+    private final HttpHeadersProvider requestHeadersProvider;
 
-    public JettyMessageSender(HttpRequestFactory requestFactory, ResolvableEndpointAddress endpoint) {
+    public JettyMessageSender(HttpRequestFactory requestFactory,
+                              ResolvableEndpointAddress addressResolver,
+                              HttpHeadersProvider headersProvider) {
         this.requestFactory = requestFactory;
-        this.endpoint = endpoint;
+        this.addressResolver = addressResolver;
+        this.requestHeadersProvider = headersProvider;
     }
 
     @Override
     protected void sendMessage(Message message, final CompletableFuture<MessageSendingResult> resultFuture) {
         try {
-            requestFactory.buildRequest(message, endpoint.resolveFor(message))
-                .send(result -> resultFuture.complete(MessageSendingResult.of(result)));
+            final HttpRequestData requestData = new HttpRequestDataBuilder()
+                    .withRawAddress(addressResolver.getRawAddress())
+                    .build();
+
+            HttpRequestHeaders headers = requestHeadersProvider.getHeaders(message, requestData);
+
+            URI resolvedUri = addressResolver.resolveFor(message);
+            Request request = requestFactory.buildRequest(message, resolvedUri, headers);
+
+            request.send(result -> resultFuture.complete(MessageSendingResult.of(result)));
         } catch (EndpointAddressResolutionException exception) {
             resultFuture.complete(MessageSendingResult.failedResult(exception));
         }

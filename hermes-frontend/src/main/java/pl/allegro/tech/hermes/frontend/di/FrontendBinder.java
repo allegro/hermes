@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -23,16 +24,15 @@ import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
-import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
-import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
-import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
-import pl.allegro.tech.hermes.frontend.server.WaitForKafkaStartupHook;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
+import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
+import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
+import pl.allegro.tech.hermes.frontend.server.WaitForKafkaStartupHook;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.validator.AvroTopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
@@ -79,7 +79,6 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(NoOperationPublishingTracker.class);
         bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bindSingleton(MessageContentTypeEnforcer.class);
-        bindSingleton(AvroTopicMessageValidator.class);
         bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
         });
         bindSingleton(MessageFactory.class);
@@ -88,6 +87,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessagePreviewPersister.class);
         bindSingleton(MessagePreviewLog.class);
         bindSingleton(MessagePreviewFactory.class);
+        bindSingleton(KafkaHeaderFactory.class);
         bindSingletonFactory(BlacklistZookeeperNotifyingCacheFactory.class);
     }
 

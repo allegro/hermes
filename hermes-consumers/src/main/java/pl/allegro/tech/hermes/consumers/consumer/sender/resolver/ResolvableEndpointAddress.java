@@ -29,6 +29,10 @@ public class ResolvableEndpointAddress {
         return resolver.resolveAll(address, message, metadata);
     }
 
+    public EndpointAddress getRawAddress() {
+        return address;
+    }
+
     public String toString() {
         return address.toString();
     }

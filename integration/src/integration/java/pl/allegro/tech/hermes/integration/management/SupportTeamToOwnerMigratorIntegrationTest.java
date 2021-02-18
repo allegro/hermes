@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class SupportTeamToOwnerMigratorIntegrationTest extends IntegrationTest {
 
@@ -27,7 +28,7 @@ public class SupportTeamToOwnerMigratorIntegrationTest extends IntegrationTest {
     public void shouldMigrateGroupsTopicsAndSubscriptionsToOwnerModel() {
         // given
         operations.createGroup("migrationGroupSingleTeam", "Team A");
-        Topic firstSingleTeamTopic = operations.createTopic("migrationGroupSingleTeam", "firstSingleTeamTopic");
+        Topic firstSingleTeamTopic = operations.buildTopic(randomTopic("migrationGroupSingleTeam", "firstSingleTeamTopic").build());
         Subscription firstSingleTeamTopicSubAlpha = operations.createSubscription(firstSingleTeamTopic, subscription(firstSingleTeamTopic, "firstSingleTeamTopicSubAlpha")
                 .withSupportTeam("Team Alpha")
                 .build()

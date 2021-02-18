@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.eclipse.jetty.http.HttpHeader;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData;
 
 import java.util.function.Function;
 
@@ -17,7 +18,7 @@ public final class Http1HeadersProvider implements HttpHeadersProvider {
             AVRO.equals(contentType) ? AVRO_BINARY : APPLICATION_JSON;
 
     @Override
-    public HttpRequestHeaders getHeaders(Message message) {
+    public HttpRequestHeaders getHeaders(Message message, HttpRequestData requestData) {
         return new HttpRequestHeaders(
                 ImmutableMap.of(
                         HttpHeader.CONTENT_TYPE.toString(), contentTypeToMediaType.apply(message.getContentType()),

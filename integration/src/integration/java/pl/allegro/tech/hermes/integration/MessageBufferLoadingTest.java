@@ -1,16 +1,13 @@
 package pl.allegro.tech.hermes.integration;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
@@ -37,8 +34,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_MECHANISM;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_ZOOKEEPER_CONNECT_STRING;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
@@ -75,7 +76,11 @@ public class MessageBufferLoadingTest extends IntegrationTest {
 
         FrontendStarter frontend = new FrontendStarter(frontendPort, false);
         frontend.overrideProperty(KAFKA_BROKER_LIST, "localhost:" + kafkaPort);
-        frontend.overrideProperty(KAFKA_ZOOKEEPER_CONNECT_STRING, KAFKA_ZK_CONNECT_STRING);
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, true);
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_MECHANISM, "PLAIN");
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_PROTOCOL, "SASL_PLAINTEXT");
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_USERNAME, "hermes");
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_PASSWORD, "alice-secret");
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
         frontend.start();
 
@@ -131,16 +136,15 @@ public class MessageBufferLoadingTest extends IntegrationTest {
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
         JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper());
-        SchemaOnlineChecksRateLimiter schemaOnlineCheckRateLimiter = () -> true;
-        MessageContentWrapper wrapper = new MessageContentWrapper(contentWrapper, null, null,
-                schemaOnlineCheckRateLimiter, new DeserializationMetrics(new MetricRegistry()));
+
+        MessageContentWrapper wrapper = new MessageContentWrapper(contentWrapper, null,null, null, null, null, null);
 
         String messageId = MessageIdGenerator.generate();
         long timestamp = now().toEpochMilli();
         byte[] content = wrapper.wrapJson("message".getBytes(defaultCharset()),
                 messageId, timestamp, Collections.emptyMap());
 
-        messageRepository.save(new JsonMessage(messageId, content, timestamp), topic);
+        messageRepository.save(new JsonMessage(messageId, content, timestamp, null), topic);
         messageRepository.close();
 
         return backup;

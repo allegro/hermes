@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Collections.emptyList;
-
 public class CachedSchemaVersionsRepository implements SchemaVersionsRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(CachedSchemaVersionsRepository.class);
@@ -42,17 +40,19 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     }
 
     @Override
-    public List<SchemaVersion> versions(Topic topic, boolean online) {
+    public SchemaVersionsResult versions(Topic topic, boolean online) {
         try {
             if (online) {
-                List<SchemaVersion> v = rawSchemaClient.getVersions(topic.getName());
-                versionsCache.put(topic, v);
-                return v;
+                List<SchemaVersion> versions = rawSchemaClient.getVersions(topic.getName());
+                versionsCache.put(topic, versions);
+                return SchemaVersionsResult.succeeded(versions);
+            } else {
+                List<SchemaVersion> versions = versionsCache.get(topic);
+                return SchemaVersionsResult.succeeded(versions);
             }
-            return versionsCache.get(topic);
         } catch (Exception e) {
             logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
-            return emptyList();
+            return SchemaVersionsResult.failed();
         }
     }
 

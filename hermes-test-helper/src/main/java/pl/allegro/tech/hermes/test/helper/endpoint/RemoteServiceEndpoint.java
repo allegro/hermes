@@ -24,6 +24,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
@@ -80,6 +81,18 @@ public class RemoteServiceEndpoint {
             .register(
                 post(urlEqualTo(path))
                 .willReturn(aResponse().withStatus(returnedStatusCode).withFixedDelay(delay))));
+    }
+
+    public void redirectMessage(String message) {
+        receivedRequests.clear();
+
+        expectedMessages = Arrays.asList(message);
+
+        listener.register(
+            post(urlEqualTo(path))
+            .willReturn(aResponse()
+                .withStatus(MOVED_PERMANENTLY.getStatusCode())
+                .withHeader("Location", "http://localhost:" + service.port())));
     }
 
     public void retryMessage(String message, int delay) {

@@ -8,12 +8,13 @@
     </ol>
 
     <div class="pull-right">
+        <span ng-show="disabled" uib-popover='Sign in to edit the topic' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
         <span bind-html="config.buttonsExtension"></span>
-        <button class="btn btn-primary" ng-click="edit()">Edit</button>
-        <button class="btn btn-primary" ng-click="clone()">Clone</button>
-        <button class="btn btn-warning" ng-click="blacklist()" ng-show="!isBlacklisted">Blacklist</button>
-        <button class="btn btn-default" ng-click="unblacklist()" ng-show="isBlacklisted">Unblacklist</button>
-        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+        <button class="btn btn-primary" ng-disabled="disabled || config.readOnlyModeEnabled" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
+        <button class="btn btn-warning" ng-disabled="disabled" ng-show="admin && !isBlacklisted" ng-click="blacklist()" >Blacklist</button>
+        <button class="btn btn-default" ng-disabled="disabled" ng-show="admin && isBlacklisted"ng-click="unblacklist()" >Unblacklist</button>
+        <button class="btn btn-danger" ng-disabled="disabled" ng-click="remove()">Remove</button>
     </div>
 
     <h1><small>Topic:</small> {{topic.name}}</h1>
@@ -26,6 +27,10 @@
         <div uib-popover="Currently anyone is allowed to publish on this topic without authentication. Consider enabling authorisation." popover-trigger="mouseenter"
              ng-show="topic && !topic.auth.enabled || topic.auth.unauthenticatedAccessEnabled" class="ng-hide badge alert-warning">
             Unauthenticated access allowed <span class="glyphicon glyphicon-alert"></span>
+        </div>
+        <div uib-popover="Topic editing is disabled. Contact administrator for more details." popover-trigger="mouseenter"
+             ng-show="topic && config.readOnlyModeEnabled" class="ng-hide badge alert-warning">
+            Read only mode <span class="glyphicon glyphicon-alert"></span>
         </div>
     </div>
 
@@ -63,6 +68,12 @@
                         <strong>Content type:</strong> {{topic.contentType}}
                     </p>
                     <p>
+                        <strong>Labels:</strong>
+                        <span ng-repeat="label in topic.labelValues">
+                            <span class="label label-info margin-right-4"> {{label}} </span>
+                        </span>
+                    </p>
+                    <p>
                         <strong>Acknowlegment:</strong> {{topic.ack == 'ALL' ? 'all brokers' : 'leader only'}}
                         <span uib-popover='Specifies the strength of guarantees that acknowledged message was indeed persisted. In "Leader" mode ACK is required only from topic leader, which is fast and gives 99.99999% guarantee. It might be not enough when cluster is unstable. "All" mode means message needs to be saved on all replicas before sending ACK, which is quite slow but gives 100% guarantee that message has been persisted.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
@@ -72,6 +83,7 @@
                     </p>
                     <p><strong>Tracking enabled:</strong> {{topic.trackingEnabled}}</p>
                     <p><strong>Max message size:</strong> {{topic.maxMessageSize | readableSize}}</p>
+                    <p><strong>SchemaId Serialization Enabled:</strong> {{topic.schemaIdAwareSerializationEnabled}}</p>
 
                     <div class="ng-hide" ng-show="config.authEnabled">
                         <hr />
@@ -103,6 +115,14 @@
                         <span uib-popover='For how long should this topic be stored in offline storage.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
 
+                    <hr/>
+                    <p ng-show="topic.createdAt">
+                        <strong>Creation date:</strong> {{topic.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}
+                    </p>
+                    <p ng-show="topic.modifiedAt">
+                        <strong>Modification date:</strong> {{topic.modifiedAt | date:'yyyy-MM-dd HH:mm:ss'}}
+                    </p>
+
                 </div>
             </div>
         </div>
@@ -110,10 +130,9 @@
 
     <div class="row" ng-show="topic.contentType == 'AVRO'">
         <div class="col-md-12">
-            <div class="panel panel-default">
-                <div style="position: relative">
-                    <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
-                </div>
+            <div class="panel panel-default" style="position: relative">
+                <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
+                <button class="btn btn-default pull-right" style="padding: 4px; margin-top: 4px" ng-click="copyToClipboard()">Copy to clipboard</button>
                 <div class="panel-heading" ng-click="showMessageSchema = !showMessageSchema">
                     <h3 class="panel-title">Message schema</h3>
                 </div>
@@ -126,10 +145,8 @@
 
     <div class="row" ng-show="config.messagePreviewEnabled">
         <div class="col-md-12">
-            <div class="panel panel-default">
-                <div style="position: relative">
-                    <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showPreview = !showPreview"></span>
-                </div>
+            <div class="panel panel-default" style="position: relative">
+                <span class="btn pull-right glyphicon {{showPreview ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showPreview = !showPreview"></span>
                 <div class="panel-heading" ng-click="showPreview = !showPreview">
                     <h3 class="panel-title">Topic messages preview</h3>
                 </div>
@@ -143,11 +160,12 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row container">
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
-                    <button class="btn btn-primary" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
+                    <span ng-show="disabled" uib-popover='Sign in to add a subscription' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
+                    <button class="btn btn-primary" ng-disabled="topic.subscribingRestricted && disabled" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
                 <h4>
                     Subscriptions
@@ -168,7 +186,7 @@
         </div>
     </div>
 
-    <div class="row" ng-if="config.offlineClientsEnabled">
+    <div class="row container" ng-if="config.offlineClientsEnabled">
         <div class="list-group">
             <div class="list-group-item">
                 <h4>

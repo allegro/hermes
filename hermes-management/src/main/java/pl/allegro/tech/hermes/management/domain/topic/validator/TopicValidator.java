@@ -15,14 +15,20 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 public class TopicValidator {
 
     private final OwnerIdValidator ownerIdValidator;
+    private final ContentTypeValidator contentTypeValidator;
+    private final TopicLabelsValidator topicLabelsValidator;
     private final SchemaRepository schemaRepository;
     private final ApiPreconditions apiPreconditions;
 
     @Autowired
     public TopicValidator(OwnerIdValidator ownerIdValidator,
+                          ContentTypeValidator contentTypeValidator,
+                          TopicLabelsValidator topicLabelsValidator,
                           SchemaRepository schemaRepository,
                           ApiPreconditions apiPreconditions) {
         this.ownerIdValidator = ownerIdValidator;
+        this.contentTypeValidator = contentTypeValidator;
+        this.topicLabelsValidator = topicLabelsValidator;
         this.schemaRepository = schemaRepository;
         this.apiPreconditions = apiPreconditions;
     }
@@ -30,6 +36,8 @@ public class TopicValidator {
     public void ensureCreatedTopicIsValid(Topic created, CreatorRights creatorRights) {
         apiPreconditions.checkConstraints(created);
         checkOwner(created);
+        checkContentType(created);
+        checkTopicLabels(created);
 
         if (created.wasMigratedFromJsonType()) {
             throw new TopicValidationException("Newly created topic cannot have migratedFromJsonType flag set to true");
@@ -43,6 +51,7 @@ public class TopicValidator {
     public void ensureUpdatedTopicIsValid(Topic updated, Topic previous) {
         apiPreconditions.checkConstraints(updated);
         checkOwner(updated);
+        checkTopicLabels(updated);
 
         if (migrationFromJsonTypeFlagChangedToTrue(updated, previous)) {
             if (updated.getContentType() != ContentType.AVRO) {
@@ -77,4 +86,9 @@ public class TopicValidator {
         ownerIdValidator.check(checked.getOwner());
     }
 
+    private void checkContentType(Topic checked) {
+        contentTypeValidator.check(checked.getContentType());
+    }
+
+    private void checkTopicLabels(Topic checked) { topicLabelsValidator.check(checked.getLabels()); }
 }

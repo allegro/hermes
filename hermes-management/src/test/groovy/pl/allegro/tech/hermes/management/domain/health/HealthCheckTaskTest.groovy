@@ -90,6 +90,37 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         successfulCounter.count() == 3
     }
 
+    def "should not change status to READ_WRITE if READ_ONLY is set by admin"() {
+        given:
+        modeService.setModeByAdmin(ModeService.ManagementMode.READ_ONLY_ADMIN)
+
+        when:
+        healthCheckTask.run()
+
+        then:
+        modeService.readOnlyEnabled
+
+        and:
+        successfulCounter.count() == 2
+    }
+
+    def "should change status from READ_ONLY_ADMIN to READ_WRITE only by admin"() {
+        given:
+        modeService.setModeByAdmin(ModeService.ManagementMode.READ_ONLY_ADMIN)
+
+        when:
+        healthCheckTask.run()
+
+        then:
+        modeService.readOnlyEnabled
+
+        when:
+        modeService.setModeByAdmin(ModeService.ManagementMode.READ_WRITE)
+
+        then:
+        !modeService.readOnlyEnabled
+    }
+
     static setupZookeeperPath(ZookeeperClient zookeeperClient, String path) {
         def healthCheckPathExists = zookeeperClient.curatorFramework
                 .checkExists()

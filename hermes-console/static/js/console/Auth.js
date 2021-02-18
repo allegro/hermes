@@ -1,6 +1,7 @@
 var auth = angular.module('hermes.auth', []);
 
-auth.controller('AuthController', ['$scope', '$rootScope', 'AuthService', 'toaster', function($scope, $rootScope, AuthService, toaster) {
+auth.controller('AuthController', ['$scope', '$rootScope', 'AuthService', 'toaster', 'Visibility',
+    function($scope, $rootScope, AuthService, toaster, visibility) {
 
     $scope.enabled = AuthService.isEnabled();
     if(!AuthService.isEnabled()) {
@@ -16,6 +17,7 @@ auth.controller('AuthController', ['$scope', '$rootScope', 'AuthService', 'toast
         AuthService.login().then(function() {
             $rootScope.isAuthorized = true;
             $rootScope.$apply();
+            visibility.update();
         }, function(e) {
             toaster.pop('error', 'An error occurred', AuthService.parseErrorMessage(e));
             $rootScope.$apply();
@@ -26,6 +28,7 @@ auth.controller('AuthController', ['$scope', '$rootScope', 'AuthService', 'toast
         AuthService.logout().then(function() {
             $rootScope.isAuthorized = false;
             $rootScope.$apply();
+            visibility.update();
         }, function() {
             toaster.pop('error', 'An error occurred',  AuthService.parseErrorMessage(e));
             $rootScope.$apply();

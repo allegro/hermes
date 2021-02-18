@@ -9,7 +9,6 @@ import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
-import pl.allegro.tech.hermes.common.schema.SchemaRepositoryType;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
@@ -98,6 +97,18 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.BACKUP_STORAGE_SIZE), gauge);
     }
 
+    public void registerConsumerSenderRequestQueueSize(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_REQUEST_QUEUE_SIZE), gauge);
+    }
+
+    public void registerConsumerSenderHttp1RequestQueueSize(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_1_REQUEST_QUEUE_SIZE), gauge);
+    }
+
+    public void registerConsumerSenderHttp2RequestQueueSize(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_2_REQUEST_QUEUE_SIZE), gauge);
+    }
+
     public <T> void registerOutputRateGauge(TopicName topicName, String name, Gauge<T> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.OUTPUT_RATE, topicName, name), gauge);
     }
@@ -178,8 +189,8 @@ public class HermesMetrics {
         return pathCompiler.compile(metricDisplayName);
     }
 
-    public Timer schemaTimer(String schemaMetric, SchemaRepositoryType schemaRepoType) {
-        return metricRegistry.timer(pathCompiler.compile(schemaMetric, pathContext().withSchemaRepoType(schemaRepoType.toString()).build()));
+    public Timer schemaTimer(String schemaMetric) {
+        return metricRegistry.timer(pathCompiler.compile(schemaMetric, pathContext().withSchemaRepoType("schema-registry").build()));
     }
 
     public Timer executorDurationTimer(String executorName) {

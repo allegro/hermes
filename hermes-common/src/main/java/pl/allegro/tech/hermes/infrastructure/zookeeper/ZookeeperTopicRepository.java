@@ -85,13 +85,13 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     @Override
     public void removeTopic(TopicName topicName) {
         ensureTopicExists(topicName);
-        ensureTopicIsEmpty(topicName);
-
+        ensureTopicHasNoSubscriptions(topicName);
         logger.info("Removing topic: " + topicName);
         remove(paths.topicPath(topicName));
     }
 
-    private void ensureTopicIsEmpty(TopicName topicName) {
+    @Override
+    public void ensureTopicHasNoSubscriptions(TopicName topicName) {
         List<String> children = childrenOf(paths.subscriptionsPath(topicName));
         boolean anyNodeNotEmpty = children.stream()
                 .anyMatch(sub -> !isEmpty(paths.subscriptionsPath(topicName) + "/" + sub));
@@ -137,7 +137,14 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
 
     private Optional<Topic> getTopicDetails(TopicName topicName, boolean quiet) {
         ensureTopicExists(topicName);
-
-        return readFrom(paths.topicPath(topicName), Topic.class, quiet);
+        return readWithStatFrom(
+                paths.topicPath(topicName),
+                Topic.class,
+                (topic, stat) -> {
+                    topic.setCreatedAt(stat.getCtime());
+                    topic.setModifiedAt(stat.getMtime());
+                },
+                quiet
+        );
     }
 }

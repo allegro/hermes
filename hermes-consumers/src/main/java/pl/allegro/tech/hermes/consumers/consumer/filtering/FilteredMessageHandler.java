@@ -3,11 +3,10 @@ package pl.allegro.tech.hermes.consumers.consumer.filtering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterResult;
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -55,6 +54,5 @@ public class FilteredMessageHandler {
 
     private void updateMetrics(Subscription subscription) {
         metrics.meter(Meters.FILTERED_METER, subscription.getTopicName(), subscription.getName()).mark();
-        metrics.counter(Counters.FILTERED, subscription.getTopicName(), subscription.getName()).inc();
     }
 }

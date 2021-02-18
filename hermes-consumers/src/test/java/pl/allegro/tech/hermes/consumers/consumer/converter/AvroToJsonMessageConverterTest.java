@@ -6,6 +6,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
@@ -26,7 +27,7 @@ public class AvroToJsonMessageConverterTest {
         AvroUser avroUser = new AvroUser("Bob", 18, "blue");
         Message source = message()
                 .withData(avroUser.asBytes())
-                .withSchema(new CompiledSchema<>(avroUser.getSchema(), SchemaVersion.valueOf(0)))
+                .withSchema(CompiledSchema.of(avroUser.getSchema(), 1, 0))
                 .withExternalMetadata(of())
                 .build();
         AvroToJsonMessageConverter converter = new AvroToJsonMessageConverter();

@@ -104,6 +104,7 @@ public class TopicService {
 
     public void createTopicWithSchema(TopicWithSchema topicWithSchema, String createdBy, CreatorRights isAllowedToManage) {
         Topic topic = topicWithSchema.getTopic();
+        auditor.beforeObjectCreation(createdBy, topic);
         topicValidator.ensureCreatedTopicIsValid(topic, isAllowedToManage);
         ensureTopicDoesNotExist(topic);
 
@@ -123,7 +124,7 @@ public class TopicService {
 
     private void validateSchema(boolean shouldValidate, TopicWithSchema topicWithSchema, Topic topic) {
         if (shouldValidate) {
-            schemaService.validateSchema(topic.getName(), topicWithSchema.getSchema());
+            schemaService.validateSchema(topic, topicWithSchema.getSchema());
             boolean schemaAlreadyRegistered = schemaService.getSchema(topic.getQualifiedName()).isPresent();
             if (schemaAlreadyRegistered) {
                 throw new TopicSchemaExistsException(topic.getQualifiedName());
@@ -134,7 +135,7 @@ public class TopicService {
     private void registerAvroSchema(boolean shouldRegister, TopicWithSchema topicWithSchema, String createdBy) {
         if (shouldRegister) {
             try {
-                schemaService.registerSchema(topicWithSchema.getTopic(), topicWithSchema.getSchema(), true);
+                schemaService.registerSchema(topicWithSchema.getTopic(), topicWithSchema.getSchema());
             } catch (Exception e) {
                 logger.error("Rolling back topic {} creation due to schema registration error", topicWithSchema.getQualifiedName(), e);
                 removeTopic(topicWithSchema.getTopic(), createdBy);
@@ -145,7 +146,6 @@ public class TopicService {
 
     private void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
         topicValidator.ensureCreatedTopicIsValid(topic, creatorRights);
-        multiDcExecutor.execute(new CreateTopicRepositoryCommand(topic));
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
@@ -154,6 +154,8 @@ public class TopicService {
         } else {
             logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
         }
+
+        multiDcExecutor.execute(new CreateTopicRepositoryCommand(topic));
     }
 
     private void createTopicInBrokers(Topic topic) {
@@ -171,6 +173,8 @@ public class TopicService {
     }
 
     public void removeTopicWithSchema(Topic topic, String removedBy) {
+        auditor.beforeObjectRemoval(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
+        topicRepository.ensureTopicHasNoSubscriptions(topic.getName());
         removeSchema(topic);
         if (!topicProperties.isAllowRemoval()) {
             throw new TopicRemovalDisabledException(topic);
@@ -194,10 +198,9 @@ public class TopicService {
 
     public void updateTopicWithSchema(TopicName topicName, PatchData patch, String modifiedBy) {
         Topic topic = getTopicDetails(topicName);
-        boolean validateAvroSchema = AVRO.equals(topic.getContentType());
         extractSchema(patch)
                 .ifPresent(schema -> {
-                    schemaService.registerSchema(topic, schema, validateAvroSchema);
+                    schemaService.registerSchema(topic, schema);
                     scheduleTouchTopic(topicName);
                 });
         updateTopic(topicName, patch, modifiedBy);
@@ -208,6 +211,7 @@ public class TopicService {
     }
 
     public void updateTopic(TopicName topicName, PatchData patch, String modifiedBy) {
+        auditor.beforeObjectUpdate(modifiedBy, Topic.class.getSimpleName(), topicName, patch);
         groupService.checkGroupExists(topicName.getGroupName());
 
         Topic retrieved = getTopicDetails(topicName);
@@ -375,12 +379,14 @@ public class TopicService {
     }
 
     public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
-        return query.filter(getTopicsMetrics())
+        List<Topic> filteredNames = query.filterNames(getAllTopics())
+                .collect(toList());
+        return query.filter(getTopicsMetrics(filteredNames))
                 .collect(toList());
     }
 
-    private List<TopicNameWithMetrics> getTopicsMetrics() {
-        return getAllTopics()
+    private List<TopicNameWithMetrics> getTopicsMetrics(List<Topic> topics) {
+        return topics
                 .stream()
                 .map(t -> {
                     TopicMetrics metrics = metricRepository.loadMetrics(t.getName());

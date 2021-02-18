@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.di;
 
+import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -14,9 +15,9 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilterSource;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilters;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
+import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
@@ -29,6 +30,7 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthSubscriptionHandlerF
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthTokenRequestRateLimiterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClient;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
@@ -39,14 +41,23 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistryFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.EmptyHttpHeadersProvidersFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
@@ -95,12 +106,14 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(ConsumerHttpServer.class);
 
         bind(KafkaMessageReceiverFactory.class).in(Singleton.class).to(ReceiverFactory.class);
+        bind(BasicMessageContentReaderFactory.class).in(Singleton.class).to(MessageContentReaderFactory.class);
         bind(MessageBodyInterpolator.class).in(Singleton.class).to(UriInterpolator.class);
         bind(InterpolatingEndpointAddressResolver.class).to(EndpointAddressResolver.class).in(Singleton.class);
         bind(JmsHornetQMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
                 .in(Singleton.class).named("defaultJmsMessageSenderProvider");
         bind(JettyHttpMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
                 .in(Singleton.class).named("defaultHttpMessageSenderProvider");
+        bind(EmptyHttpHeadersProvidersFactory.class).to(HttpHeadersProvidersFactory.class).in(Singleton.class);
 
         bind("consumer").named("moduleName").to(String.class);
 
@@ -122,13 +135,14 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(Retransmitter.class);
         bindSingleton(ConsumerMonitor.class);
         bindSingleton(SslContextFactoryProvider.class);
+        bindSingleton(KafkaHeaderExtractor.class);
         bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});
         bind(DefaultHttpMetadataAppender.class).in(Singleton.class)
                 .to(new TypeLiteral<MetadataAppender<Request>>() {});
 
         bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class)
                 .to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
-        bindSingleton(HttpClientFactory.class);
+        bindSingleton(HttpClientsFactory.class);
 
         bindFactory(ConsumerNodesRegistryFactory.class).in(Singleton.class).to(ConsumerNodesRegistry.class);
 
@@ -137,11 +151,16 @@ public class ConsumersBinder extends AbstractBinder {
         bindFactory(SubscriptionIdsCacheFactory.class).in(Singleton.class).to(SubscriptionIds.class);
         bindFactory(ConsumerAssignmentCacheFactory.class).in(Singleton.class).to(ConsumerAssignmentCache.class);
         bindFactory(ClusterAssignmentCacheFactory.class).in(Singleton.class).to(ClusterAssignmentCache.class);
+        bindSingleton(HttpClientsWorkloadReporter.class);
 
         bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
         bindFactory(ConsumerAssignmentRegistryFactory.class).in(Singleton.class).to(ConsumerAssignmentRegistry.class);
         bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
         bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
+
+        bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class).named("http-1-client");
+        bindFactory(OAuthHttpClientFactory.class).in(Singleton.class).to(HttpClient.class).named("oauth-http-client");
+        bindFactory(Http2ClientFactory.class).in(Singleton.class).to(Http2ClientHolder.class);
 
         bindSingleton(MaxRatePathSerializer.class);
         bindSingleton(MaxRateSupervisor.class);

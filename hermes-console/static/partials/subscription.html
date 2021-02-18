@@ -9,11 +9,12 @@
     </ol>
 
     <div class="pull-right">
-        <button ng-show="subscription.state === 'ACTIVE'" class="btn btn-warning" ng-click="suspend()">Suspend</button>
-        <button ng-show="subscription.state === 'SUSPENDED'" class="btn btn-success" ng-click="activate()">Activate</button>
-        <button class="btn btn-primary" ng-click="edit()">Edit</button>
-        <button class="btn btn-primary" ng-click="clone()">Clone</button>
-        <button class="btn btn-danger" ng-click="remove()">Remove</button>
+        <span ng-show="disabled" uib-popover='Sign in to edit the subscription' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
+        <button ng-show="subscription.state === 'ACTIVE'" class="btn btn-warning" ng-disabled="disabled" ng-click="suspend()">Suspend</button>
+        <button ng-show="subscription.state === 'SUSPENDED'" class="btn btn-success" ng-disabled="disabled" ng-click="activate()">Activate</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
+        <button class="btn btn-danger" ng-disabled="disabled" ng-click="remove()">Remove</button>
     </div>
 
     <h2><small>Subscription:</small> {{subscription.name}}</h2>
@@ -145,6 +146,7 @@
                         <span uib-popover='Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p><strong>Message delivery tracking:</strong> {{ trackingModeName[subscription.trackingMode] }}</p>
+                    <hr/>
                     <p>
                         <strong>Retry on 4xx status:</strong> {{subscription.subscriptionPolicy.retryClientErrors}}
                         <span uib-popover='If false, message will not be retried when service responds with 4xx status (i.e. Bad Request).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
@@ -153,6 +155,15 @@
                         <strong>Retry backoff:</strong> {{subscription.subscriptionPolicy.messageBackoff}} milliseconds
                         <span uib-popover='Minimum amount of time between consecutive message retries.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
+                    <p ng-show="subscription.deliveryType === 'SERIAL'">
+                        <strong>Retry backoff multiplier:</strong> {{subscription.subscriptionPolicy.backoffMultiplier}}
+                        <span uib-popover='Delay multiplier between consecutive send attempts of failed requests' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p ng-show="subscription.deliveryType === 'SERIAL' && subscription.subscriptionPolicy.backoffMultiplier > 1">
+                        <strong>Retry backoff max interval:</strong> {{subscription.subscriptionPolicy.backoffMaxIntervalInSec}} seconds
+                        <span uib-popover='Maximum value of delay backoff when using exponential calculation' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <hr/>
                     <p>
                         <strong>Monitoring severity:</strong> {{subscription.monitoringDetails.severity}}
                         <span uib-popover="How important should be the subscription's health for the monitoring." popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
@@ -178,6 +189,14 @@
                     <p ng-repeat="(key, value) in notSupportedEndpointAddressResolverMetadataEntries(subscription.endpointAddressResolverMetadata)">
                         <strong>{{key}}:</strong> {{value}}
                     </p>
+
+                    <hr/>
+                    <p ng-show="subscription.createdAt">
+                        <strong>Creation date:</strong> {{subscription.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}
+                    </p>
+                    <p ng-show="subscription.modifiedAt">
+                        <strong>Modification date:</strong> {{subscription.modifiedAt | date:'yyyy-MM-dd HH:mm:ss'}}
+                    </p>
                 </div>
             </div>
 
@@ -194,7 +213,7 @@
                                     <button class="btn btn-default" type="button" id="retransmitCalendarButton"><span class="glyphicon glyphicon-time"></span></button>
                                 </span>
                             </div>
-                            <button class="btn btn-danger" ng-click="retransmit()"></span> Retransmit</button>
+                            <button class="btn btn-danger" ng-click="retransmit()" ng-disabled="disabled"></span> Retransmit</button>
                             <span class="loading-in-panel" ng-show="retransmissionLoading">
                                 <i class=" fa fa-circle-o-notch fa-spin fa-2x"></i>
                             </span>
@@ -260,10 +279,15 @@
 
         <div class="col-md-12" ng-show="subscription.filters">
 
-            <div class="panel">
+            <div class="panel panel-default">
 
                 <div class="panel-heading">
-                    <h3 class="panel-title">Subscription filters</h3>
+                    <div class="btn-group pull-right">
+                        <button class="btn btn-success btn-xs" ng-click="debugFilters()">
+                            <span class="glyphicon glyphicon-console"></span> Debug
+                        </button>
+                    </div>
+                    <h3 class="panel-title">Subscription message filters</h3>
                 </div>
 
                 <table class="table">
@@ -272,6 +296,7 @@
                         <th>Type</th>
                         <th>Path</th>
                         <th>Matcher</th>
+                        <th>Matching strategy</th>
                         <th> </th>
                     </tr>
 
@@ -280,10 +305,34 @@
                         <td>{{filter.type}}</td>
                         <td>{{filter.path}}</td>
                         <td>{{filter.matcher}}</td>
+                        <td>{{filter.matchingStrategy}}</td>
                     </tr>
 
                 </table>
 
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-show="subscription.headers.length > 0">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Fixed HTTP headers</h3>
+                </div>
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Value</th>
+                        <th> </th>
+                    </tr>
+                    <tr ng-repeat="header in subscription.headers">
+                        <td>{{$index + 1}}</td>
+                        <td>{{header.name}}</td>
+                        <td>{{header.value}}</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
@@ -325,7 +374,7 @@
         </div>
     </div>
 
-    <div class="row" ng-show="isAuthorized">
+    <div class="row" ng-show="admin">
         <div class="col-md-6">
             <div class="panel panel-warning">
                 <div class="panel-heading">

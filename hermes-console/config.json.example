@@ -1,6 +1,7 @@
 {
     "console": {
         "title": "hermes console" // page title
+        "footer": "<a href=\"http://hermes.allegro.tech\">hermes.allegro.tech</a>" // page footer
     },
     "dashboard": {
         "metrics": "", // link to metrics dashboard
@@ -76,7 +77,11 @@
                     "b": "Another option"
                 }
             }
-        }
+        },
+        "deliveryTypes": [
+              {"value": "SERIAL", "label": "SERIAL"},
+              {"value": "BATCH", "label": "BATCH"}
+        ]
     },
     "owner": {
         "sources": [

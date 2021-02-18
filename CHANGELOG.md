@@ -1,8 +1,446 @@
 ## [Unreleased]
 
-### Features
-
 ...
+
+## 1.8.1 (01.12.2020)
+
+### Fixes
+
+#### ([1313](https://github.com/allegro/hermes/pull/1313)) Defined labels UI fix
+
+## 1.8.0 (01.12.2020)
+
+### Enhancements
+
+#### ([1258](https://github.com/allegro/hermes/pull/1258)) Introduce Reactive Hermes Client
+
+Thanks to @wjur for this contribution!
+
+#### ([1293](https://github.com/allegro/hermes/pull/1293)) Added possibility to tag topics with defined labels
+
+Thanks to @kacperb333 for this contribution!
+
+## 1.7.0 (18.11.2020)
+
+### Enhancements
+
+#### ([1299](https://github.com/allegro/hermes/pull/1299)) Add new meaningful metrics to MetricsMessageDeliveryListener
+
+New hermes-client metrics take into account also application level errors which are represented by http status codes.
+
+`Topic.publish.finally.success:` Message has been accepted by Hermes
+
+`topic.publish.finally.failure:` Message has been rejected by Hermes or there was transport level issue. 
+
+`topic.publish.failure:` Number of failures including retries.
+
+`topic.publish.attempts:` Number of publish attempt. Does not include retries.
+
+`topic.publish.retry.success:` Number of successful publications after one or more retry.
+
+`topic.publish.retry.failure:` Number of failures after retries have been exhausted.
+
+`topic.publish.retry.attempt:` Number of publications where retry was involved.
+
+
+#### ([1301](https://github.com/allegro/hermes/pull/1301)) partition-key HTTP header
+
+Added ability to publish messages to the specific partition
+
+
+#### ([1310](https://github.com/allegro/hermes/pull/1310)) hermes-frontend change default response http status
+
+This improvement is related to this [enhancement](https://github.com/allegro/hermes/blob/master/CHANGELOG.md#1294-hermes-frontend-occasionally-returns-incorrect-status-200).
+Now hermes-frontend changes default response status from 200 to 500 for every exchange. 
+
+### Fixes
+
+#### ([1304](https://github.com/allegro/hermes/issues/1304)) Json validation fix in debugging filters in hermes-console
+
+
+## 1.6.2 (9.11.2020)
+
+### Fixes
+
+#### ([1305](https://github.com/allegro/hermes/pull/1305)) Moved `consistency checker` config to Properties class
+
+#### ([1300](https://github.com/allegro/hermes/pull/1300)) Fixed publish to Sonatype by use of `Nexus Publish Plugin`
+
+## 1.6.1 (2.11.2020)
+
+### Enhancements
+
+#### ([1296](https://github.com/allegro/hermes/pull/1296)) Consistency checking in hermes-console
+
+From now on Hermes operator can check consistency between multiple Hermes Zookeeper clusters via Hermes-console.
+Inconsistency can occur when one Zookeeper cluster is down for a while.
+
+#### ([1294](https://github.com/allegro/hermes/pull/1294)) Hermes frontend occasionally returns incorrect status 200
+
+In Hermes-frontend there are only two [status codes](https://hermes-pubsub.readthedocs.io/en/latest/user/publishing/#response-codes)
+representing success, these are 201 and 202. Unfortunately, Hermes-frontend occasionally returned 200.
+It’s because it’s built on Undertow http server which returns 200 http status code as default one when response isn’t set.
+Thanks this enhancement instead of 200, 500 is returned. 500 means error and can be retried by a client.
+
+#### ([1256](https://github.com/allegro/hermes/pull/1256)) Readonly mode for Kafka topics configuration
+
+#### ([1279](https://github.com/allegro/hermes/pull/1279)) Button for copying schema of a topic
+
+#### ([1283](https://github.com/allegro/hermes/pull/1283)) Changed order of operations on topic creation
+
+## 1.6.0 (15.10.2020)
+
+### Enhancements
+
+#### ([1277](https://github.com/allegro/hermes/pull/1277)) Removed usage of all Kafka Zookeeper clients
+
+It's now possible not to define connectionString for Kafka Zookeeper in Hermes configuration, as all usages
+of Kafka Zookeeper clients have been removed.
+
+## 1.5.4 (13.10.2020)
+
+### Enhancements
+
+#### ([1270](https://github.com/allegro/hermes/pull/1270)) A topic change updates its all cached schemas
+
+#### ([1271](https://github.com/allegro/hermes/pull/1271)) Audit logs for unsuccessful topic and subscription operations
+
+#### ([1273](https://github.com/allegro/hermes/pull/1273)) Topic removal is forbidden if the topic contains any subscription
+
+#### ([1274](https://github.com/allegro/hermes/pull/1274)) Moved filtering to hermes-common
+
+#### ([1275](https://github.com/allegro/hermes/pull/1275)) Added message filters debugger
+
+### Fixes
+
+#### ([1276](https://github.com/allegro/hermes/pull/1276)) Downgraded kafka to 2.1.1
+
+Kafka dependency needs to be kept in this version due to bug that occurs when using kafka dependency in versions 
+2.2.0 - 2.3.1 and brokers in versions before 2.4.0 (https://issues.apache.org/jira/browse/KAFKA-9212). 
+
+Ideally, we would bump kafka dependency up to 2.3.2, which according to the issue above is no longer affected by this bug,
+but it's nowhere to be found :(. Since 2.4.0 version bumps transitive dependency for a zookeeper client library, it would introduce
+further incompatibility if Hermes Zookeeper is in lower version than Zookeeper used in Kafka, as these two are independent
+of each other.
+
+This needs to be revisited after Hermes is completely independent of kafka library, as no transitive dependency 
+to zookeeper will be present (kafka-clients library is free of transitive zookeeper dependency).
+
+#### ([1268](https://github.com/allegro/hermes/pull/1268)) Fixed http headers now have a dedicated pane in console 
+
+## 1.5.3 (28.08.2020)
+
+### Enhancements
+
+#### ([1263](https://github.com/allegro/hermes/pull/1263)) Magic byte truncation for schema version
+Ignoring magic byte and schema version when schema version present in a header
+
+## 1.5.2 (25.08.2020)
+
+### Enhancements
+
+#### ([1250](https://github.com/allegro/hermes/pull/1250)) Optimizing graphite metrics queries
+
+### Fixes
+
+#### ([1251](https://github.com/allegro/hermes/pull/1251)) Fix HermesMockExtension stops wiremock server after first test class
+
+## 1.5.1 (18.08.2020)
+
+### Enhancements
+
+#### ([1244](https://github.com/allegro/hermes/pull/1244)) Remove support for schema-repo
+
+#### ([1247](https://github.com/allegro/hermes/pull/1247)) Preserving filter value in groups list
+
+### Fixes
+
+#### ([1246](https://github.com/allegro/hermes/pull/1246)) Fix SchemaNotFoundException returns 5xx
+
+#### ([1248](https://github.com/allegro/hermes/pull/1248)) Subscription name validation fixed
+
+## 1.4.14 (17.07.2020)
+
+### Fixes
+
+#### ([1243](https://github.com/allegro/hermes/pull/1243)) Fix for serialization with schema id
+
+## 1.4.13 (15.07.2020)
+
+### Enhancements
+
+#### ([1232](https://github.com/allegro/hermes/pull/1232)) Serialization with schema id
+
+Issues resolved: [1225 - Confluent message serialization and deserialization compataibility](https://github.com/allegro/hermes/issues/1225)
+and [682 - Avro messages does not contain header](https://github.com/allegro/hermes/issues/682).
+
+#### ([1235](https://github.com/allegro/hermes/pull/1235)) Docker update
+
+Dockerfiles have been updated. The project is now automatically built by dockerhub.
+
+#### ([1236](https://github.com/allegro/hermes/pull/1236)) Batch subscription disabled in hermes console
+
+#### ([1237](https://github.com/allegro/hermes/pull/1237)) Feature: default schema id serialization
+
+#### ([1238](https://github.com/allegro/hermes/pull/1238)) Hermes docs update
+
+Exponential retry policy and docker guide added to docs.
+
+#### ([1240](https://github.com/allegro/hermes/pull/1240)) Schema registry added to docker
+
+### Fixes
+
+#### ([1239](https://github.com/allegro/hermes/pull/1239)) Old vagrant file removed from docker dir
+
+## 1.4.12 (07.07.2020)
+
+### Fixes
+
+#### ([1234](https://github.com/allegro/hermes/pull/1234)) Fix for exponential retry policy
+
+Fixed hermes console for batch subscription.
+
+## 1.4.11 (01.07.2020)
+
+### Enhancements
+
+#### ([1223](https://github.com/allegro/hermes/pull/1223)) Remove ALPN for jdk 1.8.0_252+
+
+Removing APLN for jdk 1.8.0_252. More info [here](https://webtide.com/jetty-alpn-java-8u252/).
+
+#### ([1224](https://github.com/allegro/hermes/pull/1224)) Handle proper broker listener name
+
+#### ([1228](https://github.com/allegro/hermes/pull/1228)) Kafka libraries upgraded to version 2.2.2
+
+### Fixes
+
+#### ([1222](https://github.com/allegro/hermes/pull/1222)) Configurable namespace operator
+
+Namespace operators are now cofigurable. Fix for [1209 - Feature/schema subject naming](https://github.com/allegro/hermes/pull/1209).
+
+## 1.4.10 (23.06.2020)
+
+### Enhancements
+
+#### ([1221](https://github.com/allegro/hermes/pull/1221)) Exponential retry policy
+
+Exponential retry policy for failed requests in serial subscription.
+
+## 1.4.9 (19.06.2020)
+
+### Enhancements
+
+#### ([1220](https://github.com/allegro/hermes/pull/1220)) Update config for management
+
+## 1.4.8 (19.06.2020)
+
+### Enhancements
+
+#### ([1214](https://github.com/allegro/hermes/pull/1214)) Read only mode persistence
+
+Read only mode set by an admin (READ_ONLY_ADMIN) in Hermes Management will be not overwritten by healthcheck task.
+
+#### ([1215](https://github.com/allegro/hermes/pull/1215)) Return error response when owner not found
+
+Instead of `200 OK` with empty list it returns `404 Not Found` `{"message":"Owner of id 'yyyy' not found in source xxx","code":"OWNER_NOT_FOUND"}` when owner not found.
+
+#### ([1216](https://github.com/allegro/hermes/pull/1216)) Fix typo: happend -> happen
+
+#### ([1217](https://github.com/allegro/hermes/pull/1217)) Adding modules find and register by default
+
+It is required to use annotations like `@JsonCreator` / `@JsonProperty` for classes written in Kotlin.
+
+This patch fixes redundant Jackson annotations.
+
+#### ([1218](https://github.com/allegro/hermes/pull/1218)) Update Hermes management config structure
+
+## 1.4.7 (09.06.2020)
+
+### Enhancements
+
+#### ([1208](https://github.com/allegro/hermes/pull/1208)) Schema repository docs improvement
+#### ([1209](https://github.com/allegro/hermes/pull/1209)) Feature/schema subject naming
+#### ([1210](https://github.com/allegro/hermes/pull/1210)) Add missing documentation of workload constraints
+#### ([1203](https://github.com/allegro/hermes/pull/1203)) Hermes secured
+
+Allow Hermes to connect to the Kafka via secured channel. This feature provides additional configs params:
+
+- `kafka.authorization.enabled` - `true` or `false` (default is `false`)
+- `kafka.authorization.mechanism` - mechanism for authentication (default is `PLAIN`)
+- `kafka.authorization.protocol` - protocol for the communication (default is `SASL_PLAINTEXT`)
+- `kafka.authorization.username` - client's username (default is `username`)
+- `kafka.authorization.password` - client's password (default is `password`)
+
+### Fixes
+
+#### ([1202](https://github.com/allegro/hermes/pull/1202)) Fixed Vagrant provisioning
+
+Added fallback to `archive.apache.org` for Kafka distribution.
+
+#### ([1207](https://github.com/allegro/hermes/pull/1207)) java11 fix: jaxb deps upgrade
+
+#### ([1212](https://github.com/allegro/hermes/pull/1212)) Removed duplicated counter for filtered messages
+
+Removed duplicated counter for filtered messages.
+
+## 1.4.6 (24.04.2020)
+
+### Enhancements
+
+#### ([#1196](https://github.com/allegro/hermes/pull/1196)) Hermes supports JRE truststore
+
+Hermes supports using trust store provided by JRE (located in `$JAVA_HOME/jre/lib/security/`).
+
+This change introduces new properties `{consumers,frontend}.ssl.{key,trust}store.source` which can be set to `jre` or `provided`.
+
+Additionally the property `consumer.ssl.enabled` is enabled by default.
+
+### Fixes
+
+#### ([#1197](https://github.com/allegro/hermes/pull/1197)) Remove logback files from hermes-consumers and hermes-frontend
+
+## 1.4.5 (20.04.2020)
+
+### Enhancements
+
+#### ([#1199](https://github.com/allegro/hermes/pull/1199)) Remove limits for offline retention time
+
+#### ([#1198](https://github.com/allegro/hermes/pull/1198))  Adds deserialization root cause exception in Hermes-mock
+
+### Fixes
+
+#### ([#1194](https://github.com/allegro/hermes/pull/1194)) Fix typo in docs 
+
+## 1.4.4 (31.03.2020)
+
+### Enhancements
+
+#### ([1192](https://github.com/allegro/hermes/pull/1192)) Schema `__metadata` field validation
+
+Hermes Management does not allow to save topic with an invalid Avro schemas:
+- schema without field __metadata
+- schema with field __metadata that declares types other than hermes specifies in documentation, for example `java.avro.string`
+
+#### ([1189](https://github.com/allegro/hermes/pull/1189)) Unwrapping message content interface
+
+This change introduce the interfaces `MessageContentReader` and `MessageContentReaderFactory`.
+
+These interfaces allow to provide custom implementation of reading Kafka records, for example for reading metadata from Kafka headers.
+
+It can be useful when you publish messages directly on Kafka and use only consuming module from Hermes.
+
+For more information, see the [docs](https://hermes-pubsub.readthedocs.io/en/latest/configuration/internal-format/#custom-reading-internal-messages).
+
+## 1.4.3 (24.03.2020)
+
+### Enhancements
+
+#### ([1186](https://github.com/allegro/hermes/pull/1186)) Added metrics for http client connection pool
+
+Added http connection pool monitoring. By default it’s disabled, can be enabled by flag:
+
+`consumer.http.client.connection.pool.monitoring.enabled=true`
+
+#### ([1188](https://github.com/allegro/hermes/pull/1188)) Max requests queued per destination config param for http clients
+
+`consumer.inflight.size` is no longer used in HTTP clients configuration as max requests queued
+ per destination. Instead, `consumer.http.client.max.connections.per.destination` and `consumer
+ .http2.client.max.connections.per.destination` can be used to configure that parameter.
+
+## 1.4.2 (24.03.2020)
+
+### Bugfixes
+
+### Enhancements
+
+#### ([1183](https://github.com/allegro/hermes/pull/1183)) Retry on HTTP 429 Too many requests code
+
+From now Hermes provides back pressure mechanism relaying only on 503 and new 429 http status header.
+
+#### ([1180](https://github.com/allegro/hermes/pull/1180)) Fix subscription latency URL
+#### ([1182](https://github.com/allegro/hermes/pull/1182)) Restoring node command in th path
+
+## 1.4.1 (12.03.2020)
+
+### Enhancements
+
+#### ([1177](https://github.com/allegro/hermes/pull/1177)) HttpClients can have additional headers set
+
+Additional HTTP headers can be set by providing custom implementation of HttpHeadersProvidersFactory interface.
+
+#### ([1178](https://github.com/allegro/hermes/pull/1178)) Sending delay is calculated based on message publishing timestamp
+
+
+## 1.4.0 (22.02.2020)
+
+The release contains a lot of improvements created during Hacktoberfest event.
+Many thanks to contributors for implementing them, great work! :tada:
+
+### Enhancements
+
+#### ([1173](https://github.com/allegro/hermes/pull/1173)) Metadata headers in messages by @mareckmareck
+#### ([1012](https://github.com/allegro/hermes/pull/1012)) Catching all Throwables when consuming messages by @dankraw
+#### ([1012](https://github.com/allegro/hermes/pull/1012)) Allowed to filter messages by any element in array by @karolhor
+#### ([1166](https://github.com/allegro/hermes/pull/1166)) Hermes-management serves console config from application property file by @druminski
+#### ([1138](https://github.com/allegro/hermes/pull/1138)) Added UI for HTTP header filtering by @qrman
+#### ([1107](https://github.com/allegro/hermes/pull/1107)) Hermes-console served by Hermes-management as static resource by @mkopylec
+#### ([1165](https://github.com/allegro/hermes/pull/1165)) Removed mirror algorithm in consumer workload mechanism by @jewertow
+#### ([1127](https://github.com/allegro/hermes/pull/1127)) Manually create consumer group/commit offsets on subscription creation by @jewertow
+#### ([1141](https://github.com/allegro/hermes/pull/1141)) Added sorting by name and search for constraints UI by @pwolaq
+#### ([1114](https://github.com/allegro/hermes/pull/1114)) Hermes-console UX improvements by @krzysztofpcy
+#### ([1100](https://github.com/allegro/hermes/pull/1100)) Report consumer sender workload by @jewertow
+#### ([1124](https://github.com/allegro/hermes/pull/1124)) Return proper response when Avro lacks __metadata by @jewertow
+#### ([1137](https://github.com/allegro/hermes/pull/1137)) Introduced list of supported topic content types by @semisiu
+#### ([1139](https://github.com/allegro/hermes/pull/1139)) Redirects in hermes-consumers are disabled by default by @druminski
+#### ([1158](https://github.com/allegro/hermes/pull/1158)) Exposed creation and modification date for topic & subscription by @jewertow
+#### ([1162](https://github.com/allegro/hermes/pull/1162)) Removed Jersey repackaged immutable map reference by @dankraw
+
+## 1.3.5 (27.01.2020)
+
+This version contains important changes related to Java 11 deployment of Hermes frontends
+(especially a critical fix in Undertow regarding the use of TLSv1.3 in JDK11)
+as well as some performance improvements (in terms of GC impact) of the way Avro API is being used.
+
+### Enhancements
+
+#### ([1160](https://github.com/allegro/hermes/pull/1160)) Using Undertow 2 on frontends
+#### ([1156](https://github.com/allegro/hermes/pull/1156)) Reusing Avro binary decoders
+
+### Bugfixes
+
+#### ([1153](https://github.com/allegro/hermes/pull/1153)) Fixed Hermes mock predicate
+
+## 1.3.4 (27.11.2019)
+
+### Enhancements
+
+#### ([1149](https://github.com/allegro/hermes/pull/1149)) Hermes Mock asserts contentType using startsWith check
+
+Thanks @Deff17 for contribution.
+
+### Bugfixes
+
+#### ([1147](https://github.com/allegro/hermes/pull/1147)) Added support for IE 11 in Hermes Console
+
+Thanks @kuaikuai for contribution.
+
+## 1.3.3 (04.11.2019)
+
+### Enhancements
+
+#### ([1134](https://github.com/allegro/hermes/pull/1134)) Including schema validation error details in management responses
+
+### Bugfixes
+
+#### ([1132](https://github.com/allegro/hermes/pull/1132)) Fixed url of service mock in QuickStart guide
+
+#### ([1146](https://github.com/allegro/hermes/pull/1146)) Fixed consumer process stopping on subscription removal
+
+#### ([1140](https://github.com/allegro/hermes/pull/1140)) Clearing inflight-messages meter on consumer stop
+
+#### ([1131](https://github.com/allegro/hermes/pull/1131)) Renamed file with key dedicated for integration tests
+
+#### ([1130](https://github.com/allegro/hermes/pull/1130)) Fixed hierarchical max rate registry test
 
 ## 1.3.2 (21.10.2019)
 

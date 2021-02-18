@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row" style="margin-bottom: 2em;">
         <div class="col-md-3 col-md-offset-3">
             <a class="btn btn-main btn-block" ng-href="{{statsDashboard}}" target="_blank">
                 <i class="fa fa-bar-chart"></i> Runtime
@@ -35,6 +35,20 @@
             <a class="btn btn-main btn-block" ng-href="{{docs}}" target="_blank">
                 <i class="fa fa-book"></i> Docs
             </a>
+        </div>
+    </div>
+
+    <div class="row" ng-if="admin">
+        <div class="col-md-6 col-md-offset-3">
+            <div class=" btn-group btn-block" dropdown>
+                <button class="btn btn-main btn-block dropdown-toggle" dropdown-toggle>
+                    <i class="fa fa-wrench"></i> Admin Tools <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu btn-block" role="menu" aria-labelledby="single-button">
+                    <li role="menuitem"><a href="#/constraints">Constraints</a></li>
+                    <li role="menuitem"><a href="#/consistency">Consistency</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 

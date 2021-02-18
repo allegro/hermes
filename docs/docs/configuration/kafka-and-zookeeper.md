@@ -2,8 +2,7 @@
 
 ## Zookeeper
 
-Hermes uses Zookeeper as metadata store. It does not have to be the same Zookeeper as the one used by Kafka. There should
-be only one Zookeeper cluster in use by all Hermes modules: Frontend, Consumers and Management.
+Hermes uses Zookeeper as metadata store. It does not have to be the same Zookeeper as the one used by Kafka.
 
 Option in Frontend/Consumers     | Option in Management           | Description                                                                | Default value
 -------------------------------- | ------------------------------ | -------------------------------------------------------------------------- | --------------
@@ -49,10 +48,10 @@ kafka:
       connectionString: // connection string to cluster Zookeeper, default: localhost:2181
 ```
 
-### Multiple Kafka clusters
+### Multiple Kafka and Zookeeper clusters
 
-Hermes can be configured to publish and read messages to/from multiple Kafka clusters. We use this feature on production
-environment where we have separated kafka clusters in different data centers. If Kafka in one DC fails, whole traffic
+Hermes can be configured to publish and read messages to/from multiple Kafka clusters and to store metadata in multiple Zookeeper clusters.
+We use this feature on production environment where we have separated kafka clusters in different data centers. If Kafka in one DC fails, whole traffic
 can be routed to the second DC. This scenario assumes, that Kafka clusters hold different set of messages. There is no
 support for multiple clusters each holding the same copy of data.
 
@@ -63,9 +62,9 @@ This is the schematics of two data center architecture:
 * there are specific **Frontend** and **Consumers** instances per cluster:
     * each **Frontend** instance writes data to single cluster
     * each **Consumers** instance reads data from single cluster
-* **Management** connects to all Kafka clusters and keeps topics and subscriptions in-sync
-* all **Frontend**, **Consumers** and **Management** instances connect to the same Metadata Zookeeper, regardless of cluster they
-    connect to
+* each **Management** instance:
+    * connects to all Kafka clusters and keeps topics and subscriptions in-sync
+    * connects to all Zookeeper clusters and keeps metadata in-sync
 
 Configuring Frontend and Consumers is easy: use configuration options from [previous chapter](#single-kafka-cluster) to
 connect to given clusters. Remember about specifying proper `kafka.cluster.name`.
@@ -81,13 +80,30 @@ kafka:
       clusterName: kafka_primary
       connectionString: kafka-zookeeper:2181/clusters/dc1
     -
-      datacenter: dc1
+      datacenter: dc2
       clusterName: kafka_secondary
       connectionString: kafka-zookeeper:2181/clusters/dc2
+
+storage:
+  pathPrefix: /run/hermes
+  clusters:
+    -
+      datacenter: dc1
+      clusterName: zk1
+      connectionString: metadata-zookeeper.dc1:2181
+    -
+      datacenter: dc2
+      clusterName: zk2
+      connectionString: metadata-zookeeper.dc2:2181
 ```
 
 ### Multiple Hermes on single Kafka cluster
 
-It is also possible to run multiple Hermes clusters on single Kafka cluster, e.g. to separate different test environments. The
-only requirement is to specify different `kafka.namespace` option for each Hermes. This might also be used to distinguish
-Hermes-managed topics on multi-purpose Kafka cluster.clusters
+It’s also possible to run multiple Hermes clusters on a single Kafka cluster, e.g. to separate different test environments.
+To do this, on each Hermes cluster you have to provide different value for:
+* `kafka.namespace` property in **Frontend** and **Consumers**. In **Management** it’s named `kafka.defaultNamespace` and also need to be changed.
+* `zookeeper.root` property in **Frontend** and **Consumers** if you use the same Zookeeper cluster for all Hermes clusters.
+In **Management** it’s named `storage.pathPrefix` and also need to be changed.
+
+`kafka.namespace` property also can used to distinguish Hermes-managed topics on multi-purpose Kafka cluster.
+

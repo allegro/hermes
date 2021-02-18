@@ -12,7 +12,11 @@ var hermes = angular.module('hermes', [
     'hermes.search',
     'hermes.stats',
     'hermes.diagnostics',
-    'hermes.constraints'
+    'hermes.constraints',
+    'hermes.diagnostics',
+    'hermes.consistency',
+    'hermes.visibility',
+    'hermes.mode'
 ]);
 
 hermes.constant('DASHBOARD_CONFIG', config.dashboard);
@@ -24,6 +28,7 @@ hermes.constant('CONSOLE_CONFIG', config.console);
 hermes.constant('TOPIC_CONFIG', config.topic || {});
 hermes.constant('SUBSCRIPTION_CONFIG', config.subscription || {});
 hermes.constant('OWNER_CONFIG', config.owner || {});
+hermes.constant('CONSISTENCY_CONFIG', config.consistency || {});
 
 hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibTooltipProvider',
     function ($stateProvider, $urlRouterProvider, $httpProvider, $tooltipProvider) {
@@ -59,6 +64,18 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                     url: '/constraints',
                     templateUrl: 'partials/constraints.html'
                 })
+                .state('consistency', {
+                    url: '/consistency',
+                    templateUrl: 'partials/consistency.html'
+                })
+                .state('groupConsistency', {
+                    url: '/consistency/:groupName',
+                    templateUrl: 'partials/groupConsistency.html'
+                })
+                .state('topicConsistency', {
+                    url: '/consistency/:groupName/topics/:topicName',
+                    templateUrl: 'partials/topicConsistency.html'
+                })
                 .state('search', {
                     url: '/search?entity&property&operator&pattern',
                     templateUrl: 'partials/search.html'
@@ -84,12 +101,18 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
         $tooltipProvider.options({ placement: 'left' });
     }]);
 
-hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', function($rootScope, config, authConfig) {
-    $rootScope.console = {
-        title: config.title
-    };
-    $rootScope.authEnabled = {
-        oauth: authConfig.oauth.enabled,
-        headers: authConfig.headers.enabled
-    };
+hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', "$sce", 'Mode', 'Visibility',
+    function ($rootScope, config, authConfig, $sce, mode, visibility) {
+        $rootScope.console = {
+            title: config.title,
+            footer: $sce.trustAsHtml(config.footer)
+        };
+        $rootScope.authEnabled = {
+            oauth: authConfig.oauth.enabled,
+            headers: authConfig.headers.enabled
+        };
+        $rootScope.$on('$viewContentLoaded', function (event) {
+            visibility.update();
+        });
+        mode.reload();
 }]);

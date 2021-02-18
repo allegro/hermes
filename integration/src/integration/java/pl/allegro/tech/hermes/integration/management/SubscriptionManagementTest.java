@@ -3,10 +3,10 @@ package pl.allegro.tech.hermes.integration.management;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
@@ -45,7 +45,6 @@ import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscri
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class SubscriptionManagementTest extends IntegrationTest {
 
@@ -67,12 +66,12 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldCreateSubscriptionWithActiveStatus() {
         // given
-        Topic topic = operations.buildTopic("subscribeGroup", "topic");
+        Topic topic = operations.buildTopic(randomTopic("subscribeGroup", "topic").build());
 
         // when
         Response response = management.subscription().create(
                 topic.getQualifiedName(),
-                subscription("subscribeGroup.topic", "subscription").build()
+                subscription(topic.getQualifiedName(), "subscription").build()
         );
 
         // then
@@ -103,10 +102,10 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldNotCreateSubscriptionWithoutTopicName() {
         // given
-        operations.buildTopic("invalidGroup", "topic");
+        Topic topic = operations.buildTopic(randomTopic("invalidGroup", "topic").build());
 
         // when
-        Response response = httpClient.target(MANAGEMENT_ENDPOINT_URL + "topics/invalidGroup.topic/subscriptions")
+        Response response = httpClient.target(MANAGEMENT_ENDPOINT_URL + "topics/" + topic.getQualifiedName() + "/subscriptions")
                 .request()
                 .post(Entity.json("{\"name\": \"subscription\"}"));
 
@@ -117,7 +116,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldSuspendSubscription() {
         // given
-        Topic topic = operations.buildTopic("suspendSubscriptionGroup", "topic");
+        Topic topic = operations.buildTopic(randomTopic("suspendSubscriptionGroup", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
         wait.untilSubscriptionIsActivated(topic, "subscription");
 
@@ -134,7 +133,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldUpdateSubscriptionEndpoint() throws Throwable {
         //given
-        Topic topic = operations.buildTopic("updateSubscriptionEndpointAddressGroup", "topic");
+        Topic topic = operations.buildTopic(randomTopic("updateSubscriptionEndpointAddressGroup", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "v1/");
         wait.untilSubscriptionIsActivated(topic, "subscription");
 
@@ -157,7 +156,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldUpdateSubscriptionPolicy() {
         // given
-        Topic topic = operations.buildTopic("updateSubscriptionPolicy", "topic");
+        Topic topic = operations.buildTopic(randomTopic("updateSubscriptionPolicy", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "v1/");
         wait.untilSubscriptionIsActivated(topic, "subscription");
 
@@ -196,7 +195,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldRemoveSubscription() {
         // given
-        Topic topic = operations.buildTopic("removeSubscriptionGroup", "topic");
+        Topic topic = operations.buildTopic(randomTopic("removeSubscriptionGroup", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
 
         // when
@@ -212,10 +211,10 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test(enabled = false)
     public void shouldGetEventStatus() throws InterruptedException {
         // given
-        Topic topic = operations.buildTopic(topic("eventStatus", "topic").withContentType(ContentType.JSON)
+        Topic topic = operations.buildTopic(randomTopic("eventStatus", "topic").withContentType(ContentType.JSON)
                 .withTrackingEnabled(true).build());
 
-        Subscription subscription = subscription("eventStatus.topic", "subscription", HTTP_ENDPOINT_URL)
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription", HTTP_ENDPOINT_URL)
                 .withTrackingMode(TrackingMode.TRACK_ALL)
                 .build();
 
@@ -240,8 +239,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnSubscriptionsThatAreCurrentlyTrackedForGivenTopic() {
         // given
-        Topic topic = operations.buildTopic("tracked", "topic");
-        Subscription subscription = subscription("tracked.topic", "subscription", HTTP_ENDPOINT_URL)
+        Topic topic = operations.buildTopic(randomTopic("tracked", "topic").build());
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription", HTTP_ENDPOINT_URL)
                 .withTrackingMode(TrackingMode.TRACK_ALL).build();
         operations.createSubscription(topic, subscription);
         operations.createSubscription(topic, "sub2", HTTP_ENDPOINT_URL);
@@ -257,10 +256,10 @@ public class SubscriptionManagementTest extends IntegrationTest {
     public void shouldReturnsTrackedAndNotSuspendedSubscriptionsForGivenTopic() {
 
         // given
-        Topic topic = operations.buildTopic("queried", "topic");
-        operations.createSubscription(topic, subscription("queried.topic", "sub1").withTrackingMode(TrackingMode.TRACK_ALL).build());
-        operations.createSubscription(topic, subscription("queried.topic", "sub2").withTrackingMode(TrackingMode.TRACK_ALL).build());
-        operations.createSubscription(topic, subscription("queried.topic", "sub3").build());
+        Topic topic = operations.buildTopic(randomTopic("queried", "topic").build());
+        operations.createSubscription(topic, subscription(topic.getQualifiedName(), "sub1").withTrackingMode(TrackingMode.TRACK_ALL).build());
+        operations.createSubscription(topic, subscription(topic.getQualifiedName(), "sub2").withTrackingMode(TrackingMode.TRACK_ALL).build());
+        operations.createSubscription(topic, subscription(topic.getQualifiedName(), "sub3").build());
         operations.suspendSubscription(topic, "sub2");
 
         // and
@@ -276,11 +275,11 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldNotAllowSubscriptionNameToContainDollarSign() {
         // given
-        Topic topic = operations.buildTopic("dollar", "topic");
+        Topic topic = operations.buildTopic(randomTopic("dollar", "topic").build());
 
         Stream.of("$name", "na$me", "name$").forEach(name -> {
             // when
-            Response response = management.subscription().create(topic.getQualifiedName(), subscription("dollar.topic", name).build());
+            Response response = management.subscription().create(topic.getQualifiedName(), subscription(topic.getQualifiedName(), name).build());
             // then
             assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
         });
@@ -289,15 +288,14 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnHealthyStatusForAHealthySubscription() {
         // given
-        String groupName = "healthHealthy";
-        String topicName = "topic";
+        Topic topic = randomTopic("healthHealthy", "topic").build();
         String subscriptionName = "subscription";
 
         // and
-        Topic topic = operations.buildTopic(groupName, topicName);
+        operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForTopic(groupName, topicName, 100, 100);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("healthHealthy.topic.subscription").withRate(100).build());
+        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 100);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription").withRate(100).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
@@ -309,15 +307,14 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnUnhealthyStatusWithAProblemForMalfunctioningSubscription() {
         // given
-        String groupName = "healthUnhealthy";
-        String topicName = "topic";
+        Topic topic = randomTopic("healthUnhealthy", "topic").build();
         String subscriptionName = "subscription";
 
         // and
-        Topic topic = operations.buildTopic(groupName, topicName);
+        operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
-        graphiteEndpoint.returnMetricForTopic(groupName, topicName, 100, 50);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("healthUnhealthy.topic.subscription").withRate(50).withStatusRate(500, 11).build());
+        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription").withRate(50).withStatusRate(500, 11).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
@@ -330,15 +327,15 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnNoDataStatusWhenGraphiteRespondsWithAnError() {
         // given
-        String groupName = "healthNoData";
         String topicName = "topic";
+        Topic topic = randomTopic("healthNoData", "topic").build();
         String subscriptionName = "subscription";
 
         // and
-        Topic topic = operations.buildTopic(groupName, topicName);
+        operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
         graphiteEndpoint.returnServerErrorForAllTopics();
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("healthUnhealthy.topic.subscription").withRate(100).build());
+        graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription").withRate(100).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
@@ -350,8 +347,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldNotAllowSubscriptionWithBatchDeliveryAndAvroContentType() {
         // given
-        Topic topic = operations.buildTopic("subscribeGroup", "topic");
-        Subscription subscription = subscription("subscribeGroup.topic", "subscription")
+        Topic topic = operations.buildTopic(randomTopic("subscribeGroup", "topic").build());
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
                 .withDeliveryType(DeliveryType.BATCH)
                 .withContentType(ContentType.AVRO)
                 .build();

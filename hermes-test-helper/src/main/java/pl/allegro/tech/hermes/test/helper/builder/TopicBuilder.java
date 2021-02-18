@@ -7,10 +7,13 @@ import pl.allegro.tech.hermes.api.PublishingAuth;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicDataOfflineStorage;
+import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class TopicBuilder {
@@ -33,7 +36,7 @@ public class TopicBuilder {
 
     private boolean migratedFromJsonType = false;
 
-    private boolean schemaVersionAwareSerialization = false;
+    private boolean schemaIdAwareSerialization = false;
 
     private int maxMessageSize = 1024 * 1024;
 
@@ -46,6 +49,8 @@ public class TopicBuilder {
     private boolean subscribingRestricted = false;
 
     private TopicDataOfflineStorage offlineStorage = TopicDataOfflineStorage.defaultOfflineStorage();
+
+    private Set<TopicLabel> labels = Collections.emptySet();
 
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
@@ -70,9 +75,9 @@ public class TopicBuilder {
     public Topic build() {
         return new Topic(
                 name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerialization, maxMessageSize,
+                jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
-                offlineStorage
+                offlineStorage, labels, null, null
         );
     }
 
@@ -121,8 +126,8 @@ public class TopicBuilder {
         return this;
     }
 
-    public TopicBuilder withSchemaVersionAwareSerialization() {
-        this.schemaVersionAwareSerialization = true;
+    public TopicBuilder withSchemaIdAwareSerialization() {
+        this.schemaIdAwareSerialization = true;
         return this;
     }
 
@@ -153,6 +158,11 @@ public class TopicBuilder {
 
     public TopicBuilder withOfflineStorage(int days) {
         this.offlineStorage = new TopicDataOfflineStorage(true, OfflineRetentionTime.of(days));
+        return this;
+    }
+
+    public TopicBuilder withLabels(Set<TopicLabel> labels) {
+        this.labels = labels;
         return this;
     }
 }

@@ -1,20 +1,21 @@
-FROM jeanblanchard/java:8
+FROM gradle:5.6.2-jdk11 AS builder
 
-MAINTAINER Allegro
+COPY --chown=gradle:gradle . /home/gradle/src/
+WORKDIR /home/gradle/src/
+RUN ./gradlew clean distZip -Pdistribution
+
+FROM adoptopenjdk/openjdk11:alpine-jre
 
 RUN apk update \
   && apk add unzip wget bash \
   && rm -rf /var/cache/apk/*
 
-ENV ARCHIVE_NAME="hermes-management-latest.zip"
-ENV URL="http://box.allegro.tech/hermes/${ARCHIVE_NAME}"
+RUN mkdir /app
 
-RUN wget -nv "${URL}" -O "/tmp/${ARCHIVE_NAME}" \
-  && unzip -q "/tmp/${ARCHIVE_NAME}" -d /opt \
-  && rm "/tmp/${ARCHIVE_NAME}" \
-  && mv /opt/hermes-management-* /opt/hermes-management
+COPY --from=builder /home/gradle/src/hermes-management/build/distributions/*.zip /app/hermes-management.zip
+RUN unzip /app/hermes-management.zip && mv /hermes-management-* /hermes-management
 
+ADD docker/latest/management/management.yaml /etc/hermes/management.yaml
 ENV SPRING_CONFIG_LOCATION="file:///etc/hermes/management.yaml"
-ADD management.yaml /etc/hermes/management.yaml
 
-CMD /opt/hermes-management/bin/hermes-management
+CMD /hermes-management/bin/hermes-management

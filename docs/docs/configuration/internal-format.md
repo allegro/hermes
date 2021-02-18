@@ -6,7 +6,7 @@ metadata. Metadata format depends on data format (Avro, JSON) - please see forma
 
 Currently metadata holds two fields:
 
-* **id** - string containing Hermes-Message-Id as UUID v4
+* **messageId** - string containing Hermes-Message-Id as UUID v4
 * **timestamp** - Unix epoch timestamp in milliseconds holding date of reception
 
 There is no guarantee that this metadata won't be extended.
@@ -18,7 +18,7 @@ Messages with metadata have following format:
 ```json
 {
     "metadata": {
-        "id": "b0838e5f-c3d1-47b3-8949-abe7a1f65202",
+        "messageId": "b0838e5f-c3d1-47b3-8949-abe7a1f65202",
         "timestamp": 1439129947000
     },
     "message": {
@@ -27,7 +27,64 @@ Messages with metadata have following format:
 }
 ```
 
-## Avro *[incubating]*
+## Avro
 
-Hermes metadata is stored in `__metadata` field, which is specified as map of optional elements. It will always contain
-``id`` and ``timestamp``.
+Hermes metadata is stored in `__metadata` field, which is specified as map of optional elements. It will always contain at least
+``messageId`` and ``timestamp``.
+
+```json
+{
+  "type": "record",
+  "name": "SomeTopic",
+  "namespace": "pl.allegro.hermes",
+  "doc": "Schema of some event",
+  "fields": [
+    {
+      "name": "__metadata",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": "string"
+        }
+      ],
+      "doc": "Field used to propagate metadata like messageId and timestamp",
+      "default": null
+    },
+    // other event fields
+  ]
+}
+```
+
+## Custom reading internal messages
+
+Hermes allows to provide custom implementation of reading Kafka records, for example for reading metadata from Kafka headers.
+
+To do this, implement the interfaces `MessageContentReader` and `MessageContentReaderFactory`
+and inject the implementation of `MessageContentReaderFactory` into the builder.
+
+```java
+class CustomMessageContentReader implements MessageContentReader {
+    @Override
+    public UnwrappedMessageContent read(ConsumerRecord<byte[], byte[]> message, ContentType contentType) {
+        // custom implementation of reading consumer record
+    }
+}
+
+class CustomMessageContentReaderFactory implements MessageContentReaderFactory {
+    @Override
+    public MessageContentReader provide(Topic topic) {
+        return new CustomMessageContentReader();
+    }
+}
+
+public class CustomHermesConsumers {
+    public static void main(String[] args) {
+        MessageContentReaderFactory factory = new CustomMessageContentReaderFactory();
+        HermesConsumers hermesConsumers = HermesConsumers.consumers()
+                .withMessageContentReaderFactory(factory)
+                .build();
+        hermesConsumers.start();
+    }
+}
+```

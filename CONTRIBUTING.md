@@ -18,7 +18,7 @@ You can also use other *magic words* from [GitHub handbook](https://help.github.
 
 * for small changes, no need to add separate issue, defining problem in pull request is enough
 * if issue exists, reference it from PR title or description using GitHub magic words like *resolves #issue-number*
-* create pull requests to **develop** branch
+* create pull requests to **master** branch
 * it would be nice to squash commits before creating pull requests
 * it's required to squash commits before merge
 * pay attention to changing documentation in `docs/`

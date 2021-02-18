@@ -4,6 +4,8 @@ import io.undertow.io.Receiver;
 import io.undertow.server.DefaultResponseListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
@@ -21,6 +23,7 @@ import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 
 class MessageReadHandler implements HttpHandler {
+    private static final Logger logger = LoggerFactory.getLogger(MessageReadHandler.class);
 
     private final HttpHandler next;
     private final HttpHandler timeoutHandler;
@@ -210,6 +213,13 @@ class MessageReadHandler implements HttpHandler {
         @Override
         public boolean handleDefaultResponse(HttpServerExchange exchange) {
             if (exchange.getAttachment(AttachmentContent.KEY).isResponseReady()) {
+                if (exchange.getStatusCode() == 200) {
+                    try {
+                        exchange.setStatusCode(500);
+                    } catch (RuntimeException e) {
+                        logger.error("Exception has been thrown during an exchange status modification", e);
+                    }
+                }
                 return !responseNotSimulatedOnlyOnce.compareAndSet(false, true);
             } else {
                 return RESPONSE_SIMULATED;

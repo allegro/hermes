@@ -10,13 +10,14 @@ import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilter;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilterSource;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.MessageFilters;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.SubscriptionMessageFilterCompiler;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.header.HeaderSubscriptionMessageFilterCompiler;
-import pl.allegro.tech.hermes.consumers.consumer.filtering.json.JsonPathSubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
+import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
+import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
+import pl.allegro.tech.hermes.domain.filtering.SubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.domain.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.domain.filtering.header.HeaderSubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.domain.filtering.json.JsonPathSubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
 import pl.allegro.tech.hermes.consumers.di.TrackersBinder;
@@ -98,6 +99,10 @@ public final class HermesConsumersBuilder {
 
     public HermesConsumersBuilder withKafkaTopicsNamesMapper(KafkaNamesMapper kafkaNamesMapper) {
         return withBinding(kafkaNamesMapper, KafkaNamesMapper.class);
+    }
+
+    public HermesConsumersBuilder withMessageContentReaderFactory(MessageContentReaderFactory messageContentReaderFactory) {
+        return withBinding(messageContentReaderFactory, MessageContentReaderFactory.class);
     }
 
     public <T> HermesConsumersBuilder withBinding(T instance, Class<T> clazz) {

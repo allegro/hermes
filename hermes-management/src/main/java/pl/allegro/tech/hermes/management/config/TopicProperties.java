@@ -1,6 +1,13 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.TopicLabel;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 @ConfigurationProperties(prefix = "topic")
 public class TopicProperties {
@@ -13,6 +20,10 @@ public class TopicProperties {
 
     private boolean removeSchema = false;
 
+    private List<ContentType> allowedContentTypes = Arrays.asList(ContentType.AVRO, ContentType.JSON);
+
+    private Set<TopicLabel> allowedTopicLabels = Collections.emptySet();
+
     private boolean uncleanLeaderElectionEnabled = false;
 
     private int touchDelayInSeconds = 120;
@@ -20,6 +31,8 @@ public class TopicProperties {
     private boolean touchSchedulerEnabled = true;
 
     private int subscriptionsAssignmentsCompletedTimeoutSeconds = 30;
+
+    private boolean defaultSchemaIdAwareSerializationEnabled = false;
 
     /**
      * Introduced in Kafka 0.11.0.0 mechanism of splitting oversized batches does not respect configuration of maximum
@@ -66,6 +79,22 @@ public class TopicProperties {
         this.removeSchema = removeSchema;
     }
 
+    public List<ContentType> getAllowedContentTypes() {
+        return allowedContentTypes;
+    }
+
+    public void setAllowedContentTypes(List<ContentType> allowedContentTypes) {
+        this.allowedContentTypes = allowedContentTypes;
+    }
+
+    public Set<TopicLabel> getAllowedTopicLabels() {
+        return allowedTopicLabels;
+    }
+
+    public void setAllowedTopicLabels(Set<TopicLabel> allowedTopicLabels) {
+        this.allowedTopicLabels = allowedTopicLabels;
+    }
+
     public boolean isUncleanLeaderElectionEnabled() {
         return uncleanLeaderElectionEnabled;
     }
@@ -104,5 +133,13 @@ public class TopicProperties {
 
     public void setMaxMessageSize(int maxMessageSize) {
         this.maxMessageSize = maxMessageSize;
+    }
+
+    public void setDefaultSchemaIdAwareSerializationEnabled(boolean defaultSchemaIdAwareSerializationEnabled) {
+        this.defaultSchemaIdAwareSerializationEnabled = defaultSchemaIdAwareSerializationEnabled;
+    }
+
+    public boolean isDefaultSchemaIdAwareSerializationEnabled() {
+        return defaultSchemaIdAwareSerializationEnabled;
     }
 }

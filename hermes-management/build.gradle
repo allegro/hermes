@@ -13,7 +13,7 @@ dependencies {
 
     compile group: 'com.wordnik', name: 'swagger-jersey2-jaxrs_2.10', version: '1.3.4'
 
-    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '2.0.0'
+    compile group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka
 
     compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
     compile (group: 'com.github.fge', name: 'json-schema-validator', version: '2.2.6') {
@@ -26,6 +26,7 @@ dependencies {
     compile group: 'org.javers', name: 'javers-core', version: '5.2.5'
 
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.spring
@@ -34,9 +35,24 @@ dependencies {
     testCompile group: 'org.spockframework', name: 'spock-spring', version: versions.spock
 
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
+
+    testCompile group: 'org.testcontainers', name: 'spock', version: '1.15.0'
+    testCompile group: 'org.testcontainers', name: 'kafka', version: '1.15.0'
 }
 
 if (project.hasProperty('distribution')) {
     apply plugin: 'application'
     mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
 }
+
+task buildHermesConsole(type: Exec) {
+    workingDir '../hermes-console'
+    commandLine './package.sh'
+}
+
+task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
+    from '../hermes-console/dist/static'
+    into(sourceSets.main.output.resourcesDir.path + '/static/ui')
+}
+
+jar.dependsOn(attachHermesConsole)

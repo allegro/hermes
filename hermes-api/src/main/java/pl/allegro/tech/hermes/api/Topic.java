@@ -2,14 +2,21 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.annotation.JacksonInject;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
+@JsonIgnoreProperties(value = {"createdAt", "modifiedAt"}, allowGetters = true)
 public class Topic {
 
     @Valid
@@ -38,6 +45,7 @@ public class Topic {
     public static final int MIN_MESSAGE_SIZE = 1024;
     public static final int MAX_MESSAGE_SIZE = 2 * 1024 * 1024;
     private static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024;
+    public static final String DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY = "defaultSchemaIdAwareSerializationEnabled";
 
     public enum Ack {
         NONE, LEADER, ALL
@@ -51,7 +59,7 @@ public class Topic {
 
     private boolean migratedFromJsonType = false;
 
-    private boolean schemaVersionAwareSerializationEnabled = false;
+    private final boolean schemaIdAwareSerializationEnabled;
 
     private boolean subscribingRestricted = false;
 
@@ -59,11 +67,18 @@ public class Topic {
 
     private final TopicDataOfflineStorage offlineStorage;
 
+    @Valid
+    private Set<TopicLabel> labels;
+
+    private Instant createdAt;
+
+    private Instant modifiedAt;
+
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
-                 boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType,
-                 boolean jsonToAvroDryRunEnabled, boolean schemaVersionAwareSerializationEnabled,
+                 boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
+                 @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
-                 TopicDataOfflineStorage offlineStorage) {
+                 TopicDataOfflineStorage offlineStorage, Set<TopicLabel> labels, Instant createdAt, Instant modifiedAt) {
         this.name = name;
         this.description = description;
         this.owner = owner;
@@ -73,11 +88,14 @@ public class Topic {
         this.migratedFromJsonType = migratedFromJsonType;
         this.contentType = contentType;
         this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
-        this.schemaVersionAwareSerializationEnabled = schemaVersionAwareSerializationEnabled;
+        this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
         this.maxMessageSize = maxMessageSize;
         this.publishingAuth = publishingAuth;
         this.subscribingRestricted = subscribingRestricted;
         this.offlineStorage = offlineStorage;
+        this.labels = labels;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
     }
 
     @JsonCreator
@@ -90,19 +108,24 @@ public class Topic {
             @JsonProperty("ack") Ack ack,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
-            @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
+            @JsonProperty("schemaIdAwareSerializationEnabled") @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("maxMessageSize") Integer maxMessageSize,
             @JsonProperty("auth") PublishingAuth publishingAuth,
             @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
-            @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage
-            ) {
+            @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
+            @JsonProperty("labels") Set<TopicLabel> labels,
+            @JsonProperty("createdAt") Instant createdAt,
+            @JsonProperty("modifiedAt") Instant modifiedAt
+    ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
-                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled,
+                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
                 publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
                 subscribingRestricted,
-                offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage
+                offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage,
+                labels == null ? Collections.emptySet() : labels,
+                createdAt, modifiedAt
         );
     }
 
@@ -113,8 +136,8 @@ public class Topic {
     @Override
     public int hashCode() {
         return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaVersionAwareSerializationEnabled, maxMessageSize, publishingAuth, subscribingRestricted,
-                offlineStorage);
+                jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled, maxMessageSize,
+                publishingAuth, subscribingRestricted, offlineStorage, labels);
     }
 
     @Override
@@ -134,13 +157,14 @@ public class Topic {
                 && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
-                && Objects.equals(this.schemaVersionAwareSerializationEnabled, other.schemaVersionAwareSerializationEnabled)
+                && Objects.equals(this.schemaIdAwareSerializationEnabled, other.schemaIdAwareSerializationEnabled)
                 && Objects.equals(this.ack, other.ack)
                 && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.maxMessageSize, other.maxMessageSize)
                 && Objects.equals(this.subscribingRestricted, other.subscribingRestricted)
                 && Objects.equals(this.publishingAuth, other.publishingAuth)
-                && Objects.equals(this.offlineStorage, other.offlineStorage);
+                && Objects.equals(this.offlineStorage, other.offlineStorage)
+                && Objects.equals(this.labels, other.labels);
     }
 
     @JsonProperty("name")
@@ -188,8 +212,8 @@ public class Topic {
         return getAck() == Ack.ALL;
     }
 
-    public boolean isSchemaVersionAwareSerializationEnabled() {
-        return schemaVersionAwareSerializationEnabled;
+    public boolean isSchemaIdAwareSerializationEnabled() {
+        return schemaIdAwareSerializationEnabled;
     }
 
     public int getMaxMessageSize() {
@@ -221,6 +245,26 @@ public class Topic {
 
     public TopicDataOfflineStorage getOfflineStorage() {
         return offlineStorage;
+    }
+
+    public Set<TopicLabel> getLabels() {
+        return Collections.unmodifiableSet(labels);
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = Instant.ofEpochMilli(createdAt);
+    }
+
+    public Instant getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(Long modifiedAt) {
+        this.modifiedAt = Instant.ofEpochMilli(modifiedAt);
     }
 
     @Override

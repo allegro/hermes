@@ -8,6 +8,10 @@ import static java.lang.String.format;
 
 public class InvalidSchemaException extends HermesException {
 
+    InvalidSchemaException(String cause) {
+        super(format("Error while trying to validate schema: %s", cause));
+    }
+
     InvalidSchemaException(SchemaParseException cause) {
         super(format("Error while trying to validate schema: %s", cause.getMessage()), cause);
     }

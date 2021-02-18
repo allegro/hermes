@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.schema.BadSchemaRequestException
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
+import pl.allegro.tech.hermes.schema.SubjectNamingStrategy
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -27,7 +28,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get
 import static com.github.tomakehurst.wiremock.client.WireMock.post
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName
 
+@Subject(SchemaRegistryRawSchemaClient.class)
 class SchemaRegistryRawSchemaClientTest extends Specification {
 
     @Shared String schemaRegistryContentType = "application/vnd.schemaregistry.v1+json"
@@ -42,14 +45,23 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     @Shared SchemaRepositoryInstanceResolver resolver
 
-    @Shared @Subject RawSchemaClient client
+    @Shared SubjectNamingStrategy[] subjectNamingStrategies
+
+    @Shared RawSchemaClient[] clients
 
     def setupSpec() {
         port = Ports.nextAvailable()
         wireMock = new WireMockServer(port)
         wireMock.start()
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
-        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper())
+        def namespace = new SubjectNamingStrategy.Namespace("test", "_")
+        subjectNamingStrategies = [
+                qualifiedName,
+                qualifiedName.withValueSuffixIf(true),
+                qualifiedName.withNamespacePrefixIf(true, namespace),
+                qualifiedName.withValueSuffixIf(true).withNamespacePrefixIf(true, namespace)
+        ]
+        clients = subjectNamingStrategies.collect { new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), it) }
     }
 
     def cleanupSpec() {
@@ -63,20 +75,24 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should register schema"() {
         given:
-        wireMock.stubFor(post(versionsUrl(topicName)).willReturn(okResponse()))
+        wireMock.stubFor(post(versionsUrl(topicName, subjectNamingStrategy)).willReturn(okResponse()))
 
         when:
         client.registerSchema(topicName, rawSchema)
 
         then:
-        wireMock.verify(1, postRequestedFor(versionsUrl(topicName))
+        wireMock.verify(1, postRequestedFor(versionsUrl(topicName, subjectNamingStrategy))
                 .withHeader("Content-type", equalTo(schemaRegistryContentType))
                 .withRequestBody(equalTo("""{"schema":"{}"}""")))
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should throw schema registration exception for invalid schema registration"() {
         given:
-        wireMock.stubFor(post(versionsUrl(topicName)).willReturn(badRequestResponse().withBody("Invalid schema")))
+        wireMock.stubFor(post(versionsUrl(topicName, subjectNamingStrategy)).willReturn(badRequestResponse().withBody("Invalid schema")))
 
         when:
         client.registerSchema(topicName, rawSchema)
@@ -84,80 +100,108 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         then:
         def e = thrown(BadSchemaRequestException)
         e.message.contains("Invalid schema")
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should throw exception for server internal error response when registering schema"() {
         given:
-        wireMock.stubFor(post(versionsUrl(topicName)).willReturn(internalErrorResponse()))
+        wireMock.stubFor(post(versionsUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
         client.registerSchema(topicName, rawSchema)
 
         then:
         thrown(InternalSchemaRepositoryException)
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should fetch schema at specified version"() {
         given:
         def version = 5
-        wireMock.stubFor(get(schemaVersionUrl(topicName, version)).willReturn(okResponse()
+        wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(okResponse()
                 .withHeader("Content-type", "application/json")
                 .withBody("""{"subject":"someGroup.someTopic","id":100,"version":$version,"schema":"{}"}""")))
 
         when:
-        def schema = client.getSchema(topicName, SchemaVersion.valueOf(version))
+        def schemaMetadata = client.getRawSchemaWithMetadata(topicName, SchemaVersion.valueOf(version))
 
         then:
-        schema.get() == rawSchema
+        schemaMetadata.get().getSchema() == rawSchema
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should throw exception when not able to fetch schema version"() {
         given:
         def version = 3
-        wireMock.stubFor(get(schemaVersionUrl(topicName, version)).willReturn(internalErrorResponse()))
+        wireMock.stubFor(get(schemaVersionUrl(topicName, version, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getSchema(topicName, SchemaVersion.valueOf(version))
+        client.getRawSchemaWithMetadata(topicName, SchemaVersion.valueOf(version))
 
         then:
         thrown(InternalSchemaRepositoryException)
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should fetch latest schema version"() {
         given:
-        wireMock.stubFor(get(schemaLatestVersionUrl(topicName)).willReturn(okResponse()
+        wireMock.stubFor(get(schemaLatestVersionUrl(topicName, subjectNamingStrategy)).willReturn(okResponse()
                 .withHeader("Content-type", "application/json")
                 .withBody("""{"subject":"someGroup.someTopic","id":200,"version":20,"schema":"{}"}""")))
 
         when:
-        def schema = client.getLatestSchema(topicName)
+        def getRawSchemaWithMetadata = client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
-        schema.get() == rawSchema
+        getRawSchemaWithMetadata.get().getSchema() == rawSchema
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should return empty optional when latest schema does not exist"() {
         when:
-        def schema = client.getLatestSchema(topicName)
+        def metadata = client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
-        !schema.isPresent()
+        !metadata.isPresent()
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should throw exception when not able to fetch latest schema version"() {
         given:
-        wireMock.stubFor(get(schemaLatestVersionUrl(topicName)).willReturn(internalErrorResponse()))
+        wireMock.stubFor(get(schemaLatestVersionUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
-        client.getLatestSchema(topicName)
+        client.getLatestRawSchemaWithMetadata(topicName)
 
         then:
         def e = thrown(InternalSchemaRepositoryException)
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should return all schema versions"() {
         given:
-        wireMock.stubFor(get(versionsUrl(topicName)).willReturn(okResponse()
+        wireMock.stubFor(get(versionsUrl(topicName, subjectNamingStrategy)).willReturn(okResponse()
                 .withHeader("Content-Type", "application/json")
                 .withBody("[3,6,2]")))
 
@@ -166,6 +210,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
         then:
         versions.containsAll(SchemaVersion.valueOf(3), SchemaVersion.valueOf(6), SchemaVersion.valueOf(2))
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should return empty list on not registered subject"() {
@@ -174,75 +222,99 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
         then:
         versions.isEmpty()
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should throw exception when not able to fetch schema versions"() {
         given:
-        wireMock.stubFor(get(versionsUrl(topicName)).willReturn(internalErrorResponse()))
+        wireMock.stubFor(get(versionsUrl(topicName, subjectNamingStrategy)).willReturn(internalErrorResponse()))
 
         when:
         client.getVersions(topicName)
 
         then:
         thrown(InternalSchemaRepositoryException)
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should delete all schema versions"() {
         given:
-        wireMock.stubFor(WireMock.delete(versionsUrl(topicName)).willReturn(okResponse()))
+        wireMock.stubFor(WireMock.delete(versionsUrl(topicName, subjectNamingStrategy)).willReturn(okResponse()))
 
         when:
         client.deleteAllSchemaVersions(topicName)
 
         then:
-        wireMock.verify(1, deleteRequestedFor(versionsUrl(topicName)))
+        wireMock.verify(1, deleteRequestedFor(versionsUrl(topicName, subjectNamingStrategy)))
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should throw exception on method not allowed response when deleting schema"() {
         given:
-        wireMock.stubFor(WireMock.delete(versionsUrl(topicName)).willReturn(methodNotAllowedResponse()))
+        wireMock.stubFor(WireMock.delete(versionsUrl(topicName, subjectNamingStrategy)).willReturn(methodNotAllowedResponse()))
 
         when:
         client.deleteAllSchemaVersions(topicName)
 
         then:
         thrown(BadSchemaRequestException)
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should verify schema compatibility"() {
         given:
-        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .willReturn(okResponse()
-                .withHeader("Content-type", "application/json")
-                .withBody("""{"is_compatible":true}""")))
+                        .withHeader("Content-type", "application/json")
+                        .withBody("""{"is_compatible":true}""")))
 
         when:
         client.validateSchema(topicName, rawSchema)
 
         then:
         noExceptionThrown()
-        wireMock.verify(1, postRequestedFor(schemaCompatibilityUrl(topicName))
+        wireMock.verify(1, postRequestedFor(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .withHeader("Content-type", equalTo(schemaRegistryContentType))
                 .withRequestBody(equalTo("""{"schema":"{}"}""")))
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should throw exception for incompatible schema"() {
         given:
-        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .willReturn(okResponse()
-                .withHeader("Content-type", "application/json")
-                .withBody("""{"is_compatible":false}""")))
+                        .withHeader("Content-type", "application/json")
+                        .withBody("""{"is_compatible":false}""")))
 
         when:
         client.validateSchema(topicName, rawSchema)
 
         then:
         thrown(BadSchemaRequestException)
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should throw exception for 422 unprocessable entity response"() {
         given:
-        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .willReturn(unprocessableEntityResponse()))
 
         when:
@@ -250,11 +322,15 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
         then:
         thrown(BadSchemaRequestException)
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should accept subject not found response as if schema is valid"() {
         given:
-        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .willReturn(notFoundResponse()))
 
         when:
@@ -262,29 +338,36 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
         then:
         noExceptionThrown()
+
+        where:
+        client << clients
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should successfully validate schema against validation endpoint"() {
         boolean validationEnabled = true
         String deleteSchemaPathSuffix = ""
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
-        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix)
+        def client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix, subjectNamingStrategy)
 
-        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .willReturn(okResponse()
-                .withHeader("Content-type", "application/json")
-                .withBody("""{"is_compatible":true}""")))
+                        .withHeader("Content-type", "application/json")
+                        .withBody("""{"is_compatible":true}""")))
 
-        wireMock.stubFor(post(schemaValidationUrl(topicName))
+        wireMock.stubFor(post(schemaValidationUrl(topicName, subjectNamingStrategy))
                 .willReturn(okResponse()
-                .withHeader("Content-type", "application/json")
-                .withBody("""{ "is_valid": true}""")))
+                        .withHeader("Content-type", "application/json")
+                        .withBody("""{ "is_valid": true}""")))
 
         when:
         client.validateSchema(topicName, rawSchema)
 
         then:
         noExceptionThrown()
+
+        where:
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
     def "should receive errors from validation endpoint"() {
@@ -292,24 +375,24 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         boolean validationEnabled = true
         String deleteSchemaPathSuffix = ""
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
-        client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix)
+        def client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix, subjectNamingStrategy)
 
-        wireMock.stubFor(post(schemaCompatibilityUrl(topicName))
+        wireMock.stubFor(post(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .willReturn(okResponse()
-                .withHeader("Content-type", "application/json")
-                .withBody("""{"is_compatible":true}""")))
+                        .withHeader("Content-type", "application/json")
+                        .withBody("""{"is_compatible":true}""")))
 
-        wireMock.stubFor(post(schemaValidationUrl(topicName))
+        wireMock.stubFor(post(schemaValidationUrl(topicName, subjectNamingStrategy))
                 .willReturn(okResponse()
-                .withHeader("Content-type", "application/json")
-                .withBody(
-                """
-{ "is_valid": false,
-  "errors": [
-    {"message": "missing doc field", "ignoredField": true},
-    {"message": "name should start with uppercase"}
-  ]
-}""")))
+                        .withHeader("Content-type", "application/json")
+                        .withBody(
+                                """ |
+                    |{ "is_valid": false,
+                    |  "errors": [
+                    |    {"message": "missing doc field", "ignoredField": true},
+                    |    {"message": "name should start with uppercase"}
+                    |  ]
+                    |}""".stripMargin())))
 
         when:
         client.validateSchema(topicName, rawSchema)
@@ -318,26 +401,29 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         def e = thrown(BadSchemaRequestException)
         e.message.contains("missing doc field")
         e.message.contains("name should start with uppercase")
+
+        where:
+        subjectNamingStrategy << subjectNamingStrategies
     }
 
-    private UrlPattern versionsUrl(TopicName topic) {
-        urlEqualTo("/subjects/${topic.qualifiedName()}/versions")
+    private UrlPattern versionsUrl(TopicName topic, SubjectNamingStrategy subjectNamingStrategy) {
+        urlEqualTo("/subjects/${subjectNamingStrategy.apply(topic)}/versions")
     }
 
-    private UrlPattern schemaVersionUrl(TopicName topic, int version) {
-        urlEqualTo("/subjects/${topic.qualifiedName()}/versions/$version")
+    private UrlPattern schemaVersionUrl(TopicName topic, int version, SubjectNamingStrategy subjectNamingStrategy) {
+        urlEqualTo("/subjects/${subjectNamingStrategy.apply(topic)}/versions/$version")
     }
 
-    private UrlPattern schemaLatestVersionUrl(TopicName topic) {
-        urlEqualTo("/subjects/${topic.qualifiedName()}/versions/latest")
+    private UrlPattern schemaLatestVersionUrl(TopicName topic, SubjectNamingStrategy subjectNamingStrategy) {
+        urlEqualTo("/subjects/${subjectNamingStrategy.apply(topic)}/versions/latest")
     }
 
-    private UrlPattern schemaCompatibilityUrl(TopicName topic) {
-        urlEqualTo("/compatibility/subjects/${topic.qualifiedName()}/versions/latest")
+    private UrlPattern schemaCompatibilityUrl(TopicName topic, SubjectNamingStrategy subjectNamingStrategy) {
+        urlEqualTo("/compatibility/subjects/${subjectNamingStrategy.apply(topic)}/versions/latest")
     }
 
-    private UrlPattern schemaValidationUrl(TopicName topic) {
-        urlEqualTo("/subjects/${topic.qualifiedName()}/validation")
+    private UrlPattern schemaValidationUrl(TopicName topic, SubjectNamingStrategy subjectNamingStrategy) {
+        urlEqualTo("/subjects/${subjectNamingStrategy.apply(topic)}/validation")
     }
 
     private ResponseDefinitionBuilder okResponse() {

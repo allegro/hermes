@@ -3,6 +3,7 @@ var groups = angular.module('hermes.groups', ['hermes.topic', 'hermes.discovery'
 groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
     function (groupRepository, $scope, $modal) {
         $scope.fetching = true;
+        $scope.search = groupRepository.getSearchFilter();
 
         function loadGroups() {
             groupRepository.list().then(function (groups) {
@@ -30,12 +31,17 @@ groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
                 loadGroups();
             });
         };
+
+        $scope.storeSearchFilter = function () {
+            groupRepository.storeSearchFilter($scope.search);
+        };
     }]);
 
 groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope', '$location', '$stateParams', '$uibModal', 'toaster', 'ConfirmationModal', 'PasswordService',
     function (groupRepository, topicFactory, $scope, $location, $stateParams, $modal, toaster, confirmationModal, passwordService) {
         $scope.fetching = true;
         var groupName = $scope.groupName = $stateParams.groupName;
+        var topicDraft = topicFactory.create();
 
         $scope.group = groupRepository.get(groupName);
         $scope.topics = [];
@@ -63,14 +69,15 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                         return groupName;
                     },
                     topic: function () {
-                        return topicFactory.create();
+                        return topicDraft;
                     },
                     messageSchema: function() {
                         return null;
                     }
                 }
             }).result.then(function(){
-                    loadTopics();
+                loadTopics();
+                topicDraft = topicFactory.create();
             });
 
 
@@ -156,6 +163,8 @@ groups.factory('GroupRepository', ['$resource', '$q', '$location', 'TopicReposit
             });
         };
 
+        var searchFilter = '';
+
         return {
             list: function () {
                 return $q.all([listing.query().$promise, topicRepository.list().$promise]).then(function (data) {
@@ -187,6 +196,12 @@ groups.factory('GroupRepository', ['$resource', '$q', '$location', 'TopicReposit
             },
             listSubscriptions: function(topicName) {
                 return topicRepository.listSubscriptions(topicName).$promise;
+            },
+            storeSearchFilter: function (filter) {
+                searchFilter = filter;
+            },
+            getSearchFilter: function () {
+                return searchFilter;
             }
         };
     }]);

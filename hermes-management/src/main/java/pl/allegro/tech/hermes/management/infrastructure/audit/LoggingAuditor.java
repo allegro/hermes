@@ -5,6 +5,7 @@ import org.javers.core.Javers;
 import org.javers.core.diff.Diff;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -19,6 +20,26 @@ public class LoggingAuditor implements Auditor {
     public LoggingAuditor(Javers javers, ObjectMapper objectMapper) {
         this.javers = checkNotNull(javers);
         this.objectMapper = checkNotNull(objectMapper);
+    }
+
+    @Override
+    public void beforeObjectCreation(String username, Object createdObject) {
+        ignoringExceptions(() ->
+                logger.info("User {} tries creating new {} {}.", username, createdObject.getClass().getSimpleName(),
+                        objectMapper.writeValueAsString(createdObject)));
+    }
+
+    @Override
+    public void beforeObjectRemoval(String username, String removedObjectType, String removedObjectName) {
+        logger.info("User {} tries removing {} {}.", username, removedObjectType, removedObjectName);
+    }
+
+    @Override
+    public void beforeObjectUpdate(String username, String objectClassName, Object objectName, PatchData patchData) {
+        ignoringExceptions(() -> {
+            logger.info("User {} tries updating {} {}. {}", username, objectClassName,
+                    objectName, patchData);
+        });
     }
 
     @Override

@@ -11,7 +11,7 @@ import static java.util.stream.Collectors.toMap;
 public interface MultipleDcKafkaNamesMappersFactory {
 
     default KafkaNamesMappers createDefaultKafkaNamesMapper(KafkaClustersProperties clustersProperties) {
-        return createKafkaNamesMapper(clustersProperties, namespace -> new NamespaceKafkaNamesMapper(namespace));
+        return createKafkaNamesMapper(clustersProperties, namespace -> new NamespaceKafkaNamesMapper(namespace, clustersProperties.getNamespaceSeparator()));
     }
 
     default KafkaNamesMappers createKafkaNamesMapper(KafkaClustersProperties clustersProperties, Function<String, KafkaNamesMapper> factoryFunction) {

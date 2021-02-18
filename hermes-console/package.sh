@@ -8,8 +8,14 @@ else
     ARCHIVE_NAME=$1
 fi
 
+UNAME="$(uname -s)"
+case "${UNAME}" in
+    Darwin*)    DISTRO=darwin;;
+    *)          DISTRO=linux
+esac
+
 NODE_VERSION="v6.11.4"
-NODE_DIST="node-$NODE_VERSION-linux-x64"
+NODE_DIST="node-$NODE_VERSION-$DISTRO-x64"
 
 printf "Packaging Hermes Console\n"
 
@@ -18,7 +24,7 @@ if [ ! -e dist ]; then
 fi
 
 if [ ! -e dist/$NODE_DIST.tar.gz ]; then
-    printf "Downloading NodeJS distribution version $NODE_VERSION\n"
+    printf "Downloading NodeJS distribution version $NODE_DIST\n"
     wget --quiet --no-clobber "https://nodejs.org/dist/$NODE_VERSION/$NODE_DIST.tar.gz" --directory-prefix dist
     mkdir -p dist/node
     tar --extract --keep-old-files --strip 1 --file dist/$NODE_DIST.tar.gz -C dist/node
@@ -31,15 +37,7 @@ printf "Running NPM and bower\n"
 npm install --production --yes
 node_modules/.bin/bower install --allow-root -F
 
-printf "Creating package: dist/$ARCHIVE_NAME.zip\n"
+printf "Creating directory: dist/static\n"
 
-# first step - create base directory and copy contents
-mkdir -p dist/$ARCHIVE_NAME
-cp -r node_modules package.json serve.js config_default.json static run.sh dist/$ARCHIVE_NAME
-(cd dist && cp -r node $ARCHIVE_NAME)
-
-# second step - create zip
-(cd dist && zip --quiet --symlinks --recurse-paths $ARCHIVE_NAME.zip $ARCHIVE_NAME)
-
-# cleanup
-rm -rf dist/$ARCHIVE_NAME
+# copy static contents
+cp -r static dist

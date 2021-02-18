@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.util.Optional;
@@ -10,7 +11,7 @@ public class UnwrappedMessageContent {
 
     private final MessageMetadata messageMetadata;
     private final byte[] content;
-    private final Optional<CompiledSchema<?>> schema;
+    private final Optional<CompiledSchema<Schema>> schema;
 
     public UnwrappedMessageContent(MessageMetadata messageMetadata, byte[] content) {
         this.messageMetadata = messageMetadata;
@@ -18,7 +19,7 @@ public class UnwrappedMessageContent {
         this.schema = Optional.empty();
     }
 
-    public UnwrappedMessageContent(MessageMetadata messageMetadata, byte[] content, CompiledSchema schema) {
+    public UnwrappedMessageContent(MessageMetadata messageMetadata, byte[] content, CompiledSchema<Schema> schema) {
         this.messageMetadata = messageMetadata;
         this.content = content;
         this.schema = Optional.of(schema);
@@ -32,8 +33,7 @@ public class UnwrappedMessageContent {
         return messageMetadata;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> Optional<CompiledSchema<T>> getSchema() {
-        return schema.map(schema -> (CompiledSchema<T>)schema);
+    public Optional<CompiledSchema<Schema>> getSchema() {
+        return schema;
     }
 }

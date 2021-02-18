@@ -22,11 +22,13 @@ import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -297,13 +299,27 @@ public class ConsumerMessageSenderTest {
     public void shouldBackoffRetriesOnServiceUnavailableWithoutRetryAfter() throws InterruptedException {
         // given
         Message message = message();
-        doReturn(failure(SERVICE_UNAVAILABLE.getStatusCode())).doReturn(success()).when(messageSender).send(message);
+        doReturn(failure(SERVICE_UNAVAILABLE.code())).doReturn(success()).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
 
         // then
         verifyRateLimiterFailedSendingCountedTimes(1);
+        verifyRateLimiterSuccessfulSendingCountedTimes(1);
+        verifySemaphoreReleased();
+    }
+
+    @Test
+    public void shouldBackoffRetriesOnTooManyRequestsWithoutRetryAfter() throws InterruptedException {
+        // given
+        Message message = message();
+        doReturn(failure(TOO_MANY_REQUESTS.code())).doReturn(success()).when(messageSender).send(message);
+
+        // when
+        sender.sendAsync(message);
+
+        // then
         verifyRateLimiterSuccessfulSendingCountedTimes(1);
         verifySemaphoreReleased();
     }
@@ -381,7 +397,90 @@ public class ConsumerMessageSenderTest {
 
         // then
         long sendingTime = System.currentTimeMillis() - sendingStartTime;
-        assertThat(sendingTime).isGreaterThan(500);
+        assertThat(sendingTime).isGreaterThanOrEqualTo(500);
+    }
+
+    @Test
+    public void shouldCalculateSendingDelayBasingOnPublishingTimestamp() {
+        // given
+        Subscription subscription = subscriptionBuilderWithTestValues()
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withSendingDelay(2000)
+                        .build())
+                .build();
+        setUpMetrics(subscription);
+
+        Message message = messageWithTimestamp(System.currentTimeMillis() - 1800);
+        when(messageSender.send(message)).thenReturn(success());
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        long sendingStartTime = System.currentTimeMillis();
+        sender.sendAsync(message);
+        verify(successHandler, timeout(500)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
+
+        // then
+        long sendingTime = System.currentTimeMillis() - sendingStartTime;
+        assertThat(sendingTime).isLessThan(300);
+    }
+
+    @Test
+    public void shouldIncreaseRetryBackoffExponentially() throws InterruptedException {
+        // given
+        final int backoff = 500;
+        final double multiplier = 2;
+        Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier);
+        setUpMetrics(subscription);
+        Message message = message();
+        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        sender.sendAsync(message);
+        Thread.sleep(backoff + (long) multiplier * backoff - 100);
+
+        // then
+        verifyZeroInteractions(successHandler);
+        verifyRateLimiterFailedSendingCountedTimes(2);
+    }
+
+    @Test
+    public void shouldIgnoreExponentialRetryBackoffWithRetryAfter() {
+        // given
+        final int retrySeconds = 1;
+        final int backoff = 5000;
+        final double multiplier = 3;
+        Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier);
+        setUpMetrics(subscription);
+        Message message = message();
+        doReturn(backoff(retrySeconds)).doReturn(backoff(retrySeconds)).doReturn(success()).when(messageSender).send(message);
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        sender.sendAsync(message);
+
+        //then
+        verify(successHandler, timeout(retrySeconds * 1000 * 2 + 500 ))
+                .handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
+    }
+
+    @Test
+    public void shouldIgnoreExponentialRetryBackoffAfterExceededTtl() throws InterruptedException {
+        final int backoff = 1000;
+        final double multiplier = 2;
+        final int ttl = 2;
+        Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier, ttl);
+        setUpMetrics(subscription);
+        Message message = message();
+        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
+        ConsumerMessageSender sender = consumerMessageSender(subscription);
+
+        // when
+        sender.sendAsync(message);
+        Thread.sleep(backoff + (long) multiplier * backoff + 1000);
+
+        //then
+        verifyZeroInteractions(successHandler);
     }
 
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
@@ -396,7 +495,8 @@ public class ConsumerMessageSenderTest {
                 () -> inflightSemaphore.release(),
                 hermesMetrics,
                 ASYNC_TIMEOUT_MS,
-                new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor())
+                new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor()),
+                Clock.systemUTC()
         );
         sender.initialize();
 
@@ -471,6 +571,20 @@ public class ConsumerMessageSenderTest {
         return subscriptionBuilderWithTestValues().withRequestTimeout(timeout).build();
     }
 
+    private Subscription subscriptionWithExponentialRetryBackoff(int messageBackoff, double backoffMultiplier) {
+        return subscriptionWithExponentialRetryBackoff(messageBackoff, backoffMultiplier, 3600);
+    }
+
+    private Subscription subscriptionWithExponentialRetryBackoff(int messageBackoff, double backoffMultiplier, int ttl) {
+        return subscriptionBuilderWithTestValues()
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withMessageBackoff(messageBackoff)
+                        .withBackoffMultiplier(backoffMultiplier)
+                        .withMessageTtl(ttl)
+                        .build())
+                .build();
+    }
+
     private SubscriptionBuilder subscriptionBuilderWithTestValues() {
         return subscription("group.topic", "subscription");
     }
@@ -508,6 +622,7 @@ public class ConsumerMessageSenderTest {
                 .withTestMessage()
                 .withContent("{\"username\":\"ala\"}", StandardCharsets.UTF_8)
                 .withReadingTimestamp(timestamp)
+                .withPublishingTimestamp(timestamp)
                 .build();
     }
 }

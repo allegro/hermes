@@ -6,8 +6,6 @@ public class KafkaProperties {
 
     private String clusterName = "primary";
 
-    private String connectionString = "localhost:2181";
-
     private String bootstrapKafkaServer = "localhost:9093";
 
     private int kafkaServerRequestTimeoutMillis = 3000;
@@ -29,6 +27,8 @@ public class KafkaProperties {
     private String namespace = "";
 
     private KafkaConsumer kafkaConsumer = new KafkaConsumer();
+
+    private KafkaSaslProperties sasl = new KafkaSaslProperties();
 
     public static final class KafkaConsumer {
 
@@ -105,14 +105,6 @@ public class KafkaProperties {
         }
     }
 
-    public String getConnectionString() {
-        return connectionString;
-    }
-
-    public void setConnectionString(String connectionString) {
-        this.connectionString = connectionString;
-    }
-
     public int getSessionTimeoutMillis() {
         return sessionTimeoutMillis;
     }
@@ -151,6 +143,14 @@ public class KafkaProperties {
 
     public void setKafkaConsumer(KafkaConsumer kafkaConsumer) {
         this.kafkaConsumer = kafkaConsumer;
+    }
+
+    public KafkaSaslProperties getSasl() {
+        return sasl;
+    }
+
+    public void setSasl(KafkaSaslProperties sasl) {
+        this.sasl = sasl;
     }
 
     public String getDatacenter() {

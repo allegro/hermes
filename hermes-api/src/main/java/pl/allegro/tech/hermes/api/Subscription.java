@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 import pl.allegro.tech.hermes.api.constraints.ValidContentType;
@@ -9,6 +10,7 @@ import pl.allegro.tech.hermes.api.constraints.ValidContentType;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +21,7 @@ import java.util.Objects;
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
 @ValidContentType(message = "AVRO content type is not supported in BATCH delivery mode")
+@JsonIgnoreProperties(value = {"createdAt", "modifiedAt"}, allowGetters = true)
 public class Subscription implements Anonymizable {
 
     @Valid
@@ -89,6 +92,10 @@ public class Subscription implements Anonymizable {
     private SubscriptionOAuthPolicy oAuthPolicy;
 
     private boolean subscriptionIdentityHeadersEnabled;
+
+    private Instant createdAt;
+
+    private Instant modifiedAt;
 
     public enum State {
         PENDING, ACTIVE, SUSPENDED
@@ -420,9 +427,25 @@ public class Subscription implements Anonymizable {
         return subscriptionIdentityHeadersEnabled;
     }
 
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = Instant.ofEpochMilli(createdAt);
+    }
+
+    public Instant getModifiedAt() {
+        return modifiedAt;
+    }
+
+    public void setModifiedAt(Long modifiedAt) {
+        this.modifiedAt = Instant.ofEpochMilli(modifiedAt);
+    }
+
     @Override
     public Subscription anonymize() {
-        if (getEndpoint().containsCredentials() || hasOAuthPolicy()) {
+        if (getEndpoint() != null && getEndpoint().containsCredentials() || hasOAuthPolicy()) {
             return new Subscription(
                     topicName,
                     name,

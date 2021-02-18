@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.schema.CompiledSchemaRepository
 import pl.allegro.tech.hermes.schema.SchemaRepository
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.schema.SchemaVersionsRepository
+import pl.allegro.tech.hermes.schema.SchemaVersionsResult
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Shared
@@ -87,7 +88,9 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         SchemaVersionsRepository schemaVersionsRepositoryForTopicsWithoutSchema = Mock()
         SchemaVersionsRepository schemaVersionsRepository = [
                 versions: { Topic topic ->
-                    topic == avroTopic1 ?[version] : schemaVersionsRepositoryForTopicsWithoutSchema.versions(topic)
+                    topic == avroTopic1
+                            ? SchemaVersionsResult.succeeded([version])
+                            : schemaVersionsRepositoryForTopicsWithoutSchema.versions(topic)
                 }
         ] as SchemaVersionsRepository
         def schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository)
@@ -139,7 +142,9 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
     private SchemaVersionsRepository schemaVersionsRepositoryForAvroTopics() {
         [
             versions: { Topic topic ->
-                topic.contentType == ContentType.AVRO ? [version] : []
+                topic.contentType == ContentType.AVRO
+                        ? SchemaVersionsResult.succeeded([version])
+                        : SchemaVersionsResult.succeeded([])
             }
         ] as SchemaVersionsRepository
     }

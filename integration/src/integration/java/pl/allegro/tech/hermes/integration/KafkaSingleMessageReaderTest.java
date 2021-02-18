@@ -86,7 +86,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() throws IOException {
         // given
         Topic topic = randomTopic("avro", "fetchSchemaAwareSerialization")
-                .withSchemaVersionAwareSerialization()
+                .withSchemaIdAwareSerialization()
                 .withContentType(AVRO)
                 .build();
         TopicWithSchema topicWithSchema = topicWithSchema(topic, avroUser.getSchemaAsString());

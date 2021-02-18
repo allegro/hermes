@@ -1,24 +1,22 @@
 package pl.allegro.tech.hermes.mock;
 
-import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-public class HermesMockExtension implements ParameterResolver, AfterAllCallback, AfterEachCallback {
+public class HermesMockExtension implements ParameterResolver, BeforeEachCallback, AfterEachCallback {
 
     private final HermesMock hermesMock;
 
     public HermesMockExtension(int port) {
-        this.hermesMock = new HermesMock.Builder().withPort(port).build();
-        this.hermesMock.start();
+        this(new HermesMock.Builder().withPort(port).build());
     }
 
     public HermesMockExtension(HermesMock hermesMock) {
         this.hermesMock = hermesMock;
-        this.hermesMock.start();
     }
 
     public HermesMockDefine define() {
@@ -38,13 +36,14 @@ public class HermesMockExtension implements ParameterResolver, AfterAllCallback,
     }
 
     @Override
-    public void afterAll(ExtensionContext extensionContext) throws Exception {
-        hermesMock.stop();
+    public void beforeEach(ExtensionContext extensionContext) throws Exception {
+        hermesMock.start();
     }
 
     @Override
     public void afterEach(ExtensionContext extensionContext) throws Exception {
         hermesMock.resetReceivedRequest();
+        hermesMock.stop();
     }
 
     @Override

@@ -15,11 +15,14 @@ subscriptions.factory('SubscriptionFactory', ['SUBSCRIPTION_CONFIG', function (s
                     deliveryType: 'SERIAL',
                     mode: 'ANYCAST',
                     filters: [],
+                    headers: [],
                     contentType: 'JSON',
                     subscriptionPolicy: {
                         messageTtl: 3600,
-                        messageBackoff: 100,
-                        sendingDelay: 0
+                        messageBackoff: 1000,
+                        sendingDelay: 0,
+                        backoffMultiplier: 1.0,
+                        backoffMaxIntervalInSec: 600
                     },
                     monitoringDetails: {
                         severity: 'NON_IMPORTANT',

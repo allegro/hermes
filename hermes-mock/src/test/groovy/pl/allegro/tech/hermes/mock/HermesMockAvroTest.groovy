@@ -86,13 +86,13 @@ class HermesMockAvroTest extends Specification {
             hermes.define().avroTopic(topicName)
 
             def messages = (1..5).collect { new TestMessage("key-" + it, "value-" + it) }
-            def filter = { TestMessage m -> m.key.startsWith("key-") }
+            def filter = { TestMessage m -> m.key.startsWith("key-1") || m.key.startsWith("key-3") }
 
         when:
             messages.each { publish(topicName, it) }
 
         then:
-            hermes.expect().avroMessagesOnTopic(topicName, 5, schema, TestMessage, filter)
+            hermes.expect().avroMessagesOnTopic(topicName, 2, schema, TestMessage, filter)
     }
 
     def "should get messages with schema from file"() {
@@ -225,16 +225,15 @@ class HermesMockAvroTest extends Specification {
         given:
             def topicName = "my-topic"
             hermes.define().jsonTopic(topicName)
-            def count = 3
-            def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
-            def filter = { TestMessage m -> m.key.startsWith("key-") }
+            def messages = (1..3).collect { new TestMessage("key-" + it, "value-" + it) }
+            def filter = { TestMessage m -> m.key.startsWith("key-1") }
 
         when:
             messages.each { publish(topicName, it) }
             5.times { publish(topicName) }
 
         then:
-            count == hermes.query().countMatchingAvroMessages(topicName, schema, TestMessage, filter)
+            1 == hermes.query().countMatchingAvroMessages(topicName, schema, TestMessage, filter)
     }
 
     def asAvro(TestMessage message) {

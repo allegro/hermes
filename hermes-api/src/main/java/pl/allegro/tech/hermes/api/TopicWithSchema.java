@@ -1,10 +1,16 @@
 package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 
+import java.time.Instant;
 import java.util.Objects;
+import java.util.Set;
+
+import pl.allegro.tech.hermes.api.Topic.Ack;
 
 public class TopicWithSchema extends Topic {
 
@@ -15,8 +21,9 @@ public class TopicWithSchema extends Topic {
     public TopicWithSchema(Topic topic, String schema) {
         this(schema, topic.getQualifiedName(), topic.getDescription(), topic.getOwner(), topic.getRetentionTime(),
                 topic.isJsonToAvroDryRunEnabled(), topic.getAck(), topic.isTrackingEnabled(), topic.wasMigratedFromJsonType(),
-                topic.isSchemaVersionAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
-                topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage());
+                topic.isSchemaIdAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
+                topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage(), topic.getLabels(),
+                topic.getCreatedAt(), topic.getModifiedAt());
     }
 
     @JsonCreator
@@ -29,15 +36,18 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("ack") Ack ack,
                            @JsonProperty("trackingEnabled") boolean trackingEnabled,
                            @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
-                           @JsonProperty("schemaVersionAwareSerializationEnabled") boolean schemaVersionAwareSerializationEnabled,
+                           @JsonProperty("schemaIdAwareSerializationEnabled") @JacksonInject(value = Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
                            @JsonProperty("contentType") ContentType contentType,
                            @JsonProperty("maxMessageSize") Integer maxMessageSize,
                            @JsonProperty("auth") PublishingAuth publishingAuth,
                            @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
-                           @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage) {
+                           @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
+                           @JsonProperty("labels") Set<TopicLabel> labels,
+                           @JsonProperty("createdAt") Instant createdAt,
+                           @JsonProperty("modifiedAt") Instant modifiedAt) {
         super(qualifiedName, description, owner, retentionTime, jsonToAvroDryRunEnabled, ack, trackingEnabled,
-                migratedFromJsonType, schemaVersionAwareSerializationEnabled, contentType, maxMessageSize,
-                publishingAuth, subscribingRestricted, offlineStorage);
+                migratedFromJsonType, schemaIdAwareSerializationEnabled, contentType, maxMessageSize,
+                publishingAuth, subscribingRestricted, offlineStorage, labels, createdAt, modifiedAt);
         this.topic = convertToTopic();
         this.schema = schema;
     }
@@ -53,8 +63,9 @@ public class TopicWithSchema extends Topic {
     private Topic convertToTopic() {
         return new Topic(this.getQualifiedName(), this.getDescription(), this.getOwner(), this.getRetentionTime(),
                 this.isJsonToAvroDryRunEnabled(), this.getAck(), this.isTrackingEnabled(), this.wasMigratedFromJsonType(),
-                this.isSchemaVersionAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(),
-                this.getPublishingAuth(), this.isSubscribingRestricted(), this.getOfflineStorage());
+                this.isSchemaIdAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(),
+                this.getPublishingAuth(), this.isSubscribingRestricted(), this.getOfflineStorage(), this.getLabels(),
+                this.getCreatedAt(), this.getModifiedAt());
     }
 
     public String getSchema() {

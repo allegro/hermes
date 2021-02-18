@@ -8,16 +8,23 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import java.util.Optional;
 
 public class AvroMessage implements Message {
+
     private final String id;
     private final byte[] data;
     private final long timestamp;
     private final CompiledSchema<Schema> schema;
+    private final String partitionKey;
 
-    public AvroMessage(String id, byte[] data, long timestamp, CompiledSchema<Schema> schema) {
+    public AvroMessage(String id,
+                       byte[] data,
+                       long timestamp,
+                       CompiledSchema<Schema> schema,
+                       String partitionKey) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;
         this.schema = schema;
+        this.partitionKey = partitionKey;
     }
 
     @Override
@@ -40,6 +47,11 @@ public class AvroMessage implements Message {
         return ContentType.AVRO;
     }
 
+    @Override
+    public String getPartitionKey() {
+        return partitionKey;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> Optional<CompiledSchema<T>> getCompiledSchema() {
@@ -47,6 +59,6 @@ public class AvroMessage implements Message {
     }
 
     public AvroMessage withDataReplaced(byte[] newData) {
-        return new AvroMessage(id, newData, timestamp, schema);
+        return new AvroMessage(id, newData, timestamp, schema, partitionKey);
     }
 }

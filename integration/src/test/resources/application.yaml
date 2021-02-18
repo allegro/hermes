@@ -16,7 +16,6 @@ kafka:
     -
       datacenter: dc
       clusterName: primary
-      connectionString: localhost:14192/kafka
       connectionTimeout: 10000
       namespace: 'itTest'
 
@@ -26,7 +25,14 @@ topic:
   allowRemoval: true
   removeSchema: true
   defaultContentType: AVRO
+  allowedContentTypes:
+    - AVRO
+    - JSON
   touchSchedulerEnabled: false
+  allowedTopicLabels:
+    - label-1
+    - label-2
+    - label-3
 
 storage:
   pathPrefix: /hermes
@@ -72,3 +78,6 @@ topicOwnerCache:
 
 subscriptionOwnerCache:
   refreshRateInSeconds: 300
+
+consistencyChecker:
+  threadPoolSize: 2

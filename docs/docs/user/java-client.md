@@ -73,7 +73,7 @@ hermesClient.publish(
 );
 ```
 
-Publication reuslts in returning `HermesResponse` object:
+Publication results in returning `HermesResponse` object:
 
 ```java
 CompletableFuture<HermesResponse> result = client.publish("group.topic", "{}");
@@ -127,6 +127,16 @@ HermesClient client = HermesClientBuilder.hermesClient(sender)
 ```
 
 ## Sender implementations
+
+### Spring - WebClient
+
+**Requirement**: `org.springframework:spring-webflux` must be provided at runtime.
+
+```java
+HermesClient client = HermesClientBuilder.hermesClient(new WebClientHermesSender(WebClient.create()))
+    .withURI(URI.create("http://localhost:8080"))
+    .build();
+```
 
 ### Spring - AsyncRestTemplate
 

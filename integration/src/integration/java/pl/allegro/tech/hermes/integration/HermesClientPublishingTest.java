@@ -11,12 +11,8 @@ import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
 import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
-import pl.allegro.tech.hermes.common.ssl.JvmKeystoreSslContextFactory;
-import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
-import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.net.ssl.X509TrustManager;
 import java.net.URI;
 
 import static java.net.URI.create;
@@ -30,7 +26,6 @@ public class HermesClientPublishingTest extends IntegrationTest {
     private TestMessage message = TestMessage.of("hello", "world");
 
     private URI topicURI = create("http://localhost:" + FRONTEND_PORT);
-    private URI sslTopicUri = create("https://localhost:" + FRONTEND_SSL_PORT);
 
     private Topic topic;
 
@@ -67,27 +62,6 @@ public class HermesClientPublishingTest extends IntegrationTest {
         runTestSuiteForHermesClient(client);
     }
 
-    @Test
-    public void shouldPublishUsingOkHttpClientUsingSSL() {
-        // given
-        HermesClient client = hermesClient(new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured())).withURI(sslTopicUri).build();
-
-        // when & then
-        runTestSuiteForHermesClient(client);
-    }
-
-    @Test
-    public void shouldCommunicateWithHermesUsingHttp2() {
-        // given
-        HermesClient client = hermesClient(new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured())).withURI(sslTopicUri).build();
-
-        // when
-        HermesResponse response = client.publish(topic.getQualifiedName(), message.body()).join();
-
-        // then
-        assertThat(response.getProtocol()).isEqualTo("h2");
-    }
-
     private void runTestSuiteForHermesClient(HermesClient client) {
         shouldPublishUsingHermesClient(client);
         shouldNotPublishUsingHermesClient(client);
@@ -113,18 +87,5 @@ public class HermesClientPublishingTest extends IntegrationTest {
         // then
         assertThat(response.isFailure()).isTrue();
         assertThat(response.getDebugLog()).contains("Sending message").contains("failed");
-    }
-
-    private OkHttpClient getOkHttpClientWithSslContextConfigured() {
-        KeystoreProperties keystore = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
-        KeystoreProperties truststore = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
-        JvmKeystoreSslContextFactory sslContextFactory = new JvmKeystoreSslContextFactory("TLS", keystore, truststore);
-        SSLContextHolder sslContextHolder = sslContextFactory.create();
-        return new OkHttpClient.Builder()
-                .sslSocketFactory(
-                        sslContextHolder.getSslContext().getSocketFactory(),
-                        (X509TrustManager) sslContextHolder.getTrustManagers()[0]
-                )
-                .build();
     }
 }

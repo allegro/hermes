@@ -175,4 +175,16 @@ public class SubscriptionTest {
         assertThat(updatedPolicy.getGrantType()).isEqualTo(USERNAME_PASSWORD);
         assertThat(updatedPolicy.getUsername()).isEqualTo("user1");
     }
+
+    @Test
+    public void shouldReadIntBackoffMultiplier() throws Exception{
+        // given
+        String json = "{\"name\": \"test\", \"endpoint\": \"http://localhost:8888\", \"subscriptionPolicy\": {\"messageBackoff\": 1000, \"backoffMultiplier\": 3}}";
+
+        // when
+        Subscription subscription = mapper.readValue(json, Subscription.class);
+
+        // then
+        assertThat(subscription.getSerialSubscriptionPolicy().getBackoffMultiplier()).isEqualTo(3);
+    }
 }
