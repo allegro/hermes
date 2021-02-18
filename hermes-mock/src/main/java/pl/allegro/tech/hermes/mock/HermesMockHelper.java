@@ -74,14 +74,14 @@ public class HermesMockHelper {
         ResponseDefinitionBuilder responseDefBuilder = aResponse()
                 .withStatus(response.getStatusCode())
                 .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
-                .withFixedDelay(getMilliseconds(response.getFixedDelay()));
+                .withFixedDelay(toIntMilliseconds(response.getFixedDelay()));
         wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
                 .withHeader("Content-Type", startsWith(contentType))
                 .willReturn(responseDefBuilder)
         );
     }
 
-    private static Integer getMilliseconds(Duration duration) {
+    private static Integer toIntMilliseconds(Duration duration) {
         return duration == null ? null : Math.toIntExact(duration.toMillis());
     }
 
