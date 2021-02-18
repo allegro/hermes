@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.mock;
 
+import org.apache.http.HttpStatus;
+
 import java.time.Duration;
 
 public class Response {
@@ -20,7 +22,7 @@ public class Response {
     }
 
     public static final class Builder {
-        private int statusCode;
+        private int statusCode = HttpStatus.SC_CREATED;
         private Duration fixedDelay;
 
         private Builder() {
