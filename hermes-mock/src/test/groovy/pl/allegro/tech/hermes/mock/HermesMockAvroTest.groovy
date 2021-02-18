@@ -12,7 +12,6 @@ import spock.lang.Shared
 import spock.lang.Specification
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
-import javax.ws.rs.core.Response
 import java.time.Duration
 import java.time.Instant
 
