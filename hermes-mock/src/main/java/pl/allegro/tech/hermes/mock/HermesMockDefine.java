@@ -18,14 +18,14 @@ public class HermesMockDefine {
     }
 
     public void jsonTopic(String topicName, int statusCode) {
-        addTopic(topicName, statusCode, "application/json");
+        addTopic(topicName, new Response(statusCode), "application/json");
     }
 
     public void avroTopic(String topicName, int statusCode) {
-        addTopic(topicName, statusCode, "avro/binary");
+        addTopic(topicName, new Response(statusCode), "avro/binary");
     }
 
-    private void addTopic(String topicName, int statusCode, String contentType) {
-        hermesMockHelper.addStub(topicName, statusCode, contentType);
+    private void addTopic(String topicName, Response response, String contentType) {
+        hermesMockHelper.addStub(topicName, response, contentType);
     }
 }

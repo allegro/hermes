@@ -68,11 +68,11 @@ public class HermesMockHelper {
         wireMockServer.verify(count, postRequestedFor(urlEqualTo("/topics/" + topicName)));
     }
 
-    public void addStub(String topicName, int statusCode, String contentType) {
+    public void addStub(String topicName, Response response, String contentType) {
         wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
                 .withHeader("Content-Type", startsWith(contentType))
                 .willReturn(aResponse()
-                        .withStatus(statusCode)
+                        .withStatus(response.getStatusCode())
                         .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
                 )
         );
