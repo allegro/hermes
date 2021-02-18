@@ -21,6 +21,7 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class HermesMockHelper {
@@ -81,7 +82,10 @@ public class HermesMockHelper {
     }
 
     private static Integer toIntMilliseconds(Duration duration) {
-        return duration == null ? null : Math.toIntExact(duration.toMillis());
+        return Optional.ofNullable(duration)
+                .map(Duration::toMillis)
+                .map(Math::toIntExact)
+                .orElse(null);
     }
 
     public static StringValuePattern startsWith(String value) {
