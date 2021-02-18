@@ -71,13 +71,12 @@ public class HermesMockHelper {
     }
 
     public void addStub(String topicName, Response response, String contentType) {
-        ResponseDefinitionBuilder responseDefBuilder = aResponse()
-                .withStatus(response.getStatusCode())
-                .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
-                .withFixedDelay(toIntMilliseconds(response.getFixedDelay()));
         wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
                 .withHeader("Content-Type", startsWith(contentType))
-                .willReturn(responseDefBuilder)
+                .willReturn(aResponse()
+                        .withStatus(response.getStatusCode())
+                        .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
+                        .withFixedDelay(toIntMilliseconds(response.getFixedDelay())))
         );
     }
 
