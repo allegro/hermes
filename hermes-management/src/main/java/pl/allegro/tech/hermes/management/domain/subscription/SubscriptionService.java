@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -40,17 +38,20 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.empty;
-import static java.util.stream.Stream.of;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
-@Component
 public class SubscriptionService {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionService.class);
 
@@ -67,8 +68,10 @@ public class SubscriptionService {
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
     private final MultiDCAwareService multiDCAwareService;
     private final RepositoryManager repositoryManager;
+    private final long subscriptionHealthCheckTimeoutMillis;
+    private final ExecutorService subscriptionHealthCheckExecutorService;
 
-    @Autowired
+
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
                                SubscriptionOwnerCache subscriptionOwnerCache,
                                TopicService topicService,
@@ -79,7 +82,9 @@ public class SubscriptionService {
                                Auditor auditor,
                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
                                MultiDCAwareService multiDCAwareService,
-                               RepositoryManager repositoryManager) {
+                               RepositoryManager repositoryManager,
+                               ExecutorService unhealthyGetExecutorService,
+                               long unhealthyGetTimeoutMillis) {
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionOwnerCache = subscriptionOwnerCache;
         this.topicService = topicService;
@@ -91,6 +96,8 @@ public class SubscriptionService {
         this.multiDcExecutor = multiDcExecutor;
         this.multiDCAwareService = multiDCAwareService;
         this.repositoryManager = repositoryManager;
+        this.subscriptionHealthCheckExecutorService = unhealthyGetExecutorService;
+        this.subscriptionHealthCheckTimeoutMillis = unhealthyGetTimeoutMillis;
     }
 
     public List<String> listSubscriptionNames(TopicName topicName) {
@@ -274,20 +281,59 @@ public class SubscriptionService {
         return subscriptionRepository.getSubscriptionDetails(subscriptionNames);
     }
 
-    public List<UnhealthySubscription> getAllUnhealthy(boolean respectMonitoringSeverity, List<String> subscriptionNames,
+    public List<UnhealthySubscription> getAllUnhealthy(boolean respectMonitoringSeverity,
+                                                       List<String> subscriptionNames,
                                                        List<String> qualifiedTopicNames) {
-        List<Subscription> subscriptions = subscriptionRepository.getSubscriptionDetails(subscriptionOwnerCache.getAll());
-        return filterSubscriptions(subscriptions, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
+        return getUnhealthyList(subscriptionOwnerCache.getAll(), respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
     }
 
-    public List<UnhealthySubscription> getUnhealthyForOwner(OwnerId ownerId, boolean respectMonitoringSeverity,
-                                                            List<String> subscriptionNames, List<String> qualifiedTopicNames) {
-        List<Subscription> ownerSubscriptions = getForOwnerId(ownerId);
-        return filterSubscriptions(ownerSubscriptions, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
+    public List<UnhealthySubscription> getUnhealthyForOwner(OwnerId ownerId,
+                                                            boolean respectMonitoringSeverity,
+                                                            List<String> subscriptionNames,
+                                                            List<String> qualifiedTopicNames) {
+        return getUnhealthyList(subscriptionOwnerCache.get(ownerId), respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
     }
 
-    private List<UnhealthySubscription> filterSubscriptions(Collection<Subscription> subscriptions, boolean respectMonitoringSeverity,
-                                                            List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+    private List<UnhealthySubscription> getUnhealthyList(Collection<SubscriptionName> ownerSubscriptionNames,
+                                                         boolean respectMonitoringSeverity,
+                                                         List<String> subscriptionNames,
+                                                         List<String> qualifiedTopicNames) {
+        try {
+            return getSubscriptionDetails(ownerSubscriptionNames)
+                    .thenComposeAsync(ownerSubscriptions -> {
+                                List<CompletableFuture<UnhealthySubscription>> unhealthySubscriptions = filterSubscriptions(
+                                        ownerSubscriptions,
+                                        respectMonitoringSeverity,
+                                        subscriptionNames,
+                                        qualifiedTopicNames
+                                );
+                                return CompletableFuture.allOf(unhealthySubscriptions.toArray(new CompletableFuture[0])).thenApply(
+                                        v -> unhealthySubscriptions.stream()
+                                                .map(CompletableFuture::join)
+                                                .filter(Objects::nonNull)
+                                                .collect(Collectors.toList())
+                                );
+                            },
+                            subscriptionHealthCheckExecutorService
+                    )
+                    .get(subscriptionHealthCheckTimeoutMillis, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            throw new UnhealthySubscriptionGetException("Fetching unhealthy subscriptions timed out.");
+        } catch (Exception e) {
+            throw new UnhealthySubscriptionGetException("Fetching unhealthy subscriptions failed.", e);
+        }
+    }
+
+    private CompletableFuture<List<Subscription>> getOwnerSubscriptions(OwnerId ownerId) {
+        return CompletableFuture.supplyAsync(() -> getForOwnerId(ownerId));
+    }
+
+    private CompletableFuture<List<Subscription>> getSubscriptionDetails(Collection<SubscriptionName> subscriptionNames) {
+        return CompletableFuture.supplyAsync(() -> subscriptionRepository.getSubscriptionDetails(subscriptionNames), subscriptionHealthCheckExecutorService);
+    }
+
+    private List<CompletableFuture<UnhealthySubscription>> filterSubscriptions(Collection<Subscription> subscriptions, boolean respectMonitoringSeverity,
+                                                                               List<String> subscriptionNames, List<String> qualifiedTopicNames) {
         boolean shouldFilterBySubscriptionNames = CollectionUtils.isNotEmpty(subscriptionNames);
         boolean shouldFilterByQualifiedTopicNames = CollectionUtils.isNotEmpty(qualifiedTopicNames);
 
@@ -301,14 +347,7 @@ public class SubscriptionService {
             subscriptionStream = subscriptionStream.filter(s -> filterByQualifiedTopicNames(qualifiedTopicNames, s.getQualifiedTopicName()));
         }
 
-        return subscriptionStream.flatMap(s -> {
-            SubscriptionHealth subscriptionHealth = getHealth(s);
-            if (subscriptionHealth.getStatus() == Status.UNHEALTHY) {
-                return of(UnhealthySubscription.from(s, subscriptionHealth));
-            } else {
-                return empty();
-            }
-        }).collect(toList());
+        return subscriptionStream.map(s -> CompletableFuture.supplyAsync(() -> getUnhealthy(s), subscriptionHealthCheckExecutorService)).collect(toList());
     }
 
     private boolean filterBySubscriptionNames(List<String> subscriptionNames, String subscriptionName) {
@@ -328,6 +367,15 @@ public class SubscriptionService {
         TopicMetrics topicMetrics = topicService.getTopicMetrics(topicName);
         SubscriptionMetrics subscriptionMetrics = getSubscriptionMetrics(topicName, subscription.getName());
         return subscriptionHealthChecker.checkHealth(subscription, topicMetrics, subscriptionMetrics);
+    }
+
+    private UnhealthySubscription getUnhealthy(Subscription subscription) {
+        SubscriptionHealth subscriptionHealth = getHealth(subscription);
+        if (subscriptionHealth.getStatus() == Status.UNHEALTHY) {
+            return UnhealthySubscription.from(subscription, subscriptionHealth);
+        } else {
+            return null;
+        }
     }
 
     private List<SubscriptionNameWithMetrics> getSubscriptionsMetrics(List<Subscription> subscriptions) {

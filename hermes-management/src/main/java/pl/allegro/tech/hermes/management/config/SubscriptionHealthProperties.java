@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "health")
-public class HealthProperties {
+@ConfigurationProperties(prefix = "subscription-health")
+public class SubscriptionHealthProperties {
     private int maxLagInSeconds = 600;
     private double maxOtherErrorsRatio = 0.5;
     private double maxTimeoutsRatio = 0.1;
@@ -15,6 +15,8 @@ public class HealthProperties {
     private boolean receivingMalformedMessagesIndicatorEnabled = true;
     private boolean timingOutIndicatorEnabled = true;
     private boolean unreachableIndicatorEnabled = true;
+    private long timeoutMillis = 8000;
+    private int threads = 16;
 
     public int getMaxLagInSeconds() {
         return maxLagInSeconds;
@@ -102,5 +104,21 @@ public class HealthProperties {
 
     public void setUnreachableIndicatorEnabled(boolean unreachableIndicatorEnabled) {
         this.unreachableIndicatorEnabled = unreachableIndicatorEnabled;
+    }
+
+    public long getTimeoutMillis() {
+        return timeoutMillis;
+    }
+
+    public void setTimeoutMillis(long timeoutMillis) {
+        this.timeoutMillis = timeoutMillis;
+    }
+
+    public int getThreads() {
+        return threads;
+    }
+
+    public void setThreads(int threads) {
+        this.threads = threads;
     }
 }

@@ -81,3 +81,6 @@ subscriptionOwnerCache:
 
 consistencyChecker:
   threadPoolSize: 2
+
+subscription-health:
+  timeoutMillis: 200

@@ -14,12 +14,14 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.GenericType;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static pl.allegro.tech.hermes.api.MonitoringDetails.Severity;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
 import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
@@ -111,7 +113,7 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         );
         assertThat(listAllUnhealthySubscriptionsAsPlainText(Lists.asList(), Lists.asList("group.topic2"))).isEqualTo(
                 "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s\r\n" +
-                "ownedSubscription5 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
+                        "ownedSubscription5 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
         );
         assertThat(listAllUnhealthySubscriptionsAsPlainText(Lists.asList("ownedSubscription2"), Lists.asList("group.topic2"))).isEqualTo(
                 "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
@@ -170,10 +172,30 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         );
         assertThat(listUnhealthySubscriptionsDisrespectingSeverityAsPlainText("Team A")).isEqualTo(
                 "ownedSubscription1 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s\r\n" +
-                "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s\r\n" +
-                "ownedSubscription3 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
+                        "ownedSubscription2 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s\r\n" +
+                        "ownedSubscription3 - Consuming service returns a lot of 5xx codes, currently 11 5xx/s"
         );
     }
+
+    @Test
+    public void shouldTimeoutUnhealthySubscriptionsRequest() {
+        // given
+        Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
+        createSubscriptionForOwner(topic, "ownedSubscription1", "Team A", Severity.CRITICAL);
+        int graphiteDelay = 1000;
+        graphiteEndpoint.returnMetricWithDelay(subscriptionMetricsStub(subName(topic, "ownedSubscription1")).withRate(50).withStatusRate(200, 11).build(), graphiteDelay);
+
+        // when
+        long start = System.currentTimeMillis();
+        Throwable thrown = catchThrowable(() -> listUnhealthyAsPlainText("Plaintext", "Team A", true, Lists.asList(), Lists.asList()));
+        long end = System.currentTimeMillis();
+
+        // then
+        assertThat(thrown).isInstanceOf(InternalServerErrorException.class);
+        assertThat(end - start < graphiteDelay);
+
+    }
+
 
     @Test
     public void shouldReportSuspendedSubscriptionAsHealthy() {
@@ -236,7 +258,8 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
     private List<UnhealthySubscription> listUnhealthy(String ownerSourceName, String ownerId, boolean respectMonitoringSeverity,
                                                       List<String> subscriptionNames, List<String> qualifiedTopicNames) {
         return management.unhealthyEndpoint().listUnhealthy(ownerSourceName, ownerId, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
-                .readEntity(new GenericType<List<UnhealthySubscription>>() {});
+                .readEntity(new GenericType<List<UnhealthySubscription>>() {
+                });
     }
 
     private String listUnhealthySubscriptionsForOwnerAsPlainText(String ownerId) {
@@ -266,8 +289,8 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
                 .queryParam("ownerSourceName", ownerSourceName)
                 .queryParam("ownerId", ownerId)
                 .queryParam("respectMonitoringSeverity", respectMonitoringSeverity)
-                .queryParam("subscriptionNames", (Object[])subscriptionNames.toArray(new String[0]))
-                .queryParam("qualifiedTopicNames", (Object[])qualifiedTopicNames.toArray(new String[0]))
+                .queryParam("subscriptionNames", (Object[]) subscriptionNames.toArray(new String[0]))
+                .queryParam("qualifiedTopicNames", (Object[]) qualifiedTopicNames.toArray(new String[0]))
                 .request(TEXT_PLAIN)
                 .get(String.class);
     }
