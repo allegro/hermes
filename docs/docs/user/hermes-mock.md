@@ -23,6 +23,16 @@ with a given response code.
 - `avroTopic(String topicName, int statusCode)` - defines an Avro topic that when published on responds
 with a given response code.
 
+- `jsonTopic(String topicName, Response response)` - defines a JSON topic that when published on responds
+  with a given response.
+
+- `avroTopic(String topicName, Response response)` - defines an Avro topic that when published on responds
+  with a given response.
+
+`Response` allows to define the following elements:
+- `statusCode` - a HTTP response code
+- `fixedDelay` - a response will be returned after the given time
+
 ##### HermesMockExpect
 
 Is responsible for expectation of message on Hermes side, provides the following methods:
