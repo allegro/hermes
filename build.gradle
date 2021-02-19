@@ -67,7 +67,7 @@ allprojects {
     project.ext.versions = [
             kafka             : '2.1.1',
             guava             : '23.0',
-            jackson           : '2.9.10',
+            jackson           : '2.11.4',
             jersey            : '2.23.2',
             jetty             : '9.4.19.v20190610',
             curator           : '2.12.0',
@@ -91,7 +91,7 @@ allprojects {
     }
 
     dependencies {
-        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.7'
+        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
         compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 
         testCompile group: 'junit', name: 'junit', version: '4.11'
