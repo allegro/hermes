@@ -19,7 +19,7 @@ public class ElasticsearchDocument {
 
     public static ElasticsearchDocument build(Callable<XContentBuilder> builder) {
         try {
-            return new ElasticsearchDocument(builder.call().bytes());
+            return new ElasticsearchDocument(BytesReference.bytes(builder.call()));
         } catch (Exception e) {
             throw new ElasticsearchRepositoryException(e);
         }
