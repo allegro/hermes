@@ -2,6 +2,40 @@
 
 ...
 
+## 1.8.2 (26.02.2021)
+
+### Fixes
+
+#### ([1287](https://github.com/allegro/hermes/pull/1287)) Fix jshint config and previously not detected errors
+
+Thanks to @pwolaq for this contribution!
+
+### Enhancements
+
+#### ([1322](https://github.com/allegro/hermes/pull/1322)) Optimized getting list of unhealthy subscriptions
+
+#### ([1320](https://github.com/allegro/hermes/pull/1320)) Bump elasticsearch client version
+
+#### ([1318](https://github.com/allegro/hermes/pull/1318)) Bump tools versions to fix vulnerabilities
+
+Thanks to @adrian-warcholinski for this contribution!
+
+#### ([1319](https://github.com/allegro/hermes/pull/1319)) Added an option to set response delay in Hermes Mock
+
+Thanks to @platan for this contribution!
+
+#### ([1280](https://github.com/allegro/hermes/pull/1280)) Returning more detailed message when published event does not match a schema
+
+Thanks to @jewertow for this contribution!
+
+#### ([1285](https://github.com/allegro/hermes/pull/1285)) Avoid clearing unsaved forms
+
+Thanks to @pwolaq for this contribution!
+
+#### ([1316](https://github.com/allegro/hermes/pull/1316)) Allow header propagation just by using configuration
+
+Thanks to @althink for this contribution!
+
 ## 1.8.1 (01.12.2020)
 
 ### Fixes
