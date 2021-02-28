@@ -36,6 +36,11 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_M
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_PROTOCOL_VERSION;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BATCH_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_COMPRESSION_CODEC;
@@ -50,6 +55,13 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRIE
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_BACKOFF_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE;
+
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
 
 public class KafkaMessageProducerFactory implements Factory<Producers> {
     private static final String ACK_ALL = "-1";
@@ -82,7 +94,8 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
         props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, getInt(KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS));
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, getInt(KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION));
 
-        if (getBoolean(KAFKA_AUTHORIZATION_ENABLED)) {
+        if (getBoolean(KAFKA_AUTHORIZATION_ENABLED) &&
+                getString(KAFKA_AUTHORIZATION_MECHANISM).equalsIgnoreCase("PLAIN")) {
             props.put(SASL_MECHANISM, getString(KAFKA_AUTHORIZATION_MECHANISM));
             props.put(SECURITY_PROTOCOL_CONFIG, getString(KAFKA_AUTHORIZATION_PROTOCOL));
             props.put(SASL_JAAS_CONFIG,
@@ -90,6 +103,18 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
                             + "username=\"" + getString(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
                             + "password=\"" + getString(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
+        }
+
+        if (getBoolean(KAFKA_AUTHORIZATION_ENABLED) &&
+                getString(KAFKA_AUTHORIZATION_MECHANISM).equalsIgnoreCase("SSL")) {
+            props.put(SASL_MECHANISM, getString(KAFKA_AUTHORIZATION_MECHANISM));
+            props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, getString(KAFKA_SSL_TRUSTSTORE_LOCATION));
+            props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, getString(KAFKA_SSL_TRUSTSTORE_PASSWORD));
+            props.put(SSL_KEYSTORE_LOCATION_CONFIG, getString(KAFKA_SSL_KEYSTORE_LOCATION));
+            props.put(SSL_KEYSTORE_PASSWORD_CONFIG, getString(KAFKA_SSL_KEYSTORE_PASSWORD));
+            props.put(SSL_KEY_PASSWORD_CONFIG, getString(KAFKA_SSL_KEYSTORE_PASSWORD));
+            props.put(REQUEST_TIMEOUT_MS_CONFIG, getInt(KAFKA_PRODUCER_REQUEST_TIMEOUT_MS));
+            props.put(SSL_PROTOCOL_CONFIG, getString(KAFKA_SSL_PROTOCOL_VERSION));
         }
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));

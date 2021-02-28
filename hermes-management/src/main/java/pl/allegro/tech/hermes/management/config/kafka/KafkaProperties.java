@@ -30,6 +30,8 @@ public class KafkaProperties {
 
     private KafkaSaslProperties sasl = new KafkaSaslProperties();
 
+    private KafkaSSLProperties ssl = new KafkaSSLProperties();
+
     public static final class KafkaConsumer {
 
         private int cacheExpirationSeconds = 60;
@@ -151,6 +153,14 @@ public class KafkaProperties {
 
     public void setSasl(KafkaSaslProperties sasl) {
         this.sasl = sasl;
+    }
+
+    public KafkaSSLProperties getSsl() {
+        return ssl;
+    }
+
+    public void setSsl(KafkaSSLProperties ssl) {
+        this.ssl = ssl;
     }
 
     public String getDatacenter() {

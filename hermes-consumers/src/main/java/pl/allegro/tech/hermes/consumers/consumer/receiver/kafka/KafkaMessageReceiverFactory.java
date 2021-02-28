@@ -56,6 +56,17 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_M
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_PROTOCOL_VERSION;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
 
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
@@ -137,7 +148,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
 
-        if (configs.getBooleanProperty(KAFKA_AUTHORIZATION_ENABLED)) {
+        if (configs.getBooleanProperty(KAFKA_AUTHORIZATION_ENABLED) &&
+                configs.getStringProperty(KAFKA_AUTHORIZATION_MECHANISM).equalsIgnoreCase("PLAIN")) {
             props.put(SASL_MECHANISM, configs.getStringProperty(KAFKA_AUTHORIZATION_MECHANISM));
             props.put(SECURITY_PROTOCOL_CONFIG, configs.getStringProperty(KAFKA_AUTHORIZATION_PROTOCOL));
             props.put(SASL_JAAS_CONFIG,
@@ -146,6 +158,19 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                             + "password=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
         }
+
+        if (configs.getBooleanProperty(KAFKA_AUTHORIZATION_ENABLED) &&
+                configs.getStringProperty(KAFKA_AUTHORIZATION_MECHANISM).equalsIgnoreCase("SSL")) {
+            props.put(SASL_MECHANISM, configs.getStringProperty(KAFKA_AUTHORIZATION_MECHANISM));
+            props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, configs.getStringProperty(KAFKA_SSL_TRUSTSTORE_LOCATION));
+            props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, configs.getStringProperty(KAFKA_SSL_TRUSTSTORE_PASSWORD));
+            props.put(SSL_KEYSTORE_LOCATION_CONFIG, configs.getStringProperty(KAFKA_SSL_KEYSTORE_LOCATION));
+            props.put(SSL_KEYSTORE_PASSWORD_CONFIG, configs.getStringProperty(KAFKA_SSL_KEYSTORE_PASSWORD));
+            props.put(SSL_KEY_PASSWORD_CONFIG, configs.getStringProperty(KAFKA_SSL_KEYSTORE_PASSWORD));
+            props.put(SSL_PROTOCOL_CONFIG, configs.getStringProperty(KAFKA_SSL_PROTOCOL_VERSION));
+        }
+        
+        
         props.put(AUTO_OFFSET_RESET_CONFIG, configs.getStringProperty(Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG));
         props.put(SESSION_TIMEOUT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG));
         props.put(HEARTBEAT_INTERVAL_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG));
