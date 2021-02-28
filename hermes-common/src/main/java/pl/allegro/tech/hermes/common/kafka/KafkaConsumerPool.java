@@ -11,6 +11,8 @@ import org.apache.kafka.common.TopicPartition;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +26,25 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RECEIVE_BUFFER_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
-
+import static org.apache.kafka.common.config.SslConfigs.SSL_CIPHER_SUITES_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENABLED_PROTOCOLS_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENGINE_FACTORY_CLASS_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYMANAGER_ALGORITHM_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_CERTIFICATE_CHAIN_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_KEY_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_TYPE_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROVIDER_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_SECURE_RANDOM_IMPLEMENTATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTMANAGER_ALGORITHM_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG;
 
 /**
  * This class help us to avoid unnecessarily creating new kafka consumers for the same broker instance, mainly in case of
@@ -92,11 +112,42 @@ public class KafkaConsumerPool {
             props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
             props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
 
+            props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.getSecurityProtocol());
+
             if (poolConfig.isSaslEnabled()) {
                 props.put(SASL_MECHANISM, poolConfig.getSecurityMechanism());
-                props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.getSecurityProtocol());
                 props.put(SASL_JAAS_CONFIG, poolConfig.getSaslJaasConfig());
             }
+
+            if (poolConfig.isSslEnabled()) {
+                Optional.ofNullable(poolConfig.getSslKeyPassword()).ifPresent(v -> props.put(SSL_KEY_PASSWORD_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslKeyStoreCertificateChain())
+                        .ifPresent(v -> props.put(SSL_KEYSTORE_CERTIFICATE_CHAIN_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslKeyStoreKey()).ifPresent(v -> props.put(SSL_KEYSTORE_KEY_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslKeyStoreLocation()).ifPresent(v -> props.put(SSL_KEYSTORE_LOCATION_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslKeyStorePassword()).ifPresent(v -> props.put(SSL_KEYSTORE_PASSWORD_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslTrustStoreCertificates())
+                        .ifPresent(v -> props.put(SSL_TRUSTSTORE_CERTIFICATES_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslTrustStoreLocation()).ifPresent(v -> props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslTrustStorePassword()).ifPresent(v -> props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslEnabledProtocols()).map(s -> Arrays.asList(s.split(",")))
+                        .ifPresent(v -> props.put(SSL_ENABLED_PROTOCOLS_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslKeyStoreType()).ifPresent(v -> props.put(SSL_KEYSTORE_TYPE_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslProtocolVersion()).ifPresent(v -> props.put(SSL_PROTOCOL_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslProvider()).ifPresent(v -> props.put(SSL_PROVIDER_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslTrustStoreType()).ifPresent(v -> props.put(SSL_TRUSTSTORE_TYPE_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslEndpointIdentificationAlgorithm())
+                        .ifPresent(v -> props.put(SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslCipherSuites()).map(s -> Arrays.asList(s.split(",")))
+                        .ifPresent(v -> props.put(SSL_CIPHER_SUITES_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslEngineFactoryClass()).ifPresent(v -> props.put(SSL_ENGINE_FACTORY_CLASS_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslKeymanagerAlgorithm()).ifPresent(v -> props.put(SSL_KEYMANAGER_ALGORITHM_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslSecureRandomImplementation())
+                        .ifPresent(v -> props.put(SSL_SECURE_RANDOM_IMPLEMENTATION_CONFIG, v));
+                Optional.ofNullable(poolConfig.getSslTrustmanagerAlgorithm())
+                        .ifPresent(v -> props.put(SSL_TRUSTMANAGER_ALGORITHM_CONFIG, v));
+            }
+
             return new KafkaConsumer<>(props);
         }
     }

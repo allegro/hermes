@@ -1,11 +1,13 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
+import pl.allegro.tech.hermes.common.config.KafkaSSLProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 public class KafkaProperties implements KafkaParameters {
 
     private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
+    private KafkaSSLProperties ssl = new KafkaSSLProperties();
 
     private String datacenter = "dc";
 
@@ -65,6 +67,15 @@ public class KafkaProperties implements KafkaParameters {
     @Override
     public String getBrokerList() {
         return brokerList;
+    }
+
+    @Override
+    public KafkaSSLProperties getSsl() {
+        return ssl;
+    }
+
+    public void setSsl(KafkaSSLProperties ssl) {
+        this.ssl = ssl;
     }
 
     public void setBrokerList(String brokerList) {

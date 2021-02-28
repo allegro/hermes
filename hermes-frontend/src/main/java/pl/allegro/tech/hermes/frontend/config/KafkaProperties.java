@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
+import pl.allegro.tech.hermes.common.config.KafkaSSLProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 import java.time.Duration;
@@ -8,6 +9,7 @@ import java.time.Duration;
 public class KafkaProperties implements KafkaParameters {
 
     private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
+    private KafkaSSLProperties ssl = new KafkaSSLProperties();
 
     private String datacenter = "dc";
 
@@ -70,5 +72,14 @@ public class KafkaProperties implements KafkaParameters {
 
     public void setAdminRequestTimeout(Duration adminRequestTimeout) {
         this.adminRequestTimeout = adminRequestTimeout;
+    }
+
+    @Override
+    public KafkaSSLProperties getSsl() {
+        return ssl;
+    }
+
+    public void setSsl(KafkaSSLProperties ssl) {
+        this.ssl = ssl;
     }
 }

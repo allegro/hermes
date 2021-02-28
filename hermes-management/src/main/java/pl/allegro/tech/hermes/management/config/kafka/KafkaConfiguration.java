@@ -34,7 +34,9 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.time.Clock;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -42,11 +44,29 @@ import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static java.util.stream.Collectors.toList;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL;
 import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
+import static org.apache.kafka.common.config.SslConfigs.SSL_CIPHER_SUITES_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENABLED_PROTOCOLS_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENGINE_FACTORY_CLASS_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYMANAGER_ALGORITHM_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_CERTIFICATE_CHAIN_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_KEY_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_TYPE_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROVIDER_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_SECURE_RANDOM_IMPLEMENTATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTMANAGER_ALGORITHM_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
@@ -112,7 +132,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     private ConsumerGroupManager createConsumerGroupManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
         return subscriptionProperties.isCreateConsumerGroupManuallyEnabled()
                 ? new KafkaConsumerGroupManager(kafkaNamesMapper, kafkaProperties.getQualifiedClusterName(),
-                        kafkaProperties.getBootstrapKafkaServer(), kafkaProperties)
+                kafkaProperties.getBootstrapKafkaServer(), kafkaProperties)
                 : new NoOpConsumerGroupManager();
     }
 
@@ -156,10 +176,31 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 kafkaProperties.getKafkaConsumer().getFetchMinBytes(),
                 kafkaProperties.getKafkaConsumer().getNamePrefix(),
                 kafkaProperties.getKafkaConsumer().getConsumerGroupName(),
+                kafkaProperties.getSecurityProtocol(),
                 kafkaProperties.getSasl().isEnabled(),
                 kafkaProperties.getSasl().getMechanism(),
-                kafkaProperties.getSasl().getProtocol(),
-                kafkaProperties.getSasl().getJaasConfig());
+                kafkaProperties.getSasl().getJaasConfig(),
+                kafkaProperties.getSsl().isEnabled(),
+                kafkaProperties.getSsl().getTrustStoreLocation(),
+                kafkaProperties.getSsl().getTrustStorePassword(),
+                kafkaProperties.getSsl().getKeyStoreLocation(),
+                kafkaProperties.getSsl().getKeyStorePassword(),
+                kafkaProperties.getSsl().getKeyPassword(),
+                kafkaProperties.getSsl().getProtocolVersion(),
+                kafkaProperties.getSsl().getEndpointIdentificationAlgorithm(),
+                kafkaProperties.getSsl().getKeyStoreCertificateChain(),
+                kafkaProperties.getSsl().getKeyStoreKey(),
+                kafkaProperties.getSsl().getTrustStoreCertificates(),
+                kafkaProperties.getSsl().getEnabledProtocols(),
+                kafkaProperties.getSsl().getKeyStoreType(),
+                kafkaProperties.getSsl().getProtocol(),
+                kafkaProperties.getSsl().getProvider(),
+                kafkaProperties.getSsl().getTrustStoreType(),
+                kafkaProperties.getSsl().getCipherSuites(),
+                kafkaProperties.getSsl().getEngineFactoryClass(),
+                kafkaProperties.getSsl().getKeymanagerAlgorithm(),
+                kafkaProperties.getSsl().getSecureRandomImplementation(),
+                kafkaProperties.getSsl().getTrustmanagerAlgorithm());
 
         return new KafkaConsumerPool(config, brokerStorage, configuredBootstrapServers);
     }
@@ -167,13 +208,47 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     private AdminClient brokerAdminClient(KafkaProperties kafkaProperties) {
         Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapKafkaServer());
-        props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
+        props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSecurityProtocol());
+
         if (kafkaProperties.getSasl().isEnabled()) {
             props.put(SASL_MECHANISM, kafkaProperties.getSasl().getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSasl().getProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaProperties.getSasl().getJaasConfig());
         }
+
+        if (kafkaProperties.getSsl().isEnabled()) {
+            Optional.ofNullable(kafkaProperties.getSsl().getKeyPassword()).ifPresent(v -> props.put(SSL_KEY_PASSWORD_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getKeyStoreCertificateChain())
+                    .ifPresent(v -> props.put(SSL_KEYSTORE_CERTIFICATE_CHAIN_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getKeyStoreKey()).ifPresent(v -> props.put(SSL_KEYSTORE_KEY_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getKeyStoreLocation()).ifPresent(v -> props.put(SSL_KEYSTORE_LOCATION_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getKeyStorePassword()).ifPresent(v -> props.put(SSL_KEYSTORE_PASSWORD_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getTrustStoreCertificates())
+                    .ifPresent(v -> props.put(SSL_TRUSTSTORE_CERTIFICATES_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getTrustStoreLocation())
+                    .ifPresent(v -> props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getTrustStorePassword())
+                    .ifPresent(v -> props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getEnabledProtocols()).map(s -> Arrays.asList(s.split(",")))
+                    .ifPresent(v -> props.put(SSL_ENABLED_PROTOCOLS_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getKeyStoreType()).ifPresent(v -> props.put(SSL_KEYSTORE_TYPE_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getProtocolVersion()).ifPresent(v -> props.put(SSL_PROTOCOL_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getProvider()).ifPresent(v -> props.put(SSL_PROVIDER_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getTrustStoreType()).ifPresent(v -> props.put(SSL_TRUSTSTORE_TYPE_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getEndpointIdentificationAlgorithm())
+                    .ifPresent(v -> props.put(SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getCipherSuites()).map(s -> Arrays.asList(s.split(",")))
+                    .ifPresent(v -> props.put(SSL_CIPHER_SUITES_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getEngineFactoryClass())
+                    .ifPresent(v -> props.put(SSL_ENGINE_FACTORY_CLASS_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getKeymanagerAlgorithm())
+                    .ifPresent(v -> props.put(SSL_KEYMANAGER_ALGORITHM_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getSecureRandomImplementation())
+                    .ifPresent(v -> props.put(SSL_SECURE_RANDOM_IMPLEMENTATION_CONFIG, v));
+            Optional.ofNullable(kafkaProperties.getSsl().getTrustmanagerAlgorithm())
+                    .ifPresent(v -> props.put(SSL_TRUSTMANAGER_ALGORITHM_CONFIG, v));
+        }
+
         return AdminClient.create(props);
     }
 }

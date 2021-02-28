@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.common.kafka;
 
+import pl.allegro.tech.hermes.common.config.KafkaSSLProperties;
+
 public interface KafkaParameters {
 
     boolean isEnabled();
@@ -13,4 +15,6 @@ public interface KafkaParameters {
     String getPassword();
 
     String getBrokerList();
+
+    KafkaSSLProperties getSsl();
 }
