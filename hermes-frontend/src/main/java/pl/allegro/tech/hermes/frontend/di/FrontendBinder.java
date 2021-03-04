@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiterFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
+import pl.allegro.tech.hermes.frontend.publishing.message.AvroEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
@@ -78,7 +79,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(PublishingMessageTracker.class);
         bindSingleton(NoOperationPublishingTracker.class);
         bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
-        bindSingleton(MessageContentTypeEnforcer.class);
+        bind(MessageContentTypeEnforcer.class).to(AvroEnforcer.class).in(Singleton.class);
         bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
         });
         bindSingleton(MessageFactory.class);
