@@ -19,6 +19,7 @@ groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
                 templateUrl: 'partials/modal/editGroup.html',
                 controller: 'GroupEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     group: function() {
                         return {};
@@ -41,7 +42,6 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
     function (groupRepository, topicFactory, $scope, $location, $stateParams, $modal, toaster, confirmationModal, passwordService) {
         $scope.fetching = true;
         var groupName = $scope.groupName = $stateParams.groupName;
-        var topicDraft = topicFactory.create();
 
         $scope.group = groupRepository.get(groupName);
         $scope.topics = [];
@@ -61,6 +61,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                 templateUrl: 'partials/modal/editTopic.html',
                 controller: 'TopicEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     operation: function () {
                         return 'ADD';
@@ -69,7 +70,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                         return groupName;
                     },
                     topic: function () {
-                        return topicDraft;
+                        return topicFactory.create();
                     },
                     messageSchema: function() {
                         return null;
@@ -77,7 +78,6 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                 }
             }).result.then(function(){
                 loadTopics();
-                topicDraft = topicFactory.create();
             });
 
 
@@ -88,6 +88,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                 templateUrl: 'partials/modal/editGroup.html',
                 controller: 'GroupEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     group: function() {
                         return $scope.group;
