@@ -148,6 +148,10 @@
                     <p><strong>Message delivery tracking:</strong> {{ trackingModeName[subscription.trackingMode] }}</p>
                     <hr/>
                     <p>
+                        <strong>Request timeout:</strong> {{subscription.subscriptionPolicy.requestTimeout}} milliseconds
+                        <span uib-popover='Request timeout in millis' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
                         <strong>Retry on 4xx status:</strong> {{subscription.subscriptionPolicy.retryClientErrors}}
                         <span uib-popover='If false, message will not be retried when service responds with 4xx status (i.e. Bad Request).' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>

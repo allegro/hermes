@@ -140,6 +140,17 @@
             </div>
 
             <hr/>
+            <div class="form-group {{subscriptionForm.requestTimeout.$valid ? '' : 'has-error'}}">
+                <label for="requestTimeout" class="col-md-3 control-label">Request timout</label>
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <input type="number" min="100" max="300000" step="1" class="form-control" id="requestTimeout" name="requestTimeout" placeholder="Request timeout" ng-model="subscription.subscriptionPolicy.requestTimeout" ng-pattern="/^\d+$/"/>
+                        <span class="input-group-addon">milliseconds</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Request timeout in millis">?</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group {{subscriptionForm.retryClientErrors.$valid ? '' : 'has-error'}}">
                 <label for="retryClientErrors" class="col-md-3 control-label">Retry on 4xx status</label>
                 <div class="col-md-9">
