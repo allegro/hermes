@@ -2,6 +2,12 @@
 
 ...
 
+## 1.8.3 (05.03.2021)
+
+### Fixes
+
+#### ([1328](https://github.com/allegro/hermes/pull/1328)) Prevent closing unsaved modals
+
 ## 1.8.2 (26.02.2021)
 
 ### Fixes
