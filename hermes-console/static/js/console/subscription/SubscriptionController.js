@@ -19,8 +19,6 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
-        var subscriptionDraft;
-
         $scope.config = config;
 
         subscriptionRepository.get(topicName, subscriptionName).$promise
@@ -35,7 +33,6 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                         modifiedAt.setUTCSeconds(subscription.modifiedAt);
                         $scope.subscription.modifiedAt = modifiedAt;
                     }
-                    subscriptionDraft = _.cloneDeep($scope.subscription);
                 });
 
         $scope.retransmissionLoading = false;
@@ -85,14 +82,15 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
           return filtered;
         };
 
-        $scope.edit = function () {
+        $scope.edit = function (subscription) {
             $modal.open({
                 templateUrl: 'partials/modal/editSubscription.html',
                 controller: 'SubscriptionEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     subscription: function () {
-                        return subscriptionDraft;
+                        return _.cloneDeep(subscription);
                     },
                     topicName: function () {
                         return topicName;
@@ -112,7 +110,6 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 }
             }).result.then(function(response){
                 $scope.subscription = response.subscription;
-                subscriptionDraft = _.cloneDeep(response.subscription);
             });
         };
 
@@ -121,6 +118,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 templateUrl: 'partials/modal/editSubscription.html',
                 controller: 'SubscriptionEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     subscription: function () {
                         return $scope.subscription;
@@ -258,9 +256,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         $scope.debugFilters = function () {
             filtersDebuggerModal.open(topicName, $scope.subscription.filters, $scope.topicContentType)
                 .then(function (result) {
-                    subscriptionDraft = _.cloneDeep($scope.subscription);
-                    subscriptionDraft.filters = result.messageFilters;
-                    $scope.edit();
+                    var subscription = _.cloneDeep($scope.subscription);
+                    subscription.filters = result.messageFilters;
+                    $scope.edit(subscription);
                 });
         };
 
@@ -275,7 +273,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
               endpointAddressResolverMetadataConfig, topicContentType, showFixedHeaders, subscriptionConfig) {
         $scope.topicName = topicName;
         $scope.topicContentType = topicContentType;
-        $scope.subscription = subscription;
+        $scope.subscription = _.cloneDeep(subscription);
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
         $scope.showFixedHeaders = showFixedHeaders;
