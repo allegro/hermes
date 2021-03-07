@@ -110,7 +110,6 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
 
         if (getBoolean(KAFKA_AUTHORIZATION_ENABLED) &&
                 getString(KAFKA_AUTHORIZATION_MECHANISM).equalsIgnoreCase("SSL")) {
-            props.put(SASL_MECHANISM, getString(KAFKA_AUTHORIZATION_MECHANISM));
             props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, getString(KAFKA_SSL_TRUSTSTORE_LOCATION));
             props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, getString(KAFKA_SSL_TRUSTSTORE_PASSWORD));
             props.put(SSL_KEYSTORE_LOCATION_CONFIG, getString(KAFKA_SSL_KEYSTORE_LOCATION));

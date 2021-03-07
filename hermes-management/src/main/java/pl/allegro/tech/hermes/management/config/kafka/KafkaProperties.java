@@ -6,7 +6,7 @@ public class KafkaProperties {
 
     private String clusterName = "primary";
 
-    private String bootstrapKafkaServer = "localhost:9093";
+    private String bootstrapKafkaServer = "localhost:9092";
 
     private int kafkaServerRequestTimeoutMillis = 3000;
 
