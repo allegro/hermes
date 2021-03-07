@@ -33,9 +33,7 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-import javax.annotation.PreDestroy;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -55,6 +53,7 @@ import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
@@ -170,7 +169,17 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 kafkaProperties.getSasl().isEnabled(),
                 kafkaProperties.getSasl().getMechanism(),
                 kafkaProperties.getSasl().getProtocol(),
-                kafkaProperties.getSasl().getJaasConfig());
+                kafkaProperties.getSasl().getJaasConfig(),
+                kafkaProperties.getSsl().isEnabled(),
+                kafkaProperties.getSsl().getTrustStoreLocation(),
+                kafkaProperties.getSsl().getTrustStorePassword(),
+                kafkaProperties.getSsl().getKeyStoreLocation(),
+                kafkaProperties.getSsl().getKeyStorePassword(),
+                kafkaProperties.getSsl().getKeyPassword(),
+                kafkaProperties.getSsl().getProtocolVersion(),
+                kafkaProperties.getSsl().getSecurityProtocol(),
+                kafkaProperties.getSsl().getEndpointIdentificationAlgorithm()
+        );
 
         return new KafkaConsumerPool(config, brokerStorage, configuredBootstrapServers);
     }
@@ -193,6 +202,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             props.put(SSL_KEYSTORE_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeyStorePassword());
             props.put(SSL_KEY_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeyPassword());
             props.put(SSL_PROTOCOL_CONFIG, kafkaProperties.getSsl().getProtocolVersion());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSsl().getSecurityProtocol());
+            props.put(SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, kafkaProperties.getSsl().getEndpointIdentificationAlgorithm());
         }
 
         return AdminClient.create(props);

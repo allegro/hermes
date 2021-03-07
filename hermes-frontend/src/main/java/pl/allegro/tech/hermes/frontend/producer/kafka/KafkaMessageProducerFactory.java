@@ -40,7 +40,9 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_TRUSTSTORE_PASSWORD;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_LOCATION;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEYSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_KEY_PASSWORD;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_PROTOCOL_VERSION;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BATCH_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_COMPRESSION_CODEC;
@@ -62,6 +64,7 @@ import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG;
 
 public class KafkaMessageProducerFactory implements Factory<Producers> {
     private static final String ACK_ALL = "-1";
@@ -112,9 +115,11 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
             props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, getString(KAFKA_SSL_TRUSTSTORE_PASSWORD));
             props.put(SSL_KEYSTORE_LOCATION_CONFIG, getString(KAFKA_SSL_KEYSTORE_LOCATION));
             props.put(SSL_KEYSTORE_PASSWORD_CONFIG, getString(KAFKA_SSL_KEYSTORE_PASSWORD));
-            props.put(SSL_KEY_PASSWORD_CONFIG, getString(KAFKA_SSL_KEYSTORE_PASSWORD));
+            props.put(SSL_KEY_PASSWORD_CONFIG, getString(KAFKA_SSL_KEY_PASSWORD));
             props.put(REQUEST_TIMEOUT_MS_CONFIG, getInt(KAFKA_PRODUCER_REQUEST_TIMEOUT_MS));
             props.put(SSL_PROTOCOL_CONFIG, getString(KAFKA_SSL_PROTOCOL_VERSION));
+            props.put(SECURITY_PROTOCOL_CONFIG, getString(KAFKA_AUTHORIZATION_MECHANISM));
+            props.put(SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, getString(KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM));
         }
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));

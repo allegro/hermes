@@ -36,6 +36,7 @@ import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
 import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG;
 
 public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
@@ -113,6 +114,8 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
             props.put(SSL_KEYSTORE_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeyStorePassword());
             props.put(SSL_KEY_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeyPassword());
             props.put(SSL_PROTOCOL_CONFIG, kafkaProperties.getSsl().getProtocolVersion());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSsl().getSecurityProtocol());
+            props.put(SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, kafkaProperties.getSsl().getEndpointIdentificationAlgorithm());
         }
         return props;
     }

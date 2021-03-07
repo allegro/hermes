@@ -5,12 +5,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class KafkaSSLProperties {
     private boolean isEnabled = false;
     private String mechanism = "SSL";
-    private String trustStoreLocation = "truststore.jks";
+    private String trustStoreLocation = "kafka.server.truststore.jks";
     private String trustStorePassword = "changeit";
-    private String keyStoreLocation = "keystore.jks";
+    private String keyStoreLocation = "kafka.server.keystore.jks";
     private String keyStorePassword = "changeit";
     private String keyPassword = "changeit";
     private String protocolVersion = "TLSv1.2";
+    private String securityProtocol = "SSL";
+    private String endpointIdentificationAlgorithm = "";
 
     public boolean isEnabled() {
         return isEnabled;
@@ -74,5 +76,20 @@ public class KafkaSSLProperties {
 
     public void setProtocolVersion(String protocolVersion) {
         this.protocolVersion = protocolVersion;
+    }
+    public String getSecurityProtocol() {
+        return securityProtocol;
+    }
+
+    public void setSecurityProtocol(String securityProtocol) {
+        this.securityProtocol = securityProtocol;
+    }
+
+    public String getEndpointIdentificationAlgorithm() {
+        return endpointIdentificationAlgorithm;
+    }
+
+    public void setEndpointIdentificationAlgorithm(String endpointIdentificationAlgorithm) {
+        this.endpointIdentificationAlgorithm = endpointIdentificationAlgorithm;
     }
 }

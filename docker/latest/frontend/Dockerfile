@@ -17,6 +17,8 @@ RUN unzip /app/hermes-frontend.zip && mv /hermes-frontend-* /hermes-frontend
 
 ADD docker/latest/frontend/frontend.properties /etc/hermes/frontend.properties
 ADD docker/latest/frontend/logback.xml /etc/hermes/logback.xml
+ADD docker/latest/cert/kafka.server.keystore.jks /etc/hermes/kafka.server.keystore.jks
+ADD docker/latest/cert/kafka.server.truststore.jks /etc/hermes/kafka.server.truststore.jks
 ENV HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/frontend.properties -Dlogback.configurationFile=/etc/hermes/logback.xml"
 
 CMD /hermes-frontend/bin/hermes-frontend

@@ -24,7 +24,13 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RECEIVE_BUFFER_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
-
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG;
 
 /**
  * This class help us to avoid unnecessarily creating new kafka consumers for the same broker instance, mainly in case of
@@ -97,6 +103,18 @@ public class KafkaConsumerPool {
                 props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.getSecurityProtocol());
                 props.put(SASL_JAAS_CONFIG, poolConfig.getSaslJaasConfig());
             }
+
+            if (poolConfig.isSslEnabled()) {
+                props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, poolConfig.getSslTrustStoreLocation());
+                props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, poolConfig.getSslTrustStorePassword());
+                props.put(SSL_KEYSTORE_LOCATION_CONFIG, poolConfig.getSslKeyStoreLocation());
+                props.put(SSL_KEYSTORE_PASSWORD_CONFIG, poolConfig.getSslKeyStorePassword());
+                props.put(SSL_KEY_PASSWORD_CONFIG, poolConfig.getSslKeyPassword());
+                props.put(SSL_PROTOCOL_CONFIG, poolConfig.getSslProtocolVersion());
+                props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.getSslSecurityProtocol());
+                props.put(SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, poolConfig.getSslEndpointIdentificationAlgorithm());
+            }
+
             return new KafkaConsumer<>(props);
         }
     }
