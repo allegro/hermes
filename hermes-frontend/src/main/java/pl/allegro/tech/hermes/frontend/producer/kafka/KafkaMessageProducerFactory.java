@@ -115,7 +115,6 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
             props.put(SSL_KEYSTORE_LOCATION_CONFIG, getString(KAFKA_SSL_KEYSTORE_LOCATION));
             props.put(SSL_KEYSTORE_PASSWORD_CONFIG, getString(KAFKA_SSL_KEYSTORE_PASSWORD));
             props.put(SSL_KEY_PASSWORD_CONFIG, getString(KAFKA_SSL_KEY_PASSWORD));
-            props.put(REQUEST_TIMEOUT_MS_CONFIG, getInt(KAFKA_PRODUCER_REQUEST_TIMEOUT_MS));
             props.put(SSL_PROTOCOL_CONFIG, getString(KAFKA_SSL_PROTOCOL_VERSION));
             props.put(SECURITY_PROTOCOL_CONFIG, getString(KAFKA_AUTHORIZATION_MECHANISM));
             props.put(SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, getString(KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM));
