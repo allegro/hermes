@@ -16,16 +16,16 @@ kafka:
       clusterName: primary
       connectionTimeout: 3000
       bootstrapKafkaServer: host.docker.internal:9093
-      ssl:
-        enabled: true
-        trustStoreLocation: /etc/hermes/kafka.server.truststore.jks
-        trustStorePassword: changeit
-        keyStoreLocation: /etc/hermes/kafka.server.keystore.jks
-        keyStorePassword: changeit
-        keyPassword: changeit
-        protocol: TLSv1.2
-        securityProtocol: SSL
-        endpointIdentificationAlgorithm: ""
+#      ssl:
+#        enabled: true
+#        trustStoreLocation: /etc/hermes/kafka.server.truststore.jks
+#        trustStorePassword: changeit
+#        keyStoreLocation: /etc/hermes/kafka.server.keystore.jks
+#        keyStorePassword: changeit
+#        keyPassword: changeit
+#        protocol: TLSv1.2
+#        securityProtocol: SSL
+#        endpointIdentificationAlgorithm: ""
 
 metrics:
   graphiteHttpUri: graphite:8082
