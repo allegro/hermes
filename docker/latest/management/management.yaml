@@ -7,7 +7,7 @@ storage:
     -
       datacenter: dc
       clusterName: zk
-      connectionString: host.docker.internal:2181
+      connectionString: zk:2181
 
 kafka:
   clusters:
@@ -15,7 +15,7 @@ kafka:
       datacenter: dc
       clusterName: primary
       connectionTimeout: 3000
-      bootstrapKafkaServer: host.docker.internal:9093
+      bootstrapKafkaServer: kafka:9092
 #      ssl:
 #        enabled: true
 #        trustStoreLocation: /etc/hermes/kafka.server.truststore.jks
