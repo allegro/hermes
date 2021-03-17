@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.ApacheHttpClientMessageBatchSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 
 import javax.inject.Inject;
@@ -12,10 +13,12 @@ import static com.google.common.base.Preconditions.checkState;
 
 public class HttpMessageBatchSenderFactory implements MessageBatchSenderFactory {
     private ConfigFactory configFactory;
+    private SendingResultHandlersProvider listenerProvider;
 
     @Inject
-    public HttpMessageBatchSenderFactory(ConfigFactory configFactory) {
+    public HttpMessageBatchSenderFactory(ConfigFactory configFactory, SendingResultHandlersProvider listenerProvider) {
         this.configFactory = configFactory;
+        this.listenerProvider = listenerProvider;
     }
 
     @Override
@@ -24,6 +27,7 @@ public class HttpMessageBatchSenderFactory implements MessageBatchSenderFactory 
         return new ApacheHttpClientMessageBatchSender(
                 configFactory.getIntProperty(Configs.CONSUMER_BATCH_CONNECTION_TIMEOUT),
                 configFactory.getIntProperty(Configs.CONSUMER_BATCH_CONNECTION_REQUEST_TIMEOUT),
-                new SimpleEndpointAddressResolver());
+                new SimpleEndpointAddressResolver(),
+                listenerProvider);
     }
 }

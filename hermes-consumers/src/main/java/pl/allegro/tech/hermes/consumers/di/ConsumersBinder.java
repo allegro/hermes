@@ -15,6 +15,8 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlersProvider;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
@@ -114,6 +116,7 @@ public class ConsumersBinder extends AbstractBinder {
         bind(JettyHttpMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
                 .in(Singleton.class).named("defaultHttpMessageSenderProvider");
         bind(EmptyHttpHeadersProvidersFactory.class).to(HttpHeadersProvidersFactory.class).in(Singleton.class);
+        bind(DefaultSendingResultHandlersProvider.class).to(SendingResultHandlersProvider.class).in(Singleton.class);
 
         bind("consumer").named("moduleName").to(String.class);
 

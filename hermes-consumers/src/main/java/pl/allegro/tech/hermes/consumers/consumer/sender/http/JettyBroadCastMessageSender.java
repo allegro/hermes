@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import com.google.common.collect.ImmutableList;
 import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.api.Response;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -24,13 +23,16 @@ public class JettyBroadCastMessageSender implements MessageSender {
     private final HttpRequestFactory requestFactory;
     private final ResolvableEndpointAddress endpoint;
     private final HttpHeadersProvider requestHeadersProvider;
+    private final SendingResultHandlersProvider sendingResultHandlersProvider;
+
 
     public JettyBroadCastMessageSender(HttpRequestFactory requestFactory,
                                        ResolvableEndpointAddress endpoint,
-                                       HttpHeadersProvider requestHeadersProvider) {
+                                       HttpHeadersProvider requestHeadersProvider, SendingResultHandlersProvider sendingResultHandlersProvider) {
         this.requestFactory = requestFactory;
         this.endpoint = endpoint;
         this.requestHeadersProvider = requestHeadersProvider;
+        this.sendingResultHandlersProvider = sendingResultHandlersProvider;
     }
 
     @Override
@@ -78,10 +80,9 @@ public class JettyBroadCastMessageSender implements MessageSender {
     }
 
     private CompletableFuture<SingleMessageSendingResult> processResponse(Request request) {
-        CompletableFuture<SingleMessageSendingResult> future = new CompletableFuture<>();
-        Response.CompleteListener completeListener = result -> future.complete(MessageSendingResult.of(result));
-        request.send(completeListener);
-        return future;
+        CompletableFuture<SingleMessageSendingResult> resultFuture = new CompletableFuture<>();
+        request.send(sendingResultHandlersProvider.provideJettyCompleteListenerForBroadcast(resultFuture));
+        return resultFuture;
     }
 
     @Override
