@@ -19,3 +19,9 @@ filters.filter('prettyJson', function () {
         return "null";
     };
 });
+
+filters.filter('toLowercase', function () {
+    return function(string) {
+        return angular.lowercase(string)
+    }
+});

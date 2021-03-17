@@ -56,3 +56,8 @@ console:
   configurationType: classpath_resource
   topic:
     allowedTopicLabels: *ALLOWED_LABELS
+    retentionUnits:
+      - value: TimeUnit.HOURS
+        label: Hours
+      - value: TimeUnit.DAYS
+        label: Days
