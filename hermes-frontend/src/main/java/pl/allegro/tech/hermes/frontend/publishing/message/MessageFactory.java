@@ -40,7 +40,7 @@ public class MessageFactory {
     private static final Logger logger = LoggerFactory.getLogger(MessageFactory.class);
 
     private final MessageValidators validators;
-    private final MessageContentTypeEnforcer enforcer;
+    private final AvroEnforcer enforcer;
     private final SchemaRepository schemaRepository;
     private final HeadersPropagator headersPropagator;
     private final MessageContentWrapper messageContentWrapper;
@@ -49,7 +49,7 @@ public class MessageFactory {
 
     @Inject
     public MessageFactory(MessageValidators validators,
-                          MessageContentTypeEnforcer enforcer,
+                          AvroEnforcer enforcer,
                           SchemaRepository schemaRepository,
                           HeadersPropagator headersPropagator,
                           MessageContentWrapper messageContentWrapper,

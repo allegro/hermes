@@ -10,7 +10,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_JSON;
 
-public class MessageContentTypeEnforcer {
+public class MessageContentTypeEnforcer implements AvroEnforcer {
 
     private final JsonAvroConverter defaultJsonAvroconverter = new JsonAvroConverter();
     private final AvroEncodedJsonAvroConverter avroEncodedJsonAvroConverter = new AvroEncodedJsonAvroConverter();
@@ -19,6 +19,7 @@ public class MessageContentTypeEnforcer {
     private static final String AVRO_JSON_WITH_DELIM = AVRO_JSON + ";";
     private static final String AVRO_BINARY_WITH_DELIM = AVRO_BINARY + ";";
 
+    @Override
     public byte[] enforceAvro(String payloadContentType, byte[] data, Schema schema, Topic topic) {
         String contentTypeLowerCase = StringUtils.lowerCase(payloadContentType);
         if (isJSON(contentTypeLowerCase)) {
