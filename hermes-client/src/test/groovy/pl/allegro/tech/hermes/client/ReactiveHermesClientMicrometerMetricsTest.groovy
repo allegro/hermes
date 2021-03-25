@@ -84,8 +84,7 @@ class ReactiveHermesClientMicrometerMetricsTest extends Specification {
         metrics.counter("hermes-client.com_group.topic.retries.success").count() == 1
         metrics.counter("hermes-client.com_group.topic.status.{code}", "code", String.valueOf(201)).count() == 1
         metrics.counter("hermes-client.com_group.topic.retries.count").count() == 2
-        metrics.summary("hermes-client.com_group.topic.retries.attempts").takeSnapshot().percentileValues()[0].value() == 2
-        metrics.summary("hermes-client.com_group.topic.retries.attempts").takeSnapshot().max() == 2
+        metrics.summary("hermes-client.com_group.topic.retries.attempts").takeSnapshot().count() == 1
         metrics.timer("hermes-client.com_group.topic.latency").count() == 3
     }
 
