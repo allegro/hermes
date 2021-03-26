@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @JsonIgnoreProperties(value = {"createdAt", "modifiedAt"}, allowGetters = true)
 public class Topic {
@@ -53,7 +54,7 @@ public class Topic {
 
     @Valid
     @NotNull
-    private RetentionTime retentionTime = RetentionTime.of(1);
+    private RetentionTime retentionTime = RetentionTime.of(1, TimeUnit.DAYS);
 
     private boolean trackingEnabled = false;
 

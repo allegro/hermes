@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class TopicBuilder {
 
@@ -30,7 +31,7 @@ public class TopicBuilder {
 
     private ContentType contentType = ContentType.JSON;
 
-    private RetentionTime retentionTime = RetentionTime.of(1);
+    private RetentionTime retentionTime = RetentionTime.of(1, TimeUnit.DAYS);
 
     private boolean trackingEnabled = false;
 
@@ -96,8 +97,8 @@ public class TopicBuilder {
         return this;
     }
 
-    public TopicBuilder withRetentionTime(int retentionTime) {
-        this.retentionTime = new RetentionTime(retentionTime);
+    public TopicBuilder withRetentionTime(int retentionTime, TimeUnit unit) {
+        this.retentionTime = new RetentionTime(retentionTime, unit);
         return this;
     }
 

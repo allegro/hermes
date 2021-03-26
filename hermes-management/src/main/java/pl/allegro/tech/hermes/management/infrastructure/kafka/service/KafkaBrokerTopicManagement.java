@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
@@ -38,7 +37,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void createTopic(Topic topic) {
-        Map<String, String> config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
+        Map<String, String> config = createTopicConfig(topic.getRetentionTime().getDurationInMillis(), topicProperties);
 
         kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
                 kafkaAdminClient.createTopics(Collections.singletonList(
@@ -58,7 +57,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     @Override
     public void updateTopic(Topic topic) {
-        Map<String, String> config = createTopicConfig(topic.getRetentionTime().getDuration(), topicProperties);
+        Map<String, String> config = createTopicConfig(topic.getRetentionTime().getDurationInMillis(), topicProperties);
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
 
         if (isMigrationToNewKafkaTopic(kafkaTopics)) {
@@ -115,9 +114,9 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
         kafkaAdminClient.alterConfigs(configUpdates);
     }
 
-    private Map<String, String> createTopicConfig(int retentionPolicy, TopicProperties topicProperties) {
+    private Map<String, String> createTopicConfig(long retentionPolicy, TopicProperties topicProperties) {
         Map<String, String> props = new HashMap<>();
-        props.put(LogConfig.RetentionMsProp(), String.valueOf(TimeUnit.DAYS.toMillis(retentionPolicy)));
+        props.put(LogConfig.RetentionMsProp(), String.valueOf(retentionPolicy));
         props.put(LogConfig.UncleanLeaderElectionEnableProp(), Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
         props.put(LogConfig.MaxMessageBytesProp(), String.valueOf(topicProperties.getMaxMessageSize()));
 

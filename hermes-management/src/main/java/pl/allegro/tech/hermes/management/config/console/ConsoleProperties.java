@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class could have a much better structure, however it has this one due to compatibility with old JSON config file format.
@@ -321,6 +322,9 @@ public class ConsoleProperties {
         );
         private boolean readOnlyModeEnabled = false;
         private Set<String> allowedTopicLabels = Collections.emptySet();
+        private List<RetentionUnit> retentionUnits = Lists.newArrayList(
+                new RetentionUnit("DAYS", "DAYS")
+        );
 
         public boolean isMessagePreviewEnabled() {
             return messagePreviewEnabled;
@@ -399,6 +403,14 @@ public class ConsoleProperties {
         public void setReadOnlyModeEnabled(boolean readOnlyModeEnabled) {
             this.readOnlyModeEnabled = readOnlyModeEnabled;
         }
+
+        public List<RetentionUnit> getRetentionUnits() {
+            return retentionUnits;
+        }
+
+        public void setRetentionUnits(List<RetentionUnit> retentionUnits) {
+            this.retentionUnits = retentionUnits;
+        }
     }
 
     public static final class DefaultTopicView {
@@ -433,6 +445,7 @@ public class ConsoleProperties {
 
     public static final class RetentionTime {
         private int duration = 1;
+        private TimeUnit retentionUnit = TimeUnit.DAYS;
 
         public int getDuration() {
             return duration;
@@ -440,6 +453,14 @@ public class ConsoleProperties {
 
         public void setDuration(int duration) {
             this.duration = duration;
+        }
+
+        public TimeUnit getRetentionUnit() {
+            return retentionUnit;
+        }
+
+        public void setRetentionUnit(TimeUnit retentionUnit) {
+            this.retentionUnit = retentionUnit;
         }
     }
 
@@ -451,6 +472,35 @@ public class ConsoleProperties {
         }
 
         public TopicContentType(String value, String label) {
+            this.value = value;
+            this.label = label;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+    }
+
+    public static final class RetentionUnit {
+        private String value = "";
+        private String label = "";
+
+        public RetentionUnit() {
+        }
+
+        public RetentionUnit(String value, String label) {
             this.value = value;
             this.label = label;
         }

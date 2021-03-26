@@ -78,8 +78,8 @@
                         <span uib-popover='Specifies the strength of guarantees that acknowledged message was indeed persisted. In "Leader" mode ACK is required only from topic leader, which is fast and gives 99.99999% guarantee. It might be not enough when cluster is unstable. "All" mode means message needs to be saved on all replicas before sending ACK, which is quite slow but gives 100% guarantee that message has been persisted.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p>
-                        <strong>Retention time:</strong> {{topic.retentionTime.duration}} days
-                        <span uib-popover='For how many days message is available for subscribers after being published.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                        <strong>Retention time:</strong> {{topic.retentionTime.duration}} {{topic.retentionTime.retentionUnit | toLowercase}}
+                        <span uib-popover='For how many hours/days message is available for subscribers after being published.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p><strong>Tracking enabled:</strong> {{topic.trackingEnabled}}</p>
                     <p><strong>Max message size:</strong> {{topic.maxMessageSize | readableSize}}</p>

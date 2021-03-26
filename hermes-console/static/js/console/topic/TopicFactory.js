@@ -6,7 +6,8 @@ topics.factory('TopicFactory', ['TOPIC_CONFIG',
             create: function() {
                 var defaults = {
                     retentionTime: {
-                        duration: 1
+                        duration: 1,
+                        retentionUnit: 'DAYS'
                     },
                     contentType: 'JSON',
                     ack: 'LEADER',
