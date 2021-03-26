@@ -18,13 +18,16 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
     private final HttpRequestFactory requestFactory;
     private final ResolvableEndpointAddress addressResolver;
     private final HttpHeadersProvider requestHeadersProvider;
+    private final SendingResultHandlers sendingResultHandlers;
 
     public JettyMessageSender(HttpRequestFactory requestFactory,
                               ResolvableEndpointAddress addressResolver,
-                              HttpHeadersProvider headersProvider) {
+                              HttpHeadersProvider headersProvider,
+                              SendingResultHandlers sendingResultHandlers) {
         this.requestFactory = requestFactory;
         this.addressResolver = addressResolver;
         this.requestHeadersProvider = headersProvider;
+        this.sendingResultHandlers = sendingResultHandlers;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
             URI resolvedUri = addressResolver.resolveFor(message);
             Request request = requestFactory.buildRequest(message, resolvedUri, headers);
 
-            request.send(result -> resultFuture.complete(MessageSendingResult.of(result)));
+            request.send(sendingResultHandlers.handleSendingResultForSerial(resultFuture));
         } catch (EndpointAddressResolutionException exception) {
             resultFuture.complete(MessageSendingResult.failedResult(exception));
         }

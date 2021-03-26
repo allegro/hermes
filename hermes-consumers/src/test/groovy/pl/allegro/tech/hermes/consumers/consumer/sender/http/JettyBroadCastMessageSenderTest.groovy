@@ -49,6 +49,8 @@ class JettyBroadCastMessageSenderTest extends Specification {
     HttpHeadersProvider requestHeadersProvider = new HermesHeadersProvider(
             singleton(new AuthHeadersProvider(new Http1HeadersProvider(), { Optional.empty() })))
 
+    SendingResultHandlers resultHandlersProvider = new DefaultSendingResultHandlers()
+
     def setupSpec() throws Exception {
         wireMockServers.forEach { it.start() }
 
@@ -66,7 +68,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
                 EndpointAddressResolverMetadata.empty());
         def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
-                requestHeadersProvider);
+                requestHeadersProvider, resultHandlersProvider);
     }
 
     def "should send message successfully in parallel to all urls"() {
@@ -131,7 +133,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
 
         def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
-                requestHeadersProvider)
+                requestHeadersProvider, resultHandlersProvider)
 
         when:
         def future = messageSender.send(testMessage())
