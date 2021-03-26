@@ -7,19 +7,19 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResu
 
 import java.util.concurrent.CompletableFuture;
 
-public class DefaultSendingResultHandlersProvider implements SendingResultHandlersProvider {
+public class DefaultSendingResultHandlers implements SendingResultHandlers {
     @Override
-    public Response.CompleteListener provideJettyCompleteListener(CompletableFuture<MessageSendingResult> resultFuture) {
+    public Response.CompleteListener handleSendingResultForSerial(CompletableFuture<MessageSendingResult> resultFuture) {
         return new JettyResponseListener(resultFuture);
     }
 
     @Override
-    public Response.CompleteListener provideJettyCompleteListenerForBroadcast(CompletableFuture<SingleMessageSendingResult> resultFuture) {
+    public Response.CompleteListener handleSendingResultForBroadcast(CompletableFuture<SingleMessageSendingResult> resultFuture) {
         return new JettyBroadCastResponseListener(resultFuture);
     }
 
     @Override
-    public MessageSendingResult handleApacheSendingResult(CloseableHttpResponse response) {
+    public MessageSendingResult handleSendingResultForBatch(CloseableHttpResponse response) {
         return MessageSendingResult.ofStatusCode(response.getStatusLine().getStatusCode());
     }
 }

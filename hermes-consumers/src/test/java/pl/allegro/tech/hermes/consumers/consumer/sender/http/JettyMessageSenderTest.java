@@ -84,7 +84,7 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver(), METADATA);
         HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender());
-        messageSender = new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlersProvider());
+        messageSender = new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
     }
 
     @Test
@@ -192,7 +192,7 @@ public class JettyMessageSenderTest {
                         new Http1HeadersProvider(),
                         () -> Optional.of("Basic Auth Hello!")
                 ))
-        ),new DefaultSendingResultHandlersProvider());
+        ),new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -212,7 +212,7 @@ public class JettyMessageSenderTest {
                 new DefaultHttpMetadataAppender());
         remoteServiceEndpoint.setDelay(500);
 
-        JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address, headersProvider,new DefaultSendingResultHandlersProvider());
+        JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address, headersProvider,new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -231,7 +231,7 @@ public class JettyMessageSenderTest {
                 new DefaultHttpMetadataAppender());
         remoteServiceEndpoint.setDelay(200);
 
-        JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address, headersProvider,new DefaultSendingResultHandlersProvider());
+        JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address, headersProvider,new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 

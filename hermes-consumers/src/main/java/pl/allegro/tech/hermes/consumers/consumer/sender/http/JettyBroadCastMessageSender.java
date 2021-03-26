@@ -23,16 +23,16 @@ public class JettyBroadCastMessageSender implements MessageSender {
     private final HttpRequestFactory requestFactory;
     private final ResolvableEndpointAddress endpoint;
     private final HttpHeadersProvider requestHeadersProvider;
-    private final SendingResultHandlersProvider sendingResultHandlersProvider;
+    private final SendingResultHandlers sendingResultHandlers;
 
 
     public JettyBroadCastMessageSender(HttpRequestFactory requestFactory,
                                        ResolvableEndpointAddress endpoint,
-                                       HttpHeadersProvider requestHeadersProvider, SendingResultHandlersProvider sendingResultHandlersProvider) {
+                                       HttpHeadersProvider requestHeadersProvider, SendingResultHandlers sendingResultHandlers) {
         this.requestFactory = requestFactory;
         this.endpoint = endpoint;
         this.requestHeadersProvider = requestHeadersProvider;
-        this.sendingResultHandlersProvider = sendingResultHandlersProvider;
+        this.sendingResultHandlers = sendingResultHandlers;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
 
     private CompletableFuture<SingleMessageSendingResult> processResponse(Request request) {
         CompletableFuture<SingleMessageSendingResult> resultFuture = new CompletableFuture<>();
-        request.send(sendingResultHandlersProvider.provideJettyCompleteListenerForBroadcast(resultFuture));
+        request.send(sendingResultHandlers.handleSendingResultForBroadcast(resultFuture));
         return resultFuture;
     }
 

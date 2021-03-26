@@ -29,15 +29,15 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
     private final int connectionTimeout;
     private final int connectionRequestTimeout;
     private final EndpointAddressResolver resolver;
-    private final SendingResultHandlersProvider provider;
+    private final SendingResultHandlers resultHandlers;
 
     private CloseableHttpClient client = HttpClients.createMinimal();
 
-    public ApacheHttpClientMessageBatchSender(int connectionTimeout, int connectionRequestTimeout, EndpointAddressResolver resolver, SendingResultHandlersProvider provider) {
+    public ApacheHttpClientMessageBatchSender(int connectionTimeout, int connectionRequestTimeout, EndpointAddressResolver resolver, SendingResultHandlers resultHandlers) {
         this.connectionTimeout = connectionTimeout;
         this.connectionRequestTimeout = connectionRequestTimeout;
         this.resolver = resolver;
-        this.provider = provider;
+        this.resultHandlers = resultHandlers;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
     private MessageSendingResult send(HttpPost post) {
         try {
-            return provider.handleApacheSendingResult(client.execute(post));
+            return resultHandlers.handleSendingResultForBatch(client.execute(post));
         } catch (IOException e) {
             return MessageSendingResult.failedResult(e);
         } finally {

@@ -49,7 +49,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
     HttpHeadersProvider requestHeadersProvider = new HermesHeadersProvider(
             singleton(new AuthHeadersProvider(new Http1HeadersProvider(), { Optional.empty() })))
 
-    SendingResultHandlersProvider resultHandlersProvider = new DefaultSendingResultHandlersProvider()
+    SendingResultHandlers resultHandlersProvider = new DefaultSendingResultHandlers()
 
     def setupSpec() throws Exception {
         wireMockServers.forEach { it.start() }

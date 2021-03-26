@@ -7,8 +7,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResu
 
 import java.util.concurrent.CompletableFuture;
 
-public interface SendingResultHandlersProvider {
-    CompleteListener provideJettyCompleteListener(CompletableFuture<MessageSendingResult> resultFuture);
-    CompleteListener provideJettyCompleteListenerForBroadcast(CompletableFuture<SingleMessageSendingResult> resultFuture);
-    MessageSendingResult handleApacheSendingResult(CloseableHttpResponse response);
+public interface SendingResultHandlers {
+    CompleteListener handleSendingResultForSerial(CompletableFuture<MessageSendingResult> resultFuture);
+    CompleteListener handleSendingResultForBroadcast(CompletableFuture<SingleMessageSendingResult> resultFuture);
+    MessageSendingResult handleSendingResultForBatch(CloseableHttpResponse response);
 }
