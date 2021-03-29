@@ -131,7 +131,6 @@ public class SchemaManager {
                 .startObject()
                     .startObject(indexType)
                         .field("dynamic", dynamicMappingEnabled)
-                        .startObject("_all").field("enabled", false).endObject()
                         .startObject("properties")
                             .startObject(MESSAGE_ID).field("type", "keyword").field("norms", false).endObject()
                             .startObject(TIMESTAMP).field("type", "date").field("index", false).endObject()
