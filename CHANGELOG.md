@@ -2,6 +2,23 @@
 
 ...
 
+## 1.8.5 (29.03.2021)
+
+### Enhancements
+
+#### ([1334](https://github.com/allegro/hermes/pull/1334)) Removed deprecated _all field from ES queries
+
+## 1.8.4 (26.03.2021)
+
+### Enhancements
+
+#### ([1333](https://github.com/allegro/hermes/pull/1333)) Allow configuring percentiles on MeterRegistry level in hermes-client
+#### ([1332](https://github.com/allegro/hermes/pull/1332)) Pluggable sending result handlers
+#### ([1330](https://github.com/allegro/hermes/pull/1330)) Topic retention in hours
+#### ([1326](https://github.com/allegro/hermes/pull/1326)) Added support for custom AvroEnforcer and MessageConverterResolver
+
+Thanks to @tadamcze for this contribution!
+
 ## 1.8.3 (05.03.2021)
 
 ### Fixes
