@@ -2,6 +2,12 @@
 
 ...
 
+## 1.8.6 (13.04.2021)
+
+### Enhancements
+
+#### ([1336](https://github.com/allegro/hermes/pull/1336)) Added headers provider for batch sender
+
 ## 1.8.5 (29.03.2021)
 
 ### Enhancements
