@@ -24,6 +24,7 @@ public class ConsoleProperties {
     private TopicView topic = new TopicView();
     private SubscriptionView subscription = new SubscriptionView();
     private ConsistencyView consistency = new ConsistencyView();
+    private GroupView group = new GroupView();
 
     public Dashboard getDashboard() {
         return dashboard;
@@ -71,6 +72,14 @@ public class ConsoleProperties {
 
     public void setConsistency(ConsistencyView consistency) {
         this.consistency = consistency;
+    }
+
+    public GroupView getGroup() {
+        return group;
+    }
+
+    public void setGroup(GroupView group) {
+        this.group = group;
     }
 
     public static final class Console {
@@ -603,6 +612,18 @@ public class ConsoleProperties {
 
         public void setDeliveryTypes(List<SubscriptionDeliveryType> deliveryTypes) {
             this.deliveryTypes = deliveryTypes;
+        }
+    }
+
+    public static final class GroupView {
+        private boolean nonAdminCreationEnabled = false;
+
+        public boolean isNonAdminCreationEnabled() {
+            return nonAdminCreationEnabled;
+        }
+
+        public void setNonAdminCreationEnabled(boolean nonAdminCreationEnabled) {
+            this.nonAdminCreationEnabled = nonAdminCreationEnabled;
         }
     }
 

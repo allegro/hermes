@@ -2,10 +2,11 @@ package pl.allegro.tech.hermes.management.api.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.management.domain.subscription.CreatorRights;
+import pl.allegro.tech.hermes.management.config.GroupProperties;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
@@ -16,10 +17,12 @@ import javax.ws.rs.container.ContainerRequestContext;
 public class ManagementRights {
 
     private final TopicRepository topicRepository;
+    private final GroupProperties groupProperties;
 
     @Autowired
-    public ManagementRights(TopicRepository topicRepository) {
+    public ManagementRights(TopicRepository topicRepository, GroupProperties groupProperties) {
         this.topicRepository = topicRepository;
+        this.groupProperties = groupProperties;
     }
 
     public boolean isUserAllowedToManageTopic(Topic topic, ContainerRequestContext requestContext) {
@@ -30,6 +33,14 @@ public class ManagementRights {
     public boolean isUserAllowedToCreateSubscription(Subscription subscription, ContainerRequestContext requestContext) {
         return !topicRepository.isSubscribingRestricted(subscription.getTopicName()) ||
                 isAdmin(requestContext) || isTopicOwner(subscription, requestContext);
+    }
+
+    public boolean isUserAllowedToCreateGroup(ContainerRequestContext requestContext) {
+        return isAdmin(requestContext) || groupProperties.isNonAdminCreationEnabled();
+    }
+
+    private boolean isUserAllowedToManageGroup(ContainerRequestContext requestContext) {
+        return isAdmin(requestContext);
     }
 
     public boolean isUserAllowedToManageSubscription(Subscription subscription, ContainerRequestContext requestContext) {
@@ -53,14 +64,18 @@ public class ManagementRights {
         return (SecurityProvider.OwnershipResolver) requestContext.getProperty(AuthorizationFilter.OWNERSHIP_RESOLVER);
     }
 
-    public CreatorRights getSubscriptionCreatorRights(ContainerRequestContext requestContext) {
+    public CreatorRights<Subscription> getSubscriptionCreatorRights(ContainerRequestContext requestContext) {
         return new SubscriptionCreatorRights(requestContext);
     }
 
-    private class SubscriptionCreatorRights implements CreatorRights {
+    public CreatorRights<Group> getGroupCreatorRights(ContainerRequestContext requestContext) {
+        return new GroupCreatorRights(requestContext);
+    }
+
+    class SubscriptionCreatorRights implements CreatorRights<Subscription> {
         private ContainerRequestContext requestContext;
 
-        private SubscriptionCreatorRights(ContainerRequestContext requestContext) {
+        SubscriptionCreatorRights(ContainerRequestContext requestContext) {
             this.requestContext = requestContext;
         }
 
@@ -72,6 +87,24 @@ public class ManagementRights {
         @Override
         public boolean allowedToCreate(Subscription subscription) {
             return ManagementRights.this.isUserAllowedToCreateSubscription(subscription, requestContext);
+        }
+    }
+
+    class GroupCreatorRights implements CreatorRights<Group> {
+        private ContainerRequestContext requestContext;
+
+        GroupCreatorRights(ContainerRequestContext requestContext) {
+            this.requestContext = requestContext;
+        }
+
+        @Override
+        public boolean allowedToManage(Group group) {
+            return ManagementRights.this.isUserAllowedToManageGroup(requestContext);
+        }
+
+        @Override
+        public boolean allowedToCreate(Group group) {
+            return ManagementRights.this.isUserAllowedToCreateGroup(requestContext);
         }
     }
 }

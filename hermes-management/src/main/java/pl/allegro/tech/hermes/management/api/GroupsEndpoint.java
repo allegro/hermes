@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
@@ -20,6 +21,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -36,10 +38,15 @@ public class GroupsEndpoint {
 
     private final ApiPreconditions preconditions;
 
+    private final ManagementRights managementRights;
+
     @Autowired
-    public GroupsEndpoint(GroupService groupService, ApiPreconditions preconditions) {
+    public GroupsEndpoint(GroupService groupService,
+                          ApiPreconditions preconditions,
+                          ManagementRights managementRights) {
         this.groupService = groupService;
         this.preconditions = preconditions;
+        this.managementRights = managementRights;
     }
 
     @GET
@@ -61,10 +68,9 @@ public class GroupsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Create group", response = String.class, httpMethod = HttpMethod.POST)
-    @RolesAllowed(Roles.ADMIN)
-    public Response create(Group group, @Context SecurityContext securityContext) {
+    public Response create(Group group, @Context SecurityContext securityContext, @Context ContainerRequestContext requestContext) {
         preconditions.checkConstraints(group);
-        groupService.createGroup(group, securityContext.getUserPrincipal().getName());
+        groupService.createGroup(group, securityContext.getUserPrincipal().getName(), managementRights.getGroupCreatorRights(requestContext));
         return Response.status(Response.Status.CREATED).build();
     }
 

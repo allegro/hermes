@@ -4,6 +4,9 @@
         <h3 class="modal-title" ng-show="operation === 'EDIT'"><small>Edit group:</small> {{group.groupName}}</h3>
     </div>
     <div class="modal-body">
+        <div ng-show="!admin && operation == 'ADD'" class="alert alert-warning">When creating a group please make sure that it complies with general
+            group standards and naming conventions. In addition, ensure that there does not already exist a group, that would fit your needs</div>
+
         <form name="groupForm" class="form-horizontal" role="form">
             <div ng-hide="!authEnabled.headers || isAuthorized" class="form-group {{groupForm.rootPassword.$valid ? '' : 'has-error'}}">
                 <label for="rootPassword" class="col-md-3 control-label">Root password</label>

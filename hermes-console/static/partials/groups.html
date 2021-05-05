@@ -7,7 +7,7 @@
 
     <h1>Groups</h1>
 
-    <div ng-show="!admin" class="alert alert-info">In order to create a new group, please contact Hermes adminstrator</div>
+    <div ng-show="!canCreateGroup()" class="alert alert-info">In order to create a new group, please contact Hermes administrator</div>
 
     <div class="row container">
         <div class="input-group col-md-2 col-md-offset-10">
@@ -18,7 +18,7 @@
 
     <div class="row container">
         <div class="list-group">
-            <div class="list-group-item" ng-show="admin">
+            <div class="list-group-item" ng-show="canCreateGroup()">
                 <div class="pull-right">
                     <button class="btn btn-primary"  ng-click="addGroup()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>

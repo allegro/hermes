@@ -1,6 +1,6 @@
 ## [Unreleased]
+#### (???) Groups can now be created without admin rights by default. This behaviour (both button visibility in console and role checking in management) can be changed by modyfing "nonAdminCreationEnabled" property in console and management.
 
-...
 
 ## 1.8.6 (13.04.2021)
 
