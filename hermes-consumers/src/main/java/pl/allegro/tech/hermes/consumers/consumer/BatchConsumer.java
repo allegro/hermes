@@ -235,7 +235,11 @@ public class BatchConsumer implements Consumer {
         return new RetryListener() {
             @Override
             public <V> void onRetry(Attempt<V> attempt) {
-                consumer.accept((MessageSendingResult) attempt.getResult());
+                if (attempt.hasException()) {
+                    consumer.accept(MessageSendingResult.failedResult(attempt.getExceptionCause()));
+                } else {
+                    consumer.accept((MessageSendingResult) attempt.getResult());
+                }
             }
         };
     }
