@@ -1,6 +1,10 @@
 ## [Unreleased]
-#### (???) Groups can now be created without admin rights by default. This behaviour (both button visibility in console and role checking in management) can be changed by modyfing "nonAdminCreationEnabled" property in console and management.
 
+## 1.8.7 (05.05.2021)
+
+## Enhancements
+
+#### ([1339](https://github.com/allegro/hermes/pull/1339)) Groups can now be created without admin rights by default. This behaviour (both button visibility in console and role checking in management) can be changed by modifying "nonAdminCreationEnabled" property in console and management.
 
 ## 1.8.6 (13.04.2021)
 
