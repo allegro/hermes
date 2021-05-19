@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
-import pl.allegro.tech.hermes.management.domain.subscription.CreatorRights;
+import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 @Component
@@ -33,7 +33,7 @@ public class SubscriptionValidator {
         this.subscriptionRepository = subscriptionRepository;
     }
 
-    public void checkCreation(Subscription toCheck, CreatorRights creatorRights) {
+    public void checkCreation(Subscription toCheck, CreatorRights<Subscription> creatorRights) {
         apiPreconditions.checkConstraints(toCheck);
         ownerIdValidator.check(toCheck.getOwner());
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));

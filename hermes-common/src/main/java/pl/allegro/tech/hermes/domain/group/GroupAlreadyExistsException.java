@@ -5,6 +5,10 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class GroupAlreadyExistsException extends HermesException {
 
+    public GroupAlreadyExistsException(String groupName) {
+        super(String.format("Group %s already exists", groupName));
+    }
+
     public GroupAlreadyExistsException(String groupName, Throwable cause) {
         super(String.format("Group %s already exists", groupName), cause);
     }

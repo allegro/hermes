@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.management.domain.group.commands.CreateGroupReposi
 import pl.allegro.tech.hermes.management.domain.group.commands.RemoveGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.group.commands.UpdateGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,13 +29,17 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final Auditor auditor;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
+    private final GroupValidator validator;
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, Auditor auditor,
-                        MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
+    public GroupService(GroupRepository groupRepository,
+                        Auditor auditor,
+                        MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+                        GroupValidator validator) {
         this.groupRepository = groupRepository;
         this.auditor = auditor;
         this.multiDcExecutor = multiDcExecutor;
+        this.validator = validator;
     }
 
     public List<Group> listGroups() {
@@ -49,7 +54,10 @@ public class GroupService {
         return groupRepository.getGroupDetails(groupName);
     }
 
-    public void createGroup(Group group, String createdBy) {
+    public void createGroup(Group group,
+                            String createdBy,
+                            CreatorRights<Group> creatorRights) {
+        validator.checkCreation(group, creatorRights);
         multiDcExecutor.execute(new CreateGroupRepositoryCommand(group));
         auditor.objectCreated(createdBy, group);
     }

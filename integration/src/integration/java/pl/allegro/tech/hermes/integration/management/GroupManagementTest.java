@@ -37,7 +37,7 @@ public class GroupManagementTest extends IntegrationTest {
     }
 
     @Test
-    void shouldCreateAndFetchGroupDetails() throws InterruptedException {
+    void shouldCreateAndFetchGroupDetails() {
         //given
         Group group = group("groupWithDetails").build();
         management.group().create(group);

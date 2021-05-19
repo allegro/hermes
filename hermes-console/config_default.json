@@ -24,6 +24,9 @@
     },
     "offlineClientsEnabled": false
   },
+  "group": {
+    "nonAdminCreationEnabled": true
+  },
   "subscription": {
     "deliveryTypes": [
       {"value": "SERIAL", "label": "SERIAL"},

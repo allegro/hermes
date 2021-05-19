@@ -19,13 +19,13 @@ rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope'
             }
 
             function isOwner(value) {
-                if(isAdmin(value)) {
+                if (isAdmin(value)) {
                     return true;
                 }
-                if(subscriptionName) {
+                if (subscriptionName) {
                     return value.includes('subscriptionOwner');
                 }
-                if(topicName) {
+                if (topicName) {
                     return value.includes('topicOwner');
                 }
                 return value.includes('any');
