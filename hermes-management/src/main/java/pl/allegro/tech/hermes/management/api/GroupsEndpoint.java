@@ -68,6 +68,7 @@ public class GroupsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Create group", response = String.class, httpMethod = HttpMethod.POST)
+    @RolesAllowed(Roles.ANY)
     public Response create(Group group, @Context SecurityContext securityContext, @Context ContainerRequestContext requestContext) {
         preconditions.checkConstraints(group);
         groupService.createGroup(group, securityContext.getUserPrincipal().getName(), managementRights.getGroupCreatorRights(requestContext));
