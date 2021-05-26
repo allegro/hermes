@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## 1.8.8 (26.05.2021)
+
+## Enhancements
+
+#### ([1340](https://github.com/allegro/hermes/pull/1340)) Renamed HostnameResolver to InstanceIdResolver
+
 ## 1.8.7 (05.05.2021)
 
 ## Enhancements
