@@ -1,5 +1,5 @@
 package pl.allegro.tech.hermes.common.util;
 
-public interface HostnameResolver {
+public interface InstanceIdResolver {
     String resolve();
 }

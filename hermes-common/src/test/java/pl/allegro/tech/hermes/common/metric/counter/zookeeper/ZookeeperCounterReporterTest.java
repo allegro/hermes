@@ -15,7 +15,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
-import pl.allegro.tech.hermes.common.util.HostnameResolver;
+import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.util.SortedMap;
@@ -80,14 +80,14 @@ public class ZookeeperCounterReporterTest {
     private ConfigFactory configFactory;
 
     @Mock
-    private HostnameResolver hostnameResolver;
+    private InstanceIdResolver instanceIdResolver;
 
     private ZookeeperCounterReporter zookeeperCounterReporter;
 
     @Before
     public void before() {
         when(configFactory.getStringProperty(Configs.GRAPHITE_PREFIX)).thenReturn(GRAPHITE_PREFIX);
-        when(hostnameResolver.resolve()).thenReturn("localhost.domain");
+        when(instanceIdResolver.resolve()).thenReturn("localhost.domain");
         zookeeperCounterReporter = new ZookeeperCounterReporter(metricRegistry, counterStorage, configFactory);
     }
 
