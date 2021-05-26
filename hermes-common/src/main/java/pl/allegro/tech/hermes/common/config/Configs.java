@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.common.config;
 
 import com.google.common.io.Files;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
+import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 
 import static java.lang.Math.abs;
 import static java.util.UUID.randomUUID;
@@ -252,7 +252,7 @@ public enum Configs {
     CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER("consumer.workload.max.subscriptions.per.consumer", 200),
     CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE("consumer.workload.assignment.processing.thread.pool.size", 5),
     CONSUMER_WORKLOAD_NODE_ID("consumer.workload.node.id",
-            new InetAddressHostnameResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits())),
+            new InetAddressInstanceIdResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits())),
     CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL("consumer.workload.monitor.scan.interval.seconds", 120),
     CONSUMER_WORKLOAD_AUTO_REBALANCE("consumer.workload.rebalance.auto", true),
     CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS("consumer.workload.dead.after.seconds", 120),
@@ -271,7 +271,7 @@ public enum Configs {
 
     CONSUMER_USE_TOPIC_MESSAGE_SIZE("consumer.use.topic.message.size", false),
 
-    CONSUMER_CLIENT_ID("consumer.clientId", new InetAddressHostnameResolver().resolve()),
+    CONSUMER_CLIENT_ID("consumer.clientId", new InetAddressInstanceIdResolver().resolve()),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),

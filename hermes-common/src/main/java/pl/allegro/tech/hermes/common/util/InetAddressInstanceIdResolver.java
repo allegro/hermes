@@ -6,11 +6,11 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public final class InetAddressHostnameResolver implements HostnameResolver {
+public final class InetAddressInstanceIdResolver implements InstanceIdResolver {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InetAddressHostnameResolver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InetAddressInstanceIdResolver.class);
 
-    public InetAddressHostnameResolver() { }
+    public InetAddressInstanceIdResolver() { }
 
     public String resolve() {
         String hostname = "hostname-could-not-be-detected";
