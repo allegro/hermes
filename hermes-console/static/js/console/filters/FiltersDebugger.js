@@ -11,7 +11,10 @@ angular.module('hermes.filters.debugger', ['hermes.filters.repository'])
 
             $scope.verify = function () {
                 resetVerificationState();
-                filtersRepository.verify($scope.topicName, $scope.messageFilters, $scope.message).$promise
+                var filtersWithoutHeaderFilterType = _.reject($scope.messageFilters, function (f) {
+                    return f.header;
+                });
+                filtersRepository.verify($scope.topicName, filtersWithoutHeaderFilterType, $scope.message).$promise
                     .then(function (response) {
                         $scope.verificationStatus = response.status;
                         $scope.errorMessage = response.errorMessage;

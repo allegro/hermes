@@ -29,6 +29,7 @@ console:
         label: DAYS
   subscription:
     showHeadersFilter: true
+    showFixedHeaders: false
     deliveryTypes:
       - value: SERIAL
         label: SERIAL

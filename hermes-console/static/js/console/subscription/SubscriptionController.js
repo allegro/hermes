@@ -37,6 +37,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
 
         $scope.retransmissionLoading = false;
 
+        $scope.showHeadersFilter = config.showHeadersFilter;
         $scope.showFixedHeaders = config.showFixedHeaders;
 
         $scope.endpointAddressResolverMetadataConfig = config.endpointAddressResolverMetadata;
@@ -106,6 +107,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     showFixedHeaders: function () {
                         return $scope.showFixedHeaders;
+                    },
+                    showHeadersFilter: function () {
+                      return $scope.showHeadersFilter;
                     }
                 }
             }).result.then(function(response){
@@ -137,6 +141,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     },
                     showFixedHeaders: function () {
                         return $scope.showFixedHeaders;
+                    },
+                    showHeadersFilter: function () {
+                        return $scope.showHeadersFilter;
                     }
                 }
             }).result.then(function(response){
@@ -268,15 +275,16 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',
     'topicName', 'PasswordService', 'toaster', 'operation', 'endpointAddressResolverMetadataConfig', 'topicContentType',
-    'showFixedHeaders', 'SUBSCRIPTION_CONFIG',
+    'showFixedHeaders', 'showHeadersFilter', 'SUBSCRIPTION_CONFIG',
     function (subscriptionRepository, $scope, $modal, subscription, topicName, passwordService, toaster, operation,
-              endpointAddressResolverMetadataConfig, topicContentType, showFixedHeaders, subscriptionConfig) {
+              endpointAddressResolverMetadataConfig, topicContentType, showFixedHeaders, showHeadersFilter, subscriptionConfig) {
         $scope.topicName = topicName;
         $scope.topicContentType = topicContentType;
         $scope.subscription = _.cloneDeep(subscription);
         $scope.operation = operation;
         $scope.endpointAddressResolverMetadataConfig = endpointAddressResolverMetadataConfig;
         $scope.showFixedHeaders = showFixedHeaders;
+        $scope.showHeadersFilter = showHeadersFilter;
         $scope.config = subscriptionConfig;
 
         $scope.save = function () {
@@ -318,6 +326,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
         $scope.delHeader = function (index) {
             $scope.subscription.headers.splice(index, 1);
         };
+
     }]);
 
 function initRetransmissionCalendar(daysBack) {
