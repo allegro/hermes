@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## 1.8.9 (02.06.2021)
+
+## Enhancements
+
+#### ([1342](https://github.com/allegro/hermes/pull/1342)) Add kafka producer publishing error metrics
+
 ## 1.8.8 (26.05.2021)
 
 ## Enhancements
