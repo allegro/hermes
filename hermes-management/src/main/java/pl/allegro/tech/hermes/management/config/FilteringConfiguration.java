@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
 import pl.allegro.tech.hermes.domain.filtering.SubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.domain.filtering.header.HeaderSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.filtering.json.JsonPathSubscriptionMessageFilterCompiler;
 
 import java.util.Arrays;
@@ -20,7 +21,8 @@ public class FilteringConfiguration {
     FilterChainFactory filterChainFactory() {
         List<SubscriptionMessageFilterCompiler> subscriptionFilterCompilers = Arrays.asList(
                 new AvroPathSubscriptionMessageFilterCompiler(),
-                new JsonPathSubscriptionMessageFilterCompiler()
+                new JsonPathSubscriptionMessageFilterCompiler(),
+                new HeaderSubscriptionMessageFilterCompiler()
         );
         MessageFilters messageFilters = new MessageFilters(emptyList(), subscriptionFilterCompilers);
         return new FilterChainFactory(messageFilters);

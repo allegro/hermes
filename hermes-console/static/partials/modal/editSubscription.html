@@ -206,6 +206,15 @@
                 </div>
             </div>
 
+            <div class="form-group" ng-show="showHeadersFilter">
+                <label class="col-md-3 control-label">HTTP header filter</label>
+                <div class="col-md-9">
+                    <http-header-filters-editor
+                        form="subscriptionForm"
+                        filters="subscription.filters"></http-header-filters-editor>
+                </div>
+            </div>
+
             <div class="form-group" ng-show="showFixedHeaders">
                 <label class="col-md-3 control-label">Fixed HTTP headers</label>
                 <div class="col-md-9">

@@ -17,8 +17,10 @@ angular.module('hermes.filters')
                 $scope.filter = {};
             };
 
-            $scope.delFilter = function (index) {
-                $scope.filters.splice(index, 1);
+            $scope.delFilter = function (filter) {
+                $scope.filters = _.reject($scope.filters, function (f) {
+                    return f === filter;
+                });
             };
 
             $scope.debugFilters = function () {
@@ -32,7 +34,7 @@ angular.module('hermes.filters')
         return {
             controller: 'FiltersEditorController',
             restrict: 'E',
-            templateUrl: 'partials/filtersEditor.html',
+            templateUrl: 'partials/filter/filtersEditor.html',
             scope: {
                 form: '=',
                 topicContentType: '=topicContentType',

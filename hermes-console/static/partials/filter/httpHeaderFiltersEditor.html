@@ -1,0 +1,41 @@
+<div>
+    <table class="table borderless">
+        <tr>
+            <th>Header name</th>
+            <th>Matcher</th>
+            <th></th>
+        </tr>
+        <tr ng-repeat="filter in filters" ng-if="filter.type === 'header'">
+            <td>
+                <input ng-model="filter.header"
+                       class="form-control col-md-1 {{filter.header.$valid ? '' : 'has-error'}}"
+                       name="subscriptionHttpHeaderFilterInput" placeholder="{{filter.header}}"/>
+            </td>
+            <td>
+                <input ng-model="filter.matcher"
+                       class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
+                       name="subscriptionHttpFilterMatcherEdit" placeholder="{{filter.matcher}}"/>
+            </td>
+            <td>
+                <button class="btn btn-danger" ng-click="delFilter(filter)">Delete</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input ng-model="filter.header"
+                       class="form-control col-md-1 {{filter.header.$valid ? '' : 'has-error'}}"
+                       name="subscriptionHttpHeaderFilterInput" placeholder="Header name"/>
+            </td>
+            <td>
+                <input ng-model="filter.matcher"
+                       class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
+                       name="subscriptionHttpFilterMatcherInput" placeholder="Matcher for filter"/>
+            </td>
+            <td>
+                <div class="col-md-1">
+                    <button class="btn btn-success" ng-click="addFilter()">Add</button>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
