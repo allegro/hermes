@@ -116,10 +116,11 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
             receiver = new ThrottlingMessageReceiver(receiver, idleTimeCalculator, subscription, hermesMetrics);
         }
 
+        boolean filteringRateLimitEnabled = configs.getBooleanProperty(Configs.CONSUMER_FILTERING_RATE_LIMITER_ENABLED);
         if (configs.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
             FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
                     offsetQueue,
-                    consumerRateLimiter,
+                    filteringRateLimitEnabled ? consumerRateLimiter : null,
                     trackers,
                     hermesMetrics);
             receiver = new FilteringMessageReceiver(receiver, filteredMessageHandler, filterChainFactory, subscription);
