@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+## 1.9.0 (15.06.2021)
+
+## Enhancements
+
+#### ([1346](https://github.com/allegro/hermes/pull/1346)) Add configurable filtering rate limiter
+
+#### ([1345](https://github.com/allegro/hermes/pull/1345)) Add UI panel for http header filters 
+
 ## 1.8.9 (02.06.2021)
 
 ## Enhancements
