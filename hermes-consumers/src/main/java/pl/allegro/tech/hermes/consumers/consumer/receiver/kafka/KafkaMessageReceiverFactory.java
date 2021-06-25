@@ -1,10 +1,15 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
+import com.netflix.config.DynamicPropertyFactory;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.SslConfigs;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.config.KafkaClientConfig;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -146,6 +151,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                             + "username=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
                             + "password=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
+
+            KafkaClientConfig.loadKakfaConfig(props::put);
         }
         props.put(AUTO_OFFSET_RESET_CONFIG, configs.getStringProperty(Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG));
         props.put(SESSION_TIMEOUT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG));

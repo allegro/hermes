@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.config.KafkaClientConfig;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -90,6 +91,8 @@ public class KafkaMessageProducerFactory implements Factory<Producers> {
                             + "username=\"" + getString(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
                             + "password=\"" + getString(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
+
+            KafkaClientConfig.loadKakfaConfig(props::put);
         }
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));
