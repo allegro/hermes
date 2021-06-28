@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.endpoints.ModeEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.ReadinessEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
@@ -49,6 +50,8 @@ public class HermesEndpoints {
 
     private final FilterEndpoint filterEndpoint;
 
+    private final ReadinessEndpoint readinessEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
@@ -64,6 +67,7 @@ public class HermesEndpoints {
         this.unhealthyEndpoint = hermes.unhealthyEndpoint();
         this.modeEndpoint = hermes.modeEndpoint();
         this.filterEndpoint = hermes.createFilterEndpoint();
+        this.readinessEndpoint = hermes.createReadinessEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -138,6 +142,10 @@ public class HermesEndpoints {
 
     public FilterEndpoint filter() {
         return filterEndpoint;
+    }
+
+    public ReadinessEndpoint readiness() {
+        return readinessEndpoint;
     }
 }
 

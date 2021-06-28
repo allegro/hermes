@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
+import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -19,6 +20,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepos
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
@@ -58,6 +60,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<String, WorkloadConstraintsRepository> workloadConstraintsRepositoriesByDc = new HashMap<>();
     private final Map<String, UndeliveredMessageLog> undeliveredMessageLogsByDc = new HashMap<>();
     private final Map<String, AdminTool> adminToolByDc = new HashMap<>();
+    private final Map<String, ReadinessRepository> readinessRepositoriesByDc = new HashMap<>();
 
     public ZookeeperRepositoryManager(ZookeeperClientManager clientManager,
                                       DatacenterNameProvider datacenterNameProvider,
@@ -97,6 +100,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             UndeliveredMessageLog undeliveredMessageLog = new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
             AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(),
                     mapper, adminReaperInterval);
+
+            ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths, dcName);
             adminTool.start();
 
             groupRepositoriesByDc.put(dcName, groupRepository);
@@ -110,6 +115,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
             undeliveredMessageLogsByDc.put(dcName, undeliveredMessageLog);
             adminToolByDc.put(dcName, adminTool);
+            readinessRepositoriesByDc.put(dcName, readinessRepository);
         }
     }
 
@@ -155,5 +161,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         repositoryByType.put(WorkloadConstraintsRepository.class, workloadConstraintsRepositoriesByDc);
         repositoryByType.put(UndeliveredMessageLog.class, undeliveredMessageLogsByDc);
         repositoryByType.put(AdminTool.class, adminToolByDc);
+        repositoryByType.put(ReadinessRepository.class, readinessRepositoriesByDc);
     }
 }

@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
+import java.util.List;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Readiness;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.api.Topic;
@@ -16,6 +18,7 @@ import javax.ws.rs.core.Response;
 
 import java.util.concurrent.TimeUnit;
 
+import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -204,4 +207,7 @@ public class HermesAPIOperations {
         wait.untilOAuthProviderCreated(oAuthProvider.getName());
     }
 
+    public void setReadiness(String dcName, boolean isReady) {
+        assertThat(endpoints.readiness().setReadiness(dcName, new Readiness(isReady)).getStatus()).isEqualTo(ACCEPTED.getStatusCode());
+    }
 }
