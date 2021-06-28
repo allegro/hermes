@@ -101,7 +101,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(),
                     mapper, adminReaperInterval);
 
-            ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
+            ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths, dcName);
             adminTool.start();
 
             groupRepositoriesByDc.put(dcName, groupRepository);
