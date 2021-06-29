@@ -63,3 +63,4 @@ console:
         label: Days
   subscription:
     showHeadersFilter: false
+    showFixedHeaders: false
