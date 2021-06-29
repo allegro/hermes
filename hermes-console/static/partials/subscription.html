@@ -294,7 +294,8 @@
                     <tr>
                         <th>#</th>
                         <th>Type</th>
-                        <th>Path</th>
+                        <th ng-show="showHeadersFilter">Path or Header name</th>
+                        <th ng-show="!showHeadersFilter">Path</th>
                         <th>Matcher</th>
                         <th>Matching strategy</th>
                         <th> </th>
@@ -303,7 +304,7 @@
                     <tr ng-repeat="filter in subscription.filters">
                         <td>{{$index + 1}}</td>
                         <td>{{filter.type}}</td>
-                        <td>{{filter.path}}</td>
+                        <td>{{filter.path}}{{filter.header}}</td>
                         <td>{{filter.matcher}}</td>
                         <td>{{filter.matchingStrategy}}</td>
                     </tr>
