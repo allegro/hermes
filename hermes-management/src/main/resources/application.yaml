@@ -61,3 +61,6 @@ console:
         label: Hours
       - value: TimeUnit.DAYS
         label: Days
+  subscription:
+    showHeadersFilter: false
+    showFixedHeaders: false

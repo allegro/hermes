@@ -22,6 +22,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
         $scope.showFixedHeaders = subscriptionConfig.showFixedHeaders;
+        $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
@@ -222,6 +223,9 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     },
                     showFixedHeaders: function () {
                         return $scope.showFixedHeaders;
+                    },
+                    showHeadersFilter: function () {
+                        return $scope.showHeadersFilter;
                     }
                 }
             }).result.then(function () {

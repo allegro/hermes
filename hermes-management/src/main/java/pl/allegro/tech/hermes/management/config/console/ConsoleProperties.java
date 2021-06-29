@@ -576,6 +576,7 @@ public class ConsoleProperties {
     public static final class SubscriptionView {
         private Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata = new HashMap<>();
         private boolean showHeadersFilter = false;
+        private boolean showFixedHeaders = false;
         private DefaultSubscriptionView defaults = new DefaultSubscriptionView();
         private List<SubscriptionDeliveryType> deliveryTypes = Lists.newArrayList(
                 new SubscriptionDeliveryType("SERIAL", "SERIAL"),
@@ -612,6 +613,14 @@ public class ConsoleProperties {
 
         public void setDeliveryTypes(List<SubscriptionDeliveryType> deliveryTypes) {
             this.deliveryTypes = deliveryTypes;
+        }
+
+        public boolean isShowFixedHeaders() {
+            return showFixedHeaders;
+        }
+
+        public void setShowFixedHeaders(boolean showFixedHeaders) {
+            this.showFixedHeaders = showFixedHeaders;
         }
     }
 

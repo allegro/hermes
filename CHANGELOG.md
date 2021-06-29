@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## 1.9.1 (29.06.2021)
+
+### Fixes
+
+#### ([1348](https://github.com/allegro/hermes/issues/1348)) Fixed subscription creation via UI
+
 ## 1.9.0 (15.06.2021)
 
 ## Enhancements
