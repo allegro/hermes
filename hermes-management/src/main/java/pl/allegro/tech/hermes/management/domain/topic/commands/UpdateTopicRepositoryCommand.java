@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.topic.commands;
 
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class UpdateTopicRepositoryCommand extends RepositoryCommand<TopicRepository> {
@@ -15,18 +16,18 @@ public class UpdateTopicRepositoryCommand extends RepositoryCommand<TopicReposit
     }
 
     @Override
-    public void backup(TopicRepository repository) {
-        backup = repository.getTopicDetails(topic.getName());
+    public void backup(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
+        backup = holder.getRepository().getTopicDetails(topic.getName());
     }
 
     @Override
-    public void execute(TopicRepository repository) {
-        repository.updateTopic(topic);
+    public void execute(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
+        holder.getRepository().updateTopic(topic);
     }
 
     @Override
-    public void rollback(TopicRepository repository) {
-        repository.updateTopic(backup);
+    public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
+        holder.getRepository().updateTopic(backup);
     }
 
     @Override

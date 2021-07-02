@@ -8,15 +8,12 @@ import javax.inject.Named;
 import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
-import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperDatacenterReadinessRepository;
 
 
 public class ReadinessRepositoryFactory implements Factory<List<ReadinessRepository>> {
-
-    private final String hostname;
 
     private final CuratorFramework zookeeper;
 
@@ -26,16 +23,15 @@ public class ReadinessRepositoryFactory implements Factory<List<ReadinessReposit
 
     @Inject
     public ReadinessRepositoryFactory(@Named(CuratorType.HERMES) CuratorFramework zookeeper, ZookeeperPaths paths,
-                                      ObjectMapper mapper, InstanceIdResolver instanceIdResolver) {
+                                      ObjectMapper mapper) {
         this.zookeeper = zookeeper;
         this.paths = paths;
         this.mapper = mapper;
-        this.hostname = instanceIdResolver.resolve();
     }
 
     @Override
     public List<ReadinessRepository> provide() {
-        return Lists.newArrayList(new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths, hostname));
+        return Lists.newArrayList(new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths));
     }
 
     @Override

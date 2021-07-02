@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
-import java.util.List;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;

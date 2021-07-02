@@ -4,18 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.Readiness;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.domain.readiness.DatacenterReadinessRepository;
+import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 
-public class ZookeeperDatacenterReadinessRepository extends ZookeeperBasedRepository implements DatacenterReadinessRepository {
-
-    private final String datacenter;
+public class ZookeeperDatacenterReadinessRepository extends ZookeeperBasedRepository implements ReadinessRepository {
 
     public ZookeeperDatacenterReadinessRepository(CuratorFramework zookeeper,
                                                   ObjectMapper mapper,
-                                                  ZookeeperPaths paths,
-                                                  String datacenter) {
+                                                  ZookeeperPaths paths) {
         super(zookeeper, mapper, paths);
-        this.datacenter = datacenter;
     }
 
     @Override
@@ -40,10 +36,5 @@ public class ZookeeperDatacenterReadinessRepository extends ZookeeperBasedReposi
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
         }
-    }
-
-    @Override
-    public boolean datacenterMatches(String datacenter) {
-        return this.datacenter.equals(datacenter);
     }
 }

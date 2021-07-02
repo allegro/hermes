@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryQueryExecutor;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
@@ -84,6 +85,12 @@ public class StorageConfiguration {
             ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
         return new MultiDatacenterRepositoryCommandExecutor(repositoryManager(zookeeperGroupRepositoryFactory),
                 storageClustersProperties.isTransactional());
+    }
+
+    @Bean
+    MultiDatacenterRepositoryQueryExecutor multiDcRepositoryQueryExecutor(
+            ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
+        return new MultiDatacenterRepositoryQueryExecutor(repositoryManager(zookeeperGroupRepositoryFactory));
     }
 
     @Bean

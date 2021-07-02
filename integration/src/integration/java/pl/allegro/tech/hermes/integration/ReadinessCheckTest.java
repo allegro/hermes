@@ -1,10 +1,14 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.google.common.io.Files;
+import java.util.List;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Response;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.DatacenterReadiness;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.ManagementStarter;
@@ -75,6 +79,23 @@ public class ReadinessCheckTest extends IntegrationTest {
 
         // cleanup
         frontendStarter.stop();
+    }
+
+    @Test
+    public void shouldReturnDatacentersWithItsZookeeperReadinessStatus() {
+        // given
+        operations.setReadiness("dc5", false);
+
+        // when
+        WebTarget client = JerseyClientFactory.create().target(MANAGEMENT_URL).path("readiness").path("datacenters");
+        Response response = client.request().get();
+
+        // then
+        assertThat(response).hasStatus(OK);
+        assertThat(response.readEntity(new GenericType<List<DatacenterReadiness>>() {}))
+                .contains(new DatacenterReadiness("dc", true))
+                .contains(new DatacenterReadiness("dc5", false));
+
     }
 
     private FrontendStarter setupFrontend(int port) throws Exception {

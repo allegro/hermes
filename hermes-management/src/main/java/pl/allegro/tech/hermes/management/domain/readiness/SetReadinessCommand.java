@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.management.domain.readiness;
 
-import pl.allegro.tech.hermes.domain.readiness.DatacenterReadinessRepository;
+import pl.allegro.tech.hermes.api.DatacenterReadiness;
+import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class SetReadinessCommand extends RepositoryCommand<DatacenterReadinessRepository> {
+public class SetReadinessCommand extends RepositoryCommand<ReadinessRepository> {
     private final DatacenterReadiness readiness;
 
     public SetReadinessCommand(DatacenterReadiness readiness) {
@@ -11,21 +13,21 @@ public class SetReadinessCommand extends RepositoryCommand<DatacenterReadinessRe
     }
 
     @Override
-    public void backup(DatacenterReadinessRepository repository) { }
+    public void backup(DatacenterBoundRepositoryHolder<ReadinessRepository> holder) { }
 
     @Override
-    public void execute(DatacenterReadinessRepository repository) {
-        if (repository.datacenterMatches(readiness.getDatacenter())) {
-            repository.setReadiness(readiness.isReady());
+    public void execute(DatacenterBoundRepositoryHolder<ReadinessRepository> holder) {
+        if (holder.getDatacenterName().equals(readiness.getDatacenter())) {
+            holder.getRepository().setReadiness(readiness.isReady());
         }
     }
 
     @Override
-    public void rollback(DatacenterReadinessRepository repository) { }
+    public void rollback(DatacenterBoundRepositoryHolder<ReadinessRepository> holder) { }
 
     @Override
-    public Class<DatacenterReadinessRepository> getRepositoryType() {
-        return DatacenterReadinessRepository.class;
+    public Class<ReadinessRepository> getRepositoryType() {
+        return ReadinessRepository.class;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.blacklist.commands;
 
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class AddTopicToBlacklistRepositoryCommand extends RepositoryCommand<TopicBlacklistRepository> {
@@ -12,16 +13,16 @@ public class AddTopicToBlacklistRepositoryCommand extends RepositoryCommand<Topi
     }
 
     @Override
-    public void backup(TopicBlacklistRepository repository) {}
+    public void backup(DatacenterBoundRepositoryHolder<TopicBlacklistRepository> holder) {}
 
     @Override
-    public void execute(TopicBlacklistRepository repository) {
-        repository.add(qualifiedTopicName);
+    public void execute(DatacenterBoundRepositoryHolder<TopicBlacklistRepository> holder) {
+        holder.getRepository().add(qualifiedTopicName);
     }
 
     @Override
-    public void rollback(TopicBlacklistRepository repository) {
-        repository.remove(qualifiedTopicName);
+    public void rollback(DatacenterBoundRepositoryHolder<TopicBlacklistRepository> holder) {
+        holder.getRepository().remove(qualifiedTopicName);
     }
 
     @Override

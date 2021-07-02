@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.workload.constraints.command;
 import pl.allegro.tech.hermes.api.Constraints;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class CreateSubscriptionConstraintsRepositoryCommand extends RepositoryCommand<WorkloadConstraintsRepository> {
@@ -17,19 +18,19 @@ public class CreateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
     }
 
     @Override
-    public void backup(WorkloadConstraintsRepository repository) {
-        exists = repository.constraintsExist(subscriptionName);
+    public void backup(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
+        exists = holder.getRepository().constraintsExist(subscriptionName);
     }
 
     @Override
-    public void execute(WorkloadConstraintsRepository repository) {
-        repository.createConstraints(subscriptionName, constraints);
+    public void execute(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
+        holder.getRepository().createConstraints(subscriptionName, constraints);
     }
 
     @Override
-    public void rollback(WorkloadConstraintsRepository repository) {
+    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
         if (!exists) {
-            repository.deleteConstraints(subscriptionName);
+            holder.getRepository().deleteConstraints(subscriptionName);
         }
     }
 
