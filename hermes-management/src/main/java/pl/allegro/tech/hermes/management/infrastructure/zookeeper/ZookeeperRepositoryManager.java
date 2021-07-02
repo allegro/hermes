@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndica
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
-import pl.allegro.tech.hermes.domain.readiness.DatacenterReadinessRepository;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
@@ -102,7 +101,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(),
                     mapper, adminReaperInterval);
 
-            ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths, dcName);
+            ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
             adminTool.start();
 
             groupRepositoriesByDc.put(dcName, groupRepository);
@@ -162,6 +161,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         repositoryByType.put(WorkloadConstraintsRepository.class, workloadConstraintsRepositoriesByDc);
         repositoryByType.put(UndeliveredMessageLog.class, undeliveredMessageLogsByDc);
         repositoryByType.put(AdminTool.class, adminToolByDc);
-        repositoryByType.put(DatacenterReadinessRepository.class, readinessRepositoriesByDc);
+        repositoryByType.put(ReadinessRepository.class, readinessRepositoriesByDc);
     }
 }
