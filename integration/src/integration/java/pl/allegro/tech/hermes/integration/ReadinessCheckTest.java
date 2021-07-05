@@ -56,11 +56,11 @@ public class ReadinessCheckTest extends IntegrationTest {
         FrontendStarter frontendStarter = setupFrontend(frontendPort); // frontend needs to be started after the flag is set in zookeeper
 
         // when
-        WebTarget clientDc5 = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
+        WebTarget clientDcToTurnOff = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
         WebTarget clientDefaultDc = JerseyClientFactory.create().target(FRONTEND_URL).path("status").path("ready");
 
         // then
-        assertThat(clientDc5.request().get()).hasStatus(SERVICE_UNAVAILABLE);
+        assertThat(clientDcToTurnOff.request().get()).hasStatus(SERVICE_UNAVAILABLE);
         assertThat(clientDefaultDc.request().get()).hasStatus(OK);
 
         // cleanup
@@ -71,10 +71,10 @@ public class ReadinessCheckTest extends IntegrationTest {
         frontendStarter = setupFrontend(frontendPort);
 
         // when
-        clientDc5 = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
+        clientDcToTurnOff = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
 
         // then
-        assertThat(clientDc5.request().get()).hasStatus(OK);
+        assertThat(clientDcToTurnOff.request().get()).hasStatus(OK);
         assertThat(clientDefaultDc.request().get()).hasStatus(OK);
 
         // cleanup

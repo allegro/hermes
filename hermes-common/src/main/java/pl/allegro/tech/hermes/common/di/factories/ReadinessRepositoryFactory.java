@@ -9,6 +9,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ReadOnlyCachedDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperDatacenterReadinessRepository;
 
@@ -31,7 +32,8 @@ public class ReadinessRepositoryFactory implements Factory<List<ReadinessReposit
 
     @Override
     public List<ReadinessRepository> provide() {
-        return Lists.newArrayList(new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths));
+        ZookeeperDatacenterReadinessRepository zookeeperDatacenterReadinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
+        return Lists.newArrayList(new ReadOnlyCachedDatacenterReadinessRepository(zookeeperDatacenterReadinessRepository));
     }
 
     @Override
