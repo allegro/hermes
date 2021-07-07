@@ -13,12 +13,15 @@ class WaitForKafkaStartupHookTest extends Specification {
     ServiceLocator serviceLocator = Mock()
 
     @Shared
-    ConfigFactory config = Mock() { getLongProperty(Configs.FRONTEND_STARTUP_WAIT_KAFKA_INTERVAL) >> 1L }
+    ConfigFactory config = Mock() {
+        getLongProperty(Configs.FRONTEND_KAFKA_HEALTH_CHECK_INTERVAL) >> 1L
+        getLongProperty(Configs.FRONTEND_KAFKA_HEALTH_CHECK_WAIT_TIMEOUT) >> 1000L
+    }
 
     def "should wait for any metadata to be fetched successfully"() {
         given:
         TopicMetadataLoadingRunner loader = Mock()
-        def hook = new WaitForKafkaStartupHook(loader, config)
+        def hook = new WaitForKafkaStartupHook(new KafkaHealthChecker(loader, config))
 
         when:
         hook.accept(serviceLocator);
@@ -31,7 +34,7 @@ class WaitForKafkaStartupHookTest extends Specification {
     def "should not wait if there are no topics"() {
         given:
         TopicMetadataLoadingRunner loader = Mock()
-        def hook = new WaitForKafkaStartupHook(loader, config)
+        def hook = new WaitForKafkaStartupHook(new KafkaHealthChecker(loader, config))
 
         when:
         hook.accept(serviceLocator);

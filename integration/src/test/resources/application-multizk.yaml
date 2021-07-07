@@ -14,8 +14,9 @@ zookeeper:
 kafka:
   clusters:
     -
-      datacenter: dc
+      datacenter: dc5
       clusterName: primary
+      bootstrapKafkaServer: localhost:9097
       connectionTimeout: 10000
       namespace: 'itTest'
 

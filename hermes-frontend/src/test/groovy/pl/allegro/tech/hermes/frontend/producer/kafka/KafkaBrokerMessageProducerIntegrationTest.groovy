@@ -53,7 +53,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     @Shared
     ConfigFactory configFactory = Mock() {
-        getLongProperty(Configs.FRONTEND_STARTUP_WAIT_KAFKA_INTERVAL) >> 1L
+        getLongProperty(Configs.FRONTEND_KAFKA_HEALTH_CHECK_INTERVAL) >> 1L
         getStringProperty(Configs.KAFKA_HEADER_NAME_MESSAGE_ID) >> "id"
         getStringProperty(Configs.KAFKA_HEADER_NAME_TIMESTAMP) >> "ts"
         getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_VERSION) >> "sv"
