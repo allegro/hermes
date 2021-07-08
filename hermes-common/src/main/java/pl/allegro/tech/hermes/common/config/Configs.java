@@ -166,8 +166,8 @@ public enum Configs {
 
     FRONTEND_STARTUP_WAIT_KAFKA_ENABLED("frontend.startup.wait.kafka.enabled", false),
 
-    FRONTEND_KAFKA_HEALTH_CHECK_INTERVAL("frontend.startup.wait.kafka.interval", 5000L),
-    FRONTEND_KAFKA_HEALTH_CHECK_WAIT_TIMEOUT("frontend.startup.wait.kafka.timeout.ms", 24 * 60 * 60 * 1000L),
+    FRONTEND_KAFKA_HEALTH_CHECK_INTERVAL("frontend.kafka.health.check.interval.ms", 5000L),
+    FRONTEND_KAFKA_HEALTH_CHECK_WAIT_TIMEOUT("frontend.kafka.health.check.wait.timeout.ms", 24 * 60 * 60 * 1000L),
 
     FRONTEND_READINESS_CHECK_ENABLED("frontend.readiness.check.enabled", false),
 
