@@ -10,11 +10,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.DatacenterReadiness;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.integration.env.CustomKafkaStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.ManagementStarter;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
+import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
@@ -28,32 +30,37 @@ public class ReadinessCheckTest extends IntegrationTest {
     private static final String ZOOKEEPER_URL = "localhost:" + ZOOKEEPER_PORT;
     private static final int MANAGEMENT_PORT = 18083;
     private static final String MANAGEMENT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
+    private static final int KAFKA_PORT = 9096;
+    private static final String KAFKA_URL = "localhost:" + KAFKA_PORT;
 
     private ZookeeperStarter zookeeperStarter;
-    private ManagementStarter managementStarter;
     private HermesAPIOperations operations;
+    private ManagementStarter managementStarter;
+    private KafkaStarter kafkaStarter;
 
     @BeforeClass
     public void setupEnvironment() throws Exception {
         zookeeperStarter = setupZookeeper();
+        kafkaStarter = setupKafka();
         managementStarter = setupManagement();
         operations = setupOperations();
     }
 
     @AfterClass
     public void cleanEnvironment() throws Exception {
-        zookeeperStarter.stop();
         managementStarter.stop();
+        kafkaStarter.stop();
+        zookeeperStarter.stop();
     }
 
     @Test
-    public void shouldReturnCorrectHealthStatusForParticularDC() throws Exception {
+    public void shouldReturnCorrectReadinessStatusSetForParticularDC() throws Exception {
         // given
         int frontendPort = Ports.nextAvailable();
         String frontendUrl = "http://localhost:" + frontendPort + "/";
 
         operations.setReadiness("dc5", false);
-        FrontendStarter frontendStarter = setupFrontend(frontendPort); // frontend needs to be started after the flag is set in zookeeper
+        FrontendStarter frontend = setupFrontend(frontendPort); // frontend needs to be started after the flag is set in zookeeper
 
         // when
         WebTarget clientDcToTurnOff = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
@@ -64,11 +71,11 @@ public class ReadinessCheckTest extends IntegrationTest {
         assertThat(clientDefaultDc.request().get()).hasStatus(OK);
 
         // cleanup
-        frontendStarter.stop();
+        frontend.stop();
 
         // given
         operations.setReadiness("dc5", true);
-        frontendStarter = setupFrontend(frontendPort);
+        frontend = setupFrontend(frontendPort);
 
         // when
         clientDcToTurnOff = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
@@ -78,11 +85,42 @@ public class ReadinessCheckTest extends IntegrationTest {
         assertThat(clientDefaultDc.request().get()).hasStatus(OK);
 
         // cleanup
-        frontendStarter.stop();
+        frontend.stop();
     }
 
     @Test
-    public void shouldReturnDatacentersWithItsZookeeperReadinessStatus() {
+    public void shouldReturnCorrectReadinessStatusBasedOnKafkaReadiness() throws Exception {
+        // given
+        int frontendPort = Ports.nextAvailable();
+        String frontendUrl = "http://localhost:" + frontendPort + "/";
+        FrontendStarter frontend = setupFrontend(frontendPort);
+
+        operations.createGroup("someRandomGroup");
+        operations.createTopic("someRandomGroup", "someRandomTopic");
+
+        // when
+        WebTarget clientReadiness = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
+        WebTarget clientHealth = JerseyClientFactory.create().target(frontendUrl).path("status").path("health");
+
+        kafkaStarter.stop();
+
+        // then
+        assertThat(clientReadiness.request().get()).hasStatus(SERVICE_UNAVAILABLE);
+        assertThat(clientHealth.request().get()).hasStatus(OK);
+
+        // when
+        kafkaStarter.start();
+
+        // then
+        assertThat(clientReadiness.request().get()).hasStatus(OK);
+        assertThat(clientHealth.request().get()).hasStatus(OK);
+
+        // cleanup
+        frontend.stop();
+    }
+
+    @Test
+    public void shouldReturnDatacentersWithItsZookeeperReadinessStatus() throws Exception {
         // given
         operations.setReadiness("dc5", false);
 
@@ -108,9 +146,11 @@ public class ReadinessCheckTest extends IntegrationTest {
         frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false);
         frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
         frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, ZOOKEEPER_URL);
-
+        frontend.overrideProperty(Configs.FRONTEND_STARTUP_WAIT_KAFKA_ENABLED, false);
+        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, KAFKA_URL);
+        frontend.overrideProperty(Configs.FRONTEND_KAFKA_HEALTH_CHECK_WAIT_TIMEOUT, 500L);
+        frontend.overrideProperty(Configs.FRONTEND_KAFKA_HEALTH_CHECK_INTERVAL, 200L);
         frontend.start();
-
         return frontend;
     }
 
@@ -129,5 +169,11 @@ public class ReadinessCheckTest extends IntegrationTest {
     private HermesAPIOperations setupOperations() {
         HermesEndpoints management = new HermesEndpoints(MANAGEMENT_URL, CONSUMER_ENDPOINT_URL);
         return new HermesAPIOperations(management, wait);
+    }
+
+    private CustomKafkaStarter setupKafka() throws Exception {
+        CustomKafkaStarter kafkaStarter = new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_URL + "/unhealthyKafka");
+        kafkaStarter.start();
+        return kafkaStarter;
     }
 }

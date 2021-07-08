@@ -154,8 +154,7 @@ public class HermesServer {
                 .get("/status/ping", healthCheckHandler)
                 .get("/status/health", healthCheckHandler)
                 .get("/status/ready", readinessHandler)
-                .get("/", healthCheckHandler)
-                ;
+                .get("/", healthCheckHandler);
 
         return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) : routingHandler;
     }

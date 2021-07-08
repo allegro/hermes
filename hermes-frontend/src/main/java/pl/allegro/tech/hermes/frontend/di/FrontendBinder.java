@@ -4,6 +4,7 @@ import io.undertow.server.HttpHandler;
 import org.glassfish.hk2.api.TypeLiteral;
 import pl.allegro.tech.hermes.common.di.AbstractBinder;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
+import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
@@ -26,6 +27,7 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.KafkaHealthChecker;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
@@ -61,6 +63,7 @@ public class FrontendBinder extends AbstractBinder {
 
         bind(hooksHandler).to(HooksHandler.class);
         bindSingleton(WaitForKafkaStartupHook.class);
+        bindSingleton(KafkaHealthChecker.class);
         bindSingleton(TopicMetadataLoadingRunner.class);
         bindSingleton(TopicMetadataLoadingJob.class);
         bindSingleton(TopicMetadataLoadingStartupHook.class);
@@ -92,6 +95,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessagePreviewFactory.class);
         bindSingleton(KafkaHeaderFactory.class);
         bindSingletonFactory(BlacklistZookeeperNotifyingCacheFactory.class);
+        bindFactory(ReadinessRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<List<ReadinessRepository>>() {
+        });
     }
 
 }
