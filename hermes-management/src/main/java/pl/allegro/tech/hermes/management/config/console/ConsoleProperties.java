@@ -426,6 +426,7 @@ public class ConsoleProperties {
         private String ack = "LEADER";
         private String contentType = "JSON";
         private RetentionTime retentionTime = new RetentionTime();
+        private DefaultOfflineStorageView offlineStorage = new DefaultOfflineStorageView();
 
         public String getAck() {
             return ack;
@@ -441,6 +442,35 @@ public class ConsoleProperties {
 
         public void setContentType(String contentType) {
             this.contentType = contentType;
+        }
+
+        public RetentionTime getRetentionTime() {
+            return retentionTime;
+        }
+
+        public void setRetentionTime(RetentionTime retentionTime) {
+            this.retentionTime = retentionTime;
+        }
+
+        public DefaultOfflineStorageView getOfflineStorage() {
+            return offlineStorage;
+        }
+
+        public void setOfflineStorage(DefaultOfflineStorageView offlineStorage) {
+            this.offlineStorage = offlineStorage;
+        }
+    }
+
+    public static final class DefaultOfflineStorageView {
+        private boolean enabled = false;
+        private RetentionTime retentionTime = new RetentionTime();
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         public RetentionTime getRetentionTime() {
@@ -577,6 +607,7 @@ public class ConsoleProperties {
         private Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata = new HashMap<>();
         private boolean showHeadersFilter = false;
         private boolean showFixedHeaders = false;
+        private int requestTimeoutWarningThreshold = 1001;
         private DefaultSubscriptionView defaults = new DefaultSubscriptionView();
         private List<SubscriptionDeliveryType> deliveryTypes = Lists.newArrayList(
                 new SubscriptionDeliveryType("SERIAL", "SERIAL"),
@@ -621,6 +652,14 @@ public class ConsoleProperties {
 
         public void setShowFixedHeaders(boolean showFixedHeaders) {
             this.showFixedHeaders = showFixedHeaders;
+        }
+
+        public int getRequestTimeoutWarningThreshold() {
+            return requestTimeoutWarningThreshold;
+        }
+
+        public void setRequestTimeoutWarningThreshold(int requestTimeoutWarningThreshold) {
+            this.requestTimeoutWarningThreshold = requestTimeoutWarningThreshold;
         }
     }
 
@@ -689,6 +728,7 @@ public class ConsoleProperties {
 
     public static final class SubscriptionPolicy {
         private int messageTtl = 3600;
+        private int requestTimeout = 1000;
 
         public int getMessageTtl() {
             return messageTtl;
@@ -696,6 +736,14 @@ public class ConsoleProperties {
 
         public void setMessageTtl(int messageTtl) {
             this.messageTtl = messageTtl;
+        }
+
+        public int getRequestTimeout() {
+            return requestTimeout;
+        }
+
+        public void setRequestTimeout(int requestTimeout) {
+            this.requestTimeout = requestTimeout;
         }
     }
 

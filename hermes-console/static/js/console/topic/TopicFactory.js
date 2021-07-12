@@ -17,6 +17,7 @@ topics.factory('TopicFactory', ['TOPIC_CONFIG',
                         source: ''
                     },
                     offlineStorage: {
+                        enabled: false,
                         retentionTime: {
                             duration: 60
                         }

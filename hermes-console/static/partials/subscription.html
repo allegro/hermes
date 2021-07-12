@@ -145,6 +145,10 @@
                         <strong>Message TTL:</strong> {{subscription.subscriptionPolicy.messageTtl}} seconds
                         <span uib-popover='Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
+                    <p>
+                        <strong>Request timeout:</strong> {{subscription.subscriptionPolicy.requestTimeout}} milliseconds
+                        <span uib-popover='Http client request timeout in milliseconds.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
                     <p><strong>Message delivery tracking:</strong> {{ trackingModeName[subscription.trackingMode] }}</p>
                     <hr/>
                     <p>
