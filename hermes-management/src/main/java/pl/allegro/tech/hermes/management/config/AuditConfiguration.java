@@ -27,13 +27,13 @@ import java.util.Collection;
 public class AuditConfiguration {
 
     @Bean
-    @ConditionalOnProperty(prefix = "audit", value = "enabled", havingValue = "true")
-    public LoggingAuditor loggingAuditor(ObjectMapper objectMapper, AuditProperties auditProperties) {
+    @ConditionalOnProperty(prefix = "audit", value = "isLoggingAuditEnabled", havingValue = "true")
+    public LoggingAuditor loggingAuditor(ObjectMapper objectMapper) {
         return new LoggingAuditor(javers(), objectMapper);
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "audit", value = "eventUrl")
+    @ConditionalOnProperty(prefix = "audit", value = "isEventAuditEnabled", havingValue = "true")
     public EventAuditor eventAuditor(AuditProperties auditProperties, RestTemplateBuilder restTemplateBuilder) {
         RestTemplate restTemplate = restTemplateBuilder.build();
         return new EventAuditor(javers(), restTemplate, auditProperties.getEventUrl().toString());

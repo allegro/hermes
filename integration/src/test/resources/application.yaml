@@ -84,3 +84,8 @@ consistencyChecker:
 
 subscription-health:
   timeoutMillis: 200
+
+audit:
+  isLoggingAuditEnabled: true
+  isEventAuditEnabled: true
+  eventUrl: "https://webhook.site/8bbb6c1b-3452-4891-9487-a9d5edbf37f1"
