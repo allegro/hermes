@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.common.config;
 
 import com.google.common.io.Files;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
+import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 
 import static java.lang.Math.abs;
 import static java.util.UUID.randomUUID;
@@ -27,10 +27,8 @@ public enum Configs {
     ZOOKEEPER_CACHE_THREAD_POOL_SIZE("zookeeper.cache.thread.pool.size", 5),
     ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE("zookeeper.cache.processing.thread.pool.size", 5),
 
-    KAFKA_ZOOKEEPER_CONNECT_STRING("kafka.zookeeper.connect.string", "localhost:2181"),
-
     ENVIRONMENT_NAME("environment.name", "dev"),
-    HOSTNAME("hostname", new InetAddressHostnameResolver().resolve()),
+    HOSTNAME("hostname", new InetAddressInstanceIdResolver().resolve()),
 
     KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary-dc"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
@@ -122,6 +120,7 @@ public enum Configs {
     FRONTEND_THROUGHPUT_DYNAMIC_DESIRED("frontend.throughput.dynamic.desired", Long.MAX_VALUE),
     FRONTEND_THROUGHPUT_DYNAMIC_IDLE("frontend.throughput.dynamic.idle", 0.5),
     FRONTEND_THROUGHPUT_DYNAMIC_CHECK_INTERVAL("frontend.throughput.dynamic.interval.seconds", 30),
+    FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED("frontend.response.error.logger.enabled", false),
 
     FRONTEND_KEEP_ALIVE_HEADER_ENABLED("frontend.keep.alive.header.enabled", false),
     FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS("frontend.keep.alive.header.timeout.seconds", 1),
@@ -156,6 +155,9 @@ public enum Configs {
 
     FRONTEND_AUTHENTICATION_ENABLED("frontend.authentication.enabled", false),
     FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),
+
+    FRONTEND_HEADER_PROPAGATION_ENABLED("frontend.header.propagation.enabled", false),
+    FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER("frontend.header.propagation.allow.filter", ""),
 
     FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
     FRONTEND_MESSAGE_PREVIEW_MAX_SIZE_KB("frontend.message.preview.max.size.kb", 10),
@@ -228,6 +230,7 @@ public enum Configs {
     CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_MONITORING("consumer.rate.limiter.reporting.thread.pool.monitoring", false),
     CONSUMER_RATE_LIMITER_HEARTBEAT_MODE_DELAY("consumer.rate.limiter.hearbeat.mode.delay", 60),
     CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY("consumer.rate.limiter.slow.mode.delay", 1),
+    CONSUMER_FILTERING_RATE_LIMITER_ENABLED("consumer.filtering.rate.limiter.enabled", false),
     CONSUMER_RATE_CONVERGENCE_FACTOR("consumer.rate.convergence.factor", 0.2),
     CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO("consumer.rate.failures.nochange.tolerance.ratio", 0.05),
     CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO("consumer.rate.failures.speedup.tolerance.ratio", 0.01),
@@ -250,7 +253,7 @@ public enum Configs {
     CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER("consumer.workload.max.subscriptions.per.consumer", 200),
     CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE("consumer.workload.assignment.processing.thread.pool.size", 5),
     CONSUMER_WORKLOAD_NODE_ID("consumer.workload.node.id",
-            new InetAddressHostnameResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits())),
+            new InetAddressInstanceIdResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits())),
     CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL("consumer.workload.monitor.scan.interval.seconds", 120),
     CONSUMER_WORKLOAD_AUTO_REBALANCE("consumer.workload.rebalance.auto", true),
     CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS("consumer.workload.dead.after.seconds", 120),
@@ -269,7 +272,7 @@ public enum Configs {
 
     CONSUMER_USE_TOPIC_MESSAGE_SIZE("consumer.use.topic.message.size", false),
 
-    CONSUMER_CLIENT_ID("consumer.clientId", new InetAddressHostnameResolver().resolve()),
+    CONSUMER_CLIENT_ID("consumer.clientId", new InetAddressInstanceIdResolver().resolve()),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),

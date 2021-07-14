@@ -26,7 +26,6 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
 import javax.inject.Inject;
-import javax.swing.text.html.Option;
 import java.time.Clock;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +40,7 @@ public class MessageFactory {
     private static final Logger logger = LoggerFactory.getLogger(MessageFactory.class);
 
     private final MessageValidators validators;
-    private final MessageContentTypeEnforcer enforcer;
+    private final AvroEnforcer enforcer;
     private final SchemaRepository schemaRepository;
     private final HeadersPropagator headersPropagator;
     private final MessageContentWrapper messageContentWrapper;
@@ -50,7 +49,7 @@ public class MessageFactory {
 
     @Inject
     public MessageFactory(MessageValidators validators,
-                          MessageContentTypeEnforcer enforcer,
+                          AvroEnforcer enforcer,
                           SchemaRepository schemaRepository,
                           HeadersPropagator headersPropagator,
                           MessageContentWrapper messageContentWrapper,
@@ -100,7 +99,7 @@ public class MessageFactory {
     }
 
     private JsonMessage createJsonMessage(HeaderMap headerMap, String messageId, byte[] messageContent, long timestamp) {
-        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp);
+        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp, extractPartitionKey(headerMap));
         byte[] wrapped = messageContentWrapper
                 .wrapJson(message.getData(), message.getId(), message.getTimestamp(), headersPropagator.extract(toHeadersMap(headerMap)));
         return message.withDataReplaced(wrapped);
@@ -125,7 +124,8 @@ public class MessageFactory {
                 messageId,
                 enforcer.enforceAvro(headerMap.getFirst(Headers.CONTENT_TYPE_STRING), messageContent, schema.getSchema(), topic),
                 timestamp,
-                schema);
+                schema,
+                extractPartitionKey(headerMap));
 
         validators.check(topic, message);
         byte[] wrapped = messageContentWrapper.wrapAvro(message.getData(), message.getId(), message.getTimestamp(),
@@ -162,6 +162,10 @@ public class MessageFactory {
         } catch (NumberFormatException e) {
             return Optional.empty();
         }
+    }
+
+    private String extractPartitionKey(HeaderMap headerMap) {
+        return headerMap.getFirst(MessageMetadataHeaders.PARTITION_KEY.getName());
     }
 
     private Map<String, String> toHeadersMap(HeaderMap headerMap) {

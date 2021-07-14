@@ -397,7 +397,7 @@ public class ConsumerMessageSenderTest {
 
         // then
         long sendingTime = System.currentTimeMillis() - sendingStartTime;
-        assertThat(sendingTime).isGreaterThan(500);
+        assertThat(sendingTime).isGreaterThanOrEqualTo(500);
     }
 
     @Test
@@ -574,7 +574,7 @@ public class ConsumerMessageSenderTest {
     private Subscription subscriptionWithExponentialRetryBackoff(int messageBackoff, double backoffMultiplier) {
         return subscriptionWithExponentialRetryBackoff(messageBackoff, backoffMultiplier, 3600);
     }
-    
+
     private Subscription subscriptionWithExponentialRetryBackoff(int messageBackoff, double backoffMultiplier, int ttl) {
         return subscriptionBuilderWithTestValues()
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()

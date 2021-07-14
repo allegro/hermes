@@ -24,6 +24,9 @@
     },
     "offlineClientsEnabled": false
   },
+  "group": {
+    "nonAdminCreationEnabled": true
+  },
   "subscription": {
     "deliveryTypes": [
       {"value": "SERIAL", "label": "SERIAL"},
@@ -34,5 +37,8 @@
     "sources": [
       {"name": "Crowd", "placeholder": "Crowd group (or groups separated by ',')"}
     ]
+  },
+  "consistency": {
+    "maxGroupBatchSize": 10
   }
 }

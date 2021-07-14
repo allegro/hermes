@@ -14,6 +14,7 @@ var hermes = angular.module('hermes', [
     'hermes.diagnostics',
     'hermes.constraints',
     'hermes.diagnostics',
+    'hermes.consistency',
     'hermes.visibility',
     'hermes.mode'
 ]);
@@ -25,8 +26,10 @@ hermes.constant('AUTH_OAUTH_CONFIG', config.auth.oauth);
 hermes.constant('METRICS_CONFIG', config.metrics);
 hermes.constant('CONSOLE_CONFIG', config.console);
 hermes.constant('TOPIC_CONFIG', config.topic || {});
+hermes.constant('GROUP_CONFIG', config.group || {});
 hermes.constant('SUBSCRIPTION_CONFIG', config.subscription || {});
 hermes.constant('OWNER_CONFIG', config.owner || {});
+hermes.constant('CONSISTENCY_CONFIG', config.consistency || {});
 
 hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibTooltipProvider',
     function ($stateProvider, $urlRouterProvider, $httpProvider, $tooltipProvider) {
@@ -61,6 +64,18 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                 .state('constraints', {
                     url: '/constraints',
                     templateUrl: 'partials/constraints.html'
+                })
+                .state('consistency', {
+                    url: '/consistency',
+                    templateUrl: 'partials/consistency.html'
+                })
+                .state('groupConsistency', {
+                    url: '/consistency/:groupName',
+                    templateUrl: 'partials/groupConsistency.html'
+                })
+                .state('topicConsistency', {
+                    url: '/consistency/:groupName/topics/:topicName',
+                    templateUrl: 'partials/topicConsistency.html'
                 })
                 .state('search', {
                     url: '/search?entity&property&operator&pattern',

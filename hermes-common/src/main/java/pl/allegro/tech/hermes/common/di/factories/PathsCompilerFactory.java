@@ -2,22 +2,22 @@ package pl.allegro.tech.hermes.common.di.factories;
 
 import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
-import pl.allegro.tech.hermes.common.util.HostnameResolver;
+import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 
 import javax.inject.Inject;
 
 public class PathsCompilerFactory implements Factory<PathsCompiler> {
 
-    private final HostnameResolver hostnameResolver;
+    private final InstanceIdResolver instanceIdResolver;
 
     @Inject
-    public PathsCompilerFactory(HostnameResolver hostnameResolver) {
-        this.hostnameResolver = hostnameResolver;
+    public PathsCompilerFactory(InstanceIdResolver instanceIdResolver) {
+        this.instanceIdResolver = instanceIdResolver;
     }
 
     @Override
     public PathsCompiler provide() {
-        return new PathsCompiler(hostnameResolver.resolve());
+        return new PathsCompiler(instanceIdResolver.resolve());
     }
 
     @Override

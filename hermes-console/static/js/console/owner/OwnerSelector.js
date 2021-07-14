@@ -52,7 +52,7 @@ angular.module('hermes.owner')
             }
 
             var sourceConfig = _.find(config.sources, function (s) {
-                return s.name == $scope.sourceName
+                return s.name === $scope.sourceName;
             });
 
             if (sourceConfig && sourceConfig.placeholder) {
@@ -60,7 +60,7 @@ angular.module('hermes.owner')
             }
 
             return "who's the owner?";
-        }
+        };
     }])
     .directive('ownerSelector', function () {
         return {

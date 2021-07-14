@@ -38,6 +38,9 @@
     "offlineClientsEnabled": false
   },
   "subscription": {
+    "showHeadersFilter": false,
+    "showFixedHeaders": false,
+    "requestTimeoutWarningThreshold": 1001,
     "deliveryTypes": [
       {"value": "SERIAL", "label": "SERIAL"},
       {"value": "BATCH", "label": "BATCH"}

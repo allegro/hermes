@@ -19,13 +19,13 @@ rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope'
             }
 
             function isOwner(value) {
-                if(isAdmin(value)) {
+                if (isAdmin(value)) {
                     return true;
                 }
-                if(subscriptionName) {
+                if (subscriptionName) {
                     return value.includes('subscriptionOwner');
                 }
-                if(topicName) {
+                if (topicName) {
                     return value.includes('topicOwner');
                 }
                 return value.includes('any');
@@ -33,8 +33,8 @@ rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope'
 
             rolesResource.query().$promise.then(
                 function (value) {
-                    $rootScope.admin = $rootScope.authEnabled.headers || isAdmin(value);
-                    $rootScope.disabled = !$rootScope.authEnabled.headers && (!isOwner(value) || $rootScope.readOnly);
+                    $rootScope.admin = isAdmin(value);
+                    $rootScope.disabled = !isOwner(value) || $rootScope.readOnly;
                 },
                 function() {
                     $rootScope.admin = false;

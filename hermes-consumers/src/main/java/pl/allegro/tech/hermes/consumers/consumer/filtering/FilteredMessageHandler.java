@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.filtering;
 
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -17,7 +18,7 @@ import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionParti
 public class FilteredMessageHandler {
 
     private final OffsetQueue offsetQueue;
-    private final ConsumerRateLimiter consumerRateLimiter;
+    private final Optional<ConsumerRateLimiter> consumerRateLimiter;
     private final Trackers trackers;
     private final HermesMetrics metrics;
 
@@ -28,7 +29,7 @@ public class FilteredMessageHandler {
                                   Trackers trackers,
                                   HermesMetrics metrics) {
         this.offsetQueue = offsetQueue;
-        this.consumerRateLimiter = consumerRateLimiter;
+        this.consumerRateLimiter = Optional.ofNullable(consumerRateLimiter);
         this.trackers = trackers;
         this.metrics = metrics;
     }
@@ -48,7 +49,7 @@ public class FilteredMessageHandler {
                 trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
             }
 
-            consumerRateLimiter.acquireFiltered();
+            consumerRateLimiter.ifPresent(ConsumerRateLimiter::acquireFiltered);
         }
     }
 

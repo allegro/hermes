@@ -16,7 +16,6 @@ kafka:
     -
       datacenter: dc
       clusterName: primary
-      connectionString: localhost:14192/kafka
       connectionTimeout: 10000
       namespace: 'itTest'
 
@@ -30,6 +29,10 @@ topic:
     - AVRO
     - JSON
   touchSchedulerEnabled: false
+  allowedTopicLabels:
+    - label-1
+    - label-2
+    - label-3
 
 storage:
   pathPrefix: /hermes
@@ -76,6 +79,8 @@ topicOwnerCache:
 subscriptionOwnerCache:
   refreshRateInSeconds: 300
 
-audit:
-  enabled: true
-  eventUrl: "https://webhook.site/db3f1559-9ada-4585-85ab-2985fbf39cac"
+consistencyChecker:
+  threadPoolSize: 2
+
+subscription-health:
+  timeoutMillis: 200

@@ -1,0 +1,33 @@
+<section>
+    <div class="modal-body">
+        <form name="debuggerForm" class="form-horizontal" role="form">
+            <div class="form-group">
+                <div class="col-md-9">
+                    <textarea class="form-control" id="message"
+                              name="message" placeholder="Message (JSON)"
+                              ng-model="message" rows="20"></textarea>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-info btn-block btn-lg" ng-disabled="verificationInProgress" ng-click="verify()">Verify</button>
+                    <hr/>
+                    <h2>
+                        <span ng-if="verificationStatus=='MATCHED'" class="label label-success full-width">Matched</span>
+                        <span ng-if="verificationStatus=='NOT_MATCHED'" class="label label-warning full-width">Not Matched</span>
+                        <span ng-if="verificationStatus=='ERROR'" class="label label-danger full-width">Error</span>
+                    </h2>
+                    <div ng-if="verificationStatus=='ERROR'"
+                         class="alert alert-danger pre-scrollable" style="height: 284px; margin-bottom: 0">{{errorMessage}}</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-9">
+                    <filters-editor form="debuggerForm" topic-content-type="topicContentType" filters="messageFilters"></filters-editor>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" ng-disabled="debuggerForm.$invalid || disabled" ng-click="updateFilters()">Update Subscription Filters</button>
+        <button class="btn btn-warning" ng-click="$dismiss()">Cancel</button>
+    </div>
+</section>

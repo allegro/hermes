@@ -40,6 +40,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final MetadataAppender<Request> metadataAppender;
     private final HttpAuthorizationProviderFactory authorizationProviderFactory;
     private final HttpHeadersProvidersFactory httpHeadersProviderFactory;
+    private final SendingResultHandlers sendingResultHandlers;
 
     @Inject
     public JettyHttpMessageSenderProvider(
@@ -48,13 +49,15 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
             EndpointAddressResolver endpointAddressResolver,
             MetadataAppender<Request> metadataAppender,
             HttpAuthorizationProviderFactory authorizationProviderFactory,
-            HttpHeadersProvidersFactory httpHeadersProviderFactory) {
+            HttpHeadersProvidersFactory httpHeadersProviderFactory,
+            SendingResultHandlers sendingResultHandlers) {
         this.httpClient = httpClient;
         this.http2ClientHolder = http2ClientHolder;
         this.endpointAddressResolver = endpointAddressResolver;
         this.metadataAppender = metadataAppender;
         this.authorizationProviderFactory = authorizationProviderFactory;
         this.httpHeadersProviderFactory = httpHeadersProviderFactory;
+        this.sendingResultHandlers = sendingResultHandlers;
     }
 
     @Override
@@ -66,9 +69,9 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         HttpRequestFactory requestFactory = httpRequestFactory(subscription);
 
         if (subscription.getMode() == SubscriptionMode.BROADCAST) {
-            return new JettyBroadCastMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription));
+            return new JettyBroadCastMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
         } else {
-            return new JettyMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription));
+            return new JettyMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
         }
     }
 

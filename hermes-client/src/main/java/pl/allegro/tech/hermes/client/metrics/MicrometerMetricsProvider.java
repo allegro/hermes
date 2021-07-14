@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.client.metrics;
 
-import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
@@ -37,10 +36,7 @@ public class MicrometerMetricsProvider implements MetricsProvider {
 
     @Override
     public void histogramUpdate(String name, int value) {
-        DistributionSummary.builder(name)
-                .publishPercentiles(0, 0.5, 0.9, 0.95, 0.99)
-                .register(metrics)
-                .record(value);
+        metrics.summary(name).record(value);
     }
 
     private String buildCounterName(String prefix, String name, Map<String, String> tags) {

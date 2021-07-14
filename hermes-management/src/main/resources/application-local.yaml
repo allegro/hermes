@@ -21,8 +21,15 @@ console:
   topic:
     messagePreviewEnabled: true
     offlineClientsEnabled: false
+    readOnlyModeEnabled: false
+    retentionUnits:
+      - value: HOURS
+        label: HOURS
+      - value: DAYS
+        label: DAYS
   subscription:
     showHeadersFilter: true
+    showFixedHeaders: false
     deliveryTypes:
       - value: SERIAL
         label: SERIAL

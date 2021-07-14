@@ -17,17 +17,15 @@ public final class SharedServices {
 
     private final Map<Class<?>, Starter<?>> starters;
     private final CuratorFramework zookeeper;
-    private final CuratorFramework kafkaZookeeper;
 
 
-    private SharedServices(Map<Class<?>, Starter<?>> starters, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper) {
+    private SharedServices(Map<Class<?>, Starter<?>> starters, CuratorFramework zookeeper) {
         this.starters = starters;
         this.zookeeper = zookeeper;
-        this.kafkaZookeeper = kafkaZookeeper;
     }
 
-    public static void initialize(Map<Class<?>, Starter<?>> starters, CuratorFramework zookeeper, CuratorFramework kafkaZookeeper) {
-        services = new SharedServices(starters, zookeeper, kafkaZookeeper);
+    public static void initialize(Map<Class<?>, Starter<?>> starters, CuratorFramework zookeeper) {
+        services = new SharedServices(starters, zookeeper);
     }
 
     public static SharedServices services() {
@@ -49,10 +47,6 @@ public final class SharedServices {
 
     public CuratorFramework zookeeper() {
         return zookeeper;
-    }
-
-    public CuratorFramework kafkaZookeeper() {
-        return kafkaZookeeper;
     }
 
     public HermesConsumers consumers() {

@@ -7,6 +7,12 @@ import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.time.Duration
+import java.time.Instant
+
+import static java.time.Instant.now
+import static pl.allegro.tech.hermes.mock.Response.Builder.aResponse
+
 class HermesMockJsonTest extends Specification {
 
     @Shared
@@ -33,6 +39,21 @@ class HermesMockJsonTest extends Specification {
         then:
         hermes.expect().singleMessageOnTopic(topicName)
         response.status == HttpStatus.SC_OK
+    }
+
+    def "should respond with a delay"() {
+        given:
+        def topicName = "my-test-json-topic"
+        Duration fixedDelay = Duration.ofMillis(500)
+        hermes.define().jsonTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
+        Instant start = now()
+
+        when:
+        publisher.publish(topicName, "Basic Request")
+
+        then:
+        hermes.expect().singleMessageOnTopic(topicName)
+        Duration.between(start, now()) >= fixedDelay
     }
 
 }

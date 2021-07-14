@@ -1,0 +1,82 @@
+<section ng-controller="TopicConsistencyController">
+
+    <ol class="breadcrumb">
+        <li><a href="#/">home</a></li>
+        <li><a href="#/consistency">consistency</a></li>
+        <li><a ng-href="#/consistency/{{groupName}}">{{groupName}}</a></li>
+        <li class="active">{{topicName}}</li>
+    </ol>
+
+    <h1><small>Topic:</small> {{topic.name}}</h1>
+
+    <div class="row container" ng-if="topic.inconsistentMetadata.length > 0">
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h3 class="panel-title">Inconsistent metadata</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th ng-repeat="metadata in topic.inconsistentMetadata">{{metadata.datacenter}}</th>
+                    </tr>
+                    </thead>
+                    <tbody style="overflow-y: scroll">
+                    <tr>
+                        <td ng-repeat="metadata in topic.inconsistentMetadata">
+                            <pre class="content">{{metadata.content | prettyJson}}</pre>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center" ng-if="topic.inconsistentMetadata.length === 0">
+        <div class="col-md-12">
+            <p class="alert alert-success">Topic metadata are consistent.</p>
+        </div>
+    </div>
+
+    <div class="row container" ng-if="topic.inconsistentSubscriptions.length > 0">
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h3 class="panel-title">Inconsistent subscriptions</h3>
+            </div>
+            <div ng-repeat="subscription in topic.inconsistentSubscriptions">
+                <a class="list-group-item" ng-click="showPreview = !showPreview">
+                    <strong>{{subscription.name}}</strong>
+                    <div class="pull-right">
+                        <span class="glyphicon {{showPreview ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}"></span>
+                    </div>
+                </a>
+                <div uib-collapse="!showPreview" class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th class="col-md-6" ng-repeat="metadata in subscription.inconsistentMetadata">
+                                {{metadata.datacenter}}
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody style="overflow-y: scroll">
+                        <tr>
+                            <td class="col-md-6" ng-repeat="metadata in subscription.inconsistentMetadata">
+                                <pre class="content">{{metadata.content | prettyJson}}</pre>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-center" ng-if="topic.inconsistentSubscriptions.length === 0">
+        <div class="col-md-12">
+            <p class="alert alert-success">All subscriptions are consistent.</p>
+        </div>
+    </div>
+
+</section>

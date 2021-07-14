@@ -1,0 +1,60 @@
+<div>
+    <table class="table borderless table-condensed">
+        <tr>
+            <th>Path</th>
+            <th>Matcher</th>
+            <th>Matching strategy</th>
+            <th>
+                <button ng-if="withDebugger" class="btn btn-success btn-xs btn-block" ng-click="debugFilters()">
+                    <span class="glyphicon glyphicon-console"></span> Debug
+                </button>
+            </th>
+        </tr>
+        <tr ng-repeat="filter in filters" ng-if="filter.type !== 'header'">
+            <td>
+                <input ng-model="filter.path"
+                       class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
+                       name="subscriptionFilterPathInput" placeholder="{{filter.path}}"/>
+            </td>
+            <td>
+                <input ng-model="filter.matcher"
+                       class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
+                       name="subscriptionFilterMatcherInput" placeholder="{{filter.matcher}}"/>
+            </td>
+            <td>
+                <select ng-model="filter.matchingStrategy"
+                        class="form-control col-md-1"
+                        name="subscriptionFilterMatchingStrategySelect">
+                    <option value="all">all (default)</option>
+                    <option value="any">any</option>
+                </select>
+            </td>
+            <td>
+                <button class="btn btn-danger btn-block" ng-click="delFilter(filter)">Delete</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input ng-model="filter.path"
+                       class="form-control col-md-1 {{filter.path.$valid ? '' : 'has-error'}}"
+                       name="subscriptionFilterPathInput" placeholder="Path for filter"/>
+            </td>
+            <td>
+                <input ng-model="filter.matcher"
+                       class="form-control col-md-1 {{filter.matcher.$valid ? '' : 'has-error'}}"
+                       name="subscriptionFilterMatcherInput" placeholder="Matcher for filter"/>
+            </td>
+            <td>
+                <select ng-model="filter.matchingStrategy" ng-init="filter.matchingStrategy='all'"
+                        class="form-control col-md-1"
+                        name="subscriptionFilterMatchingStrategySelect">
+                    <option value="all">all (default)</option>
+                    <option value="any">any</option>
+                </select>
+            </td>
+            <td>
+                <button class="btn btn-success btn-block" ng-click="addFilter()">Add</button>
+            </td>
+        </tr>
+    </table>
+</div>

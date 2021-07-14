@@ -22,10 +22,12 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
         $scope.showFixedHeaders = subscriptionConfig.showFixedHeaders;
+        $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
             $scope.topic.shortName = $scope.topic.name.substring($scope.topic.name.lastIndexOf('.') + 1);
+            $scope.topic.labelValues = $scope.topic.labels.map(function(label) { return label.value });
             if (topicWithSchema && topicWithSchema.createdAt && topicWithSchema.modifiedAt) {
                 var createdAt = new Date(0);
                 createdAt.setUTCSeconds(topicWithSchema.createdAt);
@@ -81,6 +83,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 templateUrl: 'partials/modal/editTopic.html',
                 controller: 'TopicEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     operation: function () {
                         return 'EDIT';
@@ -106,6 +109,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 templateUrl: 'partials/modal/editTopic.html',
                 controller: 'TopicEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     operation: function () {
                         return 'ADD';
@@ -142,7 +146,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                                 toaster.pop('warning', 'Topic schema was not removed',
                                     'Note that schema was not removed for this topic. Schema is persisted in an external registry ' +
                                     'and its removal is disabled in this environment. Before creating topic with the same name make sure ' +
-                                    'it\'s manually removed by the schema registry operator.')
+                                    'it\'s manually removed by the schema registry operator.');
                             }
                             $location.path('/groups/' + groupName).replace();
                         })
@@ -200,6 +204,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 templateUrl: 'partials/modal/editSubscription.html',
                 controller: 'SubscriptionEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     operation: function () {
                         return 'ADD';
@@ -218,11 +223,25 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     },
                     showFixedHeaders: function () {
                         return $scope.showFixedHeaders;
+                    },
+                    showHeadersFilter: function () {
+                        return $scope.showHeadersFilter;
                     }
                 }
             }).result.then(function () {
                 loadSubscriptions();
             });
+        };
+
+        $scope.copyToClipboard = function () {
+            var tempElement = document.createElement('textarea');
+            tempElement.value = $scope.messageSchema;
+            document.body.appendChild(tempElement);
+            tempElement.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempElement);
+
+            toaster.pop('info', 'Info', 'Message schema has been copied to clipboard');
         };
     }]);
 
@@ -244,6 +263,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
             var topic = _.cloneDeep($scope.topic);
             delete topic.shortName;
 
+            topic.labels = ($scope.topic.labelValues || []).map(function(labelValue) { return {value: labelValue}} );
             if (operation === 'ADD') {
                 topic.name = groupName + '.' + $scope.topic.shortName;
                 $scope.topic.name = topic.name;

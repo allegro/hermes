@@ -1,0 +1,61 @@
+<section ng-controller="ConsistencyController">
+
+    <ol class="breadcrumb">
+        <li><a href="#/">home</a></li>
+        <li class="active">consistency</li>
+    </ol>
+
+    <div class="pull-right">
+        <button class="btn btn-primary" ng-disabled="consistencyChecking.state !== 'READY'" ng-click="checkConsistency()">
+            Check consistency
+        </button>
+    </div>
+
+    <h1>Consistency</h1>
+
+    <div class="row text-center">
+        <div class="col-md-12">
+            <p class="alert alert-info" ng-if="consistencyChecking.state == 'READY'">
+                Click 'Check consistency' to detect inconsistencies between clusters.
+            </p>
+            <div class="alert alert-info" ng-if="consistencyChecking.state == 'CHECKING_CONSISTENCY'">
+                Consistency check is in progress.
+                <span style="font-size: 20px; vertical-align: middle;" class="fa fa-circle-o-notch fa-spin"></span>
+            </div>
+        </div>
+    </div>
+
+    <uib-progressbar ng-if="consistencyChecking.state == 'CHECKING_CONSISTENCY'" animate="false" value="processedGroupsPercent" type="success">
+        <b>{{processedGroupsPercent}}%</b>
+    </uib-progressbar>
+
+    <div class="row text-center" ng-if="consistencyChecking.result.inconsistentGroups.length == 0">
+        <div class="col-md-12">
+            <p class="alert alert-success">All groups are consistent.</p>
+        </div>
+    </div>
+
+    <div class="row container" ng-if="consistencyChecking.result.inconsistentGroups.length > 0">
+        <div class="list-group">
+            <div class="list-group-item list-group-item-warning">
+                <div class="form-inline pull-right">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+                        <input class="form-control" ng-model="search.name" placeholder="search...">
+                    </div>
+                </div>
+                <h4>Inconsistent groups</h4>
+            </div>
+            <a class="list-group-item"
+               ng-repeat="group in consistencyChecking.result.inconsistentGroups | filter:search:strict | orderBy:'name'"
+               ng-href="#/consistency/{{group.name}}">
+                <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <strong>{{group.name}}</strong>
+                <div class="pull-right">
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</section>

@@ -43,10 +43,10 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
                 return blacklistRepository.get({name: topicName}).$promise;
             },
             blacklist: function (topicName) {
-                return blacklistRepository.blacklist([topicName])
+                return blacklistRepository.blacklist([topicName]);
             },
             unblacklist: function (topicName) {
-                return blacklistRepository.delete({name: topicName})
+                return blacklistRepository.delete({name: topicName});
             }
         };
     }]);

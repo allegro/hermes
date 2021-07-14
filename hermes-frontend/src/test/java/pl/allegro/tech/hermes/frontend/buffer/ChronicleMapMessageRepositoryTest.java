@@ -45,7 +45,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id, messageContent, timestamp, qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id, messageContent, timestamp, qualifiedName, message.getPartitionKey()));
 
         //when
         messageRepository.delete(id);
@@ -73,14 +73,14 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message2, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent.getBytes(), message1.getTimestamp(), qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent.getBytes(), message1.getTimestamp(), qualifiedName, message1.getPartitionKey()));
 
         //when
         messageRepository.delete(id1);
 
         //then
         assertThat(messageRepository.findAll()).hasSize(1);
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent.getBytes(), message2.getTimestamp(), qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent.getBytes(), message2.getTimestamp(), qualifiedName, message2.getPartitionKey()));
     }
 
     @Test
@@ -118,7 +118,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(message.getId(), message.getData(), message.getTimestamp(), qualifiedName));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(message.getId(), message.getData(), message.getTimestamp(), qualifiedName, message.getPartitionKey()));
     }
 
     private Message generateMessage() {
@@ -132,6 +132,6 @@ public class ChronicleMapMessageRepositoryTest {
     private Message generateMessage(String content, long timestamp) {
         byte[] messageContent = content.getBytes();
         String id = MessageIdGenerator.generate();
-        return new JsonMessage(id, messageContent, timestamp);
+        return new JsonMessage(id, messageContent, timestamp, "partition-key");
     }
 }

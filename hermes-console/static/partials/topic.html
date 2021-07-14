@@ -10,7 +10,7 @@
     <div class="pull-right">
         <span ng-show="disabled" uib-popover='Sign in to edit the topic' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
         <span bind-html="config.buttonsExtension"></span>
-        <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-disabled="disabled || config.readOnlyModeEnabled" ng-click="edit()">Edit</button>
         <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
         <button class="btn btn-warning" ng-disabled="disabled" ng-show="admin && !isBlacklisted" ng-click="blacklist()" >Blacklist</button>
         <button class="btn btn-default" ng-disabled="disabled" ng-show="admin && isBlacklisted"ng-click="unblacklist()" >Unblacklist</button>
@@ -27,6 +27,10 @@
         <div uib-popover="Currently anyone is allowed to publish on this topic without authentication. Consider enabling authorisation." popover-trigger="mouseenter"
              ng-show="topic && !topic.auth.enabled || topic.auth.unauthenticatedAccessEnabled" class="ng-hide badge alert-warning">
             Unauthenticated access allowed <span class="glyphicon glyphicon-alert"></span>
+        </div>
+        <div uib-popover="Topic editing is disabled. Contact administrator for more details." popover-trigger="mouseenter"
+             ng-show="topic && config.readOnlyModeEnabled" class="ng-hide badge alert-warning">
+            Read only mode <span class="glyphicon glyphicon-alert"></span>
         </div>
     </div>
 
@@ -64,12 +68,18 @@
                         <strong>Content type:</strong> {{topic.contentType}}
                     </p>
                     <p>
+                        <strong>Labels:</strong>
+                        <span ng-repeat="label in topic.labelValues">
+                            <span class="label label-info margin-right-4"> {{label}} </span>
+                        </span>
+                    </p>
+                    <p>
                         <strong>Acknowlegment:</strong> {{topic.ack == 'ALL' ? 'all brokers' : 'leader only'}}
                         <span uib-popover='Specifies the strength of guarantees that acknowledged message was indeed persisted. In "Leader" mode ACK is required only from topic leader, which is fast and gives 99.99999% guarantee. It might be not enough when cluster is unstable. "All" mode means message needs to be saved on all replicas before sending ACK, which is quite slow but gives 100% guarantee that message has been persisted.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p>
-                        <strong>Retention time:</strong> {{topic.retentionTime.duration}} days
-                        <span uib-popover='For how many days message is available for subscribers after being published.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                        <strong>Retention time:</strong> {{topic.retentionTime.duration}} {{topic.retentionTime.retentionUnit | toLowercase}}
+                        <span uib-popover='For how many hours/days message is available for subscribers after being published.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p><strong>Tracking enabled:</strong> {{topic.trackingEnabled}}</p>
                     <p><strong>Max message size:</strong> {{topic.maxMessageSize | readableSize}}</p>
@@ -120,10 +130,9 @@
 
     <div class="row" ng-show="topic.contentType == 'AVRO'">
         <div class="col-md-12">
-            <div class="panel panel-default">
-                <div style="position: relative">
-                    <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
-                </div>
+            <div class="panel panel-default" style="position: relative">
+                <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
+                <button class="btn btn-default pull-right" style="padding: 4px; margin-top: 4px" ng-click="copyToClipboard()">Copy to clipboard</button>
                 <div class="panel-heading" ng-click="showMessageSchema = !showMessageSchema">
                     <h3 class="panel-title">Message schema</h3>
                 </div>
@@ -136,10 +145,8 @@
 
     <div class="row" ng-show="config.messagePreviewEnabled">
         <div class="col-md-12">
-            <div class="panel panel-default">
-                <div style="position: relative">
-                    <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showPreview = !showPreview"></span>
-                </div>
+            <div class="panel panel-default" style="position: relative">
+                <span class="btn pull-right glyphicon {{showPreview ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showPreview = !showPreview"></span>
                 <div class="panel-heading" ng-click="showPreview = !showPreview">
                     <h3 class="panel-title">Topic messages preview</h3>
                 </div>

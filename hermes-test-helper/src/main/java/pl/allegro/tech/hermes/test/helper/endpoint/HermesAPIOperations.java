@@ -14,6 +14,8 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.ws.rs.core.Response;
 
+import java.util.concurrent.TimeUnit;
+
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,7 +50,7 @@ public class HermesAPIOperations {
 
     public TopicWithSchema createTopic(String group, String topic) {
         Topic created = topic(group, topic)
-                .withRetentionTime(1000)
+                .withRetentionTime(1000, TimeUnit.DAYS)
                 .withDescription("Test topic")
                 .build();
         return createTopic(created);

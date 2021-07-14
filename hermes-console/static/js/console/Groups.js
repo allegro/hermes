@@ -1,9 +1,13 @@
 var groups = angular.module('hermes.groups', ['hermes.topic', 'hermes.discovery', 'ui.bootstrap']);
 
-groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
-    function (groupRepository, $scope, $modal) {
+groups.controller('GroupsController', ['GROUP_CONFIG', 'GroupRepository', '$scope', '$rootScope', '$uibModal',
+    function (groupConfig, groupRepository, $scope, $rootScope, $modal) {
         $scope.fetching = true;
         $scope.search = groupRepository.getSearchFilter();
+
+        $scope.canCreateGroup = function() {
+            return $rootScope.admin || groupConfig.nonAdminCreationEnabled;
+        };
 
         function loadGroups() {
             groupRepository.list().then(function (groups) {
@@ -19,6 +23,7 @@ groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
                 templateUrl: 'partials/modal/editGroup.html',
                 controller: 'GroupEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     group: function() {
                         return {};
@@ -34,7 +39,7 @@ groups.controller('GroupsController', ['GroupRepository', '$scope', '$uibModal',
 
         $scope.storeSearchFilter = function () {
             groupRepository.storeSearchFilter($scope.search);
-        }
+        };
     }]);
 
 groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope', '$location', '$stateParams', '$uibModal', 'toaster', 'ConfirmationModal', 'PasswordService',
@@ -60,6 +65,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                 templateUrl: 'partials/modal/editTopic.html',
                 controller: 'TopicEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     operation: function () {
                         return 'ADD';
@@ -75,7 +81,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                     }
                 }
             }).result.then(function(){
-                    loadTopics();
+                loadTopics();
             });
 
 
@@ -86,6 +92,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                 templateUrl: 'partials/modal/editGroup.html',
                 controller: 'GroupEditController',
                 size: 'lg',
+                backdrop: 'static',
                 resolve: {
                     group: function() {
                         return $scope.group;

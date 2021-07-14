@@ -35,7 +35,7 @@ repository.factory('ConstraintsRepository', ['DiscoveryService', '$resource',
                             topicConstraints: [],
                             subscriptionConstraints: []
                         };
-                    })
+                    });
             },
             updateTopicConstraints: function (topicConstraints) {
                 return updateTopicConstraintsEndpoint.update({}, topicConstraints).$promise;
@@ -47,7 +47,7 @@ repository.factory('ConstraintsRepository', ['DiscoveryService', '$resource',
                 return removeTopicConstraintsEndpoint.remove({ topicName: topicName });
             },
             removeSubscriptionConstraints: function (topicName, subscriptionName) {
-                return removeSubscriptionConstraintsEndpoint.remove({ topicName: topicName, subscriptionName: subscriptionName })
+                return removeSubscriptionConstraintsEndpoint.remove({ topicName: topicName, subscriptionName: subscriptionName });
             }
         };
     }]);

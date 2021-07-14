@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.GraphiteWebTargetFactory;
 import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.KafkaCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MessagePreviewRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
@@ -43,8 +42,8 @@ import pl.allegro.tech.hermes.common.schema.SchemaRepositoryInstanceResolverFact
 import pl.allegro.tech.hermes.common.schema.SchemaRepositoryFactory;
 import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
-import pl.allegro.tech.hermes.common.util.HostnameResolver;
-import pl.allegro.tech.hermes.common.util.InetAddressHostnameResolver;
+import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
+import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
@@ -59,7 +58,7 @@ public class CommonBinder extends AbstractBinder {
     protected void configure() {
         bind(ZookeeperCounterStorage.class).to(CounterStorage.class).in(Singleton.class);
         bindFactory(ClockFactory.class).in(Singleton.class).to(Clock.class);
-        bind(InetAddressHostnameResolver.class).in(Singleton.class).to(HostnameResolver.class);
+        bind(InetAddressInstanceIdResolver.class).in(Singleton.class).to(InstanceIdResolver.class);
         bindSingletonFactory(SchemaRepositoryClientFactory.class);
         bindSingletonFactory(SchemaRepositoryInstanceResolverFactory.class);
         bindSingletonFactory(RawSchemaClientFactory.class);
@@ -83,7 +82,6 @@ public class CommonBinder extends AbstractBinder {
         bind(SchemaOnlineChecksWaitingRateLimiter.class).in(Singleton.class).to(SchemaOnlineChecksRateLimiter.class);
 
         bindSingletonFactory(HermesCuratorClientFactory.class).named(CuratorType.HERMES);
-        bindSingletonFactory(KafkaCuratorClientFactory.class).named(CuratorType.KAFKA);
         bindSingletonFactory(GraphiteWebTargetFactory.class);
         bindSingletonFactory(ObjectMapperFactory.class);
         bindSingletonFactory(SharedCounterFactory.class);

@@ -45,6 +45,10 @@ class HermesClientMetricsTest extends Specification {
         then:
         metrics.counter("hermes-client.com_group.topic.failure").count == 4
         metrics.timers.containsKey("hermes-client.com_group.topic.latency")
+
+        metrics.counter("hermes-client.com_group.topic.publish.failure").count == 4
+        metrics.counter("hermes-client.com_group.topic.publish.finally.failure").count == 1
+        metrics.counter("hermes-client.com_group.topic.publish.retry.failure").count == 3
     }
 
     def "should update max retries exceeded metric"() {
@@ -64,6 +68,14 @@ class HermesClientMetricsTest extends Specification {
         metrics.counter("hermes-client.com_group.topic.retries.success").count == 0
         metrics.histogram("hermes-client.com_group.topic.retries.attempts").getSnapshot().size() == 0
         metrics.timers.containsKey("hermes-client.com_group.topic.latency")
+
+        metrics.counter("hermes-client.com_group.topic.publish.finally.success").count == 0
+        metrics.counter("hermes-client.com_group.topic.publish.finally.failure").count == 1
+        metrics.counter("hermes-client.com_group.topic.publish.failure").count == 4
+        metrics.counter("hermes-client.com_group.topic.publish.attempt").count == 1
+        metrics.counter("hermes-client.com_group.topic.publish.retry.success").count == 0
+        metrics.counter("hermes-client.com_group.topic.publish.retry.failure").count == 3
+        metrics.counter("hermes-client.com_group.topic.publish.retry.attempt").count == 1
     }
 
     def "should update retries metrics"() {
@@ -96,10 +108,54 @@ class HermesClientMetricsTest extends Specification {
         metrics.histogram("hermes-client.com_group.topic.retries.attempts").getSnapshot().getMin() == 2
         metrics.histogram("hermes-client.com_group.topic.retries.attempts").getSnapshot().getMax() == 5
         metrics.timers.containsKey("hermes-client.com_group.topic.latency")
+
+        metrics.counter("hermes-client.com_group.topic.publish.finally.success").count == 2
+        metrics.counter("hermes-client.com_group.topic.publish.finally.failure").count == 1
+        metrics.counter("hermes-client.com_group.topic.publish.failure").count == 10
+        metrics.counter("hermes-client.com_group.topic.publish.attempt").count == 3
+        metrics.counter("hermes-client.com_group.topic.publish.retry.success").count == 2
+        metrics.counter("hermes-client.com_group.topic.publish.retry.failure").count == 9
+        metrics.counter("hermes-client.com_group.topic.publish.retry.attempt").count == 3
+    }
+
+    def "should update failure metrics when there is an application-level error"() {
+        given:
+        HermesClient client1 = hermesClient(badRequestHermesSender())
+                .withRetrySleep(0)
+                .withRetries(4)
+                .withMetrics(metricsProvider).build()
+
+        HermesClient client2 = hermesClient(badRequestHermesSender())
+                .withRetrySleep(0)
+                .withRetries(6)
+                .withMetrics(metricsProvider).build()
+
+        HermesClient client3 = hermesClient(badRequestHermesSender())
+                .withRetrySleep(0)
+                .withRetries(2)
+                .withMetrics(metricsProvider).build()
+
+        when:
+        silence({ client1.publish("com.group.topic", "123").join() })
+        silence({ client2.publish("com.group.topic", "456").join() })
+        silence({ client3.publish("com.group.topic", "789").join() })
+
+        then:
+        metrics.counter("hermes-client.com_group.topic.publish.finally.success").count == 0
+        metrics.counter("hermes-client.com_group.topic.publish.finally.failure").count == 3
+        metrics.counter("hermes-client.com_group.topic.publish.failure").count == 3
+        metrics.counter("hermes-client.com_group.topic.publish.attempt").count == 3
+        metrics.counter("hermes-client.com_group.topic.publish.retry.success").count == 0
+        metrics.counter("hermes-client.com_group.topic.publish.retry.failure").count == 0
+        metrics.counter("hermes-client.com_group.topic.publish.retry.attempt").count == 0
     }
 
     private CompletableFuture<HermesResponse> successFuture(HermesMessage message) {
         return completedFuture(HermesResponseBuilder.hermesResponse(message).withHttpStatus(201).build())
+    }
+
+    private CompletableFuture<HermesResponse> badRequestFuture(HermesMessage message) {
+        return completedFuture(HermesResponseBuilder.hermesResponse(message).withHttpStatus(400).build())
     }
 
     private CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
@@ -128,6 +184,15 @@ class HermesClientMetricsTest extends Specification {
             CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
                 Thread.sleep(sendLatencyMs.toMillis())
                 return successFuture(message)
+            }
+        }
+    }
+
+    private HermesSender badRequestHermesSender() {
+        new HermesSender() {
+            @Override
+            CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
+                return badRequestFuture(message)
             }
         }
     }

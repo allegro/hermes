@@ -40,7 +40,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_P
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_ZOOKEEPER_CONNECT_STRING;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
@@ -82,7 +81,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         frontend.overrideProperty(KAFKA_AUTHORIZATION_PROTOCOL, "SASL_PLAINTEXT");
         frontend.overrideProperty(KAFKA_AUTHORIZATION_USERNAME, "hermes");
         frontend.overrideProperty(KAFKA_AUTHORIZATION_PASSWORD, "alice-secret");
-        frontend.overrideProperty(KAFKA_ZOOKEEPER_CONNECT_STRING, KAFKA_ZK_CONNECT_STRING);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
         frontend.start();
 
@@ -146,7 +144,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         byte[] content = wrapper.wrapJson("message".getBytes(defaultCharset()),
                 messageId, timestamp, Collections.emptyMap());
 
-        messageRepository.save(new JsonMessage(messageId, content, timestamp), topic);
+        messageRepository.save(new JsonMessage(messageId, content, timestamp, null), topic);
         messageRepository.close();
 
         return backup;

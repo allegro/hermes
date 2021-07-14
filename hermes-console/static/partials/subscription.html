@@ -12,7 +12,7 @@
         <span ng-show="disabled" uib-popover='Sign in to edit the subscription' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
         <button ng-show="subscription.state === 'ACTIVE'" class="btn btn-warning" ng-disabled="disabled" ng-click="suspend()">Suspend</button>
         <button ng-show="subscription.state === 'SUSPENDED'" class="btn btn-success" ng-disabled="disabled" ng-click="activate()">Activate</button>
-        <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit()">Edit</button>
+        <button class="btn btn-primary" ng-disabled="disabled" ng-click="edit(subscription)">Edit</button>
         <button class="btn btn-primary" ng-disabled="disabled" ng-click="clone()">Clone</button>
         <button class="btn btn-danger" ng-disabled="disabled" ng-click="remove()">Remove</button>
     </div>
@@ -144,6 +144,10 @@
                     <p>
                         <strong>Message TTL:</strong> {{subscription.subscriptionPolicy.messageTtl}} seconds
                         <span uib-popover='Amount of time a message can be held in sending queue and retried. If message will not be delivered during this time, it will be discarded.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
+                    <p>
+                        <strong>Request timeout:</strong> {{subscription.subscriptionPolicy.requestTimeout}} milliseconds
+                        <span uib-popover='Http client request timeout in milliseconds.' popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
                     <p><strong>Message delivery tracking:</strong> {{ trackingModeName[subscription.trackingMode] }}</p>
                     <hr/>
@@ -279,9 +283,14 @@
 
         <div class="col-md-12" ng-show="subscription.filters">
 
-            <div class="panel">
+            <div class="panel panel-default">
 
                 <div class="panel-heading">
+                    <div class="btn-group pull-right">
+                        <button class="btn btn-success btn-xs" ng-click="debugFilters()">
+                            <span class="glyphicon glyphicon-console"></span> Debug
+                        </button>
+                    </div>
                     <h3 class="panel-title">Subscription message filters</h3>
                 </div>
 
@@ -289,7 +298,8 @@
                     <tr>
                         <th>#</th>
                         <th>Type</th>
-                        <th>Path</th>
+                        <th ng-show="showHeadersFilter">Path or Header name</th>
+                        <th ng-show="!showHeadersFilter">Path</th>
                         <th>Matcher</th>
                         <th>Matching strategy</th>
                         <th> </th>
@@ -298,7 +308,7 @@
                     <tr ng-repeat="filter in subscription.filters">
                         <td>{{$index + 1}}</td>
                         <td>{{filter.type}}</td>
-                        <td>{{filter.path}}</td>
+                        <td>{{filter.path}}{{filter.header}}</td>
                         <td>{{filter.matcher}}</td>
                         <td>{{filter.matchingStrategy}}</td>
                     </tr>
@@ -311,7 +321,7 @@
 
     <div class="row" ng-show="subscription.headers.length > 0">
         <div class="col-md-12">
-            <div class="panel">
+            <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Fixed HTTP headers</h3>
                 </div>

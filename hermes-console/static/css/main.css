@@ -14,6 +14,10 @@ body {
     margin-top: 4em;
 }
 
+.margin-right-4 {
+    margin-right: 4px;
+}
+
 .margin-top-10 {
     margin-top: 10px;
 }
@@ -106,4 +110,8 @@ footer {
 
     text-align: center;
     color: #b9b9b9;
+}
+
+.full-width {
+    display: block;
 }

@@ -21,7 +21,7 @@ import pl.allegro.tech.hermes.common.metric.MetricRegistryWithHdrHistogramReserv
 import pl.allegro.tech.hermes.common.metric.MetricsReservoirType;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
-import pl.allegro.tech.hermes.common.util.HostnameResolver;
+import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -34,17 +34,17 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
 
     private final ConfigFactory configFactory;
     private final CounterStorage counterStorage;
-    private final HostnameResolver hostnameResolver;
+    private final InstanceIdResolver instanceIdResolver;
     private final String moduleName;
 
     @Inject
     public MetricRegistryFactory(ConfigFactory configFactory,
                                  CounterStorage counterStorage,
-                                 HostnameResolver hostnameResolver,
+                                 InstanceIdResolver instanceIdResolver,
                                  @Named("moduleName") String moduleName) {
         this.configFactory = configFactory;
         this.counterStorage = counterStorage;
-        this.hostnameResolver = hostnameResolver;
+        this.instanceIdResolver = instanceIdResolver;
         this.moduleName = moduleName;
 
     }
@@ -67,7 +67,7 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
             String prefix = Joiner.on(".").join(
                     configFactory.getStringProperty(Configs.GRAPHITE_PREFIX),
                     moduleName,
-                    hostnameResolver.resolve().replaceAll("\\.", HermesMetrics.REPLACEMENT_CHAR));
+                    instanceIdResolver.resolve().replaceAll("\\.", HermesMetrics.REPLACEMENT_CHAR));
 
             GraphiteReporter
                     .forRegistry(registry)

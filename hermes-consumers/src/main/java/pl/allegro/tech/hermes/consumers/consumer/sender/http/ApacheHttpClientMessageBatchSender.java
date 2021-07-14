@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.BatchHttpHeadersProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 
@@ -29,26 +31,31 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
     private final int connectionTimeout;
     private final int connectionRequestTimeout;
     private final EndpointAddressResolver resolver;
+    private final SendingResultHandlers resultHandlers;
+    private final BatchHttpHeadersProvider headersProvider;
 
     private CloseableHttpClient client = HttpClients.createMinimal();
 
-    public ApacheHttpClientMessageBatchSender(int connectionTimeout, int connectionRequestTimeout, EndpointAddressResolver resolver) {
+    public ApacheHttpClientMessageBatchSender(int connectionTimeout, int connectionRequestTimeout, EndpointAddressResolver resolver, SendingResultHandlers resultHandlers, BatchHttpHeadersProvider headersProvider) {
         this.connectionTimeout = connectionTimeout;
         this.connectionRequestTimeout = connectionRequestTimeout;
         this.resolver = resolver;
+        this.resultHandlers = resultHandlers;
+        this.headersProvider = headersProvider;
     }
 
     @Override
     public MessageSendingResult send(MessageBatch batch, EndpointAddress address, EndpointAddressResolverMetadata metadata,
                                      int requestTimeout) {
         try {
-            return send(batch, resolver.resolve(address, batch, metadata), requestTimeout);
+            HttpRequestHeaders headers = headersProvider.getHeaders(address);
+            return send(batch, resolver.resolve(address, batch, metadata), requestTimeout, headers);
         } catch (EndpointAddressResolutionException e) {
             return MessageSendingResult.failedResult(e);
         }
     }
 
-    public MessageSendingResult send(MessageBatch batch, URI address, int requestTimeout) {
+    public MessageSendingResult send(MessageBatch batch, URI address, int requestTimeout, HttpRequestHeaders headers) {
         ContentType contentType = getMediaType(batch.getContentType());
         HttpPost httpPost = new HttpPost(address);
         ByteBufferEntity entity = new ByteBufferEntity(batch.getContent(), contentType);
@@ -61,6 +68,9 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
         httpPost.setConfig(requestConfig);
         httpPost.setEntity(entity);
+
+        headers.asMap().forEach(httpPost::addHeader);
+
         httpPost.addHeader(HTTP.CONN_KEEP_ALIVE, "true");
         httpPost.addHeader(BATCH_ID.getName(), batch.getId());
         httpPost.addHeader(HTTP.CONTENT_TYPE, contentType.getMimeType());
@@ -78,7 +88,7 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
     private MessageSendingResult send(HttpPost post) {
         try {
-            return MessageSendingResult.ofStatusCode(client.execute(post).getStatusLine().getStatusCode());
+            return resultHandlers.handleSendingResultForBatch(client.execute(post));
         } catch (IOException e) {
             return MessageSendingResult.failedResult(e);
         } finally {
