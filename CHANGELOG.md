@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## 1.9.2 (14.07.2021)
+
+## Enhancements
+
+#### ([1353](https://github.com/allegro/hermes/pull/1353)) Configurable request timeout in subscription view
+
 ## 1.9.1 (29.06.2021)
 
 ### Fixes
