@@ -61,6 +61,11 @@ console:
         label: Hours
       - value: TimeUnit.DAYS
         label: Days
+    defaults:
+      offlineStorage:
+        retentionTime:
+          duration: 60
+
   subscription:
     showHeadersFilter: false
     showFixedHeaders: false

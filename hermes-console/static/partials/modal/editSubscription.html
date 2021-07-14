@@ -109,12 +109,23 @@
                 </div>
             </div>
 
-            <div class="form-group {{subscriptionForm.subscriptionRequestTimeout.$valid ? '' : 'has-error'}}" ng-show="subscription.deliveryType === 'BATCH'">
+            <div class="form-group {{subscriptionForm.subscriptionRequestTimeout.$valid ? '' : 'has-error'}}">
                 <label for="subscriptionRequestTimeout" class="col-md-3 control-label">Request timeout</label>
                 <div class="col-md-9">
                     <div class="input-group">
-                        <input type="number" min="0" max="1000000" step="1" ng-required="subscription.deliveryType === 'BATCH'" class="form-control" id="subscriptionRequestTimeout" name="subscriptionRequestTimeout" placeholder="Max time for processing message by subscriber." ng-model="subscription.subscriptionPolicy.requestTimeout"/>
+                        <input type="number" min="0" max="{{subscription.deliveryType === 'SERIAL' ? 10000 : 1000000}}"
+                               step="1" ng-required="subscription.deliveryType === 'BATCH'" class="form-control"
+                               id="subscriptionRequestTimeout" name="subscriptionRequestTimeout"
+                               placeholder="Max time for processing message by the subscriber"
+                               ng-model="subscription.subscriptionPolicy.requestTimeout"/>
                         <span class="input-group-addon">milliseconds</span>
+                        <span class="input-group-addon helpme-addon" uib-tooltip="Max time for processing message by the subscriber. The value is used in Hermes http client.">?</span>
+                    </div>
+                    <div class="alert alert-warning"
+                         ng-show="subscription.subscriptionPolicy.requestTimeout >= config.requestTimeoutWarningThreshold && subscription.deliveryType === 'SERIAL'">
+                        <strong>High request timeout <span class="glyphicon glyphicon-alert" /></strong>
+                        Please consider lower value to comply with the fail-fast principle.
+                        In some cases it is better to rethink the design of a subscriber rather than increase the timeout.
                     </div>
                 </div>
             </div>
