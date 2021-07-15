@@ -17,7 +17,7 @@ jobs:
       matrix:
         java: [ '8', '11']
         tests: ['check', 'integrationTest', 'jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0']
-    name: Java ${{ matrix.Java }} sample
+    name: Java ${{ matrix.Java }} ${{ matrix.tests }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 11
@@ -28,6 +28,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew assemble
+      run: ./gradlew build
     - name: Run tests with Gradle
       run: ./gradlew ${{ matrix.tests }}
