@@ -86,6 +86,6 @@ subscription-health:
   timeoutMillis: 200
 
 audit:
-  isLoggingAuditEnabled: true
+  isLoggingAuditEnabled: false
   isEventAuditEnabled: true
-  eventUrl: "https://webhook.site/8bbb6c1b-3452-4891-9487-a9d5edbf37f1"
+  eventUrl: "http://localhost:18081/audit-events"

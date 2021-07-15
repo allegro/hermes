@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.infrastructure.audit.pojo;
+package pl.allegro.tech.hermes.management.infrastructure.audit;
 
 public class AuditEvent {
     private final AuditEventType eventType;
@@ -38,4 +38,10 @@ public class AuditEvent {
     public String getResourceName() {
         return resourceName;
     }
+}
+
+enum AuditEventType {
+    BEFORE_CREATION, CREATED,
+    BEFORE_UPDATE, UPDATED,
+    BEFORE_REMOVAL, REMOVED
 }

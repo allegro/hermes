@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.assertj.core.api.Assertions;
@@ -12,9 +13,11 @@ import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
+import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -34,6 +37,84 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class TopicManagementTest extends IntegrationTest {
 
     private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
+
+    @Test
+    public void shouldEmmitAuditEventWhenTopicCreated() {
+        //given
+        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
+        operations.createGroup("testGroupName");
+        Topic topic = topic("testGroupName", "testTopicName").build();
+
+        //when
+        management.topic().create(topicWithSchema(topic));
+
+        //then
+        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString().startsWith("{\n" +
+                "  \"eventType\": \"CREATED\",\n" +
+                "  \"resourceName\": \"Topic\",\n" +
+                "  \"payloadClass\": \"pl.allegro.tech.hermes.api.Topic\",\n" +
+                "  \"payload\": {\n" +
+                "    \"name\": \"testGroupName.testTopicName\","));
+    }
+
+    @Test
+    public void shouldEmmitAuditEventWhenTopicRemoved() {
+        //given
+        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
+        operations.createGroup("anotherTestGroupName");
+        Topic topic = topic("anotherTestGroupName", "anotherTestTopicName").build();
+        operations.createTopic(topicWithSchema(topic));
+
+        //when
+        management.topic().remove(topic.getQualifiedName());
+
+        //then
+        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString().startsWith("{\n" +
+                "  \"eventType\": \"REMOVED\",\n" +
+                "  \"resourceName\": \"Topic\",\n" +
+                "  \"payloadClass\": \"java.lang.String\",\n" +
+                "  \"payload\": \"anotherTestGroupName.anotherTestTopicName\",\n" +
+                "  \"username\": \"[anonymous user]\"\n" +
+                "}"));
+    }
+
+    @Test
+    public void shouldEmmitAuditEventWhenTopicUpdated() {
+        //given
+        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
+        operations.createGroup("someTestGroupName");
+        Topic topic = topic("someTestGroupName", "someTestTopicName").withMaxMessageSize(1024).build();
+        operations.createTopic(topicWithSchema(topic));
+        PatchData patchData = PatchData.from(ImmutableMap.of("maxMessageSize", 2048));
+
+        //when
+        management.topic().update(topic.getQualifiedName(), patchData);
+
+        //then
+        LoggedRequest response = remoteService.waitAndGetLastRequest();
+        assertThat(response.getBodyAsString().startsWith("{\n" +
+                "  \"eventType\": \"UPDATED\",\n" +
+                "  \"resourceName\": \"Topic\",\n" +
+                "  \"payloadClass\": \"pl.allegro.tech.hermes.api.Diff\",\n"));
+        assertThat(response.getBodyAsString().contains(topic.getQualifiedName()));
+    }
+
+    @Test
+    public void shouldEmmitAuditEventBeforeUpdateWhenWrongPatchDataKeyProvided() {
+        //given
+        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
+        operations.createGroup("testGroupName");
+        Topic topic = topic("testGroupName", "testTopicName").withMaxMessageSize(1024).build();
+        operations.createTopic(topicWithSchema(topic));
+        PatchData patchData = PatchData.from(ImmutableMap.of("someValue", 2048));
+
+        //when
+        management.topic().update("testGroupName.testTopicName", patchData);
+
+        //then
+        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString()
+                .startsWith("{\"eventType\": \"BEFORE_UPDATE\","));
+    }
 
     @Test
     public void shouldCreateTopic() {

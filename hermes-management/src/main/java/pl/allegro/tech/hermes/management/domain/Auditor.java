@@ -34,5 +34,4 @@ public interface Auditor {
     default void objectUpdated(String username, Anonymizable oldObject, Anonymizable newObject) {
         objectUpdated(username, (Object) oldObject.anonymize(), (Object) newObject.anonymize());
     }
-
 }

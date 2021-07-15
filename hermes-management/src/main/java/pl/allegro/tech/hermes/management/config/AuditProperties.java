@@ -7,17 +7,7 @@ import java.net.URL;
 @ConfigurationProperties(prefix = "audit")
 class AuditProperties {
 
-    private boolean enabled = false;
-
     private URL eventUrl = null;
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 
     public URL getEventUrl() {
         return eventUrl;

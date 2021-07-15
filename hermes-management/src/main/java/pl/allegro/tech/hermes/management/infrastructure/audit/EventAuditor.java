@@ -5,9 +5,9 @@ import org.javers.core.diff.Diff;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
+import pl.allegro.tech.hermes.api.Anonymizable;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.domain.Auditor;
-import pl.allegro.tech.hermes.management.infrastructure.audit.pojo.AuditEvent;
-import pl.allegro.tech.hermes.management.infrastructure.audit.pojo.AuditEventType;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -27,6 +27,29 @@ public class EventAuditor implements Auditor {
         this.eventDestination = eventDestination;
     }
 
+    @Override
+    public void beforeObjectCreation(String username, Anonymizable createdObject) {
+        ignoringExceptions(() -> {
+            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_CREATION, createdObject, username);
+            restTemplate.postForObject(eventDestination, event, Void.class);
+        });
+    }
+
+    @Override
+    public void beforeObjectRemoval(String username, String removedObjectType, String removedObjectName) {
+        ignoringExceptions(() -> {
+            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_REMOVAL, removedObjectName, removedObjectType, username);
+            restTemplate.postForObject(eventDestination, event, Void.class);
+        });
+    }
+
+    @Override
+    public void beforeObjectUpdate(String username, String objectClassName, Object objectName, PatchData patchData) {
+        ignoringExceptions(() -> {
+            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_UPDATE, patchData, objectName.getClass().getName(), username);
+            restTemplate.postForObject(eventDestination, event, Void.class);
+        });
+    }
 
     @Override
     public void objectCreated(String username, Object createdObject) {
