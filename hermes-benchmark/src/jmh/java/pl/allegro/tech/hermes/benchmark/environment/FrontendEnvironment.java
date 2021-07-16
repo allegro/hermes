@@ -44,7 +44,9 @@ public class FrontendEnvironment {
     private MetricRegistry metricRegistry;
 
     public static void main(String[] args) throws Exception {
-        new FrontendEnvironment().setupEnvironment();
+        FrontendEnvironment env =  new FrontendEnvironment();
+        env.setupEnvironment();
+        env.shutdownServers();
     }
 
     @Setup(Level.Trial)
