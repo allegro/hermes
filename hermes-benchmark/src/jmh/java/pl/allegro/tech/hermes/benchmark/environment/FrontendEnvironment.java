@@ -51,9 +51,10 @@ public class FrontendEnvironment {
 
     @Setup(Level.Trial)
     public void setupEnvironment() throws Exception {
-        String zookeeperConnectString = "localhost:" + ZOOKEEPER_PORT;
-        zookeeperStarter = new ZookeeperStarter(ZOOKEEPER_PORT,zookeeperConnectString );
+        zookeeperStarter = new ZookeeperStarter(ZOOKEEPER_PORT,"irrelevant");
         zookeeperStarter.start();
+        int port = zookeeperStarter.instance().getPort();
+        String zookeeperConnectString = "localhost:" + port;
 
         Properties kafkaProperties = new Properties();
         kafkaProperties.load(this.getClass().getResourceAsStream("/kafka.properties"));

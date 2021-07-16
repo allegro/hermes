@@ -17,8 +17,8 @@ public class ZookeeperStarter implements Starter<TestingServer> {
 
     private TestingServer zookeeperServer;
 
-    private final int port;
-    private final String connectString;
+    private int port;
+    private String connectString;
     private final String[] pathsToInitialize;
 
     public ZookeeperStarter(int port, String connectString, String... pathsToInitialize) {
@@ -29,9 +29,10 @@ public class ZookeeperStarter implements Starter<TestingServer> {
 
     @Override
     public void start() throws Exception {
+        zookeeperServer = new TestingServer(true);
+        port = zookeeperServer.getPort();
         logger.info("Running in-memory Zookeeper at port {}", port);
-        zookeeperServer = new TestingServer(config(port), true);
-
+        connectString = "localhost:" + port;
         String[] zkConnectStringSplitted = connectString.split("/", 2);
 
         try(CuratorFramework curator = startZookeeperClient(zkConnectStringSplitted[0])) {

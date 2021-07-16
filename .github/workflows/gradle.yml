@@ -41,32 +41,32 @@ jobs:
         run: ./gradlew assemble
       - name: Run tests with Gradle
         run: ./gradlew ${{ matrix.tests }}
-#  benchmark-java8:
-#    runs-on: ubuntu-20.04
-#    name: Java 8 benchmark
-#    steps:
-#      - uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 0
-#      - uses: actions/cache@v2
-#        with:
-#          path: |
-#            ~/.gradle/caches
-#            ~/.gradle/wrapper
-#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-#          restore-keys: |
-#            ${{ runner.os }}-gradle-
-#      - name: Set up JDK 8
-#        uses: actions/setup-java@v2
-#        with:
-#          java-version: 8
-#          distribution: 'adopt'
-#      - name: Grant execute permission for gradlew
-#        run: chmod +x gradlew
-#      - name: Build with Gradle
-#        run: ./gradlew assemble
-#      - name: Run tests with Gradle
-#        run: ./gradlew jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0
+  benchmark-java8:
+    runs-on: ubuntu-20.04
+    name: Java 8 benchmark
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: 8
+          distribution: 'adopt'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew assemble
+      - name: Run tests with Gradle
+        run: ./gradlew jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0
   benchmark-java11:
     runs-on: ubuntu-20.04
     name: Java 11 benchmark
