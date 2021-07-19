@@ -64,14 +64,19 @@ public class MyCustomSecurityProvider implements SecurityProvider {
 ## Management operations auditing
 
 Hermes includes management operations auditor, which audits group, topic or subscription creation, removal or modification.
+Hermes can also be emitting audit events to a provided URL (for example Hermes topic). 
+Thanks to this other service(s) can get information about groups, topics and subscriptions changes.
 It can be configured using following options:
 
 
 Option                    | Description                            | Default value
 ------------------------- | -------------------------------------- | -------------
-enabled                   | enable Auditor                         | false
+isLoggingAuditEnabled     | enable Logging Auditor                 | false
+isEventAuditEnabled       | enable Event Auditor to provided URL   | false
+eventUrl                  | URL to which events will be sent       | null
+
 
 
 Auditor uses `java.security.Principal` obtained from `javax.ws.rs.core.SecurityContext` to get user name. 
 `SecurityContext` is provided by component implementing `pl.allegro.tech.hermes.management.api.auth.SecurityContextProvider` as in `MyCustomSecurityContextProvider` example above.
-Currently basic `pl.allegro.tech.hermes.management.infrastructure.audit.LoggingAuditor` is provided.
+Currently `pl.allegro.tech.hermes.management.infrastructure.audit.CompositeAuditor` is provided.
