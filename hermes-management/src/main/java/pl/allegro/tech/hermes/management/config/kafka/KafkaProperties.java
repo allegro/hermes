@@ -6,7 +6,7 @@ public class KafkaProperties {
 
     private String clusterName = "primary";
 
-    private String bootstrapKafkaServer = "localhost:9093";
+    private String bootstrapKafkaServer = "localhost:9092";
 
     private int kafkaServerRequestTimeoutMillis = 3000;
 
@@ -29,6 +29,8 @@ public class KafkaProperties {
     private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
     private KafkaSaslProperties sasl = new KafkaSaslProperties();
+
+    private KafkaSSLProperties ssl = new KafkaSSLProperties();
 
     public static final class KafkaConsumer {
 
@@ -151,6 +153,14 @@ public class KafkaProperties {
 
     public void setSasl(KafkaSaslProperties sasl) {
         this.sasl = sasl;
+    }
+
+    public KafkaSSLProperties getSsl() {
+        return ssl;
+    }
+
+    public void setSsl(KafkaSSLProperties ssl) {
+        this.ssl = ssl;
     }
 
     public String getDatacenter() {

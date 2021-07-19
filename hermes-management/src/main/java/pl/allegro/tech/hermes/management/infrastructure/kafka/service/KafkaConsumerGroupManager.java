@@ -30,6 +30,13 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 import static org.apache.kafka.clients.producer.ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
+import static org.apache.kafka.common.config.SslConfigs.SSL_PROTOCOL_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_KEY_PASSWORD_CONFIG;
+import static org.apache.kafka.common.config.SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG;
 
 public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
@@ -98,6 +105,17 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
             props.put(SASL_MECHANISM, kafkaProperties.getSasl().getMechanism());
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSasl().getProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaProperties.getSasl().getJaasConfig());
+        }
+        if (kafkaProperties.getSsl().isEnabled()) {
+            props.put(SASL_MECHANISM, kafkaProperties.getSsl().getMechanism());
+            props.put(SSL_TRUSTSTORE_LOCATION_CONFIG, kafkaProperties.getSsl().getTrustStoreLocation());
+            props.put(SSL_TRUSTSTORE_PASSWORD_CONFIG, kafkaProperties.getSsl().getTrustStorePassword());
+            props.put(SSL_KEYSTORE_LOCATION_CONFIG, kafkaProperties.getSsl().getKeyStoreLocation());
+            props.put(SSL_KEYSTORE_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeyStorePassword());
+            props.put(SSL_KEY_PASSWORD_CONFIG, kafkaProperties.getSsl().getKeyPassword());
+            props.put(SSL_PROTOCOL_CONFIG, kafkaProperties.getSsl().getProtocolVersion());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSsl().getSecurityProtocol());
+            props.put(SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, kafkaProperties.getSsl().getEndpointIdentificationAlgorithm());
         }
         return props;
     }

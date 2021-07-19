@@ -88,9 +88,20 @@ public enum Configs {
 
     KAFKA_AUTHORIZATION_ENABLED("kafka.authorization.enabled", false),
     KAFKA_AUTHORIZATION_MECHANISM("kafka.authorization.mechanism", "PLAIN"),
+    //SASL AUTHENTICATION
     KAFKA_AUTHORIZATION_PROTOCOL("kafka.authorization.protocol", "SASL_PLAINTEXT"),
     KAFKA_AUTHORIZATION_USERNAME("kafka.authorization.username", "username"),
     KAFKA_AUTHORIZATION_PASSWORD("kafka.authorization.password", "password"),
+    //SSL AUTHENTICATION
+    //KAFKA_AUTHORIZATION_PROTOCOL("kafka.authorization.mechanism", "SSL"),
+    KAFKA_SSL_PROTOCOL_VERSION("kafka.ssl.protocol.version", "TLSv1.2"),
+    KAFKA_SSL_TRUSTSTORE_LOCATION("kafka.ssl.truststore.location", "kafka.server.truststore.jks"),
+    KAFKA_SSL_TRUSTSTORE_PASSWORD("kafka.ssl.truststore.password", "changeit"),
+    KAFKA_SSL_KEYSTORE_LOCATION("kafka.ssl.keystore.location", "kafka.server.keystore.jks"),
+    KAFKA_SSL_KEYSTORE_PASSWORD("kafka.ssl.keystore.password", "changeit"),
+    KAFKA_SSL_KEY_PASSWORD("kafka.ssl.key.password", "changeit"),
+    KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM("kafka.ssl.endpoint.identification.algorithm",""),
+
 
     FRONTEND_PORT("frontend.port", 8080),
     FRONTEND_HOST("frontend.host", "0.0.0.0"),

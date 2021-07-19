@@ -12,10 +12,22 @@ public class KafkaConsumerPoolConfig {
     private final String securityMechanism;
     private final String securityProtocol;
     private final String saslJaasConfig;
+    private final boolean isSslEnabled;
+    private final String sslTrustStoreLocation;
+    private final String sslTrustStorePassword;
+    private final String sslKeyStoreLocation;
+    private final String sslKeyStorePassword;
+    private final String sslKeyPassword;
+    private final String sslProtocolVersion;
+    private final String sslSecurityProtocol;
+    private final String sslEndpointIdentificationAlgorithm;
 
     public KafkaConsumerPoolConfig(int cacheExpirationSeconds, int bufferSize, int fetchMaxWaitMillis,
                                    int fetchMinBytes, String idPrefix, String consumerGroupName,
-                                   boolean isSaslEnabled, String securityMechanism, String securityProtocol, String saslJaasConfig) {
+                                   boolean isSaslEnabled, String securityMechanism, String securityProtocol, String saslJaasConfig,
+                                   boolean isSslEnabled, String sslTrustStoreLocation, String sslTrustStorePassword, String sslKeyStoreLocation,
+                                   String sslKeyStorePassword, String sslKeyPassword, String sslProtocolVersion,
+                                   String sslSecurityProtocol, String sslEndpointIdentificationAlgorithm) {
         this.cacheExpirationSeconds = cacheExpirationSeconds;
         this.bufferSizeBytes = bufferSize;
         this.fetchMaxWaitMillis = fetchMaxWaitMillis;
@@ -26,6 +38,15 @@ public class KafkaConsumerPoolConfig {
         this.securityMechanism = securityMechanism;
         this.securityProtocol = securityProtocol;
         this.saslJaasConfig = saslJaasConfig;
+        this.isSslEnabled = isSslEnabled;
+        this.sslTrustStoreLocation = sslTrustStoreLocation;
+        this.sslTrustStorePassword = sslTrustStorePassword;
+        this.sslKeyStoreLocation = sslKeyStoreLocation;
+        this.sslKeyStorePassword = sslKeyStorePassword;
+        this.sslKeyPassword = sslKeyPassword;
+        this.sslProtocolVersion = sslProtocolVersion;
+        this.sslSecurityProtocol = sslSecurityProtocol;
+        this.sslEndpointIdentificationAlgorithm = sslEndpointIdentificationAlgorithm;
     }
 
     public int getCacheExpirationSeconds() {
@@ -66,5 +87,41 @@ public class KafkaConsumerPoolConfig {
 
     public String getSaslJaasConfig() {
         return saslJaasConfig;
+    }
+
+    public boolean isSslEnabled() {
+        return isSaslEnabled;
+    }
+
+    public String getSslTrustStoreLocation() {
+        return sslTrustStoreLocation;
+    }
+
+    public String getSslTrustStorePassword() {
+        return sslTrustStorePassword;
+    }
+
+    public String getSslKeyStoreLocation() {
+        return sslKeyStoreLocation;
+    }
+
+    public String getSslKeyStorePassword() {
+        return sslKeyStorePassword;
+    }
+
+    public String getSslKeyPassword() {
+        return sslKeyPassword;
+    }
+
+    public String getSslProtocolVersion() {
+        return sslProtocolVersion;
+    }
+
+    public String getSslSecurityProtocol() {
+        return sslSecurityProtocol;
+    }
+
+    public String getSslEndpointIdentificationAlgorithm() {
+        return sslEndpointIdentificationAlgorithm;
     }
 }
