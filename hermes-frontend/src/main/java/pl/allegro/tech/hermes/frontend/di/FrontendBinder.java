@@ -34,6 +34,7 @@ import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.WaitForKafkaStartupHook;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.services.ReadinessCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
@@ -70,6 +71,7 @@ public class FrontendBinder extends AbstractBinder {
         bind("producer").named("moduleName").to(String.class);
 
         bindSingleton(HealthCheckService.class);
+        bindSingleton(ReadinessCheckService.class);
         bind(DefaultHeadersPropagator.class).to(HeadersPropagator.class).in(Singleton.class);
 
         bindFactory(HandlersChainFactory.class).to(HttpHandler.class).in(Singleton.class);

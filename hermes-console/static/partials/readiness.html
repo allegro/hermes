@@ -1,0 +1,28 @@
+<section ng-controller="ReadinessController">
+
+    <ol class="breadcrumb">
+        <li><a href="#/">home</a></li>
+        <li class="active">readiness</li>
+    </ol>
+
+    <div class="alert alert-danger" role="alert" ng-if="error">
+        Error during setting datacenter readiness:<br>
+        {{error}}
+    </div>
+
+    <h1><small>Datacenter readiness:</small></h1>
+    <div class="container">
+        <div class="row" ng-repeat="item in datacenters">
+            <div class="col-md-1">
+                <span>{{$index + 1}}</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            </div>
+            <div class="col-md-1">
+                <strong>{{item.datacenter}}</strong>
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-danger" ng-if=item.isReady ng-click="openModal(item)">Turn off</button>
+                <button class="btn btn-default" ng-if=!item.isReady ng-click="openModal(item)">Turn on</button>
+            </div>
+        </div>
+    </div>
+</section>

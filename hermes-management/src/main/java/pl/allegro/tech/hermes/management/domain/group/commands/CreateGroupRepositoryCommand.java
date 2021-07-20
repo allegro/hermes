@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.group.commands;
 
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class CreateGroupRepositoryCommand extends RepositoryCommand<GroupRepository> {
@@ -14,19 +15,19 @@ public class CreateGroupRepositoryCommand extends RepositoryCommand<GroupReposit
     }
 
     @Override
-    public void backup(GroupRepository repository) {
-        exists = repository.groupExists(group.getGroupName());
+    public void backup(DatacenterBoundRepositoryHolder<GroupRepository> holder) {
+        exists = holder.getRepository().groupExists(group.getGroupName());
     }
 
     @Override
-    public void execute(GroupRepository repository) {
-        repository.createGroup(group);
+    public void execute(DatacenterBoundRepositoryHolder<GroupRepository> holder) {
+        holder.getRepository().createGroup(group);
     }
 
     @Override
-    public void rollback(GroupRepository repository) {
+    public void rollback(DatacenterBoundRepositoryHolder<GroupRepository> holder) {
         if (!exists) {
-            repository.removeGroup(group.getGroupName());
+            holder.getRepository().removeGroup(group.getGroupName());
         }
     }
 

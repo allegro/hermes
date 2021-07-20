@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.subscription.commands;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class CreateSubscriptionRepositoryCommand extends RepositoryCommand<SubscriptionRepository> {
@@ -13,16 +14,16 @@ public class CreateSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
     }
 
     @Override
-    public void backup(SubscriptionRepository repository) {}
+    public void backup(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {}
 
     @Override
-    public void execute(SubscriptionRepository repository) {
-        repository.createSubscription(subscription);
+    public void execute(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
+        holder.getRepository().createSubscription(subscription);
     }
 
     @Override
-    public void rollback(SubscriptionRepository repository) {
-        repository.removeSubscription(subscription.getTopicName(), subscription.getName());
+    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
+        holder.getRepository().removeSubscription(subscription.getTopicName(), subscription.getName());
     }
 
     @Override

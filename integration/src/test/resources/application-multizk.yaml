@@ -1,0 +1,90 @@
+owner:
+  crowd:
+    enabled: true
+    path: http://localhost:18222/crowd
+    connect-timeout: 2000
+    socket-timeout: 2000
+
+application:
+  name: hermes-management
+
+zookeeper:
+  enabled: false
+
+kafka:
+  clusters:
+    -
+      datacenter: dc
+      clusterName: primary
+      connectionTimeout: 10000
+      namespace: 'itTest'
+
+topic:
+  replicationFactor: 1
+  partitions: 2
+  allowRemoval: true
+  removeSchema: true
+  defaultContentType: AVRO
+  allowedContentTypes:
+    - AVRO
+    - JSON
+  touchSchedulerEnabled: false
+  allowedTopicLabels:
+    - label-1
+    - label-2
+    - label-3
+
+storage:
+  pathPrefix: /hermes
+  clusters:
+    -
+      datacenter: dc
+      clusterName: zk1
+      connectionString: localhost:14192
+    -
+      datacenter: dc5
+      clusterName: zk2
+      connectionString: localhost:14193
+
+auth:
+  oauthServerUrl: http://localhost:19999
+
+metrics:
+  graphiteHttpUri: http://localhost:18089/
+
+graphite:
+  client:
+    cacheTtlSeconds: 1
+
+spring:
+  jersey:
+    type: servlet
+  mvc:
+    servlet:
+      path: /status
+
+management:
+  endpoints:
+    web:
+      base-path: /
+  server:
+    servlet:
+      context-path: /
+
+spring.groovy.template.check-template-location: false
+
+schema.repository:
+  type: schema_registry
+  deleteSchemaPathSuffix:
+
+topicOwnerCache:
+  refreshRateInSeconds: 300 # 5 minutes
+
+subscriptionOwnerCache:
+  refreshRateInSeconds: 300
+
+consistencyChecker:
+  threadPoolSize: 2
+
+subscription-health:
+  timeoutMillis: 200
