@@ -19,59 +19,59 @@ public class MetricsMessageDeliveryListener implements MessageDeliveryListener {
     @Override
     public void onSend(HermesResponse response, long latency) {
         HermesMessage message = response.getHermesMessage();
-        String prefix = MetricsUtils.getMetricsPrefix(message.getTopic());
+        String topic = MetricsUtils.sanitizeTopic(message.getTopic());
 
-        metrics.timerRecord(prefix + ".latency", latency, NANOSECONDS);
+        metrics.timerRecord(topic, "latency", latency, NANOSECONDS);
         Map<String, String> tags = new HashMap<>();
         tags.put("code", String.valueOf(response.getHttpStatus()));
-        metrics.counterIncrement(prefix, "status", tags);
+        metrics.counterIncrement(topic, "status", tags);
 
-        counterIncrementIf(prefix + ".publish.failure", response.isFailure());
+        counterIncrementIf(topic,"publish.failure", response.isFailure());
     }
 
     @Override
     public void onFailure(HermesResponse response, int attemptCount) {
-        String prefix = MetricsUtils.getMetricsPrefix(response.getHermesMessage().getTopic());
-        metrics.counterIncrement(prefix + ".failure");
+        String topic = MetricsUtils.sanitizeTopic(response.getHermesMessage().getTopic());
+        metrics.counterIncrement(topic, "failure");
     }
 
     @Override
     public void onFailedRetry(HermesResponse response, int attemptCount) {
-        String prefix = MetricsUtils.getMetricsPrefix(response.getHermesMessage().getTopic());
-        metrics.counterIncrement(prefix + ".retries.count");
-        metrics.counterIncrement(prefix + ".failure");
+        String topic = MetricsUtils.sanitizeTopic(response.getHermesMessage().getTopic());
+        metrics.counterIncrement(topic, "retries.count");
+        metrics.counterIncrement(topic, "failure");
 
-        metrics.counterIncrement(prefix + ".publish.retry.failure");
+        metrics.counterIncrement(topic, "publish.retry.failure");
     }
 
     @Override
     public void onSuccessfulRetry(HermesResponse response, int attemptCount) {
-        String prefix = MetricsUtils.getMetricsPrefix(response.getHermesMessage().getTopic());
-        metrics.counterIncrement(prefix + ".retries.success");
-        metrics.histogramUpdate(prefix + ".retries.attempts", attemptCount - 1);
+        String topic = MetricsUtils.sanitizeTopic(response.getHermesMessage().getTopic());
+        metrics.counterIncrement(topic,  "retries.success");
+        metrics.histogramUpdate(topic, "retries.attempts", attemptCount - 1);
 
         boolean wasRetried = attemptCount > 1;
 
-        metrics.counterIncrement(prefix + ".publish.attempt");
-        counterIncrementIf(prefix + ".publish.retry.success", response.isSuccess() && wasRetried);
-        counterIncrementIf(prefix + ".publish.finally.success", response.isSuccess());
-        counterIncrementIf(prefix + ".publish.retry.failure", response.isFailure() && wasRetried);
-        counterIncrementIf(prefix + ".publish.finally.failure", response.isFailure());
-        counterIncrementIf(prefix + ".publish.retry.attempt", wasRetried);
+        metrics.counterIncrement(topic, "publish.attempt");
+        counterIncrementIf(topic, "publish.retry.success", response.isSuccess() && wasRetried);
+        counterIncrementIf(topic, "publish.finally.success", response.isSuccess());
+        counterIncrementIf(topic, "publish.retry.failure", response.isFailure() && wasRetried);
+        counterIncrementIf(topic, "publish.finally.failure", response.isFailure());
+        counterIncrementIf(topic, "publish.retry.attempt", wasRetried);
     }
 
     @Override
     public void onMaxRetriesExceeded(HermesResponse response, int attemptCount) {
-        String prefix = MetricsUtils.getMetricsPrefix(response.getHermesMessage().getTopic());
-        metrics.counterIncrement(prefix + ".retries.exhausted");
-        metrics.counterIncrement(prefix + ".publish.finally.failure");
-        metrics.counterIncrement(prefix + ".publish.attempt");
-        metrics.counterIncrement(prefix + ".publish.retry.attempt");
+        String topic = MetricsUtils.sanitizeTopic(response.getHermesMessage().getTopic());
+        metrics.counterIncrement(topic, "retries.exhausted");
+        metrics.counterIncrement(topic, "publish.finally.failure");
+        metrics.counterIncrement(topic, "publish.attempt");
+        metrics.counterIncrement(topic, "publish.retry.attempt");
     }
 
-    private void counterIncrementIf(String name, boolean condition) {
+    private void counterIncrementIf(String topic, String name, boolean condition) {
         if (condition) {
-            metrics.counterIncrement(name);
+            metrics.counterIncrement(topic, name);
         }
     }
 }
