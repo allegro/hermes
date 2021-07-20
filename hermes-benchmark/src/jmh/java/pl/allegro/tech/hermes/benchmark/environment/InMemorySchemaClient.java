@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class InMemorySchemaClient implements RawSchemaClient {
@@ -24,8 +23,8 @@ public class InMemorySchemaClient implements RawSchemaClient {
 
     @Override
     public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version) {
-        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getVersion(), version) ?
-            Optional.of(rawSchemaWithMetadata) : Optional.empty();
+        return (schemaTopicName.equals(topic) && (rawSchemaWithMetadata.getVersion() == version.value())) ?
+                Optional.of(rawSchemaWithMetadata) : Optional.empty();
     }
 
     @Override
@@ -35,8 +34,8 @@ public class InMemorySchemaClient implements RawSchemaClient {
 
     @Override
     public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
-        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getId(), schemaId) ?
-            Optional.of(rawSchemaWithMetadata) : Optional.empty();
+        return (schemaTopicName.equals(topic) && (rawSchemaWithMetadata.getId() == schemaId.value())) ?
+                Optional.of(rawSchemaWithMetadata) : Optional.empty();
     }
 
     @Override
