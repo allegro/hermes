@@ -21,6 +21,10 @@ public class ZookeeperStarter implements Starter<TestingServer> {
     private String connectString;
     private final String[] pathsToInitialize;
 
+    public ZookeeperStarter(){
+        pathsToInitialize = new String[0];
+    }
+
     public ZookeeperStarter(int port, String connectString, String... pathsToInitialize) {
         this.port = port;
         this.connectString = connectString;

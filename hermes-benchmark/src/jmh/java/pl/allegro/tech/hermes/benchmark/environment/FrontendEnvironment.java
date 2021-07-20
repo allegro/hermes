@@ -35,7 +35,6 @@ public class FrontendEnvironment {
 
     private static final Logger logger = LoggerFactory.getLogger(FrontendEnvironment.class);
     private static final int MAX_CONNECTIONS_PER_ROUTE = 200;
-    private static final int ZOOKEEPER_PORT = Ports.nextAvailable();
 
     private HermesFrontend hermesFrontend;
     private ZookeeperStarter zookeeperStarter;
@@ -51,20 +50,24 @@ public class FrontendEnvironment {
 
     @Setup(Level.Trial)
     public void setupEnvironment() throws Exception {
-        zookeeperStarter = new ZookeeperStarter(ZOOKEEPER_PORT,"irrelevant");
+        zookeeperStarter = new ZookeeperStarter();
         zookeeperStarter.start();
         int port = zookeeperStarter.instance().getPort();
         String zookeeperConnectString = "localhost:" + port;
 
         Properties kafkaProperties = new Properties();
         kafkaProperties.load(this.getClass().getResourceAsStream("/kafka.properties"));
-        kafkaProperties.setProperty("zookeeper.connect",zookeeperConnectString);
+        kafkaProperties.setProperty("zookeeper.connect", zookeeperConnectString);
+        int kafkaPort = Ports.nextAvailable();
+        kafkaProperties.setProperty("port", Integer.toString(kafkaPort));
+
 
         kafkaStarter = new KafkaStarter(kafkaProperties);
         kafkaStarter.start();
 
         ConfigFactory configFactory = new MutableConfigFactory()
-                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperConnectString);
+                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperConnectString)
+                .overrideProperty(Configs.KAFKA_BROKER_LIST,"localhost:" + kafkaPort);
 
         hermesFrontend = HermesFrontend.frontend()
                 .withBinding(configFactory, ConfigFactory.class)
