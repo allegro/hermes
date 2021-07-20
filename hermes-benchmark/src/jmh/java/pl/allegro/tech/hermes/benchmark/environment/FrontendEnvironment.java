@@ -11,14 +11,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
+import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
@@ -32,7 +37,7 @@ public class FrontendEnvironment {
     private static final int ZOOKEEPER_PORT = 2181;
 
     private HermesFrontend hermesFrontend;
-    private ZookeeperStarter zookeeperStarter;
+    private BenchmarkZookeeperStarter zookeeperStarter;
     private KafkaStarter kafkaStarter;
     private HermesPublisher publisher;
     private MetricRegistry metricRegistry;
@@ -43,15 +48,27 @@ public class FrontendEnvironment {
 
     @Setup(Level.Trial)
     public void setupEnvironment() throws Exception {
-        zookeeperStarter = new ZookeeperStarter(ZOOKEEPER_PORT, "localhost");
+        zookeeperStarter = new BenchmarkZookeeperStarter();
         zookeeperStarter.start();
 
-        kafkaStarter = new KafkaStarter("/kafka.properties");
+        Properties kafkaProperties = new Properties();
+        kafkaProperties.load(this.getClass().getResourceAsStream("/kafka.properties"));
+        kafkaProperties.setProperty("zookeeper.connect", zookeeperStarter.getConnectString());
+        int kafkaPort = Ports.nextAvailable();
+        kafkaProperties.setProperty("port", Integer.toString(kafkaPort));
+
+
+        kafkaStarter = new KafkaStarter(kafkaProperties);
         kafkaStarter.start();
+
+        ConfigFactory configFactory = new MutableConfigFactory()
+                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperStarter.getConnectString())
+                .overrideProperty(Configs.KAFKA_BROKER_LIST,String.format("localhost:%s",kafkaPort));
 
         hermesFrontend = HermesFrontend.frontend()
                 .withDisabledGlobalShutdownHook()
                 .withDisabledFlushLogsShutdownHook()
+                .withBinding(configFactory, ConfigFactory.class)
                 .withBinding(
                         new InMemorySchemaClient(fromQualifiedName("bench.topic"), loadMessageResource("schema"), 1, 1),
                         RawSchemaClient.class)

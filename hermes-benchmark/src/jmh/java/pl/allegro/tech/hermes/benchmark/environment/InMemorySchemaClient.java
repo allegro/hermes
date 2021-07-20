@@ -24,7 +24,7 @@ public class InMemorySchemaClient implements RawSchemaClient {
 
     @Override
     public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version) {
-        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getVersion(), version) ?
+        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getVersion(), version.value()) ?
             Optional.of(rawSchemaWithMetadata) : Optional.empty();
     }
 
@@ -35,7 +35,7 @@ public class InMemorySchemaClient implements RawSchemaClient {
 
     @Override
     public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
-        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getId(), schemaId) ?
+        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getId(), schemaId.value()) ?
             Optional.of(rawSchemaWithMetadata) : Optional.empty();
     }
 
