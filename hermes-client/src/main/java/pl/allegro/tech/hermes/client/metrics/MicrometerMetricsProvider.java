@@ -50,9 +50,8 @@ public class MicrometerMetricsProvider implements MetricsProvider {
 
     private String buildCounterName(String topic, String key, Map<String, String> tags) {
         tags.put("topic", topic);
-        tags.put("key", key);
-        return prefix + "{topic}.{key}"
-                + (tags.size() > 2 ? "." : "")
-                + tags.keySet().stream().filter(e -> !e.equals("topic") && !e.equals("key")).map(e -> "{" + e + "}").collect(Collectors.joining("."));
+        return prefix + "{topic}" + "." + key
+                + (tags.size() > 1 ? "." : "")
+                + tags.keySet().stream().filter(e -> !e.equals("topic")).map(e -> "{" + e + "}").collect(Collectors.joining("."));
     }
 }
