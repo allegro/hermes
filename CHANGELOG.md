@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Fixes
+
+#### ([1362](https://github.com/allegro/hermes/pull/1362)) Refactored benchmark module
+
 ## 1.9.2 (14.07.2021)
 
 ## Enhancements
