@@ -68,19 +68,14 @@ public class SubscriptionManagementTest extends IntegrationTest {
         //given
         RemoteServiceEndpoint auditEventRemoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         Topic topic = operations.buildTopic(randomTopic("subscribeGroup", "topic").build());
-        String expectedBody = "{\n" +
-                "  \"eventType\": \"CREATED\",\n" +
-                "  \"resourceName\": \"Subscription\",\n" +
-                "  \"payloadClass\": \"java.lang.String\",\n" +
-                "  \"payload\": \"someSubscription\",\n" +
-                "  \"username\": \"[anonymous user]\"\n" +
-                "}";
 
         //when
         management.subscription().create(topic.getQualifiedName(), subscription(topic, "someSubscription").build());
 
         //then
-        assertThat(auditEventRemoteService.waitAndGetLastRequest().getBodyAsString().equals(expectedBody));
+        assertThat(
+                auditEventRemoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("CREATED", "someSubscription");
     }
 
     @Test
@@ -88,20 +83,15 @@ public class SubscriptionManagementTest extends IntegrationTest {
         //given
         RemoteServiceEndpoint auditEventRemoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         Topic topic = operations.buildTopic(randomTopic("subscribeGroup2", "topic").build());
-        String expectedBody = "{\n" +
-                "  \"eventType\": \"REMOVED\",\n" +
-                "  \"resourceName\": \"Subscription\",\n" +
-                "  \"payloadClass\": \"java.lang.String\",\n" +
-                "  \"payload\": \"anotherSubscription\",\n" +
-                "  \"username\": \"[anonymous user]\"\n" +
-                "}";
         operations.createSubscription(topic, subscription(topic, "anotherSubscription").build());
 
         //when
         management.subscription().remove(topic.getQualifiedName(), "anotherSubscription");
 
         //then
-        assertThat(auditEventRemoteService.waitAndGetLastRequest().getBodyAsString().equals(expectedBody));
+        assertThat(
+                auditEventRemoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("REMOVED", "anotherSubscription");
     }
 
     @Test
@@ -116,8 +106,9 @@ public class SubscriptionManagementTest extends IntegrationTest {
                 patchData().set("endpoint", EndpointAddress.of(HTTP_ENDPOINT_URL)).build());
 
         //then
-        assertThat(auditEventRemoteService.waitAndGetLastRequest().getBodyAsString().contains("{\"eventType\":\"UPDATED\",\"resourceName\":\"Subscription\","));
-        assertThat(auditEventRemoteService.waitAndGetLastRequest().getBodyAsString().contains("anotherOneSubscription"));
+        assertThat(
+                auditEventRemoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("UPDATED", "anotherOneSubscription");
     }
 
     @Test

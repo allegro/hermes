@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration.management;
 
-import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.assertj.core.api.Assertions;
@@ -49,12 +48,9 @@ public class TopicManagementTest extends IntegrationTest {
         management.topic().create(topicWithSchema(topic));
 
         //then
-        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString().startsWith("{\n" +
-                "  \"eventType\": \"CREATED\",\n" +
-                "  \"resourceName\": \"Topic\",\n" +
-                "  \"payloadClass\": \"pl.allegro.tech.hermes.api.Topic\",\n" +
-                "  \"payload\": {\n" +
-                "    \"name\": \"testGroupName.testTopicName\","));
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("CREATED", "Topic", topic.getQualifiedName());
     }
 
     @Test
@@ -69,13 +65,9 @@ public class TopicManagementTest extends IntegrationTest {
         management.topic().remove(topic.getQualifiedName());
 
         //then
-        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString().startsWith("{\n" +
-                "  \"eventType\": \"REMOVED\",\n" +
-                "  \"resourceName\": \"Topic\",\n" +
-                "  \"payloadClass\": \"java.lang.String\",\n" +
-                "  \"payload\": \"anotherTestGroupName.anotherTestTopicName\",\n" +
-                "  \"username\": \"[anonymous user]\"\n" +
-                "}"));
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("REMOVED", "Topic", topic.getQualifiedName());
     }
 
     @Test
@@ -91,12 +83,9 @@ public class TopicManagementTest extends IntegrationTest {
         management.topic().update(topic.getQualifiedName(), patchData);
 
         //then
-        LoggedRequest response = remoteService.waitAndGetLastRequest();
-        assertThat(response.getBodyAsString().startsWith("{\n" +
-                "  \"eventType\": \"UPDATED\",\n" +
-                "  \"resourceName\": \"Topic\",\n" +
-                "  \"payloadClass\": \"pl.allegro.tech.hermes.api.Diff\",\n"));
-        assertThat(response.getBodyAsString().contains(topic.getQualifiedName()));
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("UPDATED", "Topic", topic.getQualifiedName());
     }
 
     @Test
@@ -112,8 +101,9 @@ public class TopicManagementTest extends IntegrationTest {
         management.topic().update("testGroupName.testTopicName", patchData);
 
         //then
-        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString()
-                .startsWith("{\"eventType\": \"BEFORE_UPDATE\","));
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("BEFORE_UPDATE", "Topic", topic.getQualifiedName());
     }
 
     @Test

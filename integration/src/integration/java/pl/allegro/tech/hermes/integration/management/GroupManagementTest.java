@@ -22,65 +22,44 @@ public class GroupManagementTest extends IntegrationTest {
     public void shouldEmmitAuditEventWhenGroupCreated() {
         //given
         RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
-        String expectedBody = "{\n" +
-                "  \"eventType\": \"CREATED\",\n" +
-                "  \"resourceName\": \"Group\",\n" +
-                "  \"payloadClass\": \"pl.allegro.tech.hermes.api.Group\",\n" +
-                "  \"payload\": {\n" +
-                "    \"groupName\": \"exampleGroup\",\n" +
-                "  },\n" +
-                "  \"username\": \"[anonymous user]\"\n" +
-                "}";
 
         //when
         management.group().create(group("exampleGroup").build());
 
         //then
-        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString().equals(expectedBody));
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("CREATED", "exampleGroup", "pl.allegro.tech.hermes.api.Group");
     }
 
     @Test
     public void shouldEmmitAuditEventWhenGroupRemoved() {
         //given
         RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
-        String expectedBody = "{\n" +
-                "  \"eventType\": \"REMOVED\",\n" +
-                "  \"resourceName\": \"Group\",\n" +
-                "  \"payloadClass\": \"pl.allegro.tech.hermes.api.Group\",\n" +
-                "  \"payload\": {\n" +
-                "    \"groupName\": \"anotherExampleGroup\",\n" +
-                "  },\n" +
-                "  \"username\": \"[anonymous user]\"\n" +
-                "}";
         operations.createGroup("anotherExampleGroup");
 
         //when
         management.group().delete("anotherExampleGroup");
 
         //then
-        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString().equals(expectedBody));
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("REMOVED", "anotherExampleGroup", "pl.allegro.tech.hermes.api.Group");
     }
 
     @Test
     public void shouldEmmitAuditEventWhenGroupUpdated() {
         //given
         RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
-        String expectedBody = "{\n" +
-                "  \"eventType\": \"UPDATED\",\n" +
-                "  \"resourceName\": \"Group\",\n" +
-                "  \"payloadClass\": \"pl.allegro.tech.hermes.api.Group\",\n" +
-                "  \"payload\": {\n" +
-                "    \"groupName\": \"updatedGroup\",\n" +
-                "  },\n" +
-                "  \"username\": \"[anonymous user]\"\n" +
-                "}";
         operations.createGroup("anotherExampleGroup");
 
         //when
         management.group().update("anotherOneExampleGroup", group("updatedGroup").build());
 
         //then
-        assertThat(remoteService.waitAndGetLastRequest().getBodyAsString().equals(expectedBody));
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("UPDATED", "updatedGroup", "pl.allegro.tech.hermes.api.Group");
     }
 
     @Test
