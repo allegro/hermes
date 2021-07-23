@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.audit;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javers.core.Javers;
 import org.javers.core.diff.Diff;
 import org.slf4j.Logger;
@@ -21,16 +22,24 @@ public class EventAuditor implements Auditor {
 
     private final String eventDestination;
 
-    public EventAuditor(Javers javers, RestTemplate restTemplate, String eventDestination) {
+    private final ObjectMapper objectMapper;
+
+    public EventAuditor(Javers javers, RestTemplate restTemplate, String eventDestination, ObjectMapper objectMapper) {
         this.javers = checkNotNull(javers);
         this.restTemplate = checkNotNull(restTemplate);
         this.eventDestination = eventDestination;
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public void beforeObjectCreation(String username, Anonymizable createdObject) {
         ignoringExceptions(() -> {
-            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_CREATION, createdObject, username);
+            String createdObjectToString = objectMapper.writeValueAsString(createdObject);
+            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_CREATION,
+                    createdObjectToString,
+                    createdObject.getClass().getSimpleName(),
+                    createdObject.toString(),
+                    username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
@@ -38,7 +47,11 @@ public class EventAuditor implements Auditor {
     @Override
     public void beforeObjectRemoval(String username, String removedObjectType, String removedObjectName) {
         ignoringExceptions(() -> {
-            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_REMOVAL, removedObjectName, removedObjectType, username);
+            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_REMOVAL,
+                    removedObjectName,
+                    removedObjectType,
+                    removedObjectName,
+                    username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
@@ -46,7 +59,12 @@ public class EventAuditor implements Auditor {
     @Override
     public void beforeObjectUpdate(String username, String objectClassName, Object objectName, PatchData patchData) {
         ignoringExceptions(() -> {
-            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_UPDATE, patchData, objectName.toString(), username);
+            String patchDataToString = objectMapper.writeValueAsString(patchData);
+            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_UPDATE,
+                    patchDataToString,
+                    patchData.getClass().getSimpleName(),
+                    objectName.toString(),
+                    username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
@@ -54,7 +72,12 @@ public class EventAuditor implements Auditor {
     @Override
     public void objectCreated(String username, Object createdObject) {
         ignoringExceptions(() -> {
-            AuditEvent event = new AuditEvent(AuditEventType.CREATED, createdObject, username);
+            String createdObjectToString = objectMapper.writeValueAsString(createdObject);
+            AuditEvent event = new AuditEvent(AuditEventType.CREATED,
+                    createdObjectToString,
+                    createdObject.getClass().getSimpleName(),
+                    createdObject.toString(),
+                    username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
@@ -62,7 +85,11 @@ public class EventAuditor implements Auditor {
     @Override
     public void objectRemoved(String username, String removedObjectType, String removedObjectName) {
         ignoringExceptions(() -> {
-            AuditEvent event = new AuditEvent(AuditEventType.REMOVED, removedObjectName, removedObjectType, username);
+            AuditEvent event = new AuditEvent(AuditEventType.REMOVED,
+                    removedObjectName,
+                    removedObjectType,
+                    removedObjectName,
+                    username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
@@ -71,7 +98,12 @@ public class EventAuditor implements Auditor {
     public void objectUpdated(String username, Object oldObject, Object newObject) {
         ignoringExceptions(() -> {
             Diff diff = javers.compare(oldObject, newObject);
-            AuditEvent event = new AuditEvent(AuditEventType.UPDATED, diff, newObject.toString(), username);
+            String diffToString = objectMapper.writeValueAsString(diff.toString());
+            AuditEvent event = new AuditEvent(AuditEventType.UPDATED,
+                    diffToString,
+                    oldObject.getClass().getSimpleName(),
+                    oldObject.toString(),
+                    username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }

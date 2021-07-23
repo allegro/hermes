@@ -3,18 +3,14 @@ package pl.allegro.tech.hermes.management.infrastructure.audit;
 public class AuditEvent {
     private final AuditEventType eventType;
     private final String resourceName;
-    private final Class<?> payloadClass;
-    private final Object payload;
+    private final String payloadClass;
+    private final String payload;
     private final String username;
 
-    public AuditEvent(AuditEventType eventType, Object payload, String username) {
-        this(eventType, payload, payload.getClass().getSimpleName(), username);
-    }
-
-    public AuditEvent(AuditEventType eventType, Object payload, String resourceName, String username){
+    public AuditEvent(AuditEventType eventType, String payload, String payloadClass, String resourceName, String username){
         this.eventType = eventType;
         this.payload = payload;
-        this.payloadClass = payload.getClass();
+        this.payloadClass = payloadClass;
         this.resourceName = resourceName;
         this.username = username;
     }
@@ -23,11 +19,11 @@ public class AuditEvent {
         return eventType;
     }
 
-    public Class<?> getPayloadClass() {
+    public String getPayloadClass() {
         return payloadClass;
     }
 
-    public Object getPayload() {
+    public String getPayload() {
         return payload;
     }
 
