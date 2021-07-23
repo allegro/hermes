@@ -98,9 +98,8 @@ public class EventAuditor implements Auditor {
     public void objectUpdated(String username, Object oldObject, Object newObject) {
         ignoringExceptions(() -> {
             Diff diff = javers.compare(oldObject, newObject);
-            String diffToString = objectMapper.writeValueAsString(diff.toString());
             AuditEvent event = new AuditEvent(AuditEventType.UPDATED,
-                    diffToString,
+                    diff.toString(),
                     oldObject.getClass().getSimpleName(),
                     oldObject.toString(),
                     username);
