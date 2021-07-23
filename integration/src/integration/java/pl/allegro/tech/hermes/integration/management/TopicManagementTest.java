@@ -67,7 +67,7 @@ public class TopicManagementTest extends IntegrationTest {
         //then
         assertThat(
                 remoteService.waitAndGetLastRequest().getBodyAsString()
-        ).contains("REMOVED", "Topic", topic.getQualifiedName());
+        ).contains("REMOVED", topic.getQualifiedName());
     }
 
     @Test
@@ -85,7 +85,7 @@ public class TopicManagementTest extends IntegrationTest {
         //then
         assertThat(
                 remoteService.waitAndGetLastRequest().getBodyAsString()
-        ).contains("UPDATED", "Topic", topic.getQualifiedName());
+        ).contains("UPDATED", "someTestTopicName");
     }
 
     @Test
@@ -103,7 +103,7 @@ public class TopicManagementTest extends IntegrationTest {
         //then
         assertThat(
                 remoteService.waitAndGetLastRequest().getBodyAsString()
-        ).contains("BEFORE_UPDATE", "Topic", topic.getQualifiedName());
+        ).contains("BEFORE_UPDATE", "testGroupName.testTopicName", "someValue", "2048");
     }
 
     @Test

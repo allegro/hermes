@@ -46,7 +46,7 @@ public class EventAuditor implements Auditor {
     @Override
     public void beforeObjectUpdate(String username, String objectClassName, Object objectName, PatchData patchData) {
         ignoringExceptions(() -> {
-            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_UPDATE, patchData, objectName.getClass().getName(), username);
+            AuditEvent event = new AuditEvent(AuditEventType.BEFORE_UPDATE, patchData, objectName.toString(), username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }
@@ -71,7 +71,7 @@ public class EventAuditor implements Auditor {
     public void objectUpdated(String username, Object oldObject, Object newObject) {
         ignoringExceptions(() -> {
             Diff diff = javers.compare(oldObject, newObject);
-            AuditEvent event = new AuditEvent(AuditEventType.UPDATED, diff, newObject.getClass().getSimpleName(), username);
+            AuditEvent event = new AuditEvent(AuditEventType.UPDATED, diff, newObject.toString(), username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });
     }

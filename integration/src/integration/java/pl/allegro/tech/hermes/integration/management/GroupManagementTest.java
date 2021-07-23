@@ -29,7 +29,7 @@ public class GroupManagementTest extends IntegrationTest {
         //then
         assertThat(
                 remoteService.waitAndGetLastRequest().getBodyAsString()
-        ).contains("CREATED", "exampleGroup", "pl.allegro.tech.hermes.api.Group");
+        ).contains("CREATED", "exampleGroup");
     }
 
     @Test
@@ -44,22 +44,22 @@ public class GroupManagementTest extends IntegrationTest {
         //then
         assertThat(
                 remoteService.waitAndGetLastRequest().getBodyAsString()
-        ).contains("REMOVED", "anotherExampleGroup", "pl.allegro.tech.hermes.api.Group");
+        ).contains("REMOVED", "anotherExampleGroup");
     }
 
     @Test
     public void shouldEmmitAuditEventWhenGroupUpdated() {
         //given
         RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
-        operations.createGroup("anotherExampleGroup");
+        operations.createGroup("anotherOneExampleGroup");
 
         //when
-        management.group().update("anotherOneExampleGroup", group("updatedGroup").build());
+        management.group().update("anotherOneExampleGroup", group("anotherOneExampleGroup").build());
 
         //then
         assertThat(
                 remoteService.waitAndGetLastRequest().getBodyAsString()
-        ).contains("UPDATED", "updatedGroup", "pl.allegro.tech.hermes.api.Group");
+        ).contains("UPDATED", "anotherOneExampleGroup");
     }
 
     @Test
