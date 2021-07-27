@@ -1,4 +1,8 @@
-## [Unreleased]
+## 1.9.3 (27.07.2021)
+
+## Enhancements
+
+#### ([1359](https://github.com/allegro/hermes/pull/1359)) Add support for publication of audit events
 
 ### Fixes
 
