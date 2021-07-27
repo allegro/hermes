@@ -5,6 +5,8 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import javax.ws.rs.core.Response;
 import java.util.stream.Stream;
@@ -15,6 +17,50 @@ import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class GroupManagementTest extends IntegrationTest {
+
+    @Test
+    public void shouldEmmitAuditEventWhenGroupCreated() {
+        //given
+        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
+
+        //when
+        management.group().create(group("exampleGroup").build());
+
+        //then
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("CREATED", "exampleGroup");
+    }
+
+    @Test
+    public void shouldEmmitAuditEventWhenGroupRemoved() {
+        //given
+        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
+        operations.createGroup("anotherExampleGroup");
+
+        //when
+        management.group().delete("anotherExampleGroup");
+
+        //then
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("REMOVED", "anotherExampleGroup");
+    }
+
+    @Test
+    public void shouldEmmitAuditEventWhenGroupUpdated() {
+        //given
+        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
+        operations.createGroup("anotherOneExampleGroup");
+
+        //when
+        management.group().update("anotherOneExampleGroup", group("anotherOneExampleGroup").build());
+
+        //then
+        assertThat(
+                remoteService.waitAndGetLastRequest().getBodyAsString()
+        ).contains("UPDATED", "anotherOneExampleGroup");
+    }
 
     @Test
     public void shouldCreateGroup() {

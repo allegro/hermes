@@ -84,3 +84,8 @@ consistencyChecker:
 
 subscription-health:
   timeoutMillis: 200
+
+audit:
+  isLoggingAuditEnabled: false
+  isEventAuditEnabled: true
+  eventUrl: "http://localhost:18081/audit-events"

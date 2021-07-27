@@ -38,7 +38,10 @@ management:
     periodSeconds: 30
     enabled: true
 
-audit.enabled: false
+audit:
+  isLoggingAuditEnabled: false
+  isEventAuditEnabled: false
+  eventUrl: null
 
 topic:
   allowedTopicLabels: &ALLOWED_LABELS
