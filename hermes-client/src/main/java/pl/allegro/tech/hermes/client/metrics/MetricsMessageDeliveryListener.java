@@ -26,7 +26,7 @@ public class MetricsMessageDeliveryListener implements MessageDeliveryListener {
         tags.put("code", String.valueOf(response.getHttpStatus()));
         metrics.counterIncrement(topic, "status", tags);
 
-        counterIncrementIf(topic,"publish.failure", response.isFailure());
+        counterIncrementIf(topic, "publish.failure", response.isFailure());
     }
 
     @Override
