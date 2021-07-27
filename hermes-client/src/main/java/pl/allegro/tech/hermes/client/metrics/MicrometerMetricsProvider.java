@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +19,7 @@ public class MicrometerMetricsProvider implements MetricsProvider {
 
     @Override
     public void counterIncrement(String topic, String key) {
-        counterIncrement(topic, key, Collections.emptyMap());
+        counterIncrement(topic, key, new HashMap<>());
     }
 
     @Override
