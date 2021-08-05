@@ -29,8 +29,8 @@ class HermesClientMicrometerMetricsTest extends Specification {
         client.publish("com.group.topic", "123").join()
 
         then:
-        metrics.counter("hermes-client.{topic}.status.{code}", "code", String.valueOf(201), "topic", "com_group.topic").count() == 1
-        def timer = metrics.timer("hermes-client.{topic}.latency", "topic", "com_group.topic")
+        metrics.counter("hermes-client.status", "code", String.valueOf(201), "topic", "com_group.topic").count() == 1
+        def timer = metrics.timer("hermes-client.latency", "topic", "com_group.topic")
         timer.totalTime(TimeUnit.NANOSECONDS) >= Duration.ofMillis(100).get(ChronoUnit.NANOS)
         timer.totalTime(TimeUnit.NANOSECONDS) < Duration.ofMillis(300).get(ChronoUnit.NANOS)
     }
@@ -46,8 +46,8 @@ class HermesClientMicrometerMetricsTest extends Specification {
         silence({ client.publish("com.group.topic", "123").join() })
 
         then:
-        metrics.counter("hermes-client.{topic}.failure", "topic", "com_group.topic").count()  == 4
-        metrics.timer("hermes-client.{topic}.latency", "topic", "com_group.topic").count() == 4
+        metrics.counter("hermes-client.failure", "topic", "com_group.topic").count()  == 4
+        metrics.timer("hermes-client.latency", "topic", "com_group.topic").count() == 4
     }
 
     def "should update max retries exceeded metric"() {
@@ -61,12 +61,12 @@ class HermesClientMicrometerMetricsTest extends Specification {
         silence({ client.publish("com.group.topic", "123").join() })
 
         then:
-        metrics.counter("hermes-client.{topic}.failure", "topic", "com_group.topic").count() == 4
-        metrics.counter("hermes-client.{topic}.retries.count", "topic", "com_group.topic").count() == 3
-        metrics.counter("hermes-client.{topic}.retries.exhausted", "topic", "com_group.topic").count() == 1
-        metrics.counter("hermes-client.{topic}.retries.success", "topic", "com_group.topic").count() == 0
-        metrics.summary("hermes-client.{topic}.retries.attempts", "topic", "com_group.topic").takeSnapshot().count() == 0
-        metrics.timer("hermes-client.{topic}.latency", "topic", "com_group.topic").count() == 4
+        metrics.counter("hermes-client.failure", "topic", "com_group.topic").count() == 4
+        metrics.counter("hermes-client.retries.count", "topic", "com_group.topic").count() == 3
+        metrics.counter("hermes-client.retries.exhausted", "topic", "com_group.topic").count() == 1
+        metrics.counter("hermes-client.retries.success", "topic", "com_group.topic").count() == 0
+        metrics.summary("hermes-client.retries.attempts", "topic", "com_group.topic").takeSnapshot().count() == 0
+        metrics.timer("hermes-client.latency", "topic", "com_group.topic").count() == 4
     }
 
     def "should update retries metrics"() {
@@ -80,13 +80,13 @@ class HermesClientMicrometerMetricsTest extends Specification {
         silence({ client.publish("com.group.topic", "123").join() })
 
         then:
-        metrics.counter("hermes-client.{topic}.failure", "topic", "com_group.topic").count() == 2
-        metrics.counter("hermes-client.{topic}.retries.exhausted", "topic", "com_group.topic").count() == 0
-        metrics.counter("hermes-client.{topic}.retries.success", "topic", "com_group.topic").count() == 1
-        metrics.counter("hermes-client.{topic}.status.{code}", "code", String.valueOf(201), "topic", "com_group.topic").count() == 1
-        metrics.counter("hermes-client.{topic}.retries.count", "topic", "com_group.topic").count() == 2
-        metrics.summary("hermes-client.{topic}.retries.attempts", "topic", "com_group.topic").takeSnapshot().count() == 1
-        metrics.timer("hermes-client.{topic}.latency", "topic", "com_group.topic").count() == 3
+        metrics.counter("hermes-client.failure", "topic", "com_group.topic").count() == 2
+        metrics.counter("hermes-client.retries.exhausted", "topic", "com_group.topic").count() == 0
+        metrics.counter("hermes-client.retries.success", "topic", "com_group.topic").count() == 1
+        metrics.counter("hermes-client.status", "code", String.valueOf(201), "topic", "com_group.topic").count() == 1
+        metrics.counter("hermes-client.retries.count", "topic", "com_group.topic").count() == 2
+        metrics.summary("hermes-client.retries.attempts", "topic", "com_group.topic").takeSnapshot().count() == 1
+        metrics.timer("hermes-client.latency", "topic", "com_group.topic").count() == 3
     }
 
     private CompletableFuture<HermesResponse> successFuture(HermesMessage message) {

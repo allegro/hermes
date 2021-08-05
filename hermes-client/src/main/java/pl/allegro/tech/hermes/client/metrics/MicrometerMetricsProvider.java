@@ -24,7 +24,8 @@ public class MicrometerMetricsProvider implements MetricsProvider {
 
     @Override
     public void counterIncrement(String topic, String key, Map<String, String> tags) {
-        metrics.counter(buildCounterName(topic, key, tags), Tags.of(tags.entrySet().stream()
+        tags.put("topic", topic);
+        metrics.counter(buildCounterName(key), Tags.of(tags.entrySet().stream()
                .map(e -> Tag.of(e.getKey(), e.getValue()))
                .collect(Collectors.toSet())))
                .increment();
@@ -33,7 +34,8 @@ public class MicrometerMetricsProvider implements MetricsProvider {
     @Override
     public void timerRecord(String topic, String key, long duration, TimeUnit unit) {
         Map<String, String> tags = new HashMap<>();
-        metrics.timer(buildCounterName(topic, key, tags), Tags.of(tags.entrySet().stream()
+        tags.put("topic", topic);
+        metrics.timer(buildCounterName(key), Tags.of(tags.entrySet().stream()
                 .map(e -> Tag.of(e.getKey(), e.getValue()))
                 .collect(Collectors.toSet())))
                 .record(duration, unit);
@@ -42,16 +44,14 @@ public class MicrometerMetricsProvider implements MetricsProvider {
     @Override
     public void histogramUpdate(String topic, String key, int value) {
         Map<String, String> tags = new HashMap<>();
-        metrics.summary(buildCounterName(topic, key, tags), Tags.of(tags.entrySet().stream()
+        tags.put("topic", topic);
+        metrics.summary(buildCounterName(key), Tags.of(tags.entrySet().stream()
                 .map(e -> Tag.of(e.getKey(), e.getValue()))
                 .collect(Collectors.toSet())))
                 .record(value);
     }
 
-    private String buildCounterName(String topic, String key, Map<String, String> tags) {
-        tags.put("topic", topic);
-        return prefix + "{topic}" + "." + key
-                + (tags.size() > 1 ? "." : "")
-                + tags.keySet().stream().filter(e -> !e.equals("topic")).map(e -> "{" + e + "}").collect(Collectors.joining("."));
+    private String buildCounterName(String key) {
+        return prefix + key;
     }
 }
