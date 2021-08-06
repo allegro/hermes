@@ -4,29 +4,28 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.client.metrics.MetricsProvider
 import pl.allegro.tech.hermes.client.metrics.MicrometerTaggedMetricsProvider
+import reactor.core.publisher.Mono
 import spock.lang.Specification
 
 import java.time.Duration
 import java.time.temporal.ChronoUnit
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-import static java.util.concurrent.CompletableFuture.completedFuture
-import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient
+import static pl.allegro.tech.hermes.client.ReactiveHermesClientBuilder.hermesClient
 
-class HermesClientMicrometerMetricsTest extends Specification {
+class ReactiveHermesClientMicrometerTaggedMetricsTest extends Specification {
 
     private final MeterRegistry metrics = new SimpleMeterRegistry()
     private final MetricsProvider metricsProvider = new MicrometerTaggedMetricsProvider(metrics)
 
     def "should measure publish latency"() {
         given:
-        HermesClient client = hermesClient(delayedHermesSender(Duration.ofMillis(100)))
+        ReactiveHermesClient client = hermesClient(delayedHermesSender(Duration.ofMillis(100)))
                 .withRetrySleep(0)
                 .withMetrics(metricsProvider).build()
 
         when:
-        client.publish("com.group.topic", "123").join()
+        client.publish("com.group.topic", "123").block()
 
         then:
         metrics.counter("hermes-client.status", "code", String.valueOf(201), "topic", "com_group.topic").count() == 1
@@ -37,13 +36,13 @@ class HermesClientMicrometerMetricsTest extends Specification {
 
     def "should close timer on exceptional completion and log failure metric"() {
         given:
-        HermesClient client = hermesClient({uri, msg ->  failingFuture(new RuntimeException())})
+        ReactiveHermesClient client = hermesClient({uri, msg ->  failingMono(new RuntimeException())})
                 .withRetrySleep(0)
                 .withRetries(3)
                 .withMetrics(metricsProvider).build()
 
         when:
-        silence({ client.publish("com.group.topic", "123").join() })
+        silence({ client.publish("com.group.topic", "123").block() })
 
         then:
         metrics.counter("hermes-client.failure", "topic", "com_group.topic").count()  == 4
@@ -52,13 +51,13 @@ class HermesClientMicrometerMetricsTest extends Specification {
 
     def "should update max retries exceeded metric"() {
         given:
-        HermesClient client = hermesClient({uri, msg ->  failingFuture(new RuntimeException())})
+        ReactiveHermesClient client = hermesClient({uri, msg ->  failingMono(new RuntimeException())})
                 .withRetrySleep(0)
                 .withRetries(3)
                 .withMetrics(metricsProvider).build()
 
         when:
-        silence({ client.publish("com.group.topic", "123").join() })
+        silence({ client.publish("com.group.topic", "123").block() })
 
         then:
         metrics.counter("hermes-client.failure", "topic", "com_group.topic").count() == 4
@@ -71,13 +70,13 @@ class HermesClientMicrometerMetricsTest extends Specification {
 
     def "should update retries metrics"() {
         def retries = 3
-        HermesClient client = hermesClient(failingHermesSender(retries - 1))
+        ReactiveHermesClient client = hermesClient(failingHermesSender(retries - 1))
                 .withRetrySleep(0)
                 .withRetries(retries)
                 .withMetrics(metricsProvider).build()
 
         when:
-        silence({ client.publish("com.group.topic", "123").join() })
+        silence({ client.publish("com.group.topic", "123").block() })
 
         then:
         metrics.counter("hermes-client.failure", "topic", "com_group.topic").count() == 2
@@ -89,36 +88,34 @@ class HermesClientMicrometerMetricsTest extends Specification {
         metrics.timer("hermes-client.latency", "topic", "com_group.topic").count() == 3
     }
 
-    private CompletableFuture<HermesResponse> successFuture(HermesMessage message) {
-        return completedFuture(HermesResponseBuilder.hermesResponse(message).withHttpStatus(201).build())
+    private Mono<HermesResponse> successMono(HermesMessage message) {
+        return Mono.just(HermesResponseBuilder.hermesResponse(message).withHttpStatus(201).build())
     }
 
-    private CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
-        CompletableFuture<HermesResponse> future = new CompletableFuture<>()
-        future.completeExceptionally(throwable)
-        return future
+    private Mono<HermesResponse> failingMono(Throwable throwable) {
+        return Mono.error(throwable)
     }
 
-    private HermesSender failingHermesSender(int errorNo) {
-        new HermesSender() {
+    private ReactiveHermesSender failingHermesSender(int errorNo) {
+        new ReactiveHermesSender() {
             int i = 0
             @Override
-            CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
+            Mono<HermesResponse> sendReactively(URI uri, HermesMessage message) {
                 i++
                 if (i <= errorNo) {
-                    return failingFuture(new RuntimeException())
+                    return failingMono(new RuntimeException())
                 }
-                return successFuture(message)
+                return successMono(message)
             }
         }
     }
 
-    private HermesSender delayedHermesSender(Duration sendLatencyMs) {
-        new HermesSender() {
+    private ReactiveHermesSender delayedHermesSender(Duration sendLatencyMs) {
+        new ReactiveHermesSender() {
             @Override
-            CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
+            Mono<HermesResponse> sendReactively(URI uri, HermesMessage message) {
                 Thread.sleep(sendLatencyMs.toMillis())
-                return successFuture(message)
+                return successMono(message)
             }
         }
     }
