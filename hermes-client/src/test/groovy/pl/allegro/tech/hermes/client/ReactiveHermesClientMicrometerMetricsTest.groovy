@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.client
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.client.metrics.MetricsProvider
-import pl.allegro.tech.hermes.client.metrics.MicrometerMetricsProvider
+import pl.allegro.tech.hermes.client.metrics.MicrometerTaggedMetricsProvider
 import reactor.core.publisher.Mono
 import spock.lang.Specification
 
@@ -16,7 +16,7 @@ import static pl.allegro.tech.hermes.client.ReactiveHermesClientBuilder.hermesCl
 class ReactiveHermesClientMicrometerMetricsTest extends Specification {
 
     private final MeterRegistry metrics = new SimpleMeterRegistry()
-    private final MetricsProvider metricsProvider = new MicrometerMetricsProvider(metrics)
+    private final MetricsProvider metricsProvider = new MicrometerTaggedMetricsProvider(metrics)
 
     def "should measure publish latency"() {
         given:

@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class MicrometerMetricsProvider implements MetricsProvider {
+public class MicrometerTaggedMetricsProvider implements MetricsProvider {
 
     private final MeterRegistry metrics;
 
-    public MicrometerMetricsProvider(MeterRegistry metrics) {
+    public MicrometerTaggedMetricsProvider(MeterRegistry metrics) {
         this.metrics = metrics;
     }
 
