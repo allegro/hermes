@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.client
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.client.metrics.MetricsProvider
-import pl.allegro.tech.hermes.client.metrics.MicrometerMetricsProvider
+import pl.allegro.tech.hermes.client.metrics.MicrometerTaggedMetricsProvider
 import reactor.core.publisher.Mono
 import spock.lang.Specification
 
@@ -13,10 +13,10 @@ import java.util.concurrent.TimeUnit
 
 import static pl.allegro.tech.hermes.client.ReactiveHermesClientBuilder.hermesClient
 
-class ReactiveHermesClientMicrometerMetricsTest extends Specification {
+class ReactiveHermesClientMicrometerTaggedMetricsTest extends Specification {
 
     private final MeterRegistry metrics = new SimpleMeterRegistry()
-    private final MetricsProvider metricsProvider = new MicrometerMetricsProvider(metrics)
+    private final MetricsProvider metricsProvider = new MicrometerTaggedMetricsProvider(metrics)
 
     def "should measure publish latency"() {
         given:
@@ -28,8 +28,8 @@ class ReactiveHermesClientMicrometerMetricsTest extends Specification {
         client.publish("com.group.topic", "123").block()
 
         then:
-        metrics.counter("hermes-client.com_group.topic.status.{code}", "code", String.valueOf(201)).count() == 1
-        def timer = metrics.timer("hermes-client.com_group.topic.latency")
+        metrics.counter("hermes-client.status", "code", String.valueOf(201), "topic", "com_group.topic").count() == 1
+        def timer = metrics.timer("hermes-client.latency", "topic", "com_group.topic")
         timer.totalTime(TimeUnit.NANOSECONDS) >= Duration.ofMillis(100).get(ChronoUnit.NANOS)
         timer.totalTime(TimeUnit.NANOSECONDS) < Duration.ofMillis(300).get(ChronoUnit.NANOS)
     }
@@ -45,8 +45,8 @@ class ReactiveHermesClientMicrometerMetricsTest extends Specification {
         silence({ client.publish("com.group.topic", "123").block() })
 
         then:
-        metrics.counter("hermes-client.com_group.topic.failure").count()  == 4
-        metrics.timer("hermes-client.com_group.topic.latency").count() == 4
+        metrics.counter("hermes-client.failure", "topic", "com_group.topic").count()  == 4
+        metrics.timer("hermes-client.latency", "topic", "com_group.topic").count() == 4
     }
 
     def "should update max retries exceeded metric"() {
@@ -60,12 +60,12 @@ class ReactiveHermesClientMicrometerMetricsTest extends Specification {
         silence({ client.publish("com.group.topic", "123").block() })
 
         then:
-        metrics.counter("hermes-client.com_group.topic.failure").count() == 4
-        metrics.counter("hermes-client.com_group.topic.retries.count").count() == 3
-        metrics.counter("hermes-client.com_group.topic.retries.exhausted").count() == 1
-        metrics.counter("hermes-client.com_group.topic.retries.success").count() == 0
-        metrics.summary("hermes-client.com_group.topic.retries.attempts").takeSnapshot().count() == 0
-        metrics.timer("hermes-client.com_group.topic.latency").count() == 4
+        metrics.counter("hermes-client.failure", "topic", "com_group.topic").count() == 4
+        metrics.counter("hermes-client.retries.count", "topic", "com_group.topic").count() == 3
+        metrics.counter("hermes-client.retries.exhausted", "topic", "com_group.topic").count() == 1
+        metrics.counter("hermes-client.retries.success", "topic", "com_group.topic").count() == 0
+        metrics.summary("hermes-client.retries.attempts", "topic", "com_group.topic").takeSnapshot().count() == 0
+        metrics.timer("hermes-client.latency", "topic", "com_group.topic").count() == 4
     }
 
     def "should update retries metrics"() {
@@ -79,13 +79,13 @@ class ReactiveHermesClientMicrometerMetricsTest extends Specification {
         silence({ client.publish("com.group.topic", "123").block() })
 
         then:
-        metrics.counter("hermes-client.com_group.topic.failure").count() == 2
-        metrics.counter("hermes-client.com_group.topic.retries.exhausted").count() == 0
-        metrics.counter("hermes-client.com_group.topic.retries.success").count() == 1
-        metrics.counter("hermes-client.com_group.topic.status.{code}", "code", String.valueOf(201)).count() == 1
-        metrics.counter("hermes-client.com_group.topic.retries.count").count() == 2
-        metrics.summary("hermes-client.com_group.topic.retries.attempts").takeSnapshot().count() == 1
-        metrics.timer("hermes-client.com_group.topic.latency").count() == 3
+        metrics.counter("hermes-client.failure", "topic", "com_group.topic").count() == 2
+        metrics.counter("hermes-client.retries.exhausted", "topic", "com_group.topic").count() == 0
+        metrics.counter("hermes-client.retries.success", "topic", "com_group.topic").count() == 1
+        metrics.counter("hermes-client.status", "code", String.valueOf(201), "topic", "com_group.topic").count() == 1
+        metrics.counter("hermes-client.retries.count", "topic", "com_group.topic").count() == 2
+        metrics.summary("hermes-client.retries.attempts", "topic", "com_group.topic").takeSnapshot().count() == 1
+        metrics.timer("hermes-client.latency", "topic", "com_group.topic").count() == 3
     }
 
     private Mono<HermesResponse> successMono(HermesMessage message) {
