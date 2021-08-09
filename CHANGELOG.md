@@ -4,6 +4,10 @@
 
 #### ([1361](https://github.com/allegro/hermes/pull/1361)) Topic name is now published in tags by MicrometerTaggedMetricsProvider
 
+Changed MeterRegistry interface by adding topic name as functions parameter. Renamed `MicrometerMetricsProvider` to `MicrometerTaggedMetricsProvider`,
+also changed implementation by not pushing topic (which is also provided in tags now) and all tags name to path.
+It changes metrics provided by Micrometer e.g. from this: `hermes-client.com_group.topic.status.{code}` with tags: `{code="201"}` to this: `hermes-client.status` with tags: `{code="201", topic="com_group.topic"}`
+
 ## 1.9.3 (27.07.2021)
 
 ## Enhancements
