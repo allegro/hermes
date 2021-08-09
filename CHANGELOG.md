@@ -1,3 +1,9 @@
+## 1.9.4 (09.08.2021)
+
+## Fixes
+
+#### ([1361](https://github.com/allegro/hermes/pull/1361)) Topic name is now published in tags by MicrometerTaggedMetricsProvider
+
 ## 1.9.3 (27.07.2021)
 
 ## Enhancements
