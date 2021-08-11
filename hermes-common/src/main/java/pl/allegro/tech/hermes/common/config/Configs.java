@@ -179,6 +179,12 @@ public enum Configs {
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT("frontend.startup.topic.schema.loading.retry.count", 3),
     FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.schema.loading.thread.pool.size", 16),
 
+    BROKER_PUBLISHING_STARTUP_VALIDATION_ENABLED("broker.publishing.startup.validation.enabled", false),
+    BROKER_PUBLISHING_STARTUP_VALIDATION_TOPIC_NAME("broker.publishing.startup.validation.topic.name", "com.example.test"),
+    BROKER_PUBLISHING_STARTUP_VALIDATION_TIMEOUT_MS("broker.publishing.startup.validation.timeout.ms", 24 * 60 * 60 * 1000L),
+    BROKER_PUBLISHING_STARTUP_VALIDATION_MESSAGES_COUNT("broker.publishing.startup.validation.messages.count", 100),
+    BROKER_PUBLISHING_STARTUP_VALIDATION_RETRY_INTERVAL("broker.publishing.startup.validation.retry.interval", 1000L),
+
     MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE("frontend.messages.local.buffered.storage.size.bytes", 256 * 1024 * 1024L),
     MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED("frontend.messages.local.storage.v2.migration.enabled", true),
     MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),

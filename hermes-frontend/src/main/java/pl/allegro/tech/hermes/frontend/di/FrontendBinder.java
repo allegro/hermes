@@ -8,6 +8,8 @@ import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducer;
+import pl.allegro.tech.hermes.frontend.producer.kafka.BrokerMessagesProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
@@ -26,6 +28,7 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.MessagesPublishingStartupValidationHook;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
@@ -64,6 +67,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(TopicMetadataLoadingJob.class);
         bindSingleton(TopicMetadataLoadingStartupHook.class);
         bindSingleton(TopicSchemaLoadingStartupHook.class);
+        bindSingleton(MessagesPublishingStartupValidationHook.class);
         bindSingleton(AuthenticationConfigurationProvider.class);
         bindSingleton(SslContextFactoryProvider.class);
 
@@ -75,6 +79,7 @@ public class FrontendBinder extends AbstractBinder {
         bindFactory(HandlersChainFactory.class).to(HttpHandler.class).in(Singleton.class);
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
         bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
+        bindFactory(BrokerMessagesProducerFactory.class).to(BrokerMessagesProducer.class).in(Singleton.class);
         bindFactory(ThroughputLimiterFactory.class).to(ThroughputLimiter.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
         bindSingleton(NoOperationPublishingTracker.class);
