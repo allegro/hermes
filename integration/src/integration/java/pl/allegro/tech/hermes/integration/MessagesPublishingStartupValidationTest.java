@@ -20,6 +20,8 @@ import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertTha
 
 public class MessagesPublishingStartupValidationTest extends IntegrationTest {
 
+    private static final int ZOOKEEPER_PORT = 14194;
+    private static final String ZOOKEEPER_URL = "localhost:" + ZOOKEEPER_PORT;
     private static final int KAFKA_PORT = 9096;
     private static final String KAFKA_URL = "localhost:" + KAFKA_PORT;
 
@@ -72,7 +74,7 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         frontend.overrideProperty(Configs.FRONTEND_PORT, port);
         frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
         frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
-        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, ZOOKEEPER_CONNECT_STRING);
+        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, ZOOKEEPER_URL);
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_ENABLED, true);
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TIMEOUT_MS, 5000L);
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TOPIC_NAME, String.format("%s.%s", KAFKA_MESSAGES_PUBLISHING_VALIDATION_GROUP, KAFKA_MESSAGES_PUBLISHING_VALIDATION_TOPIC));
@@ -82,7 +84,7 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
     }
 
     private CustomKafkaStarter setupKafka() throws Exception {
-        CustomKafkaStarter kafkaStarter = new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_CONNECT_STRING + "/unhealthyKafka");
+        CustomKafkaStarter kafkaStarter = new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_URL + "/unhealthyKafka");
         kafkaStarter.start();
         return kafkaStarter;
     }
