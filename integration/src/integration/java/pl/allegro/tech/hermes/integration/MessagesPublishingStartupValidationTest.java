@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.integration.env.CustomKafkaStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
+import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.ws.rs.client.WebTarget;
@@ -29,15 +30,18 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
     private static final String KAFKA_MESSAGES_PUBLISHING_VALIDATION_TOPIC = "someRandomTopic";
 
     private KafkaStarter kafkaStarter;
+    private ZookeeperStarter zookeeperStarter;
 
     @BeforeClass
     public void setupEnvironment() throws Exception {
+        zookeeperStarter = setupZookeeper();
         kafkaStarter = setupKafka();
     }
 
     @AfterClass
     public void cleanEnvironment() throws Exception {
         kafkaStarter.stop();
+        zookeeperStarter.stop();
     }
 
     @Test
@@ -81,6 +85,12 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, KAFKA_URL);
         frontend.start();
         return frontend;
+    }
+
+    private ZookeeperStarter setupZookeeper() throws Exception {
+        ZookeeperStarter zookeeperStarter = new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_URL, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT));
+        zookeeperStarter.start();
+        return zookeeperStarter;
     }
 
     private CustomKafkaStarter setupKafka() throws Exception {
