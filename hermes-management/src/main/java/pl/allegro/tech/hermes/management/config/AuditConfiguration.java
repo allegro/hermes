@@ -29,7 +29,7 @@ import java.util.Collection;
 public class AuditConfiguration {
 
     @Bean(name = "eventAuditorRestTemplate")
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = "eventAuditorRestTemplate")
     public RestTemplate eventAuditorRestTemplate() {
         return new RestTemplateBuilder().build();
     }
