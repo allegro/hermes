@@ -58,7 +58,7 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         Throwable exception = catchThrowable(() -> setupFrontend(frontendPort));
 
         // then
-        assertThat(exception).isInstanceOf(PublishingStartupValidationException.class);
+        assertThat(exception).isInstanceOf(IllegalStateException.class);
         assertThat(exception.getMessage()).isEqualTo("Error while validating publishing messages, last result: failed:100, success:0");
 
         // when
