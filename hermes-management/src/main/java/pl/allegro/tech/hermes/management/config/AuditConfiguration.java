@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.metamodel.clazz.EntityDefinitionBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -26,6 +28,12 @@ import java.util.Collection;
 @EnableConfigurationProperties({AuditProperties.class})
 public class AuditConfiguration {
 
+    @Bean(name = "eventAuditorRestTemplate")
+    @ConditionalOnMissingBean
+    public RestTemplate eventAuditorRestTemplate() {
+        return new RestTemplateBuilder().build();
+    }
+
     @Bean
     @ConditionalOnProperty(prefix = "audit", value = "isLoggingAuditEnabled", havingValue = "true")
     public LoggingAuditor loggingAuditor(ObjectMapper objectMapper) {
@@ -34,9 +42,8 @@ public class AuditConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "audit", value = "isEventAuditEnabled", havingValue = "true")
-    public EventAuditor eventAuditor(AuditProperties auditProperties, RestTemplateBuilder restTemplateBuilder) {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        return new EventAuditor(javers(), restTemplate, auditProperties.getEventUrl().toString(), new ObjectMapper());
+    public EventAuditor eventAuditor(AuditProperties auditProperties, @Qualifier("eventAuditorRestTemplate") RestTemplate eventAuditorRestTemplate) {
+        return new EventAuditor(javers(), eventAuditorRestTemplate, auditProperties.getEventUrl().toString(), new ObjectMapper());
     }
 
     @Bean
