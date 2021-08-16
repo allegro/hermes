@@ -1,16 +1,17 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.google.common.io.Files;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.server.PublishingStartupValidationException;
 import pl.allegro.tech.hermes.integration.env.CustomKafkaStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
-import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.ws.rs.client.WebTarget;
@@ -21,27 +22,20 @@ import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertTha
 
 public class MessagesPublishingStartupValidationTest extends IntegrationTest {
 
-    private static final int ZOOKEEPER_PORT = 14194;
-    private static final String ZOOKEEPER_URL = "localhost:" + ZOOKEEPER_PORT;
+    private static final String BROKER_MESSAGES_PUBLISHING_VALIDATION_GROUP = "someRandomGroup";
+    private static final String BROKER_MESSAGES_PUBLISHING_VALIDATION_TOPIC = "someRandomTopic";
     private static final int KAFKA_PORT = 9096;
-    private static final String KAFKA_URL = "localhost:" + KAFKA_PORT;
 
-    private static final String KAFKA_MESSAGES_PUBLISHING_VALIDATION_GROUP = "someRandomGroup";
-    private static final String KAFKA_MESSAGES_PUBLISHING_VALIDATION_TOPIC = "someRandomTopic";
+    private KafkaStarter kafka;
 
-    private KafkaStarter kafkaStarter;
-    private ZookeeperStarter zookeeperStarter;
-
-    @BeforeClass
+    @BeforeMethod
     public void setupEnvironment() throws Exception {
-        zookeeperStarter = setupZookeeper();
-        kafkaStarter = setupKafka();
+        kafka = setupKafka();
     }
 
-    @AfterClass
+    @AfterMethod
     public void cleanEnvironment() throws Exception {
-        kafkaStarter.stop();
-        zookeeperStarter.stop();
+        kafka.stop();
     }
 
     @Test
@@ -50,19 +44,26 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         int frontendPort = Ports.nextAvailable();
         String frontendUrl = "http://localhost:" + frontendPort + "/";
 
-        operations.createGroup(KAFKA_MESSAGES_PUBLISHING_VALIDATION_GROUP);
-        operations.createTopic(KAFKA_MESSAGES_PUBLISHING_VALIDATION_GROUP, KAFKA_MESSAGES_PUBLISHING_VALIDATION_TOPIC);
-
         // when
-        kafkaStarter.stop();
         Throwable exception = catchThrowable(() -> setupFrontend(frontendPort));
 
         // then
         assertThat(exception).isInstanceOf(IllegalStateException.class);
+        assertThat(exception.getMessage()).isEqualTo("Missing topic to validate publishing messages on startup");
+
+        Topic topic = operations.buildTopic(TopicBuilder.topic(BROKER_MESSAGES_PUBLISHING_VALIDATION_GROUP, BROKER_MESSAGES_PUBLISHING_VALIDATION_TOPIC).build());
+        assertThat(topic).isNotNull();
+
+        // when
+        kafka.stop();
+        exception = catchThrowable(() -> setupFrontend(frontendPort));
+
+        // then
+        assertThat(exception).isInstanceOf(PublishingStartupValidationException.class);
         assertThat(exception.getMessage()).isEqualTo("Error while validating publishing messages, last result: failed:100, success:0");
 
         // when
-        kafkaStarter.start();
+        kafka.start();
         FrontendStarter frontend = setupFrontend(frontendPort);
         WebTarget clientHealth = JerseyClientFactory.create().target(frontendUrl).path("status").path("health");
 
@@ -78,24 +79,17 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         frontend.overrideProperty(Configs.FRONTEND_PORT, port);
         frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
         frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
-        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, ZOOKEEPER_URL);
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_ENABLED, true);
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TIMEOUT_MS, 5000L);
-        frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TOPIC_NAME, String.format("%s.%s", KAFKA_MESSAGES_PUBLISHING_VALIDATION_GROUP, KAFKA_MESSAGES_PUBLISHING_VALIDATION_TOPIC));
-        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, KAFKA_URL);
+        frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TOPIC_NAME, String.format("%s.%s", BROKER_MESSAGES_PUBLISHING_VALIDATION_GROUP, BROKER_MESSAGES_PUBLISHING_VALIDATION_TOPIC));
+        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, "localhost:" + KAFKA_PORT);
         frontend.start();
         return frontend;
     }
 
-    private ZookeeperStarter setupZookeeper() throws Exception {
-        ZookeeperStarter zookeeperStarter = new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_URL, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT));
-        zookeeperStarter.start();
-        return zookeeperStarter;
-    }
-
     private CustomKafkaStarter setupKafka() throws Exception {
-        CustomKafkaStarter kafkaStarter = new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_URL + "/unhealthyKafka");
-        kafkaStarter.start();
-        return kafkaStarter;
+        CustomKafkaStarter kafka = new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_CONNECT_STRING + "/validation");
+        kafka.start();
+        return kafka;
     }
 }

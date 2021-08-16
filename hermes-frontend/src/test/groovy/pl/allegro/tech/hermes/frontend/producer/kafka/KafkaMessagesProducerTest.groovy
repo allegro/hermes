@@ -17,7 +17,7 @@ class KafkaMessagesProducerTest extends Specification {
     @Shared
     CachedTopic cachedTopic = cachedTopic("group.test")
 
-    def "should successfully publish messages if publishing any single message on broker is successful"() {
+    def "should successfully publish messages if broker is available"() {
         given:
         List<Message> jsonMessages = (0..<4).collect {jsonMessage(it)}
         BrokerMessageProducer brokerMessageProducer = TestBrokerMessageProducer.builder().throwException(false).build()
