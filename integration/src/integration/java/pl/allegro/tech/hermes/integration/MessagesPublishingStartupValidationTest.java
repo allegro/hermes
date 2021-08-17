@@ -1,17 +1,21 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.google.common.io.Files;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.server.PublishingStartupValidationException;
 import pl.allegro.tech.hermes.integration.env.CustomKafkaStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
+import pl.allegro.tech.hermes.integration.env.ManagementStarter;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
+import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.ws.rs.client.WebTarget;
@@ -24,22 +28,35 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
 
     private static final String BROKER_MESSAGES_PUBLISHING_VALIDATION_GROUP = "someRandomGroup";
     private static final String BROKER_MESSAGES_PUBLISHING_VALIDATION_TOPIC = "someRandomTopic";
+    private static final int ZOOKEEPER_PORT = 14193;
+    private static final String ZOOKEEPER_URL = "localhost:" + ZOOKEEPER_PORT;
+    private static final int MANAGEMENT_PORT = 18083;
+    private static final String MANAGEMENT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
     private static final int KAFKA_PORT = 9096;
+    private static final String KAFKA_URL = "localhost:" + KAFKA_PORT;
 
-    private KafkaStarter kafka;
+    private ZookeeperStarter zookeeper;
+    private HermesAPIOperations operations;
+    private ManagementStarter hermesManagement;
+    private KafkaStarter kafkaStarter;
 
-    @BeforeMethod
+    @BeforeClass
     public void setupEnvironment() throws Exception {
-        kafka = setupKafka();
+        zookeeper = setupZookeeper();
+        kafkaStarter = setupKafka();
+        hermesManagement = setupHermesManagement();
+        operations = setupOperations();
     }
 
-    @AfterMethod
+    @AfterClass
     public void cleanEnvironment() throws Exception {
-        kafka.stop();
+        hermesManagement.stop();
+        kafkaStarter.stop();
+        zookeeper.stop();
     }
 
     @Test
-    public void shouldIndicateServiceIsHealthyBasedOnAbilityToPublishMessagesToKafka() throws Exception {
+    public void shouldReturnCorrectReadinessStatusBasedOnKafkaReadiness() throws Exception {
         // given
         int frontendPort = Ports.nextAvailable();
         String frontendUrl = "http://localhost:" + frontendPort + "/";
@@ -51,10 +68,12 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         assertThat(exception).isInstanceOf(IllegalStateException.class);
         assertThat(exception.getMessage()).isEqualTo("Missing topic to validate publishing messages on startup");
 
+        // when
         Topic topic = operations.buildTopic(TopicBuilder.topic(BROKER_MESSAGES_PUBLISHING_VALIDATION_GROUP, BROKER_MESSAGES_PUBLISHING_VALIDATION_TOPIC).build());
         assertThat(topic).isNotNull();
 
         // when
+        kafkaStarter.stop();
         exception = catchThrowable(() -> setupFrontend(frontendPort));
 
         // then
@@ -62,7 +81,7 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         assertThat(exception.getMessage()).isEqualTo("Error while validating publishing messages, last result: failed:100, success:0");
 
         // when
-        kafka.start();
+        kafkaStarter.start();
         FrontendStarter frontend = setupFrontend(frontendPort);
         WebTarget clientHealth = JerseyClientFactory.create().target(frontendUrl).path("status").path("health");
 
@@ -76,16 +95,37 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
     private FrontendStarter setupFrontend(int port) throws Exception {
         FrontendStarter frontend = new FrontendStarter(port, false);
         frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
+        frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false);
         frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
+        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, ZOOKEEPER_URL);
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_ENABLED, true);
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TIMEOUT_MS, 5000L);
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TOPIC_NAME, String.format("%s.%s", BROKER_MESSAGES_PUBLISHING_VALIDATION_GROUP, BROKER_MESSAGES_PUBLISHING_VALIDATION_TOPIC));
-        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, "localhost:" + KAFKA_PORT);
+        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, KAFKA_URL);
         frontend.start();
         return frontend;
     }
 
-    private CustomKafkaStarter setupKafka() {
-        return new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_CONNECT_STRING + "/validation");
+    private ZookeeperStarter setupZookeeper() throws Exception {
+        ZookeeperStarter zookeeperStarter = new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_URL, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT));
+        zookeeperStarter.start();
+        return zookeeperStarter;
+    }
+
+    private ManagementStarter setupHermesManagement() throws Exception {
+        ManagementStarter managementStarter = new ManagementStarter(MANAGEMENT_PORT, "validation");
+        managementStarter.start();
+        return managementStarter;
+    }
+
+    private HermesAPIOperations setupOperations() {
+        HermesEndpoints management = new HermesEndpoints(MANAGEMENT_URL, CONSUMER_ENDPOINT_URL);
+        return new HermesAPIOperations(management, wait);
+    }
+
+    private CustomKafkaStarter setupKafka() throws Exception {
+        CustomKafkaStarter kafkaStarter = new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_URL + "/validation");
+        kafkaStarter.start();
+        return kafkaStarter;
     }
 }
