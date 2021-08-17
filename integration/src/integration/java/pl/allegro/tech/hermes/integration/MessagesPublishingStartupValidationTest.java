@@ -55,7 +55,6 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         assertThat(topic).isNotNull();
 
         // when
-        kafka.stop();
         exception = catchThrowable(() -> setupFrontend(frontendPort));
 
         // then
@@ -76,7 +75,6 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
 
     private FrontendStarter setupFrontend(int port) throws Exception {
         FrontendStarter frontend = new FrontendStarter(port, false);
-        frontend.overrideProperty(Configs.FRONTEND_PORT, port);
         frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
         frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
         frontend.overrideProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_ENABLED, true);
@@ -87,9 +85,7 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
         return frontend;
     }
 
-    private CustomKafkaStarter setupKafka() throws Exception {
-        CustomKafkaStarter kafka = new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_CONNECT_STRING + "/validation");
-        kafka.start();
-        return kafka;
+    private CustomKafkaStarter setupKafka() {
+        return new CustomKafkaStarter(KAFKA_PORT, ZOOKEEPER_CONNECT_STRING + "/validation");
     }
 }
