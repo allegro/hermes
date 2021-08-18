@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducer
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingException
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingResults
+import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesBatchProducingResults
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage
 import spock.lang.Shared
 import spock.lang.Specification
@@ -152,11 +152,11 @@ class MessagesPublishingStartupValidationHookTest extends Specification {
         exception.message == "Error while validating publishing messages, last result: null"
     }
 
-    private static BrokerMessagesProducingResults successPublishingStartupValidationResults() {
-        new BrokerMessagesProducingResults([SUCCESS, SUCCESS, SUCCESS])
+    private static BrokerMessagesBatchProducingResults successPublishingStartupValidationResults() {
+        new BrokerMessagesBatchProducingResults([SUCCESS, SUCCESS, SUCCESS])
     }
 
-    private static BrokerMessagesProducingResults failedPublishingStartupValidationResults() {
-        new BrokerMessagesProducingResults([FAILURE, SUCCESS, SUCCESS])
+    private static BrokerMessagesBatchProducingResults failedPublishingStartupValidationResults() {
+        new BrokerMessagesBatchProducingResults([FAILURE, SUCCESS, SUCCESS])
     }
 }

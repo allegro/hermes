@@ -2,11 +2,11 @@ package pl.allegro.tech.hermes.frontend.producer;
 
 import java.util.Collection;
 
-public final class BrokerMessagesProducingResults {
+public final class BrokerMessagesBatchProducingResults {
 
     private final Collection<BrokerMessagesProducingResult> brokerMessagesProducingResults;
 
-    public BrokerMessagesProducingResults(Collection<BrokerMessagesProducingResult> brokerMessagesProducingResults) {
+    public BrokerMessagesBatchProducingResults(Collection<BrokerMessagesProducingResult> brokerMessagesProducingResults) {
         this.brokerMessagesProducingResults = brokerMessagesProducingResults;
     }
 

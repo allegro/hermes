@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka
 
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingResults
+import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesBatchProducingResults
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage
 import pl.allegro.tech.hermes.frontend.publishing.message.Message
@@ -24,7 +24,7 @@ class KafkaMessagesProducerTest extends Specification {
         KafkaMessagesProducer kafkaMessagesProducer = new KafkaMessagesProducer(brokerMessageProducer)
 
          when:
-        BrokerMessagesProducingResults results = kafkaMessagesProducer.publishMessages(cachedTopic, jsonMessages, 100L)
+        BrokerMessagesBatchProducingResults results = kafkaMessagesProducer.publishMessages(cachedTopic, jsonMessages, 100L)
 
         then:
         !results.isFailure()
@@ -51,7 +51,7 @@ class KafkaMessagesProducerTest extends Specification {
         KafkaMessagesProducer kafkaMessagesProducer = new KafkaMessagesProducer(brokerMessageProducer)
 
         when:
-        BrokerMessagesProducingResults results = kafkaMessagesProducer.publishMessages(cachedTopic, successfulJsonMessages + failedJsonMessage, 100L)
+        BrokerMessagesBatchProducingResults results = kafkaMessagesProducer.publishMessages(cachedTopic, successfulJsonMessages + failedJsonMessage, 100L)
 
         then:
         results.isFailure()
@@ -64,7 +64,7 @@ class KafkaMessagesProducerTest extends Specification {
         KafkaMessagesProducer kafkaMessagesProducer = new KafkaMessagesProducer(brokerMessageProducer)
 
         when:
-        BrokerMessagesProducingResults results = kafkaMessagesProducer.publishMessages(cachedTopic, [], 100L)
+        BrokerMessagesBatchProducingResults results = kafkaMessagesProducer.publishMessages(cachedTopic, [], 100L)
 
         then:
         !results.isFailure()

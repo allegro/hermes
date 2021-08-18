@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingResult;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingException;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingObserver;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingResults;
+import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesBatchProducingResults;
 
 import java.util.Collection;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -32,11 +32,11 @@ public class KafkaMessagesProducingObserver implements BrokerMessagesProducingOb
     }
 
     @Override
-    public BrokerMessagesProducingResults waitForMessagesProducingResults() {
+    public BrokerMessagesBatchProducingResults waitForMessagesBatchProducingResults() {
         try {
             boolean completed = countDownLatch.await(timeoutMs, TimeUnit.MILLISECONDS);
             if (completed) {
-                return new BrokerMessagesProducingResults(validationResults);
+                return new BrokerMessagesBatchProducingResults(validationResults);
             } else {
                 throw new BrokerMessagesProducingException("Timeout while publishing messages");
             }

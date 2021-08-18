@@ -7,5 +7,5 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public interface BrokerMessagesProducer {
-    BrokerMessagesProducingResults publishMessages(@NotNull CachedTopic topic, List<Message> messages, long timeoutMs);
+    BrokerMessagesBatchProducingResults publishMessages(@NotNull CachedTopic topic, List<Message> messages, long timeoutMs);
 }

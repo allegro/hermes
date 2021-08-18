@@ -17,7 +17,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducer;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingException;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingResults;
+import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesBatchProducingResults;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
@@ -66,8 +66,8 @@ public class MessagesPublishingStartupValidationHook implements ServiceAwareHook
         logger.info("Validating publishing messages to broker is available");
         Duration delay = Duration.of(config.getLongProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_RETRY_INTERVAL), ChronoUnit.MILLIS);
         Duration timeout = Duration.of(config.getLongProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TIMEOUT_MS), ChronoUnit.MILLIS);
-        RetryPolicy<BrokerMessagesProducingResults> retryPolicy = retryPolicy(delay, timeout);
-        Fallback<BrokerMessagesProducingResults> fallback = fallback();
+        RetryPolicy<BrokerMessagesBatchProducingResults> retryPolicy = retryPolicy(delay, timeout);
+        Fallback<BrokerMessagesBatchProducingResults> fallback = fallback();
         Failsafe.with(fallback, retryPolicy)
                 .with(scheduler)
                 .get(context -> {
@@ -76,7 +76,7 @@ public class MessagesPublishingStartupValidationHook implements ServiceAwareHook
                 });
     }
 
-    private BrokerMessagesProducingResults publishMessagesToBroker() {
+    private BrokerMessagesBatchProducingResults publishMessagesToBroker() {
         return topicsCache
                 .getTopic(config.getStringProperty(Configs.BROKER_PUBLISHING_STARTUP_VALIDATION_TOPIC_NAME))
                 .map(it -> producer.publishMessages(
@@ -87,16 +87,16 @@ public class MessagesPublishingStartupValidationHook implements ServiceAwareHook
                 .orElseThrow(() -> new IllegalStateException("Missing topic to validate publishing messages on startup"));
     }
 
-    private Fallback<BrokerMessagesProducingResults> fallback() {
-        return Fallback.of((CheckedConsumer<ExecutionAttemptedEvent<? extends BrokerMessagesProducingResults>>) event -> {
+    private Fallback<BrokerMessagesBatchProducingResults> fallback() {
+        return Fallback.of((CheckedConsumer<ExecutionAttemptedEvent<? extends BrokerMessagesBatchProducingResults>>) event -> {
             throw new PublishingStartupValidationException(event.getLastResult());
         })
                 .handle(BrokerMessagesProducingException.class)
                 .handleIf((validationResults, throwable) -> validationResults.isFailure());
     }
 
-    private RetryPolicy<BrokerMessagesProducingResults> retryPolicy(Duration delay, Duration maxDuration) {
-        return new RetryPolicy<BrokerMessagesProducingResults>()
+    private RetryPolicy<BrokerMessagesBatchProducingResults> retryPolicy(Duration delay, Duration maxDuration) {
+        return new RetryPolicy<BrokerMessagesBatchProducingResults>()
                 .handle(BrokerMessagesProducingException.class)
                 .withMaxRetries(-1)
                 .withDelay(delay)

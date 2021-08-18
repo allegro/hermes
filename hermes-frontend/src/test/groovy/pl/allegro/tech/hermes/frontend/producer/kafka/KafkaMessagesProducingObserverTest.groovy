@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka
 
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingException
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingResults
+import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesBatchProducingResults
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -21,7 +21,7 @@ class KafkaMessagesProducingObserverTest extends Specification {
         }
 
         and:
-        BrokerMessagesProducingResults results = observer.waitForMessagesProducingResults()
+        BrokerMessagesBatchProducingResults results = observer.waitForMessagesBatchProducingResults()
 
         then:
         results.isFailure() == isFailed
@@ -43,7 +43,7 @@ class KafkaMessagesProducingObserverTest extends Specification {
         }
 
         and:
-        observer.waitForMessagesProducingResults()
+        observer.waitForMessagesBatchProducingResults()
 
         then:
         BrokerMessagesProducingException exception = thrown(BrokerMessagesProducingException)

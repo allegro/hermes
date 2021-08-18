@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingResult;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducer;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingObserver;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingResults;
+import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesBatchProducingResults;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
@@ -31,15 +31,15 @@ public class KafkaMessagesProducer implements BrokerMessagesProducer {
     }
 
     @Override
-    public BrokerMessagesProducingResults publishMessages(@NotNull CachedTopic topic, List<Message> messages, long timeoutMs) {
+    public BrokerMessagesBatchProducingResults publishMessages(@NotNull CachedTopic topic, List<Message> messages, long timeoutMs) {
         if (messages.size() > 0) {
             final BrokerMessagesProducingObserver observer = new KafkaMessagesProducingObserver(messages.size(), timeoutMs);
             messages.forEach(it -> publishMessage(topic, it, observer));
-            BrokerMessagesProducingResults validationResults = observer.waitForMessagesProducingResults();
+            BrokerMessagesBatchProducingResults validationResults = observer.waitForMessagesBatchProducingResults();
             logger.info("PublishingStartupValidationResults:{}", validationResults);
             return validationResults;
         } else {
-            return new BrokerMessagesProducingResults(Collections.emptyList());
+            return new BrokerMessagesBatchProducingResults(Collections.emptyList());
         }
     }
 

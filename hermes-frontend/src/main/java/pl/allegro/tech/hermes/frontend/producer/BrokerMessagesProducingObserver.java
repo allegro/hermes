@@ -4,5 +4,5 @@ public interface BrokerMessagesProducingObserver {
 
     void notifyAboutBrokerMessageProducingResult(BrokerMessagesProducingResult brokerMessagesProducingResult);
 
-    BrokerMessagesProducingResults waitForMessagesProducingResults();
+    BrokerMessagesBatchProducingResults waitForMessagesBatchProducingResults();
 }
