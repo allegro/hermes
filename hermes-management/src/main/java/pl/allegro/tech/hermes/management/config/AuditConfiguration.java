@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.metamodel.clazz.EntityDefinitionBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,9 +30,12 @@ import java.util.Collection;
 @EnableConfigurationProperties({AuditProperties.class})
 public class AuditConfiguration {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuditConfiguration.class);
+
     @Bean(name = "eventAuditorRestTemplate")
     @ConditionalOnMissingBean(name = "eventAuditorRestTemplate")
     public RestTemplate eventAuditorRestTemplate() {
+        logger.info("Creating eventAuditorRestTemplate bean");
         return new RestTemplateBuilder().build();
     }
 
