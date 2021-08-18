@@ -28,11 +28,11 @@ public class MessagesPublishingStartupValidationTest extends IntegrationTest {
 
     private static final String BROKER_MESSAGES_PUBLISHING_VALIDATION_GROUP = "someRandomGroup";
     private static final String BROKER_MESSAGES_PUBLISHING_VALIDATION_TOPIC = "someRandomTopic";
-    private static final int ZOOKEEPER_PORT = 14193;
+    private static final int ZOOKEEPER_PORT = 14194;
     private static final String ZOOKEEPER_URL = "localhost:" + ZOOKEEPER_PORT;
-    private static final int MANAGEMENT_PORT = 18083;
+    private static final int MANAGEMENT_PORT = 18084;
     private static final String MANAGEMENT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
-    private static final int KAFKA_PORT = 9096;
+    private static final int KAFKA_PORT = 9098;
     private static final String KAFKA_URL = "localhost:" + KAFKA_PORT;
 
     private ZookeeperStarter zookeeper;
