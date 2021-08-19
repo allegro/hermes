@@ -6,8 +6,9 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingException
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesProducingObserver;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessagesBatchProducingResults;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -21,7 +22,7 @@ public class KafkaMessagesProducingObserver implements BrokerMessagesProducingOb
         Preconditions.checkArgument(messagesCounter > 0, "Must observe positive number of messages to be produced");
         Preconditions.checkArgument(timeoutMs > 0L, "Timeout must be defined");
         this.countDownLatch = new CountDownLatch(messagesCounter);
-        validationResults = new ArrayBlockingQueue<>(messagesCounter);
+        validationResults = Collections.synchronizedList(new ArrayList<>(messagesCounter));
         this.timeoutMs = timeoutMs;
     }
 

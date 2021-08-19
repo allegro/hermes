@@ -37,7 +37,9 @@ import static java.nio.charset.Charset.defaultCharset;
 
 public class MessagesPublishingStartupValidationHook implements ServiceAwareHook {
 
+    private final static byte[] VALIDATION_MESSAGE = "validation-message".getBytes(defaultCharset());
     private static final Logger logger = LoggerFactory.getLogger(MessagesPublishingStartupValidationHook.class);
+
     private final TopicsCache topicsCache;
     private final MessageContentWrapper messageContentWrapper;
     private final Clock clock;
@@ -52,6 +54,9 @@ public class MessagesPublishingStartupValidationHook implements ServiceAwareHook
                                                    Clock clock,
                                                    TopicsCache topicsCache) {
         this.scheduler = Executors.newScheduledThreadPool(
+                  /* 2 threads are required by retry policy to execute asynchronously main operation and listener callback for checking timeout condition
+                  https://javadoc.io/doc/net.jodah/failsafe/2.2.0/net/jodah/failsafe/FailsafeExecutor.html
+                  */
                 2, new ThreadFactoryBuilder().setNameFormat("messages-publishing-startup-validation-%d").build()
         );
         this.config = config;
@@ -89,8 +94,8 @@ public class MessagesPublishingStartupValidationHook implements ServiceAwareHook
 
     private Fallback<BrokerMessagesBatchProducingResults> fallback() {
         return Fallback.of((CheckedConsumer<ExecutionAttemptedEvent<? extends BrokerMessagesBatchProducingResults>>) event -> {
-            throw new PublishingStartupValidationException(event.getLastResult());
-        })
+                    throw new PublishingStartupValidationException(event.getLastResult());
+                })
                 .handle(BrokerMessagesProducingException.class)
                 .handleIf((validationResults, throwable) -> validationResults.isFailure());
     }
@@ -108,7 +113,7 @@ public class MessagesPublishingStartupValidationHook implements ServiceAwareHook
         return IntStream.range(0, number).mapToObj(it -> {
                     String messageId = MessageIdGenerator.generate();
                     long timestamp = clock.millis();
-                    byte[] messageContent = messageContentWrapper.wrapJson("validation-message".getBytes(defaultCharset()), messageId, timestamp, Collections.emptyMap());
+                    byte[] messageContent = messageContentWrapper.wrapJson(VALIDATION_MESSAGE, messageId, timestamp, Collections.emptyMap());
                     return new JsonMessage(messageId, messageContent, timestamp, null);
                 }
         ).collect(Collectors.toList());
