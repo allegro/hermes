@@ -407,16 +407,16 @@ public class PublishingTest extends IntegrationTest {
                 .withMode(SubscriptionMode.ANYCAST)
                 .build();
         operations.createSubscription(topic, subscriptionWithDelay);
-
-        TestMessage message = TestMessage.of("hello", "world");
-        remoteService.expectMessages(message.body());
-
-        // when
         try {
             Thread.sleep(1000 * 3);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        TestMessage message = TestMessage.of("hello", "world");
+        remoteService.expectMessages(message.body());
+
+        // when
         Response response = publisher.publish(topic.getQualifiedName(), message.body());
         long publishedTime = System.currentTimeMillis();
 
