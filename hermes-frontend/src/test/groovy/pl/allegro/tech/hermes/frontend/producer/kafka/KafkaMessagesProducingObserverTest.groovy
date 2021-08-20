@@ -51,7 +51,7 @@ class KafkaMessagesProducingObserverTest extends Specification {
 
         where:
         testScenario                                                      | brokerMessagesProducingResults | timeToNotify
-        "was not notified about at least on result of messages producing" | [SUCCESS, SUCCESS]             | 1
+        "was not notified about at least one result of messages producing" | [SUCCESS, SUCCESS]             | 1
         "was not notified about all results of messages producing"        | [FAILURE, FAILURE]             | 0
     }
 
