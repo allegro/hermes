@@ -34,7 +34,11 @@ public class KafkaHealthChecker {
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("wait-kafka-%d").build();
-        this.scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        this.scheduler = Executors.newScheduledThreadPool(
+                /* 2 threads are required by retry policy to execute asynchronously main operation and listener callback for checking timeout condition
+                   https://javadoc.io/doc/net.jodah/failsafe/2.2.0/net/jodah/failsafe/FailsafeExecutor.html
+                   */
+                2, threadFactory);
         this.retryPolicy = new RetryPolicy<List<MetadataLoadingResult>>()
                 .withMaxRetries(-1)
                 .withDelay(Duration.of(config.getLongProperty(Configs.FRONTEND_KAFKA_HEALTH_CHECK_INTERVAL), ChronoUnit.MILLIS))
