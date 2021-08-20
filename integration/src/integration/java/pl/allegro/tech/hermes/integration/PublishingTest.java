@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import org.apache.commons.lang.StringUtils;
+import org.assertj.core.data.Percentage;
 import org.glassfish.jersey.client.ClientConfig;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -411,6 +412,11 @@ public class PublishingTest extends IntegrationTest {
         remoteService.expectMessages(message.body());
 
         // when
+        try {
+            Thread.sleep(1000 * 3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Response response = publisher.publish(topic.getQualifiedName(), message.body());
         long publishedTime = System.currentTimeMillis();
 

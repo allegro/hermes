@@ -50,9 +50,9 @@ class KafkaMessagesProducingObserverTest extends Specification {
         exception.message == "Timeout while publishing messages"
 
         where:
-        testScenario                                                      | brokerMessagesProducingResults | timeToNotify
+        testScenario                                                       | brokerMessagesProducingResults | timeToNotify
         "was not notified about at least one result of messages producing" | [SUCCESS, SUCCESS]             | 1
-        "was not notified about all results of messages producing"        | [FAILURE, FAILURE]             | 0
+        "was not notified about all results of messages producing"         | [FAILURE, FAILURE]             | 0
     }
 
     def "should throw exception about invalid argument if #testScenario"() {
