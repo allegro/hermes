@@ -118,9 +118,8 @@ public class HermesAPIOperations {
         if (endpoints.findSubscriptions(topic.getName().getGroupName(), topic.getName().getName(), subscription.isTrackingEnabled()).contains(subscription.getName())) {
             return subscription;
         }
-
         assertThat(endpoints.subscription().create(topic.getQualifiedName(), subscription).getStatus()).isEqualTo(CREATED.getStatusCode());
-
+        assertThat(endpoints.subscription().list(topic.getQualifiedName(), subscription.isTrackingEnabled()).contains("not-existing-dummy-topic"));
         wait.untilSubscriptionCreated(topic, subscription);
         return subscription;
     }
