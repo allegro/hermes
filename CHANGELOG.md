@@ -1,3 +1,9 @@
+## 1.9.6 (23.08.2021)
+
+## Fixes
+
+#### ([1361](https://github.com/allegro/hermes/pull/1367)) Add RestTemplate bean for EventAuditor
+
 ## 1.9.4 (09.08.2021)
 
 ## Fixes

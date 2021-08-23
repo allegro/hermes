@@ -7,13 +7,13 @@ import java.net.URL;
 @ConfigurationProperties(prefix = "audit")
 class AuditProperties {
 
-    private URL eventUrl = null;
+    private String eventUrl = null;
 
-    public URL getEventUrl() {
+    public String getEventUrl() {
         return eventUrl;
     }
 
-    public void setEventUrl(URL eventUrl) {
+    public void setEventUrl(String eventUrl) {
         this.eventUrl = eventUrl;
     }
 }
