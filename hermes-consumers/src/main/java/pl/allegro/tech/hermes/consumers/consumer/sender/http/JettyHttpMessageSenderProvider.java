@@ -41,6 +41,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final HttpAuthorizationProviderFactory authorizationProviderFactory;
     private final HttpHeadersProvidersFactory httpHeadersProviderFactory;
     private final SendingResultHandlers sendingResultHandlers;
+    private final HttpRequestFactory broadCastRequestFactory;
 
     @Inject
     public JettyHttpMessageSenderProvider(
@@ -50,7 +51,8 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
             MetadataAppender<Request> metadataAppender,
             HttpAuthorizationProviderFactory authorizationProviderFactory,
             HttpHeadersProvidersFactory httpHeadersProviderFactory,
-            SendingResultHandlers sendingResultHandlers) {
+            SendingResultHandlers sendingResultHandlers,
+            HttpRequestFactory broadCastRequestFactory) {
         this.httpClient = httpClient;
         this.http2ClientHolder = http2ClientHolder;
         this.endpointAddressResolver = endpointAddressResolver;
@@ -58,6 +60,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         this.authorizationProviderFactory = authorizationProviderFactory;
         this.httpHeadersProviderFactory = httpHeadersProviderFactory;
         this.sendingResultHandlers = sendingResultHandlers;
+        this.broadCastRequestFactory = broadCastRequestFactory;
     }
 
     @Override
@@ -69,7 +72,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         HttpRequestFactory requestFactory = httpRequestFactory(subscription);
 
         if (subscription.getMode() == SubscriptionMode.BROADCAST) {
-            return new JettyBroadCastMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
+            return new JettyBroadCastMessageSender(broadCastRequestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
         } else {
             return new JettyMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
         }
@@ -79,7 +82,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         int requestTimeout = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
         int socketTimeout = subscription.getSerialSubscriptionPolicy().getSocketTimeout();
 
-        return new HttpRequestFactory(
+        return new DefaultHttpRequestFactory(
                 getHttpClient(subscription),
                 requestTimeout,
                 socketTimeout,

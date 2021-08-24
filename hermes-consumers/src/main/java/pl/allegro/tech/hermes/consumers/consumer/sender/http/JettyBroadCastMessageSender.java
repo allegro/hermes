@@ -74,7 +74,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
                         .map(CompletableFuture::join)
                         .reduce(
                                 ImmutableList.<SingleMessageSendingResult>builder(),
-                                (builder, element) -> builder.add(element),
+                                ImmutableList.Builder::add,
                                 (listA, listB) -> listA.addAll(listB.build())
                         ).build());
     }

@@ -66,7 +66,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
     def setup() {
         def address = new ResolvableEndpointAddress(endpoint, new MultiUrlEndpointAddressResolver(),
                 EndpointAddressResolverMetadata.empty());
-        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
+        def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
                 requestHeadersProvider, resultHandlersProvider);
     }
@@ -131,7 +131,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
             getRawAddress() >> endpoint
         }
 
-        def httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
+        def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
                 requestHeadersProvider, resultHandlersProvider)
 
