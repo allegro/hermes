@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
+import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -226,6 +227,11 @@ public class SubscriptionService {
     public SubscriptionMetrics getSubscriptionMetrics(TopicName topicName, String subscriptionName) {
         subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
         return metricsRepository.loadMetrics(topicName, subscriptionName);
+    }
+
+    public PersistentSubscriptionMetrics getPersistentSubscriptionMetrics(TopicName topicName, String subscriptionName) {
+        subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
+        return metricsRepository.loadZookeeperMetrics(topicName, subscriptionName);
     }
 
     public SubscriptionHealth getSubscriptionHealth(TopicName topicName, String subscriptionName) {
