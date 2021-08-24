@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
@@ -152,6 +153,15 @@ public class SubscriptionsEndpoint {
     public SubscriptionMetrics getMetrics(@PathParam("topicName") String qualifiedTopicName,
                                           @PathParam("subscriptionName") String subscriptionName) {
         return subscriptionService.getSubscriptionMetrics(fromQualifiedName(qualifiedTopicName), subscriptionName);
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/{subscriptionName}/metrics/persistent")
+    @ApiOperation(value = "Get persistent subscription metrics", response = PersistentSubscriptionMetrics.class, httpMethod = HttpMethod.GET)
+    public PersistentSubscriptionMetrics getPersistentMetrics(@PathParam("topicName") String qualifiedTopicName,
+                                                             @PathParam("subscriptionName") String subscriptionName) {
+        return subscriptionService.getPersistentSubscriptionMetrics(fromQualifiedName(qualifiedTopicName), subscriptionName);
     }
 
     @GET

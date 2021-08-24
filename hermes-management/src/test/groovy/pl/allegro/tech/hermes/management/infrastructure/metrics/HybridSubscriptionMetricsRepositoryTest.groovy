@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.infrastructure.metrics
 
 import pl.allegro.tech.hermes.api.MetricLongValue
 import pl.allegro.tech.hermes.api.SubscriptionMetrics
+import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource
@@ -69,6 +70,21 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         metrics.codes2xx == of('2')
         metrics.codes4xx == of('4')
         metrics.codes5xx == of('5')
+    }
+
+    def "should read subscription zookeeper metrics"() {
+        given:
+        summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 1000
+        summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 10
+        summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/volume') >> 16
+
+        when:
+        PersistentSubscriptionMetrics zookeeperMetrics = repository.loadZookeeperMetrics(new TopicName('group', 'topic'), 'subscription')
+
+        then:
+        zookeeperMetrics.delivered == 1000
+        zookeeperMetrics.discarded == 10
+        zookeeperMetrics.volume == 16
     }
 
     private static String getHttpStatusCodeForFamily(int family) {

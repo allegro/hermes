@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
@@ -83,6 +84,14 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                 .withThroughput(graphiteMetrics.metricValue(throughput))
                 .withBatchRate(graphiteMetrics.metricValue(batchPath))
                 .build();
+    }
+
+    @Override
+    public PersistentSubscriptionMetrics loadZookeeperMetrics(TopicName topicName, String subscriptionName) {
+        SubscriptionName name = new SubscriptionName(subscriptionName, topicName);
+        ZookeeperMetrics zookeeperMetrics = readZookeeperMetrics(name);
+
+        return new PersistentSubscriptionMetrics(zookeeperMetrics.delivered, zookeeperMetrics.discarded, zookeeperMetrics.volume);
     }
 
     private ZookeeperMetrics readZookeeperMetrics(SubscriptionName name) {
