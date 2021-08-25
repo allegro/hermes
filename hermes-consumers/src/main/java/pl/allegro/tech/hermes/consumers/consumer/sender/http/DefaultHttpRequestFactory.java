@@ -18,7 +18,7 @@ public class DefaultHttpRequestFactory implements HttpRequestFactory {
     private final long socketTimeout;
     private final MetadataAppender<Request> metadataAppender;
 
-    DefaultHttpRequestFactory(HttpClient client,
+    public DefaultHttpRequestFactory(HttpClient client,
                               long timeout,
                               long socketTimeout,
                               MetadataAppender<Request> metadataAppender) {
