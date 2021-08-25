@@ -16,13 +16,6 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConv
 import pl.allegro.tech.hermes.consumers.consumer.converter.DefaultMessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlers;
-import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
-import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
-import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
@@ -56,6 +49,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.EmptyHttpHeadersProvidersFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
@@ -63,7 +58,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
@@ -99,6 +96,9 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRe
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistryFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
+import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
+import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 
 import javax.inject.Singleton;
 import javax.jms.Message;
@@ -120,7 +120,7 @@ public class ConsumersBinder extends AbstractBinder {
                 .in(Singleton.class).named("defaultHttpMessageSenderProvider");
         bind(EmptyHttpHeadersProvidersFactory.class).to(HttpHeadersProvidersFactory.class).in(Singleton.class);
         bind(DefaultSendingResultHandlers.class).to(SendingResultHandlers.class).in(Singleton.class);
-        bind(DefaultHttpRequestFactory.class).to(HttpRequestFactory.class).in(Singleton.class);
+        bind(DefaultHttpRequestFactoryProvider.class).to(HttpRequestFactoryProvider.class).in(Singleton.class);
 
         bind("consumer").named("moduleName").to(String.class);
 
@@ -143,12 +143,15 @@ public class ConsumersBinder extends AbstractBinder {
         bindSingleton(ConsumerMonitor.class);
         bindSingleton(SslContextFactoryProvider.class);
         bindSingleton(KafkaHeaderExtractor.class);
-        bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});
+        bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {
+        });
         bind(DefaultHttpMetadataAppender.class).in(Singleton.class)
-                .to(new TypeLiteral<MetadataAppender<Request>>() {});
+                .to(new TypeLiteral<MetadataAppender<Request>>() {
+                });
 
         bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class)
-                .to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
+                .to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>() {
+                });
         bindSingleton(HttpClientsFactory.class);
 
         bindFactory(ConsumerNodesRegistryFactory.class).in(Singleton.class).to(ConsumerNodesRegistry.class);
