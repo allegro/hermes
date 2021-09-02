@@ -28,38 +28,38 @@ public class SubscriptionHealthProblem {
         this.description = description;
     }
 
-    public static SubscriptionHealthProblem lagging(long subscriptionLag) {
+    public static SubscriptionHealthProblem lagging(long subscriptionLag, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 LAGGING,
-                format("Subscription lag is growing, current value is %d messages", subscriptionLag)
+                format("Lag is growing on subscription %s, current value is %d messages", subscriptionName, subscriptionLag)
         );
     }
 
-    public static SubscriptionHealthProblem malfunctioning(double code5xxErrorsRate) {
+    public static SubscriptionHealthProblem malfunctioning(double code5xxErrorsRate, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 MALFUNCTIONING,
-                format("Consuming service returns a lot of 5xx codes, currently %.0f 5xx/s", code5xxErrorsRate)
+                format("Consuming service returns a lot of 5xx codes for subscription %s, currently %.0f 5xx/s", subscriptionName, code5xxErrorsRate)
         );
     }
 
-    public static SubscriptionHealthProblem receivingMalformedMessages(double code4xxErrorsRate) {
+    public static SubscriptionHealthProblem receivingMalformedMessages(double code4xxErrorsRate, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 RECEIVING_MALFORMED_MESSAGES,
-                format("Consuming service returns a lot of 4xx codes, currently %.0f 4xx/s", code4xxErrorsRate)
+                format("Consuming service returns a lot of 4xx codes for subscription %s, currently %.0f 4xx/s", subscriptionName, code4xxErrorsRate)
         );
     }
 
-    public static SubscriptionHealthProblem timingOut(double timeoutsRate) {
+    public static SubscriptionHealthProblem timingOut(double timeoutsRate, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 TIMING_OUT,
-                format("Consuming service times out a lot, currently %.0f timeouts/s", timeoutsRate)
+                format("Consuming service times out a lot for subscription %s, currently %.0f timeouts/s", subscriptionName, timeoutsRate)
         );
     }
 
-    public static SubscriptionHealthProblem unreachable(double otherErrorsRate) {
+    public static SubscriptionHealthProblem unreachable(double otherErrorsRate, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 UNREACHABLE,
-                format("Unable to connect to consuming service instances, current rate is %.0f failures/s", otherErrorsRate)
+                format("Unable to connect to consuming service instances for subscription %s, current rate is %.0f failures/s", subscriptionName, otherErrorsRate)
         );
     }
 

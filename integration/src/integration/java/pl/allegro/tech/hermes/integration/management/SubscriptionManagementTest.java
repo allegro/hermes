@@ -369,7 +369,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(subscriptionHealth.getStatus()).isEqualTo(UNHEALTHY);
-        assertThat(subscriptionHealth.getProblems()).containsOnly(malfunctioning(11));
+        assertThat(subscriptionHealth.getProblems()).containsOnly(malfunctioning(11, topic.getQualifiedName() + "$subscription"));
     }
 
     @Test

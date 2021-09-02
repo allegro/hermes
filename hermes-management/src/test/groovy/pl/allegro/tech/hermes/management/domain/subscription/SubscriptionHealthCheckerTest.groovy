@@ -80,7 +80,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         health.status == UNHEALTHY
-        health.problems == [lagging(60100)] as Set
+        health.problems == [lagging(60100, ACTIVE_SERIAL_SUBSCRIPTION.getQualifiedName().toString())] as Set
     }
 
     def "should not indicate lagging if production rate is 0"() {
@@ -110,7 +110,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         health.status == UNHEALTHY
-        health.problems == [unreachable(51)] as Set
+        health.problems == [unreachable(51, ACTIVE_SERIAL_SUBSCRIPTION.getQualifiedName().toString())] as Set
     }
 
     def "should indicate that a batch subscriber with more than 50% 'other' errors is unreachable"() {
@@ -121,13 +121,14 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .withBatchRate(of("4.0"))
                 .withOtherErrors(of("6.0"))
                 .build()
+        def batchSubscription = batchSubscriptionWithSize(10)
 
         when:
-        SubscriptionHealth health = healthChecker.checkHealth(batchSubscriptionWithSize(10), topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(batchSubscription, topicMetrics, subscriptionMetrics)
 
         then:
         health.status == UNHEALTHY
-        health.problems == [unreachable(6.0)] as Set
+        health.problems == [unreachable(6.0, batchSubscription.getQualifiedName().toString())] as Set
     }
 
     def "should indicate that a serial subscriber with more than 10% timeouts is timing out"() {
@@ -143,7 +144,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         health.status == UNHEALTHY
-        health.problems == [timingOut(11)] as Set
+        health.problems == [timingOut(11, ACTIVE_SERIAL_SUBSCRIPTION.getQualifiedName().toString())] as Set
     }
 
     def "should indicate that a batch subscriber with more than 10% timeouts is timing out"() {
@@ -154,13 +155,14 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .withBatchRate(of("8.0"))
                 .withTimeouts(of("2.0"))
                 .build()
+        def batchSubscription = batchSubscriptionWithSize(10)
 
         when:
-        SubscriptionHealth health = healthChecker.checkHealth(batchSubscriptionWithSize(10), topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(batchSubscription, topicMetrics, subscriptionMetrics)
 
         then:
         health.status == UNHEALTHY
-        health.problems == [timingOut(2.0)] as Set
+        health.problems == [timingOut(2.0, batchSubscription.getQualifiedName().toString())] as Set
     }
 
     def "should indicate that a serial subscriber returning more than 10% 5xx errors is malfunctioning"() {
@@ -176,7 +178,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         health.status == UNHEALTHY
-        health.problems == [malfunctioning(11)] as Set
+        health.problems == [malfunctioning(11, ACTIVE_SERIAL_SUBSCRIPTION.getQualifiedName().toString())] as Set
     }
 
     def "should indicate that a batch subscriber returning more than 10% 5xx errors is malfunctioning"() {
@@ -187,13 +189,14 @@ class SubscriptionHealthCheckerTest extends Specification {
                 .withBatchRate(of("8.0"))
                 .withCodes5xx(of("2.0"))
                 .build()
+        def batchSubscription = batchSubscriptionWithSize(10)
 
         when:
-        SubscriptionHealth health = healthChecker.checkHealth(batchSubscriptionWithSize(10), topicMetrics, subscriptionMetrics)
+        SubscriptionHealth health = healthChecker.checkHealth(batchSubscription, topicMetrics, subscriptionMetrics)
 
         then:
         health.status == UNHEALTHY
-        health.problems == [malfunctioning(2.0)] as Set
+        health.problems == [malfunctioning(2.0, batchSubscription.getQualifiedName().toString())] as Set
     }
 
     def "should indicate that a serial subscriber with retry returning more than 10% 4xx errors is receiving malformed events"() {
@@ -215,7 +218,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         health.status == UNHEALTHY
-        health.problems == [receivingMalformedMessages(11.0)] as Set
+        health.problems == [receivingMalformedMessages(11.0, subscriptionWithRetry.getQualifiedName().toString())] as Set
     }
 
     def "should indicate that a batch subscriber with retry returning more than 10% 4xx errors is receiving malformed events"() {
@@ -238,7 +241,7 @@ class SubscriptionHealthCheckerTest extends Specification {
 
         then:
         health.status == UNHEALTHY
-        health.problems == [receivingMalformedMessages(2.0)] as Set
+        health.problems == [receivingMalformedMessages(2.0, subscriptionWithRetry.getQualifiedName().toString())] as Set
     }
 
     def "should not indicate that a serial subscriber without retry returning more than 10% 4xx errors is receiving malformed events"() {
