@@ -41,6 +41,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final HttpAuthorizationProviderFactory authorizationProviderFactory;
     private final HttpHeadersProvidersFactory httpHeadersProviderFactory;
     private final SendingResultHandlers sendingResultHandlers;
+    private final HttpRequestFactoryProvider requestFactoryProvider;
 
     @Inject
     public JettyHttpMessageSenderProvider(
@@ -50,7 +51,8 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
             MetadataAppender<Request> metadataAppender,
             HttpAuthorizationProviderFactory authorizationProviderFactory,
             HttpHeadersProvidersFactory httpHeadersProviderFactory,
-            SendingResultHandlers sendingResultHandlers) {
+            SendingResultHandlers sendingResultHandlers,
+            HttpRequestFactoryProvider requestFactoryProvider) {
         this.httpClient = httpClient;
         this.http2ClientHolder = http2ClientHolder;
         this.endpointAddressResolver = endpointAddressResolver;
@@ -58,6 +60,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         this.authorizationProviderFactory = authorizationProviderFactory;
         this.httpHeadersProviderFactory = httpHeadersProviderFactory;
         this.sendingResultHandlers = sendingResultHandlers;
+        this.requestFactoryProvider = requestFactoryProvider;
     }
 
     @Override
@@ -66,25 +69,13 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
         ResolvableEndpointAddress resolvableEndpoint = new ResolvableEndpointAddress(endpoint,
                 endpointAddressResolver, endpointAddressResolverMetadata);
-        HttpRequestFactory requestFactory = httpRequestFactory(subscription);
+        HttpRequestFactory requestFactory = requestFactoryProvider.provideRequestFactory(subscription, getHttpClient(subscription), metadataAppender);
 
         if (subscription.getMode() == SubscriptionMode.BROADCAST) {
             return new JettyBroadCastMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
         } else {
             return new JettyMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
         }
-    }
-
-    private HttpRequestFactory httpRequestFactory(Subscription subscription) {
-        int requestTimeout = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
-        int socketTimeout = subscription.getSerialSubscriptionPolicy().getSocketTimeout();
-
-        return new HttpRequestFactory(
-                getHttpClient(subscription),
-                requestTimeout,
-                socketTimeout,
-                metadataAppender
-        );
     }
 
     private HttpHeadersProvider getHttpRequestHeadersProvider(Subscription subscription) {
