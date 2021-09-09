@@ -74,6 +74,11 @@ public class SingleMessageSendingResult implements MessageSendingResult {
         }
     }
 
+    public SingleMessageSendingResult(Result result, URI uri) {
+        this(result);
+        this.requestUri = Optional.of(uri);
+    }
+
     private void initializeForStatusCode(int statusCode) {
         this.statusCode = statusCode;
         responseFamily = familyOf(statusCode);

@@ -83,7 +83,7 @@ public class JettyMessageSenderTest {
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
         address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver(), METADATA);
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender());
+        HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender());
         messageSender = new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
     }
 
@@ -185,7 +185,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
         // given
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender());
+        HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender());
 
         JettyMessageSender messageSender = new JettyMessageSender(httpRequestFactory, address, new HermesHeadersProvider(Collections.singleton(
                 new AuthHeadersProvider(
@@ -207,7 +207,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldUseSuppliedRequestTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
+        HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client,
                 100, 1000,
                 new DefaultHttpMetadataAppender());
         remoteServiceEndpoint.setDelay(500);
@@ -226,7 +226,7 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldUseSuppliedSocketTimeout() throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        HttpRequestFactory httpRequestFactory = new HttpRequestFactory(client,
+        HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client,
                 1000, 100,
                 new DefaultHttpMetadataAppender());
         remoteServiceEndpoint.setDelay(200);

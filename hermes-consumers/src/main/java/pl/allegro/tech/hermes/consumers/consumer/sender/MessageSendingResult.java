@@ -53,6 +53,10 @@ public interface MessageSendingResult {
         return new SingleMessageSendingResult(result);
     }
 
+    static SingleMessageSendingResult ofResultWithUri(Result result, URI uri) {
+        return new SingleMessageSendingResult(result,uri);
+    }
+
     String getRootCause();
 
     int getStatusCode();
