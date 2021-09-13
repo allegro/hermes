@@ -1,3 +1,15 @@
+## 1.9.8 (09.09.2021)
+
+## Enhancements
+
+#### ([1370](https://github.com/allegro/hermes/pull/1370)) HttpRequestFactory interface extracted 
+
+## 1.9.7 (24.08.2021)
+
+## Enhancements
+
+#### ([1369](https://github.com/allegro/hermes/pull/1369)) Subscription zookeeper metrics endpoint
+
 ## 1.9.6 (23.08.2021)
 
 ## Fixes
