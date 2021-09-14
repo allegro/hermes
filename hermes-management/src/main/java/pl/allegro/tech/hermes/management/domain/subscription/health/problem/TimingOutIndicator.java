@@ -20,7 +20,7 @@ public class TimingOutIndicator implements SubscriptionHealthProblemIndicator {
     @Override
     public Optional<SubscriptionHealthProblem> getProblem(SubscriptionHealthContext context) {
         if (areSubscriptionMetricsReliable(context) && isTimeoutsRateHigh(context)) {
-            return Optional.of(timingOut(context.getTimeoutsRate()));
+            return Optional.of(timingOut(context.getTimeoutsRate(), context.getSubscription().getQualifiedName().toString()));
         }
         return Optional.empty();
     }

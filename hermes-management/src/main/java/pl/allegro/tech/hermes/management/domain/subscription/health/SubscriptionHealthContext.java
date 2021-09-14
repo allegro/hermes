@@ -85,4 +85,8 @@ public final class SubscriptionHealthContext {
     public double getTopicRate() {
         return topicRate;
     }
+
+    public Subscription getSubscription() {
+        return subscription;
+    }
 }

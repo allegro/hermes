@@ -20,7 +20,7 @@ public class LaggingIndicator implements SubscriptionHealthProblemIndicator {
         long subscriptionLag = context.getLag();
         double topicRate = context.getTopicRate();
         if (topicRate > 0.0 && subscriptionLag > maxLagInSeconds * topicRate) {
-            return Optional.of(lagging(subscriptionLag));
+            return Optional.of(lagging(subscriptionLag, context.getSubscription().getQualifiedName().toString()));
         }
         return Optional.empty();
     }
