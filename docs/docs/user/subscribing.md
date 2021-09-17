@@ -203,8 +203,11 @@ This counter will reset when:
 The client is able to signal it can't handle the message at the moment and Hermes Consumer will retry delivery after
 minimum of given delay.
 
-The endpoint can return **Retry-After** header, with the amount of seconds to backoff, combined with status **429** or **503**. This
-is the only case when returning **4xx** or **5xx** code does not result in slowing down the overall [sending speed](#rate-limiting).
+You can control slowing down overall [sending speed](#rate-limiting) only when returning **429** or **503** status code,
+depending on optional **Retry-After** header returned from subscription endpoint, with the amount of seconds to backoff.
+Keep in mind, that sending speed will slow down if response won't contain **Retry-After** header. Also, when you set
+**retryClientErrors** flag to true on subscription, any request with **4xx** code will be retried without slowing down 
+overall sending speed (except **429**, see above).
 
 Regardless of the provided delay, the **Inflight TTL** of the message still applies in this situation,
 therefore the endpoint needs to ensure the total delay of consecutive **Retry-After** responses does not exceed this value.
