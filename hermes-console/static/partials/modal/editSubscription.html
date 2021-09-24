@@ -202,6 +202,12 @@
                             <option value="trackingAll">Track everything</option>
                         </select>
                     </div>
+                    <div class="alert alert-warning"
+                         ng-show="subscription.trackingMode === 'trackingAll'">
+                        <strong>Tracking all messages enabled <span class="glyphicon glyphicon-alert" /></strong>
+                        Please chose this option only when necessary. Mainly this is for debugging problems with subscription.
+                        Remember to change this mode after the problem is solved.
+                    </div>
                 </div>
             </div>
 
