@@ -134,10 +134,12 @@ Hermes treats any response with **2xx** status code as successful delivery (e.g.
 Responses with **5xx** status code or any network issues (e.g. connection timeout) are treated as failures, unless it
 is **503** (or **429**) code, described in [back pressure section](#back-pressure).
 
-Responses with **4xx** status code are treated as failures (except **429**, see above), but by default they are not retried. 
+Responses with **4xx** status code are treated as success (except **429**, see above), 
+but by default they are not retried and won't reduce overall sending speed on subscription. 
 This is because usually when subscriber responds with *400 Bad Message* it means this message is somehow invalid and will never be parsed,
 no matter how many times Hermes would try to deliver it. This behavior can be changed using **retryClientErrors**
-flag on subscription.
+flag on subscription. When this flag is set to true, message with response code **4xx** will be retried, 
+also causing slowing down overall sending speed. See [back pressure section](#back-pressure) for more details.
 
 ## Retries
 
@@ -203,8 +205,21 @@ This counter will reset when:
 The client is able to signal it can't handle the message at the moment and Hermes Consumer will retry delivery after
 minimum of given delay.
 
-The endpoint can return **Retry-After** header, with the amount of seconds to backoff, combined with status **429** or **503**. This
-is the only case when returning **4xx** or **5xx** code does not result in slowing down the overall [sending speed](#rate-limiting).
+You can control slowing down overall [sending speed](#rate-limiting) only when returning **429** or **503** status code,
+depending on optional **Retry-After** header returned from subscription endpoint, with the amount of seconds to backoff.
+Keep in mind, that sending speed will slow down if response won't contain **Retry-After** header. Also, when you set
+**retryClientErrors** flag to true on subscription, any request with **4xx** code will be retried with slowing down 
+overall sending speed (except **429**, see above). To be sure, take a look at the below table:
+
+| status           | retryClientErrors flag | Retry-After header | retry message | slow down sending speed |
+|------------------|------------------------|--------------------|---------------|-------------------------|
+| 4xx (except 429) | false                  | not applicable     | no            | no                      |
+| 4xx (except 429) | true                   | not applicable     | yes           | yes                     |
+| 429              | not applicable         | no                 | yes           | yes                     |
+| 429              | not applicable         | yes                | yes           | no                      |
+| 5xx (except 503) | not applicable         | not applicable     | yes           | yes                     |
+| 503              | not applicable         | no                 | yes           | yes                     |
+| 503              | not applicable         | yes                | yes           | no                      |             
 
 Regardless of the provided delay, the **Inflight TTL** of the message still applies in this situation,
 therefore the endpoint needs to ensure the total delay of consecutive **Retry-After** responses does not exceed this value.
