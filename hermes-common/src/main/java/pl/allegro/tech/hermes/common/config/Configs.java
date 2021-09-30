@@ -291,21 +291,7 @@ public enum Configs {
     METRICS_COUNTER_EXPIRE_AFTER_ACCESS("metrics.counter.expire.after.access", 72),
     METRICS_RESERVOIR_TYPE("metrics.reservoir.type", "exponentially_decaying"),
 
-    METRICS_ATTRIBUTE_MAX("metrics.attribute.max", true),
-    METRICS_ATTRIBUTE_MEAN("metrics.attribute.mean", false),
-    METRICS_ATTRIBUTE_MIN("metrics.attribute.min", false),
-    METRICS_ATTRIBUTE_STDDEV("metrics.attribute.stddev", false),
-    METRICS_ATTRIBUTE_P50("metrics.attribute.p50", true),
-    METRICS_ATTRIBUTE_P75("metrics.attribute.p75", true),
-    METRICS_ATTRIBUTE_P95("metrics.attribute.p95", true),
-    METRICS_ATTRIBUTE_P98("metrics.attribute.p98", true),
-    METRICS_ATTRIBUTE_P99("metrics.attribute.p99", true),
-    METRICS_ATTRIBUTE_P999("metrics.attribute.p999", true),
-    METRICS_ATTRIBUTE_COUNT("metrics.attribute.count", true),
-    METRICS_ATTRIBUTE_M1_RATE("metrics.attribute.m1_rate", true),
-    METRICS_ATTRIBUTE_M5_RATE("metrics.attribute.m5_rate", false),
-    METRICS_ATTRIBUTE_M15_RATE("metrics.attribute.m15_rate", false),
-    METRICS_ATTRIBUTE_MEAN_RATE("metrics.attribute.mean_rate", false),
+    METRICS_DISABLED_ATTRIBUTES("metrics.disabled.attributes", "M15_RATE, M5_RATE, MEAN, MEAN_RATE, MIN, STDDEV"),
 
     GLOBAL_SHUTDOWN_HOOK_REGISTERED("global.shutdown.hook.registered", true),
 
