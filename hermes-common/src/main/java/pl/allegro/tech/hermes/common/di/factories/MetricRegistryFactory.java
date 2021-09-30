@@ -26,6 +26,7 @@ import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -54,16 +55,6 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
         MetricRegistry registry = createMetricsRegistry();
 
         if (configFactory.getBooleanProperty(Configs.METRICS_GRAPHITE_REPORTER)) {
-
-            Set<MetricAttribute> disabledAttributes = Sets.newHashSet(
-                            MetricAttribute.M15_RATE,
-                            MetricAttribute.M5_RATE,
-                            MetricAttribute.MEAN,
-                            MetricAttribute.MEAN_RATE,
-                            MetricAttribute.MIN,
-                            MetricAttribute.STDDEV
-            );
-
             String prefix = Joiner.on(".").join(
                     configFactory.getStringProperty(Configs.GRAPHITE_PREFIX),
                     moduleName,
@@ -72,7 +63,7 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
             GraphiteReporter
                     .forRegistry(registry)
                     .prefixedWith(prefix)
-                    .disabledMetricAttributes(disabledAttributes)
+                    .disabledMetricAttributes(getDisabledAttributesFromConfig())
                     .build(new Graphite(new InetSocketAddress(
                             configFactory.getStringProperty(Configs.GRAPHITE_HOST),
                             configFactory.getIntProperty(Configs.GRAPHITE_PORT)
@@ -122,6 +113,35 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
                 registry.register(prefix + "." + entry.getKey(), entry.getValue());
             }
         }
+    }
+
+    private Set<MetricAttribute> getDisabledAttributesFromConfig() {
+        Map<Configs, MetricAttribute> configsMetricAttributeMap = new HashMap<>();
+        Set<MetricAttribute> disabledAttributes = Sets.newHashSet();
+
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_MAX, MetricAttribute.MAX);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_MEAN, MetricAttribute.MEAN);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_MIN, MetricAttribute.MIN);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_STDDEV, MetricAttribute.STDDEV);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_P50, MetricAttribute.P50);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_P75, MetricAttribute.P75);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_P95, MetricAttribute.P95);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_P98, MetricAttribute.P98);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_P99, MetricAttribute.P99);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_P999, MetricAttribute.P999);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_COUNT, MetricAttribute.COUNT);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_M1_RATE, MetricAttribute.M1_RATE);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_M5_RATE, MetricAttribute.M5_RATE);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_M15_RATE, MetricAttribute.M15_RATE);
+        configsMetricAttributeMap.put(Configs.METRICS_ATTRIBUTE_MEAN_RATE, MetricAttribute.MEAN_RATE);
+
+        configsMetricAttributeMap.forEach((k, v) -> {
+            if(!configFactory.getBooleanProperty(k)) {
+                disabledAttributes.add(v);
+            }
+        });
+
+        return disabledAttributes;
     }
 
     @Override
