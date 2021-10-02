@@ -5,7 +5,7 @@ angular.module('hermes.filters.repository', [])
 
             return {
                 verify: function (topicName, filters, message) {
-                    return filtersResource.verify({topicName: topicName}, {filters: filters, message: btoa(message)});
+                    return filtersResource.verify({topicName: topicName}, {filters: filters, message: btoa(utf8.encode(message || ""))});
                 }
             };
         }]);
