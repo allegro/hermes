@@ -1,4 +1,5 @@
 repositories {
+    jcenter()
     maven { url 'http://repository.jboss.org/nexus/content/groups/public' }
     maven { url 'http://packages.confluent.io/maven/' }
 }
