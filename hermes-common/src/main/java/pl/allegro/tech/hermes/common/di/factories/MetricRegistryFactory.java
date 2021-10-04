@@ -13,6 +13,8 @@ import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.glassfish.hk2.api.Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -38,6 +40,7 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
     private final CounterStorage counterStorage;
     private final InstanceIdResolver instanceIdResolver;
     private final String moduleName;
+    private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
 
     @Inject
     public MetricRegistryFactory(ConfigFactory configFactory,
@@ -122,7 +125,13 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
         List<String> disabledAttributesList = Arrays.asList(disabledAttributesFromConfig.split("\\s*,\\s*"));
 
         disabledAttributesList.forEach(singleAttribute ->
-            disabledAttributes.add(MetricAttribute.valueOf(singleAttribute))
+                {
+                    try {
+                        disabledAttributes.add(MetricAttribute.valueOf(singleAttribute));
+                    } catch (IllegalArgumentException e) {
+                        logger.warn("Failed to add disabled attribute from config: {}", e.getMessage());
+                    }
+                }
         );
 
         return disabledAttributes;
