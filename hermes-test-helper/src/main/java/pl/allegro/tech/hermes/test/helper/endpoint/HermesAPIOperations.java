@@ -50,7 +50,7 @@ public class HermesAPIOperations {
 
     public TopicWithSchema createTopic(String group, String topic) {
         Topic created = topic(group, topic)
-                .withRetentionTime(1000, TimeUnit.DAYS)
+                .withRetentionTime(7, TimeUnit.DAYS)
                 .withDescription("Test topic")
                 .build();
         return createTopic(created);
