@@ -291,6 +291,8 @@ public enum Configs {
     METRICS_COUNTER_EXPIRE_AFTER_ACCESS("metrics.counter.expire.after.access", 72),
     METRICS_RESERVOIR_TYPE("metrics.reservoir.type", "exponentially_decaying"),
 
+    METRICS_DISABLED_ATTRIBUTES("metrics.disabled.attributes", "M15_RATE, M5_RATE, MEAN, MEAN_RATE, MIN, STDDEV"),
+
     GLOBAL_SHUTDOWN_HOOK_REGISTERED("global.shutdown.hook.registered", true),
 
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),

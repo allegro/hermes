@@ -13,6 +13,8 @@ import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.glassfish.hk2.api.Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -26,6 +28,8 @@ import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +40,7 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
     private final CounterStorage counterStorage;
     private final InstanceIdResolver instanceIdResolver;
     private final String moduleName;
+    private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
 
     @Inject
     public MetricRegistryFactory(ConfigFactory configFactory,
@@ -54,16 +59,6 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
         MetricRegistry registry = createMetricsRegistry();
 
         if (configFactory.getBooleanProperty(Configs.METRICS_GRAPHITE_REPORTER)) {
-
-            Set<MetricAttribute> disabledAttributes = Sets.newHashSet(
-                            MetricAttribute.M15_RATE,
-                            MetricAttribute.M5_RATE,
-                            MetricAttribute.MEAN,
-                            MetricAttribute.MEAN_RATE,
-                            MetricAttribute.MIN,
-                            MetricAttribute.STDDEV
-            );
-
             String prefix = Joiner.on(".").join(
                     configFactory.getStringProperty(Configs.GRAPHITE_PREFIX),
                     moduleName,
@@ -72,7 +67,7 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
             GraphiteReporter
                     .forRegistry(registry)
                     .prefixedWith(prefix)
-                    .disabledMetricAttributes(disabledAttributes)
+                    .disabledMetricAttributes(getDisabledAttributesFromConfig())
                     .build(new Graphite(new InetSocketAddress(
                             configFactory.getStringProperty(Configs.GRAPHITE_HOST),
                             configFactory.getIntProperty(Configs.GRAPHITE_PORT)
@@ -122,6 +117,24 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
                 registry.register(prefix + "." + entry.getKey(), entry.getValue());
             }
         }
+    }
+
+    private Set<MetricAttribute> getDisabledAttributesFromConfig() {
+        Set<MetricAttribute> disabledAttributes = Sets.newHashSet();
+        String disabledAttributesFromConfig = configFactory.getStringProperty(Configs.METRICS_DISABLED_ATTRIBUTES);
+        List<String> disabledAttributesList = Arrays.asList(disabledAttributesFromConfig.split("\\s*,\\s*"));
+
+        disabledAttributesList.forEach(singleAttribute ->
+                {
+                    try {
+                        disabledAttributes.add(MetricAttribute.valueOf(singleAttribute));
+                    } catch (IllegalArgumentException e) {
+                        logger.warn("Failed to add disabled attribute from config: {}", e.getMessage());
+                    }
+                }
+        );
+
+        return disabledAttributes;
     }
 
     @Override
