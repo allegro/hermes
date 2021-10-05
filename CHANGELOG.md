@@ -1,3 +1,25 @@
+## 1.9.10 (05.10.2021)
+
+## Enhancements
+
+#### ([1376](https://github.com/allegro/hermes/pull/1376)) Moved disabling metric attributes to config
+
+#### ([1375](https://github.com/allegro/hermes/pull/1375)) Added warning when setting tracking on topic and subscription
+
+#### ([1374](https://github.com/allegro/hermes/pull/1374)) Clarified conditions to control overall sending speed on subscription
+
+### Fixes
+
+#### ([1378](https://github.com/allegro/hermes/pull/1378)) Serve hermes-console by NodeJS
+
+#### ([1377](https://github.com/allegro/hermes/pull/1377)) Support unicode in filter debug in hermes-console
+
+## 1.9.9 (14.09.2021)
+
+## Enhancements
+
+#### ([1371](https://github.com/allegro/hermes/pull/1371)) Added subscriptionName to description for SubscriptionHealthProblem
+
 ## 1.9.8 (09.09.2021)
 
 ## Enhancements
