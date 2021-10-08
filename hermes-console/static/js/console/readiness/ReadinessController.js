@@ -14,9 +14,9 @@ readiness.controller('ReadinessController', ['$scope', 'ReadinessRepository', 'C
     }
 
     $scope.openModal = function openModal(datacenterInfo) {
-      var action = datacenterInfo.isReady ? "turn off" : "turn on";
+      var action = datacenterInfo.isReady ? "Turn off" : "Turn on";
       confirmationModal.open({
-        actionSubject: 'Are you sure you want to ' + action + ' the ' + datacenterInfo.datacenter + ' datacenter ?' +
+        actionSubject: 'Are you sure you want to ' + action.toLowerCase() + ' the ' + datacenterInfo.datacenter + ' datacenter ?' +
           ' The action takes place after hermes-frontend restart',
         action: action
       }).result.then(function () {
