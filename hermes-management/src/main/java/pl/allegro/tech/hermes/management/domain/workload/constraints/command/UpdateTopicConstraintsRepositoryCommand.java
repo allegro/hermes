@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.workload.constraints.command;
 import pl.allegro.tech.hermes.api.Constraints;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class UpdateTopicConstraintsRepositoryCommand extends RepositoryCommand<WorkloadConstraintsRepository> {
@@ -17,19 +18,19 @@ public class UpdateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
     }
 
     @Override
-    public void backup(WorkloadConstraintsRepository repository) {
-        backup = repository.getConsumersWorkloadConstraints().getTopicConstraints().get(topicName);
+    public void backup(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
+        backup = holder.getRepository().getConsumersWorkloadConstraints().getTopicConstraints().get(topicName);
     }
 
     @Override
-    public void execute(WorkloadConstraintsRepository repository) {
-        repository.updateConstraints(topicName, constraints);
+    public void execute(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
+        holder.getRepository().updateConstraints(topicName, constraints);
     }
 
     @Override
-    public void rollback(WorkloadConstraintsRepository repository) {
+    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
         if (backup != null) {
-            repository.updateConstraints(topicName, backup);
+            holder.getRepository().updateConstraints(topicName, backup);
         }
     }
 

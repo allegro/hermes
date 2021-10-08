@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.credentials.commands;
 
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
-import pl.allegro.tech.hermes.domain.NodePassword;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class UpdateCredentialsRepositoryCommand extends RepositoryCommand<CredentialsRepository> {
@@ -16,16 +15,16 @@ public class UpdateCredentialsRepositoryCommand extends RepositoryCommand<Creden
     }
 
     @Override
-    public void backup(CredentialsRepository repository) {
+    public void backup(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {
     }
 
     @Override
-    public void execute(CredentialsRepository repository) {
+    public void execute(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {
         repository.overwriteAdminPassword(password);
     }
 
     @Override
-    public void rollback(CredentialsRepository repository) {
+    public void rollback(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {
     }
 
     @Override

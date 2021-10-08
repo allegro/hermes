@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersiste
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
+import pl.allegro.tech.hermes.frontend.services.ReadinessCheckService;
 
 import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
@@ -53,11 +54,12 @@ public class HermesServer {
     private final ConfigFactory configFactory;
     private final HttpHandler publishingHandler;
     private final HealthCheckService healthCheckService;
+    private final ReadinessCheckService readinessCheckService;
     private final MessagePreviewPersister messagePreviewPersister;
     private final int port;
     private final int sslPort;
     private final String host;
-    private ThroughputLimiter throughputLimiter;
+    private final ThroughputLimiter throughputLimiter;
     private final TopicMetadataLoadingJob topicMetadataLoadingJob;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
@@ -67,6 +69,7 @@ public class HermesServer {
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
             HealthCheckService healthCheckService,
+            ReadinessCheckService readinessCheckService,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
             TopicMetadataLoadingJob topicMetadataLoadingJob,
@@ -76,6 +79,7 @@ public class HermesServer {
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
         this.healthCheckService = healthCheckService;
+        this.readinessCheckService = readinessCheckService;
         this.messagePreviewPersister = messagePreviewPersister;
         this.topicMetadataLoadingJob = topicMetadataLoadingJob;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
@@ -143,12 +147,15 @@ public class HermesServer {
 
     private HttpHandler handlers() {
         HttpHandler healthCheckHandler = new HealthCheckHandler(healthCheckService);
+        HttpHandler readinessHandler = new ReadinessCheckHandler(readinessCheckService);
 
         RoutingHandler routingHandler =  new RoutingHandler()
                 .post("/topics/{qualifiedTopicName}", publishingHandler)
                 .get("/status/ping", healthCheckHandler)
                 .get("/status/health", healthCheckHandler)
-                .get("/", healthCheckHandler);
+                .get("/status/ready", readinessHandler)
+                .get("/", healthCheckHandler)
+                ;
 
         return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) : routingHandler;
     }

@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.oauth.commands;
 
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class CreateOAuthProviderRepositoryCommand extends RepositoryCommand<OAuthProviderRepository> {
@@ -13,16 +14,16 @@ public class CreateOAuthProviderRepositoryCommand extends RepositoryCommand<OAut
     }
 
     @Override
-    public void backup(OAuthProviderRepository repository) {}
+    public void backup(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {}
 
     @Override
-    public void execute(OAuthProviderRepository repository) {
-        repository.createOAuthProvider(provider);
+    public void execute(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
+        holder.getRepository().createOAuthProvider(provider);
     }
 
     @Override
-    public void rollback(OAuthProviderRepository repository) {
-        repository.removeOAuthProvider(provider.getName());
+    public void rollback(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
+        holder.getRepository().removeOAuthProvider(provider.getName());
     }
 
     @Override

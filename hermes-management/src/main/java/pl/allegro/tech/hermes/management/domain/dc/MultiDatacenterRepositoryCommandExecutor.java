@@ -26,51 +26,41 @@ public class MultiDatacenterRepositoryCommandExecutor {
             backup(command);
         }
 
-        List<DatacenterBoundRepositoryHolder<T>> repositories = repositoryManager.getRepositories(command.getRepositoryType());
-        List<DatacenterBoundRepositoryHolder<T>> executedRepositories = new ArrayList<>();
+        List<DatacenterBoundRepositoryHolder<T>> repoHolders = repositoryManager.getRepositories(command.getRepositoryType());
+        List<DatacenterBoundRepositoryHolder<T>> executedRepoHolders = new ArrayList<>();
 
-        for (DatacenterBoundRepositoryHolder<T> repository : repositories) {
+        for (DatacenterBoundRepositoryHolder<T> repoHolder : repoHolders) {
             try {
-                executedRepositories.add(repository);
-                command.execute(repository.getRepository());
+                executedRepoHolders.add(repoHolder);
+                command.execute(repoHolder);
             } catch (Exception e) {
                 logger.warn("Execute failed with an error", e);
                 if (rollbackEnabled) {
-                    rollback(executedRepositories, command);
+                    rollback(executedRepoHolders, command);
                 }
-                throw wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repository.getDatacenterName());
+                throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
             }
         }
     }
 
-    private RuntimeException wrapInInternalProcessingExceptionIfNeeded(Exception toWrap,
-                                                                       String command,
-                                                                       String dcName) {
-        if (toWrap instanceof HermesException) {
-            return (HermesException) toWrap;
-        }
-        return new InternalProcessingException("Execution of command '" + command + "' failed on DC '" +
-                dcName + "'.", toWrap);
-    }
-
-    private <T> void rollback(List<DatacenterBoundRepositoryHolder<T>> repositories, RepositoryCommand<T> command) {
-        for (DatacenterBoundRepositoryHolder<T> repository :  repositories) {
+    private <T> void rollback(List<DatacenterBoundRepositoryHolder<T>> repoHolders, RepositoryCommand<T> command) {
+        for (DatacenterBoundRepositoryHolder<T> repoHolder :  repoHolders) {
             try {
-                command.rollback(repository.getRepository());
+                command.rollback(repoHolder);
             } catch (Exception e) {
-                logger.error("Rollback procedure failed for command {} on DC {}", command, repository.getDatacenterName(), e);
+                logger.error("Rollback procedure failed for command {} on DC {}", command, repoHolder.getDatacenterName(), e);
             }
         }
     }
 
     private <T> void backup(RepositoryCommand<T> command) {
-        DatacenterBoundRepositoryHolder<T> repository = repositoryManager.getLocalRepository(command.getRepositoryType());
+        DatacenterBoundRepositoryHolder<T> repoHolder = repositoryManager.getLocalRepository(command.getRepositoryType());
         try {
             logger.debug("Creating backup for command: {}", command);
-            command.backup(repository.getRepository());
+            command.backup(repoHolder);
         } catch (Exception e) {
             throw new InternalProcessingException("Backup procedure for command '" + command +
-                    "' failed on DC '" + repository.getDatacenterName() + "'.", e);
+                    "' failed on DC '" + repoHolder.getDatacenterName() + "'.", e);
         }
     }
 }

@@ -11,12 +11,12 @@ var hermes = angular.module('hermes', [
     'hermes.auth',
     'hermes.search',
     'hermes.stats',
-    'hermes.diagnostics',
     'hermes.constraints',
     'hermes.diagnostics',
     'hermes.consistency',
     'hermes.visibility',
-    'hermes.mode'
+    'hermes.mode',
+    'hermes.readiness',
 ]);
 
 hermes.constant('DASHBOARD_CONFIG', config.dashboard);
@@ -76,6 +76,10 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                 .state('topicConsistency', {
                     url: '/consistency/:groupName/topics/:topicName',
                     templateUrl: 'partials/topicConsistency.html'
+                })
+                .state('datacenterReadiness', {
+                  url: '/readiness',
+                  templateUrl: 'partials/readiness.html'
                 })
                 .state('search', {
                     url: '/search?entity&property&operator&pattern',
