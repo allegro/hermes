@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -12,7 +13,7 @@ public class RetentionTime {
     private static final TimeUnit DEFAULT_UNIT = TimeUnit.DAYS;
 
     @Min(0)
-    @Max(7)
+    @Max(value = 7, groups = AdminPermitted.class)
     private final int duration;
 
     private final TimeUnit retentionUnit;

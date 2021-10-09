@@ -21,6 +21,7 @@ import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManipulatorUser;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -96,9 +97,9 @@ public class TopicsEndpoint {
     @RolesAllowed(Roles.ANY)
     @ApiOperation(value = "Create topic", httpMethod = HttpMethod.POST)
     public Response create(TopicWithSchema topicWithSchema, @Context ContainerRequestContext requestContext) {
-        String createdBy = requestContext.getSecurityContext().getUserPrincipal().getName();
+        TopicManipulatorUser topicManipulatorUser = TopicManipulatorUser.fromSecurityContext(requestContext.getSecurityContext());
         CreatorRights isAllowedToManage = checkedTopic -> managementRights.isUserAllowedToManageTopic(checkedTopic, requestContext);
-        topicService.createTopicWithSchema(topicWithSchema, createdBy, isAllowedToManage);
+        topicService.createTopicWithSchema(topicWithSchema, topicManipulatorUser, isAllowedToManage);
         return status(Response.Status.CREATED).build();
     }
 
@@ -108,8 +109,9 @@ public class TopicsEndpoint {
     @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER})
     @ApiOperation(value = "Remove topic", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("topicName") String qualifiedTopicName, @Context SecurityContext securityContext) {
+        TopicManipulatorUser topicManipulatorUser = TopicManipulatorUser.fromSecurityContext(securityContext);
         topicService.removeTopicWithSchema(topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
-                securityContext.getUserPrincipal().getName());
+                topicManipulatorUser);
         return status(Response.Status.OK).build();
     }
 
@@ -121,8 +123,8 @@ public class TopicsEndpoint {
     @ApiOperation(value = "Update topic", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("topicName") String qualifiedTopicName, PatchData patch,
                            @Context SecurityContext securityContext) {
-        String updatedBy = securityContext.getUserPrincipal().getName();
-        topicService.updateTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName), patch, updatedBy);
+        TopicManipulatorUser topicManipulatorUser = TopicManipulatorUser.fromSecurityContext(securityContext);
+        topicService.updateTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName), patch, topicManipulatorUser);
         return status(Response.Status.OK).build();
     }
 

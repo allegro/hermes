@@ -70,7 +70,7 @@ public class GroupsEndpoint {
     @ApiOperation(value = "Create group", response = String.class, httpMethod = HttpMethod.POST)
     @RolesAllowed(Roles.ANY)
     public Response create(Group group, @Context SecurityContext securityContext, @Context ContainerRequestContext requestContext) {
-        preconditions.checkConstraints(group);
+        preconditions.checkConstraints(group, false);
         groupService.createGroup(group, securityContext.getUserPrincipal().getName(), managementRights.getGroupCreatorRights(requestContext));
         return Response.status(Response.Status.CREATED).build();
     }

@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static java.util.concurrent.TimeUnit.DAYS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -587,5 +589,43 @@ public class TopicManagementTest extends IntegrationTest {
                         new TopicLabel("label-3")
                 )
         );
+    }
+
+    @Test
+    public void shouldNotCreateTopicWith8DaysRetentionTime() {
+        // given
+        operations.createGroup("createTopicGroup");
+        Topic topic = topic("createTopicGroup", "topic")
+                .withRetentionTime(8, DAYS)
+                .build();
+
+        // when
+        Response response = management.topic().create(topicWithSchema(topic));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST).hasErrorCode(ErrorCode.VALIDATION_ERROR);
+        assertThat(management.topic().list("createTopicGroup", false)).isEmpty();
+    }
+
+    @Test
+    public void shouldNotUpdateTopicWith8DaysRetentionTime() {
+        // given
+        RetentionTime retentionTime7Days = new RetentionTime(7, DAYS);
+        RetentionTime retentionTime8Days = new RetentionTime(8, DAYS);
+        Topic topic = topic("createTopicGroup", "topic")
+                .withRetentionTime(retentionTime7Days)
+                .build();
+        operations.buildTopic(topic);
+        PatchData patch = patchData()
+                .set("retentionTime", retentionTime8Days)
+                .build();
+
+        // when
+        Response response = management.topic().update(topic.getQualifiedName(), patch);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST).hasErrorCode(ErrorCode.VALIDATION_ERROR);
+        assertThat(management.topic().get(topic.getQualifiedName()).getTopic().getRetentionTime())
+                .isEqualTo(retentionTime7Days);
     }
 }
