@@ -34,7 +34,7 @@ public class SubscriptionValidator {
     }
 
     public void checkCreation(Subscription toCheck, CreatorRights<Subscription> creatorRights) {
-        apiPreconditions.checkConstraints(toCheck);
+        apiPreconditions.checkConstraints(toCheck, false);
         ownerIdValidator.check(toCheck.getOwner());
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
 
@@ -50,7 +50,7 @@ public class SubscriptionValidator {
     }
 
     public void checkModification(Subscription toCheck) {
-        apiPreconditions.checkConstraints(toCheck);
+        apiPreconditions.checkConstraints(toCheck, false);
         ownerIdValidator.check(toCheck.getOwner());
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
         subscriptionRepository.ensureSubscriptionExists(toCheck.getTopicName(), toCheck.getName());

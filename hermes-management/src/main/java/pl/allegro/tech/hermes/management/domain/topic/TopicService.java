@@ -102,17 +102,17 @@ public class TopicService {
         this.topicOwnerCache = topicOwnerCache;
     }
 
-    public void createTopicWithSchema(TopicWithSchema topicWithSchema, String createdBy, CreatorRights isAllowedToManage) {
+    public void createTopicWithSchema(TopicWithSchema topicWithSchema, TopicManipulatorUser createdBy, CreatorRights isAllowedToManage) {
         Topic topic = topicWithSchema.getTopic();
-        auditor.beforeObjectCreation(createdBy, topic);
-        topicValidator.ensureCreatedTopicIsValid(topic, isAllowedToManage);
+        auditor.beforeObjectCreation(createdBy.getUsername(), topic);
+        topicValidator.ensureCreatedTopicIsValid(topic, createdBy, isAllowedToManage);
         ensureTopicDoesNotExist(topic);
 
         boolean validateAndRegisterSchema = AVRO.equals(topic.getContentType()) || (topic.isJsonToAvroDryRunEnabled()
                 && topicWithSchema.getSchema() != null);
 
         validateSchema(validateAndRegisterSchema, topicWithSchema, topic);
-        registerAvroSchema(validateAndRegisterSchema, topicWithSchema, createdBy);
+        registerAvroSchema(validateAndRegisterSchema, topicWithSchema, createdBy.getUsername());
         createTopic(topic, createdBy, isAllowedToManage);
     }
 
@@ -144,12 +144,12 @@ public class TopicService {
         }
     }
 
-    private void createTopic(Topic topic, String createdBy, CreatorRights creatorRights) {
-        topicValidator.ensureCreatedTopicIsValid(topic, creatorRights);
+    private void createTopic(Topic topic, TopicManipulatorUser createdBy, CreatorRights creatorRights) {
+        topicValidator.ensureCreatedTopicIsValid(topic, createdBy, creatorRights);
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic);
-            auditor.objectCreated(createdBy, topic);
+            auditor.objectCreated(createdBy.getUsername(), topic);
             topicOwnerCache.onCreatedTopic(topic);
         } else {
             logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
@@ -172,14 +172,14 @@ public class TopicService {
         }
     }
 
-    public void removeTopicWithSchema(Topic topic, String removedBy) {
-        auditor.beforeObjectRemoval(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
+    public void removeTopicWithSchema(Topic topic, TopicManipulatorUser removedBy) {
+        auditor.beforeObjectRemoval(removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
         topicRepository.ensureTopicHasNoSubscriptions(topic.getName());
         removeSchema(topic);
         if (!topicProperties.isAllowRemoval()) {
             throw new TopicRemovalDisabledException(topic);
         }
-        removeTopic(topic, removedBy);
+        removeTopic(topic, removedBy.getUsername());
     }
 
     private void removeSchema(Topic topic) {
@@ -196,7 +196,7 @@ public class TopicService {
         topicOwnerCache.onRemovedTopic(topic);
     }
 
-    public void updateTopicWithSchema(TopicName topicName, PatchData patch, String modifiedBy) {
+    public void updateTopicWithSchema(TopicName topicName, PatchData patch, TopicManipulatorUser modifiedBy) {
         Topic topic = getTopicDetails(topicName);
         extractSchema(patch)
                 .ifPresent(schema -> {
@@ -210,14 +210,14 @@ public class TopicService {
         return Optional.ofNullable(patch.getPatch().get("schema")).map(o -> (String) o);
     }
 
-    public void updateTopic(TopicName topicName, PatchData patch, String modifiedBy) {
-        auditor.beforeObjectUpdate(modifiedBy, Topic.class.getSimpleName(), topicName, patch);
+    public void updateTopic(TopicName topicName, PatchData patch, TopicManipulatorUser modifiedBy) {
+        auditor.beforeObjectUpdate(modifiedBy.getUsername(), Topic.class.getSimpleName(), topicName, patch);
         groupService.checkGroupExists(topicName.getGroupName());
 
         Topic retrieved = getTopicDetails(topicName);
         Topic modified = Patch.apply(retrieved, patch);
 
-        topicValidator.ensureUpdatedTopicIsValid(modified, retrieved);
+        topicValidator.ensureUpdatedTopicIsValid(modified, retrieved, modifiedBy);
 
         if (!retrieved.equals(modified)) {
             Instant beforeMigrationInstant = clock.instant();
@@ -235,7 +235,7 @@ public class TopicService {
                 logger.info("Notifying subscriptions' consumers about changes in topic {} content type...", topicName.qualifiedName());
                 topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
             }
-            auditor.objectUpdated(modifiedBy, retrieved, modified);
+            auditor.objectUpdated(modifiedBy.getUsername(), retrieved, modified);
             topicOwnerCache.onUpdatedTopic(retrieved, modified);
         }
     }

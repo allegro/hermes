@@ -41,7 +41,7 @@ public class OAuthProviderService {
     }
 
     public void createOAuthProvider(OAuthProvider oAuthProvider, String createdBy) {
-        preconditions.checkConstraints(oAuthProvider);
+        preconditions.checkConstraints(oAuthProvider, false);
         multiDcExecutor.execute(new CreateOAuthProviderRepositoryCommand(oAuthProvider));
         auditor.objectCreated(createdBy, oAuthProvider);
     }
@@ -54,7 +54,7 @@ public class OAuthProviderService {
     public void updateOAuthProvider(String oAuthProviderName, PatchData patch, String updatedBy) {
         OAuthProvider retrieved = repository.getOAuthProviderDetails(oAuthProviderName);
         OAuthProvider updated = Patch.apply(retrieved, patch);
-        preconditions.checkConstraints(updated);
+        preconditions.checkConstraints(updated, false);
 
         multiDcExecutor.execute(new UpdateOAuthProviderRepositoryCommand(updated));
         auditor.objectUpdated(updatedBy, retrieved, updated);

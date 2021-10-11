@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
 import pl.allegro.tech.hermes.management.config.TopicProperties
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidationException
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
+import pl.allegro.tech.hermes.management.domain.topic.TopicManipulatorUser
 import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
 import pl.allegro.tech.hermes.schema.SchemaRepository
@@ -24,6 +25,7 @@ class TopicValidatorTest extends Specification {
 
     static MANAGABLE = { true }
     static NOT_MANAGABLE = { false }
+    private static USER = new TopicManipulatorUser("username", false)
 
     static Set<TopicLabel> allowedLabels
 
@@ -47,7 +49,7 @@ class TopicValidatorTest extends Specification {
 
     def "topic with basic properties when creating should be valid"() {
         when:
-        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), MANAGABLE)
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), USER, MANAGABLE)
 
         then:
         noExceptionThrown()
@@ -55,10 +57,10 @@ class TopicValidatorTest extends Specification {
 
     def "topic not meeting preconditions when creating should be invalid"() {
         given:
-        apiPreconditions.checkConstraints(_) >> { throw new ConstraintViolationException("failed", Collections.emptySet()) }
+        apiPreconditions.checkConstraints(_, _) >> { throw new ConstraintViolationException("failed", Collections.emptySet()) }
 
         when:
-        topicValidator.ensureCreatedTopicIsValid(topic('group.invalid').build(), MANAGABLE)
+        topicValidator.ensureCreatedTopicIsValid(topic('group.invalid').build(), USER, MANAGABLE)
 
         then:
         thrown ConstraintViolationException
@@ -69,7 +71,7 @@ class TopicValidatorTest extends Specification {
         def migratedTopic = topic('group.topic').migratedFromJsonType().build()
 
         when:
-        topicValidator.ensureCreatedTopicIsValid(migratedTopic, MANAGABLE)
+        topicValidator.ensureCreatedTopicIsValid(migratedTopic, USER, MANAGABLE)
 
         then:
         thrown TopicValidationException
@@ -80,7 +82,7 @@ class TopicValidatorTest extends Specification {
         ownerDescriptorValidator.check(_) >> { throw new OwnerIdValidationException("failed") }
 
         when:
-        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), MANAGABLE)
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), USER, MANAGABLE)
 
         then:
         thrown OwnerIdValidationException
@@ -88,7 +90,7 @@ class TopicValidatorTest extends Specification {
 
     def "topic with owner that doesn't include the creator should be invalid"() {
         when:
-        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), NOT_MANAGABLE)
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), USER, NOT_MANAGABLE)
 
         then:
         thrown TopicValidationException
@@ -99,7 +101,7 @@ class TopicValidatorTest extends Specification {
         contentTypeWhitelistValidator.check(_) >> { throw new TopicValidationException("failed") }
 
         when:
-        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), MANAGABLE)
+        topicValidator.ensureCreatedTopicIsValid(topic('group.topic').build(), USER, MANAGABLE)
 
         then:
         thrown TopicValidationException
@@ -111,7 +113,7 @@ class TopicValidatorTest extends Specification {
         Topic updatedValidTopic = topic('group.topic').withTrackingEnabled(true).build()
 
         when:
-        topicValidator.ensureUpdatedTopicIsValid(updatedValidTopic, validTopic)
+        topicValidator.ensureUpdatedTopicIsValid(updatedValidTopic, validTopic, USER)
 
         then:
         noExceptionThrown()
@@ -123,7 +125,7 @@ class TopicValidatorTest extends Specification {
         Topic updatedTopic = topic('group.topic').withContentType(updatedType).build()
 
         when:
-        topicValidator.ensureUpdatedTopicIsValid(updatedTopic, originalTopic)
+        topicValidator.ensureUpdatedTopicIsValid(updatedTopic, originalTopic, USER)
 
         then:
         thrown TopicValidationException
@@ -140,7 +142,7 @@ class TopicValidatorTest extends Specification {
         def updatedTopic = topic('group.topic').withContentType(ContentType.JSON).build()
 
         when:
-        topicValidator.ensureUpdatedTopicIsValid(updatedTopic, jsonTopic)
+        topicValidator.ensureUpdatedTopicIsValid(updatedTopic, jsonTopic, USER)
 
         then:
         thrown TopicValidationException
@@ -153,7 +155,7 @@ class TopicValidatorTest extends Specification {
         schemaRepository.getLatestAvroSchema(migratedTopic) >> { throw new CouldNotLoadSchemaException(new RuntimeException()) }
 
         when:
-        topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic)
+        topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic, USER)
 
         then:
         thrown TopicValidationException
@@ -166,7 +168,7 @@ class TopicValidatorTest extends Specification {
         schemaRepository.getLatestAvroSchema(migratedTopic) >> CompiledSchema.of(new AvroUser().schema, 1, 1)
 
         when:
-        topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic)
+        topicValidator.ensureUpdatedTopicIsValid(migratedTopic, jsonTopic, USER)
 
         then:
         noExceptionThrown()
@@ -179,7 +181,8 @@ class TopicValidatorTest extends Specification {
         when:
         topicValidator.ensureUpdatedTopicIsValid(
             topic('group.topic').withDescription("updated").build(),
-            topic('group.topic').build()
+            topic('group.topic').build(),
+            USER
         )
 
         then:
@@ -194,6 +197,7 @@ class TopicValidatorTest extends Specification {
         when:
         topicValidator.ensureCreatedTopicIsValid(
             topic('group.topic').withLabels(createdTopicLabels as Set).build(),
+            USER,
             MANAGABLE
         )
 
@@ -222,6 +226,7 @@ class TopicValidatorTest extends Specification {
         when:
         topicValidator.ensureCreatedTopicIsValid(
             topic('group.topic').withLabels(createdTopicLabels as Set).build(),
+            USER,
             MANAGABLE
         )
 
@@ -250,7 +255,8 @@ class TopicValidatorTest extends Specification {
         when:
         topicValidator.ensureUpdatedTopicIsValid(
             topic('group.topic').withLabels(updatedTopicLabels as Set).build(),
-            topic('group.topic').build()
+            topic('group.topic').build(),
+            USER
         )
 
         then:
@@ -278,7 +284,8 @@ class TopicValidatorTest extends Specification {
         when:
         topicValidator.ensureUpdatedTopicIsValid(
             topic('group.topic').withLabels(updatedTopicLabels as Set).build(),
-            topic('group.topic').build()
+            topic('group.topic').build(),
+            USER
         )
 
         then:
