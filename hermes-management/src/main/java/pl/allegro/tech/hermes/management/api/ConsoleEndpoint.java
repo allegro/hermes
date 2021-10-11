@@ -9,8 +9,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-import java.net.URI;
 
 @Component
 @Path("/")
@@ -21,14 +19,6 @@ public class ConsoleEndpoint {
 
     public ConsoleEndpoint(ConsoleService service) {
         this.service = service;
-    }
-
-    @GET
-    @ApiOperation(value = "Redirect to Hermes console", httpMethod = HttpMethod.GET)
-    public Response redirectToConsole() {
-        return Response.status(Response.Status.FOUND)
-                .location(URI.create("/ui/index.html"))
-                .build();
     }
 
     @GET

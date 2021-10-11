@@ -2,6 +2,7 @@ dependencies {
     compileOnly group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.dropwizard_metrics
     compileOnly group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
     compileOnly group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    compileOnly group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     compileOnly group: 'org.springframework', name: 'spring-web', version: versions.spring_web
     compileOnly group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
 
@@ -19,6 +20,7 @@ dependencies {
     testCompile group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.dropwizard_metrics
     testCompile group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
     testCompile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    testCompile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     testCompile group: 'org.springframework', name: 'spring-web', version: versions.spring_web
     testCompile group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     testCompile group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp

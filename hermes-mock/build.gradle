@@ -14,6 +14,7 @@ dependencies {
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testCompile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    testCompile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: versions.jetty
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
