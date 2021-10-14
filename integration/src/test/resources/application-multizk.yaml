@@ -58,10 +58,7 @@ graphite:
 
 spring:
   jersey:
-    type: servlet
-  mvc:
-    servlet:
-      path: /status
+    type: filter
 
 management:
   endpoints:
