@@ -54,15 +54,12 @@ graphite:
 
 spring:
   jersey:
-    type: servlet
-  mvc:
-    servlet:
-      path: /status
+    type: filter
 
 management:
   endpoints:
     web:
-      base-path: /
+      base-path: /status
   server:
     servlet:
       context-path: /
