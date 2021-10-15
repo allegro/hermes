@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import javax.ws.rs.core.Response;
 import java.util.stream.Stream;
 
+import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NAME_IS_INVALID;
 import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;
@@ -104,7 +105,7 @@ public class GroupManagementTest extends IntegrationTest {
         Response response = management.group().create(groupWithNameWithSpaces);
 
         // then
-        assertThat(response).hasStatus(Response.Status.BAD_REQUEST).hasErrorCode(VALIDATION_ERROR);
+        assertThat(response).hasStatus(Response.Status.BAD_REQUEST).hasErrorCode(GROUP_NAME_IS_INVALID);
     }
 
     @Test
