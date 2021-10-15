@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.management.api;
 
-import static javax.servlet.http.HttpServletResponse.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.GenericFilterBean;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 
@@ -10,17 +7,13 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
-@WebFilter(urlPatterns = "/*")
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+
 public class ReadOnlyFilter extends GenericFilterBean {
-
-    private static final Logger logger = LoggerFactory.getLogger(ReadOnlyFilter.class);
     private static final String READ_ONLY_ERROR_MESSAGE = "Action forbidden due to read-only mode";
 
     private final ModeService modeService;
@@ -35,7 +28,8 @@ public class ReadOnlyFilter extends GenericFilterBean {
             HttpServletRequest req = (HttpServletRequest) request;
             if (!req.getMethod().equals("GET") && !isWhitelisted(req.getRequestURI())) {
                 HttpServletResponse resp = ((HttpServletResponse) response);
-                resp.sendError(SC_SERVICE_UNAVAILABLE, READ_ONLY_ERROR_MESSAGE);
+                resp.setStatus(SC_SERVICE_UNAVAILABLE);
+                resp.getOutputStream().println(READ_ONLY_ERROR_MESSAGE);
                 return;
             }
         }
