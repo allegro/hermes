@@ -42,6 +42,17 @@ Or explicitly via node:
 node serve.js
 ```
 
+For development purposes to have hermes console autoreload changed files it can be run with `nodemon`
+
+Install:
+```
+npm install nodemon -g
+```
+Run:
+```
+nodemon serve.js
+```
+
 ## Tests
 
 In order to run all tests and `jshint` code analysis run `grunt` tasks:
