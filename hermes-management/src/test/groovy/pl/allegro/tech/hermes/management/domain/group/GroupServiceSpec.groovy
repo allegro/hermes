@@ -42,23 +42,16 @@ class GroupServiceSpec extends Specification {
         Group toBeCreated = GroupBuilder.group("testGroup").build()
 
         when:
-        def exceptionThrown = false
-
-        try {
-            groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(false))
-        } catch (PermissionDeniedException ex) {
-            exceptionThrown = true
-        }
+        groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(false))
 
         then:
-        exceptionThrown
+        thrown(PermissionDeniedException)
     }
 
     def "should not allow to create group if group name is invalid"() {
         given:
         Group toBeCreated = GroupBuilder.group("invalid:testGroup").build()
 
-        when:
         when:
         groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(true))
         
