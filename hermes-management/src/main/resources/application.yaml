@@ -74,4 +74,4 @@ console:
     showFixedHeaders: false
 
 
-groups.validation.allowed-name-regex: [a-zA-Z0-9_.-]+
+groups.validation.allowed-name-regex: "[a-zA-Z0-9_.-]+"
