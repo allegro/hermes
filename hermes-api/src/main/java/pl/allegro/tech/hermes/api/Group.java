@@ -2,16 +2,14 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.allegro.tech.hermes.api.constraints.Names;
+
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.util.Objects;
 
 public class Group {
 
     @NotNull
-    @Pattern(regexp = Names.ALLOWED_NAME_REGEX)
     private String groupName;
 
     /**
