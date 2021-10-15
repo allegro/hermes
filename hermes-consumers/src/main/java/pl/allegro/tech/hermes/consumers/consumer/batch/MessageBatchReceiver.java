@@ -80,7 +80,7 @@ public class MessageBatchReceiver {
                 Message message = maybeMessage.get();
 
                 if (batch.canFit(message.getData())) {
-                    batch.append(message.getData(), messageMetadata(subscription, batch.getId(), message));
+                    batch.append(message.getData(), toMessageMetadata(message, subscription, batch.getId()));
                 } else if (batch.isBiggerThanTotalCapacity(message.getData())) {
                     logger.error("Message size exceeds buffer total capacity [size={}, capacity={}, subscription={}]",
                             message.getData().length, batch.getCapacity(), subscription.getQualifiedName());
@@ -110,7 +110,7 @@ public class MessageBatchReceiver {
             Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
             transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
             hermesMetrics.incrementInflightCounter(subscription);
-            trackers.get(subscription).logInflight(messageMetadata(subscription, batchId, transformed));
+            trackers.get(subscription).logInflight(toMessageMetadata(transformed, subscription, batchId));
 
             return Optional.of(transformed);
         }
@@ -126,12 +126,6 @@ public class MessageBatchReceiver {
             default:
                 throw new UnsupportedContentTypeException(subscription);
         }
-    }
-
-    private MessageMetadata messageMetadata(Subscription subscription, String batchId, Message message) {
-        return new MessageMetadata(message.getId(), batchId, message.getOffset(), message.getPartition(), message.getPartitionAssignmentTerm(),
-                subscription.getQualifiedTopicName(), subscription.getName(), message.getKafkaTopic().asString(),
-                message.getPublishingTimestamp(), message.getReadingTimestamp());
     }
 
     private boolean isReceiving() {
