@@ -59,7 +59,7 @@ spring:
 management:
   endpoints:
     web:
-      base-path: /
+      base-path: /status
   server:
     servlet:
       context-path: /
