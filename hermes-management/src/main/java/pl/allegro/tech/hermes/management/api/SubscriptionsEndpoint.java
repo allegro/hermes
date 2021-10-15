@@ -1,17 +1,17 @@
 package pl.allegro.tech.hermes.management.api;
 
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.MessageTrace;
+import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
-import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
@@ -20,9 +20,9 @@ import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
-import pl.allegro.tech.hermes.management.infrastructure.time.TimeFormatter;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -52,19 +52,16 @@ public class SubscriptionsEndpoint {
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
     private final MultiDCAwareService multiDCAwareService;
-    private final TimeFormatter timeFormatter;
     private final ManagementRights managementRights;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
                                  MultiDCAwareService multiDCAwareService,
-                                 TimeFormatter timeFormatter,
                                  ManagementRights managementRights) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
         this.multiDCAwareService = multiDCAwareService;
-        this.timeFormatter = timeFormatter;
         this.managementRights = managementRights;
     }
 
@@ -160,7 +157,7 @@ public class SubscriptionsEndpoint {
     @Path("/{subscriptionName}/metrics/persistent")
     @ApiOperation(value = "Get persistent subscription metrics", response = PersistentSubscriptionMetrics.class, httpMethod = HttpMethod.GET)
     public PersistentSubscriptionMetrics getPersistentMetrics(@PathParam("topicName") String qualifiedTopicName,
-                                                             @PathParam("subscriptionName") String subscriptionName) {
+                                                              @PathParam("subscriptionName") String subscriptionName) {
         return subscriptionService.getPersistentSubscriptionMetrics(fromQualifiedName(qualifiedTopicName), subscriptionName);
     }
 
@@ -222,12 +219,12 @@ public class SubscriptionsEndpoint {
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,
                                @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
-                               @NotEmpty String formattedTime) {
+                               @Valid OffsetRetransmissionDate offsetRetransmissionDate) {
 
         MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
                 topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 subscriptionName,
-                timeFormatter.parse(formattedTime),
+                offsetRetransmissionDate.getRetransmissionDate().toInstant().toEpochMilli(),
                 dryRun);
 
         return Response.status(OK).entity(summary).build();
