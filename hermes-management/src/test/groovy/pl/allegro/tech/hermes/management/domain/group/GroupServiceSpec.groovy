@@ -5,7 +5,9 @@ import pl.allegro.tech.hermes.api.PatchData
 import pl.allegro.tech.hermes.api.helpers.Patch
 import pl.allegro.tech.hermes.domain.group.GroupRepository
 import pl.allegro.tech.hermes.management.api.auth.CreatorRights
+import pl.allegro.tech.hermes.management.config.GroupProperties
 import pl.allegro.tech.hermes.management.domain.Auditor
+import pl.allegro.tech.hermes.management.domain.GroupNameIsNotAllowedException
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
@@ -20,7 +22,8 @@ class GroupServiceSpec extends Specification {
     GroupRepository groupRepository = Stub()
     Auditor auditor = Mock()
     MultiDatacenterRepositoryCommandExecutor executor = Stub()
-    GroupValidator validator = new GroupValidator(groupRepository)
+    GroupProperties groupProperties = new GroupProperties()
+    GroupValidator validator = new GroupValidator(groupRepository, groupProperties)
     GroupService groupService = new GroupService(groupRepository, auditor, executor, validator)
 
     def "should audit group creation"() {
@@ -44,6 +47,23 @@ class GroupServiceSpec extends Specification {
         try {
             groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(false))
         } catch (PermissionDeniedException ex) {
+            exceptionThrown = true
+        }
+
+        then:
+        exceptionThrown
+    }
+
+    def "should not allow to create group if group name is invalid"() {
+        given:
+        Group toBeCreated = GroupBuilder.group("invalid:testGroup").build()
+
+        when:
+        def exceptionThrown = false
+
+        try {
+            groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(true))
+        } catch (GroupNameIsNotAllowedException ex) {
             exceptionThrown = true
         }
 

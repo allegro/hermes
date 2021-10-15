@@ -61,5 +61,3 @@ schema.repository:
 console:
   configurationLocation: console/config-local.json
   configurationType: classpath_resource
-
-groups.validation.allowed-name-regex: "[a-zA-Z0-9_.-]+"
