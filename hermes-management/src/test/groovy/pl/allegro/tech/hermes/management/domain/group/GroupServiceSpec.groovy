@@ -59,16 +59,11 @@ class GroupServiceSpec extends Specification {
         Group toBeCreated = GroupBuilder.group("invalid:testGroup").build()
 
         when:
-        def exceptionThrown = false
-
-        try {
-            groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(true))
-        } catch (GroupNameIsNotAllowedException ex) {
-            exceptionThrown = true
-        }
-
+        when:
+        groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(true))
+        
         then:
-        exceptionThrown
+        thrown(GroupNameIsNotAllowedException)
     }
 
     def "should audit group removal"() {
