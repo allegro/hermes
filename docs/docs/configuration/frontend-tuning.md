@@ -7,10 +7,10 @@ options that can be changed to fine tune the [Undertow HTTP server](http://under
 
 Hermes Frontend can be configured to send the response after no longer than specific timeout. This prevents long-running
 requests in case of Kafka downtime and helps to reason about service SLA. This is related to
-[response codes](/user/publishing/#response-codes): depending on whether message has been persisted in Kafka before the
+[response codes](../user/publishing.md#response-codes): depending on whether message has been persisted in Kafka before the
 timeout, publisher receives **201** or **202** response code.
 
-You can change the timeout values separately for messages with different [acknowledgment levels](/user/publishing/#acknowledgment-level).
+You can change the timeout values separately for messages with different [acknowledgment levels](../user/publishing.md#acknowledgment-level).
 To do so, use
 
 * `frontend.idle.timeout` for leader ACK
@@ -38,7 +38,7 @@ Default timeout settings make Frontend safe against [Slowloris attack](https://e
 ## Buffers
 
 Hermes uses Kafka in-memory send buffers to tolerate any downtime or hiccups, as described in
-[publishing guide](/user/publishing/#buffering). Use `kafka.producer.buffer.memory` option to change the size of buffer.
+[publishing guide](../user/publishing.md#buffering). Use `kafka.producer.buffer.memory` option to change the size of buffer.
 By default it is set to **256 MB**. Changing the size might extend the period for which Hermes is able to receive
 messages in case of Kafka downtime. Since internally there are two Kafka producers spawned, one for ACK-leader and one
 for ACK-all, there are also **two buffers** - keep this in mind when deciding on heap size.
@@ -51,7 +51,7 @@ or need an extended description.
 Option                           | Kafka config            | Description                            | Default value
 -------------------------------- | ----------------------- | -------------------------------------- | -------------
 kafka.producer.metadata.max.age  | METADATA_MAX_AGE_CONFIG | how old can topic metadata be          | 30000 ms
-kafka.proudcer.compression.codec | COMPRESSION_TYPE_CONFIG | compression algorithm                  | none
+kafka.producer.compression.codec | COMPRESSION_TYPE_CONFIG | compression algorithm                  | none
 kafka.producer.retires           | RETRIES_CONFIG          | how many times should we retry sending | Integer.MAX_VALUE
 kafka.producer.retry.backoff.ms  | RETRY_BACKOFF_MS_CONFIG | backoff between retries                | 256 ms
 kafka.producer.batch.size        | BATCH_SIZE_CONFIG       | size of sent message batch in bytes    | 16 kB

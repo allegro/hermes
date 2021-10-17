@@ -1,0 +1,10 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^http://10.10.10.10"
+    },
+    {
+      "pattern": "^http://localhost"
+    }
+  ]
+}

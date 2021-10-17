@@ -1,6 +1,6 @@
 # Publishing security
 
-Hermes has a feature to restrict publishing on specific topics to particular services: [publishing permissions](/user/permissions).
+Hermes has a feature to restrict publishing on specific topics to particular services: [publishing permissions](../user/permissions.md).
 How service name is extracted from request is entirely configurable and depends on security requirements within company's ecosystem.
 
 Since Hermes uses Undertow as http server authentication implementation follows Undertow

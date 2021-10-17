@@ -192,7 +192,7 @@ HermesClient client = HermesClientBuilder.hermesClient(new OkHttpHermesSender(ok
 
 ### Custom HermesSender
 
-Example with [Unirest](http://unirest.io/java.html) - very simple http client.
+Example with [Unirest](http://kong.github.io/unirest-java) - very simple http client.
 
 ```java
 HermesClient client = HermesClientBuilder.hermesClient((uri, message) -> {
