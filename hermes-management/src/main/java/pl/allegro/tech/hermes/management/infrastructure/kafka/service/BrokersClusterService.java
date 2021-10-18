@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
@@ -80,6 +82,15 @@ public class BrokersClusterService {
 
     public boolean topicExists(Topic topic) {
         return brokerTopicManagement.topicExists(topic);
+    }
+
+    public List<String> listTopicsFromCluster() {
+        try {
+            return new ArrayList<>(adminClient.listTopics().names().get());
+        } catch (ExecutionException | InterruptedException e) {
+            logger.error("Failed to list topics names", e);
+            return Collections.emptyList();
+        }
     }
 
     public boolean areOffsetsMoved(Topic topic, String subscriptionName) {
