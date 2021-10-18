@@ -13,6 +13,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.management.api.ReadOnlyFilter;
@@ -74,6 +75,7 @@ public class ManagementConfiguration {
         registrationBean.setDispatcherTypes(REQUEST);
         registrationBean.setFilter(new ReadOnlyFilter(modeService));
         registrationBean.addUrlPatterns("/*");
+        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registrationBean;
     }
 }

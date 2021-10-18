@@ -20,6 +20,7 @@
     "jquery": "2.1.4",
     "angular-deferred-bootstrap": "~0.1.9",
     "utf8": "3.0.0",
+    "angular-ui-ace": "0.2.3",
     "eonasdan-bootstrap-datetimepicker": "~4.17.47"
   },
   "resolutions": {

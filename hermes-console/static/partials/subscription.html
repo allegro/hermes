@@ -211,13 +211,13 @@
                 <div class="panel-body">
                     <form class="form-inline">
                         <div class="form-group">
-                            <div class="input-group date" id="retransmitFromDate">
+                            <div class="input-group date" id="retransmitFromDate" ng-disabled="disabled || subscription.state !== 'ACTIVE'">
                                 <input type="text" class="form-control" style="width: 250px" placeholder="since..."/>
                                 <span class="input-group-addon">
                                     <span class="glyphicon glyphicon-time"></span>
                                 </span>
                             </div>
-                            <button class="btn btn-danger" ng-click="retransmit()" ng-disabled="disabled"></span> Retransmit</button>
+                            <button class="btn btn-danger" ng-click="retransmit()" ng-disabled="disabled || subscription.state !== 'ACTIVE'"></span> Retransmit</button>
                             <span class="loading-in-panel" ng-show="retransmissionLoading">
                                 <i class=" fa fa-circle-o-notch fa-spin fa-2x"></i>
                             </span>
