@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import pl.allegro.tech.hermes.management.domain.consistency.TopicConsistencyService;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -23,9 +24,12 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("consistency")
 public class ConsistencyEndpoint {
     private final ConsistencyService consistencyService;
+    private final TopicConsistencyService topicConsistencyService;
 
-    public ConsistencyEndpoint(ConsistencyService consistencyService) {
+    public ConsistencyEndpoint(ConsistencyService consistencyService,
+        TopicConsistencyService topicConsistencyService) {
         this.consistencyService = consistencyService;
+        this.topicConsistencyService = topicConsistencyService;
     }
 
     @GET
@@ -36,6 +40,15 @@ public class ConsistencyEndpoint {
         return Response.ok()
                 .entity(new GenericEntity<List<InconsistentGroup>>(inconsistentGroups){})
                 .build();
+    }
+
+    @GET
+    @Produces({APPLICATION_JSON})
+    @Path("/inconsistencies/topics")
+    public Response listInconsistentTopics() {
+        return Response
+            .ok(new GenericEntity<Set<String>>(topicConsistencyService.listInconsistentTopics()){})
+            .build();
     }
 
     @GET
