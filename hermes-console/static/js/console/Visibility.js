@@ -18,7 +18,7 @@ rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope'
                 return rolesList.includes('admin');
             }
 
-            function userHasAccess(rolesList) {
+            function hasSufficientPrivileges(rolesList) {
                 if (isAdmin(rolesList)) {
                     return true;
                 }
@@ -35,11 +35,13 @@ rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope'
                 function (commaSeparatedRoles) {
                     const rolesList = commaSeparatedRoles.toString().split(',');
                     $rootScope.admin = isAdmin(rolesList);
-                    $rootScope.userHasAccess = userHasAccess(rolesList);
+                    $rootScope.userHasSufficientPrivileges = hasSufficientPrivileges(rolesList);
+                    $rootScope.userWithoutAccess = !$rootScope.userHasSufficientPrivileges || $rootScope.readOnly
                 },
                 function() {
                     $rootScope.admin = false;
-                    $rootScope.userHasAccess = false;
+                    $rootScope.userHasSufficientPrivileges = false;
+                    $rootScope.userWithoutAccess = true;
                 }
             );
         }
