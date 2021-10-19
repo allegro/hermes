@@ -14,7 +14,7 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
         $scope.consistencyChecking = {
             state: consistencyCheckingStates.READY,
             result: consistencyRepository.getLastConsistencyCheckingResult()
-        }
+        };
 
         $scope.$watch('consistencyChecking.result', function (result) {
             consistencyRepository.setLastConsistencyCheckingResult(result);

@@ -29,10 +29,10 @@ readiness.controller('ReadinessController', ['$scope', 'ReadinessRepository', 'C
             displayError(e);
           });
       });
-    }
+    };
 
     function displayError(msg) {
-      $scope.error = msg
+      $scope.error = msg;
     }
 
     function clearError() {

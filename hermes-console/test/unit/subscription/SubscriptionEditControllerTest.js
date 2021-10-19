@@ -1,14 +1,17 @@
 describe("SubscriptionEditController", function() {
 
-    function hermesUrl(path) {
-        return 'http://hermes.allegro.tech' + path;
-    }
+    var $controller, $httpBackend;
 
-    beforeEach(module('hermes', function(_$provide_){
-        $provide = _$provide_;
+    beforeEach(angular.mock.module('hermes.subscription'));
+    beforeEach(angular.mock.module('hermes.discovery'));
+    beforeEach(angular.mock.module('toaster'));
+    beforeEach(angular.mock.module('ngResource'));
+    beforeEach(angular.mock.module(function($provide) {
+        $provide.constant('HERMES_URLS', ["hermes_url"]);
+        $provide.value("SUBSCRIPTION_CONFIG", {});
     }));
 
-    beforeEach(inject(function(_$controller_, _$httpBackend_){
+    beforeEach(inject(function(_$controller_, _$httpBackend_) {
         $controller = _$controller_;
         $httpBackend = _$httpBackend_;
     }));
@@ -33,13 +36,17 @@ describe("SubscriptionEditController", function() {
             operation: "SAVE",
             groupName: 'group',
             topicName: 'topic',
-            $modalInstance: { close: function() {} }}
+            endpointAddressResolverMetadataConfig: {},
+            topicContentType: {},
+            showHeadersFilter: {},
+            showFixedHeaders:{},
+            $uibModalInstance: { close: function() {} }}
         );
 
         // when
-        subscription.endpoint = "http://changed-endpoint";
-        subscription.description = "Changed description";
-        $httpBackend.expect('PUT', hermesUrl('/topics/topic/subscriptions/subscription'), {
+        $scope.subscription.endpoint = "http://changed-endpoint";
+        $scope.subscription.description = "Changed description";
+        $httpBackend.expect('PUT', 'hermes_url/topics/topic/subscriptions/subscription', {
             name: 'subscription', endpoint: "http://changed-endpoint", description: "Changed description"
         }).respond(200, true);
         $scope.save();
@@ -48,7 +55,7 @@ describe("SubscriptionEditController", function() {
         // then part is in afterEach()
     });
 
-    it("should not send endpoint when it has not changed on save", function() {
+   it("should not send endpoint when it has not changed on save", function() {
         // given
         var subscription = {
             name: 'subscription',
@@ -63,12 +70,19 @@ describe("SubscriptionEditController", function() {
             operation: "SAVE",
             groupName: 'group',
             topicName: 'topic',
-            $modalInstance: { close: function() {} }}
+            endpointAddressResolverMetadataConfig: {},
+            topicContentType: {},
+            showHeadersFilter: {},
+            showFixedHeaders:{},
+            $uibModalInstance: { close: function() {} }}
         );
 
         // when
-        subscription.description = "Changed description";
-        $httpBackend.expect('PUT', hermesUrl('/topics/topic/subscriptions/subscription'), {name: 'subscription', description: "Changed description"}).respond(200, true);
+        $scope.subscription.description = "Changed description";
+        $httpBackend.expect('PUT',
+            'hermes_url/topics/topic/subscriptions/subscription',
+            {name: 'subscription', description: "Changed description"})
+                .respond(200, true);
         $scope.save();
         $httpBackend.flush();
 

@@ -22,6 +22,6 @@ filters.filter('prettyJson', function () {
 
 filters.filter('toLowercase', function () {
     return function(string) {
-        return angular.lowercase(string)
-    }
+        return angular.lowercase(string);
+    };
 });
