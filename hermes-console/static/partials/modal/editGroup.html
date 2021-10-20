@@ -14,11 +14,11 @@
                     <input class="form-control" type="password" ng-required="!isAuthorized && authEnabled.headers" id="rootPassword" name="rootPassword" placeholder="root password" ng-model="rootPassword"/>
                 </div>
             </div>
-            <div class="form-group {{groupForm.groupName.$valid ? '' : 'has-error'}}">
+            <div class="form-group {{groupForm.groupName.$valid ? '' : 'has-error'}}" ng-if="operation === 'ADD'">
                 <label for="groupName" class="col-md-3 control-label">Name</label>
                 <div class="col-md-9">
                     <input class="form-control" id="groupName" required name="groupName" placeholder="group name"
-                           ng-model="group.groupName" ng-disabled="operation === 'EDIT'" ng-pattern="/^[a-zA-Z0-9.]+$/"/>
+                           ng-model="group.groupName" ng-pattern="/^[a-zA-Z0-9.]+$/"/>
                 </div>
             </div>
         </form>
