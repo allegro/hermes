@@ -286,5 +286,11 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
                         passwordService.reset();
                     });
         };
+         $scope.beautifyText = function (){
+            const obj_message = JSON.parse($scope.messageSchema);
+            if (obj_message !== undefined) {
+                $scope.messageSchema = JSON.stringify(obj_message, null, 4);
+            }
+        };
 
     }]);

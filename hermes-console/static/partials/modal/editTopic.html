@@ -180,9 +180,19 @@
 }
                         </pre>
                     </div>
-                    <textarea class="form-control" id="messageSchema" ng-required="topic.contentType === 'AVRO'"
-                              name="messageSchema" placeholder="Message schema"
-                              ng-model="messageSchema" rows="20"></textarea>
+                    <div class="form-control ace_editor_schema" id="messageSchema" ng-required="topic.contentType === 'AVRO'"
+                         name="message" ng-model="messageSchema"
+                         ui-ace="{
+                            require: ['ace/ext/language_tools'],
+                            advanced: {
+                                enableBasicAutocompletion: true,
+                                enableLiveAutocompletion: true
+                            },
+                            useWrapMode : true,
+                            theme:'chrome',
+                            mode: 'json'}">
+                    </div>
+                    <button class="btn btn-info pull-right margin-top-10" ng-click="beautifyText()">Beautify</button>
                 </div>
             </div>
         </form>
