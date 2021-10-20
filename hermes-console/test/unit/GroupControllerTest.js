@@ -31,7 +31,7 @@ describe("GroupController", function() {
 
     });
 
-    it("should fetch subscriptions", function() {
+    it("should fetch group with all properties", function() {
         // when
 
         $httpBackend.when('GET', 'hermes_url/groups/someGroup').respond("group");
