@@ -19,7 +19,7 @@ receives *400 Bad Message* status with validation error details.
 
 Each Avro topic **must** have [Avro schema](http://avro.apache.org/docs/1.7.7/spec.html#schemas) defined.
 
-Defining a good schema for complex data structures might be bit of a trial & error process, thus we prepared a tool
+Defining a good schema for complex data structures might be a bit of a trial & error process, thus we prepared a tool
 that helps you validate the schema locally before uploading it to Hermes.
 
 ### Create base schema
@@ -30,7 +30,7 @@ Schema requires two special fields that identify it:
 * **namespace**: set to Hermes **group name** by convention
 * **name**: set to Hermes **topic name** by convention
 
-Hermes appends metadata to each event, which has to be reflected in defined schema as well. Thus for each schema please
+Hermes appends metadata to each event, which has to be reflected in defined schema as well. Thus, for each schema please
 append the following field definition. **You should not modify published JSON**. `__metadata` field defaults to `null`.
 
 ```json
@@ -102,7 +102,7 @@ to JSON, so you can see if the formatters got everything right.
 
 ### Setting topic schema
 
-Please refer to the [schema repository configuration](/configuration/schema-repository) section in order to use Avro schemas in Hermes.
+Please refer to the [schema repository configuration](../configuration/schema-repository.md) section in order to use Avro schemas in Hermes.
 Having up and running schema repository, send a POST request with topic's schema to Hermes management endpoint:
 
 ```bash
@@ -113,7 +113,7 @@ curl -X POST -H "Content-type: application/json" --data {schema} /topics/{topicN
 
 A very important property of the Avro standard is schema backward compatibility. Each update to schema MUST
 be backward compatible. There might be multiple versions of schema for given topic defined in
-[schema repository](/configuration/schema-repository#schema-repo-store)).
+[schema registry](../configuration/schema-repository.md#confluent-schema-registry)).
 Hermes always uses the *latest* schema version.
 
 In case you need to break backwards compatibility, you should create new topic which defines new schema

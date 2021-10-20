@@ -1,6 +1,6 @@
 # Consumers rate limiter
 
-[Subscribing user guide](/user/subscribing) presents an overview of Consumers adaptive rate limiting algorithm.
+[Subscribing user guide](../user/subscribing.md) presents an overview of Consumers adaptive rate limiting algorithm.
 This section describes the algorithm in detail along with all configuration options that can be used
 to fine-tune it.
 
@@ -18,7 +18,7 @@ In **slow mode** requests are sent each *SLOW_DELAY* seconds:
 * if more than 50% of requests was successful, do nothing
 * if more than 50% of requests failed, enter **heartbeat mode**
 
-In **heatbeat mode** requests are sent each *HEARTBEAT_DELAY* seconds:
+In **heartbeat mode** requests are sent each *HEARTBEAT_DELAY* seconds:
 
 * if all requests were successful, enter **slow mode**
 * if there were any failures, do nothing
@@ -32,7 +32,7 @@ SPEEDUP_TOLERANCE  | consumer.rate.failures.speedup.tolerance.ratio  | 0.01
 TOLERANCE          | consumer.rate.failures.nochange.tolerance.ratio | 0.05
 CONVERGENCE_FACTOR | consumer.rate.convergence.factor                | 0.2
 SLOW_DELAY         | consumer.rate.limiter.slow.mode.delay           | 1
-HEARTBEAT_DELAY    | consumer.rate.limiter.hearbeat.mode.delay       | 60
+HEARTBEAT_DELAY    | consumer.rate.limiter.heartbeat.mode.delay      | 60
 
 
 ## Maximum rate negotiation

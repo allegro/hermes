@@ -8,7 +8,7 @@ curl -X POST -H "Content-Type: application/json" http://hermes-frontend/topics/g
 
 ## Creating group
 
-As [data model](/overview/data-model) describes, topics are gathered into topic groups. If you don't have a group yet,
+As [data model](../overview/data-model.md) describes, topics are gathered into topic groups. If you don't have a group yet,
 you need to create one by sending POST with `application/json` content type at
 
 ```
@@ -37,7 +37,7 @@ on topics resource:
 
 Request body must contain at least:
 
-* name: fully qualified name of topic including group name, separated with a dot (see: [naming convention](/overview/data-model#naming-convention))
+* name: fully qualified name of topic including group name, separated with a dot (see: [naming convention](../overview/data-model.md#naming-convention))
 * description: topic description
 * contentType: format of data sent to Kafka, either ``JSON`` or ``AVRO``
 * retentionTime: time to keep data in Kafka in days
@@ -101,7 +101,7 @@ This mode is dedicated for simple use-cases and offers no validation for publish
 Avro is the recommended message format for topics in Hermes. It has many advantages over plain JSON, e.g.
 has built-in message validation (against defined schema) and lowers the volume of data sent to Kafka.
 
-Read detailed documentation for publishing messages in **Avro** format [here](publishing-avro).
+Read detailed documentation for publishing messages in **Avro** format [here](publishing-avro.md).
 
 ## Response format
 
@@ -147,7 +147,7 @@ to guarantee some sane response times to our clients even in *ACK all* mode.
 
 ## Buffering
 
-Hermes administrator can set maximum time, for which Hermes will wait for Kafka acknowledgment. By default it is set to
+Hermes administrator can set maximum time, for which Hermes will wait for Kafka acknowledgment. By default, it is set to
 65ms. After that time, **202** response is sent to client. Event is kept in Kafka producer buffer and it's delivery will
 be retried until successful.
 

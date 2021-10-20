@@ -1,0 +1,21 @@
+name: Markdown Links Check
+
+on:
+  schedule:
+    - cron: "0 8 * * MON" # runs every monday at 8 am
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/docs/**'
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+          folder-path: 'docs/docs'
+          config-file: '.github/workflows/markdown-links-config.json'

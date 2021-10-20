@@ -8,7 +8,7 @@ There are two ways of setting up the environment: using vagrant or docker.
 
 ### Vagrant
 
-#### Prerequisities
+#### Prerequisites
 
 In order to go through this tutorial you need to have:
 
@@ -19,7 +19,7 @@ In order to go through this tutorial you need to have:
 
 #### Setup
 
-As described in [architecture](/overview/architecture) section, Hermes consists of multiple modules and requires Kafka
+As described in [architecture](overview/architecture.md) section, Hermes consists of multiple modules and requires Kafka
 and Zookeeper to run. To make this easy, we prepared a Vagrant file.
 
 ```bash
@@ -41,7 +41,7 @@ If the system is running, you should see Hermes Console when visiting Vagrant pu
 
 ### Docker
 
-#### Prerequisities
+#### Prerequisites
 
 If you want to run hermes with docker, you need to have:
 

@@ -17,11 +17,11 @@ directly to the way Hermes stores metadata and how users interact with the syste
 ## Naming convention
 
 **Topic** is usually referred using full-qualified name, which consists of group name and topic name separated by dot.
-**Group name** can contain any characters - letters., numbers, dots. However **topic name** can not contain dots.
+**Group name** can contain any characters - letters., numbers, dots. However, **topic name** can not contain dots.
 
 * group name: `tech.allegro.hermes`
 * topic name: `eventsPublished`
-* full-qualifed topic name: `tech.allegro.hermes.eventsPublished`
+* full-qualified topic name: `tech.allegro.hermes.eventsPublished`
 
 In full-qualified topic name, topic name is always the segment after the last dot.
 
