@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.api;
 
 import org.glassfish.jersey.server.ContainerRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 
 import javax.annotation.Priority;
@@ -25,7 +26,7 @@ public class ReadOnlyFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        if (modeService.isReadOnlyEnabled() && !requestContext.getSecurityContext().isUserInRole("admin")) {
+        if (modeService.isReadOnlyEnabled() && !requestContext.getSecurityContext().isUserInRole(Roles.ADMIN)) {
             ContainerRequest req = (ContainerRequest) requestContext.getRequest();
             if (!req.getMethod().equals("GET") && !isWhitelisted(req.getUriInfo().getPath())) {
                 throw new ServiceUnavailableException(READ_ONLY_ERROR_MESSAGE);
