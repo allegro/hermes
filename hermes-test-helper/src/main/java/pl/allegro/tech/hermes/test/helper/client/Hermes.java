@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.AllTopicClientsEndpoint;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 
@@ -112,6 +113,10 @@ public class Hermes {
 
     public OwnerEndpoint createOwnerEndpoint() {
         return createProxy(url, OwnerEndpoint.class, managementConfig);
+    }
+
+    public AllTopicClientsEndpoint createAllTopicClientsEndpoint() {
+        return createProxy(url, AllTopicClientsEndpoint.class, managementConfig);
     }
 
     public MigrationEndpoint createMigrationEndpoint() {

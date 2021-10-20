@@ -134,6 +134,22 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         };
 
+        $scope.copyClientsToClipboard = function () {
+            var topicUsers;
+            topicRepository.getTopicUsers(topicName).then(function (topicUsersFromRepository) {
+                topicUsers = topicUsersFromRepository;
+            });
+
+            var tempElement = document.createElement('textarea');
+            tempElement.value = topicUsers;
+            document.body.appendChild(tempElement);
+            tempElement.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempElement);
+
+            toaster.pop('info', 'Info', 'All topic users has been copied to clipboard');
+        };
+
         $scope.remove = function () {
             confirmationModal.open({
                 action: 'Remove',
