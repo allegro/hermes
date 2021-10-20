@@ -81,7 +81,9 @@ public class ReadOnlyModeTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.SERVICE_UNAVAILABLE);
 
         // and
+        TestSecurityProvider.setUserIsAdmin(true);
         management.modeEndpoint().setMode(ModeService.READ_WRITE);
+        TestSecurityProvider.setUserIsAdmin(false);
 
         // when
         response = createGroup(groupName);
