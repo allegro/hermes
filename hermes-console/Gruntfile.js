@@ -2,8 +2,10 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     jshint: {
-      files: ['Gruntfile.js', 'static/js/**/*.js', 'test/**/*.js']
-    },
+      files: ['Gruntfile.js', 'static/js/**/*.js', 'test/**/*.js'],
+      options: {
+        'esnext': 6,
+      }    },
     watch: {
       files: ['<%= jshint.files %>'],
       tasks: ['jshint', 'karma']
@@ -11,7 +13,7 @@ module.exports = function(grunt) {
     karma: {
       unit: {
         configFile: 'karma.config.js',
-        browsers: ['PhantomJS']
+        browsers: ['ChromeHeadless']
       }
     }
   });

@@ -38,14 +38,14 @@ search.controller('SearchController', ['$scope', '$stateParams', 'SearchReposito
 
     function decorateQueryValue(value) {
         if (value === '' || value.length < 4) {
-            return value
+            return value;
         }
 
         if (value.startsWith('.*') || value.endsWith('.*')) {
-            return value
+            return value;
         }
 
-        return '.*' + value + '.*'
+        return '.*' + value + '.*';
     }
 
     function postProcess(entity, items) {

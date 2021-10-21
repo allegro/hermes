@@ -26,7 +26,7 @@ angular.module('hermes.filters.debugger', ['hermes.filters.repository'])
                     .finally(function () {
                         $scope.verificationInProgress = false;
                     });
-                beautifyText()
+                beautifyText();
             };
 
             $scope.updateFilters = function () {
@@ -41,7 +41,7 @@ angular.module('hermes.filters.debugger', ['hermes.filters.repository'])
             function beautifyText(){
                 const obj_message = JSON.parse($scope.message);
                 if (obj_message !== undefined) {
-                    $scope.message = JSON.stringify(obj_message, null, 4)
+                    $scope.message = JSON.stringify(obj_message, null, 4);
                 }
             }
         }])

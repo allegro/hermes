@@ -14,7 +14,7 @@ repository.factory('ReadinessRepository', ['DiscoveryService', '$resource',
       getDatacenters: function () {
         return queryEndpoint.query().$promise.then(function (data) {
           return data;
-        })
+        });
       },
       setReadiness: function (datacenterInfo) {
         return setReadinessEndpoint.save({datacenter: datacenterInfo.datacenter}, {isReady: !datacenterInfo.isReady}).$promise;

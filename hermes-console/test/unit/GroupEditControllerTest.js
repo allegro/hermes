@@ -1,19 +1,19 @@
 
 describe("GroupEditController", function() {
+    var $controller, $httpBackend;
 
-    function hermesUrl(path) {
-        return 'http://hermes.allegro.tech' + path;
-    }
+    beforeEach(angular.mock.module('hermes.groups'));
+    beforeEach(angular.mock.module('ngResource'));
+    beforeEach(angular.mock.module(function($provide) {
+        $provide.constant('HERMES_URLS', ["hermes_url"]);
+        $provide.value("TOPIC_CONFIG", {});
 
-    beforeEach(module('hermes', function(_$provide_){
-        $provide = _$provide_;
     }));
 
-    beforeEach(inject(function(_$controller_, _$httpBackend_){
+    beforeEach(inject(function(_$controller_, _$httpBackend_) {
         $controller = _$controller_;
         $httpBackend = _$httpBackend_;
     }));
-
     afterEach(function() {
         $httpBackend.verifyNoOutstandingExpectation();
         $httpBackend.verifyNoOutstandingRequest();
@@ -25,11 +25,11 @@ describe("GroupEditController", function() {
             "groupName": "someGroup"
         };
 
-        $httpBackend.when('POST', hermesUrl('/groups'), group).respond(201, true);
+        $httpBackend.when('POST', 'hermes_url/groups', group).respond(201, true);
 
         // when
         var $scope = {};
-        $controller('GroupEditController', {$scope: $scope, group: group, operation: "ADD", $modalInstance: { close: function() {} }});
+        $controller('GroupEditController', {$scope: $scope, group: group, operation: "ADD", $uibModalInstance: { close: function() {} }});
         $scope.save();
 
         $httpBackend.flush();

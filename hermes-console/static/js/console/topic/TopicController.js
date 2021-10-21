@@ -27,7 +27,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
             $scope.topic.shortName = $scope.topic.name.substring($scope.topic.name.lastIndexOf('.') + 1);
-            $scope.topic.labelValues = $scope.topic.labels.map(function(label) { return label.value });
+            $scope.topic.labelValues = $scope.topic.labels.map(function(label) { return label.value; });
             if (topicWithSchema && topicWithSchema.createdAt && topicWithSchema.modifiedAt) {
                 var createdAt = new Date(0);
                 createdAt.setUTCSeconds(topicWithSchema.createdAt);
@@ -263,7 +263,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
             var topic = _.cloneDeep($scope.topic);
             delete topic.shortName;
 
-            topic.labels = ($scope.topic.labelValues || []).map(function(labelValue) { return {value: labelValue}} );
+            topic.labels = ($scope.topic.labelValues || []).map(function(labelValue) { return {value: labelValue};} );
             if (operation === 'ADD') {
                 topic.name = groupName + '.' + $scope.topic.shortName;
                 $scope.topic.name = topic.name;
