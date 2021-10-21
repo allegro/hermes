@@ -8,6 +8,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import java.util.List;
+
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
@@ -24,7 +26,7 @@ public class AllTopicClientsEndpoint {
     @GET
     @Path("/{topic}/clients")
     @Produces(APPLICATION_JSON)
-    public String getTopicClients(@PathParam("topic") String topic) {
+    public List<String> getTopicClients(@PathParam("topic") String topic) {
         return allTopicClientsService.getAllClientsByTopic(fromQualifiedName(topic));
     }
 }

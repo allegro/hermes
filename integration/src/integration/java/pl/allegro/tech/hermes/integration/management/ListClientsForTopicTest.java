@@ -7,6 +7,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ListClientsForTopicTest extends IntegrationTest {
@@ -15,7 +18,7 @@ public class ListClientsForTopicTest extends IntegrationTest {
     public void shouldListClientsForTopic() {
         // given
         Topic topic = operations.buildTopic("subscribeGroup", "topic");
-        String expectedResponse = "Smurfs, Admins";
+        List<String> expectedResponse = Arrays.asList("Smurfs", "Admins");
         createSubscriptionForTopic("ownedSubscription1", "Smurfs");
         createSubscriptionForTopic("ownedSubscription2", "Admins");
 
@@ -27,7 +30,7 @@ public class ListClientsForTopicTest extends IntegrationTest {
     public void shouldListClientsForTopicWithoutRepeating() {
         // given
         Topic topic = operations.buildTopic("subscribeGroup", "topic");
-        String expectedResponse = "Team A, Team B";
+        List<String> expectedResponse = Arrays.asList("Team A", "Team B");
         createSubscriptionForTopic("ownedSubscription1", "Team A");
         createSubscriptionForTopic("ownedSubscription2", "Team A");
         createSubscriptionForTopic("ownedSubscription3", "Team B");
@@ -47,7 +50,7 @@ public class ListClientsForTopicTest extends IntegrationTest {
         operations.createSubscription(topic, subscription);
     }
 
-    private String listClientsForTopic(String topic) {
+    private List<String> listClientsForTopic(String topic) {
         return management.allTopicClientsEndpoint().getTopicClients(topic);
     }
 }

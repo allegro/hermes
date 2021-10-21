@@ -25,7 +25,7 @@ public class AllTopicClientsService {
         this.offlineClientsService = offlineClientsService;
     }
 
-    public String getAllClientsByTopic(TopicName topicName) {
+    public List<String> getAllClientsByTopic(TopicName topicName) {
         List<String> topicClients = subscriptionRepository.listSubscriptions(topicName)
                 .stream().map(e -> e.getOwner().getId()).collect(Collectors.toList());
 
@@ -35,6 +35,6 @@ public class AllTopicClientsService {
             topicClients.addAll(offlineTopicClients);
         }
 
-        return topicClients.stream().distinct().collect(Collectors.joining(", "));
+        return topicClients.stream().distinct().collect(Collectors.toList());
     }
 }

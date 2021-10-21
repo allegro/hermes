@@ -137,7 +137,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.copyClientsToClipboard = function () {
             var topicUsers;
             topicRepository.getTopicUsers(topicName).then(function (topicUsersFromRepository) {
-                topicUsers = topicUsersFromRepository;
+                topicUsers = topicUsersFromRepository.join(", ");
             });
 
             var tempElement = document.createElement('textarea');
