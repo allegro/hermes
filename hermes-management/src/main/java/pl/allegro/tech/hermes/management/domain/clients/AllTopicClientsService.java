@@ -30,9 +30,9 @@ public class AllTopicClientsService {
                 .stream().map(e -> e.getOwner().getId()).collect(Collectors.toList());
 
         if(offlineClientsService.isPresent()) {
-            List<String> offlineTopicClients = offlineClientsService.get().find(topicName)
-                    .stream().map(e -> String.join(", ", e.getOwners())).collect(Collectors.toList());
-            topicClients.addAll(offlineTopicClients);
+            List<List<String>> offlineTopicClients = offlineClientsService.get().find(topicName)
+                    .stream().map(OfflineClient::getOwners).collect(Collectors.toList());
+            offlineTopicClients.forEach(topicClients::addAll);
         }
 
         return topicClients.stream().distinct().collect(Collectors.toList());
