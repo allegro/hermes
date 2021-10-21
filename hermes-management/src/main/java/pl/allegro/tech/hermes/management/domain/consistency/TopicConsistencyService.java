@@ -46,11 +46,11 @@ public class TopicConsistencyService {
         String prefix = kafkaClustersProperties.getDefaultNamespace() + kafkaClustersProperties.getNamespaceSeparator();
         String topicInHermes = topic;
         if (topicInHermes.endsWith(AVRO_SUFFIX)) {
-            topicInHermes = topic.substring(0, topic.length() - 5);
+            topicInHermes = topicInHermes.substring(0, topic.length() - 5);
         }
 
         if (topicInHermes.startsWith(prefix)) {
-            topicInHermes = topic.substring(prefix.length());
+            topicInHermes = topicInHermes.substring(prefix.length());
         }
         return topicInHermes;
     }
