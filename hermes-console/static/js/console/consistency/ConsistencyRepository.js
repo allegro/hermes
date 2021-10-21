@@ -38,6 +38,9 @@ repository.factory('ConsistencyRepository', ['DiscoveryService', '$resource',
             listInconsistentTopics: function () {
                 return consistencyTopicsResource.query().$promise;
             },
+            removeTopic: function (topicName) {
+                return consistencyTopicsResource.remove({topicName: topicName});
+            },
             getGroup: getGroup,
             getTopic: function (groupName, topicName) {
                 const group = getGroup(groupName) || {};

@@ -34,6 +34,28 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
             findTopicsNotPresentInHermes()
         }
 
+        $scope.removeTopic = function (topicName) {
+
+            confirmationModal.open({
+                actionSubject: 'Are you sure you want to remove topic: ' + topicName,
+                action: "Remove"
+            }).result.then(function () {
+                consistencyRepository.removeTopic(topicName)
+            })
+            .then(function (){
+                let newArray = $scope.topicsConsistencyChecking.result['inconsistentTopics'].filter(
+                    function (element) {
+                        return element !== topicName
+                    })
+                setInconsistentTopics(newArray)
+                toaster.pop('success', 'Success', 'Topic has been removed');
+            })
+            .catch(function (e) {
+                showErrorPopup("cannot remove topics: " + e);
+                setInconsistentTopics(null)
+            });
+        }
+
         function checkGroupConsistency() {
             setGroupsState(consistencyCheckingStates.CHECKING_CONSISTENCY);
             setInconsistentGroups(null);

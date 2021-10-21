@@ -93,6 +93,10 @@ public class BrokersClusterService {
         }
     }
 
+    public void removeTopicByName(String topicName) {
+        adminClient.deleteTopics(Collections.singletonList(topicName));
+    }
+
     public boolean areOffsetsMoved(Topic topic, String subscriptionName) {
         return retransmissionService.areOffsetsMoved(topic, subscriptionName, clusterName);
     }

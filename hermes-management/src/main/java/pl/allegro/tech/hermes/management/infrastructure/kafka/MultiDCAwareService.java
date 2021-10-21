@@ -90,6 +90,10 @@ public class MultiDCAwareService {
             .collect(Collectors.toCollection(HashSet::new));
     }
 
+    public void removeTopicByName(String topicName) {
+        clusters.forEach(brokersClusterService -> brokersClusterService.removeTopicByName(topicName));
+    }
+
     public void createConsumerGroups(Topic topic, Subscription subscription) {
         clusters.forEach(clusterService -> clusterService.createConsumerGroup(topic, subscription));
     }
