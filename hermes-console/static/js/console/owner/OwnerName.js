@@ -1,4 +1,4 @@
-var owner = angular.module('hermes.owner', []);
+var owner = angular.module('hermes.owner');
 owner.controller('OwnerNameController', ['$scope', 'OwnerRepository', function ($scope, ownerRepository) {
     $scope.$watch('owner', function (newOwner) {
         if (newOwner !== undefined && newOwner.id && newOwner.source) {
