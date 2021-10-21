@@ -20,8 +20,8 @@
         <div class="list-group">
             <div class="list-group-item" ng-show="canCreateGroup()">
                 <div class="pull-right">
-                    <span ng-show="disabled" uib-popover='Sign in to add a group' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
-                    <button class="btn btn-primary" ng-disabled="disabled" ng-click="addGroup()"><span class="glyphicon glyphicon-plus"></span></button>
+                    <span ng-show="!userHasSufficientPrivileges" uib-popover='Sign in to add a group' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
+                    <button class="btn btn-primary" ng-disabled="userWithoutAccess" ng-click="addGroup()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
                 <h4>&nbsp;</h4>
             </div>

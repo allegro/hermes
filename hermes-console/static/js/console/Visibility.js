@@ -14,31 +14,34 @@ rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope'
 
             var rolesResource = $resource(discovery.resolve('/roles' + topicPath + subscriptionPath));
 
-            function isAdmin(value) {
-                return value.includes('admin');
+            function isAdmin(rolesList) {
+                return rolesList.includes('admin');
             }
 
-            function isOwner(value) {
-                if (isAdmin(value)) {
+            function hasSufficientPrivileges(rolesList) {
+                if (isAdmin(rolesList)) {
                     return true;
                 }
                 if (subscriptionName) {
-                    return value.includes('subscriptionOwner');
+                    return rolesList.includes('subscriptionOwner');
                 }
                 if (topicName) {
-                    return value.includes('topicOwner');
+                    return rolesList.includes('topicOwner');
                 }
-                return value.includes('any');
+                return rolesList.includes('any');
             }
 
             rolesResource.query().$promise.then(
-                function (value) {
-                    $rootScope.admin = isAdmin(value);
-                    $rootScope.disabled = !isOwner(value) || $rootScope.readOnly;
+                function (commaSeparatedRoles) {
+                    const rolesList = commaSeparatedRoles.toString().split(',');
+                    $rootScope.admin = isAdmin(rolesList);
+                    $rootScope.userHasSufficientPrivileges = hasSufficientPrivileges(rolesList);
+                    $rootScope.userWithoutAccess = !$rootScope.userHasSufficientPrivileges || $rootScope.readOnly
                 },
                 function() {
                     $rootScope.admin = false;
-                    $rootScope.disabled = true;
+                    $rootScope.userHasSufficientPrivileges = false;
+                    $rootScope.userWithoutAccess = true;
                 }
             );
         }
