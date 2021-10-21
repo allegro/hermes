@@ -1,3 +1,21 @@
+## 1.9.13 (22.10.2021)
+
+## Enhancements
+
+#### ([1390](https://github.com/allegro/hermes/pull/1390)) Read-only mode support in hermes-console
+
+Thanks to @michal-bobowski for this contribution!
+
+#### ([1402](https://github.com/allegro/hermes/pull/1402)) Added write access for admin in the read-only mode
+
+Thanks to @kakuc for this contribution!
+
+#### ([1396](https://github.com/allegro/hermes/pull/1396)) Configurable group validation pattern
+
+Thanks to @akrystian for this contribution!
+
+#### ([1391](https://github.com/allegro/hermes/pull/1391)) Providing explicite time zone during retransmission
+
 ## 1.9.12 (21.10.2021)
 
 ## Enhancements

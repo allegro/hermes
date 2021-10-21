@@ -91,7 +91,10 @@
                 <auth-pane ng-show="enabled"></auth-pane>
             </div>
         </nav>
-        <div ng-if="readOnly" class="container alert alert-info">Running in read only mode</div>
+        <div ng-if="readOnly" class="container alert alert-danger">
+            <h4 class="alert-heading">Running in read only mode</h4>
+            If you need to make any modifications, please contact the Hermes administrators.
+        </div>
 
         <toaster-container toaster-options="{'time-out': {'toast-error': 0, 'toast-warning': 0, 'toast-success': 5000, 'toast-info': 5000}, 'close-button': {'toast-error': true, 'toast-warning': true}}"></toaster-container>
         <div ui-view class="container"></div>
