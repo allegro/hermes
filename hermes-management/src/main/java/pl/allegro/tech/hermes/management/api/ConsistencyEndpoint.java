@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.api;
 
+import javax.ws.rs.DELETE;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
@@ -49,6 +50,14 @@ public class ConsistencyEndpoint {
         return Response
             .ok(new GenericEntity<Set<String>>(topicConsistencyService.listInconsistentTopics()){})
             .build();
+    }
+
+    @DELETE
+    @Produces({APPLICATION_JSON})
+    @Path("/inconsistencies/topics")
+    public Response removeTopicByName(@QueryParam("topicName") String topicName) {
+        topicConsistencyService.removeTopic(topicName);
+        return Response.ok().build();
     }
 
     @GET
