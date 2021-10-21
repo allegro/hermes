@@ -62,11 +62,25 @@
         </div>
     </div>
 
-    <div ng-if="topicsConsistencyChecking.result.inconsistentTopics.length > 0" >
-        <h4>Topics existing on kafka cluster but not present on hermes</h4>
-        <div ng-repeat="topic in topicsConsistencyChecking.result.inconsistentTopics | orderBy">
-            {{topic}}
+    <div class="row container" ng-if="topicsConsistencyChecking.result.inconsistentTopics.length > 0" >
+        <div class="list-group">
+            <div class="list-group-item list-group-item-warning">
+                <div class="form-inline pull-right">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+                        <input class="form-control" ng-model="search" placeholder="search...">
+                    </div>
+                </div>
+                <h4>Topics existing on kafka cluster but not present in hermes</h4>
+            </div>
+            <div class="list-group-item clearfix"
+                 ng-repeat="topic in topicsConsistencyChecking.result.inconsistentTopics | filter:search:strict | orderBy">
+                <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <strong>{{topic}}</strong>
+                <div class="pull-right">
+                    <button class="btn btn-danger" ng-click="removeTopic(topic)">Remove</button>
+                </div>
+            </div>
         </div>
     </div>
-
 </section>
