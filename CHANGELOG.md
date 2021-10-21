@@ -1,3 +1,23 @@
+## 1.9.12 (21.10.2021)
+
+## Enhancements
+
+#### ([1407](https://github.com/allegro/hermes/pull/1407)) Add ace editor to schemaMessage field
+
+Thanks to @sobelek for this contribution!
+
+#### ([1399](https://github.com/allegro/hermes/pull/1399)) Fix documentation links, add markdown links check action
+
+Thanks to @AleksanderBrzozowski for this contribution!
+
+### Fixes
+
+#### ([1401](https://github.com/allegro/hermes/pull/1401)) Fix linting and running tests in hermes console
+
+Thanks to @sobelek for this contribution!
+
+#### ([1406](https://github.com/allegro/hermes/pull/1406)) Topic and subscription with '-' char in name can be updated
+
 ## 1.9.11 (18.10.2021)
 
 ## Enhancements
