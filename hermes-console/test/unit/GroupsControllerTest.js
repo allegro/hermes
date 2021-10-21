@@ -1,17 +1,16 @@
 describe("GroupsController", function() {
 
-    var $provide, $httpBackend, $controller;
+    var $controller, $httpBackend;
 
-    function hermesUrl(path) {
-        return 'http://hermes.allegro.tech' + path;
-    }
-
-    beforeEach(module('hermes', function(_$provide_){
-        $provide = _$provide_;
-        $provide.value('HERMES_URL', hermesUrl(''));
+    beforeEach(angular.mock.module('hermes.groups'));
+    beforeEach(angular.mock.module('ngResource'));
+    beforeEach(angular.mock.module(function($provide) {
+        $provide.constant('HERMES_URLS', ["hermes_url"]);
+        $provide.value("TOPIC_CONFIG", {});
+        $provide.value("GROUP_CONFIG", {});
     }));
 
-    beforeEach(inject(function(_$controller_, _$httpBackend_){
+    beforeEach(inject(function(_$controller_, _$httpBackend_) {
         $controller = _$controller_;
         $httpBackend = _$httpBackend_;
     }));
@@ -23,8 +22,8 @@ describe("GroupsController", function() {
 
     it("should fetch empty list of groups", function() {
         // given
-        $httpBackend.when('GET', hermesUrl('/groups')).respond([]);
-        $httpBackend.when('GET', hermesUrl('/topics')).respond([]);
+        $httpBackend.when('GET', 'hermes_url/groups').respond([]);
+        $httpBackend.when('GET', 'hermes_url/topics').respond([]);
 
         // when
         var $scope = {};
@@ -40,8 +39,8 @@ describe("GroupsController", function() {
     it("should fetch groups with corresponding topics", function() {
 
         // given
-        $httpBackend.when('GET', hermesUrl('/groups')).respond(['g1', 'g2', 'g3', 'g12']);
-        $httpBackend.when('GET', hermesUrl('/topics')).respond(['g1.t1', 'g1.t2', 'g3.t1', 'g12.t1']);
+        $httpBackend.when('GET', 'hermes_url/groups').respond(['g1', 'g2', 'g3', 'g12']);
+        $httpBackend.when('GET', 'hermes_url/topics').respond(['g1.t1', 'g1.t2', 'g3.t1', 'g12.t1']);
 
 
         // when

@@ -26,6 +26,7 @@ angular.module('hermes.filters.debugger', ['hermes.filters.repository'])
                     .finally(function () {
                         $scope.verificationInProgress = false;
                     });
+                beautifyText();
             };
 
             $scope.updateFilters = function () {
@@ -36,6 +37,12 @@ angular.module('hermes.filters.debugger', ['hermes.filters.repository'])
                 $scope.verificationStatus = '';
                 $scope.errorMessage = null;
                 $scope.verificationInProgress = false;
+            }
+            function beautifyText(){
+                const obj_message = JSON.parse($scope.message);
+                if (obj_message !== undefined) {
+                    $scope.message = JSON.stringify(obj_message, null, 4);
+                }
             }
         }])
     .factory('FiltersDebuggerModalFactory', ['$uibModal', function ($modal) {

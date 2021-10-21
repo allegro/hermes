@@ -17,6 +17,7 @@ var hermes = angular.module('hermes', [
     'hermes.visibility',
     'hermes.mode',
     'hermes.readiness',
+    'ui.ace',
 ]);
 
 hermes.constant('DASHBOARD_CONFIG', config.dashboard);

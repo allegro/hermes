@@ -11,7 +11,7 @@
                     <input class="form-control" type="password" ng-required="!isAuthorized && authEnabled.headers" id="rootPassword" name="rootPassword" placeholder="root password" ng-model="rootPassword"/>
                 </div>
             </div>
-            <div class="form-group {{topicForm.topicName.$valid ? '' : 'has-error'}}" ng-show="operation === 'ADD'">
+            <div class="form-group {{topicForm.topicName.$valid ? '' : 'has-error'}}" ng-if="operation === 'ADD'">
                 <label for="topicName" class="col-md-3 control-label">Name</label>
                 <div class="col-md-9">
                     <input class="form-control" id="topicName" required name="topicName" placeholder="name of topic, without group prefix" ng-model="topic.shortName" ng-pattern="/^[a-zA-Z0-9_]+$/"/>
@@ -180,9 +180,19 @@
 }
                         </pre>
                     </div>
-                    <textarea class="form-control" id="messageSchema" ng-required="topic.contentType === 'AVRO'"
-                              name="messageSchema" placeholder="Message schema"
-                              ng-model="messageSchema" rows="20"></textarea>
+                    <div class="form-control ace_editor_schema" id="messageSchema" ng-required="topic.contentType === 'AVRO'"
+                         name="message" ng-model="messageSchema"
+                         ui-ace="{
+                            require: ['ace/ext/language_tools'],
+                            advanced: {
+                                enableBasicAutocompletion: true,
+                                enableLiveAutocompletion: true
+                            },
+                            useWrapMode : true,
+                            theme:'chrome',
+                            mode: 'json'}">
+                    </div>
+                    <button class="btn btn-info pull-right margin-top-10" ng-click="beautifyText()">Beautify</button>
                 </div>
             </div>
         </form>

@@ -42,7 +42,7 @@ Metrics:
 
 These metrics measure global Hermes response codes. They make for good monitoring metrics, as sudden increase of **202**
 or **500** status codes might signal an emergency. There are no per-topic metrics for response codes. See
-[publishing guide](/user/publishing/#response-codes) for the meaning of response codes.
+[publishing guide](../user/publishing.md#response-codes) for the meaning of response codes.
 
 Metrics:
 
@@ -70,7 +70,7 @@ Metrics:
 
 ### Buffers
 
-These metrics indicate available [buffer](/user/publishing/#buffering) size for both ACK-all:
+These metrics indicate available [buffer](../user/publishing.md#buffering) size for both ACK-all:
 
 * `everyone-confirms-buffer-total-bytes`
 * `everyone-confirms-buffer-available-bytes`
@@ -99,7 +99,7 @@ issues:
 
 * **latency** as measured by Hermes: from the start of sending the message till receiving response; path: `latency`
 * **output rate**: effective output rate; path: `meter`
-* **maximum output rate**: current maximum output rate as calulated by [Consumers rate limiter](/configuration/rate-limiting); path: `output-rate`
+* **maximum output rate**: current maximum output rate as calculated by [Consumers rate limiter](../configuration/rate-limiting.md); path: `output-rate`
 * **response statuses**: rate of different response statuses sent by client (2xx, 4xx, 5xx, timeouts and other failures); path: `status`
 
 ### Tracker

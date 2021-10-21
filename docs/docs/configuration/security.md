@@ -3,7 +3,7 @@
 Since Management module uses Jersey as REST API library, access security is based on
 [JSR 250 annotations](https://jcp.org/en/jsr/detail?id=250). By default there are no security restrictions.
 
-Ownership model is described in [Ownership and permissions](/user/permissions) section. There are many ways to restrict
+Ownership model is described in [Ownership and permissions](../user/permissions.md) section. There are many ways to restrict
 access to sensitive endpoints, for example:
 
 * simple tokens/passwords generated for each **group** or **subscription**
@@ -12,7 +12,7 @@ access to sensitive endpoints, for example:
 
 Security rules need to be coded as an implementation of `pl.allegro.tech.hermes.management.api.auth.SecurityProvider`
 interface, which needs to be present in Management module Spring context (see
-[packaging section](/deployment/packaging#management) for more information on Management customization).
+[packaging section](../deployment/packaging.md#management) for more information on Management customization).
 
 ```java
 @Component

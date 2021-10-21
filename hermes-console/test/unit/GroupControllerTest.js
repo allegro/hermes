@@ -1,17 +1,16 @@
 describe("GroupController", function() {
 
-    var $provide, $httpBackend, $controller;
+    var $controller, $httpBackend;
 
-    function hermesUrl(path) {
-        return 'http://hermes.allegro.tech' + path;
-    }
+    beforeEach(angular.mock.module('hermes.groups'));
+    beforeEach(angular.mock.module('ngResource'));
+    beforeEach(angular.mock.module(function($provide) {
+        $provide.constant('HERMES_URLS', ["hermes_url"]);
+        $provide.value("TOPIC_CONFIG", {});
 
-    beforeEach(module('hermes', function(_$provide_){
-        $provide = _$provide_;
-        $provide.value('HERMES_URL', hermesUrl(''));
     }));
 
-    beforeEach(inject(function(_$controller_, _$httpBackend_){
+    beforeEach(inject(function(_$controller_, _$httpBackend_) {
         $controller = _$controller_;
         $httpBackend = _$httpBackend_;
     }));
@@ -21,29 +20,27 @@ describe("GroupController", function() {
         $httpBackend.verifyNoOutstandingRequest();
     });
 
-    it("should fetch group with all properties", function() {
-
+    beforeEach(function () {
         // given
-        var group = {
+
+        $scope = {};
+        $stateParams = {
             "groupName": "someGroup"
         };
-
-        $httpBackend.when('GET', hermesUrl('/groups/someGroup')).respond(group);
-
-        $httpBackend.when('GET', hermesUrl('/groups')).respond(['someGroup']);
-        $httpBackend.when('GET', hermesUrl('/topics')).respond([]);
-
-
-        // when
-        var $scope = {};
-        var $stateParams = {groupName: "group"};
-        $controller('GroupController', {$scope: $scope, $stateParams: $stateParams});
-        $httpBackend.flush();
-
-        // then
-        expect($scope.group.groupName).toEqual(group.groupName);
-        expect($scope.fetching).toEqual(false);
+        controller = $controller('GroupController', {$scope: $scope, $stateParams: $stateParams});
 
     });
 
+    it("should fetch group with all properties", function() {
+        // when
+
+        $httpBackend.when('GET', 'hermes_url/groups/someGroup').respond("group");
+        $httpBackend.when('GET', 'hermes_url/groups').respond(['someGroup']);
+        $httpBackend.when('GET', 'hermes_url/topics').respond([]);
+
+        // then
+        $httpBackend.flush();
+        expect($scope.fetching).toEqual(false);
+        expect($scope.groupName).toEqual($stateParams.groupName);
+    });
 });

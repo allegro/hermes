@@ -12,7 +12,7 @@
                 </div>
             </div>
 
-            <div class="form-group {{subscriptionForm.subscriptionName.$valid ? '' : 'has-error'}} " ng-show="operation === 'ADD'">
+            <div class="form-group {{subscriptionForm.subscriptionName.$valid ? '' : 'has-error'}} " ng-if="operation === 'ADD'">
                 <label for="subscriptionName" class="col-md-3 control-label">Name</label>
                 <div class="col-md-9" ng-if="operation === 'ADD'">
                     <input class="form-control" id="subscriptionName" name="subscriptionName" ng-required="operation === 'ADD'" placeholder="name of subscription" ng-model="subscription.name" ng-pattern="/^[a-zA-Z0-9.]+$/"/>

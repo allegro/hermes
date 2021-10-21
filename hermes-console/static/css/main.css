@@ -115,3 +115,6 @@ footer {
 .full-width {
     display: block;
 }
+
+.ace_editor_debug { height: 300px; }
+.ace_editor_schema { height: 500px; }

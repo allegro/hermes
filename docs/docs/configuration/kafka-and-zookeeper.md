@@ -10,7 +10,7 @@ zookeeper.connect.string         | storage.connectionString       | Zookeeper co
 zookeeper.connection.timeout     | storage.connectTimeout         | connection timeout in seconds                                              | 10 000
 zookeeper.max.retries            | storage.retryTimes             | retry count when connection fails                                          | 2
 zookeeper.base.sleep.time        | storage.retrySleep             | time to wait between subsequent retries in seconds                         | 1 000
-zookeeper.root                   | storage.pathPrefix             | perfix for Hermes data (if not specified in connection string)             | /hermes
+zookeeper.root                   | storage.pathPrefix             | prefix for Hermes data (if not specified in connection string)             | /hermes
 zookeeper.cache.thread.pool.size | n/a                            | size of thread pool used by objects cache (like topics, subscriptions etc) | 5
 zookeeper.authorization.enabled  | n/a                            | enable Zookeeper authorization                                             | false
 zookeeper.authorization.scheme   | storage.authorization.scheme   | authorization scheme                                                       | digest
@@ -36,7 +36,7 @@ kafka.cluster.name             | name of Kafka cluster (relevant only when conne
 
 Zookeeper connection specific options (retries etc) are read from Metadata Zookeeper options.
 
-Management module can connect to multiple Kafka clusters at once (see [section below](#multiple-kafka-clusters)), thus
+Management module can connect to multiple Kafka clusters at once (see [section below](#multiple-kafka-and-zookeeper-clusters)), thus
 when specifying connection option is done per cluster. Simple configuration for single cluster looks following:
 
 ```yaml
@@ -57,7 +57,7 @@ support for multiple clusters each holding the same copy of data.
 
 This is the schematics of two data center architecture:
 
-![Multi DC schematics](/img/architecture-multi-cluster.png)
+![Multi DC schematics](../img/architecture-multi-cluster.png)
 
 * there are specific **Frontend** and **Consumers** instances per cluster:
     * each **Frontend** instance writes data to single cluster

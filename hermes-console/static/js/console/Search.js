@@ -31,9 +31,21 @@ search.controller('SearchController', ['$scope', '$stateParams', 'SearchReposito
         query[property] = {};
 
         var sanitizedOperator = operator || 'like';
-        query[property][sanitizedOperator] = value;
+        query[property][sanitizedOperator] = decorateQueryValue(value);
 
         return {query: query};
+    }
+
+    function decorateQueryValue(value) {
+        if (value === '' || value.length < 4) {
+            return value;
+        }
+
+        if (value.startsWith('.*') || value.endsWith('.*')) {
+            return value;
+        }
+
+        return '.*' + value + '.*';
     }
 
     function postProcess(entity, items) {

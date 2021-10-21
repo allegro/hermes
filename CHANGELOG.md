@@ -1,3 +1,54 @@
+## 1.9.12 (21.10.2021)
+
+## Enhancements
+
+#### ([1407](https://github.com/allegro/hermes/pull/1407)) Add ace editor to schemaMessage field
+
+Thanks to @sobelek for this contribution!
+
+#### ([1399](https://github.com/allegro/hermes/pull/1399)) Fix documentation links, add markdown links check action
+
+Thanks to @AleksanderBrzozowski for this contribution!
+
+### Fixes
+
+#### ([1401](https://github.com/allegro/hermes/pull/1401)) Fix linting and running tests in hermes console
+
+Thanks to @sobelek for this contribution!
+
+#### ([1406](https://github.com/allegro/hermes/pull/1406)) Topic and subscription with '-' char in name can be updated
+
+## 1.9.11 (18.10.2021)
+
+## Enhancements
+
+#### ([1395](https://github.com/allegro/hermes/pull/1395)) Update readme with nodemon to auto reload files durning development
+#### ([1394](https://github.com/allegro/hermes/pull/1394)) Support json formatting when debugging filters in hermes-console
+
+Thanks to @sobelek for these contributions!
+
+#### ([1393](https://github.com/allegro/hermes/pull/1393)) Automatically adding .* in the front and in the end of a search query
+
+Thanks to @MaciejAndrearczyk for this contribution!
+
+#### ([1392](https://github.com/allegro/hermes/pull/1392)) Disable retransmission if subscription is not active
+
+Thanks to @akrystian for this contribution!
+
+#### ([1381](https://github.com/allegro/hermes/pull/1381)) Remove ui/index.html from hermes-console url 
+
+Thanks to @platan for this contribution!
+
+#### ([1379](https://github.com/allegro/hermes/pull/1379)) Cohere retention time validation between backend and frontend
+
+Thanks to @dominikbrandon for this contribution!
+
+#### ([1386](https://github.com/allegro/hermes/pull/1386)) Char '-' is not allowed in topic name when adding a new one.
+
+### Fixes
+
+#### ([1389](https://github.com/allegro/hermes/pull/1389)) Fixed registration of ReadOnlyFilter
+
 ## 1.9.10 (05.10.2021)
 
 ## Enhancements
