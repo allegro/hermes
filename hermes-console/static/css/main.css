@@ -116,4 +116,5 @@ footer {
     display: block;
 }
 
-.ace_editor { height: 300px; }
+.ace_editor_debug { height: 300px; }
+.ace_editor_schema { height: 500px; }
