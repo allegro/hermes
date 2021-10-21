@@ -233,9 +233,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         };
 
         $scope.retransmit = function() {
-            var retransmitFromDate = $('#retransmitFromDate').val();
+            var retransmitFromDate = $('#retransmitFromDate').data().date;
 
-            if (retransmitFromDate === '') {
+            if (!retransmitFromDate) {
                 toaster.pop('info', 'Info', 'Select date & time from which retransmission should be started');
                 return;
             }
@@ -330,16 +330,15 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
     }]);
 
 function initRetransmissionCalendar(daysBack) {
-    var startDate = new Date();
-    startDate.setDate(startDate.getDate() - daysBack);
+    const startDate = moment().subtract(daysBack, "days");
+    const endDate = moment().add(1, "second"); // this one second allows switching between today and yesterday in datetimepicker at first click
 
-    $('#retransmitCalendarButton').datetimepicker({
-        format: "dd-MM-yyyy hh:ii",
-        linkField: "retransmitFromDate",
-        linkFormat: "yyyy-mm-ddThh:ii",
-        showMeridian: true,
-        autoclose: true,
-        startDate: startDate,
-        endDate: new Date()
+    $('#retransmitFromDate').datetimepicker({
+        format: "YYYY-MM-DDTHH:mm:ssZ",
+        ignoreReadonly: true,
+        useCurrent: true,
+        minDate: startDate,
+        maxDate: endDate,
+        sideBySide: true
     });
 }
