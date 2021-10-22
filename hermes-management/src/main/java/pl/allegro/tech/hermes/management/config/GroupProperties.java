@@ -9,7 +9,7 @@ public class GroupProperties {
 
     private boolean nonAdminCreationEnabled = false;
 
-    private String allowedGroupNameRegex = "[a-zA-Z0-9_.-]+";
+    private String allowedGroupNameRegex = "^[a-zA-Z0-9.]+$";
 
     public boolean isNonAdminCreationEnabled() {
         return nonAdminCreationEnabled;
