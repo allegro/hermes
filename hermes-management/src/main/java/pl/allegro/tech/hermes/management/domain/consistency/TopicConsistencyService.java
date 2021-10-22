@@ -34,7 +34,7 @@ public class TopicConsistencyService {
         return multiDCAwareService.listTopicFromAllDC()
             .stream()
             .filter(topic -> !IGNORED_TOPIC.contains(topic) && !topicsFromHermes
-                .contains(mapTopicName(topic)))
+                .contains(mapToHermesFormat(topic)))
             .collect(Collectors.toSet());
     }
 
@@ -42,16 +42,12 @@ public class TopicConsistencyService {
         multiDCAwareService.removeTopicByName(topicName);
     }
 
-    private String mapTopicName(String topic) {
+    private String mapToHermesFormat(String topic) {
         String prefix = kafkaClustersProperties.getDefaultNamespace() + kafkaClustersProperties.getNamespaceSeparator();
-        String topicInHermes = topic;
-        if (topicInHermes.endsWith(AVRO_SUFFIX)) {
-            topicInHermes = topicInHermes.substring(0, topic.length() - 5);
-        }
 
-        if (topicInHermes.startsWith(prefix)) {
-            topicInHermes = topicInHermes.substring(prefix.length());
-        }
-        return topicInHermes;
+        int beginIndex = topic.startsWith(prefix) ? prefix.length() : 0;
+        int endIndex = topic.endsWith(AVRO_SUFFIX) ? topic.length() - AVRO_SUFFIX.length() : topic.length();
+
+        return topic.substring(beginIndex, endIndex);
     }
 }
