@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.management.domain.clients.AllTopicClientsService;
+import pl.allegro.tech.hermes.management.domain.clients.AllTopicClientsServiceImplementation;
 import pl.allegro.tech.hermes.management.domain.clients.OfflineClientsService;
 
 import java.util.Optional;
@@ -18,8 +18,8 @@ public class AllTopicClientsConfiguration {
 
     @Bean(name = "allTopicClientsService")
     @ConditionalOnMissingBean(name = "allTopicClientsService")
-    public AllTopicClientsService allTopicClientsService(Optional<OfflineClientsService> offlineClientsService, SubscriptionRepository subscriptionRepository) {
+    public AllTopicClientsServiceImplementation allTopicClientsService(Optional<OfflineClientsService> offlineClientsService, SubscriptionRepository subscriptionRepository) {
         logger.info("Creating allTopicClientsService bean");
-        return new AllTopicClientsService(offlineClientsService, subscriptionRepository);
+        return new AllTopicClientsServiceImplementation(offlineClientsService, subscriptionRepository);
     }
 }

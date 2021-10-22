@@ -17,16 +17,16 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 @Path("topics")
 public class AllTopicClientsEndpoint {
 
-    private final AllTopicClientsService allTopicClientsService;
+    private final AllTopicClientsService allTopicClientsServiceImplementation;
 
     public AllTopicClientsEndpoint(AllTopicClientsService allTopicClientsService) {
-        this.allTopicClientsService = allTopicClientsService;
+        this.allTopicClientsServiceImplementation = allTopicClientsService;
     }
 
     @GET
     @Path("/{topic}/clients")
     @Produces(APPLICATION_JSON)
     public List<String> getTopicClients(@PathParam("topic") String topic) {
-        return allTopicClientsService.getAllClientsByTopic(fromQualifiedName(topic));
+        return allTopicClientsServiceImplementation.getAllClientsByTopic(fromQualifiedName(topic));
     }
 }
