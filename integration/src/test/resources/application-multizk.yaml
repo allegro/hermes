@@ -85,3 +85,6 @@ consistencyChecker:
 
 subscription-health:
   timeoutMillis: 200
+
+group:
+  allowedGroupNameRegex: "[a-zA-Z0-9_.-]+"

@@ -27,15 +27,23 @@ public class ReadOnlyFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        if (modeService.isReadOnlyEnabled() && !requestContext.getSecurityContext().isUserInRole(Roles.ADMIN)) {
+        if (modeService.isReadOnlyEnabled()) {
             ContainerRequest req = (ContainerRequest) requestContext.getRequest();
-            if (!req.getMethod().equals("GET") && !isWhitelisted(req.getUriInfo().getPath())) {
+            if (!isWhitelisted(req) && !isAdmin(requestContext)) {
                 throw new ServiceUnavailableException(READ_ONLY_ERROR_MESSAGE);
             }
         }
     }
 
-    private boolean isWhitelisted(String requestURI) {
+    private boolean isAdmin(ContainerRequestContext requestContext) {
+        return requestContext.getSecurityContext().isUserInRole(Roles.ADMIN);
+    }
+
+    private boolean isWhitelisted(ContainerRequest req) {
+        if (req.getMethod().equals("GET")) {
+            return true;
+        }
+        String requestURI = req.getUriInfo().getPath();
         if (requestURI.startsWith("/query")) {
             return true;
         }
