@@ -3,8 +3,8 @@ var consistency = angular.module('hermes.consistency', [
     'hermes.consistency.repository'
 ]);
 
-consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 'CONSISTENCY_CONFIG', 'ConsistencyRepository',
-    function ($scope, $state, toaster, config, consistencyRepository) {
+consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 'CONSISTENCY_CONFIG', 'ConsistencyRepository', 'ConfirmationModal',
+    function ($scope, $state, toaster, config, consistencyRepository, confirmationModal) {
 
         const consistencyCheckingStates = {
             READY: 'READY',
@@ -35,14 +35,13 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
         }
 
         $scope.removeTopic = function (topicName) {
-
             confirmationModal.open({
                 actionSubject: 'Are you sure you want to remove topic: ' + topicName,
                 action: "Remove"
             }).result.then(function () {
                 consistencyRepository.removeTopic(topicName)
             })
-            .then(function (){
+            .then(function () {
                 let newArray = $scope.topicsConsistencyChecking.result['inconsistentTopics'].filter(
                     function (element) {
                         return element !== topicName
@@ -59,6 +58,7 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
         function checkGroupConsistency() {
             setGroupsState(consistencyCheckingStates.CHECKING_CONSISTENCY);
             setInconsistentGroups(null);
+            setInconsistentTopics(null);
             $scope.processedGroupsPercent = 0;
             $scope.processedGroups = 0;
 
