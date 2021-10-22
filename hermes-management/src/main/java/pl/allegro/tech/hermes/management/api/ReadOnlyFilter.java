@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.api;
 
 import org.glassfish.jersey.server.ContainerRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import pl.allegro.tech.hermes.management.api.auth.AuthorizationFilter;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 
@@ -13,7 +14,7 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 
 @Provider
-@Priority(2001)
+@Priority(AuthorizationFilter.AUTHORIZATION_FILTER_PRIORITY + 2)
 public class ReadOnlyFilter implements ContainerRequestFilter {
     private static final String READ_ONLY_ERROR_MESSAGE = "Action forbidden due to read-only mode";
 
