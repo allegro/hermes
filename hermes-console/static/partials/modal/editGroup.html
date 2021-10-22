@@ -17,8 +17,7 @@
             <div class="form-group {{groupForm.groupName.$valid ? '' : 'has-error'}}" ng-if="operation === 'ADD'">
                 <label for="groupName" class="col-md-3 control-label">Name</label>
                 <div class="col-md-9">
-                    <input class="form-control" id="groupName" required name="groupName" placeholder="group name"
-                           ng-model="group.groupName" ng-pattern="/^[a-zA-Z0-9.]+$/"/>
+                    <input class="form-control" id="groupName" required name="groupName" placeholder="group name" ng-model="group.groupName"/>
                 </div>
             </div>
         </form>
