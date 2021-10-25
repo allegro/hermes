@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
+import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistService;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
@@ -62,6 +63,7 @@ public class TopicService {
 
     private final TopicMetricsRepository metricRepository;
     private final MultiDCAwareService multiDCAwareService;
+    private final TopicBlacklistService topicBlacklistService;
     private final TopicValidator topicValidator;
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
     private final Clock clock;
@@ -80,7 +82,7 @@ public class TopicService {
                         GroupService groupService,
                         TopicProperties topicProperties,
                         SchemaService schemaService, TopicMetricsRepository metricRepository,
-                        TopicValidator topicValidator,
+                        TopicBlacklistService topicBlacklistService, TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
                         Clock clock,
                         Auditor auditor,
@@ -93,6 +95,7 @@ public class TopicService {
         this.topicProperties = topicProperties;
         this.schemaService = schemaService;
         this.metricRepository = metricRepository;
+        this.topicBlacklistService = topicBlacklistService;
         this.topicValidator = topicValidator;
         this.topicContentTypeMigrationService = topicContentTypeMigrationService;
         this.clock = clock;
@@ -178,6 +181,9 @@ public class TopicService {
         removeSchema(topic);
         if (!topicProperties.isAllowRemoval()) {
             throw new TopicRemovalDisabledException(topic);
+        }
+        if (topicBlacklistService.isBlacklisted(topic.getQualifiedName())) {
+            topicBlacklistService.unblacklist(topic.getQualifiedName());
         }
         removeTopic(topic, removedBy.getUsername());
     }
