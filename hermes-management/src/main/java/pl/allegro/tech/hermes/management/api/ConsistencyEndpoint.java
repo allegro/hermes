@@ -4,7 +4,7 @@ import javax.ws.rs.DELETE;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.consistency.ConsistencyService;
+import pl.allegro.tech.hermes.management.domain.consistency.DcConsistencyService;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import pl.allegro.tech.hermes.management.domain.consistency.TopicConsistencyService;
+import pl.allegro.tech.hermes.management.domain.consistency.KafkaHermesConsistencyService;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -24,20 +24,20 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @RolesAllowed(Roles.ADMIN)
 @Path("consistency")
 public class ConsistencyEndpoint {
-    private final ConsistencyService consistencyService;
-    private final TopicConsistencyService topicConsistencyService;
+    private final DcConsistencyService dcConsistencyService;
+    private final KafkaHermesConsistencyService kafkaHermesConsistencyService;
 
-    public ConsistencyEndpoint(ConsistencyService consistencyService,
-        TopicConsistencyService topicConsistencyService) {
-        this.consistencyService = consistencyService;
-        this.topicConsistencyService = topicConsistencyService;
+    public ConsistencyEndpoint(DcConsistencyService dcConsistencyService,
+        KafkaHermesConsistencyService kafkaHermesConsistencyService) {
+        this.dcConsistencyService = dcConsistencyService;
+        this.kafkaHermesConsistencyService = kafkaHermesConsistencyService;
     }
 
     @GET
     @Produces({APPLICATION_JSON})
     @Path("/inconsistencies/groups")
     public Response listInconsistentGroups(@QueryParam("groupNames") List<String> groupNames) {
-        List<InconsistentGroup> inconsistentGroups = consistencyService.listInconsistentGroups(new HashSet<>(groupNames));
+        List<InconsistentGroup> inconsistentGroups = dcConsistencyService.listInconsistentGroups(new HashSet<>(groupNames));
         return Response.ok()
                 .entity(new GenericEntity<List<InconsistentGroup>>(inconsistentGroups){})
                 .build();
@@ -48,7 +48,7 @@ public class ConsistencyEndpoint {
     @Path("/inconsistencies/topics")
     public Response listInconsistentTopics() {
         return Response
-            .ok(new GenericEntity<Set<String>>(topicConsistencyService.listInconsistentTopics()){})
+            .ok(new GenericEntity<Set<String>>(kafkaHermesConsistencyService.listInconsistentTopics()){})
             .build();
     }
 
@@ -56,7 +56,7 @@ public class ConsistencyEndpoint {
     @Produces({APPLICATION_JSON})
     @Path("/inconsistencies/topics")
     public Response removeTopicByName(@QueryParam("topicName") String topicName) {
-        topicConsistencyService.removeTopic(topicName);
+        kafkaHermesConsistencyService.removeTopic(topicName);
         return Response.ok().build();
     }
 
@@ -64,7 +64,7 @@ public class ConsistencyEndpoint {
     @Produces({APPLICATION_JSON})
     @Path("/groups")
     public Response listAllGroups() {
-        Set<String> groupNames = consistencyService.listAllGroupNames();
+        Set<String> groupNames = dcConsistencyService.listAllGroupNames();
         return Response.ok()
                 .entity(new GenericEntity<Set<String>>(groupNames){})
                 .build();

@@ -5,14 +5,14 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService
 import spock.lang.Specification
 
-class TopicConsistencyServiceSpec extends Specification {
+class KafkaHermesConsistencyServiceSpec extends Specification {
 
     TopicService topicService = Stub()
     KafkaClustersProperties kafkaClustersProperties = Stub()
     MultiDCAwareService multiDCAwareService = Mock()
 
-    TopicConsistencyService topicConsistencyService =
-            new TopicConsistencyService(topicService, multiDCAwareService, kafkaClustersProperties)
+    KafkaHermesConsistencyService kafkaHermesConsistencyService =
+            new KafkaHermesConsistencyService(topicService, multiDCAwareService, kafkaClustersProperties)
 
 
     def "should list empty list when there is no inconsistent topics"() {
@@ -25,7 +25,7 @@ class TopicConsistencyServiceSpec extends Specification {
                                                      "pl.allegro.test.SecondTopic"]
 
         when:
-        def result = topicConsistencyService.listInconsistentTopics()
+        def result = kafkaHermesConsistencyService.listInconsistentTopics()
 
         then:
         result.size() == 0
@@ -41,7 +41,7 @@ class TopicConsistencyServiceSpec extends Specification {
                                                      "namespace_pl.allegro.test.SecondTopic"]
 
         when:
-        def result = topicConsistencyService.listInconsistentTopics()
+        def result = kafkaHermesConsistencyService.listInconsistentTopics()
 
         then:
         result.size() == 0
@@ -58,7 +58,7 @@ class TopicConsistencyServiceSpec extends Specification {
                                                      "__consumer_offsets"]
 
         when:
-        def result = topicConsistencyService.listInconsistentTopics()
+        def result = kafkaHermesConsistencyService.listInconsistentTopics()
 
         then:
         result.size() == 0
@@ -73,7 +73,7 @@ class TopicConsistencyServiceSpec extends Specification {
                                                      "pl.allegro.test.SecondTopic"]
 
         when:
-        def result = topicConsistencyService.listInconsistentTopics()
+        def result = kafkaHermesConsistencyService.listInconsistentTopics()
 
         then:
         result.size() == 1
@@ -85,7 +85,7 @@ class TopicConsistencyServiceSpec extends Specification {
         def topicName = "pl.allegro.test.FirstTopic_avro"
 
         when:
-        topicConsistencyService.removeTopic(topicName)
+        kafkaHermesConsistencyService.removeTopic(topicName)
 
         then:
         1 * multiDCAwareService.removeTopicByName(topicName)

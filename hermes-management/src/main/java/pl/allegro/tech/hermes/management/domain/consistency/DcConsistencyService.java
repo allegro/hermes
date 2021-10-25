@@ -37,14 +37,14 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 @Component
-public class ConsistencyService {
+public class DcConsistencyService {
     private final ExecutorService executor;
     private final List<DatacenterBoundRepositoryHolder<GroupRepository>> groupRepositories;
     private final List<DatacenterBoundRepositoryHolder<TopicRepository>> topicRepositories;
     private final List<DatacenterBoundRepositoryHolder<SubscriptionRepository>> subscriptionRepositories;
     private final ObjectMapper objectMapper;
 
-    public ConsistencyService(RepositoryManager repositoryManager,
+    public DcConsistencyService(RepositoryManager repositoryManager,
                               ObjectMapper objectMapper,
                               ConsistencyCheckerProperties properties) {
         this.groupRepositories = repositoryManager.getRepositories(GroupRepository.class);

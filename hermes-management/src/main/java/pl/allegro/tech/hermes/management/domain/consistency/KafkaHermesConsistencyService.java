@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 @Component
-public class TopicConsistencyService {
+public class KafkaHermesConsistencyService {
 
     private final static String AVRO_SUFFIX = "_avro";
     private final static List<String> IGNORED_TOPIC = asList("__consumer_offsets");
@@ -19,7 +19,7 @@ public class TopicConsistencyService {
     private final MultiDCAwareService multiDCAwareService;
     private final KafkaClustersProperties kafkaClustersProperties;
 
-    public TopicConsistencyService(
+    public KafkaHermesConsistencyService(
         TopicService topicService,
         MultiDCAwareService multiDCAwareService,
         KafkaClustersProperties kafkaClustersProperties) {

@@ -21,11 +21,6 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
             result: consistencyRepository.getLastTopicsConsistencyCheckingResult()
         }
 
-        $scope.topicsConsistencyChecking = {
-            state: consistencyCheckingStates.READY,
-            result: consistencyRepository.getLastTopicsConsistencyCheckingResult()
-        }
-
         $scope.$watch('consistencyChecking.result', function (result) {
             consistencyRepository.setLastConsistencyCheckingResult(result);
         }, true);
@@ -55,7 +50,7 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
                 toaster.pop('success', 'Success', 'Topic has been removed');
             })
             .catch(function (e) {
-                showErrorPopup("cannot remove topics: " + e);
+                showErrorPopup("cannot remove topic: " + e);
                 setInconsistentTopics(null)
             });
         }
