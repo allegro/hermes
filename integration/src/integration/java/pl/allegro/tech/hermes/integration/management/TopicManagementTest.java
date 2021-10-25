@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
+import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
@@ -19,6 +20,7 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -144,6 +146,22 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.OK);
         Assertions.assertThat(management.topic().list("removeTopicGroup", false)).isEmpty();
+    }
+
+    @Test
+    public void shouldUnblacklistTopicWhileDeleting() {
+        // given
+        operations.createGroup("removeTopicGroup");
+        operations.createTopic("removeTopicGroup", "blacklistedTopic");
+        management.blacklist().blacklistTopics(Collections.singletonList("removeTopicGroup.blacklistedTopic"));
+
+        // when
+        Response response = management.topic().remove("removeTopicGroup.blacklistedTopic");
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+        Assertions.assertThat(management.topic().list("removeTopicGroup", false)).isEmpty();
+        Assertions.assertThat(management.blacklist().isTopicBlacklisted("removeTopicGroup.blacklistedTopic")).isEqualTo(BlacklistStatus.NOT_BLACKLISTED);
     }
 
     @Test
