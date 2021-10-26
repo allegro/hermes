@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
@@ -77,6 +81,17 @@ public class MultiDCAwareService {
 
     public boolean topicExists(Topic topic) {
         return clusters.stream().allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
+    }
+
+    public Set<String> listTopicFromAllDC() {
+        return clusters.stream()
+            .map(BrokersClusterService::listTopicsFromCluster)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    public void removeTopicByName(String topicName) {
+        clusters.forEach(brokersClusterService -> brokersClusterService.removeTopicByName(topicName));
     }
 
     public void createConsumerGroups(Topic topic, Subscription subscription) {
