@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import org.apache.avro.Schema;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,16 +33,19 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
     private final Producers producers;
+    private final KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
     private final HermesMetrics metrics;
     private final KafkaHeaderFactory kafkaHeaderFactory;
     private final boolean schemaIdHeaderEnabled;
 
     @Inject
     public KafkaBrokerMessageProducer(Producers producers,
+                                      KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
                                       HermesMetrics metrics,
                                       KafkaHeaderFactory kafkaHeaderFactory,
                                       ConfigFactory configFactory) {
         this.producers = producers;
+        this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
         this.metrics = metrics;
         this.kafkaHeaderFactory = kafkaHeaderFactory;
         this.schemaIdHeaderEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED);
@@ -96,7 +101,16 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
 
         try {
-            if (producers.get(cachedTopic.getTopic()).partitionsFor(kafkaTopicName).size() > 0) {
+            List<PartitionInfo> partitionInfos = producers.get(cachedTopic.getTopic()).partitionsFor(kafkaTopicName);
+            if (anyPartitionWithoutLeader(partitionInfos)) {
+                logger.warn("Topic {} has partitions without a leader.", kafkaTopicName);
+                return false;
+            }
+            if (anyUnderReplicatedPartition(partitionInfos, kafkaTopicName)) {
+                logger.warn("Topic {} has under replicated partitions.", kafkaTopicName);
+                return false;
+            }
+            if (partitionInfos.size() > 0) {
                 return true;
             }
         } catch (Exception e) {
@@ -106,6 +120,15 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
         logger.warn("No information about partitions for topic {}", kafkaTopicName);
         return false;
+    }
+
+    private boolean anyPartitionWithoutLeader(List<PartitionInfo> partitionInfos) {
+        return partitionInfos.stream().anyMatch(p -> p.leader() == null);
+    }
+
+    private boolean anyUnderReplicatedPartition(List<PartitionInfo> partitionInfos, String kafkaTopicName) throws Exception {
+        int minInSyncReplicas = kafkaTopicMetadataFetcher.fetchMinInSyncReplicas(kafkaTopicName);
+        return partitionInfos.stream().anyMatch(p -> p.inSyncReplicas().length < minInSyncReplicas);
     }
 
     private class SendCallback implements org.apache.kafka.clients.producer.Callback {

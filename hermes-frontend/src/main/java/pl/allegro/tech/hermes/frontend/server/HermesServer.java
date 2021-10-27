@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersiste
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
-import pl.allegro.tech.hermes.frontend.services.ReadinessCheckService;
 
 import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
@@ -42,8 +41,8 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALI
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_AUTH_MODE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
 
 public class HermesServer {
 
@@ -54,7 +53,7 @@ public class HermesServer {
     private final ConfigFactory configFactory;
     private final HttpHandler publishingHandler;
     private final HealthCheckService healthCheckService;
-    private final ReadinessCheckService readinessCheckService;
+    private final ReadinessChecker readinessChecker;
     private final MessagePreviewPersister messagePreviewPersister;
     private final int port;
     private final int sslPort;
@@ -69,7 +68,7 @@ public class HermesServer {
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
             HealthCheckService healthCheckService,
-            ReadinessCheckService readinessCheckService,
+            ReadinessChecker readinessChecker,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
             TopicMetadataLoadingJob topicMetadataLoadingJob,
@@ -79,7 +78,7 @@ public class HermesServer {
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
         this.healthCheckService = healthCheckService;
-        this.readinessCheckService = readinessCheckService;
+        this.readinessChecker = readinessChecker;
         this.messagePreviewPersister = messagePreviewPersister;
         this.topicMetadataLoadingJob = topicMetadataLoadingJob;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
@@ -98,6 +97,7 @@ public class HermesServer {
         if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
             topicMetadataLoadingJob.start();
         }
+        readinessChecker.start();
     }
 
     public void gracefulShutdown() throws InterruptedException {
@@ -116,6 +116,7 @@ public class HermesServer {
         if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
             topicMetadataLoadingJob.stop();
         }
+        readinessChecker.stop();
     }
 
     private Undertow configureServer() {
@@ -147,15 +148,14 @@ public class HermesServer {
 
     private HttpHandler handlers() {
         HttpHandler healthCheckHandler = new HealthCheckHandler(healthCheckService);
-        HttpHandler readinessHandler = new ReadinessCheckHandler(readinessCheckService);
+        HttpHandler readinessHandler = new ReadinessCheckHandler(readinessChecker, healthCheckService);
 
         RoutingHandler routingHandler =  new RoutingHandler()
                 .post("/topics/{qualifiedTopicName}", publishingHandler)
                 .get("/status/ping", healthCheckHandler)
                 .get("/status/health", healthCheckHandler)
                 .get("/status/ready", readinessHandler)
-                .get("/", healthCheckHandler)
-                ;
+                .get("/", healthCheckHandler);
 
         return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) : routingHandler;
     }

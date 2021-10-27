@@ -1,133 +1,214 @@
 package pl.allegro.tech.hermes.integration;
 
-import com.google.common.io.Files;
-import java.util.List;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.DatacenterReadiness;
-import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.integration.env.FrontendStarter;
-import pl.allegro.tech.hermes.integration.env.ManagementStarter;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
-import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
-import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
-import pl.allegro.tech.hermes.test.helper.util.Ports;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.integration.setup.HermesFrontendInstance;
+import pl.allegro.tech.hermes.integration.setup.HermesManagementInstance;
+import pl.allegro.tech.hermes.test.helper.containers.BrokerId;
 
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.jayway.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static pl.allegro.tech.hermes.api.Topic.Ack.ALL;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
-public class ReadinessCheckTest extends IntegrationTest {
+public class ReadinessCheckTest extends BaseIntegrationTest {
+    private static final String DC1 = DEFAULT_DC_NAME;
+    private static final String DC2 = "dc2";
 
-    private static final int ZOOKEEPER_PORT = 14193;
-    private static final String ZOOKEEPER_URL = "localhost:" + ZOOKEEPER_PORT;
-    private static final int MANAGEMENT_PORT = 18083;
-    private static final String MANAGEMENT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
-
-    private ZookeeperStarter zookeeperStarter;
-    private ManagementStarter managementStarter;
-    private HermesAPIOperations operations;
+    private HermesManagementInstance hermesManagement;
+    private Topic topic;
 
     @BeforeClass
-    public void setupEnvironment() throws Exception {
-        zookeeperStarter = setupZookeeper();
-        managementStarter = setupManagement();
-        operations = setupOperations();
+    public void setup() throws Exception {
+        hermesManagement = HermesManagementInstance.starter()
+                .addKafkaCluster(DC1, kafkaClusterOne.getBootstrapServers())
+                .addKafkaCluster(DC2, kafkaClusterTwo.getBootstrapServers())
+                .addZookeeperCluster(DC1, hermesZookeeperOne.getConnectionString())
+                .addZookeeperCluster(DC2, hermesZookeeperTwo.getConnectionString())
+                .replicationFactor(kafkaClusterOne.getAllBrokers().size())
+                .uncleanLeaderElectionEnabled(false)
+                .start();
+        topic = hermesManagement.operations().buildTopic(
+                randomTopic("someRandomGroup", "someRandomTopic")
+                        .withAck(ALL)
+                        .build()
+        );
     }
 
     @AfterClass
-    public void cleanEnvironment() throws Exception {
-        zookeeperStarter.stop();
-        managementStarter.stop();
+    public void cleanup() {
+        hermesManagement.stop();
     }
 
     @Test
-    public void shouldReturnCorrectHealthStatusForParticularDC() throws Exception {
+    public void shouldNotBeReadyUntilKafkaClusterIsUp() {
         // given
-        int frontendPort = Ports.nextAvailable();
-        String frontendUrl = "http://localhost:" + frontendPort + "/";
-
-        operations.setReadiness("dc5", false);
-        FrontendStarter frontendStarter = setupFrontend(frontendPort); // frontend needs to be started after the flag is set in zookeeper
+        kafkaClusterOne.stopAllBrokers();
 
         // when
-        WebTarget clientDcToTurnOff = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
-        WebTarget clientDefaultDc = JerseyClientFactory.create().target(FRONTEND_URL).path("status").path("ready");
+        HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
+                .metadataMaxAgeInSeconds(1)
+                .readinessCheckIntervalInSeconds(1)
+                .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
+                .kafkaConnectionString(kafkaClusterOne.getBootstrapServers())
+                .start();
 
         // then
-        assertThat(clientDcToTurnOff.request().get()).hasStatus(SERVICE_UNAVAILABLE);
-        assertThat(clientDefaultDc.request().get()).hasStatus(OK);
-
-        // cleanup
-        frontendStarter.stop();
-
-        // given
-        operations.setReadiness("dc5", true);
-        frontendStarter = setupFrontend(frontendPort);
+        assertThat(hermesFrontend.isReady()).isFalse();
+        assertThat(hermesFrontend.isHealthy()).isTrue();
 
         // when
-        clientDcToTurnOff = JerseyClientFactory.create().target(frontendUrl).path("status").path("ready");
+        kafkaClusterOne.startAllBrokers();
 
         // then
-        assertThat(clientDcToTurnOff.request().get()).hasStatus(OK);
-        assertThat(clientDefaultDc.request().get()).hasStatus(OK);
+        await().atMost(5, SECONDS).until(() ->
+                assertThat(hermesFrontend.isReady()).isTrue()
+        );
+        assertThat(hermesFrontend.isHealthy()).isTrue();
 
         // cleanup
-        frontendStarter.stop();
+        hermesFrontend.stop();
     }
 
     @Test
-    public void shouldReturnDatacentersWithItsZookeeperReadinessStatus() {
+    public void shouldNotBeReadyUntilThereAreNoUnderReplicatedPartitions() throws Exception {
         // given
-        operations.setReadiness("dc5", false);
+        List<BrokerId> brokers = kafkaClusterOne.getAllBrokers();
+        List<BrokerId> brokersToStop = brokers.subList(kafkaClusterOne.getMinInSyncReplicas() - 1, brokers.size());
+        kafkaClusterOne.stop(brokersToStop);
+        assertThat(kafkaClusterOne.countUnderReplicatedPartitions() > 0).isTrue();
 
         // when
-        WebTarget client = JerseyClientFactory.create().target(MANAGEMENT_URL).path("readiness").path("datacenters");
-        Response response = client.request().get();
+        HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
+                .metadataMaxAgeInSeconds(1)
+                .readinessCheckIntervalInSeconds(1)
+                .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
+                .kafkaConnectionString(kafkaClusterOne.getBootstrapServers())
+                .start();
 
         // then
-        assertThat(response).hasStatus(OK);
-        assertThat(response.readEntity(new GenericType<List<DatacenterReadiness>>() {}))
-                .contains(new DatacenterReadiness("dc", true))
-                .contains(new DatacenterReadiness("dc5", false));
+        assertThat(hermesFrontend.isReady()).isFalse();
+        assertThat(hermesFrontend.isHealthy()).isTrue();
 
+        // when
+        kafkaClusterOne.start(selectOne(brokersToStop));
+
+        // then
+        await().atMost(5, SECONDS).until(() ->
+                assertThat(hermesFrontend.isReady()).isTrue()
+        );
+        assertThat(hermesFrontend.isHealthy()).isTrue();
+
+        // cleanup
+        hermesFrontend.stop();
     }
 
-    private FrontendStarter setupFrontend(int port) throws Exception {
-        FrontendStarter frontend = new FrontendStarter(port, false);
-        frontend.overrideProperty(Configs.FRONTEND_PORT, port);
-        frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
-        frontend.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
-        frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
-        frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
-        frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false);
-        frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
-        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, ZOOKEEPER_URL);
+    @Test
+    public void shouldNotBeReadyUntilThereAreNoOfflinePartitions() throws Exception {
+        // given: stop one of the brokers
+        List<BrokerId> brokers = kafkaClusterOne.getAllBrokers();
+        List<BrokerId> brokersToStop = selectOne(brokers);
+        kafkaClusterOne.stop(brokersToStop);
 
-        frontend.start();
+        // and: send a message to remove stopped broker from in-sync replicas
+        publishSampleMessage(topic);
 
-        return frontend;
+        // and: stop all in-sync replicas
+        List<BrokerId> isr = selectAllOtherThan(brokers, brokersToStop);
+        kafkaClusterOne.stop(isr);
+
+        // and: start the broker that is not in in-sync replicas
+        kafkaClusterOne.start(brokersToStop);
+
+        // and: check if there is at least one offline partition
+        assertThat(kafkaClusterOne.countOfflinePartitions() > 0).isTrue();
+
+        // when
+        HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
+                .metadataMaxAgeInSeconds(1)
+                .readinessCheckIntervalInSeconds(1)
+                .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
+                .kafkaConnectionString(kafkaClusterOne.getBootstrapServers())
+                .start();
+
+        // then
+        assertThat(hermesFrontend.isReady()).isFalse();
+        assertThat(hermesFrontend.isHealthy()).isTrue();
+
+        // when
+        kafkaClusterOne.start(isr);
+
+        // then
+        await().atMost(5, SECONDS).until(() ->
+                assertThat(hermesFrontend.isReady()).isTrue()
+        );
+        assertThat(hermesFrontend.isHealthy()).isTrue();
+
+        // cleanup
+        hermesFrontend.stop();
     }
 
-    private ZookeeperStarter setupZookeeper() throws Exception {
-        ZookeeperStarter zookeeperStarter = new ZookeeperStarter(ZOOKEEPER_PORT, ZOOKEEPER_URL, CONFIG_FACTORY.getStringProperty(Configs.ZOOKEEPER_ROOT));
-        zookeeperStarter.start();
-        return zookeeperStarter;
+    @Test
+    public void shouldRespectReadinessStatusSetByAdmin() {
+        // given
+        HermesFrontendInstance hermesFrontendDc1 = HermesFrontendInstance.starter()
+                .readinessCheckIntervalInSeconds(1)
+                .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
+                .kafkaConnectionString(kafkaClusterOne.getBootstrapServers())
+                .start();
+        HermesFrontendInstance hermesFrontendDc2 = HermesFrontendInstance.starter()
+                .readinessCheckIntervalInSeconds(1)
+                .zookeeperConnectionString(hermesZookeeperTwo.getConnectionString())
+                .kafkaConnectionString(kafkaClusterTwo.getBootstrapServers())
+                .start();
+
+        // when
+        hermesManagement.operations().setReadiness(DC1, false);
+
+        // then
+        await().atMost(5, SECONDS).until(() -> {
+            assertThat(hermesFrontendDc1.isReady()).isFalse();
+            assertThat(hermesFrontendDc2.isReady()).isTrue();
+        });
+
+        // when
+        hermesManagement.operations().setReadiness(DC1, true);
+
+        // then
+        await().atMost(5, SECONDS).until(() -> {
+            assertThat(hermesFrontendDc1.isReady()).isTrue();
+            assertThat(hermesFrontendDc2.isReady()).isTrue();
+        });
+
+        // cleanup
+        hermesFrontendDc1.stop();
+        hermesFrontendDc2.stop();
     }
 
-    private ManagementStarter setupManagement() throws Exception {
-        ManagementStarter managementStarter = new ManagementStarter(MANAGEMENT_PORT, "multizk");
-        managementStarter.start();
-        return managementStarter;
+    private static List<BrokerId> selectOne(List<BrokerId> brokerIds) {
+        return brokerIds.subList(0, 1);
     }
 
-    private HermesAPIOperations setupOperations() {
-        HermesEndpoints management = new HermesEndpoints(MANAGEMENT_URL, CONSUMER_ENDPOINT_URL);
-        return new HermesAPIOperations(management, wait);
+    private static List<BrokerId> selectAllOtherThan(List<BrokerId> brokerIds, List<BrokerId> toExclude) {
+        return brokerIds.stream().filter(b -> !toExclude.contains(b)).collect(Collectors.toList());
+    }
+
+    private void publishSampleMessage(Topic topic) {
+        HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
+                .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
+                .kafkaConnectionString(kafkaClusterOne.getBootstrapServers())
+                .start();
+        Response publish = hermesFrontend.operations().publish(topic.getQualifiedName(), "message");
+        assertThat(publish).hasStatus(CREATED);
+        hermesFrontend.stop();
     }
 }

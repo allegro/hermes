@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.api;
 
 import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -11,6 +12,7 @@ import javax.ws.rs.core.Response;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Readiness;
 import pl.allegro.tech.hermes.api.DatacenterReadiness;
+import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.readiness.ReadinessService;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -28,6 +30,7 @@ public class ReadinessEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed(Roles.ADMIN)
     @Path("/{datacenter}")
     public Response setReadiness(@PathParam("datacenter") String datacenter, Readiness readiness) {
         readinessService.setReady(new DatacenterReadiness(datacenter, readiness.isReady()));
@@ -37,6 +40,7 @@ public class ReadinessEndpoint {
     @GET
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
+    @RolesAllowed(Roles.ADMIN)
     public List<DatacenterReadiness> getReadiness() {
         return readinessService.getDatacentersReadinesses();
     }
