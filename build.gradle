@@ -4,24 +4,13 @@ buildscript {
     repositories {
         jcenter()
     }
-    dependencies {
-        /**
-         * Loading Nexus Publish Plugin from local directory as it doesn’t have a stable release yet.
-         * The plugin publishes packages to Nexus and solves common problems related with this operation,
-         * such us "split staging repositories".
-         * More info about the plugin: https://github.com/gradle-nexus/publish-plugin
-         * Issue which it solves: https://groups.google.com/u/0/a/glists.sonatype.com/g/ossrh-users/c/pZvR9L3HvvY?pli=1
-         */
-        classpath files('./libs/io.github.gradle-nexus.publish-plugin-0.1.0-20200530.155245-1.jar')
-    }
 }
 
 plugins {
     id 'java'
     id 'pl.allegro.tech.build.axion-release' version '1.7.2'
+    id 'io.github.gradle-nexus.publish-plugin' version '1.0.0'
 }
-
-apply plugin: 'io.github.gradle-nexus.publish-plugin'
 
 scmVersion {
     tag {
@@ -46,11 +35,13 @@ nexusPublishing {
     repositories {
         sonatype {
             stagingProfileId = '19d6feb4b1fb3' // id for group 'pl.allegro.tech.hermes'
-            retrying {
-                maxRetries.set(getIntProperty('attemptsToCloseStagingRepository', 30))
-                delayBetween.set(Duration.ofSeconds(getIntProperty('delayInSecBetweenCloseStagingRepositoryAttempts', 45)))
-            }
+            username = System.getenv("SONATYPE_USERNAME")
+            password = System.getenv("SONATYPE_PASSWORD")
         }
+    }
+    transitionCheckOptions {
+        maxRetries.set(getIntProperty('attemptsToCloseStagingRepository', 30))
+        delayBetween.set(Duration.ofSeconds(getIntProperty('delayInSecBetweenCloseStagingRepositoryAttempts', 45)))
     }
 }
 
@@ -153,6 +144,11 @@ configure(subprojects - project(':integration')) {
     }
 
     signing {
+        useInMemoryPgpKeys(
+                System.getenv("GPG_KEY_ID"),
+                System.getenv("GPG_PRIVATE_KEY"),
+                System.getenv("GPG_PRIVATE_KEY_PASSWORD")
+        )
         sign publishing.publications.mavenJava
     }
 }
