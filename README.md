@@ -1,7 +1,7 @@
 Hermes
 ======
 
-[![Build Status](https://github.com/allegro/hermes/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/allegro/hermes/actions/workflows/gradle.yml?query=branch%3Amaster)
+[![Build Status](https://github.com/allegro/hermes/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/allegro/hermes/actions/workflows/ci.yml?query=branch%3Amaster)
 [![Documentation Status](https://readthedocs.org/projects/hermes-pubsub/badge/?version=latest)](https://readthedocs.org/projects/hermes-pubsub/?badge=latest)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/pl.allegro.tech.hermes/hermes-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/pl.allegro.tech.hermes/hermes-client)
 [![Join the chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/allegro/hermes?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
