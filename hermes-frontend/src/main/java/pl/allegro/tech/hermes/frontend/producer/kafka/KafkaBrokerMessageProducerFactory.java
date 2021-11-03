@@ -9,16 +9,19 @@ import javax.inject.Inject;
 public class KafkaBrokerMessageProducerFactory implements Factory<KafkaBrokerMessageProducer> {
 
     private final Producers producers;
+    private final KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
     private final HermesMetrics hermesMetrics;
     private final KafkaHeaderFactory kafkaHeaderFactory;
     private final ConfigFactory configFactory;
 
     @Inject
     public KafkaBrokerMessageProducerFactory(Producers producers,
+                                             KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
                                              HermesMetrics hermesMetrics,
                                              KafkaHeaderFactory kafkaHeaderFactory,
                                              ConfigFactory configFactory) {
         this.producers = producers;
+        this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
         this.hermesMetrics = hermesMetrics;
         this.kafkaHeaderFactory = kafkaHeaderFactory;
         this.configFactory = configFactory;
@@ -26,7 +29,7 @@ public class KafkaBrokerMessageProducerFactory implements Factory<KafkaBrokerMes
 
     @Override
     public KafkaBrokerMessageProducer provide() {
-        return new KafkaBrokerMessageProducer(producers, hermesMetrics, kafkaHeaderFactory, configFactory);
+        return new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, kafkaHeaderFactory, configFactory);
     }
 
     @Override

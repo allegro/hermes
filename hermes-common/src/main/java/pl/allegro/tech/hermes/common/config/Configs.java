@@ -85,6 +85,7 @@ public enum Configs {
     KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION("kafka.producer.max.in.flight.requests.per.connection", 5),
     KAFKA_PRODUCER_REPORT_NODE_METRICS("kafka.producer.report.node.metrics", false),
     KAFKA_STREAM_COUNT("kafka.stream.count", 1),
+    KAFKA_ADMIN_REQUEST_TIMEOUT_MS("kafka.admin.request.timeout.ms", 5 * 60 * 1000),
 
     KAFKA_AUTHORIZATION_ENABLED("kafka.authorization.enabled", false),
     KAFKA_AUTHORIZATION_MECHANISM("kafka.authorization.mechanism", "PLAIN"),
@@ -164,8 +165,8 @@ public enum Configs {
     FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),
     FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD("frontend.message.preview.log.persist.period.seconds", 30),
 
-    FRONTEND_STARTUP_WAIT_KAFKA_ENABLED("frontend.startup.wait.kafka.enabled", false),
-    FRONTEND_STARTUP_WAIT_KAFKA_INTERVAL("frontend.startup.wait.kafka.interval", 5000L),
+    FRONTEND_READINESS_CHECK_ENABLED("frontend.readiness.check.enabled", false),
+    FRONTEND_READINESS_CHECK_INTERVAL_SECONDS("frontend.readiness.check.interval.seconds", 1),
 
     FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED("frontend.startup.topic.metadata.loading.enabled", false),
     FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_INTERVAL("frontend.startup.topic.metadata.loading.retry.interval", 1_000L),

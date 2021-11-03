@@ -4,13 +4,16 @@ import io.undertow.server.HttpHandler;
 import org.glassfish.hk2.api.TypeLiteral;
 import pl.allegro.tech.hermes.common.di.AbstractBinder;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
+import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -31,10 +34,9 @@ import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
-import pl.allegro.tech.hermes.frontend.server.WaitForKafkaStartupHook;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.services.ReadinessCheckService;
+import pl.allegro.tech.hermes.frontend.server.ReadinessChecker;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
@@ -60,7 +62,6 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageValidators.class);
 
         bind(hooksHandler).to(HooksHandler.class);
-        bindSingleton(WaitForKafkaStartupHook.class);
         bindSingleton(TopicMetadataLoadingRunner.class);
         bindSingleton(TopicMetadataLoadingJob.class);
         bindSingleton(TopicMetadataLoadingStartupHook.class);
@@ -71,11 +72,12 @@ public class FrontendBinder extends AbstractBinder {
         bind("producer").named("moduleName").to(String.class);
 
         bindSingleton(HealthCheckService.class);
-        bindSingleton(ReadinessCheckService.class);
+        bindSingleton(ReadinessChecker.class);
         bind(DefaultHeadersPropagator.class).to(HeadersPropagator.class).in(Singleton.class);
 
         bindFactory(HandlersChainFactory.class).to(HttpHandler.class).in(Singleton.class);
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
+        bindFactory(KafkaTopicMetadataFetcherFactory.class).to(KafkaTopicMetadataFetcher.class).in(Singleton.class);
         bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
         bindFactory(ThroughputLimiterFactory.class).to(ThroughputLimiter.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
@@ -92,6 +94,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessagePreviewFactory.class);
         bindSingleton(KafkaHeaderFactory.class);
         bindSingletonFactory(BlacklistZookeeperNotifyingCacheFactory.class);
+        bindFactory(ReadinessRepositoryFactory.class).to(ReadinessRepository.class).in(Singleton.class);
     }
 
 }

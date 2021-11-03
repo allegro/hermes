@@ -2,22 +2,24 @@ package pl.allegro.tech.hermes.frontend.server;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import pl.allegro.tech.hermes.frontend.services.ReadinessCheckService;
+import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import static io.undertow.util.StatusCodes.OK;
 import static io.undertow.util.StatusCodes.SERVICE_UNAVAILABLE;
 
 public class ReadinessCheckHandler implements HttpHandler {
 
-    private final ReadinessCheckService readinessCheckService;
+    private final ReadinessChecker readinessChecker;
+    private final HealthCheckService healthCheckService;
 
-    public ReadinessCheckHandler(ReadinessCheckService readinessCheckService) {
-        this.readinessCheckService = readinessCheckService;
+    public ReadinessCheckHandler(ReadinessChecker readinessChecker, HealthCheckService healthCheckService) {
+        this.readinessChecker = readinessChecker;
+        this.healthCheckService = healthCheckService;
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (readinessCheckService.isReady()) {
+    public void handleRequest(HttpServerExchange exchange) {
+        if (!healthCheckService.isShutdown() && readinessChecker.isReady()) {
             success(exchange);
         } else {
             unavailable(exchange);
