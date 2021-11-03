@@ -8,13 +8,13 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'pl.allegro.tech.build.axion-release' version '1.7.2'
+    id 'pl.allegro.tech.build.axion-release' version '1.13.6'
     id 'io.github.gradle-nexus.publish-plugin' version '1.0.0'
 }
 
 scmVersion {
     tag {
-        prefix = 'hermes'
+        prefix = 'hermes-'
     }
 
     versionCreator 'versionWithBranch'
