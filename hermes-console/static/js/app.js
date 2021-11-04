@@ -17,6 +17,7 @@ var hermes = angular.module('hermes', [
     'hermes.visibility',
     'hermes.mode',
     'hermes.readiness',
+    'hermes.offlineRetransmission',
     'ui.ace',
 ]);
 

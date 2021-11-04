@@ -28,6 +28,8 @@ public class ZookeeperPaths {
     public static final String STORAGE_HEALTH_PATH = "storage-health";
     public static final String FRONTEND_PATH = "frontend";
     public static final String READINESS_PATH = "readiness";
+    public static final String OFFLINE_RETRANSMISSION_PATH = "offline-retransmission";
+    public static final String OFFLINE_RETRANSMISSION_TASKS_PATH = "tasks";
 
     private final String basePath;
 
@@ -184,6 +186,15 @@ public class ZookeeperPaths {
 
     public String frontendReadinessPath() {
         return Joiner.on(URL_SEPARATOR).join(basePath, FRONTEND_PATH, READINESS_PATH);
+    }
+
+    public String offlineRetransmissionPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, OFFLINE_RETRANSMISSION_PATH, OFFLINE_RETRANSMISSION_TASKS_PATH);
+    }
+
+    public String offlineRetransmissionPath(String taskId) {
+        return Joiner.on(URL_SEPARATOR)
+                .join(basePath, OFFLINE_RETRANSMISSION_PATH, OFFLINE_RETRANSMISSION_TASKS_PATH, taskId);
     }
 
     public String join(String... parts) {

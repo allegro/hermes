@@ -7,7 +7,8 @@ var topics = angular.module('hermes.topic', [
     'hermes.topic.factory',
     'hermes.services',
     'hermes.filters',
-    'hermes.owner'
+    'hermes.owner',
+    'hermes.offlineRetransmission'
 ]);
 
 topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
@@ -243,13 +244,26 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
 
             toaster.pop('info', 'Info', 'Message schema has been copied to clipboard');
         };
+
+        $scope.retransmitOffline = function () {
+            $modal.open({
+                templateUrl: 'partials/modal/offlineRetransmission.html',
+                controller: 'OfflineRetransmissionController',
+                size: 'md',
+                backdrop: 'static',
+                resolve: {
+                    topic: function () {
+                        return $scope.topic;
+                    }
+                }
+            });
+        }
     }]);
 
 topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',
     'toaster', 'topic', 'messageSchema', 'groupName', 'operation',
     function (topicConfig, topicRepository, $scope, $modal, passwordService, toaster, topic, messageSchema, groupName, operation) {
         $scope.config = topicConfig;
-
         $scope.topic = _(topic).clone();
         $scope.messageSchema = messageSchema;
         $scope.groupName = groupName;
