@@ -43,4 +43,6 @@ dependencies {
 
     testCompile group: 'org.apache.oltu.oauth2', name: 'org.apache.oltu.oauth2.client', version: '1.0.2'
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+
+    compile group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
 }

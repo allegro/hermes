@@ -1,6 +1,6 @@
 # Topic preview
 
-See [Topic preview](/user/topic-preview) section for description of this feature.
+See [Topic preview](../user/topic-preview.md) section for description of this feature.
 
 Option                                              | Description                                        | Default value
 --------------------------------------------------- | -------------------------------------------------- | -------------

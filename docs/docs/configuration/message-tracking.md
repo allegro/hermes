@@ -1,7 +1,7 @@
 # Message tracking storage
 
 Hermes can store trace of each event pass through system for selected topics and subscriptions. Information stored in
-trace are described in [subscribing guide](/user/subscribing). This section shows how to configure trace storage.
+trace are described in [subscribing guide](../user/subscribing.md). This section shows how to configure trace storage.
 
 Trace data is important, but not critical in Hermes. The number one priority is to keep Hermes core functionality -
 receiving and sending messages - stable. Thus in case of trace storage downtime or malfunction, internal queues might

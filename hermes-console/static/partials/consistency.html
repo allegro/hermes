@@ -15,11 +15,15 @@
 
     <div class="row text-center">
         <div class="col-md-12">
-            <p class="alert alert-info" ng-if="consistencyChecking.state == 'READY'">
+            <p class="alert alert-info" ng-if="consistencyChecking.state == 'READY' && topicsConsistencyChecking.state == 'READY'">
                 Click 'Check consistency' to detect inconsistencies between clusters.
             </p>
             <div class="alert alert-info" ng-if="consistencyChecking.state == 'CHECKING_CONSISTENCY'">
-                Consistency check is in progress.
+                Groups consistency check is in progress.
+                <span style="font-size: 20px; vertical-align: middle;" class="fa fa-circle-o-notch fa-spin"></span>
+            </div>
+            <div class="alert alert-info" ng-if="topicsConsistencyChecking.state == 'CHECKING_CONSISTENCY'">
+                Topics consistency check is in progress.
                 <span style="font-size: 20px; vertical-align: middle;" class="fa fa-circle-o-notch fa-spin"></span>
             </div>
         </div>
@@ -58,4 +62,25 @@
         </div>
     </div>
 
+    <div class="row container" ng-if="topicsConsistencyChecking.result.inconsistentTopics.length > 0" >
+        <div class="list-group">
+            <div class="list-group-item list-group-item-warning">
+                <div class="form-inline pull-right">
+                    <div class="input-group">
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+                        <input class="form-control" ng-model="search" placeholder="search...">
+                    </div>
+                </div>
+                <h4>Topics existing on kafka cluster but not present in hermes</h4>
+            </div>
+            <div class="list-group-item clearfix"
+                 ng-repeat="topic in topicsConsistencyChecking.result.inconsistentTopics | filter:search:strict | orderBy">
+                <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                <strong>{{topic}}</strong>
+                <div class="pull-right">
+                    <button class="btn btn-danger" ng-click="removeTopic(topic)">Remove</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>

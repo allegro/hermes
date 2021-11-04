@@ -3,8 +3,7 @@
 Hermes Frontend API has option to register callbacks triggered during different phases of message lifetime:
 
 * BrokerAcknowledgedListener: message has been acknowledged by broker, can be considered as persisted
-* BrokerTimeoutListener: broker did not save message in time, it is now stored in memory buffer and retried until
-    successfull
+* BrokerTimeoutListener: broker did not save message in time, it is now stored in memory buffer and retried until  successful
 * BrokerErrorListener: there was some kind of error (e.g. no connection to broker) when trying to send message to broker
 
 ## ChronicleMap implementation

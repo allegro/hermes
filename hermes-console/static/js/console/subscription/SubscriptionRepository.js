@@ -74,7 +74,7 @@ repository.factory('SubscriptionRepository', ['DiscoveryService', '$resource', f
                 return eventTrace.query({topicName: topicName, subscriptionName: subscriptionName, eventId: eventId});
             },
             retransmit: function (topicName, subscriptionName, fromDate) {
-                return retransmission.save({topicName: topicName, subscriptionName: subscriptionName}, fromDate);
+                return retransmission.save({topicName: topicName, subscriptionName: subscriptionName}, {retransmissionDate: fromDate});
             }
         };
 }]);

@@ -3,9 +3,13 @@
         <form name="debuggerForm" class="form-horizontal" role="form">
             <div class="form-group">
                 <div class="col-md-9">
-                    <textarea class="form-control" id="message"
-                              name="message" placeholder="Message (JSON)"
-                              ng-model="message" rows="20"></textarea>
+                    <div class="form-control ace_editor_debug" id="message"
+                         name="message" ng-model="message"
+                         ui-ace="{
+                              useWrapMode : true,
+                              theme:'chrome',
+                              mode: 'json'}">
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <button class="btn btn-info btn-block btn-lg" ng-disabled="verificationInProgress" ng-click="verify()">Verify</button>

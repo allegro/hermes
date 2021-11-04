@@ -2,15 +2,15 @@
 
 This section covers basic operational aspects of deploying Hermes. For more on configuring Hermes read:
 
-* [how to connect to Kafka and Zookeeper](/configuration/kafka-and-zookeeper)
-* [how to fine tune Frontend](/configuration/frontend-tuning)
-* [how to fine tune Consumers](/configuration/consumers-tuning)
-* [how to configure Console](/configuration/console)
-* [how to publish metrics](/configuration/metrics)
+* [how to connect to Kafka and Zookeeper](../configuration/kafka-and-zookeeper.md)
+* [how to fine tune Frontend](../configuration/frontend-tuning.md)
+* [how to fine tune Consumers](../configuration/consumers-tuning.md)
+* [how to configure Console](../configuration/console.md)
+* [how to publish metrics](../configuration/metrics.md)
 
 ## Dependencies
 
-As the [architecture overview](/overview/architecture) states, there are two systems that are required to run
+As the [architecture overview](../overview/architecture.md) states, there are two systems that are required to run
 Hermes:
 
 * **Kafka**
@@ -108,7 +108,7 @@ Hermes Console is a simple Single Page Application served using NodeJS. It accep
 * `-c` or `HERMES_CONSOLE_CONFIG` env variable to specify configuration file (default: `./config.json`)
 
 The `config.json` file is mandatory, Hermes Console will crash when unable to read it. See
-[configuring Hermes Console](/configuration/console) section for more information.
+[configuring Hermes Console](../configuration/console.md) section for more information.
 
 Hermes Console has no dependencies and will run out of the box on Linux machines. To run it, use provided script:
 

@@ -1,10 +1,13 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+
+import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;
 
@@ -14,7 +17,13 @@ public class ReadOnlyModeTest extends IntegrationTest {
 
     @BeforeMethod
     public void initialize() {
+        TestSecurityProvider.setUserIsAdmin(true);
         management.modeEndpoint().setMode(ModeService.READ_WRITE);
+    }
+
+    @AfterMethod
+    public void cleanup() {
+        TestSecurityProvider.setUserIsAdmin(true);
     }
 
     @Test
@@ -31,10 +40,11 @@ public class ReadOnlyModeTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldRestrictModifyingOperations() {
+    public void shouldRestrictModifyingOperationsForNonAdminUsers() {
         // given
         management.modeEndpoint().setMode(ModeService.READ_ONLY);
         String groupName = "not-allowed-group";
+        TestSecurityProvider.setUserIsAdmin(false);
 
         // when
         Response response = createGroup(groupName);
@@ -44,10 +54,25 @@ public class ReadOnlyModeTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldNotRestrictModifyingOperationsForAdminUsers() {
+        // given
+        management.modeEndpoint().setMode(ModeService.READ_ONLY);
+        String groupName = "not-allowed-group";
+        TestSecurityProvider.setUserIsAdmin(true);
+
+        // when
+        Response response = createGroup(groupName);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+    }
+
+    @Test
     public void shouldSwitchModeBack() {
         // given
         management.modeEndpoint().setMode(ModeService.READ_ONLY);
         String groupName = "not-allowed-at-first-group";
+        TestSecurityProvider.setUserIsAdmin(false);
 
         // when
         Response response = createGroup(groupName);
@@ -56,7 +81,9 @@ public class ReadOnlyModeTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.SERVICE_UNAVAILABLE);
 
         // and
+        TestSecurityProvider.setUserIsAdmin(true);
         management.modeEndpoint().setMode(ModeService.READ_WRITE);
+        TestSecurityProvider.setUserIsAdmin(false);
 
         // when
         response = createGroup(groupName);

@@ -7,8 +7,8 @@
     </ol>
 
     <div class="pull-right">
-        <button class="btn btn-primary" ng-show="admin" ng-click="edit()">Edit</button>
-        <button class="btn btn-danger" ng-show="admin" ng-click="remove()">Remove</button>
+        <button class="btn btn-primary" ng-disabled="userWithoutAccess" ng-show="admin" ng-click="edit()">Edit</button>
+        <button class="btn btn-danger" ng-disabled="userWithoutAccess" ng-show="admin" ng-click="remove()">Remove</button>
     </div>
 
     <h1><small>Group:</small> {{group.groupName}}</h1>
@@ -17,8 +17,8 @@
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
-                    <span ng-show="disabled" uib-popover='Sign in to add a topic' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
-                    <button class="btn btn-primary" ng-disabled="disabled" ng-click="addTopic()"><span class="glyphicon glyphicon-plus"></span></button>
+                    <span ng-show="!userHasSufficientPrivileges" uib-popover='Sign in to add a topic' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
+                    <button class="btn btn-primary" ng-disabled="userWithoutAccess" ng-click="addTopic()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
                 <h4>
                     Topics

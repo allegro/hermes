@@ -16,11 +16,11 @@ on topics `subscriptions` resource:
 
 Request body must contain at least:
 
-- topicName : fully qualified name of topic including group name, separated with a dot (see: [naming convention](/overview/data-model#naming-convention))
+- topicName : fully qualified name of topic including group name, separated with a dot (see: [naming convention](../overview/data-model.md#naming-convention))
 - name: name of subscription
 - description: subscription description
 - endpoint: valid URI
-- owner: who's the owner of this subscription (refer to [creating topic](/user/publishing/#creating-topic) for more information)
+- owner: who's the owner of this subscription (refer to [creating topic](../user/publishing.md#creating-topic) for more information)
 
 Minimal request:
 
@@ -49,7 +49,7 @@ subscriptionPolicy.retryClientErrors | retry on receiving 4xx status            
 subscriptionPolicy.requestTimeout    | request timeout in millis                           | 1000
 subscriptionPolicy.socketTimeout     | maximum time of inactivity between two data packets | infinity
 subscriptionPolicy.inflightSize      | max number of pending requests                      | 100
-subscriptionPolicy.backoffMultiplier | backoff multiplier for calcaulting message backoff  | 1
+subscriptionPolicy.backoffMultiplier | backoff multiplier for calculating message backoff  | 1
 subscriptionPolicy.backoffMaxIntervalInSec | maximal retry backoff in seconds              | 600
 headers                              | additional HTTP request headers                     | [] (array of headers)
 filters                              | used for skipping unwanted messages                 | [] (array of filters)
@@ -232,7 +232,7 @@ will be resent.
 ## Rate limiting
 
 Each subscription can define a hard limit of accepted messages per second and Hermes will never cross this line. However
-below this treshold, rate limiting algorithm tries to match sending speed with current capabilities of subscriber.
+below this threshold, rate limiting algorithm tries to match sending speed with current capabilities of subscriber.
 
 For example lets take subscriber A who has declared that he is able to receive 100 msg/sec at maximum. Hermes will be
 sending messages at this rate. Now assume that there is a problem with subscriber A - 10% of requests gets timed out.
@@ -242,7 +242,7 @@ the speed will automatically increase to reach the maximum.
 This is important when trying to understand why subscriber receives less messages than expected or the subscribers lag
 is growing. First things first, you should check subscription metrics for signs of any problems.
 
-If you want to know the exact algorithm, check [rate limiting configuration page](/configuration/rate-limiting/).
+If you want to know the exact algorithm, check [rate limiting configuration page](../configuration/rate-limiting.md).
 
 ## Additional headers
 
@@ -258,7 +258,7 @@ like feature flags.
 
 It's ignored by the default implementation.
 
-See [console integration](/configuration/console/#subscription-configuration) for more information.
+See [console integration](../configuration/console.md#subscription-configuration) for more information.
 
 ## Message filtering
 
@@ -411,7 +411,7 @@ Verify the OAuth provider is registered by calling `GET` on `/oauth/providers` a
 Hermes HTTP endpoints return asterisks (`******`) in place of the actual secrets.
 
 **Important**: Note that OAuth configuration credentials (secrets, passwords) are stored as plaintext in Zookeeper.
-Make sure access to it is [properly secured](/configuration/kafka-and-zookeeper#Zookeeper)!
+Make sure access to it is [properly secured](../configuration/kafka-and-zookeeper.md#zookeeper)!
 
 #### Requesting tokens
 
@@ -434,7 +434,7 @@ Both OAuth 2 server-side grants are supported by Hermes in order to secure subsc
 
 #### Client credentials grant
 
-[Cient credentials grant](https://tools.ietf.org/html/rfc6749#section-4.4) is the simpler OAuth grant type where a client (Hermes)
+[Client credentials grant](https://tools.ietf.org/html/rfc6749#section-4.4) is the simpler OAuth grant type where a client (Hermes)
 is given permission to send messages to subscription endpoint.
 To acquire an access token Hermes will use it's credentials configured in a specific OAuth provider definition.
 
@@ -659,4 +659,4 @@ It returns array of message tracking information in following format:
 
 Sending delay can be defined for each serial subscription. Consumers will wait for a given time before trying to deliver a message.
 This might be useful in situations when there are multiple topics that sends events in the same time, but you want to increase
-chance that events from one topics will be delivered later than events from another topic.
+chance that events from one topic will be delivered later than events from another topic.

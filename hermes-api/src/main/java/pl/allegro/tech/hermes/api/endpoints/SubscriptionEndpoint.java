@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
 import pl.allegro.tech.hermes.api.ConsumerGroup;
+import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
@@ -102,7 +103,7 @@ public interface SubscriptionEndpoint {
     Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                         @PathParam("subscriptionName") String subscriptionName,
                         @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
-                        String formattedTime);
+                        OffsetRetransmissionDate offsetRetransmissionDate);
 
     @GET
     @Produces(APPLICATION_JSON)

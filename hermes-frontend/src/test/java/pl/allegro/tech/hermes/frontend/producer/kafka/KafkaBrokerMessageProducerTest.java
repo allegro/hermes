@@ -51,12 +51,15 @@ public class KafkaBrokerMessageProducerTest {
     @Mock
     private HermesMetrics hermesMetrics;
 
+    @Mock
+    private KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
+
     private CachedTopic cachedTopic;
 
     @Before
     public void before() {
         cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
-        producer = new KafkaBrokerMessageProducer(producers, hermesMetrics, kafkaHeaderFactory, configFactory);
+        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, kafkaHeaderFactory, configFactory);
     }
 
     @After

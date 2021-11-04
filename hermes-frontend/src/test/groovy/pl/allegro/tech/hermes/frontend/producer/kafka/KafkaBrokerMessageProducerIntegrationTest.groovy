@@ -53,7 +53,6 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     @Shared
     ConfigFactory configFactory = Mock() {
-        getLongProperty(Configs.FRONTEND_STARTUP_WAIT_KAFKA_INTERVAL) >> 1L
         getStringProperty(Configs.KAFKA_HEADER_NAME_MESSAGE_ID) >> "id"
         getStringProperty(Configs.KAFKA_HEADER_NAME_TIMESTAMP) >> "ts"
         getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_VERSION) >> "sv"
@@ -99,6 +98,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     def setup() {
         producers = new Producers(leaderConfirms, everyoneConfirms, configFactory)
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
+                new KafkaTopicMetadataFetcher(adminClient, configFactory),
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
                 new KafkaHeaderFactory(configFactory),
                 configFactory)

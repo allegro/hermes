@@ -5,9 +5,11 @@ repository.factory('ConsistencyRepository', ['DiscoveryService', '$resource',
 
         const consistencyResource = $resource(discovery.resolve('/consistency/inconsistencies/groups'));
         const groupsResource = $resource(discovery.resolve('/consistency/groups'));
+        const consistencyTopicsResource = $resource(discovery.resolve('/consistency/inconsistencies/topics'))
 
         var lastConsistencyCheckingResult = {
-            inconsistentGroups: null
+            inconsistentGroups: null,
+            inconsistentTopics: null
         };
 
         function getGroup(groupName) {
@@ -22,10 +24,22 @@ repository.factory('ConsistencyRepository', ['DiscoveryService', '$resource',
                 return groupsResource.query().$promise;
             },
             setLastConsistencyCheckingResult: function (result) {
-                lastConsistencyCheckingResult = result;
+                lastConsistencyCheckingResult.inconsistentGroups = result;
             },
             getLastConsistencyCheckingResult: function () {
-                return lastConsistencyCheckingResult;
+                return lastConsistencyCheckingResult.inconsistentGroups
+            },
+            getLastTopicsConsistencyCheckingResult: function () {
+                return lastConsistencyCheckingResult.inconsistentTopics
+            },
+            setLastTopicsConsistencyCheckingResult: function (result) {
+                lastConsistencyCheckingResult.inconsistentTopics = result;
+            },
+            listInconsistentTopics: function () {
+                return consistencyTopicsResource.query().$promise;
+            },
+            removeTopic: function (topicName) {
+                return consistencyTopicsResource.remove({topicName: topicName});
             },
             getGroup: getGroup,
             getTopic: function (groupName, topicName) {

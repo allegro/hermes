@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.common.di;
 
 import com.yammer.metrics.core.HealthCheckRegistry;
-import java.util.List;
 import org.apache.avro.Schema;
 import org.glassfish.hk2.api.TypeLiteral;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
@@ -16,7 +15,6 @@ import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCa
 import pl.allegro.tech.hermes.common.di.factories.OAuthProviderRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.di.factories.PathsCompilerFactory;
-import pl.allegro.tech.hermes.common.di.factories.ReadinessRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.SharedCounterFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndicatorFactory;
 import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
@@ -46,7 +44,6 @@ import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
-import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
@@ -98,8 +95,6 @@ public class CommonBinder extends AbstractBinder {
         bindSingletonFactory(KafkaNamesMapperFactory.class);
         bindSingletonFactory(MessagePreviewRepositoryFactory.class);
         bindFactory(WorkloadConstraintsRepositoryFactory.class).in(Singleton.class).to(WorkloadConstraintsRepository.class);
-        bindFactory(ReadinessRepositoryFactory.class).in(Singleton.class).to(new TypeLiteral<List<ReadinessRepository>>() {
-        });
 
         bind(ZookeeperInternalNotificationBus.class).to(InternalNotificationsBus.class);
         bindSingletonFactory(ModelAwareZookeeperNotifyingCacheFactory.class);

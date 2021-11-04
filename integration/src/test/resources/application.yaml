@@ -86,3 +86,7 @@ audit:
   isLoggingAuditEnabled: false
   isEventAuditEnabled: true
   eventUrl: "http://localhost:18081/audit-events"
+
+group:
+  nonAdminCreationEnabled: true
+  allowedGroupNameRegex: "[a-zA-Z0-9_.-]+"

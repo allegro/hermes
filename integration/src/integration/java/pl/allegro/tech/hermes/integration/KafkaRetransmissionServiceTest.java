@@ -5,6 +5,7 @@ import com.google.common.collect.Multimaps;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
@@ -16,8 +17,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
 import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static java.util.stream.Collectors.summingLong;
@@ -51,14 +51,14 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
         sendMessagesOnTopic(topic, 4);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
-        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
         Thread.sleep(1000);
         sendMessagesOnTopic(topic, 2);
         wait.untilConsumerCommitsOffset(topic, subscription);
 
         // when
         remoteService.expectMessages(simpleMessages(2));
-        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, false, dateTime);
+        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, false, retransmissionDate);
         wait.untilSubscriptionEndsReiteration(topic, subscription);
 
         // then
@@ -77,12 +77,12 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         // we have 2 partitions, thus 4 messages to get 2 per partition
         sendMessagesOnTopic(topic, 4);
         Thread.sleep(2000); //wait 1s because our date time format has seconds precision
-        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
         sendMessagesOnTopic(topic, 2);
         wait.untilConsumerCommitsOffset(topic, subscription);
 
         // when
-        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, true, dateTime);
+        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription, true, retransmissionDate);
 
         // then
         assertThat(response).hasStatus(OK);
@@ -107,7 +107,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         wait.untilConsumerCommitsOffset(topic, subscription.getName());
 
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
-        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
 
         sendMessagesOnTopic(topic, 1);
         wait.untilConsumerCommitsOffset(topic, subscription.getName());
@@ -126,7 +126,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         wait.untilConsumerCommitsOffset(topic, subscription.getName());
 
         // when
-        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription.getName(), true, dateTime);
+        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription.getName(), true, retransmissionDate);
 
         // then
         assertThat(response).hasStatus(OK);

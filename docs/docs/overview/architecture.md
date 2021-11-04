@@ -6,13 +6,13 @@ details.
 
 Hermes is message broker using Kafka as message storage and routing backed. It consists of three modules:
 
-* **Hermes Frontend** - receives traffic (messages) from clients, see: [publishing](/user/publishing)
-* **Hermes Consumers** - sends messages to subscribers (push model), see: [subscribing](/user/subscribing)
+* **Hermes Frontend** - receives traffic (messages) from clients, see: [publishing](../user/publishing.md)
+* **Hermes Consumers** - sends messages to subscribers (push model), see: [subscribing](../user/subscribing.md)
 * **Hermes Management** - manage topics and subscriptions
 
 Hermes integrates with multiple systems, each having different role.
 
-![Architecture overview](/img/architecture-overview.png)
+![Architecture overview](../img/architecture-overview.png)
 
 * **Message Store** - stores and routes messages, current implementation: Kafka
 * **Metadata Store** - shared metadata storage for all Hermes modules, current implementation: Zookeeper

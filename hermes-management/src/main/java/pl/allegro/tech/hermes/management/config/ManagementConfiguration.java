@@ -69,13 +69,5 @@ public class ManagementConfiguration {
         return new ClockFactory().provide();
     }
 
-    @Bean
-    public FilterRegistrationBean<ReadOnlyFilter> readOnlyFilter(ModeService modeService) {
-        FilterRegistrationBean<ReadOnlyFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setDispatcherTypes(REQUEST);
-        registrationBean.setFilter(new ReadOnlyFilter(modeService));
-        registrationBean.addUrlPatterns("/*");
-        registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return registrationBean;
-    }
+
 }
