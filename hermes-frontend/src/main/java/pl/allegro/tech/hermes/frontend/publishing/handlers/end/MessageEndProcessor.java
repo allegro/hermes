@@ -24,22 +24,26 @@ public class MessageEndProcessor {
 
     private final Trackers trackers;
     private final BrokerListeners brokerListeners;
+    private final ExtraHeadersExtractor extraHeadersExtractor;
 
     @Inject
-    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners) {
+    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, ExtraHeadersExtractor extraHeadersExtractor) {
         this.trackers = trackers;
         this.brokerListeners = brokerListeners;
+        this.extraHeadersExtractor = extraHeadersExtractor;
     }
 
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
         trackers.get(attachment.getTopic()).logPublished(
-                attachment.getMessageId(), attachment.getTopic().getName(), readHostAndPort(exchange));
+                attachment.getMessageId(), attachment.getTopic().getName(), readHostAndPort(exchange),
+                extraHeadersExtractor.extractExtraRequestHeaders(exchange));
         sendResponse(exchange, attachment, StatusCodes.CREATED);
         attachment.getCachedTopic().incrementPublished();
     }
 
     public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
-        trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(), readHostAndPort(exchange));
+        trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(),
+                readHostAndPort(exchange), message.getExtraRequestHeaders());
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
         cachedTopic.incrementPublished();
     }
@@ -52,7 +56,8 @@ public class MessageEndProcessor {
     public void bufferedButDelayed(HttpServerExchange exchange, AttachmentContent attachment) {
         Topic topic = attachment.getTopic();
         brokerListeners.onTimeout(attachment.getMessage(), topic);
-        trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName(), readHostAndPort(exchange));
+        trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName(), readHostAndPort(exchange),
+                extraHeadersExtractor.extractExtraRequestHeaders(exchange));
         handleRaceConditionBetweenAckAndTimeout(attachment, topic);
         sendResponse(exchange, attachment, StatusCodes.ACCEPTED);
     }
