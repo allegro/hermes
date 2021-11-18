@@ -6,7 +6,9 @@ dependencies {
 
     compile group: 'io.undertow', name: 'undertow-core', version: versions.undertow
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    compile group: 'net.openhft', name: 'chronicle-map', version: '3.16.0'
+    compile (group: 'net.openhft', name: 'chronicle-map', version: '3.21.86') {
+        exclude group: 'net.openhft', module: 'chronicle-analytics'
+    }
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
     compile group: 'net.jodah', name: 'failsafe', version: versions.failsafe
 
