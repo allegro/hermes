@@ -30,6 +30,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORCE_VERSION: ${{ github.event.inputs.forceVersion }}
+      - name: Log new version
+        run: 'echo "New Hermes version: `./gradlew -q cV -Prelease.quiet`"'
       - name: Publish to Sonatype
         run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
