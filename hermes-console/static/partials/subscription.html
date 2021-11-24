@@ -211,7 +211,7 @@
                 <div class="panel-body">
                     <form class="form-inline">
                         <div class="form-group">
-                            <div class="input-group date" id="retransmitFromDate">
+                            <div class="input-group date" id="retransmitFromDate" calendar days-back="daysBack">
                                 <input type="text" class="form-control" style="width: 250px" placeholder="since..." ng-disabled="disabled || subscription.state !== 'ACTIVE'"/>
                                 <span class="input-group-addon" ng-disabled="disabled || subscription.state !== 'ACTIVE'">
                                     <span class="glyphicon glyphicon-time"></span>

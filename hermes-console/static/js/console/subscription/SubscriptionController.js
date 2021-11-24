@@ -46,7 +46,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
 
         topicRepository.get(topicName).then(function(topic) {
             $scope.topicContentType = topic.contentType;
-            initRetransmissionCalendar(topic.retentionTime.duration);
+            $scope.daysBack = topic.retentionTime.duration;
         });
 
         subscriptionMetrics.metrics(topicName, subscriptionName).then(function(metrics) {
@@ -328,17 +328,3 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
         };
 
     }]);
-
-function initRetransmissionCalendar(daysBack) {
-    const startDate = moment().subtract(daysBack, "days");
-    const endDate = moment().add(1, "second"); // this one second allows switching between today and yesterday in datetimepicker at first click
-
-    $('#retransmitFromDate').datetimepicker({
-        format: "YYYY-MM-DDTHH:mm:ssZ",
-        ignoreReadonly: true,
-        useCurrent: true,
-        minDate: startDate,
-        maxDate: endDate,
-        sideBySide: true
-    });
-}
