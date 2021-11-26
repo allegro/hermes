@@ -10,14 +10,19 @@ import java.security.Principal;
 public class TestSecurityProvider implements SecurityProvider {
 
     private static volatile boolean userIsAdmin = true;
+    private static volatile boolean isOwner = true;
 
     public static synchronized void setUserIsAdmin(boolean userIsAdmin) {
         TestSecurityProvider.userIsAdmin = userIsAdmin;
     }
 
+    public static synchronized void setIsOwner(boolean userIsOwner) {
+        TestSecurityProvider.isOwner = userIsOwner;
+    }
+
     @Override
     public HermesSecurity security(ContainerRequestContext requestContext) {
-        return new HermesSecurity(securityContext(requestContext), ownerId -> true);
+        return new HermesSecurity(securityContext(requestContext), ownerId -> isOwner);
     }
 
     private SecurityContext securityContext(ContainerRequestContext requestContext) {
