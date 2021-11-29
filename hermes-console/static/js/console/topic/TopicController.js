@@ -24,6 +24,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.config = topicConfig;
         $scope.showFixedHeaders = subscriptionConfig.showFixedHeaders;
         $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
+        $scope.offlineRetransmissionEnabled = topicConfig.offlineRetransmissionEnabled;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
@@ -44,6 +45,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 console.error('Could not parse topic schema: ', e);
                 $scope.messageSchema = '[schema parsing failure]';
             }
+            $scope.offlineRetransmissionEnabled = $scope.offlineRetransmissionEnabled && $scope.topic.offlineStorage.enabled;
         });
 
         $scope.metricsUrls = topicMetrics.metricsUrls(groupName, topicName);
@@ -101,6 +103,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 }
             }).result.then(function (result) {
                 $scope.topic = result.topic;
+                $scope.offlineRetransmissionEnabled = $scope.offlineRetransmissionEnabled && $scope.topic.offlineStorage.enabled;
                 $scope.messageSchema = result.messageSchema;
             });
         };
@@ -254,6 +257,9 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 resolve: {
                     topic: function () {
                         return $scope.topic;
+                    },
+                    topicConfig: function () {
+                        return $scope.config;
                     }
                 }
             });
