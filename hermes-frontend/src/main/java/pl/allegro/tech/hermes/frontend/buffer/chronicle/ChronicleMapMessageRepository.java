@@ -14,6 +14,9 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 public class ChronicleMapMessageRepository implements MessageRepository {
@@ -22,7 +25,14 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     private static final boolean SAME_BUILDER_CONFIG = false;
 
-    private ChronicleMap<String, ChronicleMapEntryValue> map;
+    private final ChronicleMap<String, ChronicleMapEntryValue> map;
+
+    private boolean closed = false;
+    private final ReadWriteLock closeLock = new ReentrantReadWriteLock();
+
+    static {
+        System.setProperty("chronicle.map.disable.locking", Boolean.TRUE.toString());
+    }
 
     public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize) {
         logger.info("Creating backup storage in path: {}", file.getAbsolutePath());
@@ -31,6 +41,8 @@ public class ChronicleMapMessageRepository implements MessageRepository {
                     .constantKeySizeBySample(MessageIdGenerator.generate())
                     .averageValueSize(averageMessageSize)
                     .entries(entries)
+                    .setPreShutdownAction(new LoggingMapSizePreShutdownHook())
+                    .sparseFile(true)
                     .createOrRecoverPersistedTo(file, SAME_BUILDER_CONFIG);
         } catch (IOException e) {
             logger.error("Failed to load backup storage file from path {}", file.getAbsoluteFile(), e);
@@ -40,12 +52,21 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize, HermesMetrics hermesMetrics) {
         this(file, entries, averageMessageSize);
-        hermesMetrics.registerMessageRepositorySizeGauge(() -> map.size());
+        hermesMetrics.registerMessageRepositorySizeGauge(map::size);
     }
 
     @Override
     public void save(Message message, Topic topic) {
-        map.put(message.getId(), new ChronicleMapEntryValue(message.getData(), message.getTimestamp(), topic.getQualifiedName(), message.getPartitionKey(), message.getExtraRequestHeaders()));
+        Lock lock = closeLock.readLock();
+        lock.lock();
+        try {
+            if (closed) {
+                throw new ChronicleMapClosedException("Backup storage is closed. Unable to add new messages.");
+            }
+            map.put(message.getId(), new ChronicleMapEntryValue(message.getData(), message.getTimestamp(), topic.getQualifiedName(), message.getPartitionKey(), message.getExtraRequestHeaders()));
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -65,5 +86,22 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     private BackupMessage toBackupMessage(String id, ChronicleMapEntryValue entryValue) {
         return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(), entryValue.getQualifiedTopicName(), entryValue.getPartitionKey(), entryValue.getExtraRequestHeaders());
+    }
+
+    private class LoggingMapSizePreShutdownHook implements Runnable {
+
+        @Override
+        public void run() {
+            Lock lock = closeLock.writeLock();
+            lock.lock();
+            try {
+                closed = true;
+                if (map != null) {
+                    logger.info("Closing backup storage with {} messages.", map.size());
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
     }
 }

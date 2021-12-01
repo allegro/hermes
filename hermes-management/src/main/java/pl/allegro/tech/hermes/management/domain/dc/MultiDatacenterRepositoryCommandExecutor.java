@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.domain.dc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.exception.HermesException;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.util.ArrayList;

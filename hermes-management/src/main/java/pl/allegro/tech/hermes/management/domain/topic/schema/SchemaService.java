@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidator;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.util.Optional;
@@ -54,6 +55,12 @@ public class SchemaService {
     public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {
         return rawSchemaClient
             .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), version)
+            .map(RawSchemaWithMetadata::getSchema);
+    }
+
+    public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaId id) {
+        return rawSchemaClient
+            .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), id)
             .map(RawSchemaWithMetadata::getSchema);
     }
 

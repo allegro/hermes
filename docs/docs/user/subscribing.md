@@ -215,8 +215,9 @@ overall sending speed (except **429**, see above). To be sure, take a look at th
 |------------------|------------------------|--------------------|---------------|-------------------------|
 | 4xx (except 429) | false                  | not applicable     | no            | no                      |
 | 4xx (except 429) | true                   | not applicable     | yes           | yes                     |
-| 429              | not applicable         | no                 | yes           | yes                     |
-| 429              | not applicable         | yes                | yes           | no                      |
+| 429              | false                  | not applicable     | no            | yes                     |
+| 429              | true                   | no                 | yes           | yes                     |
+| 429              | true                   | yes                | yes           | no                      |
 | 5xx (except 503) | not applicable         | not applicable     | yes           | yes                     |
 | 503              | not applicable         | no                 | yes           | yes                     |
 | 503              | not applicable         | yes                | yes           | no                      |             

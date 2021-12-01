@@ -13,9 +13,14 @@ public interface SchemaEndpoint {
     Response get(@PathParam("topicName") String qualifiedTopicName);
 
     @GET
-    @Path("{version}")
+    @Path("versions/{version}")
     @Produces(APPLICATION_JSON)
-    Response get(@PathParam("topicName") String qualifiedTopicName, @PathParam("version") int version);
+    Response getByVersion(@PathParam("topicName") String qualifiedTopicName, @PathParam("version") int version);
+
+    @GET
+    @Path("ids/{id}")
+    @Produces(APPLICATION_JSON)
+    Response getById(@PathParam("topicName") String qualifiedTopicName, @PathParam("id") int id);
 
     @POST
     @Consumes(APPLICATION_JSON)

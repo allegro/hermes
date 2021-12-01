@@ -334,6 +334,7 @@ public class ConsoleProperties {
         private List<RetentionUnit> retentionUnits = Lists.newArrayList(
                 new RetentionUnit("DAYS", "DAYS")
         );
+        private boolean offlineRetransmissionEnabled = false;
 
         public boolean isMessagePreviewEnabled() {
             return messagePreviewEnabled;
@@ -399,7 +400,9 @@ public class ConsoleProperties {
             this.removeSchema = removeSchema;
         }
 
-        public boolean isSchemaIdAwareSerializationEnabled() { return schemaIdAwareSerializationEnabled; }
+        public boolean isSchemaIdAwareSerializationEnabled() {
+            return schemaIdAwareSerializationEnabled;
+        }
 
         public void setSchemaIdAwareSerializationEnabled(boolean schemaIdAwareSerializationEnabled) {
             this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
@@ -420,6 +423,15 @@ public class ConsoleProperties {
         public void setRetentionUnits(List<RetentionUnit> retentionUnits) {
             this.retentionUnits = retentionUnits;
         }
+
+        public boolean getOfflineRetransmissionEnabled() {
+            return offlineRetransmissionEnabled;
+        }
+
+        public void setOfflineRetransmissionEnabled(boolean offlineRetransmissionEnabled) {
+            this.offlineRetransmissionEnabled = offlineRetransmissionEnabled;
+        }
+
     }
 
     public static final class DefaultTopicView {

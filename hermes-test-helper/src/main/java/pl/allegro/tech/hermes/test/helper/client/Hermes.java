@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.ModeEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.OfflineRetransmissionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.ReadinessEndpoint;
@@ -131,6 +132,10 @@ public class Hermes {
 
     public ReadinessEndpoint createReadinessEndpoint() {
         return createProxy(url, ReadinessEndpoint.class, managementConfig);
+    }
+
+    public OfflineRetransmissionEndpoint createOfflineRetransmissionEndpoint() {
+        return createProxy(url, OfflineRetransmissionEndpoint.class, managementConfig);
     }
 
     public AsyncMessagePublisher createAsyncMessagePublisher() {
