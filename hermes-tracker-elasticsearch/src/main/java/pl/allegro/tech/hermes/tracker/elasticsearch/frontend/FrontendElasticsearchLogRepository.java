@@ -15,11 +15,11 @@ import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
 import java.io.IOException;
 import java.util.Map;
 
-import static java.util.stream.Collectors.joining;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
 
 public class FrontendElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
@@ -92,18 +92,12 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
                 .field(CLUSTER, clusterName)
                 .field(SOURCE_HOSTNAME, this.hostname)
                 .field(REMOTE_HOSTNAME, hostname)
-                .field(EXTRA_REQUEST_HEADERS, joinExtraRequestHeaders(extraRequestHeaders));
+                .field(EXTRA_REQUEST_HEADERS, extraRequestHeaders.entrySet().stream()
+                    .collect(extraRequestHeadersCollector()));
     }
 
     private long toSeconds(long millis) {
         return millis / 1000;
-    }
-
-    private String joinExtraRequestHeaders(Map<String, String> extraRequestHeaders) {
-        return extraRequestHeaders.entrySet()
-            .stream()
-            .map(entry -> entry.getKey() + "=" + entry.getValue())
-            .collect(joining(","));
     }
 
     public static class Builder {

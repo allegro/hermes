@@ -73,7 +73,8 @@ public class MongoLogRepository implements LogRepository, LogSchemaAware {
                 null,
                 object.getInt(PARTITION, -1),
                 object.getLong(OFFSET, -1),
-                object.getString(CLUSTER, "")
+                object.getString(CLUSTER, ""),
+                object.getString(EXTRA_REQUEST_HEADERS)
         );
     }
 
@@ -87,7 +88,8 @@ public class MongoLogRepository implements LogRepository, LogSchemaAware {
                 PublishedMessageTraceStatus.valueOf(object.getString(STATUS)),
                 object.getString(REASON),
                 null,
-                object.getString(CLUSTER, "")
+                object.getString(CLUSTER, ""),
+                object.getString(EXTRA_REQUEST_HEADERS)
         );
     }
 

@@ -18,11 +18,10 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Gauges;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 
 import java.io.IOException;
-import java.util.Map;
 
-import static java.util.stream.Collectors.joining;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
 
 public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
@@ -103,14 +102,8 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
                 .field(PARTITION, message.getPartition())
                 .field(CLUSTER, clusterName)
                 .field(SOURCE_HOSTNAME, hostname)
-                .field(EXTRA_REQUEST_HEADERS, joinExtraRequestHeaders(message.getExtraRequestHeaders()));
-    }
-
-    private String joinExtraRequestHeaders(Map<String, String> extraRequestHeaders) {
-        return extraRequestHeaders.entrySet()
-            .stream()
-            .map(entry -> entry.getKey() + "=" + entry.getValue())
-            .collect(joining(","));
+                .field(EXTRA_REQUEST_HEADERS, message.getExtraRequestHeaders().entrySet().stream()
+                    .collect(extraRequestHeadersCollector()));
     }
 
     private long toSeconds(long millis) {

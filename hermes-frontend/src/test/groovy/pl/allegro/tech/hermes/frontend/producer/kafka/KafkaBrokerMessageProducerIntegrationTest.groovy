@@ -11,6 +11,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.TopicPartition
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap
 import org.testcontainers.spock.Testcontainers
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.DeliveryType
@@ -163,7 +164,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     private AvroMessage generateAvroMessage(String partitionKey) {
         def avroUser = new AvroUser()
-        return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema, partitionKey)
+        return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema, partitionKey, ImmutableMap.of())
     }
 
     private def createTestSubscription(Topic topic, String subscriptionName) {

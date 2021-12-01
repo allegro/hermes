@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview
 
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage
@@ -24,8 +25,8 @@ class MessagePreviewLogTest extends Specification {
 
     def "should persist JSON messages for topics"() {
         given:
-        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [1] as byte[], 0L, "partition-key"))
-        log.add(fromQualifiedName('group.topic-2'), new JsonMessage('id', [2] as byte[], 0L, null))
+        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [1] as byte[], 0L, "partition-key", ImmutableMap.of()))
+        log.add(fromQualifiedName('group.topic-2'), new JsonMessage('id', [2] as byte[], 0L, null, ImmutableMap.of()))
 
         when:
         def messages = log.snapshotAndClean()
@@ -37,7 +38,7 @@ class MessagePreviewLogTest extends Specification {
     def "should persist Avro messages for topics"() {
         given:
         def avroUser = new AvroUser()
-        def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null)
+        def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null, ImmutableMap.of())
 
         log.add(fromQualifiedName('group.topic-1'), message)
 
@@ -50,9 +51,9 @@ class MessagePreviewLogTest extends Specification {
 
     def "should persist no more than two messages for topic"() {
         given:
-        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [1] as byte[], 0L, null))
-        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [2] as byte[], 0L, null))
-        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [3] as byte[], 0L, null))
+        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [1] as byte[], 0L, null, ImmutableMap.of()))
+        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [2] as byte[], 0L, null, ImmutableMap.of()))
+        log.add(fromQualifiedName('group.topic-1'), new JsonMessage('id', [3] as byte[], 0L, null, ImmutableMap.of()))
 
         when:
         def messages = log.snapshotAndClean()
@@ -70,7 +71,7 @@ class MessagePreviewLogTest extends Specification {
         threads.times {
             int executor = it
             executorService.submit({
-                1000.times { log.add(fromQualifiedName("group.topic"), new JsonMessage('id', [executor, it] as byte[], 0L, null)) }
+                1000.times { log.add(fromQualifiedName("group.topic"), new JsonMessage('id', [executor, it] as byte[], 0L, null, ImmutableMap.of())) }
                 latch.countDown()
             })
         }

@@ -82,6 +82,6 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
 
     private SentMessageTrace createUndeliveredMessage(String subscription, String message) {
         return SentMessageTrace.createUndeliveredMessage(TOPIC, subscription, message, new IllegalArgumentException(),
-                1L, 1, 1L, "cluster");
+                1L, 1, 1L, "cluster", "");
     }
 }

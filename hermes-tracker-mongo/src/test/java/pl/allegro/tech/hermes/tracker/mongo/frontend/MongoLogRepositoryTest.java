@@ -27,27 +27,31 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
     @Override
     protected void awaitUntilMessageIsPersisted(String topic,
                                                 String id,
+                                                String remoteHostname,
                                                 PublishedMessageTraceStatus status,
-                                                String remoteHostname) throws Exception {
+                                                String... extraRequestHeadersKeywords) throws Exception {
         awaitUntilMessageIsPersisted(
                 new BasicDBObject(TOPIC_NAME, topic)
                 .append(STATUS, status.toString())
                 .append(MESSAGE_ID, id)
-                .append(REMOTE_HOSTNAME, remoteHostname));
+                .append(REMOTE_HOSTNAME, remoteHostname)
+                .append(EXTRA_REQUEST_HEADERS, extraRequestHeadersKeywords));
     }
 
     @Override
     protected void awaitUntilMessageIsPersisted(String topic,
                                                 String id,
-                                                PublishedMessageTraceStatus status,
                                                 String reason,
-                                                String remoteHostname) throws Exception {
+                                                String remoteHostname,
+                                                PublishedMessageTraceStatus status,
+                                                String... extraRequestHeadersKeywords) throws Exception {
         awaitUntilMessageIsPersisted(
                 new BasicDBObject(TOPIC_NAME, topic)
                 .append(STATUS, status.toString())
                 .append(MESSAGE_ID, id)
                 .append(REASON, reason)
-                .append(REMOTE_HOSTNAME, remoteHostname));
+                .append(REMOTE_HOSTNAME, remoteHostname)
+                .append(EXTRA_REQUEST_HEADERS, extraRequestHeadersKeywords));
     }
 
     private void awaitUntilMessageIsPersisted(DBObject query) throws Exception {

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview
 
+import com.google.common.collect.ImmutableMap
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage
@@ -16,7 +17,7 @@ class MessagePreviewFactoryTest extends Specification {
         given:
             factory = new MessagePreviewFactory(maxContentSize)
         when:
-            MessagePreview preview = factory.create(new JsonMessage('message-id', new byte[messageSize], 0L, "partition-key"))
+            MessagePreview preview = factory.create(new JsonMessage('message-id', new byte[messageSize], 0L, "partition-key", ImmutableMap.of()))
         then:
             preview.truncated == shouldTruncate
         where:
@@ -31,7 +32,7 @@ class MessagePreviewFactoryTest extends Specification {
     def "should truncate message preview if it is too large after decoding to JSON"() {
         given:
             def avroUser = new AvroUser()
-            def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null)
+            def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null, ImmutableMap.of())
             factory = new MessagePreviewFactory(avroUser.asJson().length() - 1)
         when:
             MessagePreview preview = factory.create(message)

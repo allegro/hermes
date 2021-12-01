@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -34,6 +35,7 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 
 public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
 
@@ -100,8 +102,9 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
         //given
         MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch.messageStatus", "subscription");
         long timestamp = System.currentTimeMillis();
+        ImmutableMap<String, String> extraRequestHeaders = ImmutableMap.of("x-header1", "value1", "x-header2", "value2");
 
-        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch.messageStatus", "localhost");
+        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch.messageStatus", "localhost", extraRequestHeaders);
         consumersLogRepository.logSuccessful(messageMetadata, "localhost", timestamp);
 
         //when
@@ -145,7 +148,9 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
                 null,
                 messageMetadata.getPartition(),
                 messageMetadata.getOffset(),
-                CLUSTER_NAME);
+                CLUSTER_NAME,
+                messageMetadata.getExtraRequestHeaders().entrySet().stream()
+                    .collect(extraRequestHeadersCollector()));
     }
 
     private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus status) {
@@ -155,6 +160,8 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
                 status,
                 null,
                 null,
-                CLUSTER_NAME);
+                CLUSTER_NAME,
+                messageMetadata.getExtraRequestHeaders().entrySet().stream()
+                    .collect(extraRequestHeadersCollector()));
     }
 }

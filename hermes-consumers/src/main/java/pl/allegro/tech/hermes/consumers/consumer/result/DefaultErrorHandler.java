@@ -10,11 +10,14 @@ import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
+import java.util.Map;
 
 import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
@@ -47,15 +50,17 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         updateMeters(subscription);
         updateMetrics(Counters.DISCARDED, message, subscription);
 
-        addToMessageLog(message, subscription, result);
+        MessageMetadata messageMetadata = toMessageMetadata(message, subscription);
+
+        addToMessageLog(message, subscription, result, messageMetadata.getExtraRequestHeaders());
 
         trackers.get(subscription).logDiscarded(toMessageMetadata(message, subscription), result.getRootCause());
     }
 
-    private void addToMessageLog(Message message, Subscription subscription, MessageSendingResult result) {
+    private void addToMessageLog(Message message, Subscription subscription, MessageSendingResult result, Map<String, String> extraRequestHeaders) {
         result.getLogInfo().forEach(logInfo ->
                 undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), logInfo.getFailure(), clock.millis(),
-                        message.getPartition(), message.getOffset(), cluster)));
+                        message.getPartition(), message.getOffset(), cluster, extraRequestHeaders.entrySet().stream().collect(extraRequestHeadersCollector()))));
 
     }
 

@@ -72,7 +72,8 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
                 null,
                 object.getInt(PARTITION, -1),
                 object.getLong(OFFSET, -1),
-                object.getString(CLUSTER, "")
+                object.getString(CLUSTER, ""),
+                object.getString(EXTRA_REQUEST_HEADERS)
         );
     }
 }

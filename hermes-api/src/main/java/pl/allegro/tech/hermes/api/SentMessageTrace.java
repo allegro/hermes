@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -21,6 +22,7 @@ public class SentMessageTrace implements MessageTrace {
     private final String reason;
     private final String message;
     private final String cluster;
+    private final String extraRequestHeaders;
 
     @JsonCreator
     public SentMessageTrace(@JsonProperty("messageId") String messageId,
@@ -33,7 +35,8 @@ public class SentMessageTrace implements MessageTrace {
                             @JsonProperty("message") String message,
                             @JsonProperty("partition") Integer partition,
                             @JsonProperty("offset") Long offset,
-                            @JsonProperty("cluster") String cluster) {
+                            @JsonProperty("cluster") String cluster,
+                            @JsonProperty("extraRequestHeaders") String extraRequestHeaders) {
         this.messageId = messageId;
         this.batchId = batchId;
         this.timestamp = timestamp;
@@ -45,16 +48,18 @@ public class SentMessageTrace implements MessageTrace {
         this.reason = reason;
         this.message = message;
         this.cluster = cluster;
+        this.extraRequestHeaders = extraRequestHeaders;
     }
 
     public static SentMessageTrace createUndeliveredMessage(Subscription subscription, String message,
-            Throwable cause, Long loggingTime, Integer partition, Long offset, String cluster) {
+            Throwable cause, Long loggingTime, Integer partition, Long offset, String cluster,
+            String extraRequestHeaders) {
         return createUndeliveredMessage(subscription.getQualifiedTopicName(), subscription.getName(), message,
-                cause.getMessage(), loggingTime, partition, offset, cluster);
+                cause.getMessage(), loggingTime, partition, offset, cluster, extraRequestHeaders);
     }
 
     public static SentMessageTrace createUndeliveredMessage(String qualifiedTopicName, String subscription, String message,
-            String cause, Long loggingTime, Integer partition, Long offset, String cluster) {
+            String cause, Long loggingTime, Integer partition, Long offset, String cluster, String extraRequestHeaders) {
         return new SentMessageTrace(
                 null,
                 null,
@@ -66,12 +71,14 @@ public class SentMessageTrace implements MessageTrace {
                 message,
                 partition,
                 offset,
-                cluster
+                cluster,
+                extraRequestHeaders
         );
     }
 
     public static SentMessageTrace createUndeliveredMessage(TopicName topicName, String subscription, String message,
-                                                                 Throwable cause, Long loggingTime, Integer partition, Long offset, String cluster) {
+                                                                 Throwable cause, Long loggingTime, Integer partition, Long offset, String cluster,
+                                                                 String extraRequestHeaders) {
         return new SentMessageTrace(
                 null,
                 null,
@@ -83,7 +90,8 @@ public class SentMessageTrace implements MessageTrace {
                 message,
                 partition,
                 offset,
-                cluster
+                cluster,
+                extraRequestHeaders
         );
     }
 
@@ -135,6 +143,10 @@ public class SentMessageTrace implements MessageTrace {
 
     public String getCluster() {
         return cluster;
+    }
+
+    public String getExtraRequestHeaders() {
+        return extraRequestHeaders;
     }
 
     @Override
