@@ -211,7 +211,6 @@ public class SubscriptionsEndpoint {
     }
 
     @PUT
-    @Logged
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")
