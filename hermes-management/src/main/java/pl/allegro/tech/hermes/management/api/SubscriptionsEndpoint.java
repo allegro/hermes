@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.management.api;
 
-import com.wordnik.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.MessageTrace;
@@ -211,6 +211,7 @@ public class SubscriptionsEndpoint {
     }
 
     @PUT
+    @Logged
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/retransmission")

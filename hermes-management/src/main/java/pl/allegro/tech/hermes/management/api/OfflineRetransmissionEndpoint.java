@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.management.api;
 
-import com.wordnik.swagger.annotations.Api;
+import io.swagger.annotations.Api;
 import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;

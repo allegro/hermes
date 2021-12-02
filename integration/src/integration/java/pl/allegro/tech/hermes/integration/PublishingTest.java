@@ -418,7 +418,7 @@ public class PublishingTest extends IntegrationTest {
         assertThat(response).hasStatus(CREATED);
         remoteService.waitUntilReceived();
         long receivedTime = System.currentTimeMillis();
-        assertThat(receivedTime - publishedTime).isGreaterThan(delay);
+        assertThat(receivedTime - publishedTime).isGreaterThanOrEqualTo(delay);
     }
 
     @Test
