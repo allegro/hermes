@@ -36,6 +36,7 @@ dependencies {
     compile group: 'org.testng', name: 'testng', version: '6.8.8'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
 
     compile group: 'org.apache.oltu.oauth2', name: 'org.apache.oltu.oauth2.authzserver', version: '1.0.2'
     compile group: 'org.apache.oltu.oauth2', name: 'org.apache.oltu.oauth2.resourceserver', version: '1.0.2'

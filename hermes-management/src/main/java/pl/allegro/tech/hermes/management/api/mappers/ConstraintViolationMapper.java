@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.glassfish.jersey.server.validation.ValidationError;
+import org.glassfish.jersey.server.validation.ValidationErrorData;
 import org.glassfish.jersey.server.validation.internal.ValidationHelper;
 import pl.allegro.tech.hermes.api.ErrorCode;
 
@@ -33,15 +34,15 @@ public class ConstraintViolationMapper extends AbstractExceptionMapper<Constrain
     private String prepareMessage(ConstraintViolationException ex) {
         List<String> errors = Lists.transform(
                 ValidationHelper.constraintViolationToValidationErrors(ex),
-                new ValidationErrorConverter()
+                new ValidationErrorDataConverter()
         );
 
         return Joiner.on("; ").join(errors);
     }
 
-    private static final class ValidationErrorConverter implements Function<ValidationError, String> {
+    private static final class ValidationErrorDataConverter implements Function<ValidationErrorData, String> {
         @Override
-        public String apply(ValidationError input) {
+        public String apply(ValidationErrorData input) {
             return input.getPath() + " " + input.getMessage();
         }
     }
