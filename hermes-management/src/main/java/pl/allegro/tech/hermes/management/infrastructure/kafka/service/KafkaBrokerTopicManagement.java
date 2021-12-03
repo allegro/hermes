@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import kafka.log.LogConfig;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.config.ConfigResource;
+import org.apache.kafka.common.config.TopicConfig;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
@@ -116,9 +116,9 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     private Map<String, String> createTopicConfig(long retentionPolicy, TopicProperties topicProperties) {
         Map<String, String> props = new HashMap<>();
-        props.put(LogConfig.RetentionMsProp(), String.valueOf(retentionPolicy));
-        props.put(LogConfig.UncleanLeaderElectionEnableProp(), Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
-        props.put(LogConfig.MaxMessageBytesProp(), String.valueOf(topicProperties.getMaxMessageSize()));
+        props.put(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(retentionPolicy));
+        props.put(TopicConfig.UNCLEAN_LEADER_ELECTION_ENABLE_CONFIG, Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
+        props.put(TopicConfig.MAX_MESSAGE_BYTES_CONFIG, String.valueOf(topicProperties.getMaxMessageSize()));
 
         return props;
     }

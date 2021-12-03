@@ -7,7 +7,7 @@ dependencies {
     compile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
-    compile(group: 'org.apache.kafka', name: 'kafka_2.11', version: versions.kafka) {
+    compile(group: 'org.apache.kafka', name: 'kafka_2.13', version: versions.kafka) {
         exclude group: 'javax.jms'
         exclude group: 'com.sun.jdmk'
         exclude group: 'com.sun.jmx'
