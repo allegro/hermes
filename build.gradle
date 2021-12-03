@@ -74,7 +74,7 @@ allprojects {
             undertow          : '2.0.29.Final',
             spring_web        : '5.1.5.RELEASE',
             failsafe          : '2.3.1',
-            junit_jupiter     : '5.4.2',
+            junit_jupiter     : '5.8.2',
             testcontainers    : '1.15.3'
     ]
 
