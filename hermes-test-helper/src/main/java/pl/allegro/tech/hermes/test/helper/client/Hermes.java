@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.test.helper.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -19,6 +22,7 @@ import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
+import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 
 import javax.ws.rs.Path;
@@ -174,6 +178,11 @@ public class Hermes {
     }
 
     private static ClientBuilder getClientBuilder(ClientConfig clientConfig) {
-        return ClientBuilder.newBuilder().withConfig(clientConfig).register(JacksonJsonProvider.class);
+        return ClientBuilder.newBuilder().withConfig(clientConfig).register(
+                new JacksonJaxbJsonProvider(
+                        new ObjectMapper().registerModule(new JavaTimeModule()),
+                        JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS
+                )
+        );
     }
 }
