@@ -6,25 +6,21 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.integration.env.ManagementStarter;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
+import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class HermesManagementInstance {
     private final HermesAPIOperations operations;
-    private final ManagementStarter managementStarter;
 
-    private HermesManagementInstance(HermesAPIOperations operations, ManagementStarter managementStarter) {
+    private HermesManagementInstance(HermesAPIOperations operations) {
         this.operations = operations;
-        this.managementStarter = managementStarter;
     }
 
     public HermesAPIOperations operations() {
@@ -35,22 +31,26 @@ public class HermesManagementInstance {
         return new Starter();
     }
 
-    public void stop() {
-        try {
-            managementStarter.stop();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static class Starter {
         private static final String KAFKA_NAMESPACE = "itTest";
 
-        private final int port = Ports.nextAvailable();
-        private final Map<String, String> kafkaClusters = new HashMap<>();
-        private final Map<String, String> zkClusters = new HashMap<>();
+        private int port = Ports.nextAvailable();
+        private final List<ClusterInfo> kafkaClusters = new ArrayList<>();
+        private final List<ClusterInfo> zkClusters = new ArrayList<>();
         private int replicationFactor = 1;
         private boolean uncleanLeaderElectionEnabled = false;
+        private String schemaRegistry;
+
+        public Starter port(int port) {
+            this.port = port;
+            return this;
+        }
+
+        public Starter schemaRegistry(String schemaRegistry) {
+            this.schemaRegistry = schemaRegistry;
+            return this;
+        }
+
 
         public Starter replicationFactor(int replicationFactor) {
             this.replicationFactor = replicationFactor;
@@ -63,49 +63,50 @@ public class HermesManagementInstance {
         }
 
         public Starter addZookeeperCluster(String dc, String connectionString) {
-            zkClusters.put(dc, connectionString);
+            zkClusters.add(new ClusterInfo(dc, connectionString));
             return this;
         }
 
         public Starter addKafkaCluster(String dc, String connectionString) {
-            kafkaClusters.put(dc, connectionString);
+            kafkaClusters.add(new ClusterInfo(dc, connectionString));
             return this;
         }
 
         public HermesManagementInstance start() {
             try {
-                ManagementStarter managementStarter = startManagement();
+                startManagement();
                 HermesAPIOperations operations = setupOperations();
-                return new HermesManagementInstance(operations, managementStarter);
+                return new HermesManagementInstance(operations);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private ManagementStarter startManagement() throws Exception {
+        private void startManagement() {
             List<String> args = new ArrayList<>();
+            args.add("-p");
+            args.add("" + port);
+            args.add("-e");
+            args.add("integration");
             int kafkaClusterIndex = 0;
-            for (Map.Entry<String, String> kafkaCluster : kafkaClusters.entrySet()) {
-                args.add("--kafka.clusters[" + kafkaClusterIndex + "].datacenter=" + kafkaCluster.getKey());
-                args.add("--kafka.clusters[" + kafkaClusterIndex + "].clusterName=" + kafkaCluster.getKey());
-                args.add("--kafka.clusters[" + kafkaClusterIndex + "].bootstrapKafkaServer=" + kafkaCluster.getValue());
-                args.add("--kafka.clusters[" + kafkaClusterIndex + "].clusterName=10000");
+            for (ClusterInfo kafkaCluster : kafkaClusters) {
+                args.add("--kafka.clusters[" + kafkaClusterIndex + "].datacenter=" + kafkaCluster.getDc());
+                args.add("--kafka.clusters[" + kafkaClusterIndex + "].clusterName=primary");
+                args.add("--kafka.clusters[" + kafkaClusterIndex + "].bootstrapKafkaServer=" + kafkaCluster.getConnectionString());
                 args.add("--kafka.clusters[" + kafkaClusterIndex + "].namespace=" + KAFKA_NAMESPACE);
                 kafkaClusterIndex++;
             }
             int zkClusterIndex = 0;
-            for (Map.Entry<String, String> zkCluster : zkClusters.entrySet()) {
-                args.add("--storage.clusters[" + zkClusterIndex + "].datacenter=" + zkCluster.getKey());
-                args.add("--storage.clusters[" + zkClusterIndex + "].clusterName=" + zkCluster.getKey());
-                args.add("--storage.clusters[" + zkClusterIndex + "].connectionString=" + zkCluster.getValue());
+            for (ClusterInfo zkCluster : zkClusters) {
+                args.add("--storage.clusters[" + zkClusterIndex + "].datacenter=" + zkCluster.getDc());
+                args.add("--storage.clusters[" + zkClusterIndex + "].clusterName=zk");
+                args.add("--storage.clusters[" + zkClusterIndex + "].connectionString=" + zkCluster.getConnectionString());
                 zkClusterIndex++;
             }
             args.add("--topic.replicationFactor=" + replicationFactor);
             args.add("--topic.uncleanLeaderElectionEnabled=" + uncleanLeaderElectionEnabled);
-            args.add("--audit.isEventAuditEnabled=false");
-            ManagementStarter managementStarter = new ManagementStarter(port, "integration", args.toArray(new String[0]));
-            managementStarter.start();
-            return managementStarter;
+            args.add("--schema.repository.serverUrl=" + schemaRegistry);
+            HermesManagement.main(args.toArray(new String[0]));
         }
 
         private HermesAPIOperations setupOperations() {
@@ -119,11 +120,29 @@ public class HermesManagementInstance {
 
         private CuratorFramework startZookeeperClient() {
             final CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-                    .connectString(zkClusters.values().iterator().next())
+                    .connectString(zkClusters.get(0).getConnectionString())
                     .retryPolicy(new ExponentialBackoffRetry(1000, 3))
                     .build();
             zookeeperClient.start();
             return zookeeperClient;
+        }
+    }
+
+    private static class ClusterInfo {
+        private final String dc;
+        private final String connectionString;
+
+        private ClusterInfo(String dc, String connectionString) {
+            this.dc = dc;
+            this.connectionString = connectionString;
+        }
+
+        public String getDc() {
+            return dc;
+        }
+
+        public String getConnectionString() {
+            return connectionString;
         }
     }
 }

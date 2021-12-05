@@ -76,8 +76,18 @@ public class KafkaContainerCluster implements Startable {
 
     public String getBootstrapServers() {
         return brokers.stream()
-                .map(KafkaContainer::getBootstrapServers)
+                .map(KafkaContainer::getAddressForExternalClients)
                 .collect(Collectors.joining(","));
+    }
+
+    public String getBootstrapServersForInternalClients() {
+        return brokers.stream()
+                .map(KafkaContainer::getAddressForInternalClients)
+                .collect(Collectors.joining(","));
+    }
+
+    public Network getNetwork() {
+        return zookeeper.getNetwork();
     }
 
     @Override

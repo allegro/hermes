@@ -35,8 +35,8 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
         this.networkAlias = "broker-" + brokerNum;
         withNetworkAliases(networkAlias);
         withEnv("KAFKA_BROKER_ID", "" + brokerNum);
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092");
-        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT");
+        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092,INTERNAL_CLIENT://0.0.0.0:9094");
+        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL_CLIENT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
@@ -94,9 +94,13 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
         return self();
     }
 
-    String getBootstrapServers() {
+    String getAddressForExternalClients() {
         checkState(port != PORT_NOT_ASSIGNED, "You should start Kafka container first");
         return String.format("%s:%s", getContainerIpAddress(), port);
+    }
+
+    String getAddressForInternalClients() {
+        return String.format("PLAINTEXT://%s:9094", networkAlias);
     }
 
     @Override

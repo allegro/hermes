@@ -46,6 +46,10 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
                 .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
                 .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")
                 .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
+                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
+                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServers())
+                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString())
+                .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl())
                 .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         AuthenticationConfiguration authConfig = new AuthenticationConfiguration(
