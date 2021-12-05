@@ -29,7 +29,7 @@ public class ReadinessCheckTest extends IntegrationTest {
         );
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldNotBeReadyUntilKafkaClusterIsUp() {
         // given
         kafkaClusterOne.stopAllBrokers();

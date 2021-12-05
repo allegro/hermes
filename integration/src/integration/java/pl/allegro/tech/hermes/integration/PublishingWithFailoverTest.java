@@ -21,7 +21,7 @@ public class PublishingWithFailoverTest extends IntegrationTest {
         this.remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldReturn202IfKafkaFailedToRespondButMessageCanBeBufferedInMemory() throws Exception {
         //given
         TestMessage message = TestMessage.of("hello", "world");
