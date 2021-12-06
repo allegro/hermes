@@ -18,6 +18,7 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
     private static final String START_STOP_SCRIPT = "/kafka_start_stop_wrapper.sh";
     private static final String STARTER_SCRIPT = "/kafka_start.sh";
     private static final int KAFKA_PORT = 9093;
+    private static final int KAFKA_INTERNAL_CLIENT_PORT = 9094;
     private static final int PORT_NOT_ASSIGNED = -1;
     private static final Duration READINESS_CHECK_TIMEOUT = Duration.ofMinutes(360);
 
@@ -35,7 +36,9 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
         this.networkAlias = "broker-" + brokerNum;
         withNetworkAliases(networkAlias);
         withEnv("KAFKA_BROKER_ID", "" + brokerNum);
-        withEnv("KAFKA_LISTENERS", "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092,INTERNAL_CLIENT://0.0.0.0:9094");
+        withEnv("KAFKA_LISTENERS",
+                "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092,INTERNAL_CLIENT://0.0.0.0:" + KAFKA_INTERNAL_CLIENT_PORT
+        );
         withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL_CLIENT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
@@ -100,7 +103,7 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     String getAddressForInternalClients() {
-        return String.format("PLAINTEXT://%s:9094", networkAlias);
+        return String.format("%s:%s", networkAlias, KAFKA_INTERNAL_CLIENT_PORT);
     }
 
     @Override

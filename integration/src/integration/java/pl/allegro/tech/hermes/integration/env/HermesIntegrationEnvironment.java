@@ -45,7 +45,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     public static final KafkaContainerCluster kafkaClusterTwo = new KafkaContainerCluster(NUMBER_OF_BROKERS_PER_CLUSTER);
     public static final ZookeeperContainer hermesZookeeperOne = new ZookeeperContainer();
     public static final ZookeeperContainer hermesZookeeperTwo = new ZookeeperContainer();
-    public static ConfluentSchemaRegistryContainer schemaRegistry;
+    public static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
+            .withKafkaCluster(kafkaClusterOne);
     public static HermesManagementInstance managementStarter;
     private static CuratorFramework zookeeper;
 
@@ -70,8 +71,16 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
                     .parallel()
                     .forEach(Startable::start);
 
-            schemaRegistry = new ConfluentSchemaRegistryContainer(kafkaClusterOne.getNetwork(), kafkaClusterOne.getBootstrapServersForInternalClients());
             schemaRegistry.start();
+
+            managementStarter = HermesManagementInstance.starter()
+                    .port(MANAGEMENT_PORT)
+                    .addKafkaCluster(DC1, kafkaClusterOne.getBootstrapServers())
+                    .addZookeeperCluster(DC1, hermesZookeeperOne.getConnectionString())
+                    .schemaRegistry(schemaRegistry.getUrl())
+                    .replicationFactor(kafkaClusterOne.getAllBrokers().size())
+                    .uncleanLeaderElectionEnabled(false)
+                    .start();
 
             ConsumersStarter consumersStarter = new ConsumersStarter();
             consumersStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
@@ -87,15 +96,6 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
             frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             STARTERS.put(FrontendStarter.class, frontendStarter);
-
-            managementStarter = HermesManagementInstance.starter()
-                    .port(MANAGEMENT_PORT)
-                    .addKafkaCluster(DC1, kafkaClusterOne.getBootstrapServers())
-                    .addZookeeperCluster(DC1, hermesZookeeperOne.getConnectionString())
-                    .schemaRegistry(schemaRegistry.getUrl())
-                    .replicationFactor(kafkaClusterOne.getAllBrokers().size())
-                    .uncleanLeaderElectionEnabled(false)
-                    .start();
 
             for (ITestNGMethod method : context.getAllTestMethods()) {
                 method.setRetryAnalyzer(new Retry());
