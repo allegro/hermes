@@ -411,8 +411,8 @@ public class PublishingTest extends IntegrationTest {
         remoteService.expectMessages(message.body());
 
         // when
-        Response response = publisher.publish(topic.getQualifiedName(), message.body());
         long publishedTime = System.currentTimeMillis();
+        Response response = publisher.publish(topic.getQualifiedName(), message.body());
 
         // then
         assertThat(response).hasStatus(CREATED);
