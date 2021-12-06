@@ -122,6 +122,7 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
             }
             String startScript = readFileFromClasspath("testcontainers/kafka_start.sh")
                     .replaceAll("<KAFKA_MAPPED_PORT>", port + "")
+                    .replaceAll("<KAFKA_INTERNAL_CLIENT_PORT>", KAFKA_INTERNAL_CLIENT_PORT + "")
                     .replaceAll("<BROKER_HOSTNAME>", networkAlias)
                     .replaceAll("<ZOOKEEPER_CONNECT>", externalZookeeperConnect);
             copyScriptToContainer(startScript, this, STARTER_SCRIPT);

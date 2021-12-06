@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook">
+        <delay>60000</delay>
+    </shutdownHook>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</Pattern>
@@ -16,6 +20,7 @@
     <logger name="pl.allegro.tech.hermes.consumers.supervisor.workload.selective.BalancingJob" level="warn" />
     <logger name="pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry" level="warn" />
     <logger name="pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateCalculator" level="warn" />
+    <logger name="pl.allegro.tech.hermes.management.infrastructure.audit.EventAuditor" level="warn"/>
 
     <logger name="org.mortbay.log" level="info" />
 
