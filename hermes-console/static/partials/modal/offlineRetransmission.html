@@ -1,6 +1,6 @@
 <section>
     <div class="modal-header">
-        Offline retransmission
+        {{retransmissionDescription}}
     </div>
     <div class="modal-body">
         <form name="retransmissionForm" class="form-horizontal" role="form">
@@ -26,7 +26,8 @@
                 <label for="endTimestamp" class="control-label col-md-3 pull-left">End timestamp</label>
                 <div class="input-group date col-md-8 pull-left">
                     <input type="text" class="form-control" required ng-model="retransmissionRequest.endTimestamp"
-                           placeholder="end..." id="endTimestamp" name="endTimestamp" calendar days-back="calendarDaysBack"/>
+                           placeholder="end..." id="endTimestamp" name="endTimestamp" calendar
+                           days-back="calendarDaysBack"/>
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-time"></span>
                     </span>

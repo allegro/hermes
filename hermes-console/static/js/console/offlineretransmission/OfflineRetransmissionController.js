@@ -2,14 +2,19 @@ var offlineRetransmission = angular.module('hermes.offlineRetransmission', [
   'hermes.offlineRetransmission.repository'
 ]);
 
-offlineRetransmission.controller('OfflineRetransmissionController', ['$scope', 'RetransmissionRepository', 'toaster', '$uibModalInstance', 'topic',
-  function ($scope, retransmissionRepository, toaster, $modal, topic) {
-    $scope.calendarDaysBack = 1000;
+offlineRetransmission.controller('OfflineRetransmissionController', ['$scope', 'RetransmissionRepository', 'toaster', '$uibModalInstance', 'topic', 'topicConfig',
+  function ($scope, retransmissionRepository, toaster, $modal, topic, topicConfig) {
+    if (topic.offlineStorage.retentionTime.infinite) {
+      $scope.calendarDaysBack = 1000;
+    } else {
+      $scope.calendarDaysBack = topic.offlineStorage.retentionTime.duration;
+    }
     $scope.retransmissionRequest = {
       targetTopic: null,
       startTimestamp: null,
       endTimestamp: null
     };
+    $scope.retransmissionDescription = topicConfig.offlineRetransmissionDescription;
 
     $scope.createTask = function () {
       const request = {

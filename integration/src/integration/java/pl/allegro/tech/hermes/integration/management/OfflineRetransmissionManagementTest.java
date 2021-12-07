@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -65,9 +66,6 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
 
     @Test
     public void shouldReturnClientErrorWhenRequestingRetransmissionWithEmptyData() {
-        // given
-        Topic targetTopic = createTopic();
-
         // when
         OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
                 "",
@@ -196,6 +194,33 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
         assertThat(response).containsMessage("Retransmission task with id notExistingId does not exist.");
+    }
+
+    @Test
+    public void shouldThrowAccessDeniedWhenTryingToCreateTaskWithoutPermissionsToSourceAndTargetTopics() {
+        // given
+        Topic sourceTopic = createTopic();
+        Topic targetTopic = createTopic();
+
+        operations.buildTopic(sourceTopic);
+        operations.buildTopic(targetTopic);
+
+        // when
+        TestSecurityProvider.setUserIsAdmin(false);
+        TestSecurityProvider.setIsOwner(false);
+
+        OfflineRetransmissionRequest request = createRequest(
+                sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
+        Response response = management.offlineRetransmission().createRetransmissionTask(request);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.FORBIDDEN);
+        assertThat(response).containsMessage("User needs permissions to source and target topics");
+        assertThat(management.offlineRetransmission().getAllTasks().size()).isEqualTo(0);
+
+        // cleanup
+        TestSecurityProvider.setUserIsAdmin(true);
+        TestSecurityProvider.setIsOwner(true);
     }
 
     private OfflineRetransmissionRequest createRequest(String sourceTopic, String targetTopic) {
