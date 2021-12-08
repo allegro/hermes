@@ -40,7 +40,7 @@ jobs:
         run: ./gradlew ${{ matrix.tests }}
       - name: Junit report
         uses: allegro-actions/junit-reporter@v1
-        if: ${{ (success() || failure()) && github.actor != 'dependabot[bot]' }}
+        if: ${{ (success() || failure()) && !contains(matrix.tests, 'jmh') && github.actor != 'dependabot[bot]' }}
         with:
           path: '**/build/test-results/**/TEST-*.xml'
           show: 'all'
