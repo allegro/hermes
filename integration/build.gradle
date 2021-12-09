@@ -1,7 +1,6 @@
 repositories {
     jcenter()
     maven { url 'http://repository.jboss.org/nexus/content/groups/public' }
-    maven { url 'http://packages.confluent.io/maven/' }
 }
 
 project.configurations {
@@ -79,7 +78,6 @@ dependencies {
     testCompile group: 'org.glassfish.jersey.containers', name: 'jersey-container-grizzly2-http', version: versions.jersey
     testCompile group: 'org.freemarker', name: 'freemarker', version: '2.3.21'
     testCompile group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
-    testCompile group: 'io.confluent', name: 'kafka-schema-registry', version: '4.1.2'
     if (isAlpnRequired()) {
         testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.27.v20200227'
         testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.27.v20200227'

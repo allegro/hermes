@@ -6,6 +6,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
@@ -13,7 +14,6 @@ import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
-import pl.allegro.tech.hermes.integration.env.CustomKafkaStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
@@ -34,19 +34,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_MECHANISM;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class MessageBufferLoadingTest extends IntegrationTest {
-
-    private static final String KAFKA_ZK_CONNECT_STRING = ZOOKEEPER_CONNECT_STRING + "/backupKafka";
-
     private static final int ENTRIES = 100;
     private static final int AVERAGE_MESSAGE_SIZE = 600;
 
@@ -63,24 +54,18 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     @Test
     public void shouldBackupMessage() throws Exception {
         // setup
-        int kafkaPort = Ports.nextAvailable();
         int frontendPort = Ports.nextAvailable();
         HermesPublisher publisher = new HermesPublisher("http://localhost:" + frontendPort + "/");
         String backupStorageDir = Files.createTempDir().getAbsolutePath();
-
-        CustomKafkaStarter kafka = new CustomKafkaStarter(kafkaPort, KAFKA_ZK_CONNECT_STRING);
-        kafka.start();
 
         Topic topic = randomTopic("backupGroup", "uniqueTopic").build();
         operations.buildTopic(topic);
 
         FrontendStarter frontend = new FrontendStarter(frontendPort, false);
-        frontend.overrideProperty(KAFKA_BROKER_LIST, "localhost:" + kafkaPort);
-        frontend.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, true);
-        frontend.overrideProperty(KAFKA_AUTHORIZATION_MECHANISM, "PLAIN");
-        frontend.overrideProperty(KAFKA_AUTHORIZATION_PROTOCOL, "SASL_PLAINTEXT");
-        frontend.overrideProperty(KAFKA_AUTHORIZATION_USERNAME, "hermes");
-        frontend.overrideProperty(KAFKA_AUTHORIZATION_PASSWORD, "alice-secret");
+        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
+        frontend.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
         frontend.start();
 
@@ -93,7 +78,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
                             .isEqualTo(CREATED.getStatusCode()));
 
             // when
-            kafka.stop();
+            kafkaClusterOne.cutOffConnectionsBetweenBrokersAndClients();
             assertThat(publisher.publish(topic.getQualifiedName(), "message").getStatus()).isEqualTo(ACCEPTED.getStatusCode());
 
             // then
@@ -101,9 +86,8 @@ public class MessageBufferLoadingTest extends IntegrationTest {
 
         } finally {
             // after
-            kafka.start();
+            kafkaClusterOne.restoreConnectionsBetweenBrokersAndClients();
             frontend.stop();
-            kafka.stop();
         }
     }
 
@@ -120,6 +104,10 @@ public class MessageBufferLoadingTest extends IntegrationTest {
 
         FrontendStarter frontend = new FrontendStarter(Ports.nextAvailable(), false);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
+        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
+        frontend.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
 
         // when
         frontend.start();

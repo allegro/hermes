@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integration;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
@@ -67,6 +68,10 @@ public class AttachingKeepAliveHeaderTest extends IntegrationTest {
     private FrontendStarter startFrontendWithConfig(Consumer<FrontendStarter> frontendConfigUpdater) throws Exception {
         FrontendStarter frontend = new FrontendStarter(FRONTEND_PORT, false);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_ENABLED, false);
+        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
+        frontend.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontendConfigUpdater.accept(frontend);
         frontend.start();
         return frontend;

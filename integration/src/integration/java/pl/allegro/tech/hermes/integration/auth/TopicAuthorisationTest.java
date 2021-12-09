@@ -52,6 +52,10 @@ public class TopicAuthorisationTest extends IntegrationTest {
                 .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
                 .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "pro_active")
                 .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
+                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
+                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
+                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString())
+                .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl())
                 .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         AuthenticationConfiguration authConfig = new AuthenticationConfiguration(
