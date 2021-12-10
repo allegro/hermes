@@ -9,11 +9,10 @@ import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Path("topics")
+@Path("topics/{topic}/clients")
 public interface AllTopicClientsEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
-    @Path("/{topic}/clients")
     List<String> getTopicClients(@PathParam("topic") String topic);
 }

@@ -14,19 +14,18 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Component
-@Path("topics")
+@Path("topics/{topic}/clients")
 public class AllTopicClientsEndpoint {
 
-    private final AllTopicClientsService allTopicClientsServiceImplementation;
+    private final AllTopicClientsService allTopicClientsService;
 
     public AllTopicClientsEndpoint(AllTopicClientsService allTopicClientsService) {
-        this.allTopicClientsServiceImplementation = allTopicClientsService;
+        this.allTopicClientsService = allTopicClientsService;
     }
 
     @GET
-    @Path("/{topic}/clients")
     @Produces(APPLICATION_JSON)
     public List<String> getTopicClients(@PathParam("topic") String topic) {
-        return allTopicClientsServiceImplementation.getAllClientsByTopic(fromQualifiedName(topic));
+        return allTopicClientsService.getAllClientsByTopic(fromQualifiedName(topic));
     }
 }
