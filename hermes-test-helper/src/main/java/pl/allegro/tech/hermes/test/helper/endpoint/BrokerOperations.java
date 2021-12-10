@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -13,6 +12,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -62,7 +62,7 @@ public class BrokerOperations {
             adminClient.createTopics(singletonList(topic))
                     .all()
                     .get(1, MINUTES);
-        } catch (Exception e) {
+        } catch (ExecutionException | TimeoutException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -75,19 +75,12 @@ public class BrokerOperations {
 
     private boolean topicExists(String kafkaClusterName, KafkaTopic kafkaTopic) {
         try {
-            adminClients.get(kafkaClusterName)
-                    .describeTopics(singletonList(kafkaTopic.name().asString()))
-                    .all()
-                    .get(1, MINUTES);
-            return true;
-        } catch (UnknownTopicOrPartitionException e) {
-            return false;
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof UnknownTopicOrPartitionException) {
-                return false;
-            }
-            throw new RuntimeException(e);
-        } catch (Exception e) {
+            return adminClients.get(kafkaClusterName)
+                    .listTopics()
+                    .names()
+                    .get(1, MINUTES)
+                    .contains(kafkaTopic.name().asString());
+        } catch (ExecutionException | TimeoutException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
