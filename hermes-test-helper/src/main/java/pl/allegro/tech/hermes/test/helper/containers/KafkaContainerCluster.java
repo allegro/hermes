@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.test.helper.containers;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.ToxiproxyContainer;
+import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.DockerImageName;
@@ -29,15 +31,19 @@ public class KafkaContainerCluster implements Startable {
             .withTag(CONFLUENT_PLATFORM_VERSION);
     private static final DockerImageName KAFKA_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka")
             .withTag(CONFLUENT_PLATFORM_VERSION);
+    private static final DockerImageName TOXIPROXY_IMAGE_NAME = DockerImageName.parse("shopify/toxiproxy")
+            .withTag("2.1.0");
 
     private static final Duration CLUSTER_START_TIMEOUT = Duration.ofMinutes(360);
     private static final String ZOOKEEPER_NETWORK_ALIAS = "zookeeper";
     private static final String READINESS_CHECK_SCRIPT = "/kafka_readiness_check.sh";
     private static final int ZOOKEEPER_PORT = 2181;
 
+    private final List<ContainerProxy> proxies = new ArrayList<>();
     private final int brokersNum;
     private final int minInSyncReplicas;
     private final ZookeeperContainer zookeeper;
+    private final ToxiproxyContainer toxiproxy;
     private final List<KafkaContainer> brokers = new ArrayList<>();
 
     public KafkaContainerCluster(int brokersNum) {
@@ -45,6 +51,8 @@ public class KafkaContainerCluster implements Startable {
         this.brokersNum = brokersNum;
         this.minInSyncReplicas = Math.max(brokersNum - 1, 1);
         this.zookeeper = createZookeeper(Network.newNetwork());
+        this.toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE_NAME)
+                .withNetwork(zookeeper.getNetwork());
         int internalTopicsRf = Math.max(brokersNum - 1, 1);
         for (int brokerId = 0; brokerId < brokersNum; brokerId++) {
             KafkaContainer container = new KafkaContainer(KAFKA_IMAGE_NAME, zookeeper.getNetwork(), brokerId)
@@ -74,15 +82,26 @@ public class KafkaContainerCluster implements Startable {
         return minInSyncReplicas;
     }
 
-    public String getBootstrapServers() {
+    public String getBootstrapServersForExternalClients() {
         return brokers.stream()
-                .map(KafkaContainer::getBootstrapServers)
+                .map(KafkaContainer::getAddressForExternalClients)
                 .collect(Collectors.joining(","));
+    }
+
+    public String getBootstrapServersForInternalClients() {
+        return brokers.stream()
+                .map(KafkaContainer::getAddressForInternalClients)
+                .collect(Collectors.joining(","));
+    }
+
+    public Network getNetwork() {
+        return zookeeper.getNetwork();
     }
 
     @Override
     public void start() {
         try {
+            startToxiproxy();
             Startables.deepStart(brokers)
                     .get(CLUSTER_START_TIMEOUT.getSeconds(), SECONDS);
             String readinessScript = readFileFromClasspath("testcontainers/kafka_readiness_check.sh");
@@ -92,6 +111,15 @@ public class KafkaContainerCluster implements Startable {
             waitForClusterFormation();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    private void startToxiproxy() {
+        toxiproxy.start();
+        for (KafkaContainer kafkaContainer : brokers) {
+            ContainerProxy proxy = toxiproxy.getProxy(kafkaContainer, kafkaContainer.getExposedPorts().get(0));
+            proxies.add(proxy);
+            kafkaContainer.withAdvertisedPort(proxy.getProxyPort());
         }
     }
 
@@ -120,14 +148,17 @@ public class KafkaContainerCluster implements Startable {
                 .forEach(GenericContainer::stop);
     }
 
-    public void stopAllBrokers() {
-        this.brokers.stream()
-                .parallel()
-                .forEach(KafkaContainer::stopKafka);
+    public void cutOffConnectionsBetweenBrokersAndClients() {
+        proxies.forEach(proxy -> proxy.setConnectionCut(true));
     }
 
-    public void startAllBrokers() {
-        this.brokers.stream()
+    public void restoreConnectionsBetweenBrokersAndClients() {
+        proxies.forEach(proxy -> proxy.setConnectionCut(false));
+    }
+
+    public void makeClusterOperational() {
+        brokers.stream()
+                .filter(broker -> !broker.isKafkaRunning())
                 .parallel()
                 .forEach(KafkaContainer::startKafka);
         waitForClusterFormation();

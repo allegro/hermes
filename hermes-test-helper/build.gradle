@@ -7,14 +7,6 @@ dependencies {
     compile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
-    compile(group: 'org.apache.kafka', name: 'kafka_2.11', version: versions.kafka) {
-        exclude group: 'javax.jms'
-        exclude group: 'com.sun.jdmk'
-        exclude group: 'com.sun.jmx'
-        exclude group: 'net.sf.jopt-simple'
-        exclude module: 'slf4j-log4j12'
-        exclude module: 'log4j'
-    }
     compile group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: versions.wiremock
     compile (group: 'org.apache.curator', name: 'curator-test', version: versions.curator) {
         exclude module: 'slf4j-log4j12'
@@ -46,4 +38,5 @@ dependencies {
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
 
     compile group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
+    compile group: 'org.testcontainers', name: 'toxiproxy', version: versions.testcontainers
 }

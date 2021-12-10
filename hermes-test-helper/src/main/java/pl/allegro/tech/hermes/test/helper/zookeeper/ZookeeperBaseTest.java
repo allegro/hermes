@@ -1,13 +1,10 @@
 package pl.allegro.tech.hermes.test.helper.zookeeper;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import kafka.zk.KafkaZkClient;
-import kafka.zookeeper.ZooKeeperClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
-import org.apache.kafka.common.utils.Time;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -19,8 +16,6 @@ public abstract class ZookeeperBaseTest {
     protected static CuratorFramework zookeeperClient;
 
     protected static ZookeeperWaiter wait;
-
-    protected static KafkaZkClient kafkaZkClient;
 
     protected ZookeeperBaseTest() {
     }
@@ -36,12 +31,6 @@ public abstract class ZookeeperBaseTest {
         wait = new ZookeeperWaiter(zookeeperClient);
 
         wait.untilZookeeperClientStarted();
-
-        ZooKeeperClient zooKeeperClient = new ZooKeeperClient(
-                zookeeperServer.getConnectString(), 60 * 1000, 15 * 1000,
-                10, Time.SYSTEM, "zookeeper-test", "zookeeper-test");
-        zooKeeperClient.waitUntilConnected();
-        kafkaZkClient = new KafkaZkClient(zooKeeperClient, false, Time.SYSTEM);
     }
 
     protected static CuratorFramework newClient() {

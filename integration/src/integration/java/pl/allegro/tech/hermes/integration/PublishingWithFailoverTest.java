@@ -1,12 +1,10 @@
 package pl.allegro.tech.hermes.integration;
 
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
-import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.core.Response;
@@ -17,13 +15,6 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopi
 public class PublishingWithFailoverTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
-
-    private KafkaStarter kafkaStarter;
-
-    @BeforeClass
-    public void initialize() {
-        this.kafkaStarter = SharedServices.services().kafkaStarter();
-    }
 
     @BeforeMethod
     public void initializeAlways() {
@@ -42,11 +33,9 @@ public class PublishingWithFailoverTest extends IntegrationTest {
         assertThat(publisher.publish(topic.getQualifiedName(), message.body()).getStatus()).isEqualTo(201);
 
         //when
-        kafkaStarter.stop();
-        //wait for kafka shutdown
-        Thread.sleep(100);
+        kafkaClusterOne.cutOffConnectionsBetweenBrokersAndClients();
         Response response = publisher.publish(topic.getQualifiedName(), TestMessage.simple().body());
-        kafkaStarter.start();
+        kafkaClusterOne.restoreConnectionsBetweenBrokersAndClients();
 
         //then
         assertThat(response.getStatus()).isEqualTo(202);
