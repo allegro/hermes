@@ -16,6 +16,6 @@ public class AllTopicClientsServiceImplementation implements AllTopicClientsServ
 
     public List<String> getAllClientsByTopic(TopicName topicName) {
         return subscriptionRepository.listSubscriptions(topicName)
-                .stream().map(e -> e.getOwner().getId()).collect(Collectors.toList());
+                .stream().map(e -> e.getOwner().getId()).distinct().collect(Collectors.toList());
     }
 }
