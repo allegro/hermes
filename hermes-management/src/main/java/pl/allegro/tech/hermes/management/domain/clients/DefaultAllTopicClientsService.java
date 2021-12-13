@@ -6,11 +6,11 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AllTopicClientsServiceImplementation implements AllTopicClientsService{
+public class DefaultAllTopicClientsService implements AllTopicClientsService{
 
     private final SubscriptionRepository subscriptionRepository;
 
-    public AllTopicClientsServiceImplementation(SubscriptionRepository subscriptionRepository) {
+    public DefaultAllTopicClientsService(SubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
     }
 

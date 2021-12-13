@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.clients.AllTopicClientsService;
-import pl.allegro.tech.hermes.management.domain.clients.AllTopicClientsServiceImplementation;
+import pl.allegro.tech.hermes.management.domain.clients.DefaultAllTopicClientsService;
 
 @Configuration
 public class AllTopicClientsConfiguration {
@@ -18,6 +18,6 @@ public class AllTopicClientsConfiguration {
     @ConditionalOnMissingBean(AllTopicClientsService.class)
     public AllTopicClientsService allTopicClientsService(SubscriptionRepository subscriptionRepository) {
         logger.info("Creating allTopicClientsService bean");
-        return new AllTopicClientsServiceImplementation(subscriptionRepository);
+        return new DefaultAllTopicClientsService(subscriptionRepository);
     }
 }
