@@ -8,6 +8,7 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
         var blacklistRepository = $resource(discovery.resolve('/blacklist/topics/:name'), null,
             { blacklist: { method: 'POST', url: discovery.resolve('/blacklist/topics') } });
         var listing = $resource(discovery.resolve('/topics'));
+        var topicUsersRepository = $resource(discovery.resolve('/topics/:name/clients'));
 
         return {
             list: listing.query,
@@ -47,6 +48,9 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             },
             unblacklist: function (topicName) {
                 return blacklistRepository.delete({name: topicName});
+            },
+            getTopicUsers: function (topicName) {
+                return topicUsersRepository.get({name: topicName}).$promise;
             }
         };
     }]);

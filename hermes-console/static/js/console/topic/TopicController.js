@@ -134,6 +134,23 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         };
 
+        $scope.copyClientsToClipboard = function () {
+            topicRepository.getTopicUsers(topicName)
+                .then(function (topicUsersFromRepository) {
+                    var topicUsers = topicUsersFromRepository.join(", ");
+                    var tempElement = document.createElement('textarea');
+                    tempElement.value = topicUsers;
+                    document.body.appendChild(tempElement);
+                    tempElement.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempElement);
+                    toaster.pop('info', 'Info', 'All topic users has been copied to clipboard');
+                })
+                .catch(function (response) {
+                    toaster.pop('error', 'Error ' + response.status, response.data.message);
+                });
+        };
+
         $scope.remove = function () {
             confirmationModal.open({
                 action: 'Remove',
@@ -263,7 +280,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     }
                 }
             });
-        }
+        };
     }]);
 
 topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',

@@ -165,6 +165,7 @@
         <div class="list-group">
             <div class="list-group-item">
                 <div class="pull-right">
+                    <button class="btn btn-primary" ng-click="copyClientsToClipboard()">Copy clients to clipboard</button>
                     <span ng-show="!userHasSufficientPrivileges" uib-popover='Sign in to add a subscription' popover-trigger="mouseenter" class="fa helpme">&#xf128;</span>
                     <button class="btn btn-primary" ng-disabled="(topic.subscribingRestricted && !userHasSufficientPrivileges) || readOnly" ng-click="addSubscription()"><span class="glyphicon glyphicon-plus"></span></button>
                 </div>
