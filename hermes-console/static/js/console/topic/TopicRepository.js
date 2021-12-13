@@ -50,7 +50,7 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
                 return blacklistRepository.delete({name: topicName});
             },
             getTopicUsers: function (topicName) {
-                return topicUsersRepository.get({name: topicName}).$promise;
+                return topicUsersRepository.query({name: topicName}).$promise;
             }
         };
     }]);
