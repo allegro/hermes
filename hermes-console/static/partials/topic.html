@@ -134,11 +134,18 @@
             <div class="panel panel-default" style="position: relative">
                 <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
                 <button class="btn btn-default pull-right" style="padding: 4px; margin-top: 4px" ng-click="copyToClipboard()">Copy to clipboard</button>
+                <div class="pull-right" style="padding: 4px; margin-top: 4px; margin-right: 0.6em !important;">
+                    <label>
+                        <input type="checkbox" style="vertical-align: top" ng-model="showRawMessageSchema">
+                        Raw
+                    </label>
+                </div>
                 <div class="panel-heading" ng-click="showMessageSchema = !showMessageSchema">
                     <h3 class="panel-title">Message schema</h3>
                 </div>
                 <div class="panel-body" uib-collapse="!showMessageSchema">
-                    <pre class="pre-scrollable">{{ messageSchema }}</pre>
+                    <pre class="pre-scrollable" ng-show="showRawMessageSchema">{{ messageSchema }}</pre>
+                    <avro-viewer schema="messageSchema" ng-show="!showRawMessageSchema"></avro-viewer>
                 </div>
             </div>
         </div>

@@ -18,6 +18,10 @@ body {
     margin-right: 4px;
 }
 
+.margin-right-half-em {
+    margin-right: .5em;
+}
+
 .margin-top-10 {
     margin-top: 10px;
 }
@@ -118,3 +122,34 @@ footer {
 
 .ace_editor_debug { height: 300px; }
 .ace_editor_schema { height: 500px; }
+
+.monospaced {
+    font-family: monospace, monospace;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.rotated-90-deg {
+    transform: rotate(-90deg)
+}
+
+avro-viewer {
+    line-height: 1.7;
+}
+
+.tree-branch {
+    position: absolute;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
+    border-left: 1px dashed rgba(0, 0, 0, 0.2);
+    cursor: default;
+    margin-left: -1.5em;
+    height: 1em;
+    width: 1em;
+}
+
+.long-branch {
+    width: 2em;
+}

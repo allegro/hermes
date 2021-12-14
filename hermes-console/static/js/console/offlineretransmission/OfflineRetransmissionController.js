@@ -17,7 +17,7 @@ offlineRetransmission.controller('OfflineRetransmissionController', ['$scope', '
         targetTopic: $scope.retransmissionRequest.targetTopic,
         startTimestamp: new Date($scope.retransmissionRequest.startTimestamp).toISOString(),
         endTimestamp: new Date($scope.retransmissionRequest.endTimestamp).toISOString()
-      }
+      };
       retransmissionRepository.createTask(request)
         .then(function () {
             toaster.pop('success', 'Success', 'Retransmission has been scheduled.');
@@ -26,5 +26,5 @@ offlineRetransmission.controller('OfflineRetransmissionController', ['$scope', '
         ).catch(function (response) {
         toaster.pop('error', 'Error ' + response.status, response.data.message);
       });
-    }
+    };
   }]);

@@ -19,7 +19,7 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
         $scope.topicsConsistencyChecking = {
             state: consistencyCheckingStates.READY,
             result: consistencyRepository.getLastTopicsConsistencyCheckingResult()
-        }
+        };
 
         $scope.$watch('consistencyChecking.result', function (result) {
             consistencyRepository.setLastConsistencyCheckingResult(result);
@@ -30,30 +30,30 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
         }, true);
 
         $scope.checkConsistency = function() {
-            checkGroupConsistency()
-            findTopicsNotPresentInHermes()
-        }
+            checkGroupConsistency();
+            findTopicsNotPresentInHermes();
+        };
 
         $scope.removeTopic = function (topicName) {
             confirmationModal.open({
                 actionSubject: 'Are you sure you want to remove topic: ' + topicName,
                 action: "Remove"
             }).result.then(function () {
-                consistencyRepository.removeTopic(topicName)
+                consistencyRepository.removeTopic(topicName);
             })
             .then(function () {
-                let newArray = $scope.topicsConsistencyChecking.result['inconsistentTopics'].filter(
+                let newArray = $scope.topicsConsistencyChecking.result.inconsistentTopics.filter(
                     function (element) {
-                        return element !== topicName
-                    })
-                setInconsistentTopics(newArray)
+                        return element !== topicName;
+                    });
+                setInconsistentTopics(newArray);
                 toaster.pop('success', 'Success', 'Topic has been removed');
             })
             .catch(function (e) {
                 showErrorPopup("cannot remove topic: " + e);
-                setInconsistentTopics(null)
+                setInconsistentTopics(null);
             });
-        }
+        };
 
         function checkGroupConsistency() {
             setGroupsState(consistencyCheckingStates.CHECKING_CONSISTENCY);
@@ -89,10 +89,10 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
         }
 
         function findTopicsNotPresentInHermes() {
-            setTopicsState(consistencyCheckingStates.CHECKING_CONSISTENCY)
+            setTopicsState(consistencyCheckingStates.CHECKING_CONSISTENCY);
             consistencyRepository.listInconsistentTopics()
             .then(function (topics) {
-                setInconsistentTopics(topics)
+                setInconsistentTopics(topics);
             })
             .finally(function () {
                 setTopicsState(consistencyCheckingStates.READY);
