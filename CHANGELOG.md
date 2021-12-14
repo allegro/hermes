@@ -1,3 +1,42 @@
+## 1.10.0 (13.12.2021)
+
+## Enhancements
+
+#### ([1403](https://github.com/allegro/hermes/pull/1403)) Added endpoint and frontend button to get all clients by topic
+#### ([1416](https://github.com/allegro/hermes/pull/1416)) Offline retransmission management
+#### ([1418](https://github.com/allegro/hermes/pull/1418)) Lack of fetching schema by schemaId in hermes-management
+
+Thanks to @slomkarafa for this contribution!
+
+#### ([1423](https://github.com/allegro/hermes/pull/1423)) Offline retransmission permissions
+#### ([1428](https://github.com/allegro/hermes/pull/1428)) Kafka client update to 2.7.0
+
+### Fixes
+
+#### ([1424](https://github.com/allegro/hermes/pull/1424)) Fixed unstable test: KafkaRetransmissionServiceTest
+#### ([1426](https://github.com/allegro/hermes/pull/1426)) Fixed unstable tests: JettyMessageSenderTest and PublishingTest
+
+## 1.9.15 (18.11.2021)
+
+## Enhancements
+
+#### ([1422](https://github.com/allegro/hermes/pull/1422)) Logging backup storage size on shutdown
+
+### Fixes
+
+#### ([1419](https://github.com/allegro/hermes/pull/1419)) Fixed documentation about retries on 429 response
+
+## 1.9.14 (03.11.2021)
+
+## Enhancements
+
+#### ([1410](https://github.com/allegro/hermes/pull/1410)) Finding inconsistencies between Kafka and Hermes
+#### ([1412](https://github.com/allegro/hermes/pull/1412)) Readiness check
+
+### Fixes
+
+#### ([1411](https://github.com/allegro/hermes/pull/1411)) Fixed removing blacklisted topics
+
 ## 1.9.13 (22.10.2021)
 
 ## Enhancements
