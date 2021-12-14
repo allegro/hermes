@@ -6,17 +6,13 @@ import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
 public class Gauges {
 
-    public static final String EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES = "everyone-confirms-buffer-total-bytes",
-            EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES = "everyone-confirms-buffer-available-bytes",
-            EVERYONE_CONFIRMS_COMPRESSION_RATE = "everyone-confirms-compression-rate-avg",
-            EVERYONE_CONFIRMS_FAILED_BATCHES_TOTAL = "everyone-confirms-failed-batches-total",
-            LEADER_CONFIRMS_FAILED_BATCHES_TOTAL = "leader-confirms-failed-batches-total",
-            LEADER_CONFIRMS_BUFFER_TOTAL_BYTES = "leader-confirms-buffer-total-bytes",
-            LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES = "leader-confirms-buffer-available-bytes",
-            LEADER_CONFIRMS_COMPRESSION_RATE = "leader-confirms-compression-rate-avg",
+    public static final String PRODUCER_BUFFER_TOTAL_BYTES = "buffer-total-bytes",
+            PRODUCER_BUFFER_AVAILABLE_BYTES = "buffer-available-bytes",
             BATCH_BUFFER_TOTAL_BYTES = "batch-buffer-total-bytes",
             BATCH_BUFFER_AVAILABLE_BYTES = "batch-buffer-available-bytes",
-            JMX_PREFIX = "jmx",
+            KAFKA_PRODUCER = "kafka-producer",
+            ACK_ALL = "ack-all",
+            ACK_LEADER = "ack-leader",
 
             THREADS = "threads",
             INFLIGHT_REQUESTS = "inflight-requests",

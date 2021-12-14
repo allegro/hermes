@@ -68,7 +68,7 @@ public class HermesShutdownHandler implements HttpHandler {
     }
 
     private boolean isBufferEmpty() {
-        long bufferUsedBytes = (long)(metrics.getBufferTotalBytes() - metrics.getBufferAvailablesBytes());
+        long bufferUsedBytes = (long)(metrics.getBufferTotalBytes() - metrics.getBufferAvailableBytes());
         logger.info("Buffer flush: {} bytes still in use", bufferUsedBytes);
         return  bufferUsedBytes < TOLERANCE_BYTES;
     }

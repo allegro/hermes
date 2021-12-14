@@ -1,31 +1,25 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import java.util.Collections;
+import com.codahale.metrics.Gauge;
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.common.Metric;
-import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.Node;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 
-import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
-
+import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_BUFFER_AVAILABLE_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Gauges.PRODUCER_BUFFER_TOTAL_BYTES;
 
 public class Producers {
     private final Producer<byte[], byte[]> leaderConfirms;
     private final Producer<byte[], byte[]> everyoneConfirms;
 
-    private boolean reportNodeMetrics;
-    private AtomicBoolean nodeMetricsRegistered = new AtomicBoolean(false);
+    private final boolean reportNodeMetrics;
+    private final AtomicBoolean nodeMetricsRegistered = new AtomicBoolean(false);
 
     public Producers(Producer<byte[], byte[]> leaderConfirms,
                      Producer<byte[], byte[]> everyoneConfirms,
@@ -40,14 +34,19 @@ public class Producers {
     }
 
     public void registerGauges(HermesMetrics metrics) {
-        registerTotalBytesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES);
-        registerTotalBytesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES);
-        registerCompressionRateGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_COMPRESSION_RATE);
-        registerCompressionRateGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_COMPRESSION_RATE);
-        registerFailedBatchesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_FAILED_BATCHES_TOTAL);
-        registerFailedBatchesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_FAILED_BATCHES_TOTAL);
+        registerProducerGauge(metrics, PRODUCER_BUFFER_TOTAL_BYTES);
+        registerProducerGauge(metrics, PRODUCER_BUFFER_AVAILABLE_BYTES);
+        registerProducerGauge(metrics, "compression-rate-avg");
+        registerProducerGauge(metrics, "record-error-total");
+        registerProducerGauge(metrics, "records-per-request-avg");
+        registerProducerGauge(metrics, "requests-in-flight");
+        registerProducerGauge(metrics, "record-queue-time-avg");
+        registerProducerGauge(metrics, "record-queue-time-max");
+    }
+
+    private void registerProducerGauge(HermesMetrics metrics, String name) {
+        metrics.registerProducerGaugeForAckLeader(name, new ProducerGauge(leaderConfirms, name));
+        metrics.registerProducerGaugeForAckAll(name, new ProducerGauge(everyoneConfirms, name));
     }
 
     public void maybeRegisterNodeMetricsGauges(HermesMetrics metrics) {
@@ -58,73 +57,67 @@ public class Producers {
 
     private void registerLatencyPerBrokerGauge(HermesMetrics metrics) {
         List<Node> brokers = ProducerBrokerNodeReader.read(leaderConfirms);
-        registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-avg", "everyone-confirms", brokers);
-        registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-avg", "leader-confirms", brokers);
-        registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-max", "everyone-confirms", brokers);
-        registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-max", "leader-confirms", brokers);
+        registerLatencyPerBrokerGauge(metrics, "request-latency-avg", brokers);
+        registerLatencyPerBrokerGauge(metrics, "request-latency-max", brokers);
     }
 
-    private void registerCompressionRateGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("compression-rate-avg", "producer-metrics", "average compression rate", Collections.emptyMap()), gauge);
-    }
-
-    private void registerTotalBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("buffer-total-bytes", "producer-metrics", "buffer total bytes", Collections.emptyMap()), gauge);
-    }
-
-    private void registerAvailableBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("buffer-available-bytes", "producer-metrics", "buffer available bytes", Collections.emptyMap()), gauge);
-    }
-
-    private void registerFailedBatchesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("record-error-total", "producer-metrics", "failed publishing batches", Collections.emptyMap()), gauge);
-    }
-
-    private void registerProducerGauge(final Producer<byte[], byte[]> producer,
-                                       final HermesMetrics metrics,
-                                       final MetricName name,
-                                       final String gauge) {
-
-        registerGauge(producer, metrics, gauge,
-                entry -> entry.getKey().group().equals(name.group()) && entry.getKey().name().equals(name.name()));
-    }
-
-    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
-                                               HermesMetrics metrics,
-                                               String metricName,
-                                               String producerName,
-                                               List<Node> brokers) {
+    private void registerLatencyPerBrokerGauge(HermesMetrics metrics, String metricName, List<Node> brokers) {
         for (Node broker : brokers) {
-            registerLatencyPerBrokerGauge(producer, metrics, metricName, producerName, broker);
+            metrics.registerBrokerGaugeForAckLeader(metricName, broker.host(), new BrokerGauge(leaderConfirms, metricName, broker));
+            metrics.registerBrokerGaugeForAckAll(metricName, broker.host(), new BrokerGauge(everyoneConfirms, metricName, broker));
         }
-    }
-
-    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
-                                               HermesMetrics metrics,
-                                               String metricName,
-                                               String producerName,
-                                               Node node) {
-
-        String gauge = Gauges.JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
-        registerGauge(producer, metrics, gauge,
-                entry -> entry.getKey().group().equals("producer-node-metrics")
-                        && entry.getKey().name().equals(metricName)
-                        && entry.getKey().tags().containsValue("node-" + node.id()));
-
-    }
-
-    private void registerGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge,
-                               Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
-        metrics.registerGauge(gauge, () -> {
-            Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
-                    producer.metrics().entrySet().stream().filter(predicate).findFirst();
-            double value = first.isPresent() ? first.get().getValue().value() : 0.0;
-            return value < 0? 0.0 : value;
-        });
     }
 
     public void close() {
         everyoneConfirms.close();
         leaderConfirms.close();
+    }
+
+    private static class ProducerGauge implements Gauge<Double> {
+        private static final String PRODUCER_METRICS_GROUP = "producer-metrics";
+
+        private final Producer<byte[], byte[]> producer;
+        private final String name;
+
+        private ProducerGauge(Producer<byte[], byte[]> producer, String name) {
+            this.producer = producer;
+            this.name = name;
+        }
+
+        @Override
+        public Double getValue() {
+            return producer.metrics().entrySet().stream()
+                    .filter(entry -> entry.getKey().group().equals(PRODUCER_METRICS_GROUP) && entry.getKey().name().equals(name))
+                    .map(entry -> entry.getValue().value())
+                    .filter(value -> value > 0)
+                    .findFirst()
+                    .orElse(0.0);
+        }
+    }
+
+    private static class BrokerGauge implements Gauge<Double> {
+        private final Producer<byte[], byte[]> producer;
+        private final String name;
+        private final Node node;
+
+        private BrokerGauge(Producer<byte[], byte[]> producer, String name, Node node) {
+            this.producer = producer;
+            this.name = name;
+            this.node = node;
+        }
+
+        @Override
+        public Double getValue() {
+            return producer.metrics().entrySet().stream()
+                    .filter(entry ->
+                            entry.getKey().group().equals("producer-node-metrics") &&
+                                    entry.getKey().name().equals(name) &&
+                                    entry.getKey().tags().containsValue("node-" + node.id())
+                    )
+                    .map(entry -> entry.getValue().value())
+                    .filter(value -> value > 0)
+                    .findFirst()
+                    .orElse(0.0);
+        }
     }
 }

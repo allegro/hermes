@@ -14,10 +14,6 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import javax.inject.Inject;
 
-import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.LEADER_CONFIRMS_BUFFER_TOTAL_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Timers.SUBSCRIPTION_LATENCY;
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
@@ -142,18 +138,43 @@ public class HermesMetrics {
         }
     }
 
+    public void registerBrokerGaugeForAckLeader(String name, String broker, Gauge<?> gauge) {
+        registerGauge(brokerMetricName(name, Gauges.ACK_LEADER, broker), gauge);
+    }
+
+    public void registerBrokerGaugeForAckAll(String name, String broker, Gauge<?> gauge) {
+        registerGauge(brokerMetricName(name, Gauges.ACK_ALL, broker), gauge);
+    }
+
+    public void registerProducerGaugeForAckLeader(String name, Gauge<?> gauge) {
+        registerGauge(producerMetricName(name, Gauges.ACK_LEADER), gauge);
+    }
+
+    public void registerProducerGaugeForAckAll(String name, Gauge<?> gauge) {
+        registerGauge(producerMetricName(name, Gauges.ACK_ALL), gauge);
+    }
+
     public double getBufferTotalBytes() {
-        return getDoubleValue(LEADER_CONFIRMS_BUFFER_TOTAL_BYTES)
-                + getDoubleValue(EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES);
+        return getProducerMetricValue(Gauges.PRODUCER_BUFFER_TOTAL_BYTES, Gauges.ACK_LEADER)
+                + getProducerMetricValue(Gauges.PRODUCER_BUFFER_TOTAL_BYTES, Gauges.ACK_ALL);
     }
 
-    public double getBufferAvailablesBytes() {
-        return getDoubleValue(LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES)
-                + getDoubleValue(EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES);
+    public double getBufferAvailableBytes() {
+        return getProducerMetricValue(Gauges.PRODUCER_BUFFER_AVAILABLE_BYTES, Gauges.ACK_LEADER)
+                + getProducerMetricValue(Gauges.PRODUCER_BUFFER_AVAILABLE_BYTES, Gauges.ACK_ALL);
     }
 
-    private double getDoubleValue(String gauge) {
+    private double getProducerMetricValue(String name, String ack) {
+        String gauge = producerMetricName(name, ack);
         return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
+    }
+
+    private String producerMetricName(String name, String ack) {
+        return Gauges.KAFKA_PRODUCER + "." + ack + "." + name;
+    }
+
+    private String brokerMetricName(String name, String ack, String broker) {
+        return Gauges.KAFKA_PRODUCER + "." + ack + "." + name + "." + escapeDots(broker);
     }
 
     private Counter getInflightCounter(Subscription subscription) {
