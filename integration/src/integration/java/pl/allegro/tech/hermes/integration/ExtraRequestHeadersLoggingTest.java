@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.integration;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import com.mongodb.MongoClient;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
@@ -28,7 +27,7 @@ public class ExtraRequestHeadersLoggingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishAndConsumeMessage() {
+    public void shouldPublishAndConsumeMessage() throws InterruptedException {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "topic").build());
         operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
@@ -42,6 +41,7 @@ public class ExtraRequestHeadersLoggingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(CREATED);
         remoteService.waitUntilReceived();
+        Thread.sleep(10000);
         getAllPublishedMessagesLogs();
     }
 
