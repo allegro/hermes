@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.util.Map;
 
-import static java.util.stream.Collectors.joining;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.*;
 import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 
