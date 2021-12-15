@@ -142,7 +142,7 @@ public class RemoteServiceEndpoint {
     public void waitUntilReceived(long seconds, int numberOfExpectedMessages, Consumer<LoggedRequest> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
         await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
-                assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
+                assertThat(receivedRequests.size()).isGreaterThanOrEqualTo(numberOfExpectedMessages));
         synchronized (receivedRequests) {
             receivedRequests.stream().forEach(requestBodyConsumer::accept);
         }

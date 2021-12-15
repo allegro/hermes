@@ -19,13 +19,16 @@ public class OfflineRetransmissionService {
         this.topicRepository = topicRepository;
     }
 
-    public void createTask(OfflineRetransmissionRequest request) {
+    public void validateRequest(OfflineRetransmissionRequest request) {
         TopicName sourceTopicName = TopicName.fromQualifiedName(request.getSourceTopic());
         TopicName targetTopicName = TopicName.fromQualifiedName(request.getTargetTopic());
 
         ensureTopicsExist(sourceTopicName, targetTopicName);
         ensureTimeRangeIsProper(request);
         ensureTopicIsNotStoredOffline(targetTopicName);
+    }
+
+    public void createTask(OfflineRetransmissionRequest request) {
         saveTask(request);
     }
 

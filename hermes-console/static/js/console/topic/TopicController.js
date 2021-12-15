@@ -24,6 +24,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.config = topicConfig;
         $scope.showFixedHeaders = subscriptionConfig.showFixedHeaders;
         $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
+        $scope.offlineRetransmissionEnabled = topicConfig.offlineRetransmissionEnabled;
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
@@ -44,6 +45,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 console.error('Could not parse topic schema: ', e);
                 $scope.messageSchema = '[schema parsing failure]';
             }
+            $scope.offlineRetransmissionEnabled = $scope.offlineRetransmissionEnabled && $scope.topic.offlineStorage.enabled;
         });
 
         $scope.metricsUrls = topicMetrics.metricsUrls(groupName, topicName);
@@ -101,6 +103,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 }
             }).result.then(function (result) {
                 $scope.topic = result.topic;
+                $scope.offlineRetransmissionEnabled = $scope.offlineRetransmissionEnabled && $scope.topic.offlineStorage.enabled;
                 $scope.messageSchema = result.messageSchema;
             });
         };
@@ -129,6 +132,23 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 var topicName = response.topic.name;
                 $location.path('/groups/' + groupName + '/topics/' + topicName);
             });
+        };
+
+        $scope.copyClientsToClipboard = function () {
+            topicRepository.getTopicUsers(topicName)
+                .then(function (topicUsersFromRepository) {
+                    var topicUsers = topicUsersFromRepository.join(", ");
+                    var tempElement = document.createElement('textarea');
+                    tempElement.value = topicUsers;
+                    document.body.appendChild(tempElement);
+                    tempElement.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempElement);
+                    toaster.pop('info', 'Info', 'All topic users has been copied to clipboard');
+                })
+                .catch(function (response) {
+                    toaster.pop('error', 'Error ' + response.status, response.data.message);
+                });
         };
 
         $scope.remove = function () {
@@ -254,10 +274,13 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 resolve: {
                     topic: function () {
                         return $scope.topic;
+                    },
+                    topicConfig: function () {
+                        return $scope.config;
                     }
                 }
             });
-        }
+        };
     }]);
 
 topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$scope', '$uibModalInstance', 'PasswordService',

@@ -123,7 +123,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         then:
         consumer.close()
 
-        List<kafka.common.OffsetAndMetadata> partitionsWithMessagesData = adminClient
+        List<OffsetAndMetadata> partitionsWithMessagesData = adminClient
                 .listConsumerGroupOffsets(consumerGroupId.asString())
                 .partitionsToOffsetAndMetadata()
                 .get().values().stream()
@@ -152,7 +152,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         then:
         consumer.close()
 
-        List<kafka.common.OffsetAndMetadata> partitionsWithMessagesData = adminClient
+        List<OffsetAndMetadata> partitionsWithMessagesData = adminClient
                 .listConsumerGroupOffsets(consumerGroupId.asString())
                 .partitionsToOffsetAndMetadata()
                 .get().values().stream()

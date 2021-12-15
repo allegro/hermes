@@ -56,7 +56,7 @@ allprojects {
     targetCompatibility = 1.8
 
     project.ext.versions = [
-            kafka             : '2.1.1',
+            kafka             : '2.7.0',
             guava             : '23.0',
             jackson           : '2.11.4',
             jersey            : '2.26',
@@ -74,7 +74,7 @@ allprojects {
             undertow          : '2.0.29.Final',
             spring_web        : '5.1.5.RELEASE',
             failsafe          : '2.3.1',
-            junit_jupiter     : '5.4.2',
+            junit_jupiter     : '5.8.2',
             testcontainers    : '1.15.3'
     ]
 

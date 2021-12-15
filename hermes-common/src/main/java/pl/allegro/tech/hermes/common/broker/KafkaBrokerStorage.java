@@ -4,18 +4,14 @@ import com.google.common.collect.Ordering;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.KafkaFuture;
-import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
-import org.apache.kafka.common.network.ListenerName;
-import pl.allegro.tech.hermes.common.exception.BrokerInfoNotAvailableException;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.common.exception.PartitionsNotFoundForGivenTopicException;
 
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class KafkaBrokerStorage implements BrokerStorage {

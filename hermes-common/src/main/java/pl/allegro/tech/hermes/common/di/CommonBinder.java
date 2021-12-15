@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.di;
 
-import com.yammer.metrics.core.HealthCheckRegistry;
 import org.apache.avro.Schema;
 import org.glassfish.hk2.api.TypeLiteral;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
@@ -68,7 +67,6 @@ public class CommonBinder extends AbstractBinder {
 
         bindSingleton(CuratorClientFactory.class);
         bindSingleton(HermesMetrics.class);
-        bindSingleton(HealthCheckRegistry.class);
         bindSingletonFactory(ConfigFactoryCreator.class);
         bindSingleton(MessageContentWrapper.class);
         bindSingleton(DeserializationMetrics.class);

@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.test.helper.client;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
@@ -19,6 +21,7 @@ import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.AllTopicClientsEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 
 import javax.ws.rs.Path;
@@ -110,6 +113,10 @@ public class Hermes {
         return createProxy(url, OwnerEndpoint.class, managementConfig);
     }
 
+    public AllTopicClientsEndpoint createAllTopicClientsEndpoint() {
+        return createProxy(url, AllTopicClientsEndpoint.class, managementConfig);
+    }
+
     public MigrationEndpoint createMigrationEndpoint() {
         return createProxy(url, MigrationEndpoint.class, managementConfig);
     }
@@ -174,6 +181,11 @@ public class Hermes {
     }
 
     private static ClientBuilder getClientBuilder(ClientConfig clientConfig) {
-        return ClientBuilder.newBuilder().withConfig(clientConfig).register(JacksonJsonProvider.class);
+        return ClientBuilder.newBuilder().withConfig(clientConfig).register(
+                new JacksonJaxbJsonProvider(
+                        new ObjectMapper().registerModule(new JavaTimeModule()),
+                        JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS
+                )
+        );
     }
 }
