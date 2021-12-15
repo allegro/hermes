@@ -25,8 +25,16 @@ public class TestMessageMetadata {
         return of(messageId, batchId, topic, subscription, 1L, 1);
     }
 
+    public static MessageMetadata of(String messageId,String batchId, String topic, String subscription, Map<String, String> extraRequestHeaders) {
+        return of(messageId, batchId, topic, subscription, 1L, 1, extraRequestHeaders);
+    }
+
     public static MessageMetadata of(String messageId, String batchId, String topic, String subscription, long offset, int partition) {
-        return new MessageMetadata(messageId, batchId, offset, partition, 123L, topic, subscription, topic, 123456L, 123456L, sampleExtraHeaders());
+        return of(messageId, batchId, topic, subscription, offset, partition, sampleExtraHeaders());
+    }
+
+    public static MessageMetadata of(String messageId, String batchId, String topic, String subscription, long offset, int partition, Map<String, String> extraRequestHeaders) {
+        return new MessageMetadata(messageId, batchId, offset, partition, 123L, topic, subscription, topic, 123456L, 123456L, extraRequestHeaders);
     }
 
     private static Map<String, String> sampleExtraHeaders() {

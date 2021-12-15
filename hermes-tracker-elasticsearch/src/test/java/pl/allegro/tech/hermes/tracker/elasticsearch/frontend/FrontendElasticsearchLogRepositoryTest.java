@@ -85,16 +85,16 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
                                                PublishedMessageTraceStatus status,
                                                String remoteHostname,
                                                String... extraRequestHeadersKeywords) {
-        BoolQueryBuilder result = boolQuery()
+        BoolQueryBuilder queryBuilder = boolQuery()
                 .must(termQuery(TOPIC_NAME, topic))
                 .must(termQuery(MESSAGE_ID, id))
                 .must(termQuery(STATUS, status.toString()))
                 .must(termQuery(CLUSTER, CLUSTER_NAME))
                 .must(termQuery(REMOTE_HOSTNAME, remoteHostname));
         for (String extraRequestHeadersKeyword : extraRequestHeadersKeywords) {
-            result.must(termQuery(EXTRA_REQUEST_HEADERS, extraRequestHeadersKeyword));
+            queryBuilder.must(termQuery(EXTRA_REQUEST_HEADERS, extraRequestHeadersKeyword));
         }
-        return result;
+        return queryBuilder;
     }
 
     private void awaitUntilMessageIsIndexed(QueryBuilder query) {
