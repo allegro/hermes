@@ -8,7 +8,7 @@ import java.util.Map;
 
 import static pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersToMapTransformer.toHeadersMap;
 
-class ExtraHeadersExtractor {
+public class ExtraHeadersExtractor {
     private final HeadersPropagator headersPropagator;
 
     @Inject
