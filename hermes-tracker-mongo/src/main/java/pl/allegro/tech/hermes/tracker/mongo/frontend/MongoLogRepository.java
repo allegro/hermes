@@ -17,6 +17,7 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.*;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 
 public class MongoLogRepository extends BatchingLogRepository<DBObject> implements LogRepository, LogSchemaAware {
 
@@ -59,13 +60,7 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
                 .append(TOPIC_NAME, topicName)
                 .append(CLUSTER, clusterName)
                 .append(SOURCE_HOSTNAME, hostname)
-                .append(EXTRA_REQUEST_HEADERS, joinExtraRequestHeaders(extraRequestHeaders));
-    }
-
-    private String joinExtraRequestHeaders(Map<String, String> extraRequestHeaders) {
-        return extraRequestHeaders.entrySet()
-            .stream()
-            .map(entry -> entry.getKey() + "=" + entry.getValue())
-            .collect(joining(","));
+                .append(EXTRA_REQUEST_HEADERS, extraRequestHeaders.entrySet().stream()
+                        .collect(extraRequestHeadersCollector()));
     }
 }

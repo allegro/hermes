@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.tracker.mongo.metrics.Gauges;
 import pl.allegro.tech.hermes.tracker.mongo.metrics.Timers;
 
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 
 public class MongoLogRepository extends BatchingLogRepository<DBObject> implements LogRepository, LogSchemaAware {
 
@@ -71,6 +72,8 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
                 .append(OFFSET, message.getOffset())
                 .append(STATUS, status.toString())
                 .append(CLUSTER, clusterName)
-                .append(SOURCE_HOSTNAME, hostname);
+                .append(SOURCE_HOSTNAME, hostname)
+                .append(EXTRA_REQUEST_HEADERS, message.getExtraRequestHeaders().entrySet().stream()
+                        .collect(extraRequestHeadersCollector()));
     }
 }

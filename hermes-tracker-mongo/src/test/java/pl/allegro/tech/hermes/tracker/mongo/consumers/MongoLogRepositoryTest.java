@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.mongo.LogSchemaAware;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -30,19 +31,22 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
         return new MongoLogRepository(database, 1000, 100, "cluster", "host", new MetricRegistry(), new PathsCompiler("localhost"));
     }
 
-    protected void awaitUntilMessageIsPersisted(String topic, String subscription, String messageId, SentMessageTraceStatus status) {
+    @Override
+    protected void awaitUntilMessageIsPersisted(String topic, String subscription, String messageId, SentMessageTraceStatus status, String... extraRequestHeadersKeywords) {
         await().atMost(ONE_SECOND).until(() -> {
             List<SentMessageTrace> messages = getLastUndeliveredMessages(topic, subscription, status);
             assertThat(messages).hasSize(1).extracting(MESSAGE_ID).containsExactly(messageId);
+            assertThat(messages.get(0).getExtraRequestHeaders()).contains(Arrays.asList(extraRequestHeadersKeywords));
         });
     }
 
     @Override
-    protected void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status) throws Exception {
+    protected void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status, String... extraRequestHeadersKeywords) throws Exception {
         await().atMost(ONE_SECOND).until(() -> {
             List<SentMessageTrace> messages = getLastUndeliveredMessages(topic, subscription, status);
             assertThat(messages).hasSize(1).extracting(MESSAGE_ID).containsExactly(messageId);
             assertThat(messages).hasSize(1).extracting(BATCH_ID).containsExactly(batchId);
+            assertThat(messages.get(0).getExtraRequestHeaders()).contains(Arrays.asList(extraRequestHeadersKeywords));
         });
     }
 
