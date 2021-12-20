@@ -63,7 +63,24 @@ class HermesMockAvroTest extends Specification {
 
         then:
         hermes.expect().singleMessageOnTopic(topicName)
+        hermes.expect().singleAvroMessageOnTopic(topicName, schema)
         Duration.between(start, now()) >= fixedDelay
+    }
+
+    def "should respond for a message send with delay"() {
+        given:
+        def topicName = "my-test-avro-topic"
+        def delayInMillis = 2_000
+        hermes.define().avroTopic(topicName, aResponse().build())
+
+        when:
+        Thread.start {
+            Thread.sleep(delayInMillis)
+            publish(topicName)
+        }
+
+        then:
+        hermes.expect().singleAvroMessageOnTopic(topicName, schema)
     }
 
     def "should get all messages as avro"() {
