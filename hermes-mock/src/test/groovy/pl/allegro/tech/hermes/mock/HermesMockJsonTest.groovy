@@ -56,4 +56,20 @@ class HermesMockJsonTest extends Specification {
         Duration.between(start, now()) >= fixedDelay
     }
 
+    def "should respond for a message send with delay"() {
+        given:
+        def topicName = "my-test-json-topic"
+        def delayInMillis = 2_000
+        hermes.define().jsonTopic(topicName)
+
+        when:
+        Thread.start {
+            Thread.sleep(delayInMillis)
+            publisher.publish(topicName, TestMessage.random().asJson())
+        }
+
+        then:
+        hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
+    }
+
 }
