@@ -5,7 +5,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.assertj.core.api.Assertions;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
-import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
 
@@ -56,9 +55,4 @@ public final class SharedServices {
     public GraphiteMockServer graphiteMock() {
         return ((GraphiteMockStarter) starters.get(GraphiteMockStarter.class)).instance();
     }
-
-    public KafkaStarter kafkaStarter() {
-        return (KafkaStarter) starters.get(KafkaStarter.class);
-    }
-
 }

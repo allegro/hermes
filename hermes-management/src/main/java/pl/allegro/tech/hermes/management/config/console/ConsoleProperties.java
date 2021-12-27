@@ -335,6 +335,7 @@ public class ConsoleProperties {
                 new RetentionUnit("DAYS", "DAYS")
         );
         private boolean offlineRetransmissionEnabled = false;
+        private String offlineRetransmissionDescription = "Offline retransmission";
 
         public boolean isMessagePreviewEnabled() {
             return messagePreviewEnabled;
@@ -432,6 +433,13 @@ public class ConsoleProperties {
             this.offlineRetransmissionEnabled = offlineRetransmissionEnabled;
         }
 
+        public String getOfflineRetransmissionDescription() {
+            return offlineRetransmissionDescription;
+        }
+
+        public void setOfflineRetransmissionDescription(String offlineRetransmissionDescription) {
+            this.offlineRetransmissionDescription = offlineRetransmissionDescription;
+        }
     }
 
     public static final class DefaultTopicView {

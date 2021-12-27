@@ -28,6 +28,10 @@ public class CustomSslContextFactoryTest extends IntegrationTest {
         ConfigFactory configFactory = new MutableConfigFactory()
                 .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
                 .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
+                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
+                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
+                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString())
+                .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl())
                 .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         hermesFrontend = HermesFrontend.frontend()

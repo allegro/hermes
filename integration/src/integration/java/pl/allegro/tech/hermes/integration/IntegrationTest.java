@@ -36,8 +36,10 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
         this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
         this.publisher = new HermesPublisher(FRONTEND_URL);
         this.brokerOperations = new BrokerOperations(
-                ImmutableMap.of(PRIMARY_KAFKA_CLUSTER_NAME, PRIMARY_ZK_KAFKA_CONNECT,
-                        SECONDARY_KAFKA_CLUSTER_NAME, SECONDARY_ZK_KAFKA_CONNECT),
+                ImmutableMap.of(
+                        PRIMARY_KAFKA_CLUSTER_NAME, kafkaClusterOne.getBootstrapServersForExternalClients(),
+                        SECONDARY_KAFKA_CLUSTER_NAME, kafkaClusterTwo.getBootstrapServersForExternalClients()
+                ),
                 CONFIG_FACTORY);
         this.wait = new Waiter(management, services().zookeeper(), brokerOperations, PRIMARY_KAFKA_CLUSTER_NAME, KAFKA_NAMESPACE);
         this.operations = new HermesAPIOperations(management, wait);

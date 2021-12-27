@@ -41,7 +41,7 @@ dependencies {
     compile group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.10'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
-    compile(group: 'org.apache.kafka', name: 'kafka_2.11', version: versions.kafka) {
+    compile(group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka) {
         exclude group: 'net.sf.jopt-simple'
     }
 

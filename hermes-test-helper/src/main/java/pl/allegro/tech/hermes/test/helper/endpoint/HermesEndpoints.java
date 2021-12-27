@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.AllTopicClientsEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
@@ -30,6 +31,8 @@ public class HermesEndpoints {
     private final SubscriptionEndpoint subscriptionEndpoint;
 
     private final SubscriptionOwnershipEndpoint subscriptionOwnershipEndpoint;
+
+    private final AllTopicClientsEndpoint allTopicClientsEndpoint;
 
     private final SchemaEndpoint schemaEndpoint;
 
@@ -72,6 +75,7 @@ public class HermesEndpoints {
         this.filterEndpoint = hermes.createFilterEndpoint();
         this.readinessEndpoint = hermes.createReadinessEndpoint();
         this.offlineRetransmissionEndpoint = hermes.createOfflineRetransmissionEndpoint();
+        this.allTopicClientsEndpoint = hermes.createAllTopicClientsEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -98,6 +102,10 @@ public class HermesEndpoints {
 
     public SubscriptionOwnershipEndpoint subscriptionOwnershipEndpoint() {
         return subscriptionOwnershipEndpoint;
+    }
+
+    public AllTopicClientsEndpoint allTopicClientsEndpoint() {
+        return allTopicClientsEndpoint;
     }
 
     public SchemaEndpoint schema() {

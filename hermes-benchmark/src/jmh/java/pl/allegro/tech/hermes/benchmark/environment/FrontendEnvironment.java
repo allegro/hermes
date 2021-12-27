@@ -2,6 +2,9 @@ package pl.allegro.tech.hermes.benchmark.environment;
 
 import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.io.IOUtils;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
@@ -18,12 +21,10 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
-import pl.allegro.tech.hermes.test.helper.environment.KafkaStarter;
-import pl.allegro.tech.hermes.test.helper.environment.ZookeeperStarter;
-import pl.allegro.tech.hermes.test.helper.util.Ports;
+import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
+import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
@@ -34,11 +35,10 @@ public class FrontendEnvironment {
 
     private static final Logger logger = LoggerFactory.getLogger(FrontendEnvironment.class);
     private static final int MAX_CONNECTIONS_PER_ROUTE = 200;
-    private static final int ZOOKEEPER_PORT = 2181;
 
     private HermesFrontend hermesFrontend;
-    private BenchmarkZookeeperStarter zookeeperStarter;
-    private KafkaStarter kafkaStarter;
+    private ZookeeperContainer zookeeperContainer;
+    private KafkaContainerCluster kafkaContainerCluster;
     private HermesPublisher publisher;
     private MetricRegistry metricRegistry;
 
@@ -48,22 +48,19 @@ public class FrontendEnvironment {
 
     @Setup(Level.Trial)
     public void setupEnvironment() throws Exception {
-        zookeeperStarter = new BenchmarkZookeeperStarter();
-        zookeeperStarter.start();
+        zookeeperContainer = new ZookeeperContainer();
+        zookeeperContainer.start();
 
-        Properties kafkaProperties = new Properties();
-        kafkaProperties.load(this.getClass().getResourceAsStream("/kafka.properties"));
-        kafkaProperties.setProperty("zookeeper.connect", zookeeperStarter.getConnectString());
-        int kafkaPort = Ports.nextAvailable();
-        kafkaProperties.setProperty("port", Integer.toString(kafkaPort));
+        try (CuratorFramework curator = startZookeeperClient(zookeeperContainer.getConnectionString())) {
+            curator.createContainers("hermes/groups");
+        }
 
-
-        kafkaStarter = new KafkaStarter(kafkaProperties);
-        kafkaStarter.start();
+        kafkaContainerCluster = new KafkaContainerCluster(1);
+        kafkaContainerCluster.start();
 
         ConfigFactory configFactory = new MutableConfigFactory()
-                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperStarter.getConnectString())
-                .overrideProperty(Configs.KAFKA_BROKER_LIST,String.format("localhost:%s",kafkaPort));
+                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperContainer.getConnectionString())
+                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaContainerCluster.getBootstrapServersForExternalClients());
 
         hermesFrontend = HermesFrontend.frontend()
                 .withDisabledGlobalShutdownHook()
@@ -93,8 +90,8 @@ public class FrontendEnvironment {
     @TearDown(Level.Trial)
     public void shutdownServers() throws Exception {
         hermesFrontend.stop();
-        kafkaStarter.stop();
-        zookeeperStarter.stop();
+        kafkaContainerCluster.stop();
+        zookeeperContainer.stop();
     }
 
     @TearDown(Level.Trial)
@@ -113,5 +110,15 @@ public class FrontendEnvironment {
 
     private void reportMetrics() {
         metricRegistry.getCounters().entrySet().forEach(e -> logger.info(e.getKey() + ": " + e.getValue().getCount()));
+    }
+
+    private CuratorFramework startZookeeperClient(String connectString) throws InterruptedException {
+        CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
+                .connectString(connectString)
+                .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                .build();
+        zookeeperClient.start();
+        zookeeperClient.blockUntilConnected();
+        return zookeeperClient;
     }
 }
