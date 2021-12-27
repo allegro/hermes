@@ -35,7 +35,8 @@
   },
   "topic": {
     "messagePreviewEnabled": true,
-    "offlineClientsEnabled": false
+    "offlineClientsEnabled": false,
+    "offlineClientsIframeSource": ""
   },
   "subscription": {
     "showHeadersFilter": false,

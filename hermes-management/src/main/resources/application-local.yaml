@@ -22,6 +22,7 @@ console:
     messagePreviewEnabled: true
     offlineRetransmissionEnabled: true
     offlineClientsEnabled: false
+    offlineClientsIframeSource: ""
     readOnlyModeEnabled: false
     retentionUnits:
       - value: HOURS

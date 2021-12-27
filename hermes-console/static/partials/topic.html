@@ -195,28 +195,9 @@
                     Offline clients
                 </h4>
             </div>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>User</th>
-                        <th>Last access date</th>
-                        <th>Owners</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="client in clients">
-                        <td>{{$index + 1}}</td>
-                        <td>{{client.user}}</td>
-                        <td>{{client.lastAccess}}</td>
-                        <td>{{client.owners.join(", ")}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div ng-show="offlineClientsFetching" class="text-center">
-            <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+            <div>
+                <iframe height="400" src="{{config.offlineClientsIframeSource}}" style="border: none;" width="100%"></iframe>
+            </div>
         </div>
     </div>
 

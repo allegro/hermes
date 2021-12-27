@@ -22,7 +22,8 @@
     "defaults": {
       "contentType": "AVRO"
     },
-    "offlineClientsEnabled": false
+    "offlineClientsEnabled": false,
+    "offlineClientsIframeSource": ""
   },
   "group": {
     "nonAdminCreationEnabled": true
