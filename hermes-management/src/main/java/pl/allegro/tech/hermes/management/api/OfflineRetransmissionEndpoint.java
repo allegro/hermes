@@ -13,6 +13,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
@@ -32,12 +34,13 @@ public class OfflineRetransmissionEndpoint {
 
     private final OfflineRetransmissionService retransmissionService;
     private final RetransmissionPermissions permissions;
-
+    private final OfflineRetransmissionAuditor auditor;
 
     public OfflineRetransmissionEndpoint(OfflineRetransmissionService retransmissionService,
                                          TopicRepository topicRepository, ManagementRights managementRights) {
         this.retransmissionService = retransmissionService;
         this.permissions = new RetransmissionPermissions(topicRepository, managementRights);
+        this.auditor = new OfflineRetransmissionAuditor();
     }
 
     @POST
@@ -46,6 +49,7 @@ public class OfflineRetransmissionEndpoint {
         retransmissionService.validateRequest(request);
         permissions.ensurePermissionsToBothTopics(request, requestContext);
         retransmissionService.createTask(request);
+        auditor.auditRetransmissionCreation(request, requestContext);
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -80,6 +84,19 @@ public class OfflineRetransmissionEndpoint {
             if (!hasPermissions) {
                 throw new PermissionDeniedException("User needs permissions to source and target topics.");
             }
+        }
+    }
+
+    private static class OfflineRetransmissionAuditor {
+        private static final Logger logger = LoggerFactory.getLogger(OfflineRetransmissionAuditor.class);
+
+        public void auditRetransmissionCreation(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
+            String username = extractUsername(requestContext);
+            logger.info("User {} created retransmission task: {}", username, request);
+        }
+
+        private String extractUsername(ContainerRequestContext requestContext) {
+            return requestContext.getSecurityContext().getUserPrincipal().getName();
         }
     }
 }
