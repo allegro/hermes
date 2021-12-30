@@ -72,16 +72,14 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
 
         loadSubscriptions();
         loadBlacklistStatus();
-        if ($scope.config.offlineClientsEnabled) {
-            loadIframeSource();
-        }
 
         topicRepository.preview(topicName).then(function(preview) {
             $scope.preview = preview;
         });
 
-        $scope.trustSrc = function(src) {
-            return $sce.trustAsResourceUrl(src);
+        $scope.getTrustedIframeSource = function() {
+            loadIframeSource();
+            return $sce.trustAsResourceUrl($scope.iframeSource);
         };
 
         $scope.edit = function () {
