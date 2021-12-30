@@ -54,3 +54,14 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
             }
         };
     }]);
+
+repository.factory('OfflineClientsRepository', ['DiscoveryService', '$resource',
+    function (discovery, $resource) {
+        var repository = $resource(discovery.resolve('/topics/:topic/offline-clients-source'));
+
+        return {
+            getIframeSource: function (topic) {
+                return repository.get({topic: topic}).$promise;
+            }
+        };
+    }]);

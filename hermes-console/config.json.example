@@ -54,8 +54,7 @@
         },
         "removeSchema": false,
         "buttonsExtension": "<a class=\"btn btn-info {{topic.contentType === 'JSON' ? 'ng-show' : 'ng-hide'}}\" ng-href='http://migrator.example/topics/{{topic.name}}'>Migrate to AVRO</a>",
-        "offlineClientsEnabled": false,
-        "offlineClientsIframeSource": "https://datastudio.google.com/u/0/reporting/MyCustomReport/page/DjD"
+        "offlineClientsEnabled": false
     },
     "group": {
         "nonAdminCreationEnabled": false

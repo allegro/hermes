@@ -320,7 +320,6 @@ public class ConsoleProperties {
     public static final class TopicView {
         private boolean messagePreviewEnabled = true;
         private boolean offlineClientsEnabled = false;
-        private String offlineClientsIframeSource = "";
         private boolean authEnabled = true;
         private DefaultTopicView defaults = new DefaultTopicView();
         private String buttonsExtension = "";
@@ -352,14 +351,6 @@ public class ConsoleProperties {
 
         public void setOfflineClientsEnabled(boolean offlineClientsEnabled) {
             this.offlineClientsEnabled = offlineClientsEnabled;
-        }
-
-        public String getOfflineClientsIframeSource() {
-            return offlineClientsIframeSource;
-        }
-
-        public void setOfflineClientsIframeSource(String offlineClientsIframeSource) {
-            this.offlineClientsIframeSource = offlineClientsIframeSource;
         }
 
         public boolean isAuthEnabled() {
