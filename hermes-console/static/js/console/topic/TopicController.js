@@ -11,9 +11,9 @@ var topics = angular.module('hermes.topic', [
     'hermes.offlineRetransmission'
 ]);
 
-topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
+topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$sce',
     'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG',
-    function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService,
+    function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, $sce, confirmationModal, toaster, passwordService,
               subscriptionFactory, subscriptionConfig) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
@@ -69,6 +69,10 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         topicRepository.preview(topicName).then(function(preview) {
             $scope.preview = preview;
         });
+
+        $scope.trustSrc = function(src) {
+            return $sce.trustAsResourceUrl(src);
+        };
 
         $scope.edit = function () {
             $modal.open({
