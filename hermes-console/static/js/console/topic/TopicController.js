@@ -66,7 +66,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
 
         function loadIframeSource() {
             offlineClientsRepository.getIframeSource(topicName).then(function (iframeSource) {
-                $scope.iframeSource = iframeSource;
+                $scope.iframeSource = iframeSource.source;
             });
         }
 
