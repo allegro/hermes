@@ -63,8 +63,9 @@ public class GroupService {
     }
 
     public void removeGroup(String groupName, String removedBy) {
+        Group group = groupRepository.getGroupDetails(groupName);
         multiDcExecutor.execute(new RemoveGroupRepositoryCommand(groupName));
-        auditor.objectRemoved(removedBy, Group.class.getSimpleName(), groupName);
+        auditor.objectRemoved(removedBy, group);
     }
 
     public void checkGroupExists(String groupName) {
