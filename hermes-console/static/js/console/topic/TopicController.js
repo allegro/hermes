@@ -11,20 +11,20 @@ var topics = angular.module('hermes.topic', [
     'hermes.offlineRetransmission'
 ]);
 
-topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal',
+topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$sce',
     'ConfirmationModal', 'toaster', 'PasswordService', 'SubscriptionFactory', 'SUBSCRIPTION_CONFIG', 'OfflineClientsRepository',
-    function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, confirmationModal, toaster, passwordService,
+    function (topicConfig, topicRepository, topicMetrics, $scope, $location, $stateParams, $modal, $sce, confirmationModal, toaster, passwordService,
               subscriptionFactory, subscriptionConfig, offlineClientsRepository) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
 
         $scope.subscriptionsFetching = true;
-        $scope.offlineClientsFetching = true;
         $scope.showMessageSchema = false;
         $scope.config = topicConfig;
         $scope.showFixedHeaders = subscriptionConfig.showFixedHeaders;
         $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
         $scope.offlineRetransmissionEnabled = topicConfig.offlineRetransmissionEnabled;
+        $scope.iframeSource = "";
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
@@ -64,22 +64,25 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
             });
         }
 
-        function loadOfflineClients() {
-            offlineClientsRepository.get(topicName).then(function (clients) {
-                $scope.clients = clients;
-                $scope.offlineClientsFetching = false;
+        function loadIframeSource() {
+            offlineClientsRepository.getIframeSource(topicName).then(function (iframeSource) {
+                $scope.iframeSource = iframeSource.source;
             });
         }
 
         loadSubscriptions();
         loadBlacklistStatus();
         if ($scope.config.offlineClientsEnabled) {
-            loadOfflineClients();
+            loadIframeSource();
         }
 
         topicRepository.preview(topicName).then(function(preview) {
             $scope.preview = preview;
         });
+
+        $scope.trustSrc = function(src) {
+            return $sce.trustAsResourceUrl(src);
+        };
 
         $scope.edit = function () {
             $modal.open({

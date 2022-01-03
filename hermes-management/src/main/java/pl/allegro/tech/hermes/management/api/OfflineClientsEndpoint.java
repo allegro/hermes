@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
+import pl.allegro.tech.hermes.management.domain.clients.IframeSource;
 import pl.allegro.tech.hermes.management.domain.clients.OfflineClientsService;
 
 import javax.ws.rs.GET;
@@ -33,11 +34,11 @@ public class OfflineClientsEndpoint {
     }
 
     @GET
-    @Path("/{topic}/offline-clients")
+    @Path("/{topic}/offline-clients-source")
     @Produces(APPLICATION_JSON)
     public Response find(@PathParam("topic") String topic) {
         return offlineClientsService
-                .map(service -> Response.ok(service.find(TopicName.fromQualifiedName(topic))).build())
+                .map(service -> Response.ok(new IframeSource(service.getIframeSource(TopicName.fromQualifiedName(topic)))).build())
                 .orElseThrow(OfflineClientsServiceAbsentException::new);
     }
 
@@ -53,3 +54,4 @@ public class OfflineClientsEndpoint {
         }
     }
 }
+
