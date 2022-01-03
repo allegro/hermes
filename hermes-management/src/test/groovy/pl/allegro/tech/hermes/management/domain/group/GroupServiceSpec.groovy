@@ -67,7 +67,7 @@ class GroupServiceSpec extends Specification {
         groupService.removeGroup(toBeRemoved.groupName, TEST_USER)
 
         then:
-        1 * auditor.objectRemoved(TEST_USER, toBeRemoved)
+        1 * auditor.objectRemoved(TEST_USER, toBeRemoved.groupName)
     }
 
     def "should audit group update"() {
