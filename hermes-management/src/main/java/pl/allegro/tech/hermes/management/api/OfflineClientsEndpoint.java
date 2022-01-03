@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
 import pl.allegro.tech.hermes.management.domain.clients.IframeSource;
 import pl.allegro.tech.hermes.management.domain.clients.OfflineClientsService;
@@ -37,7 +38,7 @@ public class OfflineClientsEndpoint {
     @Produces(APPLICATION_JSON)
     public Response find(@PathParam("topic") String topic) {
         return offlineClientsService
-                .map(service -> Response.ok(new IframeSource(service.getIframeSource(topic))).build())
+                .map(service -> Response.ok(new IframeSource(service.getIframeSource(TopicName.fromQualifiedName(topic)))).build())
                 .orElseThrow(OfflineClientsServiceAbsentException::new);
     }
 
