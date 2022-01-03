@@ -298,6 +298,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
         $scope.operation = operation;
 
         $scope.save = function () {
+            $scope.disableSaveButton = true;
             var promise;
             var originalTopicName = $scope.topic.name;
             passwordService.setRoot($scope.rootPassword);
@@ -326,6 +327,7 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
                     })
                     .finally(function () {
                         passwordService.reset();
+                        $scope.disableSaveButton = false;
                     });
         };
          $scope.beautifyText = function (){
