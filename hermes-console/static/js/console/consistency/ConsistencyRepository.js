@@ -5,7 +5,7 @@ repository.factory('ConsistencyRepository', ['DiscoveryService', '$resource',
 
         const consistencyResource = $resource(discovery.resolve('/consistency/inconsistencies/groups'));
         const groupsResource = $resource(discovery.resolve('/consistency/groups'));
-        const consistencyTopicsResource = $resource(discovery.resolve('/consistency/inconsistencies/topics'))
+        const consistencyTopicsResource = $resource(discovery.resolve('/consistency/inconsistencies/topics'));
 
         var lastConsistencyCheckingResult = {
             inconsistentGroups: null,
@@ -27,10 +27,10 @@ repository.factory('ConsistencyRepository', ['DiscoveryService', '$resource',
                 lastConsistencyCheckingResult.inconsistentGroups = result;
             },
             getLastConsistencyCheckingResult: function () {
-                return lastConsistencyCheckingResult.inconsistentGroups
+                return lastConsistencyCheckingResult.inconsistentGroups;
             },
             getLastTopicsConsistencyCheckingResult: function () {
-                return lastConsistencyCheckingResult.inconsistentTopics
+                return lastConsistencyCheckingResult.inconsistentTopics;
             },
             setLastTopicsConsistencyCheckingResult: function (result) {
                 lastConsistencyCheckingResult.inconsistentTopics = result;

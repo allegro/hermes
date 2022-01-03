@@ -5,6 +5,7 @@ var topics = angular.module('hermes.topic', [
     'hermes.topic.repository',
     'hermes.topic.metrics',
     'hermes.topic.factory',
+    'hermes.topic.avroViewer',
     'hermes.services',
     'hermes.filters',
     'hermes.owner',
@@ -20,6 +21,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
 
         $scope.subscriptionsFetching = true;
         $scope.showMessageSchema = false;
+        $scope.showRawMessageSchema = false;
         $scope.config = topicConfig;
         $scope.showFixedHeaders = subscriptionConfig.showFixedHeaders;
         $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
