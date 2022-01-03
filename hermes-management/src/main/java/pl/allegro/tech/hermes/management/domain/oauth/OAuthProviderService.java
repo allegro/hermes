@@ -47,8 +47,9 @@ public class OAuthProviderService {
     }
 
     public void removeOAuthProvider(String oAuthProviderName, String removedBy) {
+        OAuthProvider oAuthProvider = repository.getOAuthProviderDetails(oAuthProviderName);
         multiDcExecutor.execute(new RemoveOAuthProviderRepositoryCommand(oAuthProviderName));
-        auditor.objectRemoved(removedBy, OAuthProvider.class.getSimpleName(), oAuthProviderName);
+        auditor.objectRemoved(removedBy, oAuthProvider);
     }
 
     public void updateOAuthProvider(String oAuthProviderName, PatchData patch, String updatedBy) {

@@ -177,8 +177,9 @@ public class SubscriptionService {
 
     public void removeSubscription(TopicName topicName, String subscriptionName, String removedBy) {
         auditor.beforeObjectRemoval(removedBy, Subscription.class.getSimpleName(), subscriptionName);
+        Subscription subscription = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         multiDcExecutor.execute(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName));
-        auditor.objectRemoved(removedBy, Subscription.class.getSimpleName(), subscriptionName);
+        auditor.objectRemoved(removedBy, subscription);
         subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
     }
 

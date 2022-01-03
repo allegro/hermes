@@ -52,7 +52,7 @@ class LoggingAuditorSpec extends Specification {
             Topic toBeRemoved = TopicBuilder.topic("group.topic").build()
 
         when:
-            auditor.objectRemoved(TEST_USER, Topic.class.getSimpleName(), toBeRemoved.qualifiedName)
+            auditor.objectRemoved(TEST_USER, toBeRemoved)
 
         then:
             with(mockAppender.list.last().toString()) {
