@@ -1,3 +1,21 @@
+## 1.10.1 (04.01.2022)
+
+## Enhancements
+
+#### ([1438](https://github.com/allegro/hermes/pull/1438)) Add offline retransmission auditor
+#### ([1437](https://github.com/allegro/hermes/pull/1437)) Replaced custom fetcher for offline-clients with iframe
+#### ([1440](https://github.com/allegro/hermes/pull/1440)) Added object details to auditors while removing objects
+#### ([1434](https://github.com/allegro/hermes/pull/1434)) Add avro schema viewer
+
+Thanks to @stanczykj for this contribution!
+
+#### ([1441](https://github.com/allegro/hermes/pull/1441)) Added button blocking until backend responds
+
+### Fixes
+
+#### ([1435](https://github.com/allegro/hermes/pull/1435)) Fixed bug in hermes-mock causing HermesMockException
+#### ([1439](https://github.com/allegro/hermes/pull/1439)) When junit-reporter fails to report, action continues to work
+
 ## 1.10.0 (13.12.2021)
 
 ## Enhancements
