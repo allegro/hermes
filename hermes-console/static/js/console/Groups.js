@@ -141,6 +141,7 @@ groups.controller('GroupEditController', ['GroupRepository', '$scope', '$uibModa
         $scope.operation = operation;
 
         $scope.save = function () {
+            $scope.disableSaveButton = true;
             passwordService.setRoot($scope.rootPassword);
             var response = operation === 'ADD'? groupRepository.add($scope.group) : groupRepository.save($scope.group);
             response.$promise
@@ -153,6 +154,7 @@ groups.controller('GroupEditController', ['GroupRepository', '$scope', '$uibModa
                 })
                 .finally(function () {
                     passwordService.reset();
+                    $scope.disableSaveButton = false;
                 });
         };
     }]);

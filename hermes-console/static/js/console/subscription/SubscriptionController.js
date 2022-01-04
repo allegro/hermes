@@ -288,6 +288,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
         $scope.config = subscriptionConfig;
 
         $scope.save = function () {
+            $scope.disableSaveButton = true;
             var promise;
             var subscriptionToSave = _.cloneDeep($scope.subscription);
             passwordService.setRoot($scope.rootPassword);
@@ -312,6 +313,7 @@ subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository'
                     })
                     .finally(function () {
                         passwordService.reset();
+                        $scope.disableSaveButton = false;
                     });
         };
 
