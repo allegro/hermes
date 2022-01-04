@@ -23,7 +23,7 @@
         </form>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" ng-disabled="groupForm.$invalid" ng-click="save()">Save</button>
+        <button class="btn btn-primary" ng-disabled="groupForm.$invalid || disableSaveButton" ng-click="save()">Save</button>
         <button class="btn btn-warning" ng-click="$dismiss()">Cancel</button>
     </div>
 </section>
