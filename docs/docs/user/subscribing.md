@@ -542,7 +542,7 @@ Hermes gives an option to easily retransmit messages that are still available on
 /topics/{topicName}/subscriptions/{subscriptionName}/retransmission
 ```
 
-The message body should be using the following format:
+The message body should in the following format:
 
 ```json
 {
