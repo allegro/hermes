@@ -542,10 +542,13 @@ Hermes gives an option to easily retransmit messages that are still available on
 /topics/{topicName}/subscriptions/{subscriptionName}/retransmission
 ```
 
-The message body can be of following format:
+The message body should in the following format:
 
-* ISO date: `2015-09-03T13:30:00.000`
-* number of hours to retransmit: `-6h`
+```json
+{
+  "retransmissionDate" : "2021-10-25T00:00:00+02:00"
+}
+```
 
 Hermes will find message offset in Kafka, that is closes to the given date and initiate retransmission. In return, you will
 receive list of offsets from which retransmission will be started per partition.
