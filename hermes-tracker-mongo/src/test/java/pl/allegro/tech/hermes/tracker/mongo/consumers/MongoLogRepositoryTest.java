@@ -21,6 +21,7 @@ import java.util.stream.StreamSupport;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.sentMessageTrace;
 
 public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements LogSchemaAware {
 
@@ -65,19 +66,19 @@ public class MongoLogRepositoryTest extends AbstractLogRepositoryTest implements
 
     private SentMessageTrace convert(DBObject rawObject) {
         BasicDBObject object = (BasicDBObject) rawObject;
-        return new SentMessageTrace(
-                object.getString(MESSAGE_ID),
-                object.getString(BATCH_ID),
-                object.getLong(TIMESTAMP),
-                object.getString(LogSchemaAware.SUBSCRIPTION),
-                object.getString(TOPIC_NAME),
-                SentMessageTraceStatus.valueOf(object.getString(STATUS)),
-                object.getString(REASON),
-                null,
-                object.getInt(PARTITION, -1),
-                object.getLong(OFFSET, -1),
-                object.getString(CLUSTER, ""),
-                object.getString(EXTRA_REQUEST_HEADERS)
-        );
+        return sentMessageTrace(
+                        object.getString(MESSAGE_ID),
+                        object.getString(BATCH_ID),
+                        SentMessageTraceStatus.valueOf(object.getString(STATUS))
+                )
+                .withTimestamp(object.getLong(TIMESTAMP))
+                .withSubscription(object.getString(LogSchemaAware.SUBSCRIPTION))
+                .withTopicName(object.getString(TOPIC_NAME))
+                .withReason(object.getString(REASON))
+                .withPartition(object.getInt(PARTITION, -1))
+                .withOffset(object.getLong(OFFSET, -1))
+                .withCluster(object.getString(CLUSTER, ""))
+                .withExtraRequestHeaders(object.getString(EXTRA_REQUEST_HEADERS))
+                .build();
     }
 }

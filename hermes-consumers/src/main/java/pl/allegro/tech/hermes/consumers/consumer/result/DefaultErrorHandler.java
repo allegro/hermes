@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.time.Clock;
 import java.util.Map;
 
-import static pl.allegro.tech.hermes.api.SentMessageTrace.createUndeliveredMessage;
+import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
 import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
@@ -58,10 +58,19 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
     }
 
     private void addToMessageLog(Message message, Subscription subscription, MessageSendingResult result, Map<String, String> extraRequestHeaders) {
-        result.getLogInfo().forEach(logInfo ->
-                undeliveredMessageLog.add(createUndeliveredMessage(subscription, new String(message.getData()), logInfo.getFailure(), clock.millis(),
-                        message.getPartition(), message.getOffset(), cluster, extraRequestHeaders.entrySet().stream().collect(extraRequestHeadersCollector()))));
-
+        result.getLogInfo().forEach(logInfo -> undeliveredMessageLog.add(
+                undeliveredMessage()
+                        .withSubscription(subscription.getName())
+                        .withTopicName(subscription.getQualifiedTopicName())
+                        .withMessage(new String(message.getData()))
+                        .withReason(logInfo.getFailure().getMessage())
+                        .withTimestamp(clock.millis())
+                        .withPartition(message.getPartition())
+                        .withOffset(message.getOffset())
+                        .withCluster(cluster)
+                        .withExtraRequestHeaders(extraRequestHeaders.entrySet().stream().collect(extraRequestHeadersCollector()))
+                        .build()
+        ));
     }
 
     private void logResult(Message message, Subscription subscription, MessageSendingResult result) {

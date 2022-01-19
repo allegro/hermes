@@ -123,19 +123,21 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     private SentMessageTrace sentMessageTrace(MessageMetadata messageMetadata, long timestamp, SentMessageTraceStatus status) {
-        return new SentMessageTrace(messageMetadata.getMessageId(),
-                messageMetadata.getBatchId(),
-                timestamp,
-                messageMetadata.getSubscription(),
-                messageMetadata.getTopic(),
-                status,
-                REASON_MESSAGE,
-                null,
-                messageMetadata.getPartition(),
-                messageMetadata.getOffset(),
-                CLUSTER_NAME,
-                messageMetadata.getExtraRequestHeaders().entrySet().stream()
-                    .collect(extraRequestHeadersCollector()));
+        return SentMessageTrace.Builder.sentMessageTrace(
+                        messageMetadata.getMessageId(),
+                        messageMetadata.getBatchId(),
+                        status
+                )
+                .withTimestamp(timestamp)
+                .withSubscription(messageMetadata.getSubscription())
+                .withTopicName(messageMetadata.getTopic())
+                .withReason(REASON_MESSAGE)
+                .withPartition(messageMetadata.getPartition())
+                .withOffset(messageMetadata.getOffset())
+                .withCluster(CLUSTER_NAME)
+                .withExtraRequestHeaders(messageMetadata.getExtraRequestHeaders().entrySet().stream()
+                        .collect(extraRequestHeadersCollector()))
+                .build();
     }
 
     private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus status) {
