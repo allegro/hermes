@@ -7,15 +7,15 @@
         <div class="panel-body">
 
             <p><strong>Topic</strong> {{topicName}}</p>
-            <p><strong>Message Id:</strong> {{previewedMessage.metadata.id}}</p>
-            <p><strong>Message timestamp:</strong> {{previewedMessage.metadata.timestamp | date:'yyyy-MM-dd HH:mm:ss'}}</p>
+            <p><strong>Message Id:</strong> {{previewedMessage.__metadata.messageId}}</p>
+            <p><strong>Message timestamp:</strong> {{previewedMessage.__metadata.timestamp | date:'yyyy-MM-dd HH:mm:ss'}}</p>
             <p><strong>Partition:</strong> {{partition}}</p>
             <p><strong>Offset:</strong> {{offset}}</p>
 
             <p>
                 <strong>Message:</strong>
                         <pre class="pre-scrollable">
-{{previewedMessage.message}}
+{{previewedMessage}}
                         </pre>
             </p>
 
