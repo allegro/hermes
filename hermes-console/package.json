@@ -1,6 +1,6 @@
 {
   "name": "hermes-console",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "Console for Hermes Management",
   "repository": "https://github.com/allegro/hermes",
   "main": "serve.js",
@@ -25,6 +25,7 @@
     "karma-coverage": "^2.0.3",
     "karma-jasmine": "^4.0.1",
     "karma-junit-reporter": "^2.0.1",
+    "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-requirejs": "^1.1.0",
     "phantomjs": "~1.9.18"
   }

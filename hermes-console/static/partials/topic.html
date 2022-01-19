@@ -134,11 +134,18 @@
             <div class="panel panel-default" style="position: relative">
                 <span class="btn pull-right glyphicon {{showMessageSchema ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down' }}" ng-click="showMessageSchema = !showMessageSchema"></span>
                 <button class="btn btn-default pull-right" style="padding: 4px; margin-top: 4px" ng-click="copyToClipboard()">Copy to clipboard</button>
+                <div class="pull-right" style="padding: 4px; margin-top: 4px; margin-right: 0.6em !important;">
+                    <label>
+                        <input type="checkbox" style="vertical-align: top" ng-model="showRawMessageSchema">
+                        Raw
+                    </label>
+                </div>
                 <div class="panel-heading" ng-click="showMessageSchema = !showMessageSchema">
                     <h3 class="panel-title">Message schema</h3>
                 </div>
                 <div class="panel-body" uib-collapse="!showMessageSchema">
-                    <pre class="pre-scrollable">{{ messageSchema }}</pre>
+                    <pre class="pre-scrollable" ng-show="showRawMessageSchema">{{ messageSchema }}</pre>
+                    <avro-viewer schema="messageSchema" ng-show="!showRawMessageSchema"></avro-viewer>
                 </div>
             </div>
         </div>
@@ -195,28 +202,9 @@
                     Offline clients
                 </h4>
             </div>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>User</th>
-                        <th>Last access date</th>
-                        <th>Owners</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="client in clients">
-                        <td>{{$index + 1}}</td>
-                        <td>{{client.user}}</td>
-                        <td>{{client.lastAccess}}</td>
-                        <td>{{client.owners.join(", ")}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div ng-show="offlineClientsFetching" class="text-center">
-            <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+            <div class="list-group-item">
+                <iframe height="400" ng-src="{{trustSrc(iframeSource)}}" style="border: none;" width="100%"></iframe>
+            </div>
         </div>
     </div>
 

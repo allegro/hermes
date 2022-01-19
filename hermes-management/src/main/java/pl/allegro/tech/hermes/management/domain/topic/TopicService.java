@@ -198,7 +198,7 @@ public class TopicService {
     private void removeTopic(Topic topic, String removedBy) {
         multiDcExecutor.execute(new RemoveTopicRepositoryCommand(topic.getName()));
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
-        auditor.objectRemoved(removedBy, Topic.class.getSimpleName(), topic.getQualifiedName());
+        auditor.objectRemoved(removedBy, topic);
         topicOwnerCache.onRemovedTopic(topic);
     }
 

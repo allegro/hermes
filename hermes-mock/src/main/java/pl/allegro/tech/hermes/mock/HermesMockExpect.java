@@ -38,36 +38,34 @@ public class HermesMockExpect {
     }
 
     public <T> void jsonMessagesOnTopicAs(String topicName, int count, Class<T> clazz) {
-        assertMessages(topicName, count, () -> hermesMockQuery.allJsonMessagesAs(topicName, clazz));
+        assertMessages(count, () -> hermesMockQuery.allJsonMessagesAs(topicName, clazz));
     }
 
     public <T> void jsonMessagesOnTopicAs(String topicName, int count, Class<T> clazz, Predicate<T> predicate) {
-        assertMessages(topicName, count, () -> hermesMockQuery.matchingJsonMessagesAs(topicName, clazz, predicate));
+        assertMessages(count, () -> hermesMockQuery.matchingJsonMessagesAs(topicName, clazz, predicate));
     }
 
     public void avroMessagesOnTopic(String topicName, int count, Schema schema) {
-        assertMessages(topicName, count, () -> validateAvroMessages(topicName, schema));
+        assertMessages(count, () -> validateAvroMessages(topicName, schema));
     }
 
     public <T> void avroMessagesOnTopic(String topicName, int count, Schema schema, Class<T> clazz, Predicate<T> predicate) {
-        assertMessages(topicName, count, () -> validateAvroMessages(topicName, schema, clazz, predicate));
+        assertMessages(count, () -> validateAvroMessages(topicName, schema, clazz, predicate));
     }
 
-    private <T> void assertMessages(String topicName, int count, Supplier<List<T>> messages) {
-        expectSpecificMessages(count, messages.get());
+    private <T> void assertMessages(int count, Supplier<List<T>> messages) {
+        try {
+            await().atMost(awaitSeconds, SECONDS).until(() -> (messages != null && messages.get().size() == count));
+        } catch (ConditionTimeoutException ex) {
+            throw new HermesMockException("Hermes mock did not receive " + count + " messages, got " + messages.get().size());
+        }
     }
 
     private void expectMessages(String topicName, int count) {
         try {
-            await().atMost((long) awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
+            await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
             throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
-        }
-    }
-
-    private <T> void expectSpecificMessages(int count, List<T> messages) {
-        if (messages != null && messages.size() != count) {
-            throw new HermesMockException("Hermes mock did not receive " + count + " messages, got " + messages.size());
         }
     }
 

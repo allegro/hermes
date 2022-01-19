@@ -36,8 +36,8 @@ public class CompositeAuditor implements Auditor {
     }
 
     @Override
-    public void objectRemoved(String username, String removedObjectType, String removedObjectName) {
-        auditors.forEach(auditor -> auditor.objectRemoved(username, removedObjectType, removedObjectName));
+    public void objectRemoved(String username, Object removedObject) {
+        auditors.forEach(auditor -> auditor.objectRemoved(username, removedObject));
     }
 
     @Override

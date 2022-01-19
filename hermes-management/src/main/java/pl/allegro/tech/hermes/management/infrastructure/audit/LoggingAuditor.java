@@ -50,8 +50,10 @@ public class LoggingAuditor implements Auditor {
     }
 
     @Override
-    public void objectRemoved(String username, String removedObjectType, String removedObjectName) {
-        logger.info("User {} has removed {} {}.", username, removedObjectType, removedObjectName);
+    public void objectRemoved(String username, Object removedObject) {
+        ignoringExceptions(() ->
+        logger.info("User {} has removed {} {}.", username, removedObject.getClass().getSimpleName(),
+                objectMapper.writeValueAsString(removedObject)));
     }
 
     @Override

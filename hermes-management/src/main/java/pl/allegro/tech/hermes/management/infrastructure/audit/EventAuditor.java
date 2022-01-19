@@ -83,12 +83,13 @@ public class EventAuditor implements Auditor {
     }
 
     @Override
-    public void objectRemoved(String username, String removedObjectType, String removedObjectName) {
+    public void objectRemoved(String username, Object removedObject) {
         ignoringExceptions(() -> {
+            String removedObjectToString = objectMapper.writeValueAsString(removedObject);
             AuditEvent event = new AuditEvent(AuditEventType.REMOVED,
-                    removedObjectName,
-                    removedObjectType,
-                    removedObjectName,
+                    removedObjectToString,
+                    removedObject.getClass().getSimpleName(),
+                    removedObject.toString(),
                     username);
             restTemplate.postForObject(eventDestination, event, Void.class);
         });

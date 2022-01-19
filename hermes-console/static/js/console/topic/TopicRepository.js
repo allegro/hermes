@@ -57,11 +57,11 @@ repository.factory('TopicRepository', ['DiscoveryService', '$resource', '$locati
 
 repository.factory('OfflineClientsRepository', ['DiscoveryService', '$resource',
     function (discovery, $resource) {
-        var repository = $resource(discovery.resolve('/topics/:topic/offline-clients'));
+        var repository = $resource(discovery.resolve('/topics/:topic/offline-clients-source'));
 
         return {
-            get: function (topic) {
-                return repository.query({topic: topic}).$promise;
+            getIframeSource: function (topic) {
+                return repository.get({topic: topic}).$promise;
             }
         };
     }]);

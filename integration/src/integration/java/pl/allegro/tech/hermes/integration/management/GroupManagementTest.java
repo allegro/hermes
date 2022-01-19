@@ -12,7 +12,6 @@ import javax.ws.rs.core.Response;
 import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NAME_IS_INVALID;
-import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
