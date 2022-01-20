@@ -27,7 +27,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
  *
  */
 
-import org.apache.http.annotation.NotThreadSafe;
+import org.apache.http.annotation.Contract;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.util.Args;
@@ -54,7 +54,7 @@ import java.nio.channels.WritableByteChannel;
 /**
  * An entity that delivers the contents of a {@link ByteBuffer}.
  */
-@NotThreadSafe
+@Contract(threading = org.apache.http.annotation.ThreadingBehavior.UNSAFE)
 public class ByteBufferEntity extends AbstractHttpEntity implements Cloneable {
 
     private final ByteBuffer buffer;

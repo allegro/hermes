@@ -21,7 +21,7 @@ dependencies {
     compile group: 'javax.jms', name: 'javax.jms-api', version: '2.0'
     compile group: 'joda-time', name: 'joda-time', version: '2.5'
 
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
     compile(group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0') {
         exclude module: 'guava'
     }
@@ -31,6 +31,10 @@ dependencies {
     compile(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
+
+    compile platform('com.google.cloud:libraries-bom:24.2.0')
+
+    compile(group: 'com.google.cloud', name: 'google-cloud-pubsub')
 
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
