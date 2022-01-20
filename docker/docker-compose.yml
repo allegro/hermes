@@ -21,7 +21,7 @@ services:
       - zk
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zk:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -42,30 +42,30 @@ services:
       - graphite_data:/opt/graphite/storage
       - statsd_data:/opt/statsd
 
-  frontend:
-    image: allegro/hermes-frontend
-    ports:
-      - "8080:8080"
-    depends_on:
-      - zk
-      - kafka
-      - graphite
+  #frontend:
+  #  image: allegro/hermes-frontend
+  #  ports:
+  #    - "8080:8080"
+  #  depends_on:
+  #    - zk
+  #    - kafka
+  #    - graphite
 
-  consumers:
-    image: allegro/hermes-consumers
-    depends_on:
-      - zk
-      - kafka
-      - graphite
+  #consumers:
+  #  image: allegro/hermes-consumers
+  #  depends_on:
+  #    - zk
+  #    - kafka
+  #   - graphite
 
-  management:
-    image: allegro/hermes-management
-    ports:
-      - "8090:8090"
-    depends_on:
-      - zk
-      - kafka
-      - graphite
+  #management:
+  #  image: allegro/hermes-management
+  #  ports:
+  #    - "8090:8090"
+  #  depends_on:
+  #    - zk
+  #    - kafka
+  #    - graphite
 
   schema-registry:
     image: confluentinc/cp-schema-registry:5.1.0

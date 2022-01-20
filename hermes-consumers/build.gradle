@@ -32,7 +32,6 @@ dependencies {
         exclude module: 'hornetq-native'
     }
 
-    testCompile project(':hermes-test-helper')
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
 

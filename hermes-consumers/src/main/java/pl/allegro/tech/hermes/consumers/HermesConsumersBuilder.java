@@ -132,6 +132,9 @@ public final class HermesConsumersBuilder {
         messageSenderProviders.add(
                 "jms", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultJmsMessageSenderProvider")
         );
+        messageSenderProviders.add(
+                "pubsub", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultPubSubMessageSenderProvider")
+        );
         return new HermesConsumers(hooksHandler, binders, messageSenderProviders, logRepositories, flushLogsShutdownHookEnabled);
     }
 

@@ -65,6 +65,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryPr
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.pubsub.PubSubMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
@@ -118,6 +119,8 @@ public class ConsumersBinder extends AbstractBinder {
                 .in(Singleton.class).named("defaultJmsMessageSenderProvider");
         bind(JettyHttpMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
                 .in(Singleton.class).named("defaultHttpMessageSenderProvider");
+        bind(PubSubMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
+                .in(Singleton.class).named("defaultPubSubMessageSenderProvider");
         bind(EmptyHttpHeadersProvidersFactory.class).to(HttpHeadersProvidersFactory.class).in(Singleton.class);
         bind(DefaultSendingResultHandlers.class).to(SendingResultHandlers.class).in(Singleton.class);
         bind(DefaultHttpRequestFactoryProvider.class).to(HttpRequestFactoryProvider.class).in(Singleton.class);
