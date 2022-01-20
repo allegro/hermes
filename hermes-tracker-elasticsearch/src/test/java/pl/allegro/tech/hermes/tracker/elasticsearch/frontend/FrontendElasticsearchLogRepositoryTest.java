@@ -62,32 +62,39 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     @Override
     protected void awaitUntilMessageIsPersisted(String topic,
                                                 String id,
-                                                PublishedMessageTraceStatus status,
                                                 String reason,
-                                                String remoteHostname) {
+                                                String remoteHostname,
+                                                PublishedMessageTraceStatus status,
+                                                String... extraRequestHeadersKeywords) {
         awaitUntilMessageIsIndexed(
-                getPublishedQuery(topic, id, status, remoteHostname)
+                getPublishedQuery(topic, id, status, remoteHostname, extraRequestHeadersKeywords)
                         .must(matchQuery(REASON, reason)));
     }
 
     @Override
     protected void awaitUntilMessageIsPersisted(String topic,
                                                 String id,
+                                                String remoteHostname,
                                                 PublishedMessageTraceStatus status,
-                                                String remoteHostname) {
-        awaitUntilMessageIsIndexed(getPublishedQuery(topic, id, status, remoteHostname));
+                                                String... extraRequestHeadersKeywords) {
+        awaitUntilMessageIsIndexed(getPublishedQuery(topic, id, status, remoteHostname, extraRequestHeadersKeywords));
     }
 
     private BoolQueryBuilder getPublishedQuery(String topic,
                                                String id,
                                                PublishedMessageTraceStatus status,
-                                               String remoteHostname) {
-        return boolQuery()
+                                               String remoteHostname,
+                                               String... extraRequestHeadersKeywords) {
+        BoolQueryBuilder queryBuilder = boolQuery()
                 .must(termQuery(TOPIC_NAME, topic))
                 .must(termQuery(MESSAGE_ID, id))
                 .must(termQuery(STATUS, status.toString()))
                 .must(termQuery(CLUSTER, CLUSTER_NAME))
                 .must(termQuery(REMOTE_HOSTNAME, remoteHostname));
+        for (String extraRequestHeadersKeyword : extraRequestHeadersKeywords) {
+            queryBuilder.must(termQuery(EXTRA_REQUEST_HEADERS, extraRequestHeadersKeyword));
+        }
+        return queryBuilder;
     }
 
     private void awaitUntilMessageIsIndexed(QueryBuilder query) {

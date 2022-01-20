@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 
 public class PublishingMessageTracker implements PublishingTracker {
 
@@ -16,18 +17,18 @@ public class PublishingMessageTracker implements PublishingTracker {
     }
 
     @Override
-    public void logInflight(final String messageId, final TopicName topicName, final String hostname) {
-        repositories.forEach(r -> r.logInflight(messageId, clock.millis(), topicName.qualifiedName(), hostname));
+    public void logInflight(String messageId, TopicName topicName, String hostname, Map<String, String> extraRequestHeaders) {
+        repositories.forEach(r -> r.logInflight(messageId, clock.millis(), topicName.qualifiedName(), hostname, extraRequestHeaders));
     }
 
     @Override
-    public void logPublished(final String messageId, final TopicName topicName, final String hostname) {
-        repositories.forEach(r -> r.logPublished(messageId, clock.millis(), topicName.qualifiedName(), hostname));
+    public void logPublished(String messageId, TopicName topicName, String hostname, Map<String, String> extraRequestHeaders) {
+        repositories.forEach(r -> r.logPublished(messageId, clock.millis(), topicName.qualifiedName(), hostname, extraRequestHeaders));
     }
 
     @Override
-    public void logError(final String messageId, final TopicName topicName, final String reason, final String hostname) {
-        repositories.forEach(r -> r.logError(messageId, clock.millis(), topicName.qualifiedName(), reason, hostname));
+    public void logError(String messageId, TopicName topicName, String reason, String hostname, Map<String, String> extraRequestHeaders) {
+        repositories.forEach(r -> r.logError(messageId, clock.millis(), topicName.qualifiedName(), reason, hostname, extraRequestHeaders));
     }
 
     public void add(LogRepository logRepository) {

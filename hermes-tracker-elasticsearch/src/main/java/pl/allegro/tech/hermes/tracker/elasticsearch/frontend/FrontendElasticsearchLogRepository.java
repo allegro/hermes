@@ -13,11 +13,13 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
 
 public class FrontendElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
@@ -43,27 +45,28 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
     }
 
     @Override
-    public void logPublished(String messageId, long timestamp, String topicName, String hostname) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, SUCCESS, hostname)));
+    public void logPublished(String messageId, long timestamp, String topicName, String hostname, Map<String, String> extraRequestHeaders) {
+        queue.offer(build(() -> document(messageId, timestamp, topicName, SUCCESS, hostname, extraRequestHeaders)));
     }
 
     @Override
-    public void logError(String messageId, long timestamp, String topicName, String reason, String hostname) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, ERROR, reason, hostname)));
+    public void logError(String messageId, long timestamp, String topicName, String reason, String hostname, Map<String, String> extraRequestHeaders) {
+        queue.offer(build(() -> document(messageId, timestamp, topicName, ERROR, reason, hostname, extraRequestHeaders)));
     }
 
     @Override
-    public void logInflight(String messageId, long timestamp, String topicName, String hostname) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, INFLIGHT, hostname)));
+    public void logInflight(String messageId, long timestamp, String topicName, String hostname, Map<String, String> extraRequestHeaders) {
+        queue.offer(build(() -> document(messageId, timestamp, topicName, INFLIGHT, hostname, extraRequestHeaders)));
     }
 
     private XContentBuilder document(String messageId,
                                      long timestamp,
                                      String topicName,
                                      PublishedMessageTraceStatus status,
-                                     String hostname)
+                                     String hostname,
+                                     Map<String, String> extraRequestHeaders)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname).endObject();
+        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname, extraRequestHeaders).endObject();
     }
 
     private XContentBuilder document(String messageId,
@@ -71,12 +74,13 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
                                      String topicName,
                                      PublishedMessageTraceStatus status,
                                      String reason,
-                                     String hostname)
+                                     String hostname,
+                                     Map<String, String> extraRequestHeaders)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname).field(REASON, reason).endObject();
+        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname, extraRequestHeaders).field(REASON, reason).endObject();
     }
 
-    protected XContentBuilder notEndedDocument(String messageId, long timestamp, String topicName, String status, String hostname)
+    protected XContentBuilder notEndedDocument(String messageId, long timestamp, String topicName, String status, String hostname, Map<String, String> extraRequestHeaders)
             throws IOException {
         return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()
@@ -87,7 +91,9 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
                 .field(STATUS, status)
                 .field(CLUSTER, clusterName)
                 .field(SOURCE_HOSTNAME, this.hostname)
-                .field(REMOTE_HOSTNAME, hostname);
+                .field(REMOTE_HOSTNAME, hostname)
+                .field(EXTRA_REQUEST_HEADERS, extraRequestHeaders.entrySet().stream()
+                    .collect(extraRequestHeadersCollector()));
     }
 
     private long toSeconds(long millis) {

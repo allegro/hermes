@@ -13,7 +13,10 @@ import pl.allegro.tech.hermes.tracker.mongo.metrics.Gauges;
 import pl.allegro.tech.hermes.tracker.mongo.metrics.Timers;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
+import java.util.Map;
+
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.*;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 
 public class MongoLogRepository extends BatchingLogRepository<DBObject> implements LogRepository, LogSchemaAware {
 
@@ -34,27 +37,29 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
     }
 
     @Override
-    public void logPublished(String messageId, long timestamp, String topicName, String hostname) {
-        queue.offer(topicLog(messageId, timestamp, topicName, SUCCESS));
+    public void logPublished(String messageId, long timestamp, String topicName, String hostname, Map<String, String> extraRequestHeaders) {
+        queue.offer(topicLog(messageId, timestamp, topicName, SUCCESS, extraRequestHeaders));
     }
 
     @Override
-    public void logError(String messageId, long timestamp, String topicName, String reason, String hostname) {
-        queue.offer(topicLog(messageId, timestamp, topicName, ERROR).append(REASON, reason));
+    public void logError(String messageId, long timestamp, String topicName, String reason, String hostname, Map<String, String> extraRequestHeaders) {
+        queue.offer(topicLog(messageId, timestamp, topicName, ERROR, extraRequestHeaders).append(REASON, reason));
     }
 
     @Override
-    public void logInflight(String messageId, long timestamp, String topicName, String hostname) {
-        queue.offer(topicLog(messageId, timestamp, topicName, INFLIGHT));
+    public void logInflight(String messageId, long timestamp, String topicName, String hostname, Map<String, String> extraRequestHeaders) {
+        queue.offer(topicLog(messageId, timestamp, topicName, INFLIGHT, extraRequestHeaders));
     }
 
-    private BasicDBObject topicLog(String messageId, long timestamp, String topicName, PublishedMessageTraceStatus status) {
+    private BasicDBObject topicLog(String messageId, long timestamp, String topicName, PublishedMessageTraceStatus status, Map<String, String> extraRequestHeaders) {
         return new BasicDBObject()
                 .append(MESSAGE_ID, messageId)
                 .append(TIMESTAMP, timestamp)
                 .append(STATUS, status.toString())
                 .append(TOPIC_NAME, topicName)
                 .append(CLUSTER, clusterName)
-                .append(SOURCE_HOSTNAME, hostname);
+                .append(SOURCE_HOSTNAME, hostname)
+                .append(EXTRA_REQUEST_HEADERS, extraRequestHeaders.entrySet().stream()
+                        .collect(extraRequestHeadersCollector()));
     }
 }

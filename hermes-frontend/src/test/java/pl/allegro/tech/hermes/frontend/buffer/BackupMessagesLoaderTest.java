@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
 import com.codahale.metrics.Timer;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -191,7 +192,8 @@ public class BackupMessagesLoaderTest {
                 MessageIdGenerator.generate(),
                 "{'a':'b'}".getBytes(),
                 now().minusHours(ageHours).toInstant(UTC).toEpochMilli(),
-                "partition-key"
+                "partition-key",
+                ImmutableMap.of()
         );
     }
 }

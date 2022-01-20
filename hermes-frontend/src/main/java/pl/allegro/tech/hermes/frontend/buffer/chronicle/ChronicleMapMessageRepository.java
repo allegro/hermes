@@ -63,7 +63,7 @@ public class ChronicleMapMessageRepository implements MessageRepository {
             if (closed) {
                 throw new ChronicleMapClosedException("Backup storage is closed. Unable to add new messages.");
             }
-            map.put(message.getId(), new ChronicleMapEntryValue(message.getData(), message.getTimestamp(), topic.getQualifiedName(), message.getPartitionKey()));
+            map.put(message.getId(), new ChronicleMapEntryValue(message.getData(), message.getTimestamp(), topic.getQualifiedName(), message.getPartitionKey(), message.getExtraRequestHeaders()));
         } finally {
             lock.unlock();
         }
@@ -85,7 +85,7 @@ public class ChronicleMapMessageRepository implements MessageRepository {
     }
 
     private BackupMessage toBackupMessage(String id, ChronicleMapEntryValue entryValue) {
-        return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(), entryValue.getQualifiedTopicName(), entryValue.getPartitionKey());
+        return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(), entryValue.getQualifiedTopicName(), entryValue.getPartitionKey(), entryValue.getExtraRequestHeaders());
     }
 
     private class LoggingMapSizePreShutdownHook implements Runnable {

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id, messageContent, timestamp, qualifiedName, message.getPartitionKey()));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id, messageContent, timestamp, qualifiedName, message.getPartitionKey(), ImmutableMap.of()));
 
         //when
         messageRepository.delete(id);
@@ -73,14 +74,14 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message2, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent.getBytes(), message1.getTimestamp(), qualifiedName, message1.getPartitionKey()));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent.getBytes(), message1.getTimestamp(), qualifiedName, message1.getPartitionKey(), ImmutableMap.of()));
 
         //when
         messageRepository.delete(id1);
 
         //then
         assertThat(messageRepository.findAll()).hasSize(1);
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent.getBytes(), message2.getTimestamp(), qualifiedName, message2.getPartitionKey()));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent.getBytes(), message2.getTimestamp(), qualifiedName, message2.getPartitionKey(), ImmutableMap.of()));
     }
 
     @Test
@@ -118,7 +119,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(message.getId(), message.getData(), message.getTimestamp(), qualifiedName, message.getPartitionKey()));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(message.getId(), message.getData(), message.getTimestamp(), qualifiedName, message.getPartitionKey(), ImmutableMap.of()));
     }
 
     private Message generateMessage() {
@@ -132,6 +133,6 @@ public class ChronicleMapMessageRepositoryTest {
     private Message generateMessage(String content, long timestamp) {
         byte[] messageContent = content.getBytes();
         String id = MessageIdGenerator.generate();
-        return new JsonMessage(id, messageContent, timestamp, "partition-key");
+        return new JsonMessage(id, messageContent, timestamp, "partition-key", ImmutableMap.of());
     }
 }

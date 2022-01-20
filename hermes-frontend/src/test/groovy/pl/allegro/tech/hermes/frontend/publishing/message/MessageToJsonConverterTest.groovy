@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.message
 
+import com.google.common.collect.ImmutableMap
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import spock.lang.Specification
@@ -13,7 +14,7 @@ class MessageToJsonConverterTest extends Specification {
         def avroUser = new AvroUser('name', 16, 'favourite-colour')
 
         when:
-        def converted = new MessageToJsonConverter().convert(new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, "partition-key"))
+        def converted = new MessageToJsonConverter().convert(new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, "partition-key", ImmutableMap.of()))
 
         then:
         new String(converted) == toJson([__metadata: null, name: 'name', age: 16, favoriteColor: 'favourite-colour'])
@@ -24,7 +25,7 @@ class MessageToJsonConverterTest extends Specification {
         def avroUser = new AvroUser('name', 16, 'favourite-colour')
 
         when:
-        def converted = new MessageToJsonConverter().convert(new AvroMessage('message-id', 'unable-to-decode'.getBytes(), 0L, avroUser.compiledSchema, null))
+        def converted = new MessageToJsonConverter().convert(new AvroMessage('message-id', 'unable-to-decode'.getBytes(), 0L, avroUser.compiledSchema, null, ImmutableMap.of()))
 
         then:
         new String(converted) == 'unable-to-decode'
@@ -32,7 +33,7 @@ class MessageToJsonConverterTest extends Specification {
 
     def 'should return the same when no avro provided'() {
         when:
-        def converted = new MessageToJsonConverter().convert(new JsonMessage('message-id', 'given-message'.bytes, 0L, null))
+        def converted = new MessageToJsonConverter().convert(new JsonMessage('message-id', 'given-message'.bytes, 0L, null, ImmutableMap.of()))
 
         then:
         new String(converted) == 'given-message'

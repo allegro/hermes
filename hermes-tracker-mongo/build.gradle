@@ -1,4 +1,5 @@
 dependencies {
+    compile project(':hermes-common')
     compile project(':hermes-tracker')
     compile project(':hermes-metrics')
 

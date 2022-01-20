@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.sentMessageTrace;
+
 public class MongoLogRepository implements LogRepository, LogSchemaAware {
 
     private final DB database;
@@ -62,19 +64,20 @@ public class MongoLogRepository implements LogRepository, LogSchemaAware {
     private SentMessageTrace convertToSentMessage(DBObject rawObject) {
         BasicDBObject object = (BasicDBObject) rawObject;
 
-        return new SentMessageTrace(
-                object.getString(MESSAGE_ID),
-                object.getString(BATCH_ID),
-                object.getLong(TIMESTAMP),
-                object.getString(SUBSCRIPTION),
-                object.getString(TOPIC_NAME),
-                SentMessageTraceStatus.valueOf(object.getString(STATUS)),
-                object.getString(REASON),
-                null,
-                object.getInt(PARTITION, -1),
-                object.getLong(OFFSET, -1),
-                object.getString(CLUSTER, "")
-        );
+        return sentMessageTrace(
+                        object.getString(MESSAGE_ID),
+                        object.getString(BATCH_ID),
+                        SentMessageTraceStatus.valueOf(object.getString(STATUS))
+                )
+                .withTimestamp(object.getLong(TIMESTAMP))
+                .withSubscription(object.getString(SUBSCRIPTION))
+                .withTopicName(object.getString(TOPIC_NAME))
+                .withReason(object.getString(REASON))
+                .withPartition(object.getInt(PARTITION, -1))
+                .withOffset(object.getLong(OFFSET, -1))
+                .withCluster(object.getString(CLUSTER, ""))
+                .withExtraRequestHeaders(object.getString(EXTRA_REQUEST_HEADERS))
+                .build();
     }
 
     private PublishedMessageTrace convertToPublishedMessage(DBObject rawObject) {
@@ -87,7 +90,8 @@ public class MongoLogRepository implements LogRepository, LogSchemaAware {
                 PublishedMessageTraceStatus.valueOf(object.getString(STATUS)),
                 object.getString(REASON),
                 null,
-                object.getString(CLUSTER, "")
+                object.getString(CLUSTER, ""),
+                object.getString(EXTRA_REQUEST_HEADERS)
         );
     }
 

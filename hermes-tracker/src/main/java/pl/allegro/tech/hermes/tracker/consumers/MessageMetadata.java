@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.tracker.consumers;
 
+import com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
+
 public class MessageMetadata {
 
     private final String messageId;
@@ -12,14 +16,16 @@ public class MessageMetadata {
     private final String subscription;
     private final long publishingTimestamp;
     private final long readingTimestamp;
+    private final Map<String, String> extraRequestHeaders;
 
     public MessageMetadata(String messageId, long offset, int partition, long partitionAssignmentTerm, String topic, String subscription,
-                           String kafkaTopic, long publishingTimestamp, long readingTimestamp) {
-        this(messageId, "", offset, partition, partitionAssignmentTerm, topic, subscription, kafkaTopic, publishingTimestamp, readingTimestamp);
+                           String kafkaTopic, long publishingTimestamp, long readingTimestamp, Map<String, String> extraRequestHeaders) {
+        this(messageId, "", offset, partition, partitionAssignmentTerm, topic, subscription, kafkaTopic, publishingTimestamp,
+            readingTimestamp, extraRequestHeaders);
     }
 
     public MessageMetadata(String messageId, String batchId, long offset, int partition, long partitionAssignmentTerm, String topic, String subscription,
-                           String kafkaTopic, long publishingTimestamp, long readingTimestamp) {
+                           String kafkaTopic, long publishingTimestamp, long readingTimestamp, Map<String, String> extraRequestHeaders) {
         this.messageId = messageId;
         this.batchId = batchId;
         this.offset = offset;
@@ -30,6 +36,7 @@ public class MessageMetadata {
         this.kafkaTopic = kafkaTopic;
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
+        this.extraRequestHeaders = ImmutableMap.copyOf(extraRequestHeaders);
     }
 
     public String getMessageId() {
@@ -70,5 +77,9 @@ public class MessageMetadata {
 
     public String getKafkaTopic() {
         return kafkaTopic;
+    }
+
+    public Map<String, String> getExtraRequestHeaders() {
+        return extraRequestHeaders;
     }
 }

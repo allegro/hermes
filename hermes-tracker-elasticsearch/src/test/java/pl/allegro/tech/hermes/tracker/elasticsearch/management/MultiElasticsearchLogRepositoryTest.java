@@ -4,6 +4,9 @@ import com.codahale.metrics.MetricRegistry;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
+
+import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -33,6 +36,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
 
@@ -80,11 +84,12 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     @Test
     public void shouldGetMessageStatus() {
         // given
-        MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch1.messageStatus", "subscription");
+        Map<String, String> extraRequestHeaders = ImmutableMap.of("x-header1", "value1", "x-header2", "value2");
+        MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch1.messageStatus", "subscription", extraRequestHeaders);
         long timestamp = System.currentTimeMillis();
 
         // when
-        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch1.messageStatus", "localhost");
+        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch1.messageStatus", "localhost", extraRequestHeaders);
         consumersLogRepository.logSuccessful(messageMetadata, "localhost", timestamp);
 
         // then
@@ -118,17 +123,21 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     private SentMessageTrace sentMessageTrace(MessageMetadata messageMetadata, long timestamp, SentMessageTraceStatus status) {
-        return new SentMessageTrace(messageMetadata.getMessageId(),
-                messageMetadata.getBatchId(),
-                timestamp,
-                messageMetadata.getSubscription(),
-                messageMetadata.getTopic(),
-                status,
-                REASON_MESSAGE,
-                null,
-                messageMetadata.getPartition(),
-                messageMetadata.getOffset(),
-                CLUSTER_NAME);
+        return SentMessageTrace.Builder.sentMessageTrace(
+                        messageMetadata.getMessageId(),
+                        messageMetadata.getBatchId(),
+                        status
+                )
+                .withTimestamp(timestamp)
+                .withSubscription(messageMetadata.getSubscription())
+                .withTopicName(messageMetadata.getTopic())
+                .withReason(REASON_MESSAGE)
+                .withPartition(messageMetadata.getPartition())
+                .withOffset(messageMetadata.getOffset())
+                .withCluster(CLUSTER_NAME)
+                .withExtraRequestHeaders(messageMetadata.getExtraRequestHeaders().entrySet().stream()
+                        .collect(extraRequestHeadersCollector()))
+                .build();
     }
 
     private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus status) {
@@ -138,6 +147,8 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
                 status,
                 null,
                 null,
-                CLUSTER_NAME);
+                CLUSTER_NAME,
+                messageMetadata.getExtraRequestHeaders().entrySet().stream()
+                    .collect(extraRequestHeadersCollector()));
     }
 }
