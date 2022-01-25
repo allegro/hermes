@@ -33,6 +33,7 @@ public class KafkaRawMessageReader {
 
         try {
             kafkaConsumer.assign(Collections.singleton(topicPartition));
+            kafkaConsumer.poll(0);
             kafkaConsumer.seek(topicPartition, offset);
             ConsumerRecords<byte[], byte[]> records = kafkaConsumer.poll(Duration.ofMillis(pollTimeoutMillis));
             for (ConsumerRecord<byte[], byte[]> record : records.records(topicPartition)) {
