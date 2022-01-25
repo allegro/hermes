@@ -33,6 +33,7 @@ import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,8 +52,8 @@ public final class HermesConsumersBuilder {//TODO: use java config + qualifiers 
     //TODO: remove MultiMap...
     private final MultiMap<String, Function<ServiceLocator, ProtocolMessageSenderProvider>> messageSenderProviders = new MultiMap<>();
     private final Map<String, LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>>> springMessageSenderProviders = new HashMap<>();//TODO: use guava?
-    private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();//TODO
-    private final List<Function<ApplicationContext, LogRepository>> springLogRepositories = new ArrayList<>();//TODO
+    private final List<Function<ServiceLocator, LogRepository>> logRepositories = new ArrayList<>();
+    private final List<Function<ApplicationContext, LogRepository>> springLogRepositories = new ArrayList<>();
     private final List<SubscriptionMessageFilterCompiler> filters = new ArrayList<>();
     private final List<MessageFilter> globalFilters = new ArrayList<>();
     private final List<ImmutablePair<Class<?>, Supplier<?>>> beanDefinitions = new ArrayList<>();
@@ -67,7 +68,7 @@ public final class HermesConsumersBuilder {//TODO: use java config + qualifiers 
             new CommonBinder(),
             new ConsumersBinder());
 
-    public HermesConsumersBuilder withStartupHook(ServiceAwareHook hook) {//TODO: replace ServiceAwareHook
+    public HermesConsumersBuilder withStartupHook(ServiceAwareHook hook) {
         hooksHandler.addStartupHook(hook);
         return this;
     }
@@ -123,13 +124,18 @@ public final class HermesConsumersBuilder {//TODO: use java config + qualifiers 
         return this;
     }
 
-//    public HermesConsumersBuilder withSpringMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
-//        this.springMessageSenderProviders.put(protocol, messageSenderProviderSupplier.get());
-//        return this;
-//    }
+    public HermesConsumersBuilder withSpringMessageSenderProvider(String protocol, Supplier<ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
+        addSpringMessageSenderProvider(protocol, (context) -> messageSenderProviderSupplier.get());
+        return this;
+    }
 
     public HermesConsumersBuilder withMessageSenderProvider(String protocol, Function<ServiceLocator, ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
         this.messageSenderProviders.add(protocol, messageSenderProviderSupplier);
+        return this;
+    }
+
+    public HermesConsumersBuilder withSpringMessageSenderProvider(String protocol, Function<ApplicationContext, ProtocolMessageSenderProvider> messageSenderProviderSupplier) {
+        addSpringMessageSenderProvider(protocol, messageSenderProviderSupplier);
         return this;
     }
 
@@ -169,7 +175,7 @@ public final class HermesConsumersBuilder {//TODO: use java config + qualifiers 
         return withSpringBinding(() -> messageContentReaderFactory, MessageContentReaderFactory.class);
     }
 
-    public <T> HermesConsumersBuilder withBinding(T instance, Class<T> clazz) { //TODO: check where it is used and why and what for
+    public <T> HermesConsumersBuilder withBinding(T instance, Class<T> clazz) {
         return withBinding(instance, clazz, clazz.getName());
     }
 
@@ -229,6 +235,12 @@ public final class HermesConsumersBuilder {//TODO: use java config + qualifiers 
         availableFilters.add(new AvroPathSubscriptionMessageFilterCompiler());
         availableFilters.add(new HeaderSubscriptionMessageFilterCompiler());
         return new MessageFilters(globalFilters, availableFilters);
+    }
+
+    private void addSpringMessageSenderProvider(String key, Function<ApplicationContext, ProtocolMessageSenderProvider> object) {
+        LinkedList <Function<ApplicationContext, ProtocolMessageSenderProvider>> singleObjectList =
+                new LinkedList<>(Collections.singletonList(object));
+        addSpringMessageSenderProvider(key, singleObjectList);
     }
 
     private void addSpringMessageSenderProvider(String key, LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>> objects) {
