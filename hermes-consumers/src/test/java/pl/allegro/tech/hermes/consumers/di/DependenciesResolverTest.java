@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.consumers.di;
 
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;//TODO: remove
+import org.glassfish.hk2.utilities.binding.AbstractBinder;//TODO: remove
 import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.di.CommonBinder;
+import pl.allegro.tech.hermes.common.di.CommonBinder;//TODO:remove
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
@@ -28,7 +28,7 @@ public class DependenciesResolverTest extends ZookeeperBaseTest {
     }
 
     @Test
-    public void shouldGetAllServicesWithoutAnyExceptions() {
+    public void shouldGetAllServicesWithoutAnyExceptions() { //TODO: czy dla Springa taki test ma w ogóle sens? remove
         ServiceLocator serviceLocator = ServiceLocatorUtilities.bind("serviceLocatorTestName1",
                 new CommonBinder(), new ConsumersBinder(), new TestBinder(configFactory), new TrackersBinder()
         );

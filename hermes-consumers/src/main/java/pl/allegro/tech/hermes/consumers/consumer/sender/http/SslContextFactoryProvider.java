@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
@@ -24,7 +25,8 @@ import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 public class SslContextFactoryProvider {
 
     @Inject
-    @org.jvnet.hk2.annotations.Optional
+    @Autowired(required = false)
+    @org.jvnet.hk2.annotations.Optional//TODO: remove, what it is - Marker annotation indicating that an instance variable or method marked with Inject is not required to be present at run-time. If the service is not present, there will be no error and injection will not be performed.
     SslContextFactory sslContextFactory;
 
     @Inject

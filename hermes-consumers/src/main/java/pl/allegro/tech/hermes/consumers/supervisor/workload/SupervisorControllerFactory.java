@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.glassfish.hk2.api.Factory;
+import org.glassfish.hk2.api.Factory;//TODO: remove
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadFactory;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
 
-public class SupervisorControllerFactory implements Factory<SupervisorController> {
+public class SupervisorControllerFactory implements Factory<SupervisorController> {//TODO: remove all Factories and instead use java config with factory methods
 
     private final SupervisorController supervisorController;
 

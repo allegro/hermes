@@ -48,20 +48,32 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         configFactory.overrideProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE, "provided");
 
         consumers = HermesConsumers.consumers()
-            .withKafkaTopicsNamesMapper(
-                    new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
-            .withBinding(configFactory, ConfigFactory.class)
-            .withBinding(new MultiUrlEndpointAddressResolver(), EndpointAddressResolver.class)
-            .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
-                    10,
-                    1000,
-                    configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
-                    configFactory.getStringProperty(Configs.HOSTNAME),
-                    serviceLocator.getService(MetricRegistry.class),
-                    serviceLocator.getService(PathsCompiler.class)))
-            .withDisabledGlobalShutdownHook()
-            .withDisabledFlushLogsShutdownHook()
-            .build();
+                .withKafkaTopicsNamesMapper(
+                        new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
+//                .withSpringKafkaTopicsNamesMapper(
+//                        () -> new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create()
+//                )
+                .withBinding(configFactory, ConfigFactory.class)
+//                .withSpringBinding(() -> configFactory, ConfigFactory.class)
+                .withBinding(new MultiUrlEndpointAddressResolver(), EndpointAddressResolver.class)
+//                .withSpringBinding(MultiUrlEndpointAddressResolver::new, EndpointAddressResolver.class)
+                .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
+                        10,
+                        1000,
+                        configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
+                        configFactory.getStringProperty(Configs.HOSTNAME),
+                        serviceLocator.getService(MetricRegistry.class),
+                        serviceLocator.getService(PathsCompiler.class)))
+//                .withSpringLogRepository(applicationContext -> new MongoLogRepository(FongoFactory.hermesDB(),
+//                        10,
+//                        1000,
+//                        configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
+//                        configFactory.getStringProperty(Configs.HOSTNAME),
+//                        applicationContext.getBean(MetricRegistry.class),
+//                        applicationContext.getBean(PathsCompiler.class)))
+                .withDisabledGlobalShutdownHook()
+                .withDisabledFlushLogsShutdownHook()
+                .build();
 
         consumers.start();
     }

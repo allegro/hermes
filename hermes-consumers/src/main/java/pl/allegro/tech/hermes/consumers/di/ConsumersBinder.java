@@ -108,89 +108,97 @@ public class ConsumersBinder extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bindSingleton(ConsumerHttpServer.class);
+        bindSingleton(ConsumerHttpServer.class);//1
 
-        bind(KafkaMessageReceiverFactory.class).in(Singleton.class).to(ReceiverFactory.class);
-        bind(BasicMessageContentReaderFactory.class).in(Singleton.class).to(MessageContentReaderFactory.class);
-        bind(MessageBodyInterpolator.class).in(Singleton.class).to(UriInterpolator.class);
-        bind(InterpolatingEndpointAddressResolver.class).to(EndpointAddressResolver.class).in(Singleton.class);
+        bind(KafkaMessageReceiverFactory.class).in(Singleton.class).to(ReceiverFactory.class);//1
+        bind(BasicMessageContentReaderFactory.class).in(Singleton.class).to(MessageContentReaderFactory.class);//1
+        bind(MessageBodyInterpolator.class).in(Singleton.class).to(UriInterpolator.class);//1
+        bind(InterpolatingEndpointAddressResolver.class).to(EndpointAddressResolver.class).in(Singleton.class);//1
         bind(JmsHornetQMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
-                .in(Singleton.class).named("defaultJmsMessageSenderProvider");
+                .in(Singleton.class).named("defaultJmsMessageSenderProvider");//1
         bind(JettyHttpMessageSenderProvider.class).to(ProtocolMessageSenderProvider.class)
-                .in(Singleton.class).named("defaultHttpMessageSenderProvider");
-        bind(EmptyHttpHeadersProvidersFactory.class).to(HttpHeadersProvidersFactory.class).in(Singleton.class);
-        bind(DefaultSendingResultHandlers.class).to(SendingResultHandlers.class).in(Singleton.class);
-        bind(DefaultHttpRequestFactoryProvider.class).to(HttpRequestFactoryProvider.class).in(Singleton.class);
+                .in(Singleton.class).named("defaultHttpMessageSenderProvider");//1
+        bind(EmptyHttpHeadersProvidersFactory.class).to(HttpHeadersProvidersFactory.class).in(Singleton.class);//1
+        bind(DefaultSendingResultHandlers.class).to(SendingResultHandlers.class).in(Singleton.class);//1
+        bind(DefaultHttpRequestFactoryProvider.class).to(HttpRequestFactoryProvider.class).in(Singleton.class);//1
 
-        bind("consumer").named("moduleName").to(String.class);
+        bind("consumer").named("moduleName").to(String.class);//1
 
-        bind(NonblockingConsumersSupervisor.class).in(Singleton.class).to(ConsumersSupervisor.class);
-        bindSingleton(MessageSenderFactory.class);
-        bindSingleton(HttpAuthorizationProviderFactory.class);
-        bindSingleton(ConsumerFactory.class);
-        bindSingleton(ConsumerRateLimitSupervisor.class);
-        bindSingleton(ConsumersExecutorService.class);
-        bindSingleton(OutputRateCalculatorFactory.class);
-        bindSingleton(ZookeeperAdminCache.class);
-        bindSingleton(InstrumentedExecutorServiceFactory.class);
-        bindSingleton(ConsumerMessageSenderFactory.class);
-        bindSingleton(NoOperationMessageConverter.class);
-        bindSingleton(AvroToJsonMessageConverter.class);
-        bind(DefaultMessageConverterResolver.class).in(Singleton.class).to(MessageConverterResolver.class);
-        bindSingleton(OffsetQueue.class);
-        bindSingleton(ConsumerPartitionAssignmentState.class);
-        bindSingleton(Retransmitter.class);
-        bindSingleton(ConsumerMonitor.class);
-        bindSingleton(SslContextFactoryProvider.class);
-        bindSingleton(KafkaHeaderExtractor.class);
-        bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});
+        bind(NonblockingConsumersSupervisor.class).in(Singleton.class).to(ConsumersSupervisor.class);//1
+        bindSingleton(MessageSenderFactory.class);//1
+        bindSingleton(HttpAuthorizationProviderFactory.class);//1
+        bindSingleton(ConsumerFactory.class);//1
+        bindSingleton(ConsumerRateLimitSupervisor.class);//1
+        bindSingleton(ConsumersExecutorService.class);//1
+        bindSingleton(OutputRateCalculatorFactory.class);//1
+        bindSingleton(ZookeeperAdminCache.class);//1
+        bindSingleton(InstrumentedExecutorServiceFactory.class);//1
+        bindSingleton(ConsumerMessageSenderFactory.class);//1
+        bindSingleton(NoOperationMessageConverter.class);//1
+        bindSingleton(AvroToJsonMessageConverter.class);//1
+        bind(DefaultMessageConverterResolver.class).in(Singleton.class).to(MessageConverterResolver.class);//1
+        bindSingleton(OffsetQueue.class);//1
+        bindSingleton(ConsumerPartitionAssignmentState.class);//1
+        bindSingleton(Retransmitter.class);//1
+        bindSingleton(ConsumerMonitor.class);//1
+        bindSingleton(SslContextFactoryProvider.class);//1
+        bindSingleton(KafkaHeaderExtractor.class);//1
+        bind(JmsMetadataAppender.class).in(Singleton.class).to(new TypeLiteral<MetadataAppender<Message>>() {});//1
         bind(DefaultHttpMetadataAppender.class).in(Singleton.class)
-                .to(new TypeLiteral<MetadataAppender<Request>>() {});
+                .to(new TypeLiteral<MetadataAppender<Request>>() {});//1
 
         bindFactory(FutureAsyncTimeoutFactory.class).in(Singleton.class)
-                .to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});
-        bindSingleton(HttpClientsFactory.class);
+                .to(new TypeLiteral<FutureAsyncTimeout<MessageSendingResult>>(){});//1
+        bindSingleton(HttpClientsFactory.class);//1
 
-        bindFactory(ConsumerNodesRegistryFactory.class).in(Singleton.class).to(ConsumerNodesRegistry.class);
+        bindFactory(ConsumerNodesRegistryFactory.class).in(Singleton.class).to(ConsumerNodesRegistry.class);//1
 
-        bindFactory(SubscriptionCacheFactory.class).in(Singleton.class).to(SubscriptionsCache.class);
-        bindFactory(SubscriptionIdProviderFactory.class).in(Singleton.class).to(SubscriptionIdProvider.class);
-        bindFactory(SubscriptionIdsCacheFactory.class).in(Singleton.class).to(SubscriptionIds.class);
-        bindFactory(ConsumerAssignmentCacheFactory.class).in(Singleton.class).to(ConsumerAssignmentCache.class);
-        bindFactory(ClusterAssignmentCacheFactory.class).in(Singleton.class).to(ClusterAssignmentCache.class);
-        bindSingleton(HttpClientsWorkloadReporter.class);
+        bindFactory(SubscriptionCacheFactory.class).in(Singleton.class).to(SubscriptionsCache.class);//1
+        bindFactory(SubscriptionIdProviderFactory.class).in(Singleton.class).to(SubscriptionIdProvider.class);//
+        bindFactory(SubscriptionIdsCacheFactory.class).in(Singleton.class).to(SubscriptionIds.class);//1
+        bindFactory(ConsumerAssignmentCacheFactory.class).in(Singleton.class).to(ConsumerAssignmentCache.class);//1
+        bindFactory(ClusterAssignmentCacheFactory.class).in(Singleton.class).to(ClusterAssignmentCache.class);//1
+        bindSingleton(HttpClientsWorkloadReporter.class);//1
 
-        bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);
-        bindFactory(ConsumerAssignmentRegistryFactory.class).in(Singleton.class).to(ConsumerAssignmentRegistry.class);
-        bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);
-        bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);
+        bindFactory(UndeliveredMessageLogFactory.class).in(Singleton.class).to(UndeliveredMessageLog.class);//1
+        bindFactory(ConsumerAssignmentRegistryFactory.class).in(Singleton.class).to(ConsumerAssignmentRegistry.class);//1
+        bindFactory(SupervisorControllerFactory.class).in(Singleton.class).to(SupervisorController.class);//1
+        bindFactory(ConsumersRuntimeMonitorFactory.class).in(Singleton.class).to(ConsumersRuntimeMonitor.class);//1
 
-        bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class).named("http-1-client");
-        bindFactory(OAuthHttpClientFactory.class).in(Singleton.class).to(HttpClient.class).named("oauth-http-client");
-        bindFactory(Http2ClientFactory.class).in(Singleton.class).to(Http2ClientHolder.class);
+        //HTTPClient
+        bindFactory(HttpClientFactory.class).in(Singleton.class).to(HttpClient.class).named("http-1-client");//1
+        bindFactory(OAuthHttpClientFactory.class).in(Singleton.class).to(HttpClient.class).named("oauth-http-client");//1
+        bindFactory(Http2ClientFactory.class).in(Singleton.class).to(Http2ClientHolder.class);//1
 
-        bindSingleton(MaxRatePathSerializer.class);
-        bindSingleton(MaxRateSupervisor.class);
-        bindSingleton(MaxRateProviderFactory.class);
-        bindFactory(MaxRateRegistryFactory.class).in(Singleton.class).to(MaxRateRegistry.class);
+        //MaxRate
+        bindSingleton(MaxRatePathSerializer.class);//1
+        bindSingleton(MaxRateSupervisor.class);//1
+        bindSingleton(MaxRateProviderFactory.class);//1
+        bindFactory(MaxRateRegistryFactory.class).in(Singleton.class).to(MaxRateRegistry.class);//1
 
-        bindSingleton(UndeliveredMessageLogPersister.class);
-        bindFactory(ByteBufferMessageBatchFactoryProvider.class).in(Singleton.class).to(MessageBatchFactory.class);
-        bind(HttpMessageBatchSenderFactory.class).to(MessageBatchSenderFactory.class).in(Singleton.class);
-        bindSingleton(FilterChainFactory.class);
-        bind(new MessageFilters(Collections.emptyList(), Collections.emptyList())).to(MessageFilterSource.class);
+        bindSingleton(UndeliveredMessageLogPersister.class);//1
+        bindFactory(ByteBufferMessageBatchFactoryProvider.class).in(Singleton.class).to(MessageBatchFactory.class);//1
+        bind(HttpMessageBatchSenderFactory.class).to(MessageBatchSenderFactory.class).in(Singleton.class);//1
+        bindSingleton(FilterChainFactory.class);//1
+        bind(new MessageFilters(Collections.emptyList(), Collections.emptyList())).to(MessageFilterSource.class); //1
 
-        bind(OAuthConsumerAuthorizationHandler.class).in(Singleton.class).to(ConsumerAuthorizationHandler.class);
-        bindSingleton(OAuthSubscriptionHandlerFactory.class);
-        bindSingleton(OAuthTokenRequestRateLimiterFactory.class);
-        bindSingleton(OAuthAccessTokensLoader.class);
-        bind(OAuthHttpClient.class).in(Singleton.class).to(OAuthClient.class);
-        bind(OAuthSubscriptionAccessTokens.class).in(Singleton.class).to(OAuthAccessTokens.class);
+        //OAuth
+        bind(OAuthConsumerAuthorizationHandler.class).in(Singleton.class).to(ConsumerAuthorizationHandler.class);//1
+        bindSingleton(OAuthSubscriptionHandlerFactory.class);//1
+        bindSingleton(OAuthTokenRequestRateLimiterFactory.class);//1
+        bindSingleton(OAuthAccessTokensLoader.class);//1
+        bind(OAuthHttpClient.class).in(Singleton.class).to(OAuthClient.class);//1
+        bind(OAuthSubscriptionAccessTokens.class).in(Singleton.class).to(OAuthAccessTokens.class);//1
         bindFactory(OAuthProvidersNotifyingCacheFactory.class).in(Singleton.class)
-                .to(OAuthProvidersNotifyingCache.class);
+                .to(OAuthProvidersNotifyingCache.class);//1
     }
 
     private <T> void bindSingleton(Class<T> clazz) {
         bind(clazz).in(Singleton.class).to(clazz);
     }
+
+    //1 - stworzony bean
+    //2 - ogarnięte injections
+    //3 - ogarnięte różnice bind/bindFactory
+    //4 - ogarnięty scope
 }

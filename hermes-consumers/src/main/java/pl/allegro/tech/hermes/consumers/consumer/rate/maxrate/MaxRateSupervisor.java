@@ -67,7 +67,7 @@ public class MaxRateSupervisor implements Runnable {
         updateJob = startSelfUpdate();
     }
 
-    public void stop() throws Exception {
+    public void stop() throws Exception {//TODO: use @PreDestroy?
         maxRateRegistry.stop();
         calculatorJob.stop();
         if (updateJob != null) {
