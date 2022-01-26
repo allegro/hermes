@@ -197,21 +197,7 @@ public final class HermesConsumersBuilder {//TODO: use java config + qualifiers 
     }
 
     public HermesConsumers build() {
-//        withBinding(buildFilters(), MessageFilterSource.class);
         withSpringBinding(this::buildFilters, MessageFilters.class);
-//        withSpringBinding(() -> new Trackers(new ArrayList<>()), Trackers.class);
-
-//        binders.add(new TrackersBinder(new ArrayList<>()));
-
-//        messageSenderProviders.add(
-//                "http", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultHttpMessageSenderProvider")
-//        );
-//        messageSenderProviders.add(
-//                "https", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultHttpMessageSenderProvider")
-//        );
-//        messageSenderProviders.add(
-//                "jms", locator -> locator.getService(ProtocolMessageSenderProvider.class, "defaultJmsMessageSenderProvider")
-//        );
 
         LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>> httpProviderList = new LinkedList<>();
         httpProviderList.add(applicationContext1 -> applicationContext1.getBean("defaultHttpMessageSenderProvider", ProtocolMessageSenderProvider.class));
@@ -226,7 +212,7 @@ public final class HermesConsumersBuilder {//TODO: use java config + qualifiers 
         addSpringMessageSenderProvider("https", httpsProviderList);
         addSpringMessageSenderProvider("jms", jmsProviderList);
 
-        return new HermesConsumers(springHooksHandler, binders, beanDefinitions, springMessageSenderProviders, springLogRepositories, flushLogsShutdownHookEnabled);
+//        return new HermesConsumers(springHooksHandler, beanDefinitions, springMessageSenderProviders, springLogRepositories, flushLogsShutdownHookEnabled);
     }
 
     private MessageFilters buildFilters() {

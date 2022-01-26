@@ -10,6 +10,7 @@ import org.eclipse.jetty.client.api.Request;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -125,6 +126,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeo
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
+import pl.allegro.tech.hermes.consumers.hooks.SpringHooksHandler;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistryFactory;
@@ -149,9 +151,14 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRe
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistryFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
+import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
+import pl.allegro.tech.hermes.domain.filtering.SubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.domain.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.domain.filtering.header.HeaderSubscriptionMessageFilterCompiler;
+import pl.allegro.tech.hermes.domain.filtering.json.JsonPathSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
@@ -178,6 +185,8 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS;
@@ -309,7 +318,10 @@ public class SpringConfiguration {
         return new Trackers(new ArrayList<>());
     }
 
+
+    //TODO: wywalić?
     @Bean
+    @ConditionalOnMissingBean
     public MessageFilterSource messageFilterSource() {
         return new MessageFilters(Collections.emptyList(), Collections.emptyList());
     }
@@ -826,7 +838,7 @@ public class SpringConfiguration {
         return new EmptyHttpHeadersProvidersFactory();
     }
 
-    @Bean(name = "defaultHttpMessageSenderProvider")
+    @Bean(name = { "defaultHttpMessageSenderProvider", "defaultHttpsMessageSenderProvider" })
     public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(@Named("http-1-client") HttpClient
                                                                                 httpClient,
                                                                         Http2ClientHolder http2ClientHolder,
@@ -965,4 +977,42 @@ public class SpringConfiguration {
             SubscriptionRepository subscriptionRepository) {
         return new SubscriptionOffsetChangeIndicatorFactory(zookeeper, paths, subscriptionRepository).provide();
     }
+
+    @Bean
+    public SpringHooksHandler springHooksHandler() {
+        return new SpringHooksHandler();
+    }
+
+    @Bean
+    public MessageSenderProviders messageSenderProviders(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,
+                                                               ProtocolMessageSenderProvider defaultHttpsMessageSenderProvider,
+                                                               ProtocolMessageSenderProvider defaultJmsMessageSenderProvider) {
+        return new MessageSenderProviders(
+                defaultHttpMessageSenderProvider,
+                defaultHttpsMessageSenderProvider,
+                defaultJmsMessageSenderProvider);
+    }
+
+    @Bean
+    public MessageFilters messageFilters(Optional<List<MessageFilter>> messageFilters,
+                                         List<SubscriptionMessageFilterCompiler> subscriptionMessageFilterCompilers) {
+        List<MessageFilter> globalFilters = messageFilters.orElseGet(ArrayList::new);
+        return new MessageFilters(globalFilters, subscriptionMessageFilterCompilers);
+    }
+
+    @Bean
+    public SubscriptionMessageFilterCompiler jsonPathSubscriptionMessageFilterCompiler() {
+        return new JsonPathSubscriptionMessageFilterCompiler();
+    }
+
+    @Bean
+    public SubscriptionMessageFilterCompiler avroPathSubscriptionMessageFilterCompiler() {
+        return new AvroPathSubscriptionMessageFilterCompiler();
+    }
+
+    @Bean
+    public SubscriptionMessageFilterCompiler headerSubscriptionMessageFilterCompiler() {
+        return new HeaderSubscriptionMessageFilterCompiler();
+    }
+
 }
