@@ -45,6 +45,8 @@ dependencies {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
     }
 
+    testCompile project(':hermes-test-helper')
+
     testCompile group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
