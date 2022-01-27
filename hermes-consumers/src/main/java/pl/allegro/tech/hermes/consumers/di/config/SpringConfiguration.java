@@ -5,16 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.apache.avro.Schema;
 import org.apache.curator.framework.CuratorFramework;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
@@ -62,95 +58,10 @@ import pl.allegro.tech.hermes.common.schema.SchemaRepositoryInstanceResolverFact
 import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
-import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
-import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.batch.ByteBufferMessageBatchFactoryProvider;
-import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
-import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConverter;
-import pl.allegro.tech.hermes.consumers.consumer.converter.DefaultMessageConverterResolver;
-import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
-import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokensLoader;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthConsumerAuthorizationHandler;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthProvidersNotifyingCache;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthProvidersNotifyingCacheFactory;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthSubscriptionAccessTokens;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthSubscriptionHandlerFactory;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthTokenRequestRateLimiterFactory;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClient;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthHttpClientFactory;
-import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
-import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
-import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRatePathSerializer;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistryFactory;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.EmptyHttpHeadersProvidersFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactoryProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlers;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsMetadataAppender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
-import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
-import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
-import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeoutFactory;
-import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
-import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
-import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.hooks.SpringHooksHandler;
-import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
-import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
-import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistryFactory;
-import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionCacheFactory;
-import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdProvider;
-import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdProviderFactory;
-import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
-import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdsCacheFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
-import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.NonblockingConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
-import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitorFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCacheFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCacheFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistryFactory;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorControllerFactory;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
@@ -178,10 +89,8 @@ import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Named;
-import javax.jms.Message;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import java.io.IOException;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -204,34 +113,6 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public ConsumerAuthorizationHandler oAuthConsumerAuthorizationHandler(OAuthSubscriptionHandlerFactory handlerFactory,
-                                                                          ConfigFactory configFactory,
-                                                                          OAuthProvidersNotifyingCache oAuthProvidersCache) {
-        return new OAuthConsumerAuthorizationHandler(handlerFactory, configFactory, oAuthProvidersCache);
-    }
-
-    @Bean
-    public OAuthSubscriptionHandlerFactory oAuthSubscriptionHandlerFactory(SubscriptionRepository subscriptionRepository,
-                                                                           OAuthAccessTokens accessTokens,
-                                                                           OAuthTokenRequestRateLimiterFactory rateLimiterLoader) {
-        return new OAuthSubscriptionHandlerFactory(subscriptionRepository, accessTokens, rateLimiterLoader);
-    }
-
-    @Bean
-    public OAuthTokenRequestRateLimiterFactory oAuthTokenRequestRateLimiterFactory(OAuthProviderRepository oAuthProviderRepository,
-                                                                                   ConfigFactory configFactory) {
-        return new OAuthTokenRequestRateLimiterFactory(oAuthProviderRepository, configFactory);
-    }
-
-    @Bean
-    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)//TODO - bindFactory, raczej singleton
-    public OAuthProvidersNotifyingCache oAuthProvidersNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
-                                                                     ZookeeperPaths paths,
-                                                                     ObjectMapper objectMapper) {
-        return new OAuthProvidersNotifyingCacheFactory(curator, paths, objectMapper).provide();
-    }
-
-    @Bean
     public SubscriptionRepositoryFactory subscriptionRepositoryFactory(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
                                                                        ZookeeperPaths paths,
                                                                        ObjectMapper mapper,
@@ -245,11 +126,6 @@ public class SpringConfiguration {
         return subscriptionRepositoryFactory.provide();
     }
 
-    @Bean
-    public OAuthAccessTokens oAuthSubscriptionAccessTokens(OAuthAccessTokensLoader tokenLoader,
-                                                           ConfigFactory configFactory) {
-        return new OAuthSubscriptionAccessTokens(tokenLoader, configFactory);
-    }
 
     //TODO: make as 1 bean with Factory?
     @Bean
@@ -285,14 +161,6 @@ public class SpringConfiguration {
         return new GroupRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
-    @Bean
-    public OAuthAccessTokensLoader oAuthAccessTokensLoader(SubscriptionRepository subscriptionRepository,
-                                                           OAuthProviderRepository oAuthProviderRepository,
-                                                           OAuthClient oAuthClient,
-                                                           HermesMetrics metrics) {
-        return new OAuthAccessTokensLoader(subscriptionRepository, oAuthProviderRepository, oAuthClient, metrics);
-    }
-
     //TODO: make as 1 bean with Factory?
     @Bean
     @Named(CuratorType.HERMES)//TODO - remove
@@ -304,12 +172,6 @@ public class SpringConfiguration {
     @Bean
     public CuratorClientFactory curatorClientFactory(ConfigFactory configFactory) {
         return new CuratorClientFactory(configFactory);
-    }
-
-    @Bean
-    public OAuthClient oAuthHttpClient(@Named("oauth-http-client") HttpClient httpClient,
-                                       ObjectMapper objectMapper) {
-        return new OAuthHttpClient(httpClient, objectMapper);
     }
 
     //TODO??
@@ -327,137 +189,8 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public MetadataAppender<Message> jmsMetadataAppender() {
-        return new JmsMetadataAppender();
-    }
-
-    @Bean
-    public MetadataAppender<Request> defaultHttpMetadataAppender() {
-        return new DefaultHttpMetadataAppender();
-    }
-
-    @Bean
-    public FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeoutFactory(ConfigFactory configFactory,
-                                                                              InstrumentedExecutorServiceFactory executorFactory) {
-        return new FutureAsyncTimeoutFactory(configFactory, executorFactory).provide();
-    }
-
-    @Bean
     public FilterChainFactory filterChainFactory(MessageFilterSource filters) {
         return new FilterChainFactory(filters);
-    }
-
-    //TODO: merge into 1 bean with factory
-    @Bean(name = "http-1-client")
-    public HttpClient http1Client(HttpClientsFactory httpClientsFactory) {
-        return new HttpClientFactory(httpClientsFactory).provide();
-    }
-
-    @Bean(name = "oauth-http-client")
-    public HttpClient oauthHttpClient(HttpClientsFactory httpClientsFactory) {
-        return new OAuthHttpClientFactory(httpClientsFactory).provide();
-    }
-
-    @Bean
-    public HttpClientsFactory httpClientsFactory(ConfigFactory configFactory,
-                                                 InstrumentedExecutorServiceFactory executorFactory,
-                                                 SslContextFactoryProvider sslContextFactoryProvider) {
-        return new HttpClientsFactory(configFactory, executorFactory, sslContextFactoryProvider);
-    }
-
-    @Bean
-    public MessageBatchSenderFactory httpMessageBatchSenderFactory(ConfigFactory configFactory,
-                                                                   SendingResultHandlers resultHandlers) {
-        return new HttpMessageBatchSenderFactory(configFactory, resultHandlers);
-    }
-
-    @Bean
-    public MessageBatchFactory messageBatchFactory(HermesMetrics hermesMetrics,
-                                                   Clock clock,
-                                                   ConfigFactory configFactory) {
-        return new ByteBufferMessageBatchFactoryProvider(hermesMetrics, clock, configFactory).provide();
-    }
-
-    @Bean
-    public UndeliveredMessageLogPersister undeliveredMessageLogPersister(UndeliveredMessageLog undeliveredMessageLog,
-                                                                         ConfigFactory configFactory) {
-        return new UndeliveredMessageLogPersister(undeliveredMessageLog, configFactory);
-    }
-
-    @Bean
-    public MaxRateRegistry maxRateRegistry(ConfigFactory configFactory,
-                                           CuratorFramework curator,
-                                           ObjectMapper objectMapper,
-                                           ZookeeperPaths zookeeperPaths,
-                                           MaxRatePathSerializer pathSerializer,
-                                           SubscriptionsCache subscriptionCache,
-                                           SubscriptionIds subscriptionIds,
-                                           ConsumerAssignmentCache assignmentCache,
-                                           ClusterAssignmentCache clusterAssignmentCache) {
-        return new MaxRateRegistryFactory(configFactory, curator, objectMapper, zookeeperPaths,
-                pathSerializer, subscriptionCache, subscriptionIds, assignmentCache, clusterAssignmentCache)
-                .provide();
-    }
-
-    @Bean
-    public MaxRateProviderFactory maxRateProviderFactory(ConfigFactory configFactory,
-                                                         MaxRateRegistry maxRateRegistry,
-                                                         MaxRateSupervisor maxRateSupervisor,
-                                                         HermesMetrics metrics) {
-        return new MaxRateProviderFactory(configFactory, maxRateRegistry, maxRateSupervisor, metrics);
-    }
-
-    @Bean
-    public MaxRateSupervisor maxRateSupervisor(ConfigFactory configFactory,
-                                               ClusterAssignmentCache clusterAssignmentCache,
-                                               MaxRateRegistry maxRateRegistry,
-                                               ConsumerNodesRegistry consumerNodesRegistry,
-                                               SubscriptionsCache subscriptionsCache,
-                                               ZookeeperPaths zookeeperPaths,
-                                               HermesMetrics metrics,
-                                               Clock clock) {
-        return new MaxRateSupervisor(configFactory, clusterAssignmentCache, maxRateRegistry,
-                consumerNodesRegistry, subscriptionsCache, zookeeperPaths, metrics, clock);
-    }
-
-    @Bean
-    public MaxRatePathSerializer maxRatePathSerializer() {
-        return new MaxRatePathSerializer();
-    }
-
-    @Bean
-    public Http2ClientHolder http2ClientHolder(HttpClientsFactory httpClientsFactory,
-                                               ConfigFactory configFactory) {
-        return new Http2ClientFactory(httpClientsFactory, configFactory).provide();
-    }
-
-    @Bean
-    public ConsumersRuntimeMonitor consumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
-                                                           SupervisorController workloadSupervisor,
-                                                           HermesMetrics hermesMetrics,
-                                                           SubscriptionsCache subscriptionsCache,
-                                                           ConfigFactory configFactory) {
-        return new ConsumersRuntimeMonitorFactory(consumerSupervisor, workloadSupervisor,
-                hermesMetrics, subscriptionsCache, configFactory)
-                .provide();
-    }
-
-    @Bean
-    public SupervisorController supervisorController(InternalNotificationsBus notificationsBus,
-                                                     ConsumerNodesRegistry consumerNodesRegistry,
-                                                     ConsumerAssignmentRegistry assignmentRegistry,
-                                                     ConsumerAssignmentCache consumerAssignmentCache,
-                                                     ClusterAssignmentCache clusterAssignmentCache,
-                                                     SubscriptionsCache subscriptionsCache,
-                                                     ConsumersSupervisor supervisor,
-                                                     ZookeeperAdminCache adminCache,
-                                                     HermesMetrics metrics,
-                                                     ConfigFactory configs,
-                                                     WorkloadConstraintsRepository workloadConstraintsRepository) {
-        return new SupervisorControllerFactory(notificationsBus, consumerNodesRegistry, assignmentRegistry,
-                consumerAssignmentCache, clusterAssignmentCache, subscriptionsCache, supervisor, adminCache,
-                metrics, configs, workloadConstraintsRepository)
-                .provide();
     }
 
     @Bean
@@ -472,149 +205,11 @@ public class SpringConfiguration {
         return new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();
     }
 
-
-    @Bean
-    public ConsumerAssignmentRegistry consumerAssignmentRegistry(CuratorFramework curator,
-                                                                 ConfigFactory configFactory,
-                                                                 ZookeeperPaths zookeeperPaths,
-                                                                 ConsumerAssignmentCache consumerAssignmentCache,
-                                                                 SubscriptionIds subscriptionIds) {
-        return new ConsumerAssignmentRegistryFactory(curator, configFactory, zookeeperPaths,
-                consumerAssignmentCache, subscriptionIds)
-                .provide();
-    }
-
     @Bean
     public UndeliveredMessageLog undeliveredMessageLog(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
                                                        ZookeeperPaths paths,
                                                        ObjectMapper mapper) {
         return new UndeliveredMessageLogFactory(zookeeper, paths, mapper).provide();
-    }
-
-    @Bean
-    public HttpClientsWorkloadReporter httpClientsWorkloadReporter(HermesMetrics metrics,
-                                                                   @Named("http-1-client") HttpClient httpClient,
-                                                                   Http2ClientHolder http2ClientHolder,
-                                                                   ConfigFactory configFactory) {
-        return new HttpClientsWorkloadReporter(metrics, httpClient, http2ClientHolder, configFactory);
-    }
-
-    @Bean
-    public ClusterAssignmentCache clusterAssignmentCache(CuratorFramework curator,
-                                                         ConfigFactory configFactory,
-                                                         ConsumerAssignmentCache consumerAssignmentCache,
-                                                         ZookeeperPaths zookeeperPaths,
-                                                         SubscriptionIds subscriptionIds,
-                                                         ConsumerNodesRegistry consumerNodesRegistry) {
-        return new ClusterAssignmentCacheFactory(curator, configFactory, consumerAssignmentCache,
-                zookeeperPaths, subscriptionIds, consumerNodesRegistry)
-                .provide();
-    }
-
-    @Bean
-    public ConsumerAssignmentCache consumerAssignmentCache(CuratorFramework curator,
-                                                           ConfigFactory configFactory,
-                                                           ZookeeperPaths zookeeperPaths,
-                                                           SubscriptionsCache subscriptionsCache,
-                                                           SubscriptionIds subscriptionIds) {
-        return new ConsumerAssignmentCacheFactory(curator, configFactory, zookeeperPaths, subscriptionsCache, subscriptionIds)
-                .provide();
-    }
-
-    @Bean
-    public SubscriptionIds subscriptionIds(InternalNotificationsBus internalNotificationsBus,
-                                           SubscriptionsCache subscriptionsCache,
-                                           SubscriptionIdProvider subscriptionIdProvider,
-                                           ConfigFactory configFactory) {
-        return new SubscriptionIdsCacheFactory(internalNotificationsBus, subscriptionsCache, subscriptionIdProvider, configFactory)
-                .provide();
-    }
-
-    @Bean
-    public SubscriptionIdProvider subscriptionIdProvider(CuratorFramework curatorFramework,
-                                                         ZookeeperPaths zookeeperPaths) {
-        return new SubscriptionIdProviderFactory(curatorFramework, zookeeperPaths).provide();
-    }
-
-    @Bean
-    public SubscriptionsCache subscriptionsCache(InternalNotificationsBus notificationsBus,
-                                                 GroupRepository groupRepository,
-                                                 TopicRepository topicRepository,
-                                                 SubscriptionRepository subscriptionRepository) {
-        return new SubscriptionCacheFactory(notificationsBus, groupRepository, topicRepository, subscriptionRepository)
-                .provide();
-    }
-
-    @Bean
-    public ConsumerNodesRegistry consumerNodesRegistry(CuratorFramework curatorFramework,
-                                                       ConfigFactory configFactory,
-                                                       ZookeeperPaths zookeeperPaths,
-                                                       Clock clock) {
-        return new ConsumerNodesRegistryFactory(curatorFramework, configFactory, zookeeperPaths, clock).provide();
-    }
-
-    @Bean
-    public KafkaHeaderExtractor kafkaHeaderExtractor(ConfigFactory configFactory) {
-        return new KafkaHeaderExtractor(configFactory);
-    }
-
-    //TODO
-    @Bean
-    public SslContextFactoryProvider sslContextFactoryProvider() {
-        return new SslContextFactoryProvider();
-    }
-
-    @Bean
-    public ConsumerMonitor consumerMonitor() {
-        return new ConsumerMonitor();
-    }
-
-    @Bean
-    public Retransmitter retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
-                                       ConfigFactory configs) {
-        return new Retransmitter(subscriptionOffsetChangeIndicator, configs);
-    }
-
-    @Bean
-    public ConsumerPartitionAssignmentState consumerPartitionAssignmentState() {
-        return new ConsumerPartitionAssignmentState();
-    }
-
-    @Bean
-    public OffsetQueue offsetQueue(HermesMetrics metrics,
-                                   ConfigFactory configFactory) {
-        return new OffsetQueue(metrics, configFactory);
-    }
-
-    @Bean
-    public MessageConverterResolver defaultMessageConverterResolver(AvroToJsonMessageConverter avroToJsonMessageConverter,
-                                                                    NoOperationMessageConverter noOperationMessageConverter) {
-        return new DefaultMessageConverterResolver(avroToJsonMessageConverter, noOperationMessageConverter);
-    }
-
-    //TODO: use interface?
-    @Bean
-    public AvroToJsonMessageConverter avroToJsonMessageConverter() {
-        return new AvroToJsonMessageConverter();
-    }
-
-    @Bean
-    public NoOperationMessageConverter noOperationMessageConverter() {
-        return new NoOperationMessageConverter();
-    }
-
-    @Bean
-    public ConsumerMessageSenderFactory consumerMessageSenderFactory(
-            ConfigFactory configFactory, HermesMetrics hermesMetrics,
-            MessageSenderFactory messageSenderFactory,
-            Trackers trackers,
-            FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
-            UndeliveredMessageLog undeliveredMessageLog, Clock clock,
-            InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
-            ConsumerAuthorizationHandler consumerAuthorizationHandler) {
-        return new ConsumerMessageSenderFactory(configFactory, hermesMetrics, messageSenderFactory, trackers,
-                futureAsyncTimeout, undeliveredMessageLog, clock, instrumentedExecutorServiceFactory,
-                consumerAuthorizationHandler);
     }
 
     @Bean
@@ -635,44 +230,6 @@ public class SpringConfiguration {
         return new ObjectMapperFactory(configFactory).provide();
     }
 
-    @Bean
-    public OutputRateCalculatorFactory outputRateCalculatorFactory(ConfigFactory configFactory,
-                                                                   MaxRateProviderFactory maxRateProviderFactory) {
-        return new OutputRateCalculatorFactory(configFactory, maxRateProviderFactory);
-    }
-
-    @Bean
-    public ConsumersExecutorService consumersExecutorService(ConfigFactory configFactory,
-                                                             HermesMetrics hermesMetrics) {
-        return new ConsumersExecutorService(configFactory, hermesMetrics);
-    }
-
-    @Bean
-    public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(ConfigFactory configFactory) {
-        return new ConsumerRateLimitSupervisor(configFactory);
-    }
-
-    @Bean
-    public ConsumerFactory consumerFactory(ReceiverFactory messageReceiverFactory,
-                                           HermesMetrics hermesMetrics,
-                                           ConfigFactory configFactory,
-                                           ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
-                                           OutputRateCalculatorFactory outputRateCalculatorFactory,
-                                           Trackers trackers,//TODO?
-                                           OffsetQueue offsetQueue,
-                                           ConsumerMessageSenderFactory consumerMessageSenderFactory,
-                                           TopicRepository topicRepository,
-                                           MessageConverterResolver messageConverterResolver,
-                                           MessageBatchFactory byteBufferMessageBatchFactory,
-                                           MessageContentWrapper messageContentWrapper,//TODO
-                                           MessageBatchSenderFactory batchSenderFactory,
-                                           ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                                           Clock clock) {
-        return new ConsumerFactory(messageReceiverFactory, hermesMetrics, configFactory, consumerRateLimitSupervisor,
-                outputRateCalculatorFactory, trackers, offsetQueue, consumerMessageSenderFactory, topicRepository,
-                messageConverterResolver, byteBufferMessageBatchFactory, messageContentWrapper, batchSenderFactory,
-                consumerAuthorizationHandler, clock);
-    }
 
     @Bean
     public MessageContentWrapper messageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
@@ -797,108 +354,13 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public HttpAuthorizationProviderFactory httpAuthorizationProviderFactory(OAuthAccessTokens accessTokens) {
-        return new HttpAuthorizationProviderFactory(accessTokens);
-    }
-
-    @Bean
-    public MessageSenderFactory messageSenderFactory() {
-        return new MessageSenderFactory();
-    }
-
-    @Bean
-    public ConsumersSupervisor nonblockingConsumersSupervisor(ConfigFactory configFactory,
-                                                              ConsumersExecutorService executor,
-                                                              ConsumerFactory consumerFactory,
-                                                              OffsetQueue offsetQueue,
-                                                              ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
-                                                              Retransmitter retransmitter,
-                                                              UndeliveredMessageLogPersister undeliveredMessageLogPersister,
-                                                              SubscriptionRepository subscriptionRepository,
-                                                              HermesMetrics metrics,
-                                                              ConsumerMonitor monitor,
-                                                              Clock clock) {
-        return new NonblockingConsumersSupervisor(configFactory, executor, consumerFactory, offsetQueue,
-                consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
-                subscriptionRepository, metrics, monitor, clock);
-    }
-
-    @Bean
-    public HttpRequestFactoryProvider defaultHttpRequestFactoryProvider() {
-        return new DefaultHttpRequestFactoryProvider();
-    }
-
-    @Bean
-    public SendingResultHandlers defaultSendingResultHandlers() {
-        return new DefaultSendingResultHandlers();
-    }
-
-    @Bean
-    public HttpHeadersProvidersFactory emptyHttpHeadersProvidersFactory() {
-        return new EmptyHttpHeadersProvidersFactory();
-    }
-
-    @Bean(name = { "defaultHttpMessageSenderProvider", "defaultHttpsMessageSenderProvider" })
-    public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(@Named("http-1-client") HttpClient
-                                                                                httpClient,
-                                                                        Http2ClientHolder http2ClientHolder,
-                                                                        EndpointAddressResolver endpointAddressResolver,
-                                                                        MetadataAppender<Request> metadataAppender,
-                                                                        HttpAuthorizationProviderFactory authorizationProviderFactory,
-                                                                        HttpHeadersProvidersFactory httpHeadersProviderFactory,
-                                                                        SendingResultHandlers sendingResultHandlers,
-                                                                        HttpRequestFactoryProvider requestFactoryProvider) {
-        return new JettyHttpMessageSenderProvider(httpClient, http2ClientHolder, endpointAddressResolver, metadataAppender,
-                authorizationProviderFactory, httpHeadersProviderFactory, sendingResultHandlers, requestFactoryProvider);
-    }
-
-    @Bean(name = "defaultJmsMessageSenderProvider")
-    public ProtocolMessageSenderProvider jmsHornetQMessageSenderProvider(ConfigFactory configFactory,
-                                                                         MetadataAppender<Message> metadataAppender) {
-        return new JmsHornetQMessageSenderProvider(configFactory, metadataAppender);
-    }
-
-    @Bean
-    public EndpointAddressResolver interpolatingEndpointAddressResolver(UriInterpolator interpolator) {
-        return new InterpolatingEndpointAddressResolver(interpolator);
-    }
-
-    @Bean
     public UriInterpolator messageBodyInterpolator() {
         return new MessageBodyInterpolator();
     }
 
     @Bean
-    public BasicMessageContentReaderFactory basicMessageContentReaderFactory(MessageContentWrapper
-                                                                                     messageContentWrapper,
-                                                                             KafkaHeaderExtractor kafkaHeaderExtractor) {
-        return new BasicMessageContentReaderFactory(messageContentWrapper, kafkaHeaderExtractor);
-    }
-
-    @Bean
-    public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
-                                                       MessageContentReaderFactory messageContentReaderFactory,
-                                                       HermesMetrics hermesMetrics,
-                                                       OffsetQueue offsetQueue,
-                                                       Clock clock,
-                                                       KafkaNamesMapper kafkaNamesMapper,
-                                                       FilterChainFactory filterChainFactory,
-                                                       Trackers trackers,
-                                                       ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
-        return new KafkaMessageReceiverFactory(configs, messageContentReaderFactory, hermesMetrics, offsetQueue, clock,
-                kafkaNamesMapper, filterChainFactory, trackers, consumerPartitionAssignmentState);
-    }
-
-    @Bean
     public KafkaNamesMapper kafkaNamesMapper(ConfigFactory configFactory) {
         return new KafkaNamesMapperFactory(configFactory).provide();
-    }
-
-    @Bean
-    public ConsumerHttpServer consumerHttpServer(ConfigFactory configFactory,
-                                                 ConsumerMonitor monitor,
-                                                 ObjectMapper mapper) throws IOException {
-        return new ConsumerHttpServer(configFactory, monitor, mapper);
     }
 
     //TODO - use property instead?

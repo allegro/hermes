@@ -6,6 +6,7 @@ import org.eclipse.jetty.client.HttpClient
 import pl.allegro.tech.hermes.common.config.Configs
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
+import pl.allegro.tech.hermes.consumers.di.config.ConsumerConfiguration
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -33,15 +34,12 @@ class HttpClientConnectionMonitoringTest extends Specification {
     }
 
     def setup() {
-        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider()
-        sslContextFactoryProvider.configFactory = configFactory
-
-        HttpClientFactory httpClientFactory = new HttpClientFactory(new HttpClientsFactory(
+        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, configFactory)
+        ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration()
+        client = consumerConfiguration.http1Client(new HttpClientsFactory(
                 configFactory,
                 new InstrumentedExecutorServiceFactory(hermesMetrics),
                 sslContextFactoryProvider))
-
-        client = httpClientFactory.provide()
         client.start()
 
         configFactory.overrideProperty(Configs.CONSUMER_HTTP_CLIENT_REQUEST_QUEUE_MONITORING_ENABLED, false)

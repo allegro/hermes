@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalConsumerAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
-class HierarchicalConsumerAssignmentCache implements ConsumerAssignmentCache, ClusterAssignmentCache {
+public class HierarchicalConsumerAssignmentCache implements ConsumerAssignmentCache, ClusterAssignmentCache {
 
     private static final int SUBSCRIPTION_LEVEL = 0;
 

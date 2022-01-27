@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-enum ConsumerMaxRateRegistryType {
+public enum ConsumerMaxRateRegistryType {
 
     HIERARCHICAL("hierarchical"),
     FLAT_BINARY("flat-binary");
