@@ -1,19 +1,23 @@
 package pl.allegro.tech.hermes.api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
 
 public class Owner {
 
     private final String id;
     private final String name;
+    private final String url;
 
-    @JsonCreator
-    public Owner(@JsonProperty("id") String id, @JsonProperty("name") String name) {
+    public Owner(String id, String name) {
         this.id = id;
         this.name = name;
+        this.url = null;
+    }
+
+    public Owner(String id, String name, String url) {
+        this.id = id;
+        this.name = name;
+        this.url = url;
     }
 
     public String getId() {
@@ -24,18 +28,21 @@ public class Owner {
         return name;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Owner that = (Owner) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(name, that.name);
+        Owner owner = (Owner) o;
+        return Objects.equals(id, owner.id) && Objects.equals(name, owner.name) && Objects.equals(url, owner.url);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(id, name, url);
     }
 
     @Override
@@ -43,7 +50,7 @@ public class Owner {
         return "Owner{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
                 '}';
     }
-
 }
