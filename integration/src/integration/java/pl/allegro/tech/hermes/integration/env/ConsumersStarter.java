@@ -37,7 +37,8 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTO
 public class ConsumersStarter implements Starter<HermesConsumers> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumersStarter.class);
-    List<String> args = new ArrayList<>();
+    private final List<String> args = new ArrayList<>();
+    private HermesConsumers hermesConsumers;
 
     @Override
     public void start() throws Exception {
@@ -60,17 +61,18 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         args.add("integration");
 
         HermesConsumersApp.main(args.toArray(new String[0]));
+        this.hermesConsumers = HermesConsumersApp.getInstance();//TODO?
     }
 
     @Override
     public HermesConsumers instance() {
-        return HermesConsumersApp.getInstance();
+        return this.hermesConsumers;
     }
 
     @Override
     public void stop() throws Exception {
         LOGGER.info("Stopping Hermes Consumers");
-        HermesConsumersApp.stop();
+        instance().stop();
     }
 
     public void overrideProperty(Configs config, Object value) {

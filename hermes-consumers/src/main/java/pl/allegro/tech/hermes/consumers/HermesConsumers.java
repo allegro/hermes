@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.consumers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
@@ -24,15 +26,11 @@ import java.util.List;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE;
 
-public class HermesConsumers {//TODO: use as bean?
+public class HermesConsumers implements CommandLineRunner {//TODO: use as bean?
 
     private static final Logger logger = LoggerFactory.getLogger(HermesConsumers.class);
 
-    @Autowired
-    private ConfigurableApplicationContext applicationContext;
-
-    @Autowired
-    private ConfigFactory configFactory;
+    private final ConfigurableApplicationContext applicationContext;
 
     private final SpringHooksHandler springHooksHandler;
     private final ConsumerHttpServer consumerHttpServer;
@@ -62,7 +60,8 @@ public class HermesConsumers {//TODO: use as bean?
                            ConsumerAssignmentCache assignmentCache,
                            OAuthClient oAuthHttpClient,
                            HttpClientsWorkloadReporter httpClientsWorkloadReporter,
-                           ConsumersRuntimeMonitor consumersRuntimeMonitor) {
+                           ConsumersRuntimeMonitor consumersRuntimeMonitor,
+                           ConfigurableApplicationContext applicationContext) {
         this.springHooksHandler = springHooksHandler;
         this.consumerHttpServer = consumerHttpServer;
         this.trackers = trackers;
@@ -77,6 +76,7 @@ public class HermesConsumers {//TODO: use as bean?
         this.httpClientsWorkloadReporter = httpClientsWorkloadReporter;
         this.consumersRuntimeMonitor = consumersRuntimeMonitor;
         boolean flushLogsShutdownHookEnabled = true;
+        this.applicationContext = applicationContext;
 
 
         this.springHooksHandler.addShutdownHook((s) -> {
@@ -169,7 +169,6 @@ public class HermesConsumers {//TODO: use as bean?
 
     public void start() {
         try {
-            configFactory.getIntProperty(CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE);
             oAuthHttpClient.start();
 
             logRepositories.forEach(trackers::add);
@@ -197,5 +196,10 @@ public class HermesConsumers {//TODO: use as bean?
     public void stop() {
 //        hooksHandler.shutdown(serviceLocator);
         springHooksHandler.shutdown(applicationContext);//TODO
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        this.start();
     }
 }

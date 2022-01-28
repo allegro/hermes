@@ -91,6 +91,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
             zookeeper = startZookeeperClient();
 
+            SharedServices.initialize(STARTERS, zookeeper);
+
             ConsumersStarter consumersStarter = new ConsumersStarter();
             consumersStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
             consumersStarter.overrideProperty(Configs.KAFKA_CLUSTER_NAME, PRIMARY_KAFKA_CLUSTER_NAME);
@@ -110,7 +112,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
                 method.setRetryAnalyzerClass(Retry.class);
             }
 
-            SharedServices.initialize(STARTERS, zookeeper);
+//            SharedServices.initialize(STARTERS, zookeeper);
             logger.info("Environment was prepared");
         } catch (Exception e) {
             logger.error("Exception during environment preparation", e);

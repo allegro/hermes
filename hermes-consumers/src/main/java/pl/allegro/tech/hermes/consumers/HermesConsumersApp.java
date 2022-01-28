@@ -23,7 +23,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RETRY_
 @SpringBootApplication
 public class HermesConsumersApp {
 
-    public static ConfigurableApplicationContext applicationContext;
+    private static ConfigurableApplicationContext applicationContext;
 
 //    public static void main(String[] args) {
 //        List<String> list = new ArrayList<>();
@@ -36,14 +36,13 @@ public class HermesConsumersApp {
 
     public static void main(String[] args) {
         applicationContext = SpringApplication.run(HermesConsumersApp.class, args);
-        getInstance().start();
     }
 
-    public static void stop() {
-        getInstance().stop();
-    }
+//    public static void stop() {//TODO?
+//        getInstance().stop();
+//    }
 
-    public static HermesConsumers getInstance() {
+    public static HermesConsumers getInstance() {//TODO?
         return applicationContext.getBean(HermesConsumers.class);
     }
 }

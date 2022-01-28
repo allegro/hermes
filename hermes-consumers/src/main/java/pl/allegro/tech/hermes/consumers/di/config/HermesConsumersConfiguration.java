@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.di.config;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
@@ -34,10 +36,12 @@ public class HermesConsumersConfiguration {
                                            ConsumerAssignmentCache assignmentCache,
                                            OAuthClient oAuthHttpClient,
                                            HttpClientsWorkloadReporter httpClientsWorkloadReporter,
-                                           ConsumersRuntimeMonitor consumersRuntimeMonitor) {
+                                           ConsumersRuntimeMonitor consumersRuntimeMonitor,
+                                           ConfigurableApplicationContext applicationContext) {
         return new HermesConsumers(springHooksHandler, consumerHttpServer, trackers, logRepositories,
                 messageSenderProviders, messageSenderFactor, consumerNodesRegistry, supervisorController,
-                maxRateSupervisor, assignmentCache, oAuthHttpClient, httpClientsWorkloadReporter, consumersRuntimeMonitor);
+                maxRateSupervisor, assignmentCache, oAuthHttpClient, httpClientsWorkloadReporter, consumersRuntimeMonitor,
+                applicationContext);
     }
 
 }
