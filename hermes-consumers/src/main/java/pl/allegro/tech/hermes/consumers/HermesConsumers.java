@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
+import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
@@ -21,12 +22,17 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
 
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE;
+
 public class HermesConsumers {//TODO: use as bean?
 
     private static final Logger logger = LoggerFactory.getLogger(HermesConsumers.class);
 
     @Autowired
     private ConfigurableApplicationContext applicationContext;
+
+    @Autowired
+    private ConfigFactory configFactory;
 
     private final SpringHooksHandler springHooksHandler;
     private final ConsumerHttpServer consumerHttpServer;
@@ -163,6 +169,7 @@ public class HermesConsumers {//TODO: use as bean?
 
     public void start() {
         try {
+            configFactory.getIntProperty(CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE);
             oAuthHttpClient.start();
 
             logRepositories.forEach(trackers::add);
@@ -191,18 +198,4 @@ public class HermesConsumers {//TODO: use as bean?
 //        hooksHandler.shutdown(serviceLocator);
         springHooksHandler.shutdown(applicationContext);//TODO
     }
-
-//    public static HermesConsumersBuilder consumers() {
-//        return new HermesConsumersBuilder();
-//    }
-
-//    private void registerAllBeansAsPrimary(List<ImmutablePair<Class<?>, Supplier<?>>> beans) {
-//        beans.forEach(this::registerPrimaryBean);
-//    }
-//
-//    private void registerPrimaryBean(ImmutablePair<Class<?>, Supplier<?>> bean) {
-//        BeanDefinitionCustomizer primaryBeanCustomizer = new PrimaryBeanCustomizer();
-//        applicationContext.registerBean(bean.left, bean.right, primaryBeanCustomizer);
-//    }
-
 }

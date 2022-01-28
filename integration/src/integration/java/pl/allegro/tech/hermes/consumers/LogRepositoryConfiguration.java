@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.consumers;
 import com.codahale.metrics.MetricRegistry;
 import com.mongodb.DB;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.env.FongoFactory;
@@ -13,6 +15,7 @@ import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 public class LogRepositoryConfiguration {
 
     @Bean
+//    @Profile("integration")
     LogRepository logRepository(ConfigFactory configFactory, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
 
         return new MongoLogRepository(FongoFactory.hermesDB(),

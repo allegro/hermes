@@ -77,7 +77,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             schemaRegistry.start();
 
             for (Starter<?> starter : STARTERS.values()) {
-                starter.start();//TODO
+                starter.start();
             }
 
             managementStarter = HermesManagementInstance.starter()

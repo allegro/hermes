@@ -4,17 +4,23 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.apache.avro.Schema;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.apache.commons.configuration.MapConfiguration;
 import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.env.Environment;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
+import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
@@ -93,10 +99,17 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS;
 
@@ -181,12 +194,12 @@ public class SpringConfiguration {
     }
 
 
-    //TODO: wywalić?
-    @Bean
-    @ConditionalOnMissingBean
-    public MessageFilterSource messageFilterSource() {
-        return new MessageFilters(Collections.emptyList(), Collections.emptyList());
-    }
+//    //TODO: wywalić?
+//    @Bean
+//    @ConditionalOnMissingBean(name = { "messageFilters", "messageFiltersSource"})
+//    public MessageFilterSource messageFilterSource() {
+//        return new MessageFilters(Collections.emptyList(), Collections.emptyList());
+//    }
 
     @Bean
     public FilterChainFactory filterChainFactory(MessageFilterSource filters) {
@@ -359,6 +372,7 @@ public class SpringConfiguration {
     }
 
     @Bean
+//    @ConditionalOnMissingBean
     public KafkaNamesMapper kafkaNamesMapper(ConfigFactory configFactory) {
         return new KafkaNamesMapperFactory(configFactory).provide();
     }
@@ -371,8 +385,13 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public ConfigFactory configFactory() {
-        return new ConfigFactoryCreator().provide();
+    public ConfigFactory configFactory(ApplicationArguments applicationArguments) {
+        List<String> values = Arrays.stream(Configs.values()).map(Configs::getName).collect(Collectors.toList());
+        Map<String, Object> map = applicationArguments.getOptionNames().stream()
+                .filter(values::contains)
+                .collect(Collectors.toMap(Function.identity(), applicationArguments::getOptionValues));
+        AbstractConfiguration abstractConfiguration = new MapConfiguration(map);
+        return new ConfigFactoryCreator(abstractConfiguration).provide();
     }
 
     @Bean
@@ -441,6 +460,7 @@ public class SpringConfiguration {
     }
 
     @Bean
+//    @ConditionalOnMissingBean
     public SpringHooksHandler springHooksHandler() {
         return new SpringHooksHandler();
     }
@@ -456,9 +476,8 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public MessageFilters messageFilters(Optional<List<MessageFilter>> messageFilters,
+    public MessageFilters messageFilters(List<MessageFilter> globalFilters,
                                          List<SubscriptionMessageFilterCompiler> subscriptionMessageFilterCompilers) {
-        List<MessageFilter> globalFilters = messageFilters.orElseGet(ArrayList::new);
         return new MessageFilters(globalFilters, subscriptionMessageFilterCompilers);
     }
 

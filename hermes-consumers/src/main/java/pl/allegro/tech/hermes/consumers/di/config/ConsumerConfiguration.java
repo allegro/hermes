@@ -7,6 +7,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -285,6 +286,7 @@ public class ConsumerConfiguration {
     }
 
     @Bean
+//    @ConditionalOnMissingBean//TODO: add condition
     public EndpointAddressResolver interpolatingEndpointAddressResolver(UriInterpolator interpolator) {
         return new InterpolatingEndpointAddressResolver(interpolator);
     }

@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Deprecated
 public final class HermesConsumersBuilder {//TODO: use java config + qualifiers instead?
 
 //    private final GenericApplicationContext applicationContext;
@@ -196,24 +197,24 @@ public final class HermesConsumersBuilder {//TODO: use java config + qualifiers 
         return this;
     }
 
-    public HermesConsumers build() {
-        withSpringBinding(this::buildFilters, MessageFilters.class);
-
-        LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>> httpProviderList = new LinkedList<>();
-        httpProviderList.add(applicationContext1 -> applicationContext1.getBean("defaultHttpMessageSenderProvider", ProtocolMessageSenderProvider.class));
-
-        LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>> httpsProviderList = new LinkedList<>();
-        httpsProviderList.add(applicationContext1 -> applicationContext1.getBean("defaultHttpMessageSenderProvider", ProtocolMessageSenderProvider.class));
-
-        LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>> jmsProviderList = new LinkedList<>();
-        jmsProviderList.add(applicationContext1 -> applicationContext1.getBean("defaultJmsMessageSenderProvider", ProtocolMessageSenderProvider.class));
-
-        addSpringMessageSenderProvider("http", httpProviderList);
-        addSpringMessageSenderProvider("https", httpsProviderList);
-        addSpringMessageSenderProvider("jms", jmsProviderList);
-
-//        return new HermesConsumers(springHooksHandler, beanDefinitions, springMessageSenderProviders, springLogRepositories, flushLogsShutdownHookEnabled);
-    }
+//    public HermesConsumers build() {
+//        withSpringBinding(this::buildFilters, MessageFilters.class);
+//
+//        LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>> httpProviderList = new LinkedList<>();
+//        httpProviderList.add(applicationContext1 -> applicationContext1.getBean("defaultHttpMessageSenderProvider", ProtocolMessageSenderProvider.class));
+//
+//        LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>> httpsProviderList = new LinkedList<>();
+//        httpsProviderList.add(applicationContext1 -> applicationContext1.getBean("defaultHttpMessageSenderProvider", ProtocolMessageSenderProvider.class));
+//
+//        LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>> jmsProviderList = new LinkedList<>();
+//        jmsProviderList.add(applicationContext1 -> applicationContext1.getBean("defaultJmsMessageSenderProvider", ProtocolMessageSenderProvider.class));
+//
+//        addSpringMessageSenderProvider("http", httpProviderList);
+//        addSpringMessageSenderProvider("https", httpsProviderList);
+//        addSpringMessageSenderProvider("jms", jmsProviderList);
+//
+////        return new HermesConsumers(springHooksHandler, beanDefinitions, springMessageSenderProviders, springLogRepositories, flushLogsShutdownHookEnabled);
+//    }
 
     private MessageFilters buildFilters() {
         List<SubscriptionMessageFilterCompiler> availableFilters = new ArrayList<>(filters);
