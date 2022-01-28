@@ -20,9 +20,20 @@ class AvroPathMessageFilterSpec extends Specification {
                 "id": "0001",
                 "type": "donut",
                 "name": "Cake",
-                "flag": {
-                  "test": true
+                "decoration": {
+                    "frosting": true
                 },
+                "bakery": {
+                    "first":{
+                        "open": true,
+                        "promotion": "FULL"
+                     },
+                    "second":{
+                        "open": false,
+                        "promotion": "MIN"
+                    }  
+                },
+                "flour": {},
                 "ppu": 0.55,
                 "batter": {
                      "id": "1003",
@@ -66,7 +77,12 @@ class AvroPathMessageFilterSpec extends Specification {
         ".batter.ingredients"     | ".*"        | true
         ".batter.ingredients"     | "sugar"     | false
         ".topping.ingredients"    | ".*syrup.*" | true
-        ".flag.test"              | "true"      | true
+        ".decoration.frosting"    | "true"      | true
+        ".bakery.first.open"      | "true"      | true
+        ".bakery.first.promotion" | "MIN"       | false
+        ".bakery.second.promotion"| "MIN"       | true
+        ".flour"                  | "\\{\\}"    | true
+        ".flour.size"             | "null"      | true
     }
 
     @Unroll

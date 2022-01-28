@@ -73,7 +73,7 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
 
     private List<Object> select(Object record, ListIterator<String> iter) {
         Object current = record;
-        while (iter.hasNext()) {
+        while (iter.hasNext() && isSupportedType(current)) {
             if (current instanceof GenericRecord) {
                 GenericRecord currentRecord = (GenericRecord) current;
                 String selector = iter.next();
@@ -102,12 +102,14 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
                 Map<Utf8, Object> currentRecord = (HashMap<Utf8, Object>) current;
                 Utf8 selector = new Utf8(iter.next());
                 current = currentRecord.get(selector);
-            } else {
-                break;
             }
         }
 
         return iter.hasNext() ? emptyList() : singletonList(current == null ? NULL_AS_STRING : current);
+    }
+
+    private boolean isSupportedType(Object record) {
+        return record instanceof GenericRecord || record instanceof HashMap;
     }
 
     private List<Object> selectMultipleArrayItems(ListIterator<String> iter, GenericArray<Object> currentArray) {
