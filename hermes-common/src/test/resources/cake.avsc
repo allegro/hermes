@@ -20,6 +20,15 @@
       "type": "double"
     },
     {
+       "name": "flag",
+       "type": {
+         "type": "map",
+         "values": {
+            "type": "boolean"
+         }
+       }
+    },
+    {
       "name": "topping",
       "type": [ "null", {
         "name": "toppingType",

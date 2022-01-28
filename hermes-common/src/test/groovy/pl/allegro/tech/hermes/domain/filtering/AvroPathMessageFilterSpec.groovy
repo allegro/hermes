@@ -20,6 +20,9 @@ class AvroPathMessageFilterSpec extends Specification {
                 "id": "0001",
                 "type": "donut",
                 "name": "Cake",
+                "flag": {
+                  "test": true
+                },
                 "ppu": 0.55,
                 "batter": {
                      "id": "1003",
@@ -47,22 +50,23 @@ class AvroPathMessageFilterSpec extends Specification {
         result == new AvroPathSubscriptionMessageFilterCompiler().compile(spec).test(msg)
 
         where:
-        path                      | matcher     | result
-        ".id"                     | "0001"      | true
-        ".does.not.exist"         | ".*"        | false
-        ".id"                     | "000.?"     | true
-        ".id"                     | "0002"      | false
-        ".type"                   | "donut"     | true
-        ".type"                   | "not_donut" | false
-        ".batter.id"              | "1003"      | true
-        ".batter.id"              | "1004"      | false
-        ".topping.type"           | "^Map.*"    | true
-        ".topping.description"    | ".*syrup.*" | true
-        ".topping.description.a"  | ".*"        | false
-        ".batter.ingredients"     | "null"      | true
-        ".batter.ingredients"     | ".*"        | true
-        ".batter.ingredients"     | "sugar"     | false
-        ".topping.ingredients"    | ".*syrup.*" | true
+        path                     | matcher     | result
+        ".id"                    | "0001"      | true
+        ".does.not.exist"        | ".*"        | false
+        ".id"                    | "000.?"     | true
+        ".id"                    | "0002"      | false
+        ".type"                  | "donut"     | true
+        ".type"                  | "not_donut" | false
+        ".batter.id"             | "1003"      | true
+        ".batter.id"             | "1004"      | false
+        ".topping.type"          | "^Map.*"    | true
+        ".topping.description"   | ".*syrup.*" | true
+        ".topping.description.a" | ".*"        | false
+        ".batter.ingredients"    | "null"      | true
+        ".batter.ingredients"    | ".*"        | true
+        ".batter.ingredients"    | "sugar"     | false
+        ".topping.ingredients"   | ".*syrup.*" | true
+        ".flag.test"                  | "true"      | true
     }
 
     @Unroll
@@ -100,11 +104,11 @@ class AvroPathMessageFilterSpec extends Specification {
         def avro = new JsonAvroConverter().convertToAvro(json.bytes, schema)
         def spec = new MessageFilterSpecification([path: path, matcher: matcher, matchingStrategy: matchingStrategy])
         def msg = FilterableMessageBuilder
-            .withTestMessage()
-            .withContent(avro)
-            .withSchema(schema, 1, 0)
-            .withContentType(ContentType.AVRO)
-            .build()
+                .withTestMessage()
+                .withContent(avro)
+                .withSchema(schema, 1, 0)
+                .withContentType(ContentType.AVRO)
+                .build()
 
         expect:
         result == new AvroPathSubscriptionMessageFilterCompiler().compile(spec).test(msg)
@@ -166,10 +170,10 @@ class AvroPathMessageFilterSpec extends Specification {
         when:
         new AvroPathSubscriptionMessageFilterCompiler().compile(new MessageFilterSpecification([path: ".id", matcher: "0001"]))
                 .test(FilterableMessageBuilder
-                .withTestMessage()
-                .withContent(invalidContent)
-                .withSchema(schema, 1,0)
-                .build())
+                        .withTestMessage()
+                        .withContent(invalidContent)
+                        .withSchema(schema, 1, 0)
+                        .build())
 
         then:
         thrown FilteringException
