@@ -20,6 +20,56 @@
       "type": "double"
     },
     {
+       "name": "decoration",
+       "type": {
+         "type": "map",
+         "values": {
+            "type": "boolean"
+         }
+       }
+    },
+    {
+      "name": "bakery",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": {
+            "type": "record",
+            "name": "Bakery",
+            "fields": [{
+              "name": "open",
+              "type": "boolean"
+              },
+              {
+                "name": "promotion",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "flour",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": {
+            "type": "record",
+            "name": "Flour",
+            "fields": [{
+              "name": "size",
+              "type": [ "null", "string" ],
+              "default": null
+            }]
+          },
+          "default": null
+        }
+      ]
+    },
+    {
       "name": "topping",
       "type": [ "null", {
         "name": "toppingType",

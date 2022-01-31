@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.domain.filtering.avro;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.util.Utf8;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.domain.filtering.FilteringException;
@@ -12,8 +13,10 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,33 +73,43 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
 
     private List<Object> select(Object record, ListIterator<String> iter) {
         Object current = record;
-        while (iter.hasNext() && current instanceof GenericRecord) {
-            GenericRecord currentRecord = (GenericRecord) current;
-            String selector = iter.next();
-            Matcher arrayMatcher = ARRAY_PATTERN.matcher(selector);
+        while (iter.hasNext() && isSupportedType(current)) {
+            if (current instanceof GenericRecord) {
+                GenericRecord currentRecord = (GenericRecord) current;
+                String selector = iter.next();
+                Matcher arrayMatcher = ARRAY_PATTERN.matcher(selector);
 
-            if (arrayMatcher.matches()) {
-                String idx = arrayMatcher.group(GROUP_IDX);
-                selector = arrayMatcher.group(GROUP_SELECTOR);
+                if (arrayMatcher.matches()) {
+                    String idx = arrayMatcher.group(GROUP_IDX);
+                    selector = arrayMatcher.group(GROUP_SELECTOR);
 
-                current = currentRecord.get(selector);
-                if (! (current instanceof GenericArray)) {
-                    return emptyList();
-                }
+                    current = currentRecord.get(selector);
+                    if (! (current instanceof GenericArray)) {
+                        return emptyList();
+                    }
 
-                GenericArray<Object> currentArray = (GenericArray) current;
-                if (idx.equals(WILDCARD_IDX)) {
-                    return selectMultipleArrayItems(iter, currentArray);
+                    GenericArray<Object> currentArray = (GenericArray) current;
+                    if (idx.equals(WILDCARD_IDX)) {
+                        return selectMultipleArrayItems(iter, currentArray);
+                    } else {
+                        current = selectSingleArrayItem(Integer.valueOf(idx), currentArray);
+                    }
+
                 } else {
-                    current = selectSingleArrayItem(Integer.valueOf(idx), currentArray);
+                    current = currentRecord.get(selector);
                 }
-
-            } else {
+            } else if (current instanceof HashMap) {
+                Map<Utf8, Object> currentRecord = (HashMap<Utf8, Object>) current;
+                Utf8 selector = new Utf8(iter.next());
                 current = currentRecord.get(selector);
             }
         }
 
         return iter.hasNext() ? emptyList() : singletonList(current == null ? NULL_AS_STRING : current);
+    }
+
+    private boolean isSupportedType(Object record) {
+        return record instanceof GenericRecord || record instanceof HashMap;
     }
 
     private List<Object> selectMultipleArrayItems(ListIterator<String> iter, GenericArray<Object> currentArray) {
