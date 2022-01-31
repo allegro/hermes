@@ -8,6 +8,12 @@ public class Owner {
     private final String name;
     private final String url;
 
+    public Owner() {
+        this.id = null;
+        this.name = null;
+        this.url = null;
+    }
+
     public Owner(String id, String name) {
         this.id = id;
         this.name = name;
