@@ -37,8 +37,12 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTO
 public class ConsumersStarter implements Starter<HermesConsumers> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumersStarter.class);
-    private final List<String> args = new ArrayList<>();
+    private final List<String> args;
     private HermesConsumers hermesConsumers;
+
+    public ConsumersStarter() {
+        args = new ArrayList<>();
+    }
 
     @Override
     public void start() throws Exception {
@@ -59,6 +63,7 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
 //        args.add("" + port);
         args.add("-e");//TODO - do we want to use profiles?
         args.add("integration");
+//        args.add("--server.port=8081");
 
 //        HermesConsumersApp.main(args.toArray(new String[0]));
         this.hermesConsumers = HermesConsumersApp.mainWithReturn(args.toArray(new String[0]));
@@ -78,6 +83,10 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
 
     public void overrideProperty(Configs config, Object value) {
         args.add("--" + config.getName() + "=" + value);
+    }
+
+    public void overrideProperty(String property) {
+        args.add(property);
     }
 
 }

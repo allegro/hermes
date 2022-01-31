@@ -4,6 +4,10 @@ import com.google.common.io.Files;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static java.lang.Math.abs;
 import static java.util.UUID.randomUUID;
 
@@ -326,6 +330,15 @@ public enum Configs {
     Configs(String name, Object defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
+    }
+
+    public static Configs getForName(String name) {
+        List<Configs> queryResult = Arrays.stream(Configs.values())
+                .filter(configs -> configs.name.equals(name)).collect(Collectors.toList());
+        if (queryResult.size() != 1) {
+            throw new RuntimeException("No config for given name");//TODO
+        }
+        return queryResult.stream().findFirst().get();
     }
 
     public String getName() {

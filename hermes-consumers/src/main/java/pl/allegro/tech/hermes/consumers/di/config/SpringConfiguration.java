@@ -110,6 +110,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS;
 
@@ -373,7 +374,7 @@ public class SpringConfiguration {
 
     @Bean
 //    @ConditionalOnMissingBean
-    public KafkaNamesMapper kafkaNamesMapper(ConfigFactory configFactory) {
+    public KafkaNamesMapper prodKafkaNamesMapper(ConfigFactory configFactory) {
         return new KafkaNamesMapperFactory(configFactory).provide();
     }
 
@@ -385,7 +386,7 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public ConfigFactory configFactory(ApplicationArguments applicationArguments) {
+    public ConfigFactory prodConfigFactory(ApplicationArguments applicationArguments) {
         List<String> values = Arrays.stream(Configs.values()).map(Configs::getName).collect(Collectors.toList());
         Map<String, Object> map = applicationArguments.getOptionNames().stream()
                 .filter(values::contains)
@@ -461,7 +462,7 @@ public class SpringConfiguration {
 
     @Bean
 //    @ConditionalOnMissingBean
-    public SpringHooksHandler springHooksHandler() {
+    public SpringHooksHandler prodSpringHooksHandler() {
         return new SpringHooksHandler();
     }
 

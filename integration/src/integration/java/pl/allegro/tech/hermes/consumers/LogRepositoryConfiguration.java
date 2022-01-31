@@ -16,7 +16,7 @@ public class LogRepositoryConfiguration {
 
     @Bean
 //    @Profile("integration")
-    LogRepository logRepository(ConfigFactory configFactory, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
+    LogRepository testLogRepository(ConfigFactory configFactory, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
 
         return new MongoLogRepository(FongoFactory.hermesDB(),
                 10,

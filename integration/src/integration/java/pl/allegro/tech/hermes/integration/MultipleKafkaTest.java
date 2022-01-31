@@ -85,6 +85,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         consumers.overrideProperty(Configs.CONSUMER_HEALTH_CHECK_PORT, 7454);
         consumers.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
         consumers.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
+        consumers.overrideProperty("--server.port=8081");
 
         consumers.start();//TODO
 

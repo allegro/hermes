@@ -13,7 +13,7 @@ public class EndpointAddressResolverConfiguration {
     @Bean
     @Primary
 //    @Profile("integration") //TODO: maybe we could use profiles and add ConditionalOnMissingBean in default config?
-    public EndpointAddressResolver multiUrlEndpointAddressResolver() {
+    public EndpointAddressResolver testMultiUrlEndpointAddressResolver() {
         return new MultiUrlEndpointAddressResolver();
     }
 }
