@@ -38,6 +38,11 @@ public class HermesConsumersApp {
         applicationContext = SpringApplication.run(HermesConsumersApp.class, args);
     }
 
+    public static HermesConsumers mainWithReturn(String[] args) {
+        main(args);
+        return applicationContext.getBean(HermesConsumers.class);
+    }
+
 //    public static void stop() {//TODO?
 //        getInstance().stop();
 //    }

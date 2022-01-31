@@ -60,8 +60,9 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         args.add("-e");//TODO - do we want to use profiles?
         args.add("integration");
 
-        HermesConsumersApp.main(args.toArray(new String[0]));
-        this.hermesConsumers = HermesConsumersApp.getInstance();//TODO?
+//        HermesConsumersApp.main(args.toArray(new String[0]));
+        this.hermesConsumers = HermesConsumersApp.mainWithReturn(args.toArray(new String[0]));
+//        this.hermesConsumers = HermesConsumersApp.getInstance();//TODO?
     }
 
     @Override
