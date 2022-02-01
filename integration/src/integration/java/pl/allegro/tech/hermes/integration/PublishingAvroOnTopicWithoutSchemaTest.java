@@ -64,7 +64,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnServerInternalErrorResponseOnMissingSchema() {
+    public void shouldReturnServerInternalErrorResponseOnMissingSchema() {//TODO
         // given
         Topic topic = randomTopic("avro", "topicWithoutSchema").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, AvroUserSchemaLoader.load().toString()));

@@ -15,9 +15,9 @@ public class MessageSenderProviders {
     public MessageSenderProviders(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,
                                   ProtocolMessageSenderProvider defaultHttpsMessageSenderProvider,
                                   ProtocolMessageSenderProvider defaultJmsMessageSenderProvider) {
-        addEntry("defaultHttpMessageSenderProvider", defaultHttpMessageSenderProvider);
-        addEntry("defaultHttpsMessageSenderProvider", defaultHttpsMessageSenderProvider);
-        addEntry("defaultJmsMessageSenderProvider", defaultJmsMessageSenderProvider);
+        addEntry("http", defaultHttpMessageSenderProvider);
+        addEntry("https", defaultHttpsMessageSenderProvider);
+        addEntry("jms", defaultJmsMessageSenderProvider);
     }
 
     public void populateMessageSenderFactory(MessageSenderFactory messageSenderFactory) {

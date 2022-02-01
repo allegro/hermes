@@ -33,7 +33,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
 
     @BeforeClass
     public void initializeIntegrationTest() {
-        this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL); //TODO: consumer endpoint - co z tym zrobić, który to ma być consumer?
+        this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
         this.publisher = new HermesPublisher(FRONTEND_URL);
         this.brokerOperations = new BrokerOperations(
                 ImmutableMap.of(
