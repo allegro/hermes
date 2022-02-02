@@ -1,26 +1,14 @@
 package pl.allegro.tech.hermes.integration.env;
 
-import com.codahale.metrics.MetricRegistry;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.consumers.HermesConsumersApp;
-import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
-import pl.allegro.tech.hermes.consumers.di.config.PrimaryBeanCustomizer;
-import pl.allegro.tech.hermes.integration.setup.HermesManagementInstance;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
-import pl.allegro.tech.hermes.test.helper.endpoint.MultiUrlEndpointAddressResolver;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
-import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
@@ -66,7 +54,7 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
 //        args.add("--server.port=8081");
 
 //        HermesConsumersApp.main(args.toArray(new String[0]));
-        this.hermesConsumers = HermesConsumersApp.mainWithReturn(args.toArray(new String[0]));
+        this.hermesConsumers = HermesConsumersApp.runAndGetInstance(args.toArray(new String[0]));
 //        this.hermesConsumers = HermesConsumersApp.getInstance();//TODO?
     }
 
@@ -83,10 +71,6 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
 
     public void overrideProperty(Configs config, Object value) {
         args.add("--" + config.getName() + "=" + value);
-    }
-
-    public void overrideProperty(String property) {
-        args.add(property);
     }
 
 }

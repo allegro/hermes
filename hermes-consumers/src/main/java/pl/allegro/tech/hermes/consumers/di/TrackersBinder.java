@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
 
-public class TrackersBinder extends AbstractBinder {
+public class TrackersBinder extends AbstractBinder { //TODO: remove
 
     private final List<LogRepository> logRepositories;
 

@@ -6,20 +6,15 @@ import org.glassfish.hk2.api.ServiceLocator;//TODO: remove
 import org.glassfish.hk2.utilities.Binder;//TODO: remove
 import org.glassfish.hk2.utilities.binding.AbstractBinder;//TODO: remove
 import org.jvnet.hk2.component.MultiMap;//TODO: remove
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.di.CommonBinder;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.consumers.di.config.PrimaryBeanCustomizer;
 import pl.allegro.tech.hermes.consumers.hooks.SpringHooksHandler;
 import pl.allegro.tech.hermes.consumers.hooks.SpringServiceAwareHook;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
-import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
 import pl.allegro.tech.hermes.domain.filtering.SubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
@@ -28,9 +23,7 @@ import pl.allegro.tech.hermes.domain.filtering.json.JsonPathSubscriptionMessageF
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.di.ConsumersBinder;
-import pl.allegro.tech.hermes.consumers.di.TrackersBinder;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
-import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.ArrayList;
 import java.util.Collections;

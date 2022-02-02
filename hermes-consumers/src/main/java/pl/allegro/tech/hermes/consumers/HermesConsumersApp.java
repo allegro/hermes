@@ -32,12 +32,8 @@ public class HermesConsumersApp {
         applicationContext = application.run(args);
     }
 
-    public static HermesConsumers mainWithReturn(String[] args) {
+    public static HermesConsumers runAndGetInstance(String[] args) {
         main(args);
-        return applicationContext.getBean(HermesConsumers.class);
-    }
-
-    public static HermesConsumers getInstance() {//TODO?
         return applicationContext.getBean(HermesConsumers.class);
     }
 }

@@ -24,9 +24,7 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.List;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE;
-
-public class HermesConsumers implements CommandLineRunner {//TODO: use as bean?
+public class HermesConsumers implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(HermesConsumers.class);
 
@@ -36,8 +34,6 @@ public class HermesConsumers implements CommandLineRunner {//TODO: use as bean?
     private final ConsumerHttpServer consumerHttpServer;
     private final Trackers trackers;
     private final List<LogRepository> logRepositories;
-//    private Map<String, LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>>> springMessageSenderProvidersSuppliers;
-//    private Map<String, List<ProtocolMessageSenderProvider>> springMessageSenderProviders;
     private final MessageSenderProviders messageSenderProviders;
     private final MessageSenderFactory messageSenderFactory;
     private final ConsumerNodesRegistry consumerNodesRegistry;
@@ -97,94 +93,17 @@ public class HermesConsumers implements CommandLineRunner {//TODO: use as bean?
         }
     }
 
-//    HermesConsumers(SpringHooksHandler springHooksHandler,
-//                    List<ImmutablePair<Class<?>, Supplier<?>>> builderBeans,
-//                    Map<String, LinkedList<Function<ApplicationContext, ProtocolMessageSenderProvider>>> springMessageSenderProvidersSuppliers,
-//                    List<Function<ApplicationContext, LogRepository>> springLogRepositories,
-//                    boolean flushLogsShutdownHookEnabled) {
-//
-//        this.springHooksHandler = springHooksHandler;
-//        this.springMessageSenderProvidersSuppliers = springMessageSenderProvidersSuppliers;
-//        this.springLogRepositories = springLogRepositories;
-//
-////        serviceLocator = createDIContainer(binders);//inject all config binders' classes into IoC container
-////        SpringBridge.getSpringBridge().initializeSpringBridge(serviceLocator);
-//        registerAllBeansAsPrimary(builderBeans);
-//
-//        //get all "beans" from IoC container
-////        trackers = serviceLocator.getService(Trackers.class);
-//        trackers = applicationContext.getBean(Trackers.class);
-////        consumerHttpServer = serviceLocator.getService(ConsumerHttpServer.class);
-//        consumerHttpServer = applicationContext.getBean(ConsumerHttpServer.class);
-////        messageSenderFactory = serviceLocator.getService(MessageSenderFactory.class);
-//        messageSenderFactory2 = applicationContext.getBean(MessageSenderFactory.class);
-//
-////        consumerNodesRegistry = serviceLocator.getService(ConsumerNodesRegistry.class);
-//        consumerNodesRegistry = applicationContext.getBean(ConsumerNodesRegistry.class);
-////        supervisorController = serviceLocator.getService(SupervisorController.class);
-//        supervisorController = applicationContext.getBean(SupervisorController.class);
-////        maxRateSupervisor = serviceLocator.getService(MaxRateSupervisor.class);
-//        maxRateSupervisor = applicationContext.getBean(MaxRateSupervisor.class);
-////        assignmentCache = serviceLocator.getService(ConsumerAssignmentCache.class);
-//        assignmentCache = applicationContext.getBean("consumerAssignmentCache", ConsumerAssignmentCache.class);
-////        oAuthHttpClient = serviceLocator.getService(OAuthClient.class);
-//        oAuthHttpClient = applicationContext.getBean(OAuthClient.class);
-////        httpClientsWorkloadReporter = serviceLocator.getService(HttpClientsWorkloadReporter.class);
-//        httpClientsWorkloadReporter = applicationContext.getBean(HttpClientsWorkloadReporter.class);
-//
-////        hooksHandler.addShutdownHook((s) -> { //TODO: do we need hooks for Spring?
-////            try {
-////                consumerHttpServer.stop();
-////                maxRateSupervisor.stop();
-////                assignmentCache.stop();
-////                oAuthHttpClient.stop();
-////                consumerNodesRegistry.stop();
-////                supervisorController.shutdown();
-////                s.shutdown();
-////            } catch (Exception e) {
-////                logger.error("Exception while shutdown Hermes Consumers", e);
-////            }
-////        });
-////        if (flushLogsShutdownHookEnabled) {
-////            hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
-////        }
-//
-//        springHooksHandler.addShutdownHook((s) -> {
-//            try {
-//                consumerHttpServer.stop();
-//                maxRateSupervisor.stop();
-//                assignmentCache.stop();
-//                oAuthHttpClient.stop();
-//                consumerNodesRegistry.stop();
-//                supervisorController.shutdown();
-//                applicationContext.registerShutdownHook();
-//            } catch (Exception e) {
-//                logger.error("Exception while shutdown Hermes Consumers", e);
-//            }
-//        });
-//        if (flushLogsShutdownHookEnabled) {
-//            springHooksHandler.addShutdownHook(new SpringFlushLogsShutdownHook());
-//        }
-//    }
-
     public void start() {
         try {
             oAuthHttpClient.start();
-
             logRepositories.forEach(trackers::add);
-
             messageSenderProviders.populateMessageSenderFactory(messageSenderFactory);
 
-//            springMessageSenderProviders.entrySet().forEach(entry ->
-//                    entry.getValue().forEach(messageSender ->
-//                            messageSenderFactory.addSupportedProtocol(entry.getKey(), messageSender)
-//                    ));
             consumerNodesRegistry.start();
             supervisorController.start();
             assignmentCache.start();
             maxRateSupervisor.start();
             consumersRuntimeMonitor.start();
-//            applicationContext.getBean(ConsumersRuntimeMonitor.class).start();
             consumerHttpServer.start();
             httpClientsWorkloadReporter.start();
             springHooksHandler.startup(applicationContext);
@@ -194,8 +113,7 @@ public class HermesConsumers implements CommandLineRunner {//TODO: use as bean?
     }
 
     public void stop() {
-//        hooksHandler.shutdown(serviceLocator);
-        springHooksHandler.shutdown(applicationContext);//TODO
+        springHooksHandler.shutdown(applicationContext);
     }
 
     @Override

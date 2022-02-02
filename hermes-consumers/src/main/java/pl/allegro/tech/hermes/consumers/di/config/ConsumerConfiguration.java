@@ -8,9 +8,11 @@ import org.eclipse.jetty.client.api.Request;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CuratorType;
@@ -28,6 +30,7 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConv
 import pl.allegro.tech.hermes.consumers.consumer.converter.DefaultMessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
+import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokensLoader;
@@ -78,6 +81,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
+import pl.allegro.tech.hermes.consumers.hooks.SpringHooksHandler;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
@@ -92,6 +96,7 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import javax.inject.Named;
 import javax.jms.Message;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -106,6 +111,11 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC
 @Configuration
 public class ConsumerConfiguration {
     private static final Logger logger = getLogger(ConsumerConfiguration.class);
+
+    @Bean
+    public ApplicationContext applicationContext() {
+        return new GenericApplicationContext();
+    }
 
     @Bean
     public MaxRatePathSerializer maxRatePathSerializer() {
@@ -471,5 +481,31 @@ public class ConsumerConfiguration {
                                                                    Http2ClientHolder http2ClientHolder,
                                                                    ConfigFactory configFactory) {
         return new HttpClientsWorkloadReporter(metrics, httpClient, http2ClientHolder, configFactory);
+    }
+
+    @Bean
+//    @ConditionalOnMissingBean
+    public SpringHooksHandler prodSpringHooksHandler() {
+        return new SpringHooksHandler();
+    }
+
+    @Bean
+    public MessageSenderProviders messageSenderProviders(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,
+                                                         ProtocolMessageSenderProvider defaultHttpsMessageSenderProvider,
+                                                         ProtocolMessageSenderProvider defaultJmsMessageSenderProvider) {
+        return new MessageSenderProviders(
+                defaultHttpMessageSenderProvider,
+                defaultHttpsMessageSenderProvider,
+                defaultJmsMessageSenderProvider);
+    }
+
+    @Bean
+    public UriInterpolator messageBodyInterpolator() {
+        return new MessageBodyInterpolator();
+    }
+
+    @Bean
+    public Trackers trackers() {
+        return new Trackers(new ArrayList<>());
     }
 }

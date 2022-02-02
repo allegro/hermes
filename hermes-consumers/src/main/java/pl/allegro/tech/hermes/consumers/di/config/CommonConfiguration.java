@@ -64,10 +64,6 @@ import pl.allegro.tech.hermes.common.schema.SchemaRepositoryInstanceResolverFact
 import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
-import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
-import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
-import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.hooks.SpringHooksHandler;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
@@ -87,44 +83,21 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeper
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
-import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
-import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
-import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
-import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import javax.inject.Named;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS;
-
 @Configuration
-//TODO: add scopes to each bean
+//TODO: add scopes to each bean?
 //TODO: ogarnąć wszystkie field i method injections
 //TODO: ogarnac metody dispose
-//TODO: split - commons, consumers etc.
-public class SpringConfiguration {
-
-    @Bean
-    public ApplicationContext applicationContext() {
-        return new GenericApplicationContext();
-    }
+public class CommonConfiguration {
 
     @Bean
     public SubscriptionRepositoryFactory subscriptionRepositoryFactory(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
@@ -176,7 +149,8 @@ public class SpringConfiguration {
     }
 
     //TODO: make as 1 bean with Factory?
-    @Bean
+    //TODO: dispose method
+    @Bean (destroyMethod = "close")
     @Named(CuratorType.HERMES)//TODO - remove
     public CuratorFramework hermesCurator(ConfigFactory configFactory,
                                           CuratorClientFactory curatorClientFactory) {
@@ -187,13 +161,6 @@ public class SpringConfiguration {
     public CuratorClientFactory curatorClientFactory(ConfigFactory configFactory) {
         return new CuratorClientFactory(configFactory);
     }
-
-    //TODO??
-    @Bean
-    public Trackers trackers() {
-        return new Trackers(new ArrayList<>());
-    }
-
 
 //    //TODO: wywalić?
 //    @Bean
@@ -213,6 +180,7 @@ public class SpringConfiguration {
         return new ZookeeperInternalNotificationBus(objectMapper, modelNotifyingCache);
     }
 
+    //TODO: dispose method?
     @Bean
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                                ConfigFactory config) {
@@ -270,51 +238,6 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public SchemaRepository schemaRepository(SchemaVersionsRepository schemaVersionsRepository,
-                                             CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
-        return new SchemaRepositoryFactory(schemaVersionsRepository, compiledAvroSchemaRepository).provide();
-    }
-
-    @Bean
-    public CompiledSchemaRepository<Schema> avroCompiledSchemaRepository(RawSchemaClient rawSchemaClient,
-                                                                         ConfigFactory configFactory) {
-        return new AvroCompiledSchemaRepositoryFactory(rawSchemaClient, configFactory).provide();
-    }
-
-    @Bean
-    public RawSchemaClient rawSchemaClient(ConfigFactory configFactory,
-                                           HermesMetrics hermesMetrics,
-                                           ObjectMapper objectMapper,
-                                           SchemaRepositoryInstanceResolver resolver) {
-        return new RawSchemaClientFactory(configFactory, hermesMetrics, objectMapper, resolver).provide();
-    }
-
-    @Bean
-    public SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver(ConfigFactory configFactory,
-                                                                             Client client) { //TODO
-        return new SchemaRepositoryInstanceResolverFactory(configFactory, client).provide();
-    }
-
-    @Bean(name = "schemaRepositoryClient")
-    public Client schemaRepositoryClient(ObjectMapper mapper, ConfigFactory configFactory) {
-        ClientConfig config = new ClientConfig()
-                .property(ClientProperties.READ_TIMEOUT, configFactory.getIntProperty(SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS))
-                .property(ClientProperties.CONNECT_TIMEOUT, configFactory.getIntProperty(SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS))
-                .register(new JacksonJsonProvider(mapper));
-
-        return ClientBuilder.newClient(config);
-    }
-
-    @Bean
-    public SchemaVersionsRepository schemaVersionsRepositoryFactory(RawSchemaClient rawSchemaClient,
-                                                                    ConfigFactory configFactory,
-                                                                    InternalNotificationsBus notificationsBus,
-                                                                    CompiledSchemaRepository compiledSchemaRepository) {//TODO ??
-        return new SchemaVersionsRepositoryFactory(rawSchemaClient, configFactory, notificationsBus, compiledSchemaRepository)
-                .provide();
-    }
-
-    @Bean
     public AvroMessageSchemaVersionTruncationContentWrapper avroMessageSchemaVersionTruncationContentWrapper(SchemaRepository schemaRepository,
                                                                                                              AvroMessageContentWrapper avroMessageContentWrapper,
                                                                                                              DeserializationMetrics deserializationMetrics,
@@ -365,11 +288,6 @@ public class SpringConfiguration {
                                                                                          DeserializationMetrics deserializationMetrics) {
         return new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroMessageContentWrapper,
                 deserializationMetrics);
-    }
-
-    @Bean
-    public UriInterpolator messageBodyInterpolator() {
-        return new MessageBodyInterpolator();
     }
 
     @Bean
@@ -458,22 +376,6 @@ public class SpringConfiguration {
             ZookeeperPaths paths,
             SubscriptionRepository subscriptionRepository) {
         return new SubscriptionOffsetChangeIndicatorFactory(zookeeper, paths, subscriptionRepository).provide();
-    }
-
-    @Bean
-//    @ConditionalOnMissingBean
-    public SpringHooksHandler prodSpringHooksHandler() {
-        return new SpringHooksHandler();
-    }
-
-    @Bean
-    public MessageSenderProviders messageSenderProviders(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,
-                                                               ProtocolMessageSenderProvider defaultHttpsMessageSenderProvider,
-                                                               ProtocolMessageSenderProvider defaultJmsMessageSenderProvider) {
-        return new MessageSenderProviders(
-                defaultHttpMessageSenderProvider,
-                defaultHttpsMessageSenderProvider,
-                defaultJmsMessageSenderProvider);
     }
 
     @Bean

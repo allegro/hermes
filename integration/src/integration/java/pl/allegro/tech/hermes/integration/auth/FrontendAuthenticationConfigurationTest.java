@@ -83,7 +83,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldAuthenticateUsingBasicAuth() throws Throwable {
+    public void shouldAuthenticateUsingBasicAuth() throws Throwable {//TODO: fix?? nondeterministic?
         //given
         Map<String, String> headers = getHeadersWithAuthentication(USERNAME, PASSWORD);
 

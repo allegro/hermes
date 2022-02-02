@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class MessageSenderProviders {
+public class MessageSenderProviders { //TODO: move to another package
     private final Map<String, List<ProtocolMessageSenderProvider>> entries = new HashMap<>();
 
     public MessageSenderProviders(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,

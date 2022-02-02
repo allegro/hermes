@@ -71,7 +71,8 @@ import javax.inject.Singleton;
 import javax.jms.Message;
 import java.util.Collections;
 
-public class ConsumersBinder extends AbstractBinder {
+@Deprecated
+public class ConsumersBinder extends AbstractBinder { //TODO: remove
 
     @Override
     protected void configure() {
