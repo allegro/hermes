@@ -23,7 +23,7 @@ public abstract class AbstractLogRepositoryTest {
     @BeforeSuite
     public void setUpRetry(ITestContext context) {
         for (ITestNGMethod method : context.getAllTestMethods()) {
-            method.setRetryAnalyzer(new Retry());
+            method.setRetryAnalyzerClass(Retry.class);
         }
     }
 
