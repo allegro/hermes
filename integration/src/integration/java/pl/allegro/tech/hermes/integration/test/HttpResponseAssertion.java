@@ -34,7 +34,7 @@ public class HttpResponseAssertion extends AbstractAssert<HttpResponseAssertion,
 
     public HttpResponseAssertion containsMessages(String ...messages) {
         String responseBody = actual.readEntity(String.class);
-        assertThat(Arrays.stream(messages).allMatch(responseBody::contains)).isTrue();//TODO?
+        assertThat(Arrays.stream(messages).allMatch(responseBody::contains)).isTrue();
         return this;
     }
 

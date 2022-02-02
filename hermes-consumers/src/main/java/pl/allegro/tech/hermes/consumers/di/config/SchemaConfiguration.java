@@ -29,8 +29,8 @@ import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTT
 
 @Configuration
 //TODO: add scopes to each bean?
-//TODO: ogarnąć wszystkie field i method injections
-//TODO: ogarnac metody dispose
+//TODO: @Inject
+//TODO: dispose methods
 public class SchemaConfiguration {
 
     @Bean
@@ -55,7 +55,7 @@ public class SchemaConfiguration {
 
     @Bean
     public SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver(ConfigFactory configFactory,
-                                                                             Client client) { //TODO
+                                                                             Client client) {
         return new SchemaRepositoryInstanceResolverFactory(configFactory, client).provide();
     }
 

@@ -48,7 +48,6 @@ public class ConfigFactoryCreator implements Factory<ConfigFactory> {
     public ConfigFactory provide() {
         Boolean isConfigPollingSchedulerDisabled = Boolean.valueOf(System.getProperty(DISABLE_CONFIG_POLLING_SCHEDULER, "true"));
         DynamicPropertyFactory dynamicPropertyFactory = createDynamicPropertyFactory(isConfigPollingSchedulerDisabled);
-//        DynamicPropertyFactory.initWithConfigurationSource() //TODO: use MapConfiguration?
         return new ConfigFactory(dynamicPropertyFactory);
     }
 

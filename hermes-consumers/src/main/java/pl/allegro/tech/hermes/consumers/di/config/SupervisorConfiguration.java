@@ -110,13 +110,13 @@ public class SupervisorConfiguration {
                                            ConfigFactory configFactory,
                                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                                            OutputRateCalculatorFactory outputRateCalculatorFactory,
-                                           Trackers trackers,//TODO?
+                                           Trackers trackers,
                                            OffsetQueue offsetQueue,
                                            ConsumerMessageSenderFactory consumerMessageSenderFactory,
                                            TopicRepository topicRepository,
                                            MessageConverterResolver messageConverterResolver,
                                            MessageBatchFactory byteBufferMessageBatchFactory,
-                                           MessageContentWrapper messageContentWrapper,//TODO
+                                           MessageContentWrapper messageContentWrapper,
                                            MessageBatchSenderFactory batchSenderFactory,
                                            ConsumerAuthorizationHandler consumerAuthorizationHandler,
                                            Clock clock) {

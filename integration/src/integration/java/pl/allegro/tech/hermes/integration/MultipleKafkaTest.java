@@ -49,7 +49,7 @@ public class MultipleKafkaTest extends IntegrationTest {
 
     @AfterClass
     public void cleanEnvironment() throws Exception {
-        consumersStarter.stop();//TODO
+        consumersStarter.stop();
         frontendStarter.stop();
     }
 
@@ -86,7 +86,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         consumers.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
         consumers.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
 
-        consumers.start();//TODO
+        consumers.start();
 
         return consumers;
     }

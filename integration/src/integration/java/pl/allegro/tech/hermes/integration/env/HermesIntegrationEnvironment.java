@@ -97,7 +97,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             consumersStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             consumersStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
             consumersStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
-            consumersStarter.start();//TODO
+            consumersStarter.start();
 
             FrontendStarter frontendStarter = new FrontendStarter(FRONTEND_PORT);
             frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);

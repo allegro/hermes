@@ -30,7 +30,7 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static pl.allegro.tech.hermes.integration.auth.SingleUserAwareIdentityManager.getHeadersWithAuthentication;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
-public class TopicAuthorisationTest extends IntegrationTest { //TODO
+public class TopicAuthorisationTest extends IntegrationTest {
 
     public static final int FRONTEND_PORT = Ports.nextAvailable();
     public static final String FRONTEND_URL = "http://127.0.0.1:" + FRONTEND_PORT;

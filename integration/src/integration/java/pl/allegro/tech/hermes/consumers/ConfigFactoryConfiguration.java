@@ -29,7 +29,7 @@ public class ConfigFactoryConfiguration {
         return configFactory;
     }
 
-    private Object getValue(List<String> list, String name) { //TODO
+    private Object getValue(List<String> list, String name) { //TODO: refactor
         Class<?> clazz = Configs.getForName(name).getDefaultValue().getClass();
         if (list.size() > 1) {
             return list.stream().collect(Collectors.joining(",", "", ""));

@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.common.config;
 
-import com.netflix.config.DynamicPropertyFactory;//TODO: archaius - ma byc zastapiony Spring cloud
+import com.netflix.config.DynamicPropertyFactory;//TODO: archaius - to be replaced by Spring cloud
 
 import javax.inject.Inject;
 
