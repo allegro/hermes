@@ -8,7 +8,9 @@ import pl.allegro.tech.hermes.consumers.HermesConsumersApp;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
@@ -46,9 +48,7 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         overrideProperty(CONSUMER_USE_TOPIC_MESSAGE_SIZE, true);
         overrideProperty(CONSUMER_SSL_KEYSTORE_SOURCE, "provided");
         overrideProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE, "provided");
-
-        args.add("-e");
-        args.add("integration");
+        setSpringProfiles("integration");
 
         this.hermesConsumers = HermesConsumersApp.runAndGetInstance(args.toArray(new String[0]));
     }
@@ -66,6 +66,11 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
 
     public void overrideProperty(Configs config, Object value) {
         args.add("--" + config.getName() + "=" + value);
+    }
+
+    public void setSpringProfiles(String... profiles) {
+        String profilesString = Arrays.stream(profiles).collect(Collectors.joining(",", "", ""));
+        args.add("--spring.profiles.active=" + profilesString);
     }
 
 }

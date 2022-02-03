@@ -113,8 +113,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             SharedServices.initialize(STARTERS, zookeeper);
             logger.info("Environment was prepared");
         } catch (Exception e) {
-            throw e;
-//            logger.error("Exception during environment preparation", e);
+            throw new RuntimeException("Exception during environment preparation", e);
         }
     }
 

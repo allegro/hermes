@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.di.config;
+package pl.allegro.tech.hermes.consumers.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -81,7 +83,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Configuration
+@PropertySource("classpath:/application.properties")
 public class CommonConfiguration {
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 
     @Bean
     public SubscriptionRepository subscriptionRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,

@@ -14,7 +14,7 @@ public class KafkaNamesMapperConfiguration {
 
     @Bean
     @Primary
-//    @Profile("integration")
+    @Profile("integration")
     public KafkaNamesMapper testKafkaNamesMapper(ConfigFactory configFactory) {
         return new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create();
     }

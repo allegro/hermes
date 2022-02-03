@@ -5,6 +5,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
@@ -18,6 +19,7 @@ public class ConfigFactoryConfiguration {
 
     @Bean
     @Primary
+    @Profile("integration")
     public ConfigFactory testConfigFactory(ApplicationArguments applicationArguments) {
         MutableConfigFactory configFactory = new MutableConfigFactory();
         List<String> values = Arrays.stream(Configs.values()).map(Configs::getName).collect(Collectors.toList());

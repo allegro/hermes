@@ -20,7 +20,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1Header
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
-import pl.allegro.tech.hermes.consumers.di.config.ConsumerConfiguration;
+import pl.allegro.tech.hermes.consumers.config.ConsumerConfiguration;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;

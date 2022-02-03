@@ -9,7 +9,7 @@ public class HooksHandlerConfiguration {
 
     @Bean
     @Primary
-//    @Profile("integration")
+    @Profile("integration")
     SpringHooksHandler testSpringHooksHandler() {
         SpringHooksHandler hooksHandler = new SpringHooksHandler();
         hooksHandler.disableGlobalShutdownHook();

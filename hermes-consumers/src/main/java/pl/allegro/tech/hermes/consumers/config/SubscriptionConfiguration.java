@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.di.config;
+package pl.allegro.tech.hermes.consumers.config;
 
 import com.google.common.base.Ticker;
 import org.apache.curator.framework.CuratorFramework;

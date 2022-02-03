@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.di.config;
+package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;

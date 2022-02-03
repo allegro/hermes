@@ -12,7 +12,7 @@ public class EndpointAddressResolverConfiguration {
 
     @Bean
     @Primary
-//    @Profile("integration") //TODO: maybe we could use profiles to allow multiple test-primary beans to exist
+    @Profile("integration")
     public EndpointAddressResolver testMultiUrlEndpointAddressResolver() {
         return new MultiUrlEndpointAddressResolver();
     }

@@ -15,7 +15,7 @@ import pl.allegro.tech.hermes.tracker.mongo.consumers.MongoLogRepository;
 public class LogRepositoryConfiguration {
 
     @Bean
-//    @Profile("integration")
+    @Profile("integration")
     LogRepository testLogRepository(ConfigFactory configFactory, MetricRegistry metricRegistry, PathsCompiler pathsCompiler) {
 
         return new MongoLogRepository(FongoFactory.hermesDB(),

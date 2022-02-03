@@ -6,7 +6,7 @@ import org.eclipse.jetty.client.HttpClient
 import pl.allegro.tech.hermes.common.config.Configs
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
-import pl.allegro.tech.hermes.consumers.di.config.ConsumerConfiguration
+import pl.allegro.tech.hermes.consumers.config.ConsumerConfiguration
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import pl.allegro.tech.hermes.test.helper.util.Ports

@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.di.config;
+package pl.allegro.tech.hermes.consumers.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
