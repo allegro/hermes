@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.hooks.SpringHooksHandler;

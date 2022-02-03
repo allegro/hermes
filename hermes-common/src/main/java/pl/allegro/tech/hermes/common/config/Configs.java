@@ -336,7 +336,7 @@ public enum Configs {
         List<Configs> queryResult = Arrays.stream(Configs.values())
                 .filter(configs -> configs.name.equals(name)).collect(Collectors.toList());
         if (queryResult.size() != 1) {
-            throw new RuntimeException("No config for given name");//TODO
+            throw new RuntimeException(String.format("No config for name: %s", name));//TODO: exact exception
         }
         return queryResult.stream().findFirst().get();
     }

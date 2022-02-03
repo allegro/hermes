@@ -6,12 +6,9 @@ import org.apache.curator.framework.CuratorFramework;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -60,6 +57,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentRe
 import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
@@ -296,7 +294,6 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-//    @ConditionalOnMissingBean//TODO: add condition
     public EndpointAddressResolver interpolatingEndpointAddressResolver(UriInterpolator interpolator) {
         return new InterpolatingEndpointAddressResolver(interpolator);
     }
@@ -349,7 +346,6 @@ public class ConsumerConfiguration {
         return new MaxRateProviderFactory(configFactory, maxRateRegistry, maxRateSupervisor, metrics);
     }
 
-    //TODO: use interface?
     @Bean
     public AvroToJsonMessageConverter avroToJsonMessageConverter() {
         return new AvroToJsonMessageConverter();
@@ -453,7 +449,7 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)//TODO - bindFactory, raczej singleton
+//    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)//TODO - bindFactory, most likely singleton
     public OAuthProvidersNotifyingCache oAuthProvidersNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                      ZookeeperPaths paths,
                                                                      ObjectMapper objectMapper) {

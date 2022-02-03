@@ -1,7 +1,4 @@
-package pl.allegro.tech.hermes.consumers.di.config;
-
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class MessageSenderProviders { //TODO: move to another package
+public class MessageSenderProviders {
     private final Map<String, List<ProtocolMessageSenderProvider>> entries = new HashMap<>();
 
     public MessageSenderProviders(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,

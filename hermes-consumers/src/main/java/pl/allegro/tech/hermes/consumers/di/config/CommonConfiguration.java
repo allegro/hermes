@@ -95,50 +95,31 @@ import java.util.stream.Collectors;
 
 @Configuration
 //TODO: add scopes to each bean?
-//TODO: ogarnąć wszystkie field i method injections
-//TODO: ogarnac metody dispose
+//TODO: @Inject
+//TODO: dispose methods
 public class CommonConfiguration {
 
     @Bean
-    public SubscriptionRepositoryFactory subscriptionRepositoryFactory(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
-                                                                       ZookeeperPaths paths,
-                                                                       ObjectMapper mapper,
-                                                                       TopicRepository topicRepository) {
-        return new SubscriptionRepositoryFactory(zookeeper, paths, mapper, topicRepository);
-    }
-
-    //TODO: make as 1 bean with Factory?
-    @Bean
-    public SubscriptionRepository subscriptionRepository(SubscriptionRepositoryFactory subscriptionRepositoryFactory) {
-        return subscriptionRepositoryFactory.provide();
-    }
-
-
-    //TODO: make as 1 bean with Factory?
-    @Bean
-    public OAuthProviderRepository oAuthProviderRepository(OAuthProviderRepositoryFactory oAuthProviderRepositoryFactory) {
-        return oAuthProviderRepositoryFactory.provide();
-    }
-
-    @Bean
-    public OAuthProviderRepositoryFactory oAuthProviderRepositoryFactory(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
-                                                                         ZookeeperPaths paths,
-                                                                         ObjectMapper mapper) {
-        return new OAuthProviderRepositoryFactory(zookeeper, paths, mapper);
-    }
-
-    //TODO: make as 1 bean with Factory?
-    @Bean
-    public TopicRepository topicRepository(TopicRepositoryFactory topicRepositoryFactory) {
-        return topicRepositoryFactory.provide();
-    }
-
-    @Bean
-    public TopicRepositoryFactory topicRepositoryFactory(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+    public SubscriptionRepository subscriptionRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
                                                          ZookeeperPaths paths,
                                                          ObjectMapper mapper,
-                                                         GroupRepository groupRepository) {
-        return new TopicRepositoryFactory(zookeeper, paths, mapper, groupRepository);
+                                                         TopicRepository topicRepository) {
+        return new SubscriptionRepositoryFactory(zookeeper, paths, mapper, topicRepository).provide();
+    }
+
+    @Bean
+    public OAuthProviderRepository oAuthProviderRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+                                                           ZookeeperPaths paths,
+                                                           ObjectMapper mapper) {
+        return new OAuthProviderRepositoryFactory(zookeeper, paths, mapper).provide();
+    }
+
+    @Bean
+    public TopicRepository topicRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+                                           ZookeeperPaths paths,
+                                           ObjectMapper mapper,
+                                           GroupRepository groupRepository) {
+        return new TopicRepositoryFactory(zookeeper, paths, mapper, groupRepository).provide();
     }
 
     @Bean
@@ -148,10 +129,8 @@ public class CommonConfiguration {
         return new GroupRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
-    //TODO: make as 1 bean with Factory?
-    //TODO: dispose method
     @Bean (destroyMethod = "close")
-    @Named(CuratorType.HERMES)//TODO - remove
+    @Named(CuratorType.HERMES)
     public CuratorFramework hermesCurator(ConfigFactory configFactory,
                                           CuratorClientFactory curatorClientFactory) {
         return new HermesCuratorClientFactory(configFactory, curatorClientFactory).provide();
@@ -162,7 +141,7 @@ public class CommonConfiguration {
         return new CuratorClientFactory(configFactory);
     }
 
-//    //TODO: wywalić?
+//    //TODO: remove?
 //    @Bean
 //    @ConditionalOnMissingBean(name = { "messageFilters", "messageFiltersSource"})
 //    public MessageFilterSource messageFilterSource() {
@@ -180,7 +159,6 @@ public class CommonConfiguration {
         return new ZookeeperInternalNotificationBus(objectMapper, modelNotifyingCache);
     }
 
-    //TODO: dispose method?
     @Bean
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                                ConfigFactory config) {
@@ -298,7 +276,7 @@ public class CommonConfiguration {
 
     //TODO - use property instead?
     @Bean
-    @Named("moduleName")//TODO - remove
+    @Named("moduleName")
     public String moduleName() {
         return "consumer";
     }
