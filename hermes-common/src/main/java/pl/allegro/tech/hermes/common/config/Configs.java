@@ -5,8 +5,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.lang.Math.abs;
 import static java.util.UUID.randomUUID;
