@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.util.StatusCodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -31,6 +33,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     public static final int FRONTEND_PORT = Ports.nextAvailable();
     public static final String FRONTEND_URL = "http://127.0.0.1:" + FRONTEND_PORT;
 
+    private static final Logger logger = LoggerFactory.getLogger(FrontendAuthenticationConfigurationTest.class);
     private static final String USERNAME = "someUser";
     private static final String PASSWORD = "somePassword123";
     private static final String MESSAGE = TestMessage.of("hello", "world").body();
@@ -88,6 +91,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         Response response = publisher.publish("someGroup.topicWithAuthorization", MESSAGE, headers);
 
         //then
+        logger.info("Expecting SUCCESSFUL status. Actual {}", response.getStatusInfo().getStatusCode());
         assertThat(response.getStatusInfo().getFamily()).isEqualTo(SUCCESSFUL);
     }
 

@@ -13,6 +13,7 @@ jobs:
       matrix:
         java: [ '8','11' ]
         tests: [ 'check', 'integrationTest', 'jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0' ]
+      fail-fast: false
     name: Java ${{ matrix.java }} ${{ matrix.tests }}
 
     steps:

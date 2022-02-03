@@ -126,6 +126,7 @@ public class PublishingTest extends IntegrationTest {
         wait.untilSubscriptionIsActivated(topic, subscription);
         operations.suspendSubscription(topic, subscription);
         wait.untilSubscriptionIsSuspended(topic, subscription);
+        remoteService.reset();
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), TestMessage.of("hello", "world").body());

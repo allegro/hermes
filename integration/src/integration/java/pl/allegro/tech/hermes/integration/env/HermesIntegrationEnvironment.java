@@ -107,7 +107,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             frontendStarter.start();
 
             for (ITestNGMethod method : context.getAllTestMethods()) {
-                method.setRetryAnalyzer(new Retry());
+                method.setRetryAnalyzerClass(Retry.class);
             }
 
             SharedServices.initialize(STARTERS, zookeeper);
