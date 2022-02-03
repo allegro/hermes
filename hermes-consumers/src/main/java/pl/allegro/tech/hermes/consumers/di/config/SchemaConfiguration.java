@@ -30,7 +30,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTT
 @Configuration
 //TODO: add scopes to each bean?
 //TODO: @Inject
-//TODO: dispose methods
 public class SchemaConfiguration {
 
     @Bean
@@ -59,7 +58,7 @@ public class SchemaConfiguration {
         return new SchemaRepositoryInstanceResolverFactory(configFactory, client).provide();
     }
 
-    @Bean(name = "schemaRepositoryClient")
+    @Bean
     public Client schemaRepositoryClient(ObjectMapper mapper, ConfigFactory configFactory) {
         ClientConfig config = new ClientConfig()
                 .property(ClientProperties.READ_TIMEOUT, configFactory.getIntProperty(SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS))

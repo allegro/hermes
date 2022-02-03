@@ -96,7 +96,6 @@ import java.util.stream.Collectors;
 @Configuration
 //TODO: add scopes to each bean?
 //TODO: @Inject
-//TODO: dispose methods
 public class CommonConfiguration {
 
     @Bean
@@ -159,7 +158,7 @@ public class CommonConfiguration {
         return new ZookeeperInternalNotificationBus(objectMapper, modelNotifyingCache);
     }
 
-    @Bean
+    @Bean(destroyMethod = "stop")
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                                ConfigFactory config) {
         return new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();
