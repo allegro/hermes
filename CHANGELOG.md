@@ -1,3 +1,25 @@
+## 1.10.2 (03.02.2022)
+
+## Enhancements
+
+#### ([1443](https://github.com/allegro/hermes/pull/1443)) Update hermes-mock and retransmission documentation
+#### ([1448](https://github.com/allegro/hermes/pull/1448)) Packages signing enabled only when env var GPG_KEY_ID is set
+#### ([1449](https://github.com/allegro/hermes/pull/1449)) Added possibility to define a clickable link to topic and subscription owner
+#### ([1451](https://github.com/allegro/hermes/pull/1451)) Fix handling maps in matchers
+
+Thanks to @wpanas for this contribution!
+
+#### ([1450](https://github.com/allegro/hermes/pull/1450)) Create codeql-analysis.yml
+#### ([1453](https://github.com/allegro/hermes/pull/1453)) Update and rename codeql-analysis.yml to .github/workflows/codeql-ana…
+
+Thanks to @bgalek for these contributions!
+
+### Fixes
+
+#### ([1445](https://github.com/allegro/hermes/pull/1445)) Fixed Message preview modal
+#### ([1447](https://github.com/allegro/hermes/pull/1447)) Fixed issue with inconsistent KafkaRawMessageReader reads resulting in both 200s and 404s.
+#### ([1452](https://github.com/allegro/hermes/pull/1452)) Fix some CI failures
+
 ## 1.10.1 (04.01.2022)
 
 ## Enhancements
