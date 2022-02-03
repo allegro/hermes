@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
@@ -22,6 +24,11 @@ import java.util.List;
 
 @Configuration
 public class HermesConsumersConfiguration {
+
+    @Bean
+    public ApplicationContext applicationContext() {
+        return new GenericApplicationContext();
+    }
 
     @Bean
     public HermesConsumers hermesConsumers(SpringHooksHandler springHooksHandler,
