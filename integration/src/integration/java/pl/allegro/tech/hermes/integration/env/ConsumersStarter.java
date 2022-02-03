@@ -47,7 +47,7 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         overrideProperty(CONSUMER_SSL_KEYSTORE_SOURCE, "provided");
         overrideProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE, "provided");
 
-        args.add("-e");//TODO - do we want to use profiles?
+        args.add("-e");
         args.add("integration");
 
         this.hermesConsumers = HermesConsumersApp.runAndGetInstance(args.toArray(new String[0]));

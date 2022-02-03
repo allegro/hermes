@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers;
 
+import org.apache.commons.beanutils.ConvertUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,22 +30,11 @@ public class ConfigFactoryConfiguration {
         return configFactory;
     }
 
-    private Object getValue(List<String> list, String name) { //TODO: refactor
+    private Object getValue(List<String> list, String name) {
         Class<?> clazz = Configs.getForName(name).getDefaultValue().getClass();
         if (list.size() > 1) {
             return list.stream().collect(Collectors.joining(",", "", ""));
         }
-        if (Boolean.class.equals(clazz)) {
-            return Boolean.valueOf(list.get(0));
-        } else if (Integer.class.equals(clazz)) {
-            return Integer.valueOf(list.get(0));
-        } else if (Double.class.equals(clazz)) {
-            return Double.valueOf(list.get(0));
-        } else if (Long.class.equals(clazz)) {
-            return Long.valueOf(list.get(0));
-        } else if (Float.class.equals(clazz)) {
-            return Float.valueOf(list.get(0));
-        }
-        return list.get(0);
+        return ConvertUtils.convert(list.get(0), clazz);
     }
 }

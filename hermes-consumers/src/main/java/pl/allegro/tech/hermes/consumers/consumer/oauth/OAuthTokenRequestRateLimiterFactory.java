@@ -16,7 +16,7 @@ public class OAuthTokenRequestRateLimiterFactory {
 
     private final double rateReductionFactor;
 
-    @Inject //TODO: remove all @Injects
+    @Inject
     public OAuthTokenRequestRateLimiterFactory(OAuthProviderRepository oAuthProviderRepository,
                                                ConfigFactory configFactory) {
         this.oAuthProviderRepository = oAuthProviderRepository;

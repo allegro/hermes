@@ -2,21 +2,13 @@ package pl.allegro.tech.hermes.consumers.di.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import org.apache.avro.Schema;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.curator.framework.CuratorFramework;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.core.env.Environment;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -57,11 +49,6 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
-import pl.allegro.tech.hermes.common.schema.AvroCompiledSchemaRepositoryFactory;
-import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
-import pl.allegro.tech.hermes.common.schema.SchemaRepositoryFactory;
-import pl.allegro.tech.hermes.common.schema.SchemaRepositoryInstanceResolverFactory;
-import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
@@ -94,8 +81,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Configuration
-//TODO: add scopes to each bean?
-//TODO: @Inject
 public class CommonConfiguration {
 
     @Bean
@@ -139,13 +124,6 @@ public class CommonConfiguration {
     public CuratorClientFactory curatorClientFactory(ConfigFactory configFactory) {
         return new CuratorClientFactory(configFactory);
     }
-
-//    //TODO: remove?
-//    @Bean
-//    @ConditionalOnMissingBean(name = { "messageFilters", "messageFiltersSource"})
-//    public MessageFilterSource messageFilterSource() {
-//        return new MessageFilters(Collections.emptyList(), Collections.emptyList());
-//    }
 
     @Bean
     public FilterChainFactory filterChainFactory(MessageFilterSource filters) {
@@ -268,16 +246,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-//    @ConditionalOnMissingBean
     public KafkaNamesMapper prodKafkaNamesMapper(ConfigFactory configFactory) {
         return new KafkaNamesMapperFactory(configFactory).provide();
-    }
-
-    //TODO - use property instead?
-    @Bean
-    @Named("moduleName")
-    public String moduleName() {
-        return "consumer";
     }
 
     @Bean
@@ -318,7 +288,7 @@ public class CommonConfiguration {
     public MetricRegistry metricRegistry(ConfigFactory configFactory,
                                          CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
-                                         @Named("moduleName") String moduleName) {
+                                         @Value("${moduleName}") String moduleName) {
         return new MetricRegistryFactory(configFactory, counterStorage, instanceIdResolver, moduleName)
                 .provide();
     }

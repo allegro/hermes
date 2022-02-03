@@ -65,7 +65,7 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnClientErrorWhenRequestingRetransmissionWithEmptyData() {//TODO: fix?
+    public void shouldReturnClientErrorWhenRequestingRetransmissionWithEmptyData() {
         // when
         OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
                 "",

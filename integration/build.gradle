@@ -69,6 +69,7 @@ dependencies {
 
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    testCompile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
     testCompile group: 'org.springframework', name: 'spring-web', version: versions.spring_web

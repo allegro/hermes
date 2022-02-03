@@ -449,7 +449,6 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-//    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)//TODO - bindFactory, most likely singleton
     public OAuthProvidersNotifyingCache oAuthProvidersNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                      ZookeeperPaths paths,
                                                                      ObjectMapper objectMapper) {
@@ -480,7 +479,6 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-//    @ConditionalOnMissingBean
     public SpringHooksHandler prodSpringHooksHandler() {
         return new SpringHooksHandler();
     }

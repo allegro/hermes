@@ -28,8 +28,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTT
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS;
 
 @Configuration
-//TODO: add scopes to each bean?
-//TODO: @Inject
 public class SchemaConfiguration {
 
     @Bean
