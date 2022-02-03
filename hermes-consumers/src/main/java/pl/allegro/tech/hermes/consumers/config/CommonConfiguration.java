@@ -87,11 +87,6 @@ import java.util.stream.Collectors;
 public class CommonConfiguration {
 
     @Bean
-    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-        return new PropertySourcesPlaceholderConfigurer();
-    }
-
-    @Bean
     public SubscriptionRepository subscriptionRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
                                                          ZookeeperPaths paths,
                                                          ObjectMapper mapper,
