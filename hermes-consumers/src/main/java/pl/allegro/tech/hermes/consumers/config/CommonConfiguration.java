@@ -274,8 +274,7 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public WorkloadConstraintsRepository workloadConstraintsRepository(@Named(CuratorType.HERMES) CuratorFramework
-                                                                               curator,
+    public WorkloadConstraintsRepository workloadConstraintsRepository(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                        ObjectMapper mapper,
                                                                        ZookeeperPaths paths) {
         return new WorkloadConstraintsRepositoryFactory(curator, mapper, paths).provide();

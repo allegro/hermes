@@ -333,12 +333,10 @@ public enum Configs {
     }
 
     public static Configs getForName(String name) {
-        List<Configs> queryResult = Arrays.stream(Configs.values())
-                .filter(configs -> configs.name.equals(name)).collect(Collectors.toList());
-        if (queryResult.size() != 1) {
-            throw new GetConfigPropertyException(name);
-        }
-        return queryResult.stream().findFirst().get();
+        return Arrays.stream(Configs.values())
+                .filter(configs -> configs.name.equals(name))
+                .reduce((a, b) -> { throw new DuplicateConfigPropertyException(name); })
+                .orElseThrow(() -> new MissingConfigPropertyException(name));
     }
 
     public String getName() {
