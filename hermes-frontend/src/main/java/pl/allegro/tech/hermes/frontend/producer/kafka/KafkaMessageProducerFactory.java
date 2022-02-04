@@ -51,7 +51,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE;
 
-public class KafkaMessageProducerFactory implements Factory<Producers> {
+public class KafkaMessageProducerFactory implements Factory<Producers> { //TODO
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 

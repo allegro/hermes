@@ -6,7 +6,7 @@ import org.glassfish.hk2.api.Factory;
 import javax.inject.Inject;
 import java.util.List;
 
-public class TopicMessageValidatorListFactory implements Factory<List<TopicMessageValidator>> {
+public class TopicMessageValidatorListFactory implements Factory<List<TopicMessageValidator>> { //TODO
 
     private final Iterable<TopicMessageValidator> topicMessageValidators;
 

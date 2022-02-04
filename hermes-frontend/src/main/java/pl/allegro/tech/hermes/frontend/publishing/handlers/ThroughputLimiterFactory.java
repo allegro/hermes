@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadFactory;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 
-public class ThroughputLimiterFactory implements Factory<ThroughputLimiter> {
+public class ThroughputLimiterFactory implements Factory<ThroughputLimiter> { //TODO
     private ConfigFactory configs;
     private HermesMetrics hermesMetrics;
 

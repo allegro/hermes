@@ -61,17 +61,17 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageEndProcessor.class);
         bindSingleton(MessageValidators.class);
 
-        bind(hooksHandler).to(HooksHandler.class);
+        bind(hooksHandler).to(HooksHandler.class);//TODO
         bindSingleton(TopicMetadataLoadingRunner.class);
         bindSingleton(TopicMetadataLoadingJob.class);
         bindSingleton(TopicMetadataLoadingStartupHook.class);
         bindSingleton(TopicSchemaLoadingStartupHook.class);
-        bindSingleton(AuthenticationConfigurationProvider.class);
-        bindSingleton(SslContextFactoryProvider.class);
+        bindSingleton(AuthenticationConfigurationProvider.class);//TODO
+        bindSingleton(SslContextFactoryProvider.class);//TODO
 
         bind("producer").named("moduleName").to(String.class);
 
-        bindSingleton(HealthCheckService.class);
+        bindSingleton(HealthCheckService.class);//TODO
         bindSingleton(ReadinessChecker.class);
         bind(DefaultHeadersPropagator.class).to(HeadersPropagator.class).in(Singleton.class);
 
