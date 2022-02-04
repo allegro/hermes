@@ -83,7 +83,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Configuration
-@PropertySource("classpath:/application.properties")
 public class CommonConfiguration {
 
     @Bean
@@ -290,9 +289,15 @@ public class CommonConfiguration {
     public MetricRegistry metricRegistry(ConfigFactory configFactory,
                                          CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
-                                         @Value("${moduleName}") String moduleName) {
+                                         @Named("moduleName") String moduleName) {
         return new MetricRegistryFactory(configFactory, counterStorage, instanceIdResolver, moduleName)
                 .provide();
+    }
+
+    @Bean
+    @Named("moduleName")
+    public String moduleName() {
+        return "consumer";
     }
 
     @Bean
