@@ -8,8 +8,6 @@ import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthClient;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.hooks.SpringHooksHandler;
@@ -17,10 +15,6 @@ import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
-import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
-import pl.allegro.tech.hermes.tracker.consumers.Trackers;
-
-import java.util.List;
 
 @Configuration
 public class HermesConsumersConfiguration {
@@ -33,10 +27,6 @@ public class HermesConsumersConfiguration {
     @Bean
     public HermesConsumers hermesConsumers(SpringHooksHandler springHooksHandler,
                                            ConsumerHttpServer consumerHttpServer,
-                                           Trackers trackers,
-                                           List<LogRepository> logRepositories,
-                                           MessageSenderProviders messageSenderProviders,
-                                           MessageSenderFactory messageSenderFactor,
                                            ConsumerNodesRegistry consumerNodesRegistry,
                                            SupervisorController supervisorController,
                                            MaxRateSupervisor maxRateSupervisor,
@@ -45,10 +35,9 @@ public class HermesConsumersConfiguration {
                                            HttpClientsWorkloadReporter httpClientsWorkloadReporter,
                                            ConsumersRuntimeMonitor consumersRuntimeMonitor,
                                            ConfigurableApplicationContext applicationContext) {
-        return new HermesConsumers(springHooksHandler, consumerHttpServer, trackers, logRepositories,
-                messageSenderProviders, messageSenderFactor, consumerNodesRegistry, supervisorController,
-                maxRateSupervisor, assignmentCache, oAuthHttpClient, httpClientsWorkloadReporter, consumersRuntimeMonitor,
-                applicationContext);
+        return new HermesConsumers(springHooksHandler, consumerHttpServer, consumerNodesRegistry, supervisorController,
+                maxRateSupervisor, assignmentCache, oAuthHttpClient, httpClientsWorkloadReporter,
+                consumersRuntimeMonitor, applicationContext);
     }
 
 }

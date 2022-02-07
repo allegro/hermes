@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
 import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderProviders;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
@@ -55,21 +54,16 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public MessageSenderFactory messageSenderFactory() {
-        return new MessageSenderFactory();
+    public MessageSenderFactory messageSenderFactory(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,
+                                                     ProtocolMessageSenderProvider defaultJmsMessageSenderProvider) {
+        MessageSenderFactory factory = new MessageSenderFactory();
+        factory.addSupportedProtocol("http", defaultHttpMessageSenderProvider);
+        factory.addSupportedProtocol("https", defaultHttpMessageSenderProvider);
+        factory.addSupportedProtocol("jms", defaultJmsMessageSenderProvider);
+        return factory;
     }
 
-    @Bean
-    public MessageSenderProviders messageSenderProviders(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,
-                                                         ProtocolMessageSenderProvider defaultHttpsMessageSenderProvider,
-                                                         ProtocolMessageSenderProvider defaultJmsMessageSenderProvider) {
-        return new MessageSenderProviders(
-                defaultHttpMessageSenderProvider,
-                defaultHttpsMessageSenderProvider,
-                defaultJmsMessageSenderProvider);
-    }
-
-    @Bean(name = {"defaultHttpMessageSenderProvider", "defaultHttpsMessageSenderProvider"})
+    @Bean(name = "defaultHttpMessageSenderProvider")
     public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(@Named("http-1-client") HttpClient
                                                                                 httpClient,
                                                                         Http2ClientHolder http2ClientHolder,

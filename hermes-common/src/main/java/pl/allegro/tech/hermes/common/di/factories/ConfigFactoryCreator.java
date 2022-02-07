@@ -8,18 +8,11 @@ import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.sources.URLConfigurationSource;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.EnvironmentConfiguration;
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 
 import static com.netflix.config.ConfigurationManager.APPLICATION_PROPERTIES;
 import static com.netflix.config.ConfigurationManager.DISABLE_DEFAULT_ENV_CONFIG;
@@ -33,16 +26,6 @@ public class ConfigFactoryCreator implements Factory<ConfigFactory> {
     private static final Logger logger = LoggerFactory.getLogger(ConfigFactoryCreator.class);
 
     private static final String DISABLE_CONFIG_POLLING_SCHEDULER = "archaius.fixedDelayPollingScheduler.disabled";
-
-    private Optional<AbstractConfiguration> abstractConfiguration;
-
-    public ConfigFactoryCreator(AbstractConfiguration abstractConfiguration) {
-        this.abstractConfiguration = Optional.of(abstractConfiguration);
-    }
-
-    public ConfigFactoryCreator() {
-        this.abstractConfiguration = Optional.empty();
-    }
 
     @Override
     public ConfigFactory provide() {
@@ -74,7 +57,6 @@ public class ConfigFactoryCreator implements Factory<ConfigFactory> {
 
     private AbstractConfiguration createConfigInstance() {
         ConcurrentCompositeConfiguration config = new ConcurrentCompositeConfiguration();
-        abstractConfiguration.ifPresent(config::addConfiguration);
         try {
             DynamicConfiguration urlConfig = new DynamicConfiguration(new URLConfigurationSource(), createDisabledPollingScheduler());
             config.addConfiguration(urlConfig, URL_CONFIG_NAME);

@@ -1,14 +1,13 @@
 configurations {
     sbeClasspath
 }
-//    TODO: use implementation instead of compile
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
     compile project(':hermes-metrics')
     compile project(':hermes-schema')
 
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.4.2'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
         compile group: 'org.eclipse.jetty', name: 'jetty-client', version: versions.jetty
         compile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: versions.jetty

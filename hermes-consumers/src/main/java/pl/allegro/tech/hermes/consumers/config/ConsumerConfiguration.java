@@ -42,10 +42,11 @@ import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -216,7 +217,7 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public Trackers trackers() {
-        return new Trackers(new ArrayList<>());
+    public Trackers trackers(List<LogRepository> repositories) {
+        return new Trackers(repositories);
     }
 }

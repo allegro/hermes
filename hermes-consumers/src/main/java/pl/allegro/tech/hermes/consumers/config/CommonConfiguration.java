@@ -2,19 +2,12 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.curator.framework.CuratorFramework;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
@@ -53,8 +46,6 @@ import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterSt
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
-import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
-import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
 import pl.allegro.tech.hermes.domain.filtering.SubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.filtering.avro.AvroPathSubscriptionMessageFilterCompiler;
@@ -78,9 +69,8 @@ import javax.inject.Named;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 
 @Configuration
 public class CommonConfiguration {
@@ -115,7 +105,7 @@ public class CommonConfiguration {
         return new GroupRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
-    @Bean (destroyMethod = "close")
+    @Bean(destroyMethod = "close")
     @Named(CuratorType.HERMES)
     public CuratorFramework hermesCurator(ConfigFactory configFactory,
                                           CuratorClientFactory curatorClientFactory) {
@@ -125,11 +115,6 @@ public class CommonConfiguration {
     @Bean
     public CuratorClientFactory curatorClientFactory(ConfigFactory configFactory) {
         return new CuratorClientFactory(configFactory);
-    }
-
-    @Bean
-    public FilterChainFactory filterChainFactory(MessageFilterSource filters) {
-        return new FilterChainFactory(filters);
     }
 
     @Bean
@@ -171,36 +156,29 @@ public class CommonConfiguration {
 
 
     @Bean
-    public MessageContentWrapper messageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
-                                                       AvroMessageContentWrapper avroMessageContentWrapper,
-                                                       AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
-                                                       AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
-                                                       AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
-                                                       AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper,
-                                                       AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
-        return new MessageContentWrapper(jsonMessageContentWrapper, avroMessageContentWrapper, schemaIdAwareContentWrapper,
-                headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper, anySchemaVersionContentWrapper,
-                schemaVersionTruncationContentWrapper);
-    }
+    public MessageContentWrapper messageContentWrapper(ConfigFactory config,
+                                                       ObjectMapper mapper,
+                                                       Clock clock,
+                                                       SchemaRepository schemaRepository,
+                                                       DeserializationMetrics deserializationMetrics,
+                                                       ConfigFactory configFactory,
+                                                       SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter) {
+        AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(clock);
 
-    @Bean
-    public JsonMessageContentWrapper jsonMessageContentWrapper(ConfigFactory config,
-                                                               ObjectMapper mapper) {
-        return new JsonMessageContentWrapper(config, mapper);
-    }
-
-    @Bean
-    public AvroMessageContentWrapper avroMessageContentWrapper(Clock clock) {
-        return new AvroMessageContentWrapper(clock);
-    }
-
-    @Bean
-    public AvroMessageSchemaVersionTruncationContentWrapper avroMessageSchemaVersionTruncationContentWrapper(SchemaRepository schemaRepository,
-                                                                                                             AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                                             DeserializationMetrics deserializationMetrics,
-                                                                                                             ConfigFactory configFactory) {
-        return new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics, configFactory);
+        return new MessageContentWrapper(
+                new JsonMessageContentWrapper(config, mapper),
+                avroMessageContentWrapper,
+                new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroMessageContentWrapper,
+                        deserializationMetrics),
+                new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroMessageContentWrapper,
+                        deserializationMetrics),
+                new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper,
+                        deserializationMetrics, configFactory),
+                new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, schemaOnlineChecksRateLimiter,
+                        avroMessageContentWrapper, deserializationMetrics),
+                new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper,
+                        deserializationMetrics, configFactory)
+        );
     }
 
     @Bean
@@ -209,42 +187,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper(SchemaRepository schemaRepository,
-                                                                                    SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter,
-                                                                                    AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                    DeserializationMetrics deserializationMetrics) {
-        return new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, schemaOnlineChecksRateLimiter,
-                avroMessageContentWrapper, deserializationMetrics);
-    }
-
-    @Bean
     public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(ConfigFactory configFactory) {
         return new SchemaOnlineChecksWaitingRateLimiter(configFactory);
-    }
-
-    @Bean
-    public AvroMessageHeaderSchemaIdContentWrapper avroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
-                                                                                           AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                           DeserializationMetrics deserializationMetrics,
-                                                                                           ConfigFactory configFactory) {
-        return new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics, configFactory);
-    }
-
-    @Bean
-    public AvroMessageHeaderSchemaVersionContentWrapper avroMessageHeaderSchemaVersionContentWrapper(SchemaRepository schemaRepository,
-                                                                                                     AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                                     DeserializationMetrics deserializationMetrics) {
-        return new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics);
-    }
-
-    @Bean
-    public AvroMessageSchemaIdAwareContentWrapper avroMessageSchemaIdAwareContentWrapper(SchemaRepository schemaRepository,
-                                                                                         AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                         DeserializationMetrics deserializationMetrics) {
-        return new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics);
     }
 
     @Bean
@@ -253,13 +197,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ConfigFactory prodConfigFactory(ApplicationArguments applicationArguments) {
-        List<String> values = Arrays.stream(Configs.values()).map(Configs::getName).collect(Collectors.toList());
-        Map<String, Object> map = applicationArguments.getOptionNames().stream()
-                .filter(values::contains)
-                .collect(Collectors.toMap(Function.identity(), applicationArguments::getOptionValues));
-        AbstractConfiguration abstractConfiguration = new MapConfiguration(map);
-        return new ConfigFactoryCreator(abstractConfiguration).provide();
+    public ConfigFactory prodConfigFactory() {
+        return new ConfigFactoryCreator().provide();
     }
 
     @Bean
@@ -333,24 +272,14 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MessageFilters messageFilters(List<MessageFilter> globalFilters,
-                                         List<SubscriptionMessageFilterCompiler> subscriptionMessageFilterCompilers) {
-        return new MessageFilters(globalFilters, subscriptionMessageFilterCompilers);
-    }
-
-    @Bean
-    public SubscriptionMessageFilterCompiler jsonPathSubscriptionMessageFilterCompiler() {
-        return new JsonPathSubscriptionMessageFilterCompiler();
-    }
-
-    @Bean
-    public SubscriptionMessageFilterCompiler avroPathSubscriptionMessageFilterCompiler() {
-        return new AvroPathSubscriptionMessageFilterCompiler();
-    }
-
-    @Bean
-    public SubscriptionMessageFilterCompiler headerSubscriptionMessageFilterCompiler() {
-        return new HeaderSubscriptionMessageFilterCompiler();
+    FilterChainFactory filterChainFactory() {
+        List<SubscriptionMessageFilterCompiler> subscriptionFilterCompilers = Arrays.asList(
+                new AvroPathSubscriptionMessageFilterCompiler(),
+                new JsonPathSubscriptionMessageFilterCompiler(),
+                new HeaderSubscriptionMessageFilterCompiler()
+        );
+        MessageFilters messageFilters = new MessageFilters(emptyList(), subscriptionFilterCompilers);
+        return new FilterChainFactory(messageFilters);
     }
 
 }
