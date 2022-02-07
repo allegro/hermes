@@ -55,7 +55,7 @@ public class ConfigFactoryCreator implements Factory<ConfigFactory> {
         ConfigurationManager.install(configuration);
     }
 
-    private AbstractConfiguration createConfigInstance() {
+    private static AbstractConfiguration createConfigInstance() {
         ConcurrentCompositeConfiguration config = new ConcurrentCompositeConfiguration();
         try {
             DynamicConfiguration urlConfig = new DynamicConfiguration(new URLConfigurationSource(), createDisabledPollingScheduler());
