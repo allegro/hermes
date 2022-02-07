@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.integration.env;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.apache.curator.framework.CuratorFramework;
 import org.assertj.core.api.Assertions;
-import pl.allegro.tech.hermes.consumers.HermesConsumers;
+import org.springframework.context.ConfigurableApplicationContext;
 import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
@@ -48,7 +48,7 @@ public final class SharedServices {
         return zookeeper;
     }
 
-    public HermesConsumers consumers() {
+    public ConfigurableApplicationContext consumers() {
         return ((ConsumersStarter) starters.get(ConsumersStarter.class)).instance();
     }
 

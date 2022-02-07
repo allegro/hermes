@@ -66,7 +66,7 @@ import static pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalC
 public class SupervisorConfiguration {
     private static final Logger logger = getLogger(SupervisorConfiguration.class);
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
     public SupervisorController supervisorController(InternalNotificationsBus notificationsBus,
                                                      ConsumerNodesRegistry consumerNodesRegistry,
                                                      ConsumerAssignmentRegistry assignmentRegistry,
@@ -162,7 +162,7 @@ public class SupervisorConfiguration {
                 subscriptionRepository, metrics, monitor, clock);
     }
 
-    @Bean(destroyMethod = "shutdown")
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
     public ConsumersRuntimeMonitor consumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
                                                            SupervisorController workloadSupervisor,
                                                            HermesMetrics hermesMetrics,
@@ -244,7 +244,7 @@ public class SupervisorConfiguration {
         }
     }
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerAssignmentCache consumerAssignmentCache(CuratorFramework curator,
                                                            ConfigFactory configFactory,
                                                            ZookeeperPaths zookeeperPaths,

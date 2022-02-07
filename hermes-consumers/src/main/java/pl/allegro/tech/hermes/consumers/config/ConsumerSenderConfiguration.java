@@ -122,7 +122,7 @@ public class ConsumerSenderConfiguration {
         return new HttpClientsFactory(configFactory, executorFactory, sslContextFactoryProvider);
     }
 
-    @Bean
+    @Bean(initMethod = "start")
     public HttpClientsWorkloadReporter httpClientsWorkloadReporter(HermesMetrics metrics,
                                                                    @Named("http-1-client") HttpClient httpClient,
                                                                    Http2ClientHolder http2ClientHolder,

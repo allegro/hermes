@@ -12,7 +12,7 @@ import java.io.IOException;
 @Configuration
 public class HealthConfiguration {
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerHttpServer consumerHttpServer(ConfigFactory configFactory,
                                                  ConsumerMonitor monitor,
                                                  ObjectMapper mapper) throws IOException {

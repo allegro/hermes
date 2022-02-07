@@ -2,9 +2,11 @@ package pl.allegro.tech.hermes.integration.env;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.context.ConfigurableApplicationContext;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
-import pl.allegro.tech.hermes.consumers.HermesConsumersApp;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
 import java.util.ArrayList;
@@ -24,14 +26,16 @@ import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_SOURCE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_SOURCE;
 
-public class ConsumersStarter implements Starter<HermesConsumers> {
+public class ConsumersStarter implements Starter<ConfigurableApplicationContext> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumersStarter.class);
     private final List<String> args;
-    private HermesConsumers hermesConsumers;
+    private final SpringApplication application = new SpringApplication(HermesConsumers.class);
+    private ConfigurableApplicationContext applicationContext;
 
     public ConsumersStarter() {
         args = new ArrayList<>();
+        application.setWebApplicationType(WebApplicationType.NONE);
     }
 
     @Override
@@ -50,18 +54,18 @@ public class ConsumersStarter implements Starter<HermesConsumers> {
         overrideProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE, "provided");
         setSpringProfiles("integration");
 
-        this.hermesConsumers = HermesConsumersApp.runAndGetInstance(args.toArray(new String[0]));
+        applicationContext = application.run(args.toArray(new String[0]));
     }
 
     @Override
-    public HermesConsumers instance() {
-        return this.hermesConsumers;
+    public ConfigurableApplicationContext instance() {
+        return this.applicationContext;
     }
 
     @Override
     public void stop() throws Exception {
         LOGGER.info("Stopping Hermes Consumers");
-        instance().stop();
+        instance().close();
     }
 
     public void overrideProperty(Configs config, Object value) {

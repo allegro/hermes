@@ -44,7 +44,7 @@ public class OAuthConfiguration {
         return new OAuthSubscriptionAccessTokens(tokenLoader, configFactory);
     }
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public OAuthClient oAuthHttpClient(@Named("oauth-http-client") HttpClient httpClient,
                                        ObjectMapper objectMapper) {
         return new OAuthHttpClient(httpClient, objectMapper);

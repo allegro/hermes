@@ -19,7 +19,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_DEA
 @Configuration
 public class RegistryConfiguration {
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerNodesRegistry consumerNodesRegistry(CuratorFramework curatorFramework,
                                                        ConfigFactory configFactory,
                                                        ZookeeperPaths zookeeperPaths,

@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -53,6 +55,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Configuration
 public class ConsumerConfiguration {
     private static final Logger logger = getLogger(ConsumerConfiguration.class);
+
+    @Bean
+    public ApplicationContext applicationContext() {
+        return new GenericApplicationContext();
+    }
 
     @Bean
     public MaxRatePathSerializer maxRatePathSerializer() {
@@ -113,7 +120,7 @@ public class ConsumerConfiguration {
         }
     }
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public MaxRateSupervisor maxRateSupervisor(ConfigFactory configFactory,
                                                ClusterAssignmentCache clusterAssignmentCache,
                                                MaxRateRegistry maxRateRegistry,
