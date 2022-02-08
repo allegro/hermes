@@ -2,18 +2,13 @@ package pl.allegro.tech.hermes.frontend.di.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
@@ -65,7 +60,9 @@ import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
@@ -75,11 +72,7 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import javax.inject.Named;
 import java.time.Clock;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Configuration
 public class CommonConfiguration {
@@ -114,7 +107,7 @@ public class CommonConfiguration {
         return new GroupRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
-    @Bean (destroyMethod = "close")
+    @Bean(destroyMethod = "close")
     @Named(CuratorType.HERMES)
     public CuratorFramework hermesCurator(ConfigFactory configFactory,
                                           CuratorClientFactory curatorClientFactory) {
@@ -137,7 +130,7 @@ public class CommonConfiguration {
         return new ZookeeperInternalNotificationBus(objectMapper, modelNotifyingCache);
     }
 
-    @Bean(destroyMethod = "stop")
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                                ConfigFactory config) {
         return new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();
@@ -252,13 +245,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ConfigFactory prodConfigFactory(ApplicationArguments applicationArguments) {
-        List<String> values = Arrays.stream(Configs.values()).map(Configs::getName).collect(Collectors.toList());
-        Map<String, Object> map = applicationArguments.getOptionNames().stream()
-                .filter(values::contains)
-                .collect(Collectors.toMap(Function.identity(), applicationArguments::getOptionValues));
-        AbstractConfiguration abstractConfiguration = new MapConfiguration(map);
-        return new ConfigFactoryCreator(abstractConfiguration).provide();
+    public ConfigFactory prodConfigFactory() {
+        return new ConfigFactoryCreator().provide();
     }
 
     @Bean
@@ -344,6 +332,13 @@ public class CommonConfiguration {
     @Bean
     public SubscriptionMessageFilterCompiler headerSubscriptionMessageFilterCompiler() {
         return new HeaderSubscriptionMessageFilterCompiler();
+    }
+
+    @Bean
+    public MessagePreviewRepository zookeeperMessagePreviewRepository(CuratorFramework zookeeper,
+                                                                      ObjectMapper mapper,
+                                                                      ZookeeperPaths paths) {
+        return new ZookeeperMessagePreviewRepository(zookeeper, mapper, paths);
     }
 
 }
