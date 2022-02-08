@@ -74,6 +74,7 @@ dependencies {
     testCompile group: 'org.springframework', name: 'spring-web', version: versions.spring_web
     testCompile group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
 
+    testCompile group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
     testCompile group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
 
     testCompile files('./lib/schema-repo-server-0.1.3-jersey2.jar');
