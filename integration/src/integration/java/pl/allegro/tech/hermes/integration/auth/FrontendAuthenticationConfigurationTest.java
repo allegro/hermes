@@ -66,7 +66,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
                 .withAuthenticationConfiguration(authConfig)
                 .build();
 
-        hermesFrontend.start();
+        hermesFrontend.start();//TODO
 
         hermesServer = hermesFrontend.getService(HermesServer.class);
         publisher = new HermesPublisher(FRONTEND_URL);

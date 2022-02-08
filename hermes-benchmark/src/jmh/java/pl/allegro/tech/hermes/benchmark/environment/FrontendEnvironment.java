@@ -70,7 +70,7 @@ public class FrontendEnvironment {
                         new InMemorySchemaClient(fromQualifiedName("bench.topic"), loadMessageResource("schema"), 1, 1),
                         RawSchemaClient.class)
                 .build();
-        hermesFrontend.start();
+        hermesFrontend.start(); //TODO
 
         GroupRepository groupRepository = hermesFrontend.getService(GroupRepository.class);
         TopicRepository topicRepository = hermesFrontend.getService(TopicRepository.class);

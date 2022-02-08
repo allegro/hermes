@@ -53,7 +53,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
                 .withBinding(configFactory, ConfigFactory.class)
                 .build();
 
-        hermesFrontend.start();
+        hermesFrontend.start();//TODO
         publisher = new HermesPublisher(FRONTEND_URL);
     }
 

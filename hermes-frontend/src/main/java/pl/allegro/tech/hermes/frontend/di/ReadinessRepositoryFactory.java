@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-public class ReadinessRepositoryFactory implements Factory<ReadinessRepository> {
+public class ReadinessRepositoryFactory implements Factory<ReadinessRepository> {//TODO
     private final CuratorFramework zookeeper;
     private final ZookeeperPaths paths;
     private final ObjectMapper mapper;

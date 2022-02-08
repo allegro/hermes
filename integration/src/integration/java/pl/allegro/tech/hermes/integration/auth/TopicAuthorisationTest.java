@@ -68,7 +68,7 @@ public class TopicAuthorisationTest extends IntegrationTest {
                 .withAuthenticationConfiguration(authConfig)
                 .build();
 
-        hermesFrontend.start();
+        hermesFrontend.start();//TODO
 
         publisher = new HermesPublisher(FRONTEND_URL);
 
