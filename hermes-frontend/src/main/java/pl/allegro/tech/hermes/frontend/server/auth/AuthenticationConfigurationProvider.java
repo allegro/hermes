@@ -7,9 +7,13 @@ public class AuthenticationConfigurationProvider {
 
     @Inject
     @org.jvnet.hk2.annotations.Optional
-    private AuthenticationConfiguration authenticationConfiguration;
+    private Optional<AuthenticationConfiguration> authenticationConfiguration;//TODO
+
+    public AuthenticationConfigurationProvider(Optional<AuthenticationConfiguration> authenticationConfiguration) {
+        this.authenticationConfiguration = authenticationConfiguration;
+    }
 
     public Optional<AuthenticationConfiguration> getAuthenticationConfiguration() {
-        return Optional.ofNullable(authenticationConfiguration);
+        return authenticationConfiguration;
     }
 }

@@ -3,9 +3,14 @@ package pl.allegro.tech.hermes.frontend.di.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
 import org.apache.curator.framework.CuratorFramework;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
@@ -13,6 +18,7 @@ import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
@@ -53,6 +59,7 @@ import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
+import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
@@ -69,16 +76,13 @@ import javax.inject.Named;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Configuration
 public class FrontendConfiguration {
 
-    @Bean
-    public ApplicationContext applicationContext() {
-        return new GenericApplicationContext();
-    }
-
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    @DependsOn({ "topicMetadataLoadingRunner", "topicSchemaLoadingStartupHook" })//TODO - @AutoConfigureOrder
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
@@ -87,9 +91,10 @@ public class FrontendConfiguration {
                                      MessagePreviewPersister messagePreviewPersister,
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
-                                     SslContextFactoryProvider sslContextFactoryProvider) {
+                                     SslContextFactoryProvider sslContextFactoryProvider,
+                                     ConfigurableApplicationContext applicationContext) {
         return new HermesServer(configFactory, hermesMetrics, publishingHandler, healthCheckService, readinessChecker,
-                messagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider);
+                messagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider, applicationContext);
     }
 
     @Bean
@@ -121,11 +126,13 @@ public class FrontendConfiguration {
     }
 
     @Bean
+    @Conditional(TopicMetadataLoadingStartupHookCondition.class)
     public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner) {
         return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner);
     }
 
     @Bean
+    @Conditional(TopicSchemaLoadingStartupHookCondition.class)
     public TopicSchemaLoadingStartupHook topicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                                                        SchemaRepository schemaRepository,
                                                                        ConfigFactory config) {
@@ -230,14 +237,14 @@ public class FrontendConfiguration {
         return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, trackers, config);
     }
 
-    @Bean
+    @Bean(initMethod = "extend")
     public PersistentBufferExtension persistentBufferExtension(ConfigFactory configFactory,
                                                                Clock clock,
                                                                BrokerListeners listeners,
-                                                               HooksHandler hooksHandler,
+//                                                               HooksHandler hooksHandler,
                                                                BackupMessagesLoader backupMessagesLoader,
                                                                HermesMetrics hermesMetrics) {
-        return new PersistentBufferExtension(configFactory, clock, listeners, hooksHandler, backupMessagesLoader,
+        return new PersistentBufferExtension(configFactory, clock, listeners, backupMessagesLoader,
                 hermesMetrics);
     }
 
@@ -275,5 +282,32 @@ public class FrontendConfiguration {
                                                    ZookeeperPaths paths,
                                                    ObjectMapper mapper) {
         return new ReadinessRepositoryFactory(zookeeper, paths, mapper).provide();
+    }
+
+    @Bean
+    public AuthenticationConfigurationProvider authenticationConfigurationProvider(Optional<AuthenticationConfiguration> authenticationConfiguration) {
+        return new AuthenticationConfigurationProvider(authenticationConfiguration);
+    }
+
+    @Bean
+    public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory,
+                                                               ConfigFactory configFactory) {
+        return new SslContextFactoryProvider(sslContextFactory.orElse(null), configFactory);
+    }
+
+    @Bean(initMethod = "startup")
+    public HealthCheckService healthCheckService() {
+        return new HealthCheckService();
+    }
+
+    @Bean
+    public BrokerListeners defaultBrokerListeners() {
+        return new BrokerListeners();
+    }
+
+    @Bean
+    @Conditional(TopicMetadataLoadingStartupHookCondition.class)
+    public Trackers trackers(List<LogRepository> repositories) {
+        return new Trackers(repositories);
     }
 }

@@ -36,7 +36,7 @@ public class PersistentBufferExtension {
 
     private final BrokerListeners listeners;
 
-    private final HooksHandler hooksHandler;
+//    private final HooksHandler hooksHandler;
 
     private final BackupMessagesLoader backupMessagesLoader;
     private final HermesMetrics hermesMetrics;
@@ -48,13 +48,13 @@ public class PersistentBufferExtension {
     public PersistentBufferExtension(ConfigFactory configFactory,
                                      Clock clock,
                                      BrokerListeners listeners,
-                                     HooksHandler hooksHandler,
+//                                     HooksHandler hooksHandler,
                                      BackupMessagesLoader backupMessagesLoader,
                                      HermesMetrics hermesMetrics) {
         this.config = configFactory;
         this.clock = clock;
         this.listeners = listeners;
-        this.hooksHandler = hooksHandler;
+//        this.hooksHandler = hooksHandler;//TODO
         this.backupMessagesLoader = backupMessagesLoader;
         this.hermesMetrics = hermesMetrics;
     }
@@ -86,10 +86,12 @@ public class PersistentBufferExtension {
     private void loadTemporaryBackupV2Files(BackupFilesManager backupFilesManager) {
         String temporaryDir = config.getStringProperty(MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY);
         List<File> temporaryBackupV2Files = backupFilesManager.getTemporaryBackupV2Files(temporaryDir);
-        hooksHandler.addStartupHook((s) -> {
-            temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
-            backupMessagesLoader.clearTopicsAvailabilityCache();
-        });
+//        hooksHandler.addStartupHook((s) -> {//TODO
+//            temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
+//            backupMessagesLoader.clearTopicsAvailabilityCache();
+//        });
+        temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
+        backupMessagesLoader.clearTopicsAvailabilityCache();
     }
 
     private void rollBackupFiles(BackupFilesManager backupFilesManager, List<File> rolledBackupFiles) {
@@ -97,10 +99,13 @@ public class PersistentBufferExtension {
                 rolledBackupFiles.size(),
                 rolledBackupFiles.stream().map(File::getName).collect(joining(", ")));
 
-        hooksHandler.addStartupHook((s) -> {
-            rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
+//        hooksHandler.addStartupHook((s) -> {//TODO
+//            rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
+//            backupMessagesLoader.clearTopicsAvailabilityCache();
+//        });
+
+        rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
             backupMessagesLoader.clearTopicsAvailabilityCache();
-        });
     }
 
     private void enableLocalStorage(BackupFilesManager backupFilesManager) {

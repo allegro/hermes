@@ -17,12 +17,17 @@ import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 
 public class SslContextFactoryProvider {
 
-    @Inject
-    @org.jvnet.hk2.annotations.Optional
+//    @Inject
+//    @org.jvnet.hk2.annotations.Optional
     SslContextFactory sslContextFactory;
 
-    @Inject
+//    @Inject
     ConfigFactory configFactory;
+
+    public SslContextFactoryProvider(SslContextFactory sslContextFactory, ConfigFactory configFactory) {
+        this.sslContextFactory = sslContextFactory;
+        this.configFactory = configFactory;
+    }
 
     public SslContextFactory getSslContextFactory() {
         return Optional.ofNullable(sslContextFactory).orElse(getDefault());

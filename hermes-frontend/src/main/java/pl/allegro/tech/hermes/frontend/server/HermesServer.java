@@ -4,6 +4,8 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.xnio.SslClientAuthMode;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -27,6 +29,7 @@ import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_ALWAYS_SET_KEEP_ALIVE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BACKLOG_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BUFFER_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HOST;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_IO_THREADS_COUNT;
@@ -61,6 +64,7 @@ public class HermesServer {
     private final ThroughputLimiter throughputLimiter;
     private final TopicMetadataLoadingJob topicMetadataLoadingJob;
     private final SslContextFactoryProvider sslContextFactoryProvider;
+    private final ConfigurableApplicationContext applicationContext;
 
     @Inject
     public HermesServer(
@@ -72,7 +76,8 @@ public class HermesServer {
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
             TopicMetadataLoadingJob topicMetadataLoadingJob,
-            SslContextFactoryProvider sslContextFactoryProvider) {
+            SslContextFactoryProvider sslContextFactoryProvider,
+            ConfigurableApplicationContext applicationContext) {
 
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
@@ -87,6 +92,8 @@ public class HermesServer {
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
         this.host = configFactory.getStringProperty(FRONTEND_HOST);
         this.throughputLimiter = throughputLimiter;
+
+        this.applicationContext = applicationContext;
     }
 
     public void start() {
@@ -98,6 +105,15 @@ public class HermesServer {
             topicMetadataLoadingJob.start();
         }
         readinessChecker.start();
+    }
+
+    public void stop() throws InterruptedException {
+        boolean isGraceful = configFactory.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED);
+        if(isGraceful) {
+            gracefulShutdown();
+        }
+        shutdown();
+        applicationContext.close();
     }
 
     public void gracefulShutdown() throws InterruptedException {
