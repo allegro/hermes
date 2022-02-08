@@ -184,7 +184,7 @@ public class TopicService {
             throw new TopicRemovalDisabledException(topic);
         }
         if (topicBlacklistService.isBlacklisted(topic.getQualifiedName())) {
-            topicBlacklistService.unblacklist(topic.getQualifiedName());
+            topicBlacklistService.unblacklist(topic.getQualifiedName(), removedBy);
         }
         removeTopic(topic, removedBy);
     }
