@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
 import pl.allegro.tech.hermes.management.config.TopicProperties
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidationException
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
-import pl.allegro.tech.hermes.management.domain.topic.TopicManipulatorUser
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
 import pl.allegro.tech.hermes.schema.SchemaRepository
@@ -25,7 +25,7 @@ class TopicValidatorTest extends Specification {
 
     static MANAGABLE = { true }
     static NOT_MANAGABLE = { false }
-    private static USER = new TopicManipulatorUser("username", false)
+    private static USER = new RequestUser("username", false)
 
     static Set<TopicLabel> allowedLabels
 

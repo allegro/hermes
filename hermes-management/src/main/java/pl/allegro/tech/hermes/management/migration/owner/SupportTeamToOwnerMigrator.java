@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.*;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
-import pl.allegro.tech.hermes.management.domain.topic.TopicManipulatorUser;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import java.util.HashMap;
@@ -75,7 +75,7 @@ public class SupportTeamToOwnerMigrator {
     private void migrateTopic(Topic topic, Group group, String sourceName, OwnerExistsStrategy strategy, EntityMigrationCounters topicCounters) {
         if (topic.getOwner() == null || strategy == OwnerExistsStrategy.OVERRIDE) {
             migrateEntity(topicCounters, "topic " + topic.getQualifiedName(),
-                    () -> topicService.updateTopic(topic.getName(), patchWithOwner(sourceName, group.getSupportTeam()), new TopicManipulatorUser(MIGRATION_USER, true))
+                    () -> topicService.updateTopic(topic.getName(), patchWithOwner(sourceName, group.getSupportTeam()), new RequestUser(MIGRATION_USER, true))
             );
         } else {
             topicCounters.markSkipped(OWNER_ALREADY_EXISTED_REASON);

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.dc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +21,17 @@ public class MultiDatacenterRepositoryCommandExecutor {
         this.rollbackEnabled = rollbackEnabled;
     }
 
+    public <T> void executeByUser(RepositoryCommand<T> command, RequestUser requestUser) {
+        if(requestUser.isAdmin()) execute(command, false, false);
+        else execute(command);
+    }
+
     public <T> void execute(RepositoryCommand<T> command) {
-        if (rollbackEnabled) {
+        execute(command, rollbackEnabled, true);
+    }
+
+    private <T> void execute(RepositoryCommand<T> command, boolean isRollbackEnabled, boolean shouldFailOnAnyDcFailure) {
+        if (isRollbackEnabled) {
             backup(command);
         }
 
@@ -34,10 +44,9 @@ public class MultiDatacenterRepositoryCommandExecutor {
                 command.execute(repoHolder);
             } catch (Exception e) {
                 logger.warn("Execute failed with an error", e);
-                if (rollbackEnabled) {
-                    rollback(executedRepoHolders, command);
-                }
-                throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
+                if (isRollbackEnabled) rollback(executedRepoHolders, command);
+                if (shouldFailOnAnyDcFailure)
+                    throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
             }
         }
     }

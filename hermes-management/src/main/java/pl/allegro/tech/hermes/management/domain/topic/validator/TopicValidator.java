@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
-import pl.allegro.tech.hermes.management.domain.topic.TopicManipulatorUser;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -34,7 +34,7 @@ public class TopicValidator {
         this.apiPreconditions = apiPreconditions;
     }
 
-    public void ensureCreatedTopicIsValid(Topic created, TopicManipulatorUser createdBy, CreatorRights creatorRights) {
+    public void ensureCreatedTopicIsValid(Topic created, RequestUser createdBy, CreatorRights creatorRights) {
         apiPreconditions.checkConstraints(created, createdBy.isAdmin());
         checkOwner(created);
         checkContentType(created);
@@ -49,7 +49,7 @@ public class TopicValidator {
         }
     }
 
-    public void ensureUpdatedTopicIsValid(Topic updated, Topic previous, TopicManipulatorUser modifiedBy) {
+    public void ensureUpdatedTopicIsValid(Topic updated, Topic previous, RequestUser modifiedBy) {
         apiPreconditions.checkConstraints(updated, modifiedBy.isAdmin());
         checkOwner(updated);
         checkTopicLabels(updated);
