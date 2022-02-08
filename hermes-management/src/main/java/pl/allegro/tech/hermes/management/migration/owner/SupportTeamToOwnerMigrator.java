@@ -65,7 +65,7 @@ public class SupportTeamToOwnerMigrator {
     private void migrateSubscription(Subscription subscription, String sourceName, OwnerExistsStrategy strategy, EntityMigrationCounters subscriptionCounters) {
         if (subscription.getOwner() == null || strategy == OwnerExistsStrategy.OVERRIDE) {
             migrateEntity(subscriptionCounters, "subscription " + subscription.getQualifiedName(),
-                    () -> subscriptionService.updateSubscription(subscription.getTopicName(), subscription.getName(), patchWithOwner(sourceName, subscription.getSupportTeam()), MIGRATION_USER)
+                    () -> subscriptionService.updateSubscription(subscription.getTopicName(), subscription.getName(), patchWithOwner(sourceName, subscription.getSupportTeam()), new RequestUser(MIGRATION_USER, false))
             );
         } else {
             subscriptionCounters.markSkipped(OWNER_ALREADY_EXISTED_REASON);
