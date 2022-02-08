@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.management.config.GroupProperties
 import pl.allegro.tech.hermes.management.domain.Auditor
 import pl.allegro.tech.hermes.management.domain.GroupNameIsNotAllowedException
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
 import spock.lang.Specification
@@ -17,7 +18,8 @@ import java.security.Principal
 
 class GroupServiceSpec extends Specification {
 
-    static String TEST_USER = "testUser"
+    static String TEST_USERNAME = "testUser"
+    static RequestUser USER = new RequestUser(TEST_USERNAME, true)
 
     GroupRepository groupRepository = Stub()
     Auditor auditor = Mock()
@@ -31,10 +33,10 @@ class GroupServiceSpec extends Specification {
         Group toBeCreated = GroupBuilder.group("testGroup").build()
 
         when:
-        groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(true))
+        groupService.createGroup(toBeCreated, USER, stubCreatorRights(true))
 
         then:
-        1 * auditor.objectCreated(TEST_USER, toBeCreated)
+        1 * auditor.objectCreated(TEST_USERNAME, toBeCreated)
     }
 
     def "should not allow to create group if no creator rights for creation"() {
@@ -42,7 +44,7 @@ class GroupServiceSpec extends Specification {
         Group toBeCreated = GroupBuilder.group("testGroup").build()
 
         when:
-        groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(false))
+        groupService.createGroup(toBeCreated, USER, stubCreatorRights(false))
 
         then:
         thrown(PermissionDeniedException)
@@ -53,7 +55,7 @@ class GroupServiceSpec extends Specification {
         Group toBeCreated = GroupBuilder.group("invalid:testGroup").build()
 
         when:
-        groupService.createGroup(toBeCreated, TEST_USER, stubCreatorRights(true))
+        groupService.createGroup(toBeCreated, USER, stubCreatorRights(true))
         
         then:
         thrown(GroupNameIsNotAllowedException)
@@ -64,10 +66,10 @@ class GroupServiceSpec extends Specification {
         Group toBeRemoved = GroupBuilder.group("testGroup").build()
 
         when:
-        groupService.removeGroup(toBeRemoved.groupName, TEST_USER)
+        groupService.removeGroup(toBeRemoved.groupName, USER)
 
         then:
-        1 * auditor.objectRemoved(TEST_USER, Group.from(toBeRemoved.groupName))
+        1 * auditor.objectRemoved(TEST_USERNAME, Group.from(toBeRemoved.groupName))
     }
 
     def "should audit group update"() {
@@ -77,10 +79,10 @@ class GroupServiceSpec extends Specification {
         PatchData groupPatch = PatchData.from(["groupName"  : toBeUpdated.groupName,
                                                "supportTeam": "modifiedSupportTeam"])
         when:
-        groupService.updateGroup(toBeUpdated.groupName, groupPatch, TEST_USER)
+        groupService.updateGroup(toBeUpdated.groupName, groupPatch, USER)
 
         then:
-        1 * auditor.objectUpdated(TEST_USER, toBeUpdated, Patch.apply(toBeUpdated, groupPatch))
+        1 * auditor.objectUpdated(TEST_USERNAME, toBeUpdated, Patch.apply(toBeUpdated, groupPatch))
     }
 
     Principal principal() {
@@ -88,7 +90,7 @@ class GroupServiceSpec extends Specification {
 
             @Override
             String getName() {
-                return TEST_USER
+                return TEST_USERNAME
             }
         }
     }
