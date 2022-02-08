@@ -57,11 +57,6 @@ public class ConsumerConfiguration {
     private static final Logger logger = getLogger(ConsumerConfiguration.class);
 
     @Bean
-    public ApplicationContext applicationContext() {
-        return new GenericApplicationContext();
-    }
-
-    @Bean
     public MaxRatePathSerializer maxRatePathSerializer() {
         return new MaxRatePathSerializer();
     }
