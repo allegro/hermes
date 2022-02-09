@@ -46,7 +46,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPI
 
 public final class HermesFrontend {
 
-    private static final Logger logger = LoggerFactory.getLogger(HermesFrontend.class);
+//    private static final Logger logger = LoggerFactory.getLogger(HermesFrontend.class);
 
 //    private final ServiceLocator serviceLocator;
 //    private final HooksHandler hooksHandler;
@@ -58,14 +58,14 @@ public final class HermesFrontend {
 //        frontend().build().start();
 //    }
 
-    private HermesFrontend(HooksHandler hooksHandler,
+//    private HermesFrontend(HooksHandler hooksHandler,
 //                           List<Binder> binders,
 //                           List<Function<ServiceLocator, LogRepository>> logRepositories,
-                           boolean flushLogsShutdownHookEnabled
+//                           boolean flushLogsShutdownHookEnabled
 //                           HermesServer hermesServer,
 //                           Trackers trackers,
 //                           ConfigFactory configFactory
-                           ) {
+//                           ) {
 //        this.hooksHandler = hooksHandler;
 //        this.logRepositories = logRepositories;
 //        this.hermesServer = hermesServer;
@@ -80,21 +80,21 @@ public final class HermesFrontend {
 //        if (configFactory.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED)) {
 //            hooksHandler.addShutdownHook(gracefulShutdownHook());
 //        }
-        if (configFactory.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED)) {
-            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicMetadataLoadingStartupHook.class));//TODO: order
-        }
-        if (configFactory.getBooleanProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED)) {
-            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicSchemaLoadingStartupHook.class));//TODO: order
+//        if (configFactory.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED)) {
+//            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicMetadataLoadingStartupHook.class));//TODO: order
 //        }
+//        if (configFactory.getBooleanProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED)) {
+//            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicSchemaLoadingStartupHook.class));//TODO: order
+////        }
 //        hooksHandler.addStartupHook((s) -> s.getService(HealthCheckService.class).startup());
 //        hooksHandler.addShutdownHook(defaultShutdownHook());
-        if (flushLogsShutdownHookEnabled) { //TODO: property
-            hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
-        }
-        if (!configFactory.getBooleanProperty(FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED)) {//TODO
-            LoggerConfiguration.disableResponseErrorLogger();
-        }
-    }
+//        if (flushLogsShutdownHookEnabled) { //TODO: property
+//            hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
+//        }
+//        if (!configFactory.getBooleanProperty(FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED)) {//TODO
+//            LoggerConfiguration.disableResponseErrorLogger();
+//        }
+//    }
 
 //    private ServiceAwareHook gracefulShutdownHook() {
 //        return new AbstractShutdownHook() {
@@ -120,7 +120,7 @@ public final class HermesFrontend {
 //        };
 //    }
 
-    public void start() {
+//    public void start() {
 //        logRepositories.forEach(serviceLocatorLogRepositoryFunction ->
 //                trackers.add(serviceLocatorLogRepositoryFunction.apply(serviceLocator)));
 
@@ -138,7 +138,7 @@ public final class HermesFrontend {
 //        } catch(Exception e) {
 //            logger.error("Failed to startup Hermes Frontend", e);
 //        }
-    }
+//    }
 
 //    public void stop() {
 //        hooksHandler.shutdown(serviceLocator);
@@ -158,11 +158,11 @@ public final class HermesFrontend {
 //        return ServiceLocatorUtilities.bind(uniqueName, binders.toArray(new Binder[binders.size()]));
 //    }
 
-    public static Builder frontend() {
-//        return new Builder();
-    }
+//    public static Builder frontend() { //TODO
+////        return new Builder();
+//    }
 
-    public static final class Builder {
+//    public static final class Builder {
 
 //        private static final int CUSTOM_BINDER_HIGH_PRIORITY = 10;
 
@@ -210,15 +210,15 @@ public final class HermesFrontend {
 //        }
 
 
-        public Builder withDisabledGlobalShutdownHook() {
-            hooksHandler.disableGlobalShutdownHook();
-            return this;
-        }
-
-        public Builder withDisabledFlushLogsShutdownHook() {
-            flushLogsShutdownHookEnabled = false;
-            return this;
-        }
+//        public Builder withDisabledGlobalShutdownHook() {//TODO
+//            hooksHandler.disableGlobalShutdownHook();
+//            return this;
+//        }
+//
+//        public Builder withDisabledFlushLogsShutdownHook() {//TODO
+//            flushLogsShutdownHookEnabled = false;
+//            return this;
+//        }
 
 //        public Builder withBrokerTimeoutListener(BrokerTimeoutListener brokerTimeoutListener) {
 //            listeners.addTimeoutListener(brokerTimeoutListener);
@@ -248,17 +248,17 @@ public final class HermesFrontend {
 //            return withBinding(kafkaNamesMapper, KafkaNamesMapper.class);
 //        }
 
-        public Builder withAuthenticationConfiguration(AuthenticationConfiguration authenticationConfiguration) {
-            return withBinding(authenticationConfiguration, AuthenticationConfiguration.class);
-        }
+//        public Builder withAuthenticationConfiguration(AuthenticationConfiguration authenticationConfiguration) {
+//            return withBinding(authenticationConfiguration, AuthenticationConfiguration.class);
+//        }
 
 //        public Builder withSslContextFactory(SslContextFactory sslContextFactory) {
 //            return withBinding(sslContextFactory, SslContextFactory.class);
 //        }
 
-        public <T> Builder withBinding(T instance, Class<T> clazz) {
-            return withBinding(instance, clazz, clazz.getName());
-        }
+//        public <T> Builder withBinding(T instance, Class<T> clazz) {
+//            return withBinding(instance, clazz, clazz.getName());
+//        }
 
 //        public <T> Builder withBinding(T instance, Class<T> clazz, String name) {
 //            binders.add(new AbstractBinder() {
@@ -279,6 +279,6 @@ public final class HermesFrontend {
 //            });
 //            return this;
 //        }
-    }
+//    }
 }
 

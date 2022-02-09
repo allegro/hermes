@@ -245,7 +245,7 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ConfigFactory prodConfigFactory() {
+    public ConfigFactory configFactory() {
         return new ConfigFactoryCreator().provide();
     }
 
@@ -276,7 +276,7 @@ public class CommonConfiguration {
     public MetricRegistry metricRegistry(ConfigFactory configFactory,
                                          CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
-                                         @Value("${moduleName}") String moduleName) {
+                                         @Named("moduleName") String moduleName) {
         return new MetricRegistryFactory(configFactory, counterStorage, instanceIdResolver, moduleName)
                 .provide();
     }

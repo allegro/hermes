@@ -82,7 +82,7 @@ import java.util.Optional;
 public class FrontendConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @DependsOn({ "topicMetadataLoadingRunner", "topicSchemaLoadingStartupHook" })//TODO - @AutoConfigureOrder
+//    @DependsOn({ "topicMetadataLoadingRunner", "topicSchemaLoadingStartupHook" })//TODO - @AutoConfigureOrder
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
@@ -306,8 +306,13 @@ public class FrontendConfiguration {
     }
 
     @Bean
-    @Conditional(TopicMetadataLoadingStartupHookCondition.class)
     public Trackers trackers(List<LogRepository> repositories) {
         return new Trackers(repositories);
+    }
+
+    @Bean
+    @Named("moduleName")
+    public String moduleName() {
+        return "producer";
     }
 }
