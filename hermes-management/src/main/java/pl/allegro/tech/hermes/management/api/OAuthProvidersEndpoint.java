@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.oauth.OAuthProviderService;
 
 import javax.annotation.security.RolesAllowed;
@@ -61,7 +62,7 @@ public class OAuthProvidersEndpoint {
     @ApiOperation(value = "Create OAuth provider", httpMethod = HttpMethod.POST)
     public Response create(OAuthProvider oAuthProvider,
                            @Context SecurityContext securityContext) {
-        service.createOAuthProvider(oAuthProvider, securityContext.getUserPrincipal().getName());
+        service.createOAuthProvider(oAuthProvider, RequestUser.fromSecurityContext(securityContext));
         return status(Response.Status.CREATED).build();
     }
 
@@ -73,7 +74,7 @@ public class OAuthProvidersEndpoint {
     @ApiOperation(value = "Update OAuth provider", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("oAuthProviderName") String oAuthProviderName, PatchData patch,
                            @Context SecurityContext securityContext) {
-        service.updateOAuthProvider(oAuthProviderName, patch, securityContext.getUserPrincipal().getName());
+        service.updateOAuthProvider(oAuthProviderName, patch, RequestUser.fromSecurityContext(securityContext));
         return status(Response.Status.OK).build();
     }
 
@@ -84,7 +85,7 @@ public class OAuthProvidersEndpoint {
     @ApiOperation(value = "Remove OAuth provider", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("oAuthProviderName") String oAuthProviderName,
                            @Context SecurityContext securityContext) {
-        service.removeOAuthProvider(oAuthProviderName, securityContext.getUserPrincipal().getName());
+        service.removeOAuthProvider(oAuthProviderName, RequestUser.fromSecurityContext(securityContext));
         return status(Response.Status.OK).build();
     }
 }
