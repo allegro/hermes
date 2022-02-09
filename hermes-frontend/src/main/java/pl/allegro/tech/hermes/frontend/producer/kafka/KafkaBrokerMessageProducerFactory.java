@@ -6,7 +6,8 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
 import javax.inject.Inject;
 
-public class KafkaBrokerMessageProducerFactory implements Factory<KafkaBrokerMessageProducer> { //TODO
+@Deprecated
+public class KafkaBrokerMessageProducerFactory implements Factory<KafkaBrokerMessageProducer> { //TODO - remove
 
     private final Producers producers;
     private final KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;

@@ -10,7 +10,8 @@ import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCach
 
 import javax.inject.Inject;
 
-public class TopicsCacheFactory implements Factory<TopicsCache> { //TODO
+@Deprecated
+public class TopicsCacheFactory implements Factory<TopicsCache> { //TODO - remove
 
     private final InternalNotificationsBus internalNotificationsBus;
 

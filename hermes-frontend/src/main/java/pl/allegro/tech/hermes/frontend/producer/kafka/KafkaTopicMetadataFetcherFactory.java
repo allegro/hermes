@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.admin.AdminClient;
-import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import javax.inject.Inject;
@@ -21,7 +20,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_P
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 
-public class KafkaTopicMetadataFetcherFactory implements Factory<KafkaTopicMetadataFetcher> { //TODO
+public class KafkaTopicMetadataFetcherFactory {//implements Factory<KafkaTopicMetadataFetcher> { //TODO - remove only implements?
     private final ConfigFactory configFactory;
 
     @Inject
@@ -29,7 +28,7 @@ public class KafkaTopicMetadataFetcherFactory implements Factory<KafkaTopicMetad
         this.configFactory = configFactory;
     }
 
-    @Override
+//    @Override
     public KafkaTopicMetadataFetcher provide() {
         Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, configFactory.getStringProperty(KAFKA_BROKER_LIST));
@@ -48,8 +47,7 @@ public class KafkaTopicMetadataFetcherFactory implements Factory<KafkaTopicMetad
         return new KafkaTopicMetadataFetcher(adminClient, configFactory);
     }
 
-    @Override
-    public void dispose(KafkaTopicMetadataFetcher instance) {
-        instance.close();
-    }
+//    public void dispose(KafkaTopicMetadataFetcher instance) {
+//        instance.close();
+//    }
 }

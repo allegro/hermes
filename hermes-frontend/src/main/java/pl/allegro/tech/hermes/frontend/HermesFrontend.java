@@ -44,7 +44,8 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_RESPONSE_ERR
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED;
 
-public final class HermesFrontend {
+@Deprecated
+public final class HermesFrontend { //TODO - remove
 
 //    private static final Logger logger = LoggerFactory.getLogger(HermesFrontend.class);
 

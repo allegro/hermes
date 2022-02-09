@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
-import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
@@ -51,7 +50,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE;
 
-public class KafkaMessageProducerFactory implements Factory<Producers> { //TODO
+public class KafkaMessageProducerFactory {//implements Factory<Producers> { //TODO - remove only implements?
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
@@ -62,7 +61,6 @@ public class KafkaMessageProducerFactory implements Factory<Producers> { //TODO
         this.configFactory = configFactory;
     }
 
-    @Override
     public Producers provide() {
         Map<String, Object> props = new HashMap<>();
         props.put(BOOTSTRAP_SERVERS_CONFIG, getString(KAFKA_BROKER_LIST));
@@ -113,8 +111,8 @@ public class KafkaMessageProducerFactory implements Factory<Producers> { //TODO
         return configFactory.getIntProperty(key);
     }
 
-    @Override
-    public void dispose(Producers producer) {
-        producer.close();
-    }
+//    @Override
+//    public void dispose(Producers producer) {
+//        producer.close();
+//    }
 }

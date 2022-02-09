@@ -5,7 +5,6 @@ import io.undertow.security.handlers.AuthenticationCallHandler;
 import io.undertow.security.handlers.AuthenticationMechanismsHandler;
 import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.server.HttpHandler;
-import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -17,16 +16,17 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProce
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationPredicateAwareConstraintHandler;
 
 import javax.inject.Inject;
+
+import java.util.Optional;
 
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_AUTHENTICATION_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS;
 
-public class HandlersChainFactory implements Factory<HttpHandler> { //TODO: remove implements
+public class HandlersChainFactory {//implements Factory<HttpHandler> { //TODO: remove only implements?
 
     private static final Logger logger = LoggerFactory.getLogger(HandlersChainFactory.class);
 
@@ -39,13 +39,13 @@ public class HandlersChainFactory implements Factory<HttpHandler> { //TODO: remo
     private final MessagePreviewLog previewLog;
     private final boolean previewEnabled;
     private final ThroughputLimiter throughputLimiter;
-    private final AuthenticationConfigurationProvider authenticationConfigurationProvider;
+    private final Optional<AuthenticationConfiguration> authenticationConfiguration;
 
     @Inject
     public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                 MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
                                 BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                ThroughputLimiter throughputLimiter, AuthenticationConfigurationProvider authConfigProvider) {
+                                ThroughputLimiter throughputLimiter, AuthenticationConfiguration authenticationConfiguration) {
         this.topicsCache = topicsCache;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
@@ -55,10 +55,10 @@ public class HandlersChainFactory implements Factory<HttpHandler> { //TODO: remo
         this.previewLog = messagePreviewLog;
         this.previewEnabled = configFactory.getBooleanProperty(Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED);
         this.throughputLimiter = throughputLimiter;
-        this.authenticationConfigurationProvider = authConfigProvider;
+        this.authenticationConfiguration = Optional.ofNullable(authenticationConfiguration);
     }
 
-    @Override
+//    @Override
     public HttpHandler provide() {
         HttpHandler publishing = new PublishingHandler(brokerMessageProducer, messageErrorProcessor, messageEndProcessor);
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
@@ -80,7 +80,7 @@ public class HandlersChainFactory implements Factory<HttpHandler> { //TODO: remo
     }
 
     private HttpHandler withAuthenticationHandlersChain(HttpHandler next) {
-        AuthenticationConfiguration authConfig = authenticationConfigurationProvider.getAuthenticationConfiguration()
+        AuthenticationConfiguration authConfig = authenticationConfiguration
                 .orElseThrow(() -> new IllegalStateException("AuthenticationConfiguration was not provided"));
         try {
             return createAuthenticationHandlersChain(next, authConfig);
@@ -103,8 +103,8 @@ public class HandlersChainFactory implements Factory<HttpHandler> { //TODO: remo
         return new SecurityInitialHandler(authenticationMode, authConfig.getIdentityManager(), mechanismsHandler);
     }
 
-    @Override
-    public void dispose(HttpHandler instance) {
-
-    }
+//    @Override
+//    public void dispose(HttpHandler instance) {
+//
+//    }
 }

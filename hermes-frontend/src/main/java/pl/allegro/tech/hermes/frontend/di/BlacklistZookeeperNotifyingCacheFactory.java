@@ -9,7 +9,8 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-public class BlacklistZookeeperNotifyingCacheFactory implements Factory<BlacklistZookeeperNotifyingCache> { //TODO
+@Deprecated
+public class BlacklistZookeeperNotifyingCacheFactory implements Factory<BlacklistZookeeperNotifyingCache> { //TODO - remove
 
     private final CuratorFramework curator;
     private final ZookeeperPaths zookeeperPaths;

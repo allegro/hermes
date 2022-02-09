@@ -3,18 +3,12 @@ package pl.allegro.tech.hermes.frontend.di.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
 import org.apache.curator.framework.CuratorFramework;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
-import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -26,14 +20,12 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
+import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
-import pl.allegro.tech.hermes.frontend.di.BlacklistZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.frontend.di.PersistentBufferExtension;
-import pl.allegro.tech.hermes.frontend.di.ReadinessRepositoryFactory;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
@@ -60,11 +52,10 @@ import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
-import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
@@ -155,9 +146,9 @@ public class FrontendConfiguration {
     public HttpHandler httpHandler(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                    MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                   ThroughputLimiter throughputLimiter, AuthenticationConfigurationProvider authConfigProvider) {
+                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, configFactory, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfigProvider).provide();
+                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig.orElse(null)).provide();
     }
 
     @Bean(destroyMethod = "close")
@@ -176,8 +167,10 @@ public class FrontendConfiguration {
                                                             HermesMetrics hermesMetrics,
                                                             KafkaHeaderFactory kafkaHeaderFactory,
                                                             ConfigFactory configFactory) {
-        return new KafkaBrokerMessageProducerFactory(producers, kafkaTopicMetadataFetcher, hermesMetrics,
-                kafkaHeaderFactory, configFactory).provide();
+        return new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, kafkaHeaderFactory,
+                configFactory);
+//        return new KafkaBrokerMessageProducerFactory(producers, kafkaTopicMetadataFetcher, hermesMetrics,
+//                kafkaHeaderFactory, configFactory).provide();
     }
 
     @Bean
@@ -195,15 +188,22 @@ public class FrontendConfiguration {
         return new NoOperationPublishingTracker();
     }
 
-    @Bean
-    public TopicsCache topicsCacheFactory(InternalNotificationsBus internalNotificationsBus,
-                                          GroupRepository groupRepository,
-                                          TopicRepository topicRepository,
-                                          HermesMetrics hermesMetrics,
-                                          KafkaNamesMapper kafkaNamesMapper,
-                                          BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
-        return new TopicsCacheFactory(internalNotificationsBus, groupRepository, topicRepository, hermesMetrics,
-                kafkaNamesMapper, blacklistZookeeperNotifyingCache).provide();
+    @Bean(initMethod = "start")
+    public TopicsCache notificationBasedTopicsCache(InternalNotificationsBus internalNotificationsBus,
+                                                    GroupRepository groupRepository,
+                                                    TopicRepository topicRepository,
+                                                    HermesMetrics hermesMetrics,
+                                                    KafkaNamesMapper kafkaNamesMapper,
+                                                    BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
+
+        return new NotificationBasedTopicsCache(internalNotificationsBus, blacklistZookeeperNotifyingCache,
+                groupRepository, topicRepository, hermesMetrics, kafkaNamesMapper);
+
+//        cache.start();
+//        return cache;
+
+//        return new TopicsCacheFactory(internalNotificationsBus, groupRepository, topicRepository, hermesMetrics,
+//                kafkaNamesMapper, blacklistZookeeperNotifyingCache).provide();
     }
 
     @Bean
@@ -211,10 +211,10 @@ public class FrontendConfiguration {
         return new MessageContentTypeEnforcer();
     }
 
-    @Bean
-    public TopicMessageValidatorListFactory topicMessageValidatorListFactory() {
-        return new TopicMessageValidatorListFactory(new ArrayList<>());
-    }
+//    @Bean
+//    public List<TopicMessageValidator> topicMessageValidators() { //TODO - Spring will autowire any bean to a list
+//        return new TopicMessageValidatorListFactory(topicMessageValidators);
+//    }
 
     @Bean
     public MessageFactory messageFactory(MessageValidators validators,
@@ -274,19 +274,23 @@ public class FrontendConfiguration {
     @Bean
     public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                              ZookeeperPaths zookeeperPaths) {
-        return new BlacklistZookeeperNotifyingCacheFactory(curator, zookeeperPaths).provide();
+        BlacklistZookeeperNotifyingCache cache = new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
+        try {
+            cache.start(); //TODO - change to init method?
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to start Zookeeper Topic Blacklist cache", e);
+        }
+        return cache;
+
+//        return new BlacklistZookeeperNotifyingCacheFactory(curator, zookeeperPaths).provide();
     }
 
     @Bean(destroyMethod = "close")
-    public ReadinessRepository readinessRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
-                                                   ZookeeperPaths paths,
-                                                   ObjectMapper mapper) {
-        return new ReadinessRepositoryFactory(zookeeper, paths, mapper).provide();
-    }
-
-    @Bean
-    public AuthenticationConfigurationProvider authenticationConfigurationProvider(Optional<AuthenticationConfiguration> authenticationConfiguration) {
-        return new AuthenticationConfigurationProvider(authenticationConfiguration);
+    public ReadinessRepository zookeeperDatacenterReadinessRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+                                                                      ZookeeperPaths paths,
+                                                                      ObjectMapper mapper) {
+        return new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
+//        return new ReadinessRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
     @Bean

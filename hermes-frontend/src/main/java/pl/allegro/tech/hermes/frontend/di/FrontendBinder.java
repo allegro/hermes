@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
+//import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
@@ -34,7 +34,6 @@ import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfigurationProvider;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.server.ReadinessChecker;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
@@ -66,7 +65,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(TopicMetadataLoadingJob.class);
         bindSingleton(TopicMetadataLoadingStartupHook.class);
         bindSingleton(TopicSchemaLoadingStartupHook.class);
-        bindSingleton(AuthenticationConfigurationProvider.class);//TODO ~
+//        bindSingleton(AuthenticationConfigurationProvider.class);
         bindSingleton(SslContextFactoryProvider.class);
 
         bind("producer").named("moduleName").to(String.class);
@@ -75,14 +74,14 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(ReadinessChecker.class);
         bind(DefaultHeadersPropagator.class).to(HeadersPropagator.class).in(Singleton.class);
 
-        bindFactory(HandlersChainFactory.class).to(HttpHandler.class).in(Singleton.class);
-        bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
-        bindFactory(KafkaTopicMetadataFetcherFactory.class).to(KafkaTopicMetadataFetcher.class).in(Singleton.class);
-        bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
-        bindFactory(ThroughputLimiterFactory.class).to(ThroughputLimiter.class).in(Singleton.class);
+//        bindFactory(HandlersChainFactory.class).to(HttpHandler.class).in(Singleton.class);
+//        bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);
+//        bindFactory(KafkaTopicMetadataFetcherFactory.class).to(KafkaTopicMetadataFetcher.class).in(Singleton.class);
+//        bindFactory(KafkaBrokerMessageProducerFactory.class).to(BrokerMessageProducer.class).in(Singleton.class);
+//        bindFactory(ThroughputLimiterFactory.class).to(ThroughputLimiter.class).in(Singleton.class);
         bindSingleton(PublishingMessageTracker.class);
         bindSingleton(NoOperationPublishingTracker.class);
-        bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
+//        bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bind(MessageContentTypeEnforcer.class).to(AvroEnforcer.class).in(Singleton.class);
         bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
         });
@@ -93,8 +92,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessagePreviewLog.class);
         bindSingleton(MessagePreviewFactory.class);
         bindSingleton(KafkaHeaderFactory.class);
-        bindSingletonFactory(BlacklistZookeeperNotifyingCacheFactory.class);
-        bindFactory(ReadinessRepositoryFactory.class).to(ReadinessRepository.class).in(Singleton.class);
+//        bindSingletonFactory(BlacklistZookeeperNotifyingCacheFactory.class);
+//        bindFactory(ReadinessRepositoryFactory.class).to(ReadinessRepository.class).in(Singleton.class);
     }
 
 }
