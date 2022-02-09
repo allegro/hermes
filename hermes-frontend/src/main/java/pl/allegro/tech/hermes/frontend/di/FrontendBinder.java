@@ -1,23 +1,10 @@
 package pl.allegro.tech.hermes.frontend.di;
 
-import io.undertow.server.HttpHandler;
-import org.glassfish.hk2.api.TypeLiteral;
 import pl.allegro.tech.hermes.common.di.AbstractBinder;
 import pl.allegro.tech.hermes.common.hook.HooksHandler;
-import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
-import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCacheFactory;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 //import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
-import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiterFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.AvroEnforcer;
@@ -37,13 +24,10 @@ import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.server.ReadinessChecker;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
-import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
-import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidatorListFactory;
 import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.PublishingMessageTracker;
 
 import javax.inject.Singleton;
-import java.util.List;
 
 public class FrontendBinder extends AbstractBinder {
 
@@ -83,8 +67,8 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(NoOperationPublishingTracker.class);
 //        bindFactory(TopicsCacheFactory.class).to(TopicsCache.class).in(Singleton.class);
         bind(MessageContentTypeEnforcer.class).to(AvroEnforcer.class).in(Singleton.class);
-        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
-        });
+//        bindFactory(TopicMessageValidatorListFactory.class).in(Singleton.class).to(new TypeLiteral<List<TopicMessageValidator>>() {
+//        });
         bindSingleton(MessageFactory.class);
         bindSingleton(BackupMessagesLoader.class);
         bindSingleton(PersistentBufferExtension.class);
