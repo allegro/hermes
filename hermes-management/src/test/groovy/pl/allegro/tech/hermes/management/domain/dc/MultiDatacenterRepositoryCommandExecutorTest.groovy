@@ -1,10 +1,14 @@
 package pl.allegro.tech.hermes.management.domain.dc
 
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import spock.lang.Specification
 
 
 class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
+
+    private static ADMIN = new RequestUser("ADMIN", true)
+    private static NON_ADMIN = new RequestUser("USER", false)
 
     def "should execute backup if rollback is enabled"() {
         given:
@@ -81,6 +85,43 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
 
         then:
         0 * command.rollback(holder1)
+
+        thrown InternalProcessingException
+    }
+
+    def "should not rollback and not fail when executing user is admin"() {
+        given:
+        def holder1 = Stub(DatacenterBoundRepositoryHolder)
+        def holder2 = Stub(DatacenterBoundRepositoryHolder)
+
+        def executor = buildExecutor([holder1, holder2], false)
+
+        def command = Mock(RepositoryCommand)
+        command.execute(holder2) >> { throw new Exception() }
+
+        when:
+        executor.executeByUser(command, ADMIN)
+
+        then:
+        0 * command.rollback(holder1)
+    }
+
+    def "should use executor rollback and fail when executing user is not admin"() {
+        given:
+        def isRollbackEnabled = true
+        def holder1 = Stub(DatacenterBoundRepositoryHolder)
+        def holder2 = Stub(DatacenterBoundRepositoryHolder)
+
+        def executor = buildExecutor([holder1, holder2], isRollbackEnabled)
+
+        def command = Mock(RepositoryCommand)
+        command.execute(holder2) >> { throw new Exception() }
+
+        when:
+        executor.executeByUser(command, NON_ADMIN)
+
+        then:
+        1 * command.rollback(holder1)
 
         thrown InternalProcessingException
     }
