@@ -220,13 +220,15 @@ public class SubscriptionsEndpoint {
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,
                                @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
-                               @Valid OffsetRetransmissionDate offsetRetransmissionDate) {
+                               @Valid OffsetRetransmissionDate offsetRetransmissionDate,
+                               @Context SecurityContext securityContext) {
 
         MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
                 topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 subscriptionName,
                 offsetRetransmissionDate.getRetransmissionDate().toInstant().toEpochMilli(),
-                dryRun);
+                dryRun,
+                RequestUser.fromSecurityContext(securityContext));
 
         return Response.status(OK).entity(summary).build();
     }

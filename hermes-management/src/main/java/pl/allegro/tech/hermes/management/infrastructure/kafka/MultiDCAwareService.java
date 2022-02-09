@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.retransmit.RetransmitCommand;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
@@ -59,7 +60,7 @@ public class MultiDCAwareService {
                 .readMessageFromPrimary(topic, partition, offset);
     }
 
-    public MultiDCOffsetChangeSummary moveOffset(Topic topic, String subscriptionName, Long timestamp, boolean dryRun) {
+    public MultiDCOffsetChangeSummary moveOffset(Topic topic, String subscriptionName, Long timestamp, boolean dryRun, RequestUser requester) {
         MultiDCOffsetChangeSummary multiDCOffsetChangeSummary = new MultiDCOffsetChangeSummary();
 
         clusters.forEach(cluster -> multiDCOffsetChangeSummary.addPartitionOffsetList(
@@ -68,7 +69,7 @@ public class MultiDCAwareService {
 
         if (!dryRun) {
             logger.info("Preparing retransmission for subscription {}", topic.getQualifiedName() + "$" + subscriptionName);
-            multiDcExecutor.execute(new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())));
+            multiDcExecutor.executeByUser(new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())), requester);
             clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
         }
 

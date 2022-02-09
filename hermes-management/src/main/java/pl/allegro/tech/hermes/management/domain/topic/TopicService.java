@@ -240,7 +240,7 @@ public class TopicService {
                 topicContentTypeMigrationService.waitUntilAllSubscriptionsHasConsumersAssigned(modified,
                         Duration.ofSeconds(topicProperties.getSubscriptionsAssignmentsCompletedTimeoutSeconds()));
                 logger.info("Notifying subscriptions' consumers about changes in topic {} content type...", topicName.qualifiedName());
-                topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant);
+                topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant, modifiedBy);
             }
             auditor.objectUpdated(modifiedBy.getUsername(), retrieved, modified);
             topicOwnerCache.onUpdatedTopic(retrieved, modified);
