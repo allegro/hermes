@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.command.CreateSubscriptionConstraintsRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.command.CreateTopicConstraintsRepositoryCommand;
@@ -30,28 +31,28 @@ public class WorkloadConstraintsService {
         return workloadConstraintsRepository.getConsumersWorkloadConstraints();
     }
 
-    public void createConstraints(TopicName topicName, Constraints constraints) {
-        commandExecutor.execute(new CreateTopicConstraintsRepositoryCommand(topicName, constraints));
+    public void createConstraints(TopicName topicName, Constraints constraints, RequestUser requester) {
+        commandExecutor.executeByUser(new CreateTopicConstraintsRepositoryCommand(topicName, constraints), requester);
     }
 
-    public void createConstraints(SubscriptionName subscriptionName, Constraints constraints) {
-        commandExecutor.execute(new CreateSubscriptionConstraintsRepositoryCommand(subscriptionName, constraints));
+    public void createConstraints(SubscriptionName subscriptionName, Constraints constraints, RequestUser requester) {
+        commandExecutor.executeByUser(new CreateSubscriptionConstraintsRepositoryCommand(subscriptionName, constraints), requester);
     }
 
-    public void updateConstraints(TopicName topicName, Constraints constraints) {
-        commandExecutor.execute(new UpdateTopicConstraintsRepositoryCommand(topicName, constraints));
+    public void updateConstraints(TopicName topicName, Constraints constraints, RequestUser requester) {
+        commandExecutor.executeByUser(new UpdateTopicConstraintsRepositoryCommand(topicName, constraints), requester);
     }
 
-    public void updateConstraints(SubscriptionName subscriptionName, Constraints constraints) {
-        commandExecutor.execute(new UpdateSubscriptionConstraintsRepositoryCommand(subscriptionName, constraints));
+    public void updateConstraints(SubscriptionName subscriptionName, Constraints constraints, RequestUser requester) {
+        commandExecutor.executeByUser(new UpdateSubscriptionConstraintsRepositoryCommand(subscriptionName, constraints), requester);
     }
 
-    public void deleteConstraints(TopicName topicName) {
-        commandExecutor.execute(new DeleteTopicConstraintsRepositoryCommand(topicName));
+    public void deleteConstraints(TopicName topicName, RequestUser requester) {
+        commandExecutor.executeByUser(new DeleteTopicConstraintsRepositoryCommand(topicName), requester);
     }
 
-    public void deleteConstraints(SubscriptionName subscriptionName) {
-        commandExecutor.execute(new DeleteSubscriptionConstraintsRepositoryCommand(subscriptionName));
+    public void deleteConstraints(SubscriptionName subscriptionName, RequestUser requester) {
+        commandExecutor.executeByUser(new DeleteSubscriptionConstraintsRepositoryCommand(subscriptionName), requester);
     }
 
     public boolean constraintsExist(TopicName topicName) {

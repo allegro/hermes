@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRep
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository
 import pl.allegro.tech.hermes.management.config.storage.DefaultZookeeperGroupRepositoryFactory
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
@@ -23,6 +24,7 @@ import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
 class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
 
     static WORKLOAD_CONSTRAINTS_PATH = '/hermes/consumers-workload-constraints'
+    static USER = new RequestUser("username", false);
     ZookeeperClientManager manager
     WorkloadConstraintsService service
     WorkloadConstraintsRepository repository
@@ -68,7 +70,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
 
     def "should create topic constraints in all zk clusters"() {
         when:
-        service.createConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+        service.createConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1), USER)
 
         then:
         assertNodesContains('group.topic', new Constraints(1))
@@ -76,7 +78,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
 
     def "should create subscription constraints in all zk clusters"() {
         when:
-        service.createConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+        service.createConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1), USER)
 
         then:
         assertNodesContains('group.topic$sub', new Constraints(1))
@@ -88,7 +90,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         ensureCacheWasUpdated()
 
         when:
-        service.createConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+        service.createConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1), USER)
 
         then:
         def e = thrown(TopicConstraintsAlreadyExistException)
@@ -104,7 +106,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         ensureCacheWasUpdated()
 
         when:
-        service.createConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+        service.createConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1), USER)
 
         then:
         def e = thrown(SubscriptionConstraintsAlreadyExistException)
@@ -119,7 +121,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         zookeeper2.stop()
 
         when:
-        service.createConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+        service.createConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1), USER)
 
         then:
         def e = thrown(InternalProcessingException)
@@ -134,7 +136,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         zookeeper2.stop()
 
         when:
-        service.createConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+        service.createConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1), USER)
 
         then:
         def e = thrown(InternalProcessingException)
@@ -149,7 +151,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         setupNodes('group.topic', new Constraints(1))
 
         when:
-        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(2))
+        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(2), USER)
 
         then:
         assertNodesContains('group.topic', new Constraints(2))
@@ -160,7 +162,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         setupNodes('group.topic$sub', new Constraints(1))
 
         when:
-        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(2))
+        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(2), USER)
 
         then:
         assertNodesContains('group.topic$sub', new Constraints(2))
@@ -172,7 +174,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         ensureCacheWasUpdated()
 
         when:
-        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1), USER)
 
         then:
         def e = thrown(TopicConstraintsDoNotExistException)
@@ -189,7 +191,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         ensureCacheWasUpdated()
 
         when:
-        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1), USER)
 
         then:
         def e = thrown(SubscriptionConstraintsDoNotExistException)
@@ -207,7 +209,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         zookeeper2.stop()
 
         when:
-        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1))
+        service.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(1), USER)
 
         then:
         def e = thrown(InternalProcessingException)
@@ -224,7 +226,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         zookeeper2.stop()
 
         when:
-        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+        service.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1), USER)
 
         then:
         def e = thrown(InternalProcessingException)
@@ -239,7 +241,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         setupNodes('group.topic', new Constraints(1))
 
         when:
-        service.deleteConstraints(TopicName.fromQualifiedName('group.topic'))
+        service.deleteConstraints(TopicName.fromQualifiedName('group.topic'), USER)
 
         then:
         assertNodesDoNotExist('group.topic')
@@ -250,7 +252,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         setupNodes('group.topic$sub', new Constraints(1))
 
         when:
-        service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'))
+        service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'), USER)
 
         then:
         assertNodesDoNotExist('group.topic$sub')
@@ -264,7 +266,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         assert assertNodeDoesNotExist(DC_2_NAME, 'group.topic')
 
         when:
-        service.deleteConstraints(TopicName.fromQualifiedName('group.topic'))
+        service.deleteConstraints(TopicName.fromQualifiedName('group.topic'), USER)
 
         then:
         noExceptionThrown()
@@ -281,7 +283,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         assert assertNodeDoesNotExist(DC_2_NAME, 'group.topic$sub')
 
         when:
-        service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'))
+        service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'), USER)
 
         then:
         noExceptionThrown()
@@ -297,7 +299,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         zookeeper2.stop()
 
         when:
-        service.deleteConstraints(TopicName.fromQualifiedName('group.topic'))
+        service.deleteConstraints(TopicName.fromQualifiedName('group.topic'), USER)
 
         then:
         def e = thrown(InternalProcessingException)
@@ -314,7 +316,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         zookeeper2.stop()
 
         when:
-        service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'))
+        service.deleteConstraints(SubscriptionName.fromString('group.topic$sub'), USER)
 
         then:
         def e = thrown(InternalProcessingException)
