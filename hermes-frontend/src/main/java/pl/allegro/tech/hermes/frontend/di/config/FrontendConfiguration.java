@@ -3,10 +3,14 @@ package pl.allegro.tech.hermes.frontend.di.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
 import org.apache.curator.framework.CuratorFramework;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -65,7 +69,6 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Named;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,7 +76,7 @@ import java.util.Optional;
 public class FrontendConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-//    @DependsOn({ "topicMetadataLoadingRunner", "topicSchemaLoadingStartupHook" })//TODO - @AutoConfigureOrder
+    @DependsOn("beforeStartupHooksHandler")
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
@@ -117,17 +120,24 @@ public class FrontendConfiguration {
     }
 
     @Bean
-    @Conditional(TopicMetadataLoadingStartupHookCondition.class)
+    @Conditional(TopicMetadataLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
+//    @DependsOn("configFactory")//TODO - do we need it or not?
     public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner) {
         return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner);
     }
 
     @Bean
-    @Conditional(TopicSchemaLoadingStartupHookCondition.class)
+    @Conditional(TopicSchemaLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
     public TopicSchemaLoadingStartupHook topicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                                                        SchemaRepository schemaRepository,
                                                                        ConfigFactory config) {
         return new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, config);
+    }
+
+    @Bean(initMethod = "runHooks")
+    @Order(Ordered.HIGHEST_PRECEDENCE)//TODO: use custom eg. BEFORE_STARTUP?
+    public BeforeStartupHooksHandler beforeStartupHooksHandler(List<BeforeStartupHook> hooks) {
+        return new BeforeStartupHooksHandler(hooks);
     }
 
     @Bean

@@ -1,14 +1,13 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.hook.Hook;
-import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
+import pl.allegro.tech.hermes.frontend.di.config.BeforeStartupHook;
 
 import javax.inject.Inject;
 
-public class TopicMetadataLoadingStartupHook implements ServiceAwareHook {
+public class TopicMetadataLoadingStartupHook implements BeforeStartupHook { //ServiceAwareHook { //TODO: beforehook
     private static final Logger logger = LoggerFactory.getLogger(TopicMetadataLoadingStartupHook.class);
 
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;
@@ -19,7 +18,8 @@ public class TopicMetadataLoadingStartupHook implements ServiceAwareHook {
     }
 
     @Override
-    public void accept(ServiceLocator serviceLocator) {
+//    public void accept(ServiceLocator serviceLocator) {
+    public void run() {
         try {
             topicMetadataLoadingRunner.refreshMetadata();
         } catch (Exception e) {
