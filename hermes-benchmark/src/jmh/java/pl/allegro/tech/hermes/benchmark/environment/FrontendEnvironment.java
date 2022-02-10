@@ -62,7 +62,7 @@ public class FrontendEnvironment {
                 .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperContainer.getConnectionString())
                 .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaContainerCluster.getBootstrapServersForExternalClients());
 
-        hermesFrontend = HermesFrontend.frontend()
+        hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
                 .withDisabledGlobalShutdownHook()
                 .withDisabledFlushLogsShutdownHook()
                 .withBinding(configFactory, ConfigFactory.class)

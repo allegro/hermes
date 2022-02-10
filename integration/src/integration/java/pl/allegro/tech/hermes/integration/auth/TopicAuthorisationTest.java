@@ -63,7 +63,7 @@ public class TopicAuthorisationTest extends IntegrationTest {
                 Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
                 new SingleUserAwareIdentityManager(USERNAME, PASSWORD));
 
-        hermesFrontend = HermesFrontend.frontend()
+        hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
                 .withBinding(configFactory, ConfigFactory.class)
                 .withAuthenticationConfiguration(authConfig)
                 .build();

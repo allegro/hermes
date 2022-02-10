@@ -33,7 +33,7 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 //                .overrideProperty(Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false)
 //                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false);
 
-        frontendStarter = new FrontendStarter();
+        frontendStarter = new FrontendStarter();//TODO: add port?
         frontendStarter.setSpringProfiles("integration");
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);

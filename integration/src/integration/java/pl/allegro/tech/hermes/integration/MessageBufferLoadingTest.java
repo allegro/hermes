@@ -61,7 +61,8 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         Topic topic = randomTopic("backupGroup", "uniqueTopic").build();
         operations.buildTopic(topic);
 
-        FrontendStarter frontend = new FrontendStarter(frontendPort, false);
+//        FrontendStarter frontend = new FrontendStarter(frontendPort, false);
+        FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(frontendPort, false);
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
@@ -102,7 +103,8 @@ public class MessageBufferLoadingTest extends IntegrationTest {
 
         remoteService.expectMessages("message");
 
-        FrontendStarter frontend = new FrontendStarter(Ports.nextAvailable(), false);
+//        FrontendStarter frontend = new FrontendStarter(Ports.nextAvailable(), false);
+        FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(Ports.nextAvailable(), false);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());

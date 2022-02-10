@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
@@ -45,10 +46,12 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
 
     @BeforeClass
     public void setup() throws Exception {
+        FrontendStarter frontendStarter = new FrontendStarter();
+
         ConfigFactory configFactory = new MutableConfigFactory()
                 .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
                 .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
-                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")
+                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")//TODO: only specific
                 .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
                 .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
                 .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
@@ -61,7 +64,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
                 Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
                 new SingleUserAwareIdentityManager(USERNAME, PASSWORD));
 
-        hermesFrontend = HermesFrontend.frontend()
+        hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
                 .withBinding(configFactory, ConfigFactory.class)
                 .withAuthenticationConfiguration(authConfig)
                 .build();

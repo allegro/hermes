@@ -80,7 +80,8 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
     }
 
     private FrontendStarter startFrontend(int port, int sslPort) throws Exception {
-        FrontendStarter frontend = new FrontendStarter(port, true);
+//        FrontendStarter frontend = new FrontendStarter(port, true);
+        FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(port, true);
 
         frontend.overrideProperty(FRONTEND_HTTP2_ENABLED, true);
         frontend.overrideProperty(Configs.FRONTEND_SSL_PORT, sslPort);

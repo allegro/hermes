@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.env;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.io.Files;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,21 +54,47 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         application.setWebApplicationType(WebApplicationType.NONE);
         this.port = port;
         setSpringProfiles("integration");//TODO
-        overrideProperty(FRONTEND_PORT, port);
-        overrideProperty(SCHEMA_CACHE_ENABLED, true);
-        overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
-        overrideProperty(FRONTEND_THROUGHPUT_TYPE, "fixed");
-        overrideProperty(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
-        overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
+//        overrideProperty(FRONTEND_PORT, port);
+//        overrideProperty(SCHEMA_CACHE_ENABLED, true);
+//        overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
+//        overrideProperty(FRONTEND_THROUGHPUT_TYPE, "fixed");
+//        overrideProperty(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
+//        overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
     }
 
-    public FrontendStarter(int port, boolean sslEnabled) {
-        this(port);
-        overrideProperty(FRONTEND_SSL_ENABLED, sslEnabled);
-    }
+//    public FrontendStarter(int port, boolean sslEnabled) {
+//        this(port);
+//        overrideProperty(FRONTEND_SSL_ENABLED, sslEnabled);
+//    }
 
     public FrontendStarter() {
+        this(-1);
+    }
 
+    public FrontendStarter(int port, List<String> args) {
+        this(port);
+        this.args.addAll(args);
+    }
+
+    public static FrontendStarter withCommonIntegrationTestConfig(int port) {
+        return new FrontendStarter(port, commonIntegrationTestConfig(port));
+    }
+
+    public static FrontendStarter withCommonIntegrationTestConfig(int port, boolean sslEnabled) {
+        List<String> args = commonIntegrationTestConfig(port);
+        args.add(getArgument(FRONTEND_SSL_ENABLED, sslEnabled));
+        return new FrontendStarter(port, args);
+    }
+
+    private static List<String> commonIntegrationTestConfig(int port) {
+        List<String> args = new ArrayList<>();
+        args.add(getArgument(FRONTEND_PORT, port));
+        args.add(getArgument(SCHEMA_CACHE_ENABLED, true));
+        args.add(getArgument(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true));
+        args.add(getArgument(FRONTEND_THROUGHPUT_TYPE, "fixed"));
+        args.add(getArgument(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L));
+        args.add(getArgument(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false));
+        return args;
     }
 
 
@@ -130,23 +158,29 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
 //        configFactory.overrideProperty(config, value);
 //    }
 
-    private void waitForStartup() throws Exception {
-
-        await().atMost(adjust(TEN_SECONDS)).until(() -> {
-            Request request = new Request.Builder()
-                    .url("http://localhost:" + port + "/status/ping")
-                    .build();
-
-            return client.newCall(request).execute().code() == OK.getStatusCode();
-        });
-    }
-
     public void overrideProperty(Configs config, Object value) {
-        args.add("--" + config.getName() + "=" + value);
+//        args.add("--" + config.getName() + "=" + value);
+        args.add(getArgument(config, value));
     }
 
     public void setSpringProfiles(String... profiles) {
         String profilesString = Arrays.stream(profiles).collect(Collectors.joining(",", "", ""));
         args.add("--spring.profiles.active=" + profilesString);
+    }
+
+    private void waitForStartup() throws Exception {
+        if(port != -1) {//TODO - when it should run
+            await().atMost(adjust(TEN_SECONDS)).until(() -> {
+                Request request = new Request.Builder()
+                        .url("http://localhost:" + port + "/status/ping")
+                        .build();
+
+                return client.newCall(request).execute().code() == OK.getStatusCode();
+            });
+        }
+    }
+
+    private static String getArgument(Configs config, Object value) {
+        return "--" + config.getName() + "=" + value;
     }
 }

@@ -115,9 +115,9 @@ public final class HermesFrontend { //TODO - remove
 //        return ServiceLocatorUtilities.bind(uniqueName, binders.toArray(new Binder[binders.size()]));
 //    }
 
-//    public static Builder frontend() { //TODO
-////        return new Builder();
-//    }
+    public static Builder frontend() { //TODO
+//        return new Builder();
+    }
 
 //    public static final class Builder {
 
