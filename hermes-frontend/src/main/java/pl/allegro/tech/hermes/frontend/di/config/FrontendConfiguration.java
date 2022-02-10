@@ -3,13 +3,11 @@ package pl.allegro.tech.hermes.frontend.di.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
 import org.apache.curator.framework.CuratorFramework;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
@@ -77,6 +75,7 @@ public class FrontendConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     @DependsOn("beforeStartupHooksHandler")
+    @Order(LifecycleOrder.SERVER_STARTUP) //TODO - use Order to ensure that server starts before other init methods?
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
@@ -135,7 +134,8 @@ public class FrontendConfiguration {
     }
 
     @Bean(initMethod = "runHooks")
-    @Order(Ordered.HIGHEST_PRECEDENCE)//TODO: use custom eg. BEFORE_STARTUP?
+//    @Order(Ordered.HIGHEST_PRECEDENCE)//TODO: use custom eg. BEFORE_STARTUP?
+    @Order(LifecycleOrder.BEFORE_STARTUP)
     public BeforeStartupHooksHandler beforeStartupHooksHandler(List<BeforeStartupHook> hooks) {
         return new BeforeStartupHooksHandler(hooks);
     }
@@ -248,6 +248,7 @@ public class FrontendConfiguration {
     }
 
     @Bean(initMethod = "extend")
+    @Order(LifecycleOrder.PERSISTENT_BUFFER_STARTUP)//TODO - do we need it? does it really matters?
     public PersistentBufferExtension persistentBufferExtension(ConfigFactory configFactory,
                                                                Clock clock,
                                                                BrokerListeners listeners,
@@ -310,6 +311,7 @@ public class FrontendConfiguration {
     }
 
     @Bean(initMethod = "startup")
+    @Order(LifecycleOrder.AFTER_STARTUP)
     public HealthCheckService healthCheckService() {
         return new HealthCheckService();
     }

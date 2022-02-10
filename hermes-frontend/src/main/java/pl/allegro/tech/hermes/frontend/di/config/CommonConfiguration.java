@@ -6,6 +6,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -131,6 +132,7 @@ public class CommonConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
+    @Order(LifecycleOrder.CACHE_STARTUP)//TODO - does this order really matter?
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                                ConfigFactory config) {
         return new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();

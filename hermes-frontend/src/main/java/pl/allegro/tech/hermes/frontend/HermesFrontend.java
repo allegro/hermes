@@ -38,17 +38,17 @@ public final class HermesFrontend { //TODO - remove
 //            hooksHandler.addShutdownHook(gracefulShutdownHook());
 //        }
 //        if (configFactory.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED)) {
-//            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicMetadataLoadingStartupHook.class));//TODO: order
+//            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicMetadataLoadingStartupHook.class));//TODO: order - ok
 //        }
 //        if (configFactory.getBooleanProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED)) {
-//            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicSchemaLoadingStartupHook.class));//TODO: order
+//            hooksHandler.addBeforeStartHook(serviceLocator.getService(TopicSchemaLoadingStartupHook.class));//TODO: order - ok
 ////        }
 //        hooksHandler.addStartupHook((s) -> s.getService(HealthCheckService.class).startup());
 //        hooksHandler.addShutdownHook(defaultShutdownHook());
-//        if (flushLogsShutdownHookEnabled) { //TODO: property
+//        if (flushLogsShutdownHookEnabled) { //TODO: property - ok?
 //            hooksHandler.addShutdownHook(new FlushLogsShutdownHook());
 //        }
-//        if (!configFactory.getBooleanProperty(FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED)) {//TODO
+//        if (!configFactory.getBooleanProperty(FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED)) {//TODO: property - property - ok?
 //            LoggerConfiguration.disableResponseErrorLogger();
 //        }
 //    }
@@ -84,7 +84,7 @@ public final class HermesFrontend { //TODO - remove
 //        serviceLocator.getService(PersistentBufferExtension.class).extend();
 //        startCaches(serviceLocator);
 
-//        hooksHandler.runBeforeStartHooks(serviceLocator);//TODO: order - before start hooks vs hermes server vs startup hooks
+//        hooksHandler.runBeforeStartHooks(serviceLocator);//TODO: order - before start hooks vs hermes server vs startup hooks - ok?
 //        hermesServer.start();
 //        hooksHandler.startup(serviceLocator);
 //    }
