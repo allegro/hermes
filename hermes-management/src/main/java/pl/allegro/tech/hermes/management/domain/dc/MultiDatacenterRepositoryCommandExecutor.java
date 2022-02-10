@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.dc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class MultiDatacenterRepositoryCommandExecutor {
     }
 
     public <T> void executeByUser(RepositoryCommand<T> command, RequestUser requestUser) {
-        if(requestUser.isAdmin()) execute(command, false, false);
+        if (requestUser.isAdmin()) execute(command, false, false);
         else execute(command);
     }
 
@@ -30,7 +31,7 @@ public class MultiDatacenterRepositoryCommandExecutor {
         execute(command, rollbackEnabled, true);
     }
 
-    private <T> void execute(RepositoryCommand<T> command, boolean isRollbackEnabled, boolean shouldFailOnAnyDcFailure) {
+    private <T> void execute(RepositoryCommand<T> command, boolean isRollbackEnabled, boolean shouldStopExecutionOnFailure) {
         if (isRollbackEnabled) {
             backup(command);
         }
@@ -42,17 +43,16 @@ public class MultiDatacenterRepositoryCommandExecutor {
             try {
                 executedRepoHolders.add(repoHolder);
                 command.execute(repoHolder);
+            } catch (RepositoryNotAvailableException e) {
+                handleExecutionRepositoryNotAvailableException(command, isRollbackEnabled, shouldStopExecutionOnFailure, executedRepoHolders, repoHolder, e);
             } catch (Exception e) {
-                logger.warn("Execute failed with an error", e);
-                if (isRollbackEnabled) rollback(executedRepoHolders, command);
-                if (shouldFailOnAnyDcFailure)
-                    throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
+                handleExecutionException(command, isRollbackEnabled, executedRepoHolders, repoHolder, e);
             }
         }
     }
 
     private <T> void rollback(List<DatacenterBoundRepositoryHolder<T>> repoHolders, RepositoryCommand<T> command) {
-        for (DatacenterBoundRepositoryHolder<T> repoHolder :  repoHolders) {
+        for (DatacenterBoundRepositoryHolder<T> repoHolder : repoHolders) {
             try {
                 command.rollback(repoHolder);
             } catch (Exception e) {
@@ -70,5 +70,18 @@ public class MultiDatacenterRepositoryCommandExecutor {
             throw new InternalProcessingException("Backup procedure for command '" + command +
                     "' failed on DC '" + repoHolder.getDatacenterName() + "'.", e);
         }
+    }
+
+    private <T> void handleExecutionRepositoryNotAvailableException(RepositoryCommand<T> command, boolean isRollbackEnabled, boolean shouldStopExecutionOnFailure, List<DatacenterBoundRepositoryHolder<T>> executedRepoHolders, DatacenterBoundRepositoryHolder<T> repoHolder, RepositoryNotAvailableException e) {
+        logger.warn("Execute failed with an RepositoryNotAvailableException error", e);
+        if (isRollbackEnabled) rollback(executedRepoHolders, command);
+        if (shouldStopExecutionOnFailure)
+            throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
+    }
+
+    private <T> void handleExecutionException(RepositoryCommand<T> command, boolean isRollbackEnabled, List<DatacenterBoundRepositoryHolder<T>> executedRepoHolders, DatacenterBoundRepositoryHolder<T> repoHolder, Exception e) {
+        logger.warn("Execute failed with an error", e);
+        if (isRollbackEnabled) rollback(executedRepoHolders, command);
+        throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
     }
 }

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.dc
 
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException
+import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import spock.lang.Specification
 
@@ -89,7 +90,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         thrown InternalProcessingException
     }
 
-    def "should not rollback and not fail when executing user is admin"() {
+    def "should not rollback and fail when executing user is admin"() {
         given:
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
@@ -98,6 +99,25 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
 
         def command = Mock(RepositoryCommand)
         command.execute(holder2) >> { throw new Exception() }
+
+        when:
+        executor.executeByUser(command, ADMIN)
+
+        then:
+        0 * command.rollback(holder1)
+
+        thrown InternalProcessingException
+    }
+
+    def "should not rollback and not fail when executing user is admin and Zookeper node is broken"() {
+        given:
+        def holder1 = Stub(DatacenterBoundRepositoryHolder)
+        def holder2 = Stub(DatacenterBoundRepositoryHolder)
+
+        def executor = buildExecutor([holder1, holder2], true)
+
+        def command = Mock(RepositoryCommand)
+        command.execute(holder2) >> { throw new RepositoryNotAvailableException("") }
 
         when:
         executor.executeByUser(command, ADMIN)
