@@ -118,14 +118,18 @@ public class FrontendConfiguration {
         return new TopicMetadataLoadingJob(topicMetadataLoadingRunner, config);
     }
 
-    @Bean
+    @Bean//TODO: use as list element or add init method + Order?
     @Conditional(TopicMetadataLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
+    //    @Bean(initMethod = "run")
+//    @Order(LifecycleOrder.BEFORE_STARTUP)
 //    @DependsOn("configFactory")//TODO - do we need it or not?
     public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner) {
         return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner);
     }
 
-    @Bean
+    @Bean//TODO: use as list element or add init method + Order?
+//    @Bean(initMethod = "run")
+//    @Order(LifecycleOrder.BEFORE_STARTUP)
     @Conditional(TopicSchemaLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
     public TopicSchemaLoadingStartupHook topicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                                                        SchemaRepository schemaRepository,
@@ -134,7 +138,7 @@ public class FrontendConfiguration {
     }
 
     @Bean(initMethod = "runHooks")
-//    @Order(Ordered.HIGHEST_PRECEDENCE)//TODO: use custom eg. BEFORE_STARTUP?
+    //TODO: remove?
     @Order(LifecycleOrder.BEFORE_STARTUP)
     public BeforeStartupHooksHandler beforeStartupHooksHandler(List<BeforeStartupHook> hooks) {
         return new BeforeStartupHooksHandler(hooks);
