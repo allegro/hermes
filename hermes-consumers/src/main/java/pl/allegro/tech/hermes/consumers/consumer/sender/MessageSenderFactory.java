@@ -6,11 +6,20 @@ import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedExcep
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MessageSenderFactory {
 
     private final Map<String, ProtocolMessageSenderProvider> protocolProviders = new HashMap<>();
+
+    public MessageSenderFactory(List<ProtocolMessageSenderProvider> providers) {
+        for (ProtocolMessageSenderProvider provider : providers) {
+            for (String protocol : provider.getSupportedProtocols()) {
+                addSupportedProtocol(protocol, provider);
+            }
+        }
+    }
 
     public MessageSender create(Subscription subscription) {
         EndpointAddress endpoint = subscription.getEndpoint();
@@ -22,18 +31,14 @@ public class MessageSenderFactory {
         return provider.create(subscription);
     }
 
-    public void addSupportedProtocol(String protocol, ProtocolMessageSenderProvider provider) {
+    private void addSupportedProtocol(String protocol, ProtocolMessageSenderProvider provider) {
         if (!protocolProviders.containsKey(protocol)) {
-            overrideProtocol(protocol, provider);
+            startProvider(provider);
+            protocolProviders.put(protocol, provider);
         }
     }
 
-    public void overrideProtocol(String protocol, ProtocolMessageSenderProvider provider) {
-        startProvider(provider);
-        protocolProviders.put(protocol, provider);
-    }
-
-    public void startProvider(ProtocolMessageSenderProvider provider) {
+    private void startProvider(ProtocolMessageSenderProvider provider) {
         try {
             provider.start();
         } catch (Exception e) {

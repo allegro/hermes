@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
+import com.google.common.collect.ImmutableSet;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -12,8 +13,10 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Set;
 
 public class JmsHornetQMessageSenderProvider extends AbstractJmsMessageSenderProvider {
+    private static final Set<String> SUPPORTED_PROTOCOLS = ImmutableSet.of("jms");
 
     public JmsHornetQMessageSenderProvider(ConfigFactory configFactory, MetadataAppender<Message> metadataAppender) {
         super(configFactory, metadataAppender);
@@ -31,4 +34,8 @@ public class JmsHornetQMessageSenderProvider extends AbstractJmsMessageSenderPro
         return HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
     }
 
+    @Override
+    public Set<String> getSupportedProtocols() {
+        return SUPPORTED_PROTOCOLS;
+    }
 }
