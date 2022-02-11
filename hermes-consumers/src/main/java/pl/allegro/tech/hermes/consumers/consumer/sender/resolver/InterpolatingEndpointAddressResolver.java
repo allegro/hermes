@@ -2,18 +2,16 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.resolver;
 
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
+import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.InterpolationException;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
-import pl.allegro.tech.hermes.consumers.consumer.Message;
 
-import javax.inject.Inject;
 import java.net.URI;
 
 public class InterpolatingEndpointAddressResolver implements EndpointAddressResolver {
 
     private final UriInterpolator interpolator;
 
-    @Inject
     public InterpolatingEndpointAddressResolver(UriInterpolator interpolator) {
         this.interpolator = interpolator;
     }

@@ -218,7 +218,7 @@ public class ConsumerConfiguration {
         return new MessageBodyInterpolator();
     }
 
-    @Bean
+    @Bean(destroyMethod = "close")
     public Trackers trackers(List<LogRepository> repositories) {
         return new Trackers(repositories);
     }

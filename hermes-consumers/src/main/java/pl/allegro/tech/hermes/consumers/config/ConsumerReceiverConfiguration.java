@@ -45,9 +45,8 @@ public class ConsumerReceiverConfiguration {
     }
 
     @Bean
-    public BasicMessageContentReaderFactory basicMessageContentReaderFactory(MessageContentWrapper
-                                                                                     messageContentWrapper,
-                                                                             KafkaHeaderExtractor kafkaHeaderExtractor) {
+    public MessageContentReaderFactory messageContentReaderFactory(MessageContentWrapper messageContentWrapper,
+                                                                   KafkaHeaderExtractor kafkaHeaderExtractor) {
         return new BasicMessageContentReaderFactory(messageContentWrapper, kafkaHeaderExtractor);
     }
 

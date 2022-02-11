@@ -7,7 +7,6 @@ import org.eclipse.jetty.util.HttpCookieStore;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 
-import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT;
@@ -27,7 +26,6 @@ public class HttpClientsFactory {
     private final InstrumentedExecutorServiceFactory executorFactory;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
-    @Inject
     public HttpClientsFactory(ConfigFactory configFactory,
                               InstrumentedExecutorServiceFactory executorFactory,
                               SslContextFactoryProvider sslContextFactoryProvider) {

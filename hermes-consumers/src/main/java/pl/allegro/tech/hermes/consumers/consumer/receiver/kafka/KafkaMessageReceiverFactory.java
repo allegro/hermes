@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
-import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.ExponentiallyGrowingIdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.IdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
@@ -18,9 +17,9 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ThrottlingMessageReceiver;
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Properties;
 
@@ -62,14 +61,13 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final ConfigFactory configs;
     private final MessageContentReaderFactory messageContentReaderFactory;
     private final HermesMetrics hermesMetrics;
-    private OffsetQueue offsetQueue;
+    private final OffsetQueue offsetQueue;
     private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final FilterChainFactory filterChainFactory;
     private final Trackers trackers;
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
 
-    @Inject
     public KafkaMessageReceiverFactory(ConfigFactory configs,
                                        MessageContentReaderFactory messageContentReaderFactory,
                                        HermesMetrics hermesMetrics,

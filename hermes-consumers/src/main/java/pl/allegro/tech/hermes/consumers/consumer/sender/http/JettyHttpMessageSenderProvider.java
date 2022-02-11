@@ -22,8 +22,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -43,9 +41,8 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final SendingResultHandlers sendingResultHandlers;
     private final HttpRequestFactoryProvider requestFactoryProvider;
 
-    @Inject
     public JettyHttpMessageSenderProvider(
-            @Named("http-1-client") HttpClient httpClient,
+            HttpClient httpClient,
             Http2ClientHolder http2ClientHolder,
             EndpointAddressResolver endpointAddressResolver,
             MetadataAppender<Request> metadataAppender,

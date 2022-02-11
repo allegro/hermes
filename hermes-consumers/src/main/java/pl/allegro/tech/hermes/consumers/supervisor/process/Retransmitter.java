@@ -10,18 +10,15 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
-import javax.inject.Inject;
-
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class Retransmitter {
 
     private static final Logger logger = LoggerFactory.getLogger(Retransmitter.class);
 
-    private SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
-    private String brokersClusterName;
+    private final SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator;
+    private final String brokersClusterName;
 
-    @Inject
     public Retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
                          ConfigFactory configs) {
         this.subscriptionOffsetChangeIndicator = subscriptionOffsetChangeIndicator;

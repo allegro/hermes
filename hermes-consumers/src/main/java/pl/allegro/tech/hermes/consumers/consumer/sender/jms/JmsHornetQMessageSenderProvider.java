@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 
-import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import java.net.URI;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 
 public class JmsHornetQMessageSenderProvider extends AbstractJmsMessageSenderProvider {
 
-    @Inject
     public JmsHornetQMessageSenderProvider(ConfigFactory configFactory, MetadataAppender<Message> metadataAppender) {
         super(configFactory, metadataAppender);
     }

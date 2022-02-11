@@ -6,8 +6,6 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
-import javax.inject.Inject;
-
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_BUSY_TOLERANCE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_HISTORY_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_MAX_RATE;
@@ -18,7 +16,6 @@ public class MaxRateProviderFactory {
 
     private final Creator providerCreator;
 
-    @Inject
     public MaxRateProviderFactory(ConfigFactory configFactory,
                                   MaxRateRegistry maxRateRegistry,
                                   MaxRateSupervisor maxRateSupervisor,

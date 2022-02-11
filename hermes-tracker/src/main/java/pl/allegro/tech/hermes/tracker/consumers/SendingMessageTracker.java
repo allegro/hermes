@@ -37,8 +37,4 @@ class SendingMessageTracker implements SendingTracker {
     public void logFiltered(MessageMetadata message, String reason) {
         repositories.forEach(r -> r.logFiltered(message, clock.millis(), reason));
     }
-
-    void add(LogRepository logRepository) {
-        repositories.add(logRepository);
-    }
 }

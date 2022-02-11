@@ -27,19 +27,29 @@ metrics.prefix          | prefix for all metrics   | stats.tech.hermes
 
 ## Custom
 
-You can register any custom reporter that is compatible with Dropwizard `MetricRegistry`. Use programmatic API to do so.
-The code is the same for both Frontend and Consumers module.
+You can register any custom reporter that is compatible with Dropwizard `MetricRegistry`. 
+For the Frontend module use programmatic API to do so:
 
 ```java
 HermesFrontend.Builder builder = HermesFrontend.frontend();
-/*
-    or for Consumers:
-    HermesConsumerBuilder builder = HermesConsumers.consumers()
-*/
 
 builder.withStartupHook(serviceLocator -> {
     MyMetricsReporter reporter = new MyMetricsReporter(serviceLocator.getService(MetricRegistry.class));
     reporter.start();
 });
 
+```
+
+For the Consumers module register the reporter as a bean:
+
+```java
+@Configuration
+public class CustomHermesConsumersConfiguration {
+
+    @Bean
+    @Primary
+    public MetricRegistry myMetricRegistry(MetricRegistry metricRegistry) {
+        return new MyMetricsReporter(metricRegistry);
+    }
+}
 ```

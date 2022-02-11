@@ -10,7 +10,9 @@ dependencies {
     compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.8'
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-mvc-freemarker', version: versions.jersey
 
-    compile 'io.swagger:swagger-jersey2-jaxrs:1.6.3'
+    compile (group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.6.3') {
+        exclude group: 'javax.validation', module: 'validation-api'
+    }
 
     compile group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka
 

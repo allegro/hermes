@@ -6,14 +6,11 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProvider;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
 
-import javax.inject.Inject;
-
 public class OutputRateCalculatorFactory {
 
     private final ConfigFactory configFactory;
     private final MaxRateProviderFactory maxRateProviderFactory;
 
-    @Inject
     public OutputRateCalculatorFactory(ConfigFactory configFactory,
                                        MaxRateProviderFactory maxRateProviderFactory) {
         this.configFactory = configFactory;

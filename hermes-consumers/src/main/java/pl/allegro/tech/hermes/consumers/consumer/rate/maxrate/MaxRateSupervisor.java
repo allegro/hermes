@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Collections;
 import java.util.Set;
@@ -28,7 +27,6 @@ public class MaxRateSupervisor implements Runnable {
     private final MaxRateRegistry maxRateRegistry;
     private ScheduledFuture<?> updateJob;
 
-    @Inject
     public MaxRateSupervisor(ConfigFactory configFactory,
                              ClusterAssignmentCache clusterAssignmentCache,
                              MaxRateRegistry maxRateRegistry,

@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -45,7 +44,6 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     private final ScheduledExecutorService scheduledExecutor;
 
-    @Inject
     public NonblockingConsumersSupervisor(ConfigFactory configFactory,
                                           ConsumersExecutorService executor,
                                           ConsumerFactory consumerFactory,
