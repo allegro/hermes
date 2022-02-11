@@ -75,9 +75,13 @@ public class ConsumersRuntimeMonitor implements Runnable {
     }
 
     public void shutdown() throws InterruptedException {
-        monitoringTask.cancel(false);
-        executor.shutdown();
-        executor.awaitTermination(1, TimeUnit.MINUTES);
+        try {
+            monitoringTask.cancel(false);
+            executor.shutdown();
+            executor.awaitTermination(1, TimeUnit.MINUTES);
+        } catch (InterruptedException exception) {
+            logger.warn("Got exception when stopping consumers runtime monitor", exception);
+        }
     }
 
     private void ensureCorrectness(Set<SubscriptionName> missing, Set<SubscriptionName> oversubscribed) {

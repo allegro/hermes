@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper.cache;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.cache.queue.LinkedHashSetBlockingQueue;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
@@ -14,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class ModelAwareZookeeperNotifyingCache {
+
+    private static final Logger logger = LoggerFactory.getLogger(ModelAwareZookeeperNotifyingCache.class);
 
     private static final int GROUP_LEVEL = 0;
 
@@ -45,9 +49,13 @@ public class ModelAwareZookeeperNotifyingCache {
         cache.start();
     }
 
-    public void stop() throws Exception {
-        cache.stop();
-        executor.shutdownNow();
+    public void stop() {
+        try {
+            cache.stop();
+            executor.shutdownNow();
+        } catch (Exception e) {
+            logger.warn("Failed to stop Zookeeper cache", e);
+        }
     }
 
     public void registerGroupCallback(Consumer<PathChildrenCacheEvent> callback) {

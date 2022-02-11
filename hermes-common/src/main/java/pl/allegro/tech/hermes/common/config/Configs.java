@@ -4,6 +4,8 @@ import com.google.common.io.Files;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 
+import java.util.Arrays;
+
 import static java.lang.Math.abs;
 import static java.util.UUID.randomUUID;
 
@@ -326,6 +328,13 @@ public enum Configs {
     Configs(String name, Object defaultValue) {
         this.name = name;
         this.defaultValue = defaultValue;
+    }
+
+    public static Configs getForName(String name) {
+        return Arrays.stream(Configs.values())
+                .filter(configs -> configs.name.equals(name))
+                .reduce((a, b) -> { throw new DuplicateConfigPropertyException(name); })
+                .orElseThrow(() -> new MissingConfigPropertyException(name));
     }
 
     public String getName() {

@@ -4,31 +4,38 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeyManagersProvider;
+import pl.allegro.tech.hermes.common.ssl.KeystoreConfigurationException;
+import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.TrustManagersProvider;
-import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
-import pl.allegro.tech.hermes.common.ssl.KeystoreConfigurationException;
 import pl.allegro.tech.hermes.common.ssl.TruststoreConfigurationException;
 import pl.allegro.tech.hermes.common.ssl.jvm.JvmKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.jvm.JvmTrustManagerProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
 
-import javax.inject.Inject;
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_FORMAT;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_SOURCE;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_FORMAT;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_LOCATION;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_PASSWORD;
+import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_SOURCE;
 import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JRE;
 import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 
 public class SslContextFactoryProvider {
 
-    @Inject
-    @org.jvnet.hk2.annotations.Optional
-    SslContextFactory sslContextFactory;
+    private final SslContextFactory sslContextFactory;
+    private final ConfigFactory configFactory;
 
-    @Inject
-    ConfigFactory configFactory;
+    public SslContextFactoryProvider(SslContextFactory sslContextFactory, ConfigFactory configFactory) {
+        this.sslContextFactory = sslContextFactory;
+        this.configFactory = configFactory;
+    }
 
     public Optional<org.eclipse.jetty.util.ssl.SslContextFactory> provideSslContextFactory() {
         if (configFactory.getBooleanProperty(Configs.CONSUMER_SSL_ENABLED)) {

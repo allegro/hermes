@@ -16,6 +16,8 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
+import pl.allegro.tech.hermes.consumers.config.SupervisorConfiguration;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -23,7 +25,6 @@ import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistryPaths;
 import pl.allegro.tech.hermes.consumers.subscription.cache.NotificationsBasedSubscriptionCache;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
-import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdsCacheFactory;
 import pl.allegro.tech.hermes.consumers.subscription.id.ZookeeperSubscriptionIdProvider;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
@@ -162,20 +163,23 @@ class ConsumerTestRuntimeEnvironment {
         );
         subscriptionsCaches.add(subscriptionsCache);
 
-        SubscriptionIds subscriptionIds = new SubscriptionIdsCacheFactory(notificationsBus, subscriptionsCache,
-                new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths), consumerConfig).provide();
+        SubscriptionConfiguration subscriptionConfiguration = new SubscriptionConfiguration();
+        SubscriptionIds subscriptionIds = subscriptionConfiguration.subscriptionIds(notificationsBus, subscriptionsCache,
+                new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths), consumerConfig);
 
-        ConsumerAssignmentCache consumerAssignmentCache = new ConsumerAssignmentCacheFactory(
+        SupervisorConfiguration supervisorConfiguration = new SupervisorConfiguration();
+
+        ConsumerAssignmentCache consumerAssignmentCache = supervisorConfiguration.consumerAssignmentCache(
                 curator, consumerConfig, zookeeperPaths, subscriptionsCache, subscriptionIds
-        ).provide();
+        );
 
-        ClusterAssignmentCache clusterAssignmentCache = new ClusterAssignmentCacheFactory(
+        ClusterAssignmentCache clusterAssignmentCache = supervisorConfiguration.clusterAssignmentCache(
                 curator, consumerConfig, consumerAssignmentCache, zookeeperPaths, subscriptionIds, nodesRegistry
-        ).provide();
+        );
 
-        ConsumerAssignmentRegistry consumerAssignmentRegistry = new ConsumerAssignmentRegistryFactory(
+        ConsumerAssignmentRegistry consumerAssignmentRegistry = supervisorConfiguration.consumerAssignmentRegistry(
                 curator, consumerConfig, zookeeperPaths, consumerAssignmentCache, subscriptionIds
-        ).provide();
+        );
 
 
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
