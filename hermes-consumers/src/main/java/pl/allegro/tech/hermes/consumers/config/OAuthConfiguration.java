@@ -7,7 +7,6 @@ import org.eclipse.jetty.client.HttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
@@ -66,7 +65,7 @@ public class OAuthConfiguration {
     }
 
     @Bean
-    public OAuthProvidersNotifyingCache oAuthProvidersNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
+    public OAuthProvidersNotifyingCache oAuthProvidersNotifyingCache(CuratorFramework curator,
                                                                      ZookeeperPaths paths,
                                                                      ObjectMapper objectMapper) {
         String path = paths.oAuthProvidersPath();

@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
@@ -76,7 +75,7 @@ import static java.util.Collections.emptyList;
 public class CommonConfiguration {
 
     @Bean
-    public SubscriptionRepository subscriptionRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+    public SubscriptionRepository subscriptionRepository(CuratorFramework zookeeper,
                                                          ZookeeperPaths paths,
                                                          ObjectMapper mapper,
                                                          TopicRepository topicRepository) {
@@ -84,14 +83,14 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public OAuthProviderRepository oAuthProviderRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+    public OAuthProviderRepository oAuthProviderRepository(CuratorFramework zookeeper,
                                                            ZookeeperPaths paths,
                                                            ObjectMapper mapper) {
         return new OAuthProviderRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
     @Bean
-    public TopicRepository topicRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+    public TopicRepository topicRepository(CuratorFramework zookeeper,
                                            ZookeeperPaths paths,
                                            ObjectMapper mapper,
                                            GroupRepository groupRepository) {
@@ -99,16 +98,12 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public GroupRepository groupRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
-                                           ZookeeperPaths paths,
-                                           ObjectMapper mapper) {
+    public GroupRepository groupRepository(CuratorFramework zookeeper, ZookeeperPaths paths, ObjectMapper mapper) {
         return new GroupRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
     @Bean(destroyMethod = "close")
-    @Named(CuratorType.HERMES)
-    public CuratorFramework hermesCurator(ConfigFactory configFactory,
-                                          CuratorClientFactory curatorClientFactory) {
+    public CuratorFramework hermesCurator(ConfigFactory configFactory, CuratorClientFactory curatorClientFactory) {
         return new HermesCuratorClientFactory(configFactory, curatorClientFactory).provide();
     }
 
@@ -124,13 +119,12 @@ public class CommonConfiguration {
     }
 
     @Bean(destroyMethod = "stop")
-    public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
-                                                                               ConfigFactory config) {
+    public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(CuratorFramework curator, ConfigFactory config) {
         return new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();
     }
 
     @Bean
-    public UndeliveredMessageLog undeliveredMessageLog(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+    public UndeliveredMessageLog undeliveredMessageLog(CuratorFramework zookeeper,
                                                        ZookeeperPaths paths,
                                                        ObjectMapper mapper) {
         return new UndeliveredMessageLogFactory(zookeeper, paths, mapper).provide();
@@ -143,7 +137,7 @@ public class CommonConfiguration {
 
     @Bean
     public ZookeeperAdminCache zookeeperAdminCache(ZookeeperPaths zookeeperPaths,
-                                                   @Named(CuratorType.HERMES) CuratorFramework client,
+                                                   CuratorFramework client,
                                                    ObjectMapper objectMapper,
                                                    Clock clock) {
         return new ZookeeperAdminCache(zookeeperPaths, client, objectMapper, clock);
@@ -212,7 +206,7 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public WorkloadConstraintsRepository workloadConstraintsRepository(@Named(CuratorType.HERMES) CuratorFramework curator,
+    public WorkloadConstraintsRepository workloadConstraintsRepository(CuratorFramework curator,
                                                                        ObjectMapper mapper,
                                                                        ZookeeperPaths paths) {
         return new WorkloadConstraintsRepositoryFactory(curator, mapper, paths).provide();
@@ -253,7 +247,7 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public SharedCounter sharedCounter(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+    public SharedCounter sharedCounter(CuratorFramework zookeeper,
                                        ConfigFactory config) {
         return new SharedCounterFactory(zookeeper, config).provide();
     }
@@ -264,10 +258,9 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicatorFactory(
-            @Named(CuratorType.HERMES) CuratorFramework zookeeper,
-            ZookeeperPaths paths,
-            SubscriptionRepository subscriptionRepository) {
+    public SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicatorFactory(CuratorFramework zookeeper,
+                                                                                      ZookeeperPaths paths,
+                                                                                      SubscriptionRepository subscriptionRepository) {
         return new SubscriptionOffsetChangeIndicatorFactory(zookeeper, paths, subscriptionRepository).provide();
     }
 
