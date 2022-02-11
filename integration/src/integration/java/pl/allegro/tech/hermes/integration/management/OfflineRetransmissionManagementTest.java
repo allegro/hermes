@@ -80,8 +80,8 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         assertThat(response).containsMessages(
                 "sourceTopic may not be empty",
                 "targetTopic may not be empty",
-                "startTimestamp may not be null",
-                "endTimestamp may not be null");
+                "endTimestamp must not be null",
+                "endTimestamp must not be null");
     }
 
     @Test
