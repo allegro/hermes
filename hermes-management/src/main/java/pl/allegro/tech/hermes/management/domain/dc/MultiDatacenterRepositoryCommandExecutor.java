@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
+import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +17,16 @@ public class MultiDatacenterRepositoryCommandExecutor {
 
     private final RepositoryManager repositoryManager;
     private final boolean rollbackEnabled;
+    private final ModeService modeService;
 
-    public MultiDatacenterRepositoryCommandExecutor(RepositoryManager repositoryManager, boolean rollbackEnabled) {
+    public MultiDatacenterRepositoryCommandExecutor(RepositoryManager repositoryManager, boolean rollbackEnabled, ModeService modeService) {
         this.repositoryManager = repositoryManager;
         this.rollbackEnabled = rollbackEnabled;
+        this.modeService = modeService;
     }
 
     public <T> void executeByUser(RepositoryCommand<T> command, RequestUser requestUser) {
-        if (requestUser.isAdmin()) execute(command, false, false);
+        if (requestUser.isAdmin() && modeService.isReadOnlyEnabled()) execute(command, false, false);
         else execute(command);
     }
 

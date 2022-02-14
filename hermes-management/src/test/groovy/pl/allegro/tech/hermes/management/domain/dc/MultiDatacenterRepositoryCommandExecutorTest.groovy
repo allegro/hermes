@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.dc
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException
 import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser
+import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import spock.lang.Specification
 
 
@@ -40,7 +41,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], true)
+        def executor = buildExecutor([holder1, holder2], true, false)
 
         def command = Mock(RepositoryCommand)
 
@@ -57,7 +58,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], true)
+        def executor = buildExecutor([holder1, holder2], true, false)
 
         def command = Mock(RepositoryCommand)
         command.execute(holder2) >> { throw new Exception() }
@@ -76,7 +77,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], false)
+        def executor = buildExecutor([holder1, holder2], false, false)
 
         def command = Mock(RepositoryCommand)
         command.execute(holder2) >> { throw new Exception() }
@@ -90,12 +91,31 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         thrown InternalProcessingException
     }
 
-    def "should not rollback and fail when executing user is admin"() {
+    def "should rollback and fail when executing user is admin and mode is not read only"() {
         given:
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], false)
+        def executor = buildExecutor([holder1, holder2], true, false)
+
+        def command = Mock(RepositoryCommand)
+        command.execute(holder2) >> { throw new Exception() }
+
+        when:
+        executor.executeByUser(command, ADMIN)
+
+        then:
+        1 * command.rollback(holder1)
+
+        thrown InternalProcessingException
+    }
+
+    def "should not rollback and should fail when executing user is admin and mode is read only and general fail occurs"() {
+        given:
+        def holder1 = Stub(DatacenterBoundRepositoryHolder)
+        def holder2 = Stub(DatacenterBoundRepositoryHolder)
+
+        def executor = buildExecutor([holder1, holder2], false, true)
 
         def command = Mock(RepositoryCommand)
         command.execute(holder2) >> { throw new Exception() }
@@ -114,7 +134,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], true)
+        def executor = buildExecutor([holder1, holder2], true, true)
 
         def command = Mock(RepositoryCommand)
         command.execute(holder2) >> { throw new RepositoryNotAvailableException("") }
@@ -132,7 +152,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], isRollbackEnabled)
+        def executor = buildExecutor([holder1, holder2], isRollbackEnabled, false)
 
         def command = Mock(RepositoryCommand)
         command.execute(holder2) >> { throw new Exception() }
@@ -148,13 +168,17 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
 
     private buildExecutor(boolean rollbackEnabled) {
         def repositoryManager = Stub(RepositoryManager)
-        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled)
+        def modeService = Stub(ModeService)
+        modeService.isReadOnlyEnabled() >> false
+        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled, modeService)
     }
 
-    private buildExecutor(List dcHolders, boolean rollbackEnabled) {
+    private buildExecutor(List dcHolders, boolean rollbackEnabled, boolean isReadOnly) {
         def repositoryManager = Stub(RepositoryManager)
         repositoryManager.getRepositories(_) >> dcHolders
-        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled)
+        def modeService = Stub(ModeService)
+        modeService.isReadOnlyEnabled() >> isReadOnly
+        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled, modeService)
     }
 
 }
