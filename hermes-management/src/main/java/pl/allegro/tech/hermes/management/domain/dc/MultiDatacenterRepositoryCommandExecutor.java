@@ -47,9 +47,14 @@ public class MultiDatacenterRepositoryCommandExecutor {
                 executedRepoHolders.add(repoHolder);
                 command.execute(repoHolder);
             } catch (RepositoryNotAvailableException e) {
-                handleExecutionRepositoryNotAvailableException(command, isRollbackEnabled, shouldStopExecutionOnFailure, executedRepoHolders, repoHolder, e);
+                logger.warn("Execute failed with an RepositoryNotAvailableException error", e);
+                if (isRollbackEnabled) rollback(executedRepoHolders, command);
+                if (shouldStopExecutionOnFailure)
+                    throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
             } catch (Exception e) {
-                handleExecutionException(command, isRollbackEnabled, executedRepoHolders, repoHolder, e);
+                logger.warn("Execute failed with an error", e);
+                if (isRollbackEnabled) rollback(executedRepoHolders, command);
+                throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
             }
         }
     }
@@ -75,16 +80,4 @@ public class MultiDatacenterRepositoryCommandExecutor {
         }
     }
 
-    private <T> void handleExecutionRepositoryNotAvailableException(RepositoryCommand<T> command, boolean isRollbackEnabled, boolean shouldStopExecutionOnFailure, List<DatacenterBoundRepositoryHolder<T>> executedRepoHolders, DatacenterBoundRepositoryHolder<T> repoHolder, RepositoryNotAvailableException e) {
-        logger.warn("Execute failed with an RepositoryNotAvailableException error", e);
-        if (isRollbackEnabled) rollback(executedRepoHolders, command);
-        if (shouldStopExecutionOnFailure)
-            throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
-    }
-
-    private <T> void handleExecutionException(RepositoryCommand<T> command, boolean isRollbackEnabled, List<DatacenterBoundRepositoryHolder<T>> executedRepoHolders, DatacenterBoundRepositoryHolder<T> repoHolder, Exception e) {
-        logger.warn("Execute failed with an error", e);
-        if (isRollbackEnabled) rollback(executedRepoHolders, command);
-        throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
-    }
 }
