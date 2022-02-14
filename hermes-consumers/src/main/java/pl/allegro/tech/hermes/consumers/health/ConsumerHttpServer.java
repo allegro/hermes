@@ -6,7 +6,6 @@ import com.sun.net.httpserver.HttpServer;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -23,7 +22,6 @@ public class ConsumerHttpServer {
 
     private static final String STATUS_UP = "{\"status\": \"UP\"}";
 
-    @Inject
     public ConsumerHttpServer(ConfigFactory configFactory, ConsumerMonitor monitor, ObjectMapper mapper) throws IOException {
         this.mapper = mapper;
         server = createServer(configFactory.getIntProperty(Configs.CONSUMER_HEALTH_CHECK_PORT));

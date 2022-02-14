@@ -22,10 +22,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProvider {
 
@@ -42,17 +41,18 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final HttpHeadersProvidersFactory httpHeadersProviderFactory;
     private final SendingResultHandlers sendingResultHandlers;
     private final HttpRequestFactoryProvider requestFactoryProvider;
+    private final Set<String> supportedProtocols;
 
-    @Inject
     public JettyHttpMessageSenderProvider(
-            @Named("http-1-client") HttpClient httpClient,
+            HttpClient httpClient,
             Http2ClientHolder http2ClientHolder,
             EndpointAddressResolver endpointAddressResolver,
             MetadataAppender<Request> metadataAppender,
             HttpAuthorizationProviderFactory authorizationProviderFactory,
             HttpHeadersProvidersFactory httpHeadersProviderFactory,
             SendingResultHandlers sendingResultHandlers,
-            HttpRequestFactoryProvider requestFactoryProvider) {
+            HttpRequestFactoryProvider requestFactoryProvider,
+            Set<String> supportedProtocols) {
         this.httpClient = httpClient;
         this.http2ClientHolder = http2ClientHolder;
         this.endpointAddressResolver = endpointAddressResolver;
@@ -61,6 +61,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         this.httpHeadersProviderFactory = httpHeadersProviderFactory;
         this.sendingResultHandlers = sendingResultHandlers;
         this.requestFactoryProvider = requestFactoryProvider;
+        this.supportedProtocols = supportedProtocols;
     }
 
     @Override
@@ -76,6 +77,11 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         } else {
             return new JettyMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
         }
+    }
+
+    @Override
+    public Set<String> getSupportedProtocols() {
+        return supportedProtocols;
     }
 
     private HttpHeadersProvider getHttpRequestHeadersProvider(Subscription subscription) {

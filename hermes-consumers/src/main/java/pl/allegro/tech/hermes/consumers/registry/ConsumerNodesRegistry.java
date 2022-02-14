@@ -6,6 +6,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
+import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -124,10 +125,12 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
                         .withMode(EPHEMERAL).forPath(nodePath);
                 logger.info("Registered in consumer nodes registry as {}", consumerNodeId);
             }
-            refresh();
+        } catch (NodeExistsException e) {
+            // Ignore as it is a race condition between threads trying to register the consumer node.
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
+        refresh();
     }
 
     private List<String> findDeadConsumers(long currentTime) {

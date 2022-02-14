@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,7 @@ import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import javax.inject.Named;
 import javax.jms.Message;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -53,19 +55,13 @@ public class ConsumerSenderConfiguration {
         return new HttpMessageBatchSenderFactory(configFactory, resultHandlers);
     }
 
-    @Bean
-    public MessageSenderFactory messageSenderFactory(ProtocolMessageSenderProvider defaultHttpMessageSenderProvider,
-                                                     ProtocolMessageSenderProvider defaultJmsMessageSenderProvider) {
-        MessageSenderFactory factory = new MessageSenderFactory();
-        factory.addSupportedProtocol("http", defaultHttpMessageSenderProvider);
-        factory.addSupportedProtocol("https", defaultHttpMessageSenderProvider);
-        factory.addSupportedProtocol("jms", defaultJmsMessageSenderProvider);
-        return factory;
+    @Bean(destroyMethod = "closeProviders")
+    public MessageSenderFactory messageSenderFactory(List<ProtocolMessageSenderProvider> providers) {
+        return new MessageSenderFactory(providers);
     }
 
     @Bean(name = "defaultHttpMessageSenderProvider")
-    public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(@Named("http-1-client") HttpClient
-                                                                                httpClient,
+    public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(@Named("http-1-client") HttpClient httpClient,
                                                                         Http2ClientHolder http2ClientHolder,
                                                                         EndpointAddressResolver endpointAddressResolver,
                                                                         MetadataAppender<Request> metadataAppender,
@@ -81,7 +77,8 @@ public class ConsumerSenderConfiguration {
                 authorizationProviderFactory,
                 httpHeadersProviderFactory,
                 sendingResultHandlers,
-                requestFactoryProvider
+                requestFactoryProvider,
+                ImmutableSet.of("http", "https")
         );
     }
 
@@ -106,8 +103,7 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public Http2ClientHolder http2ClientHolder(HttpClientsFactory httpClientsFactory,
-                                               ConfigFactory configFactory) {
+    public Http2ClientHolder http2ClientHolder(HttpClientsFactory httpClientsFactory, ConfigFactory configFactory) {
         if (!configFactory.getBooleanProperty(CONSUMER_HTTP2_ENABLED)) {
             return new Http2ClientHolder(null);
         } else {

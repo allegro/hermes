@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +28,6 @@ public class OAuthConsumerAuthorizationHandler implements ConsumerAuthorizationH
 
     private final RateLimiter missingHandlersCreationRateLimiter;
 
-    @Inject
     public OAuthConsumerAuthorizationHandler(OAuthSubscriptionHandlerFactory handlerFactory,
                                              ConfigFactory configFactory,
                                              OAuthProvidersNotifyingCache oAuthProvidersCache) {

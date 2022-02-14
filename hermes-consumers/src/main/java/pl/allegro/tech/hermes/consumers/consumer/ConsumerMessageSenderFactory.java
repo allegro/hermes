@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +39,6 @@ public class ConsumerMessageSenderFactory {
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final ExecutorService rateLimiterReportingExecutor;
 
-    @Inject
     public ConsumerMessageSenderFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics, MessageSenderFactory messageSenderFactory,
                                         Trackers trackers, FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
                                         UndeliveredMessageLog undeliveredMessageLog, Clock clock,

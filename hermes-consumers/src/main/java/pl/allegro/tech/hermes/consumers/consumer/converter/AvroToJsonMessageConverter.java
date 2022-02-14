@@ -1,21 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.converter;
 
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.DecoderFactory;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.message.converter.AvroBinaryDecoders;
-import pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import tech.allegro.schema.json2avro.converter.AvroConversionException;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
-
-import javax.inject.Inject;
-import java.io.IOException;
 
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
@@ -26,7 +17,6 @@ public class AvroToJsonMessageConverter implements MessageConverter {
 
     private final JsonAvroConverter converter;
 
-    @Inject
     public AvroToJsonMessageConverter() {
         this.converter = new JsonAvroConverter();
     }

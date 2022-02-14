@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
-import javax.inject.Inject;
 import java.util.Optional;
 
 public class OAuthSubscriptionAccessTokens implements OAuthAccessTokens {
@@ -19,7 +18,6 @@ public class OAuthSubscriptionAccessTokens implements OAuthAccessTokens {
 
     private final OAuthAccessTokensLoader tokenLoader;
 
-    @Inject
     public OAuthSubscriptionAccessTokens(OAuthAccessTokensLoader tokenLoader,
                                          ConfigFactory configFactory) {
         this.tokenLoader = tokenLoader;

@@ -7,23 +7,16 @@ import java.util.List;
 
 public class Trackers {
 
+    private final List<LogRepository> repositories;
     private final SendingMessageTracker sendingMessageTracker;
     private final DiscardedSendingTracker discardedSendingTracker;
     private final NoOperationSendingTracker noOperationDeliveryTracker;
 
     public Trackers(List<LogRepository> repositories) {
-        this(new SendingMessageTracker(repositories, Clock.systemUTC()),
-                new DiscardedSendingTracker(repositories, Clock.systemUTC()),
-                new NoOperationSendingTracker());
-    }
-
-    Trackers(SendingMessageTracker sendingMessageTracker,
-             DiscardedSendingTracker discardedSendingTracker,
-             NoOperationSendingTracker noOperationDeliveryTracker) {
-
-        this.sendingMessageTracker = sendingMessageTracker;
-        this.discardedSendingTracker = discardedSendingTracker;
-        this.noOperationDeliveryTracker = noOperationDeliveryTracker;
+        this.repositories = repositories;
+        this.sendingMessageTracker = new SendingMessageTracker(repositories, Clock.systemUTC());
+        this.discardedSendingTracker = new DiscardedSendingTracker(repositories, Clock.systemUTC());
+        this.noOperationDeliveryTracker = new NoOperationSendingTracker();
     }
 
     public SendingTracker get(Subscription subscription) {
@@ -39,7 +32,7 @@ public class Trackers {
         return noOperationDeliveryTracker;
     }
 
-    public void add(LogRepository logRepository) {
-        sendingMessageTracker.add(logRepository);
+    public void close() {
+        repositories.forEach(LogRepository::close);
     }
 }

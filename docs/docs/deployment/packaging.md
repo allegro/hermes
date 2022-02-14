@@ -12,10 +12,6 @@ git clone https://github.com/allegro/hermes.git
 # build hermes
 cd hermes
 ./gradlew distZip -Pdistribution
-
-# build hermes-console
-cd hermes-console
-./package.sh
 ```
 
 This will cause distribution packages for all modules to build. Look for them in:
@@ -23,7 +19,6 @@ This will cause distribution packages for all modules to build. Look for them in
 * hermes-frontend/build/distribution/hermes-frontend-{version}.zip
 * hermes-consumers/build/distribution/hermes-consumers-{version}.zip
 * hermes-management/build/distribution/hermes-management-{version}.zip
-* hermes-console/dist/hermes-console.zip
 
 Having deployed Vanilla Hermes, you can only use configuration options to alter the behavior.
 
@@ -65,28 +60,25 @@ Create any type of runnable (*distZip* or *fatJar*) and deploy it.
 
 ### Consumers
 
-Add dependency on Consumers module:
+The Consumers module is a [Spring Boot](http://projects.spring.io/spring-boot/) project. Thus, it can be extended
+like any other Spring application.
 
 ```groovy
 compile group: 'pl.allegro.tech.hermes', name: 'hermes-consumers', version: versions.hermes
 ```
 
-Use `HermesConsumersBuilder` to create usable `HermesConsumers` instance and start it:
-
 ```java
+@ComponentScan(
+        basePackages = {"pl.allegro.tech.hermes.consumers", "com.example.my-hermes.consumers"},
+        excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = HermesConsumers.class)}
+)
+@SpringBootApplication
 public class MyHermesConsumers {
 
-    private static final Logger logger = LoggerFactory.logger(MyHermesConsumers.class);
-
-    public static final void main(String... args) {
-        HermesConsumersBuilder builder = HermesConsumers.consumers()
-            .withStartupHook((serviceLocator) -> logger.info("Starting MyHermes"))
-            .withShutdownHook((serviceLocator) -> logger.info("Stopping MyHermes"));
-        /* introduce additional configuration like message senders etc */
-
-        HermesConsumers consumers = builder.build();
-        consumers.start();
+    public static void main(String... args) {
+        SpringApplication.run(MyHermesConsumers.class, args);
     }
+
 }
 ```
 
@@ -102,11 +94,11 @@ compile group: 'pl.allegro.tech.hermes', name: 'hermes-management', version: ver
 ```
 
 ```java
-@Configuration
 @ComponentScan(
         basePackages = {"pl.allegro.tech.hermes.management", "com.example.my-hermes.management"},
         excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = HermesManagement.class)}
 )
+@SpringBootApplication
 public class MyHermesManagement {
 
     public static void main(String... args) {

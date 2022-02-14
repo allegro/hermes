@@ -8,15 +8,12 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandle
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.DefaultBatchHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 
-import javax.inject.Inject;
-
 import static com.google.common.base.Preconditions.checkState;
 
 public class HttpMessageBatchSenderFactory implements MessageBatchSenderFactory {
-    private ConfigFactory configFactory;
-    private SendingResultHandlers resultHandlers;
+    private final ConfigFactory configFactory;
+    private final SendingResultHandlers resultHandlers;
 
-    @Inject
     public HttpMessageBatchSenderFactory(ConfigFactory configFactory, SendingResultHandlers resultHandlers) {
         this.configFactory = configFactory;
         this.resultHandlers = resultHandlers;

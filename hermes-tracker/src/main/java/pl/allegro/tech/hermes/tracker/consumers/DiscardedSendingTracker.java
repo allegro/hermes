@@ -38,8 +38,4 @@ public class DiscardedSendingTracker implements SendingTracker {
     public void logFiltered(MessageMetadata messageMetadata, String reason) {
 
     }
-
-    void add(LogRepository logRepository) {
-        repositories.add(logRepository);
-    }
 }

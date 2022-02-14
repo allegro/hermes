@@ -6,17 +6,18 @@ it is possible to implement support for any custom protocol.
 ## Creating message sender
 
 The most important bit is creating the `ProtocolMessageSenderProvider` which acts as a *factory* that produces the
-instance of `MessageSender`. This should be registered on application startup via `HermesConsumerBuilder`:
+instance of `MessageSender`. This should be registered as a bean:
 
 ```java
-builder.withMessageSenderProvider("myProtocol", (serviceLocator) -> {
-    new MyProtocolMessageSenderProvider()
-});
-```
+@Configuration
+public class CustomHermesConsumersConfiguration {
 
-The `HermesConsumerBuilder#withMessageSenderProvider` method accepts a lazy evaluated function which gives access to
-containers `ServiceLocator`. In some more advanced cases it might be beneficial to use some internal components,
-however there are no compatibility guarantees.
+    @Bean
+    public ProtocolMessageSenderProvider myProtocolMessageSenderProvider() {
+        return new MyProtocolMessageSenderProvider();
+    }
+}
+```
 
 ### Extending HTTP message sender
 
@@ -27,17 +28,18 @@ This example shows how to implement the `service://` pseudo protocol. We use it 
 Discovery: `service://my-service` means that address of the endpoint should be resolved by querying Service Discovery
 for instances of `my-service` service.
 
-To achieve this, implement `EndpointAddressResolver` interface and inject the implementation into the new instance of
-`JettyHttpMessageSenderProvider`:
+To achieve this, implement `EndpointAddressResolver` interface and register the implementation as a bean:
 
 ```java
-builder.withMessageSenderProvider("http", (s) ->
-                        new JettyHttpMessageSenderProvider(
-                            s.getService(HttpClient.class),
-                            s.getService(ConfigFactory.class),
-                            myCustomResolver,
-                            new DefaultHttpMetadataAppender())
-                        )
+@Configuration
+public class CustomHermesConsumersConfiguration {
+
+    @Bean
+    @Primary
+    public EndpointAddressResolver interpolatingEndpointAddressResolver() {
+        return new CustomEndpointAddressResolver();
+    }
+}
 ```
 
 ## Management support

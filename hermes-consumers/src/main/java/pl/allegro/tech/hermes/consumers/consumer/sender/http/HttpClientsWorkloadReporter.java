@@ -10,8 +10,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Queue;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -24,10 +22,9 @@ public class HttpClientsWorkloadReporter {
     private final boolean isConnectionPoolMonitoringEnabled;
     private final boolean isRequestQueueMonitoringEnabled;
 
-    @Inject
     public HttpClientsWorkloadReporter(
             HermesMetrics metrics,
-            @Named("http-1-client") HttpClient httpClient,
+            HttpClient httpClient,
             Http2ClientHolder http2ClientHolder,
             ConfigFactory configFactory
     ) {

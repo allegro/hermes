@@ -27,6 +27,8 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
 
     private static final int DOCUMENT_EXPECTED_SIZE = 1024;
 
+    private final Client elasticClient;
+
     private ConsumersElasticsearchLogRepository(Client elasticClient,
                                                 String clusterName,
                                                 String hostname,
@@ -37,6 +39,7 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
                                                 MetricRegistry metricRegistry,
                                                 PathsCompiler pathsCompiler) {
         super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
+        this.elasticClient = elasticClient;
 
         registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
@@ -75,6 +78,11 @@ public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<E
     @Override
     public void logFiltered(MessageMetadata message, long timestamp, String reason) {
         queue.offer(document(message, timestamp, FILTERED, reason));
+    }
+
+    @Override
+    public void close() {
+        elasticClient.close();
     }
 
     private ElasticsearchDocument document(MessageMetadata message, long createdAt, SentMessageTraceStatus status) {

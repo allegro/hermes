@@ -59,6 +59,11 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
         queue.offer(subscriptionLog(message, timestamp, FILTERED).append(REASON, reason));
     }
 
+    @Override
+    public void close() {
+
+    }
+
     private BasicDBObject subscriptionLog(MessageMetadata message, long timestamp, SentMessageTraceStatus status) {
         return new BasicDBObject()
                 .append(MESSAGE_ID, message.getMessageId())
