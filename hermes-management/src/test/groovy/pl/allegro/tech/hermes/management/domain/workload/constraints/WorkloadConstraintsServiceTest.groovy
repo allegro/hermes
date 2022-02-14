@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstrai
 import pl.allegro.tech.hermes.management.config.storage.DefaultZookeeperGroupRepositoryFactory
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
+import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager
@@ -29,6 +30,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
     WorkloadConstraintsService service
     WorkloadConstraintsRepository repository
     ZookeeperRepositoryManager repositoryManager
+    ModeService modeService
     MultiDatacenterRepositoryCommandExecutor executor
 
     def objectMapper = new ObjectMapper()
@@ -44,7 +46,8 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
                 manager, new TestDatacenterNameProvider(DC_1_NAME), objectMapper,
                 paths, new DefaultZookeeperGroupRepositoryFactory(), 180000)
         repositoryManager.start()
-        executor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, true)
+        modeService = new ModeService()
+        executor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, true, modeService)
         service = new WorkloadConstraintsService(repository, executor)
     }
 
