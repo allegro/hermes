@@ -1,3 +1,15 @@
+## 1.11.0 (15.02.2022)
+
+## Enhancements
+
+#### ([1457](https://github.com/allegro/hermes/pull/1457)) Migrated hermes-consumers to the Spring framework
+
+If you add custom implementations of some parts of `hermes-consumers`, please take a look at 
+[1459](https://github.com/allegro/hermes/pull/1459). The documentation changes introduced there should help you  
+migrate to version `1.11.0`.
+
+Thanks to @pmajorczyk-allegro for this contribution!
+
 ## 1.10.2 (03.02.2022)
 
 ## Enhancements
