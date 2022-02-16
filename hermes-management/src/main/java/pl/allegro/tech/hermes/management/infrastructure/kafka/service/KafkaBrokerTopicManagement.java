@@ -3,7 +3,10 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
+import org.apache.kafka.clients.admin.DeleteTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.config.TopicConfig;
 import pl.allegro.tech.hermes.api.Topic;
@@ -39,20 +42,24 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
     public void createTopic(Topic topic) {
         Map<String, String> config = createTopicConfig(topic.getRetentionTime().getDurationInMillis(), topicProperties);
 
-        kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
-                kafkaAdminClient.createTopics(Collections.singletonList(
-                        new NewTopic(
-                                k.name().asString(),
-                                topicProperties.getPartitions(),
-                                (short) topicProperties.getReplicationFactor()
-                        ).configs(config)
-                ))
-        );
+        kafkaNamesMapper.toKafkaTopics(topic).stream().map(k ->
+                        kafkaAdminClient.createTopics(Collections.singletonList(
+                                new NewTopic(
+                                        k.name().asString(),
+                                        topicProperties.getPartitions(),
+                                        (short) topicProperties.getReplicationFactor()
+                                ).configs(config)
+                        ))
+                ).map(CreateTopicsResult::all)
+                .forEach(this::waitForKafkaFuture);
     }
 
     @Override
     public void removeTopic(Topic topic) {
-        kafkaNamesMapper.toKafkaTopics(topic).forEach(k -> kafkaAdminClient.deleteTopics(Collections.singletonList(k.name().asString())));
+        kafkaNamesMapper.toKafkaTopics(topic).stream()
+                .map(k -> kafkaAdminClient.deleteTopics(Collections.singletonList(k.name().asString())))
+                .map(DeleteTopicsResult::all)
+                .forEach(this::waitForKafkaFuture);
     }
 
     @Override
@@ -61,13 +68,14 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
 
         if (isMigrationToNewKafkaTopic(kafkaTopics)) {
-            kafkaAdminClient.createTopics(Collections.singletonList(
+            KafkaFuture<Void> createTopicsFuture = kafkaAdminClient.createTopics(Collections.singletonList(
                     new NewTopic(
                             kafkaTopics.getPrimary().name().asString(),
                             topicProperties.getPartitions(),
                             (short) topicProperties.getReplicationFactor()
                     ).configs(config)
-            ));
+            )).all();
+            waitForKafkaFuture(createTopicsFuture);
         } else {
             doUpdateTopic(kafkaTopics.getPrimary(), config);
         }
@@ -89,13 +97,8 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
     }
 
     private boolean doesTopicExist(KafkaTopic topic) {
-        try {
-            return kafkaAdminClient.listTopics().names()
-                    .thenApply(names -> names.contains(topic.name().asString()))
-                    .get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new BrokersClusterCommunicationException(e);
-        }
+        KafkaFuture<Boolean> topicExistsFuture = kafkaAdminClient.listTopics().names().thenApply(names -> names.contains(topic.name().asString()));
+        return waitForKafkaFuture(topicExistsFuture);
     }
 
     private void doUpdateTopic(KafkaTopic topic, Map<String, String> configMap) {
@@ -111,7 +114,8 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
         Map<ConfigResource, Config> configUpdates = new HashMap<>();
         configUpdates.put(topicConfigResource, new Config(configEntries));
 
-        kafkaAdminClient.alterConfigs(configUpdates);
+        KafkaFuture<Void> updateTopicFuture = kafkaAdminClient.alterConfigs(configUpdates).all();
+        waitForKafkaFuture(updateTopicFuture);
     }
 
     private Map<String, String> createTopicConfig(long retentionPolicy, TopicProperties topicProperties) {
@@ -121,5 +125,13 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
         props.put(TopicConfig.MAX_MESSAGE_BYTES_CONFIG, String.valueOf(topicProperties.getMaxMessageSize()));
 
         return props;
+    }
+
+    private <T> T waitForKafkaFuture(KafkaFuture<T> future) {
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new BrokersClusterCommunicationException(e);
+        }
     }
 }
