@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
+import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.config.TopicConfig;
@@ -19,7 +20,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
@@ -39,7 +43,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
     public void createTopic(Topic topic) {
         Map<String, String> config = createTopicConfig(topic.getRetentionTime().getDurationInMillis(), topicProperties);
 
-        kafkaNamesMapper.toKafkaTopics(topic).forEach(k ->
+        kafkaNamesMapper.toKafkaTopics(topic).stream().map(k ->
                 kafkaAdminClient.createTopics(Collections.singletonList(
                         new NewTopic(
                                 k.name().asString(),
@@ -47,7 +51,13 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                                 (short) topicProperties.getReplicationFactor()
                         ).configs(config)
                 ))
-        );
+        ).forEach(result -> {
+            try {
+                result.all().get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new BrokersClusterCommunicationException(e);
+            }
+        });
     }
 
     @Override
