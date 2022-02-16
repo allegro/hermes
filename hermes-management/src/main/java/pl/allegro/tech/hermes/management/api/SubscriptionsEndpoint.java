@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -95,7 +96,7 @@ public class SubscriptionsEndpoint {
     public Response create(@PathParam("topicName") String qualifiedTopicName,
                            Subscription subscription,
                            @Context ContainerRequestContext requestContext) {
-        subscriptionService.createSubscription(subscription, requestContext.getSecurityContext().getUserPrincipal().getName(),
+        subscriptionService.createSubscription(subscription, RequestUser.fromSecurityContext(requestContext.getSecurityContext()),
                 managementRights.getSubscriptionCreatorRights(requestContext), qualifiedTopicName);
         return responseStatus(Response.Status.CREATED);
     }
@@ -180,7 +181,7 @@ public class SubscriptionsEndpoint {
                                 Subscription.State state,
                                 @Context SecurityContext securityContext) {
         subscriptionService.updateSubscriptionState(fromQualifiedName(qualifiedTopicName),
-                subscriptionName, state, securityContext.getUserPrincipal().getName());
+                subscriptionName, state, RequestUser.fromSecurityContext(securityContext));
         return responseStatus(OK);
     }
 
@@ -192,7 +193,7 @@ public class SubscriptionsEndpoint {
                            @PathParam("subscriptionName") String subscriptionId,
                            @Context SecurityContext securityContext) {
         subscriptionService.removeSubscription(fromQualifiedName(qualifiedTopicName),
-                subscriptionId, securityContext.getUserPrincipal().getName());
+                subscriptionId, RequestUser.fromSecurityContext(securityContext));
         return responseStatus(OK);
     }
 
@@ -206,7 +207,7 @@ public class SubscriptionsEndpoint {
                            PatchData patch,
                            @Context SecurityContext securityContext) {
         subscriptionService.updateSubscription(TopicName.fromQualifiedName(qualifiedTopicName),
-                subscriptionName, patch, securityContext.getUserPrincipal().getName());
+                subscriptionName, patch, RequestUser.fromSecurityContext(securityContext));
         return responseStatus(OK);
     }
 
@@ -219,13 +220,15 @@ public class SubscriptionsEndpoint {
     public Response retransmit(@PathParam("topicName") String qualifiedTopicName,
                                @PathParam("subscriptionName") String subscriptionName,
                                @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
-                               @Valid OffsetRetransmissionDate offsetRetransmissionDate) {
+                               @Valid OffsetRetransmissionDate offsetRetransmissionDate,
+                               @Context SecurityContext securityContext) {
 
         MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
                 topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 subscriptionName,
                 offsetRetransmissionDate.getRetransmissionDate().toInstant().toEpochMilli(),
-                dryRun);
+                dryRun,
+                RequestUser.fromSecurityContext(securityContext));
 
         return Response.status(OK).entity(summary).build();
     }

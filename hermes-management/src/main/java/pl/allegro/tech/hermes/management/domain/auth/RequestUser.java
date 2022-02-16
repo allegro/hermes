@@ -1,23 +1,23 @@
-package pl.allegro.tech.hermes.management.domain.topic;
+package pl.allegro.tech.hermes.management.domain.auth;
 
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 
 import javax.ws.rs.core.SecurityContext;
 import java.util.Objects;
 
-public class TopicManipulatorUser {
+public class RequestUser {
     private final String username;
     private final boolean isAdmin;
 
-    public TopicManipulatorUser(String username, boolean isAdmin) {
+    public RequestUser(String username, boolean isAdmin) {
         this.username = username;
         this.isAdmin = isAdmin;
     }
 
-    public static TopicManipulatorUser fromSecurityContext(SecurityContext securityContext) {
+    public static RequestUser fromSecurityContext(SecurityContext securityContext) {
         String username = securityContext.getUserPrincipal().getName();
         boolean isAdmin = securityContext.isUserInRole(Roles.ADMIN);
-        return new TopicManipulatorUser(username, isAdmin);
+        return new RequestUser(username, isAdmin);
     }
 
     public String getUsername() {
@@ -32,8 +32,8 @@ public class TopicManipulatorUser {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TopicManipulatorUser topicManipulatorUser = (TopicManipulatorUser) o;
-        return isAdmin == topicManipulatorUser.isAdmin && Objects.equals(username, topicManipulatorUser.username);
+        RequestUser requestUser = (RequestUser) o;
+        return isAdmin == requestUser.isAdmin && Objects.equals(username, requestUser.username);
     }
 
     @Override

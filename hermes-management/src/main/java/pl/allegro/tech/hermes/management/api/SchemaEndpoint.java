@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.schema.SchemaId;
@@ -21,7 +22,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -77,15 +80,17 @@ public class SchemaEndpoint {
     @ApiOperation(value = "Save schema", httpMethod = HttpMethod.POST)
     public Response save(@PathParam("topicName") String qualifiedTopicName,
                          @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
+                         @Context SecurityContext securityContext,
                          String schema) {
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+        RequestUser user = RequestUser.fromSecurityContext(securityContext);
         schemaService.registerSchema(topic, schema, validate);
-        notifyFrontendSchemaChanged(qualifiedTopicName);
+        notifyFrontendSchemaChanged(qualifiedTopicName, user);
         return Response.status(Response.Status.CREATED).build();
     }
 
-    private void notifyFrontendSchemaChanged(String qualifiedTopicName) {
-        topicService.scheduleTouchTopic(fromQualifiedName(qualifiedTopicName));
+    private void notifyFrontendSchemaChanged(String qualifiedTopicName, RequestUser changedBy) {
+        topicService.scheduleTouchTopic(fromQualifiedName(qualifiedTopicName), changedBy);
     }
 
     @DELETE

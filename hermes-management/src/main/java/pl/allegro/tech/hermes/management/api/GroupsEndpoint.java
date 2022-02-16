@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 
 import javax.annotation.security.RolesAllowed;
@@ -71,7 +72,7 @@ public class GroupsEndpoint {
     @RolesAllowed(Roles.ANY)
     public Response create(Group group, @Context SecurityContext securityContext, @Context ContainerRequestContext requestContext) {
         preconditions.checkConstraints(group, false);
-        groupService.createGroup(group, securityContext.getUserPrincipal().getName(), managementRights.getGroupCreatorRights(requestContext));
+        groupService.createGroup(group, RequestUser.fromSecurityContext(securityContext), managementRights.getGroupCreatorRights(requestContext));
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -84,7 +85,7 @@ public class GroupsEndpoint {
     public Response update(@PathParam("groupName") String groupName,
                            PatchData patch,
                            @Context SecurityContext securityContext) {
-        groupService.updateGroup(groupName, patch, securityContext.getUserPrincipal().getName());
+        groupService.updateGroup(groupName, patch, RequestUser.fromSecurityContext(securityContext));
         return responseStatus(Response.Status.NO_CONTENT);
     }
 
@@ -93,7 +94,7 @@ public class GroupsEndpoint {
     @ApiOperation(value = "Remove group", response = String.class, httpMethod = HttpMethod.DELETE)
     @RolesAllowed(Roles.ADMIN)
     public Response delete(@PathParam("groupName") String groupName, @Context SecurityContext securityContext) {
-        groupService.removeGroup(groupName, securityContext.getUserPrincipal().getName());
+        groupService.removeGroup(groupName, RequestUser.fromSecurityContext(securityContext));
         return responseStatus(Response.Status.OK);
     }
 

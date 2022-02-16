@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.blacklist;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.blacklist.commands.AddTopicToBlacklistRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.blacklist.commands.RemoveTopicFromBlacklistRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
@@ -21,12 +22,12 @@ public class TopicBlacklistService {
         this.multiDcExecutor = multiDcExecutor;
     }
 
-    public void blacklist(String qualifiedTopicName) {
-        multiDcExecutor.execute(new AddTopicToBlacklistRepositoryCommand(qualifiedTopicName));
+    public void blacklist(String qualifiedTopicName, RequestUser blacklistRequester) {
+        multiDcExecutor.executeByUser(new AddTopicToBlacklistRepositoryCommand(qualifiedTopicName), blacklistRequester);
     }
 
-    public void unblacklist(String qualifiedTopicName) {
-        multiDcExecutor.execute(new RemoveTopicFromBlacklistRepositoryCommand(qualifiedTopicName));
+    public void unblacklist(String qualifiedTopicName, RequestUser unblacklistRequester) {
+        multiDcExecutor.executeByUser(new RemoveTopicFromBlacklistRepositoryCommand(qualifiedTopicName), unblacklistRequester);
     }
 
     public boolean isBlacklisted(String qualifiedTopicName) {
