@@ -13,11 +13,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
-import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
-import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import javax.ws.rs.core.Response;
 import java.util.Collections;
@@ -50,7 +48,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("CREATED", "Topic", topic.getQualifiedName());
     }
 
@@ -66,7 +64,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("REMOVED", topic.getQualifiedName());
     }
 
@@ -83,7 +81,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("UPDATED", "someTestTopicName");
     }
 
@@ -100,7 +98,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("BEFORE_UPDATE", "testGroupName.testTopicName", "someValue", "2048");
     }
 

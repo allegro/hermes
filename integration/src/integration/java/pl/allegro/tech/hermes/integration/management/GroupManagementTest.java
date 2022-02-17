@@ -5,8 +5,6 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
-import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import javax.ws.rs.core.Response;
 import java.util.stream.Stream;
@@ -25,7 +23,7 @@ public class GroupManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("CREATED", "exampleGroup");
     }
 
@@ -39,7 +37,7 @@ public class GroupManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("REMOVED", "anotherExampleGroup");
     }
 
@@ -53,7 +51,7 @@ public class GroupManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("UPDATED", "anotherOneExampleGroup");
     }
 

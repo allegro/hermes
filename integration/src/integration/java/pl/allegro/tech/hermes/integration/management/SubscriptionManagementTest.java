@@ -73,7 +73,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("CREATED", "someSubscription");
     }
 
@@ -88,7 +88,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("REMOVED", "anotherSubscription");
     }
 
@@ -104,7 +104,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEvents.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("UPDATED", "anotherOneSubscription");
     }
 
@@ -194,7 +194,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         wait.untilSubscriptionEndpointAddressChanged(topic, "subscription", EndpointAddress.of(HTTP_ENDPOINT_URL));
 
         publishMessage(topic.getQualifiedName(), MESSAGE.body());
-        auditEvents.waitAndGetLastRequest();
+        auditEvents.getLastRequest();
     }
 
     @Test
@@ -266,7 +266,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // when
         String messageId = publishMessage(topic.getQualifiedName(), MESSAGE.body());
-        auditEvents.waitAndGetLastRequest();
+        auditEvents.getLastRequest();
 
         // then
         await().atMost(30, TimeUnit.SECONDS).until(() -> getMessageTrace(topic.getQualifiedName(), "subscription", messageId).size() == 3);
