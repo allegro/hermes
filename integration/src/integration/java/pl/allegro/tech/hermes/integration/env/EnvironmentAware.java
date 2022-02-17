@@ -30,6 +30,8 @@ public interface EnvironmentAware {
 
     int OAUTH_SERVER_PORT = 19999;
 
+    int AUDIT_EVENT_PORT = 19998;
+
     String PRIMARY_KAFKA_CLUSTER_NAME = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
     String SECONDARY_KAFKA_CLUSTER_NAME = "secondary";

@@ -44,6 +44,10 @@ public final class SharedServices {
         return ((WireMockStarter) starters.get(OAuthServerMockStarter.class)).instance();
     }
 
+    public WireMockServer auditEventMock() {
+        return ((WireMockStarter) starters.get(AuditEventMockStarter.class)).instance();
+    }
+
     public CuratorFramework zookeeper() {
         return zookeeper;
     }

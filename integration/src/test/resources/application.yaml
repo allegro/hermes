@@ -85,7 +85,7 @@ subscription-health:
 audit:
   isLoggingAuditEnabled: false
   isEventAuditEnabled: true
-  eventUrl: "http://localhost:18081/audit-events"
+  eventUrl: "http://localhost:19998/audit-events"
 
 group:
   nonAdminCreationEnabled: true
