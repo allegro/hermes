@@ -4,8 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
+import pl.allegro.tech.hermes.integration.env.SharedServices;
+import pl.allegro.tech.hermes.integration.helper.AuditEventEndpoint;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
@@ -31,6 +34,8 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
 
     protected BrokerOperations brokerOperations;
 
+    protected AuditEventEndpoint auditEvents;
+
     @BeforeClass
     public void initializeIntegrationTest() {
         this.management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
@@ -43,16 +48,23 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
                 CONFIG_FACTORY);
         this.wait = new Waiter(management, services().zookeeper(), brokerOperations, PRIMARY_KAFKA_CLUSTER_NAME, KAFKA_NAMESPACE);
         this.operations = new HermesAPIOperations(management, wait);
+        this.auditEvents = new AuditEventEndpoint(SharedServices.services().auditEventMock());
     }
 
     @AfterMethod
     public void after() {
+        auditEvents.reset();
         try {
             removeSubscriptions();
             removeTopics();
         } catch (RuntimeException e) {
             logger.error("Error while removing topics and subscriptions", e);
         }
+    }
+
+    @AfterSuite
+    public void afterSuite() {
+        auditEvents.stop();
     }
 
     private void removeSubscriptions() {

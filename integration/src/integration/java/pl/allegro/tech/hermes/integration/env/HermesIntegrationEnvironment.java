@@ -26,12 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
-import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 @Listeners({RetryListener.class})
 public class HermesIntegrationEnvironment implements EnvironmentAware {
@@ -64,6 +61,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         STARTERS.put(WireMockStarter.class, new WireMockStarter(HTTP_ENDPOINT_PORT));
         STARTERS.put(GraphiteHttpMockStarter.class, new GraphiteHttpMockStarter());
         STARTERS.put(OAuthServerMockStarter.class, new OAuthServerMockStarter());
+        STARTERS.put(AuditEventMockStarter.class, new AuditEventMockStarter());
         STARTERS.put(JmsStarter.class, new JmsStarter());
     }
 

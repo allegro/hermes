@@ -66,7 +66,6 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldEmmitAuditEventWhenSubscriptionCreated() {
         //given
-        RemoteServiceEndpoint auditEventRemoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         Topic topic = operations.buildTopic(randomTopic("subscribeGroup", "topic").build());
 
         //when
@@ -74,14 +73,13 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEventRemoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("CREATED", "someSubscription");
     }
 
     @Test
     public void shouldEmmitAuditEventWhenSubscriptionRemoved() {
         //given
-        RemoteServiceEndpoint auditEventRemoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         Topic topic = operations.buildTopic(randomTopic("subscribeGroup2", "topic").build());
         operations.createSubscription(topic, subscription(topic, "anotherSubscription").build());
 
@@ -90,14 +88,13 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEventRemoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("REMOVED", "anotherSubscription");
     }
 
     @Test
     public void shouldEmmitAuditEventWhenSubscriptionEndpointUpdated() {
         //given
-        RemoteServiceEndpoint auditEventRemoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         Topic topic = operations.buildTopic(randomTopic("subscribeGroup3", "topic").build());
         operations.createSubscription(topic, subscription(topic, "anotherOneSubscription").build());
 
@@ -107,7 +104,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                auditEventRemoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("UPDATED", "anotherOneSubscription");
     }
 
@@ -196,9 +193,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.OK);
         wait.untilSubscriptionEndpointAddressChanged(topic, "subscription", EndpointAddress.of(HTTP_ENDPOINT_URL));
 
-        remoteService.expectMessages(MESSAGE.body());
         publishMessage(topic.getQualifiedName(), MESSAGE.body());
-        remoteService.waitUntilReceived();
+        auditEvents.getLastRequest();
     }
 
     @Test
@@ -267,11 +263,10 @@ public class SubscriptionManagementTest extends IntegrationTest {
                 .build();
 
         operations.createSubscription(topic, subscription);
-        remoteService.expectMessages(MESSAGE.body());
 
         // when
         String messageId = publishMessage(topic.getQualifiedName(), MESSAGE.body());
-        remoteService.waitUntilReceived();
+        auditEvents.getLastRequest();
 
         // then
         await().atMost(30, TimeUnit.SECONDS).until(() -> getMessageTrace(topic.getQualifiedName(), "subscription", messageId).size() == 3);
