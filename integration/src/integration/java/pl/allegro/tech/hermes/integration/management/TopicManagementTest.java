@@ -42,7 +42,6 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldEmmitAuditEventWhenTopicCreated() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("testGroupName");
         Topic topic = topic("testGroupName", "testTopicName").build();
 
@@ -51,14 +50,13 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.waitAndGetLastRequest().getBodyAsString()
         ).contains("CREATED", "Topic", topic.getQualifiedName());
     }
 
     @Test
     public void shouldEmmitAuditEventWhenTopicRemoved() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("anotherTestGroupName");
         Topic topic = topic("anotherTestGroupName", "anotherTestTopicName").build();
         operations.createTopic(topicWithSchema(topic));
@@ -68,14 +66,13 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.waitAndGetLastRequest().getBodyAsString()
         ).contains("REMOVED", topic.getQualifiedName());
     }
 
     @Test
     public void shouldEmmitAuditEventWhenTopicUpdated() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("someTestGroupName");
         Topic topic = topic("someTestGroupName", "someTestTopicName").withMaxMessageSize(1024).build();
         operations.createTopic(topicWithSchema(topic));
@@ -86,14 +83,13 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.waitAndGetLastRequest().getBodyAsString()
         ).contains("UPDATED", "someTestTopicName");
     }
 
     @Test
     public void shouldEmmitAuditEventBeforeUpdateWhenWrongPatchDataKeyProvided() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("testGroupName");
         Topic topic = topic("testGroupName", "testTopicName").withMaxMessageSize(1024).build();
         operations.createTopic(topicWithSchema(topic));
@@ -104,7 +100,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.waitAndGetLastRequest().getBodyAsString()
         ).contains("BEFORE_UPDATE", "testGroupName.testTopicName", "someValue", "2048");
     }
 

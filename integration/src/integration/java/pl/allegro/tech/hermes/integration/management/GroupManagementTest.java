@@ -20,22 +20,18 @@ public class GroupManagementTest extends IntegrationTest {
 
     @Test
     public void shouldEmmitAuditEventWhenGroupCreated() {
-        //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
-
         //when
         management.group().create(group("exampleGroup").build());
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.waitAndGetLastRequest().getBodyAsString()
         ).contains("CREATED", "exampleGroup");
     }
 
     @Test
     public void shouldEmmitAuditEventWhenGroupRemoved() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("anotherExampleGroup");
 
         //when
@@ -43,14 +39,13 @@ public class GroupManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.waitAndGetLastRequest().getBodyAsString()
         ).contains("REMOVED", "anotherExampleGroup");
     }
 
     @Test
     public void shouldEmmitAuditEventWhenGroupUpdated() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("anotherOneExampleGroup");
 
         //when
@@ -58,7 +53,7 @@ public class GroupManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.waitAndGetLastRequest().getBodyAsString()
         ).contains("UPDATED", "anotherOneExampleGroup");
     }
 
