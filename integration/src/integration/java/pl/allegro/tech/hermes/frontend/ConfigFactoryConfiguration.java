@@ -19,7 +19,7 @@ public class ConfigFactoryConfiguration {
 
     @Bean
     @Primary
-//    @Profile("integration")
+    @Profile("integration")
     public ConfigFactory testConfigFactory(ApplicationArguments applicationArguments) {
         MutableConfigFactory configFactory = new MutableConfigFactory();
         List<String> values = Arrays.stream(Configs.values()).map(Configs::getName).collect(Collectors.toList());

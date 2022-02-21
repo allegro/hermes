@@ -13,7 +13,7 @@ public class TopicMetadataLoadingStartupHookCondition implements Condition {
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        ConfigFactory config = Objects.requireNonNull(context.getBeanFactory()).getBean("configFactory", ConfigFactory.class);
+        ConfigFactory config = Objects.requireNonNull(context.getBeanFactory()).getBean(ConfigFactory.class);
         return config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED);
     }
 }

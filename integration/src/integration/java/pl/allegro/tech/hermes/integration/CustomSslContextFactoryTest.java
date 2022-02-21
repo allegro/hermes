@@ -37,7 +37,7 @@ public class CustomSslContextFactoryTest extends IntegrationTest { //TODO - do w
 //                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         frontendStarter = new FrontendStarter(FRONTEND_PORT);//TODO: add port?
-        frontendStarter.setSpringProfiles("shouldInjectCustomSslContextFactoryToFrontend");
+        frontendStarter.addSpringProfiles("shouldInjectCustomSslContextFactoryToFrontend");
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
         frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);

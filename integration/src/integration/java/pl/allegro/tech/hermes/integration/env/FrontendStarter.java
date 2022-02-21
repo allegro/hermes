@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.integration.env;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.io.Files;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
@@ -9,19 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.consumers.HermesConsumers;
-import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.integration.metadata.TraceHeadersPropagator;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
+import pl.allegro.tech.hermes.frontend.HermesFrontendApp;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
-import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,17 +34,17 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
 
 //    private final MutableConfigFactory configFactory;
     private final int port;
-    private final List<String> args;
-    private final SpringApplication application = new SpringApplication(HermesConsumers.class);
+    private final List<String> args = new ArrayList<>();
+    private final List<String> profiles = new ArrayList<>();
+    private final SpringApplication application = new SpringApplication(HermesFrontendApp.class);//TODO: change
     private ConfigurableApplicationContext applicationContext;
 //    private HermesFrontend hermesFrontend;
     private OkHttpClient client;
 
     public FrontendStarter(int port) {
-        args = new ArrayList<>();
         application.setWebApplicationType(WebApplicationType.NONE);
         this.port = port;
-        setSpringProfiles("integration");//TODO
+        addSpringProfiles("integration");//TODO
 //        overrideProperty(FRONTEND_PORT, port);
 //        overrideProperty(SCHEMA_CACHE_ENABLED, true);
 //        overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
@@ -71,7 +62,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         this(-1);
     }
 
-    public FrontendStarter(int port, List<String> args) {
+    private FrontendStarter(int port, List<String> args) {
         this(port);
         this.args.addAll(args);
     }
@@ -135,6 +126,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
 
         client = new OkHttpClient();
 //        hermesFrontend.start();
+        setSpringProfilesArg();
         applicationContext = application.run(args.toArray(new String[0]));
         waitForStartup();//TODO - remove, use another?
     }
@@ -163,8 +155,13 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         args.add(getArgument(config, value));
     }
 
-    public void setSpringProfiles(String... profiles) {
+    public void addSpringProfiles(String... profiles) {
         String profilesString = Arrays.stream(profiles).collect(Collectors.joining(",", "", ""));
+        this.profiles.add(profilesString);
+    }
+
+    private void setSpringProfilesArg() {
+        String profilesString = profiles.stream().collect(Collectors.joining(",", "", ""));
         args.add("--spring.profiles.active=" + profilesString);
     }
 

@@ -6,6 +6,7 @@ import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.util.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -35,43 +36,64 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     public static final String FRONTEND_URL = "http://127.0.0.1:" + FRONTEND_PORT;
 
     private static final Logger logger = LoggerFactory.getLogger(FrontendAuthenticationConfigurationTest.class);
-    private static final String USERNAME = "someUser";
+    private static final String USERNAME = "someUser"; //TODO: share username and password between bean and test
     private static final String PASSWORD = "somePassword123";
+
+//    @Value("${auth.username}")//TODO?
+//    private String username;
+
+//    @Value("${auth.password}")
+//    private String password;
+
     private static final String MESSAGE = TestMessage.of("hello", "world").body();
 
     protected HermesPublisher publisher;
     protected HermesServer hermesServer;
 
-    private HermesFrontend hermesFrontend;
+//    private HermesFrontend hermesFrontend;
+    private FrontendStarter frontendStarter;
 
     @BeforeClass
     public void setup() throws Exception {
-        FrontendStarter frontendStarter = new FrontendStarter();
+        frontendStarter = new FrontendStarter();
+        frontendStarter.addSpringProfiles("auth");
+        frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
+        frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven");//TODO: the only one specific property
+        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true);
+        frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+        frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
+        frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
+//        frontendStarter.overrideProperty(Configs.CONSUMER_HEALTH_CHECK_PORT, Ports.nextAvailable());//TODO?
 
-        ConfigFactory configFactory = new MutableConfigFactory()
-                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
-                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
-                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")//TODO: only specific
-                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
-                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
-                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
-                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString())
-                .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl())
-                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
+//        ConfigFactory configFactory = new MutableConfigFactory()
+//                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
+//                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
+//                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")//TODO: the only one specific property
+//                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
+//                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
+//                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
+//                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString())
+//                .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl())
+//                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
-        AuthenticationConfiguration authConfig = new AuthenticationConfiguration(
-                exchange -> true,
-                Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
-                new SingleUserAwareIdentityManager(USERNAME, PASSWORD));
+//        AuthenticationConfiguration authConfig = new AuthenticationConfiguration(
+//                exchange -> true,
+//                Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
+//                new SingleUserAwareIdentityManager(username, password));
 
-        hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
-                .withBinding(configFactory, ConfigFactory.class)
-                .withAuthenticationConfiguration(authConfig)
-                .build();
+//        hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
+//                .withBinding(configFactory, ConfigFactory.class)
+//                .withAuthenticationConfiguration(authConfig)//TODO: auth config
+//                .build();
 
-        hermesFrontend.start();//TODO
+//        hermesFrontend.start();//TODO
+        frontendStarter.start();
 
-        hermesServer = hermesFrontend.getService(HermesServer.class);
+//        hermesServer = hermesFrontend.getService(HermesServer.class);
+        hermesServer = frontendStarter.instance().getBean(HermesServer.class);
         publisher = new HermesPublisher(FRONTEND_URL);
     }
 
@@ -81,8 +103,8 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     }
 
     @AfterClass
-    public void tearDown() throws InterruptedException {
-        hermesFrontend.stop();
+    public void tearDown() throws Exception {
+        frontendStarter.stop();
     }
 
     @Test

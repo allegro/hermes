@@ -19,7 +19,7 @@ public class SingleUserAwareIdentityManager implements IdentityManager {
     private final String username;
     private final String password;
 
-    SingleUserAwareIdentityManager(String username, String password) {
+    public SingleUserAwareIdentityManager(String username, String password) {
         this.username = username;
         this.password = password;
     }
