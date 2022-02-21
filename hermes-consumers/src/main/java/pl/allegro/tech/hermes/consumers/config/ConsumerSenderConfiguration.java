@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.config;
 import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -31,6 +32,12 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryPr
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.pubsub.ApplicationDefaultPubSubCredentialsProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.pubsub.PubSubCredentialsProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.pubsub.PubSubMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.pubsub.PubSubMessages;
+import pl.allegro.tech.hermes.consumers.consumer.sender.pubsub.PubSubMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.pubsub.PubSubSenderTargetResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
@@ -145,6 +152,35 @@ public class ConsumerSenderConfiguration {
     @Bean
     public MetadataAppender<Message> jmsMetadataAppender() {
         return new JmsMetadataAppender();
+    }
+
+    @Bean(name = "defaultPubSubMessageSenderProvider")
+    public ProtocolMessageSenderProvider pubSubMessageSenderProvider(PubSubSenderTargetResolver targetResolver,
+                                                                     ConfigFactory configFactory,
+                                                                     PubSubCredentialsProvider credentialsProvider,
+                                                                     PubSubMessages pubSubMessages) {
+        return new PubSubMessageSenderProvider(targetResolver, configFactory, credentialsProvider, pubSubMessages);
+    }
+
+    @Bean
+    public PubSubMessages pubSubMessages(PubSubMetadataAppender pubSubMetadataAppender) {
+        return new PubSubMessages(pubSubMetadataAppender);
+    }
+
+    @Bean
+    public PubSubMetadataAppender pubSubMetadataAppender(ConfigFactory configFactory) {
+        return new PubSubMetadataAppender(configFactory);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PubSubCredentialsProvider.class)
+    public PubSubCredentialsProvider pubSubCredentialsProvider() {
+        return new ApplicationDefaultPubSubCredentialsProvider();
+    }
+
+    @Bean
+    public PubSubSenderTargetResolver pubSubSenderTargetResolver() {
+        return new PubSubSenderTargetResolver();
     }
 
     @Bean

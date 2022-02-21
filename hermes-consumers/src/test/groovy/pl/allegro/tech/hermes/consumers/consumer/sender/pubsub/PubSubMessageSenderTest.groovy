@@ -1,0 +1,70 @@
+package pl.allegro.tech.hermes.consumers.consumer.sender.pubsub
+
+
+import com.google.api.core.SettableApiFuture
+import com.google.api.gax.grpc.GrpcStatusCode
+import com.google.api.gax.rpc.ApiException
+import com.google.cloud.pubsub.v1.Publisher
+import com.google.pubsub.v1.PubsubMessage
+import io.grpc.Status
+import pl.allegro.tech.hermes.common.config.ConfigFactory
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult
+import pl.allegro.tech.hermes.consumers.test.MessageBuilder
+import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Subject
+
+import java.util.concurrent.TimeUnit
+
+class PubSubMessageSenderTest extends Specification {
+
+    @Shared
+    Publisher publisher = Mock(Publisher)
+
+    @Shared
+    ConfigFactory configFactory = new MutableConfigFactory()
+
+    @Shared
+    PubSubClient client = new PubSubClient(publisher, new PubSubMessages(new PubSubMetadataAppender(configFactory)))
+
+    @Subject
+    PubSubMessageSender sender = new PubSubMessageSender(client)
+
+    def 'should return result on a happy path'() {
+        given:
+        publisher.publish(_ as PubsubMessage) >> apiFuture("test")
+
+        when:
+        def result = sender.send(MessageBuilder.testMessage())
+                .get(1, TimeUnit.SECONDS)
+        then:
+        result.succeeded()
+    }
+
+    def 'should return failed future when publishing to PubSub failed'() {
+        given:
+        def exception = new ApiException("not found", null, GrpcStatusCode.of(Status.Code.NOT_FOUND), false)
+        publisher.publish(_ as PubsubMessage) >> apiFuture(exception)
+
+        when:
+        SingleMessageSendingResult result = sender.send(MessageBuilder.testMessage())
+                .get(1, TimeUnit.SECONDS)
+
+        then:
+        !result.succeeded()
+        result.getRootCause() == "not found"
+    }
+
+    def apiFuture(String messageId) {
+        def future = SettableApiFuture.create()
+        future.set(messageId)
+        future
+    }
+
+    def apiFuture(Throwable ex) {
+        def future = SettableApiFuture.create()
+        future.setException(ex)
+        future
+    }
+}
