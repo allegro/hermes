@@ -134,7 +134,8 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     @Override
     public void stop() throws Exception {
         LOGGER.info("Stopping Hermes Frontend");
-        instance().stop();
+//        instance().stop();
+        instance().close();
     }
 
     @Override
