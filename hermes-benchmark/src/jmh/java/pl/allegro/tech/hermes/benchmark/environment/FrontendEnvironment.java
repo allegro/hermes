@@ -63,8 +63,8 @@ public class FrontendEnvironment {
                 .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaContainerCluster.getBootstrapServersForExternalClients());
 
         hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
-                .withDisabledGlobalShutdownHook()
-                .withDisabledFlushLogsShutdownHook()
+                .withDisabledGlobalShutdownHook()//TODO
+                .withDisabledFlushLogsShutdownHook()//TODO
                 .withBinding(configFactory, ConfigFactory.class)
                 .withBinding(
                         new InMemorySchemaClient(fromQualifiedName("bench.topic"), loadMessageResource("schema"), 1, 1),

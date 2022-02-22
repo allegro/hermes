@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.frontend.di.config.BeforeStartupHook;
 
 import javax.inject.Inject;
 
-public class TopicMetadataLoadingStartupHook implements BeforeStartupHook { //ServiceAwareHook { //TODO: beforehook
+public class TopicMetadataLoadingStartupHook implements BeforeStartupHook {
     private static final Logger logger = LoggerFactory.getLogger(TopicMetadataLoadingStartupHook.class);
 
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;

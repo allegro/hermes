@@ -50,7 +50,7 @@ public class TopicAuthorisationTest extends IntegrationTest {
     @BeforeClass
     public void setup() throws Exception {
         frontendStarter = new FrontendStarter();
-        frontendStarter.addSpringProfiles("auth2");//TODO: name
+        frontendStarter.addSpringProfiles("authNonRequired");
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
         frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "pro_active");

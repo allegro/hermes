@@ -38,13 +38,6 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(FrontendAuthenticationConfigurationTest.class);
     private static final String USERNAME = "someUser"; //TODO: share username and password between bean and test
     private static final String PASSWORD = "somePassword123";
-
-//    @Value("${auth.username}")//TODO?
-//    private String username;
-
-//    @Value("${auth.password}")
-//    private String password;
-
     private static final String MESSAGE = TestMessage.of("hello", "world").body();
 
     protected HermesPublisher publisher;
@@ -56,22 +49,21 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     @BeforeClass
     public void setup() throws Exception {
         frontendStarter = new FrontendStarter();
-        frontendStarter.addSpringProfiles("auth");
+        frontendStarter.addSpringProfiles("authRequired");
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven");//TODO: the only one specific property
+        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven");//the only one specific property
         frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true);
         frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
         frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
-//        frontendStarter.overrideProperty(Configs.CONSUMER_HEALTH_CHECK_PORT, Ports.nextAvailable());//TODO?
 
 //        ConfigFactory configFactory = new MutableConfigFactory()
 //                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
 //                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
-//                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")//TODO: the only one specific property
+//                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")//the only one specific property
 //                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
 //                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
 //                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
@@ -84,12 +76,12 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
 //                Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
 //                new SingleUserAwareIdentityManager(username, password));
 
-//        hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
+//        hermesFrontend = HermesFrontend.frontend()
 //                .withBinding(configFactory, ConfigFactory.class)
-//                .withAuthenticationConfiguration(authConfig)//TODO: auth config
+//                .withAuthenticationConfiguration(authConfig)
 //                .build();
 
-//        hermesFrontend.start();//TODO
+//        hermesFrontend.start();
         frontendStarter.start();
 
 //        hermesServer = hermesFrontend.getService(HermesServer.class);

@@ -36,7 +36,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     private final int port;
     private final List<String> args = new ArrayList<>();
     private final List<String> profiles = new ArrayList<>();
-    private final SpringApplication application = new SpringApplication(HermesFrontendApp.class);//TODO: change
+    private final SpringApplication application = new SpringApplication(HermesFrontendApp.class);
     private ConfigurableApplicationContext applicationContext;
 //    private HermesFrontend hermesFrontend;
     private OkHttpClient client;
@@ -44,7 +44,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     public FrontendStarter(int port) {
         application.setWebApplicationType(WebApplicationType.NONE);
         this.port = port;
-        addSpringProfiles("integration");//TODO
+        addSpringProfiles("integration");
 //        overrideProperty(FRONTEND_PORT, port);
 //        overrideProperty(SCHEMA_CACHE_ENABLED, true);
 //        overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
@@ -167,7 +167,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     }
 
     private void waitForStartup() throws Exception {
-        if(port != -1) {//TODO - when it should run
+        if(port != -1) {//TODO - when it should run?
             await().atMost(adjust(TEN_SECONDS)).until(() -> {
                 Request request = new Request.Builder()
                         .url("http://localhost:" + port + "/status/ping")

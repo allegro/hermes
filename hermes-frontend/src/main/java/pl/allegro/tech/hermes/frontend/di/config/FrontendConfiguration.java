@@ -75,7 +75,7 @@ public class FrontendConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     @DependsOn("beforeStartupHooksHandler")
-    @Order(LifecycleOrder.SERVER_STARTUP) //TODO - use Order to ensure that server starts before other init methods?
+    @Order(LifecycleOrder.SERVER_STARTUP)
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,

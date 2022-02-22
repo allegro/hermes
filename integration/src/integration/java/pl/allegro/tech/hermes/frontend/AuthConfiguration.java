@@ -23,14 +23,14 @@ public class AuthConfiguration {
 
     @Bean
     @Primary
-    @Profile("auth")
+    @Profile("authRequired")
     public AuthenticationConfiguration authenticationConfiguration() {
         return getAuthConfig(true);
     }
 
     @Bean
     @Primary
-    @Profile("auth2")
+    @Profile("authNonRequired")
     public AuthenticationConfiguration authenticationConfiguration2() {
         return getAuthConfig(false);
     }

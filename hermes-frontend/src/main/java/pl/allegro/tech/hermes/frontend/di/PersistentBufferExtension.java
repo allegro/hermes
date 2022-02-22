@@ -86,7 +86,7 @@ public class PersistentBufferExtension {
     private void loadTemporaryBackupV2Files(BackupFilesManager backupFilesManager) {
         String temporaryDir = config.getStringProperty(MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY);
         List<File> temporaryBackupV2Files = backupFilesManager.getTemporaryBackupV2Files(temporaryDir);
-//        hooksHandler.addStartupHook((s) -> {//TODO
+//        hooksHandler.addStartupHook((s) -> {//TODO - could it be run here?
 //            temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
 //            backupMessagesLoader.clearTopicsAvailabilityCache();
 //        });
@@ -99,7 +99,7 @@ public class PersistentBufferExtension {
                 rolledBackupFiles.size(),
                 rolledBackupFiles.stream().map(File::getName).collect(joining(", ")));
 
-//        hooksHandler.addStartupHook((s) -> {//TODO
+//        hooksHandler.addStartupHook((s) -> {//TODO - could it be run here?
 //            rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
 //            backupMessagesLoader.clearTopicsAvailabilityCache();
 //        });

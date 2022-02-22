@@ -26,7 +26,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_AUTHENTICATI
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS;
 
-public class HandlersChainFactory {//implements Factory<HttpHandler> { //TODO: remove only implements?
+public class HandlersChainFactory {//TODO - remove factory or keep it?
 
     private static final Logger logger = LoggerFactory.getLogger(HandlersChainFactory.class);
 

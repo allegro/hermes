@@ -30,7 +30,7 @@ import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.FA
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.MISSING;
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.SUCCESS;
 
-public class TopicSchemaLoadingStartupHook implements BeforeStartupHook {//ServiceAwareHook {//TODO: remove implements + beforehook
+public class TopicSchemaLoadingStartupHook implements BeforeStartupHook {
 
     private static final Logger logger = LoggerFactory.getLogger(TopicSchemaLoadingStartupHook.class);
 
@@ -63,7 +63,6 @@ public class TopicSchemaLoadingStartupHook implements BeforeStartupHook {//Servi
     }
 
     @Override
-//    public void accept(ServiceLocator serviceLocator) {//TODO: remove serviceLocator
     public void run() {//TODO: remove serviceLocator
 
         long start = System.currentTimeMillis();

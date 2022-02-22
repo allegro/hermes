@@ -44,7 +44,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(MessageEndProcessor.class);
         bindSingleton(MessageValidators.class);
 
-        bind(hooksHandler).to(HooksHandler.class);//TODO - ignore?
+        bind(hooksHandler).to(HooksHandler.class);
         bindSingleton(TopicMetadataLoadingRunner.class);
         bindSingleton(TopicMetadataLoadingJob.class);
         bindSingleton(TopicMetadataLoadingStartupHook.class);

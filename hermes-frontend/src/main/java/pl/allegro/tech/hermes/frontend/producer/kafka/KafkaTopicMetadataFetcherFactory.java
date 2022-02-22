@@ -20,7 +20,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_P
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 
-public class KafkaTopicMetadataFetcherFactory {//implements Factory<KafkaTopicMetadataFetcher> { //TODO - remove only implements?
+public class KafkaTopicMetadataFetcherFactory { //TODO - remove factory or keep it?
     private final ConfigFactory configFactory;
 
     @Inject
