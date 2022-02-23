@@ -56,9 +56,7 @@ public class HermesFrontendInstance {
         private final FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(port, false);
 
         public Starter() {
-//            frontend.overrideProperty(Configs.FRONTEND_PORT, port);//TODO?
             frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
-//            frontend.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);//TODO?
             frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
             frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
             frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false);

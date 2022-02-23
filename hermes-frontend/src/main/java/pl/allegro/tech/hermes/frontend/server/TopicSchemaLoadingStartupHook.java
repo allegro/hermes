@@ -63,8 +63,7 @@ public class TopicSchemaLoadingStartupHook implements BeforeStartupHook {
     }
 
     @Override
-    public void run() {//TODO: remove serviceLocator
-
+    public void run() {
         long start = System.currentTimeMillis();
         logger.info("Loading topic schemas");
         List<Topic> topics = getAvroTopics();

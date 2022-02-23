@@ -58,10 +58,6 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
 //        overrideProperty(FRONTEND_SSL_ENABLED, sslEnabled);
 //    }
 
-    public FrontendStarter() {
-        this(-1);
-    }
-
     private FrontendStarter(int port, List<String> args) {
         this(port);
         this.args.addAll(args);
@@ -88,23 +84,6 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         return args;
     }
 
-
-//    public FrontendStarter(int port) {
-//        this.port = port;
-//        configFactory = new MutableConfigFactory();
-//        configFactory.overrideProperty(FRONTEND_PORT, port);
-//        configFactory.overrideProperty(SCHEMA_CACHE_ENABLED, true);
-//        configFactory.overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
-//        configFactory.overrideProperty(FRONTEND_THROUGHPUT_TYPE, "fixed");
-//        configFactory.overrideProperty(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
-//        configFactory.overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
-//    }
-//
-//    public FrontendStarter(int port, boolean sslEnabled) {
-//        this(port);
-//        configFactory.overrideProperty(FRONTEND_SSL_ENABLED, sslEnabled);
-//    }
-
     @Override
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Frontend");
@@ -120,8 +99,8 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
 //                    serviceLocator.getService(PathsCompiler.class)))
 //            .withKafkaTopicsNamesMapper(
 //                    new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
-//            .withDisabledGlobalShutdownHook()//TODO
-//            .withDisabledFlushLogsShutdownHook()//TODO
+//            .withDisabledGlobalShutdownHook()//TODO?
+//            .withDisabledFlushLogsShutdownHook()//TODO?
 //            .build();
 
         client = new OkHttpClient();
@@ -166,16 +145,14 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         args.add("--spring.profiles.active=" + profilesString);
     }
 
-    private void waitForStartup() throws Exception {
-        if(port != -1) {//TODO - when it should run?
-            await().atMost(adjust(TEN_SECONDS)).until(() -> {
-                Request request = new Request.Builder()
-                        .url("http://localhost:" + port + "/status/ping")
-                        .build();
+    private void waitForStartup() {
+        await().atMost(adjust(TEN_SECONDS)).until(() -> {
+            Request request = new Request.Builder()
+                    .url("http://localhost:" + port + "/status/ping")
+                    .build();
 
-                return client.newCall(request).execute().code() == OK.getStatusCode();
-            });
-        }
+            return client.newCall(request).execute().code() == OK.getStatusCode();
+        });
     }
 
     private static String getArgument(Configs config, Object value) {

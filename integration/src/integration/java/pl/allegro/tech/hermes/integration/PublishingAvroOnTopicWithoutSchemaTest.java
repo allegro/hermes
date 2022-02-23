@@ -48,7 +48,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
     @BeforeClass
     public void setup() throws Exception {
         emptySchemaRegistryMock.start();
-        frontendStarter = new FrontendStarter();
+        frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, "http://localhost:" + emptySchemaRegistryMock.port());
         frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
@@ -66,11 +66,11 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
 //                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
 //                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
-//        hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
+//        hermesFrontend = HermesFrontend.frontend()
 //                .withBinding(configFactory, ConfigFactory.class)
 //                .build();
 
-//        hermesFrontend.start();//TODO
+//        hermesFrontend.start();
         frontendStarter.start();
         publisher = new HermesPublisher(FRONTEND_URL);
     }

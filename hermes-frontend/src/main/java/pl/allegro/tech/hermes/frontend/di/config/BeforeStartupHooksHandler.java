@@ -6,18 +6,13 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import java.util.List;
 
-public class BeforeStartupHooksHandler {//implements BeanFactoryPostProcessor {
+public class BeforeStartupHooksHandler {
 
     private final List<BeforeStartupHook> hooks;
 
     public BeforeStartupHooksHandler(List<BeforeStartupHook> hooks) {
         this.hooks = hooks;
     }
-
-//    @Override
-//    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-//        this.runHooks();
-//    }
 
     private void runHooks() {
         hooks.stream()

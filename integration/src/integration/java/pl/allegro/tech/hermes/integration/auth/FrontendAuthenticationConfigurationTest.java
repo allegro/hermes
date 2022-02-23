@@ -48,7 +48,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
 
     @BeforeClass
     public void setup() throws Exception {
-        frontendStarter = new FrontendStarter();
+        frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.addSpringProfiles("authRequired");
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);

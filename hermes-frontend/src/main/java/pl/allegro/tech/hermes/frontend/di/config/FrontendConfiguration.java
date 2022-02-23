@@ -139,8 +139,8 @@ public class FrontendConfiguration {
 
     @Bean(initMethod = "runHooks")
     //TODO: remove?
-    @Order(LifecycleOrder.BEFORE_STARTUP)
-    public BeforeStartupHooksHandler beforeStartupHooksHandler(List<BeforeStartupHook> hooks) {
+    @Order(LifecycleOrder.BEFORE_STARTUP) //TODO: remove all order
+    public BeforeStartupHooksHandler beforeStartupHooksHandler(List<BeforeStartupHook> hooks) { //remove wiring list
         return new BeforeStartupHooksHandler(hooks);
     }
 
@@ -183,8 +183,6 @@ public class FrontendConfiguration {
                                                             ConfigFactory configFactory) {
         return new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, kafkaHeaderFactory,
                 configFactory);
-//        return new KafkaBrokerMessageProducerFactory(producers, kafkaTopicMetadataFetcher, hermesMetrics,
-//                kafkaHeaderFactory, configFactory).provide();
     }
 
     @Bean
@@ -224,11 +222,6 @@ public class FrontendConfiguration {
     public AvroEnforcer messageContentTypeEnforcer() {
         return new MessageContentTypeEnforcer();
     }
-
-//    @Bean
-//    public List<TopicMessageValidator> topicMessageValidators() { //TODO - Spring will autowire any bean to a list
-//        return new TopicMessageValidatorListFactory(topicMessageValidators);
-//    }
 
     @Bean
     public MessageFactory messageFactory(MessageValidators validators,

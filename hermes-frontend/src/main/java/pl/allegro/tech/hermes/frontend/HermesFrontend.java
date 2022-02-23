@@ -119,7 +119,7 @@ public final class HermesFrontend { //TODO - remove
 ////        return new Builder();
 //    }
 
-//    public static final class Builder {
+    public static final class Builder {
 
 //        private static final int CUSTOM_BINDER_HIGH_PRIORITY = 10;
 
@@ -167,15 +167,15 @@ public final class HermesFrontend { //TODO - remove
 //        }
 
 
-//        public Builder withDisabledGlobalShutdownHook() {//TODO
-//            hooksHandler.disableGlobalShutdownHook();
-//            return this;
-//        }
-//
-//        public Builder withDisabledFlushLogsShutdownHook() {//TODO
-//            flushLogsShutdownHookEnabled = false;
-//            return this;
-//        }
+        public Builder withDisabledGlobalShutdownHook() {//TODO
+            hooksHandler.disableGlobalShutdownHook();
+            return this;
+        }
+
+        public Builder withDisabledFlushLogsShutdownHook() {//TODO
+            flushLogsShutdownHookEnabled = false;
+            return this;
+        }
 
 //        public Builder withBrokerTimeoutListener(BrokerTimeoutListener brokerTimeoutListener) {
 //            listeners.addTimeoutListener(brokerTimeoutListener);
@@ -236,6 +236,6 @@ public final class HermesFrontend { //TODO - remove
 //            });
 //            return this;
 //        }
-//    }
+    }
 }
 
