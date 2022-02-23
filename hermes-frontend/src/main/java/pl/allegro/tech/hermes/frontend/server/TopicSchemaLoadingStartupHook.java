@@ -1,13 +1,10 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.hook.Hook;
-import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type;
@@ -52,9 +49,9 @@ public class TopicSchemaLoadingStartupHook {
     }
 
     TopicSchemaLoadingStartupHook(TopicsCache topicsCache,
-                                         SchemaRepository schemaRepository,
-                                         int retryCount,
-                                         int threadPoolSize) {
+                                  SchemaRepository schemaRepository,
+                                  int retryCount,
+                                  int threadPoolSize) {
         this.topicsCache = topicsCache;
         this.schemaRepository = schemaRepository;
         this.retryCount = retryCount;

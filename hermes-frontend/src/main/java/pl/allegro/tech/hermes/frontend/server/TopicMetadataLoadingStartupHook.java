@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.hook.Hook;
 
 import javax.inject.Inject;
 
