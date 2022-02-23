@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.hook.Hook;
 import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.di.config.BeforeStartupHook;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -30,7 +29,7 @@ import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.FA
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.MISSING;
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.SUCCESS;
 
-public class TopicSchemaLoadingStartupHook implements BeforeStartupHook {
+public class TopicSchemaLoadingStartupHook {
 
     private static final Logger logger = LoggerFactory.getLogger(TopicSchemaLoadingStartupHook.class);
 
@@ -62,7 +61,6 @@ public class TopicSchemaLoadingStartupHook implements BeforeStartupHook {
         this.threadPoolSize = threadPoolSize;
     }
 
-    @Override
     public void run() {
         long start = System.currentTimeMillis();
         logger.info("Loading topic schemas");
@@ -109,10 +107,5 @@ public class TopicSchemaLoadingStartupHook implements BeforeStartupHook {
 
     private Map<Type, List<SchemaLoadingResult>> getGroupedResults(List<SchemaLoadingResult> allResults) {
         return allResults.stream().collect(Collectors.groupingBy(SchemaLoadingResult::getType, Collectors.toList()));
-    }
-
-    @Override
-    public int getPriority() {
-        return Hook.HIGHER_PRIORITY;
     }
 }

@@ -74,7 +74,6 @@ import java.util.Optional;
 public class FrontendConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @DependsOn("beforeStartupHooksHandler")
     @Order(LifecycleOrder.SERVER_STARTUP)
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
@@ -118,7 +117,7 @@ public class FrontendConfiguration {
         return new TopicMetadataLoadingJob(topicMetadataLoadingRunner, config);
     }
 
-    @Bean//TODO: use as list element or add init method + Order?
+    @Bean(initMethod = "run")
     @Conditional(TopicMetadataLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
     //    @Bean(initMethod = "run")
 //    @Order(LifecycleOrder.BEFORE_STARTUP)
@@ -127,21 +126,12 @@ public class FrontendConfiguration {
         return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner);
     }
 
-    @Bean//TODO: use as list element or add init method + Order?
-//    @Bean(initMethod = "run")
-//    @Order(LifecycleOrder.BEFORE_STARTUP)
+    @Bean(initMethod = "run")
     @Conditional(TopicSchemaLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
     public TopicSchemaLoadingStartupHook topicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                                                        SchemaRepository schemaRepository,
                                                                        ConfigFactory config) {
         return new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, config);
-    }
-
-    @Bean(initMethod = "runHooks")
-    //TODO: remove?
-    @Order(LifecycleOrder.BEFORE_STARTUP) //TODO: remove all order
-    public BeforeStartupHooksHandler beforeStartupHooksHandler(List<BeforeStartupHook> hooks) { //remove wiring list
-        return new BeforeStartupHooksHandler(hooks);
     }
 
     @Bean
