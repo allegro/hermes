@@ -107,13 +107,12 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
 //        hermesFrontend.start();
         setSpringProfilesArg();
         applicationContext = application.run(args.toArray(new String[0]));
-        waitForStartup();//TODO - remove, use another?
+        waitForStartup();
     }
 
     @Override
     public void stop() throws Exception {
         LOGGER.info("Stopping Hermes Frontend");
-//        instance().stop();
         instance().close();
     }
 

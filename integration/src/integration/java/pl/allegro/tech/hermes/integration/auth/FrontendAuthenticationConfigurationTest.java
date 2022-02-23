@@ -13,7 +13,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
@@ -24,7 +23,9 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.Map;
+import java.util.Properties;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static pl.allegro.tech.hermes.integration.auth.SingleUserAwareIdentityManager.getHeadersWithAuthentication;
@@ -36,8 +37,8 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     public static final String FRONTEND_URL = "http://127.0.0.1:" + FRONTEND_PORT;
 
     private static final Logger logger = LoggerFactory.getLogger(FrontendAuthenticationConfigurationTest.class);
-    private static final String USERNAME = "someUser"; //TODO: share username and password between bean and test
-    private static final String PASSWORD = "somePassword123";
+    private static String USERNAME;
+    private static String PASSWORD;
     private static final String MESSAGE = TestMessage.of("hello", "world").body();
 
     protected HermesPublisher publisher;
@@ -48,6 +49,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
 
     @BeforeClass
     public void setup() throws Exception {
+        loadCredentials();
         frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.addSpringProfiles("authRequired");
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
@@ -131,5 +133,16 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
 
         //then
         assertThat(response.getStatus()).isEqualTo(StatusCodes.UNAUTHORIZED);
+    }
+
+    private static void loadCredentials() throws IOException {
+        Properties prop = new Properties();
+        try {
+            prop.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-auth.properties"));
+        } catch (IOException e) {
+            throw new IOException("Failed to load 'application-auth.properties' file", e);
+        }
+        USERNAME = prop.getProperty("auth.username");
+        PASSWORD = prop.getProperty("auth.password");
     }
 }
