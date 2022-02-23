@@ -32,31 +32,18 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrontendStarter.class);
 
-//    private final MutableConfigFactory configFactory;
     private final int port;
     private final List<String> args = new ArrayList<>();
     private final List<String> profiles = new ArrayList<>();
     private final SpringApplication application = new SpringApplication(HermesFrontend.class);
     private ConfigurableApplicationContext applicationContext;
-//    private HermesFrontend hermesFrontend;
     private OkHttpClient client;
 
     public FrontendStarter(int port) {
         application.setWebApplicationType(WebApplicationType.NONE);
         this.port = port;
         addSpringProfiles("integration");
-//        overrideProperty(FRONTEND_PORT, port);
-//        overrideProperty(SCHEMA_CACHE_ENABLED, true);
-//        overrideProperty(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
-//        overrideProperty(FRONTEND_THROUGHPUT_TYPE, "fixed");
-//        overrideProperty(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
-//        overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
     }
-
-//    public FrontendStarter(int port, boolean sslEnabled) {
-//        this(port);
-//        overrideProperty(FRONTEND_SSL_ENABLED, sslEnabled);
-//    }
 
     private FrontendStarter(int port, List<String> args) {
         this(port);
@@ -87,24 +74,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     @Override
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Frontend");
-//        hermesFrontend = HermesFrontend.frontend()
-//            .withBinding(configFactory, ConfigFactory.class)
-//            .withHeadersPropagator(new TraceHeadersPropagator())
-//            .withLogRepository(serviceLocator -> new MongoLogRepository(FongoFactory.hermesDB(),
-//                    10,
-//                    1000,
-//                    configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME),
-//                    configFactory.getStringProperty(Configs.HOSTNAME),
-//                    serviceLocator.getService(MetricRegistry.class),
-//                    serviceLocator.getService(PathsCompiler.class)))
-//            .withKafkaTopicsNamesMapper(
-//                    new IntegrationTestKafkaNamesMapperFactory(configFactory.getStringProperty(Configs.KAFKA_NAMESPACE)).create())
-//            .withDisabledGlobalShutdownHook()//TODO?
-//            .withDisabledFlushLogsShutdownHook()//TODO?
-//            .build();
-
         client = new OkHttpClient();
-//        hermesFrontend.start();
         setSpringProfilesArg();
         applicationContext = application.run(args.toArray(new String[0]));
         waitForStartup();
@@ -121,16 +91,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         return applicationContext;
     }
 
-//    public ConfigFactory config() {
-//        return configFactory;
-//    }
-
-//    public void overrideProperty(Configs config, Object value) {
-//        configFactory.overrideProperty(config, value);
-//    }
-
     public void overrideProperty(Configs config, Object value) {
-//        args.add("--" + config.getName() + "=" + value);
         args.add(getArgument(config, value));
     }
 

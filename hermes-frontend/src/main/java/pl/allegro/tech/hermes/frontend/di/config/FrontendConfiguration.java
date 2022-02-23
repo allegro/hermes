@@ -7,8 +7,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.annotation.Order;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -196,12 +194,6 @@ public class FrontendConfiguration {
 
         return new NotificationBasedTopicsCache(internalNotificationsBus, blacklistZookeeperNotifyingCache,
                 groupRepository, topicRepository, hermesMetrics, kafkaNamesMapper);
-
-//        cache.start();
-//        return cache;
-
-//        return new TopicsCacheFactory(internalNotificationsBus, groupRepository, topicRepository, hermesMetrics,
-//                kafkaNamesMapper, blacklistZookeeperNotifyingCache).provide();
     }
 
     @Bean
@@ -234,7 +226,6 @@ public class FrontendConfiguration {
     public PersistentBufferExtension persistentBufferExtension(ConfigFactory configFactory,
                                                                Clock clock,
                                                                BrokerListeners listeners,
-//                                                               HooksHandler hooksHandler,
                                                                BackupMessagesLoader backupMessagesLoader,
                                                                HermesMetrics hermesMetrics) {
         return new PersistentBufferExtension(configFactory, clock, listeners, backupMessagesLoader,
@@ -264,18 +255,10 @@ public class FrontendConfiguration {
         return new KafkaHeaderFactory(configFactory);
     }
 
-    @Bean
+    @Bean(initMethod = "startup")
     public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                              ZookeeperPaths zookeeperPaths) {
-        BlacklistZookeeperNotifyingCache cache = new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
-        try {
-            cache.start(); //TODO - change to init method?
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to start Zookeeper Topic Blacklist cache", e);
-        }
-        return cache;
-
-//        return new BlacklistZookeeperNotifyingCacheFactory(curator, zookeeperPaths).provide();
+        return new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
     }
 
     @Bean(destroyMethod = "close")
@@ -283,7 +266,6 @@ public class FrontendConfiguration {
                                                                       ZookeeperPaths paths,
                                                                       ObjectMapper mapper) {
         return new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
-//        return new ReadinessRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
     @Bean
