@@ -66,7 +66,6 @@ public class AttachingKeepAliveHeaderTest extends IntegrationTest {
     }
 
     private FrontendStarter startFrontendWithConfig(Consumer<FrontendStarter> frontendConfigUpdater) throws Exception {
-//        FrontendStarter frontend = new FrontendStarter(FRONTEND_PORT, false);
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT, false);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);

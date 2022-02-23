@@ -50,7 +50,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE;
 
-public class KafkaMessageProducerFactory { //TODO - remove factory or keep it? - create Configuration per each complicated factory
+public class KafkaMessageProducerFactory {
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
@@ -110,9 +110,4 @@ public class KafkaMessageProducerFactory { //TODO - remove factory or keep it? -
     private Integer getInt(Configs key) {
         return configFactory.getIntProperty(key);
     }
-
-//    @Override
-//    public void dispose(Producers producer) {
-//        producer.close();
-//    }
 }

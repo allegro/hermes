@@ -52,7 +52,6 @@ public class HermesFrontendInstance {
 
     public static class Starter {
         private final int port = Ports.nextAvailable();
-//        private final FrontendStarter frontend = new FrontendStarter(port, false);
         private final FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(port, false);
 
         public Starter() {

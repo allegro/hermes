@@ -61,7 +61,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         Topic topic = randomTopic("backupGroup", "uniqueTopic").build();
         operations.buildTopic(topic);
 
-//        FrontendStarter frontend = new FrontendStarter(frontendPort, false);
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(frontendPort, false);
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
@@ -103,7 +102,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
 
         remoteService.expectMessages("message");
 
-//        FrontendStarter frontend = new FrontendStarter(Ports.nextAvailable(), false);
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(Ports.nextAvailable(), false);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
@@ -127,7 +125,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
         JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper());
 
-        MessageContentWrapper wrapper = new MessageContentWrapper(contentWrapper, null,null, null, null, null, null);
+        MessageContentWrapper wrapper = new MessageContentWrapper(contentWrapper, null, null, null, null, null, null);
 
         String messageId = MessageIdGenerator.generate();
         long timestamp = now().toEpochMilli();

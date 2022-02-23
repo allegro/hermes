@@ -1,23 +1,17 @@
 package pl.allegro.tech.hermes.integration.auth;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.util.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
@@ -44,7 +38,6 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     protected HermesPublisher publisher;
     protected HermesServer hermesServer;
 
-//    private HermesFrontend hermesFrontend;
     private FrontendStarter frontendStarter;
 
     @BeforeClass
@@ -62,31 +55,8 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
-//        ConfigFactory configFactory = new MutableConfigFactory()
-//                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
-//                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
-//                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven")//the only one specific property
-//                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
-//                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
-//                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
-//                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString())
-//                .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl())
-//                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
-
-//        AuthenticationConfiguration authConfig = new AuthenticationConfiguration(
-//                exchange -> true,
-//                Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
-//                new SingleUserAwareIdentityManager(username, password));
-
-//        hermesFrontend = HermesFrontend.frontend()
-//                .withBinding(configFactory, ConfigFactory.class)
-//                .withAuthenticationConfiguration(authConfig)
-//                .build();
-
-//        hermesFrontend.start();
         frontendStarter.start();
 
-//        hermesServer = hermesFrontend.getService(HermesServer.class);
         hermesServer = frontendStarter.instance().getBean(HermesServer.class);
         publisher = new HermesPublisher(FRONTEND_URL);
     }
@@ -136,13 +106,13 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     }
 
     private static void loadCredentials() throws IOException {
-        Properties prop = new Properties();
+        Properties properties = new Properties();
         try {
-            prop.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-auth.properties"));
+            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("application-auth.properties"));
         } catch (IOException e) {
             throw new IOException("Failed to load 'application-auth.properties' file", e);
         }
-        USERNAME = prop.getProperty("auth.username");
-        PASSWORD = prop.getProperty("auth.password");
+        USERNAME = properties.getProperty("auth.username");
+        PASSWORD = properties.getProperty("auth.password");
     }
 }

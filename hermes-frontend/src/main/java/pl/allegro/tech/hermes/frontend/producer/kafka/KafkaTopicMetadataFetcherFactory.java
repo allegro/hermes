@@ -20,7 +20,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_P
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 
-public class KafkaTopicMetadataFetcherFactory { //TODO - remove factory or keep it?
+public class KafkaTopicMetadataFetcherFactory {
     private final ConfigFactory configFactory;
 
     @Inject
@@ -28,7 +28,6 @@ public class KafkaTopicMetadataFetcherFactory { //TODO - remove factory or keep 
         this.configFactory = configFactory;
     }
 
-//    @Override
     public KafkaTopicMetadataFetcher provide() {
         Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, configFactory.getStringProperty(KAFKA_BROKER_LIST));
@@ -46,8 +45,4 @@ public class KafkaTopicMetadataFetcherFactory { //TODO - remove factory or keep 
         AdminClient adminClient = AdminClient.create(props);
         return new KafkaTopicMetadataFetcher(adminClient, configFactory);
     }
-
-//    public void dispose(KafkaTopicMetadataFetcher instance) {
-//        instance.close();
-//    }
 }

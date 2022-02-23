@@ -55,9 +55,4 @@ public class ThroughputLimiterFactory {
                 .setUncaughtExceptionHandler((t, e) -> logger.error("ThroughputLimiterExecutor failed {}", t.getName(), e)).build();
         return newScheduledThreadPool(1, threadFactory);
     }
-
-//    @Override
-//    public void dispose(ThroughputLimiter instance) {
-//
-//    }
 }
