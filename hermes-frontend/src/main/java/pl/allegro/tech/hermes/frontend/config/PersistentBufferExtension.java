@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.di;
+package pl.allegro.tech.hermes.frontend.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

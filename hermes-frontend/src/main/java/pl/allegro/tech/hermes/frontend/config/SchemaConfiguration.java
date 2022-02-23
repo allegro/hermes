@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend.di.config;
+package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
