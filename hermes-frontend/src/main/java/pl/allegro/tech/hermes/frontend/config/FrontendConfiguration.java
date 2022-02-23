@@ -1,186 +1,40 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.undertow.server.HttpHandler;
 import org.apache.curator.framework.CuratorFramework;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
-import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiterFactory;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
-import pl.allegro.tech.hermes.frontend.publishing.message.AvroEnforcer;
-import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
-import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
-import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
-import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
-import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
-import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
-import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
-import pl.allegro.tech.hermes.frontend.server.HermesServer;
-import pl.allegro.tech.hermes.frontend.server.ReadinessChecker;
-import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
-import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
-import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
-import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
-import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
-import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
-import pl.allegro.tech.hermes.tracker.frontend.PublishingMessageTracker;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.inject.Named;
 import java.time.Clock;
 import java.util.List;
-import java.util.Optional;
 
 @Configuration
 public class FrontendConfiguration {
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public HermesServer hermesServer(ConfigFactory configFactory,
-                                     HermesMetrics hermesMetrics,
-                                     HttpHandler publishingHandler,
-                                     HealthCheckService healthCheckService,
-                                     ReadinessChecker readinessChecker,
-                                     MessagePreviewPersister messagePreviewPersister,
-                                     ThroughputLimiter throughputLimiter,
-                                     TopicMetadataLoadingJob topicMetadataLoadingJob,
-                                     SslContextFactoryProvider sslContextFactoryProvider,
-                                     ConfigurableApplicationContext applicationContext) {
-        return new HermesServer(configFactory, hermesMetrics, publishingHandler, healthCheckService, readinessChecker,
-                messagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider, applicationContext);
-    }
-
-    @Bean
-    public MessageErrorProcessor messageErrorProcessor(ObjectMapper objectMapper, Trackers trackers) {
-        return new MessageErrorProcessor(objectMapper, trackers);
-    }
-
-    @Bean
-    public MessageEndProcessor messageEndProcessor(Trackers trackers, BrokerListeners brokerListeners) {
-        return new MessageEndProcessor(trackers, brokerListeners);
-    }
-
     @Bean
     public MessageValidators messageValidators(List<TopicMessageValidator> messageValidators) {
         return new MessageValidators(messageValidators);
-    }
-
-    @Bean
-    public TopicMetadataLoadingRunner topicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
-                                                                 TopicsCache topicsCache,
-                                                                 ConfigFactory config) {
-        return new TopicMetadataLoadingRunner(brokerMessageProducer, topicsCache, config);
-    }
-
-    @Bean
-    public TopicMetadataLoadingJob topicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                                           ConfigFactory config) {
-        return new TopicMetadataLoadingJob(topicMetadataLoadingRunner, config);
-    }
-
-    @Bean(initMethod = "run")
-    @Conditional(TopicMetadataLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
-    public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner) {
-        return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner);
-    }
-
-    @Bean(initMethod = "run")
-    @Conditional(TopicSchemaLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
-    public TopicSchemaLoadingStartupHook topicSchemaLoadingStartupHook(TopicsCache topicsCache,
-                                                                       SchemaRepository schemaRepository,
-                                                                       ConfigFactory config) {
-        return new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, config);
-    }
-
-    @Bean
-    public ReadinessChecker readinessChecker(ConfigFactory config,
-                                             TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                             ReadinessRepository readinessRepository) {
-        return new ReadinessChecker(config, topicMetadataLoadingRunner, readinessRepository);
-    }
-
-    @Bean
-    public HeadersPropagator defaultHeadersPropagator(ConfigFactory config) {
-        return new DefaultHeadersPropagator(config);
-    }
-
-    @Bean
-    public HttpHandler httpHandler(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
-                                   MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
-                                   BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig) {
-        return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, configFactory, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig.orElse(null)).provide();
-    }
-
-    @Bean(destroyMethod = "close")
-    public Producers kafkaMessageProducer(ConfigFactory configFactory) {
-        return new KafkaMessageProducerFactory(configFactory).provide();
-    }
-
-    @Bean(destroyMethod = "close")
-    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(ConfigFactory configFactory) {
-        return new KafkaTopicMetadataFetcherFactory(configFactory).provide();
-    }
-
-    @Bean
-    public BrokerMessageProducer kafkaBrokerMessageProducer(Producers producers,
-                                                            KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
-                                                            HermesMetrics hermesMetrics,
-                                                            KafkaHeaderFactory kafkaHeaderFactory,
-                                                            ConfigFactory configFactory) {
-        return new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, kafkaHeaderFactory,
-                configFactory);
-    }
-
-    @Bean
-    public ThroughputLimiter throughputLimiter(ConfigFactory configs, HermesMetrics hermesMetrics) {
-        return new ThroughputLimiterFactory(configs, hermesMetrics).provide();
-    }
-
-    @Bean
-    public PublishingMessageTracker publishingMessageTracker(List<LogRepository> repositories, Clock clock) {
-        return new PublishingMessageTracker(repositories, clock);
-    }
-
-    @Bean
-    public NoOperationPublishingTracker noOperationPublishingTracker() {
-        return new NoOperationPublishingTracker();
     }
 
     @Bean(initMethod = "start")
@@ -193,23 +47,6 @@ public class FrontendConfiguration {
 
         return new NotificationBasedTopicsCache(internalNotificationsBus, blacklistZookeeperNotifyingCache,
                 groupRepository, topicRepository, hermesMetrics, kafkaNamesMapper);
-    }
-
-    @Bean
-    public AvroEnforcer messageContentTypeEnforcer() {
-        return new MessageContentTypeEnforcer();
-    }
-
-    @Bean
-    public MessageFactory messageFactory(MessageValidators validators,
-                                         AvroEnforcer enforcer,
-                                         SchemaRepository schemaRepository,
-                                         HeadersPropagator headersPropagator,
-                                         MessageContentWrapper messageContentWrapper,
-                                         Clock clock,
-                                         ConfigFactory configFactory) {
-        return new MessageFactory(validators, enforcer, schemaRepository, headersPropagator, messageContentWrapper,
-                clock, configFactory);
     }
 
     @Bean
@@ -231,29 +68,6 @@ public class FrontendConfiguration {
                 hermesMetrics);
     }
 
-    @Bean
-    public MessagePreviewPersister messagePreviewPersister(MessagePreviewLog messagePreviewLog,
-                                                           MessagePreviewRepository repository,
-                                                           ConfigFactory configFactory) {
-        return new MessagePreviewPersister(messagePreviewLog, repository, configFactory);
-    }
-
-    @Bean
-    public MessagePreviewLog messagePreviewLog(MessagePreviewFactory messagePreviewFactory,
-                                               ConfigFactory configFactory) {
-        return new MessagePreviewLog(messagePreviewFactory, configFactory);
-    }
-
-    @Bean
-    public MessagePreviewFactory messagePreviewFactory(ConfigFactory configFactory) {
-        return new MessagePreviewFactory(configFactory);
-    }
-
-    @Bean
-    public KafkaHeaderFactory kafkaHeaderFactory(ConfigFactory configFactory) {
-        return new KafkaHeaderFactory(configFactory);
-    }
-
     @Bean(initMethod = "startup")
     public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                              ZookeeperPaths zookeeperPaths) {
@@ -267,12 +81,6 @@ public class FrontendConfiguration {
         return new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
     }
 
-    @Bean
-    public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory,
-                                                               ConfigFactory configFactory) {
-        return new SslContextFactoryProvider(sslContextFactory.orElse(null), configFactory);
-    }
-
     @Bean(initMethod = "startup")
     public HealthCheckService healthCheckService() {
         return new HealthCheckService();
@@ -281,11 +89,6 @@ public class FrontendConfiguration {
     @Bean
     public BrokerListeners defaultBrokerListeners() {
         return new BrokerListeners();
-    }
-
-    @Bean
-    public Trackers trackers(List<LogRepository> repositories) {
-        return new Trackers(repositories);
     }
 
     @Bean
