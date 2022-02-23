@@ -27,7 +27,6 @@ public class ThroughputLimiterFactory {//TODO - remove factory or keep it?
         this.hermesMetrics = hermesMetrics;
     }
 
-//    @Override
     public ThroughputLimiter provide() {
         switch (ThroughputLimiterType.valueOf(configs.getStringProperty(Configs.FRONTEND_THROUGHPUT_TYPE).toUpperCase())) {
             case UNLIMITED:

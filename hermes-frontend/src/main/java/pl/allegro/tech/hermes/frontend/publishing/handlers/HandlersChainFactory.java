@@ -58,7 +58,6 @@ public class HandlersChainFactory {//TODO - remove factory or keep it?
         this.authenticationConfiguration = Optional.ofNullable(authenticationConfiguration);
     }
 
-//    @Override
     public HttpHandler provide() {
         HttpHandler publishing = new PublishingHandler(brokerMessageProducer, messageErrorProcessor, messageEndProcessor);
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
@@ -102,9 +101,4 @@ public class HandlersChainFactory {//TODO - remove factory or keep it?
 
         return new SecurityInitialHandler(authenticationMode, authConfig.getIdentityManager(), mechanismsHandler);
     }
-
-//    @Override
-//    public void dispose(HttpHandler instance) {
-//
-//    }
 }

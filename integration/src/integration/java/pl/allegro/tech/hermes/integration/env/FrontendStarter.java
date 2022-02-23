@@ -8,7 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.frontend.HermesFrontendApp;
+import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     private final int port;
     private final List<String> args = new ArrayList<>();
     private final List<String> profiles = new ArrayList<>();
-    private final SpringApplication application = new SpringApplication(HermesFrontendApp.class);
+    private final SpringApplication application = new SpringApplication(HermesFrontend.class);
     private ConfigurableApplicationContext applicationContext;
 //    private HermesFrontend hermesFrontend;
     private OkHttpClient client;
