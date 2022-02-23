@@ -132,7 +132,6 @@ public class CommonConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @Order(LifecycleOrder.CACHE_STARTUP)//TODO - does this order really matter?
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
                                                                                ConfigFactory config) {
         return new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();

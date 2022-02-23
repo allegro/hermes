@@ -74,7 +74,6 @@ import java.util.Optional;
 public class FrontendConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @Order(LifecycleOrder.SERVER_STARTUP)
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
@@ -119,9 +118,6 @@ public class FrontendConfiguration {
 
     @Bean(initMethod = "run")
     @Conditional(TopicMetadataLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
-    //    @Bean(initMethod = "run")
-//    @Order(LifecycleOrder.BEFORE_STARTUP)
-//    @DependsOn("configFactory")//TODO - do we need it or not?
     public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner) {
         return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner);
     }
@@ -235,7 +231,6 @@ public class FrontendConfiguration {
     }
 
     @Bean(initMethod = "extend")
-    @Order(LifecycleOrder.PERSISTENT_BUFFER_STARTUP)//TODO - do we need it? does it really matters?
     public PersistentBufferExtension persistentBufferExtension(ConfigFactory configFactory,
                                                                Clock clock,
                                                                BrokerListeners listeners,
@@ -298,7 +293,6 @@ public class FrontendConfiguration {
     }
 
     @Bean(initMethod = "startup")
-    @Order(LifecycleOrder.AFTER_STARTUP)
     public HealthCheckService healthCheckService() {
         return new HealthCheckService();
     }
