@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.health
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.management.domain.mode.ModeService
@@ -23,7 +24,7 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         manager.start()
         assertZookeeperClientsConnected(manager.clients)
         manager.clients.each { client -> setupZookeeperPath(client, healthCheckPath) }
-        healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper(), modeService, meterRegistry)
+        healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper().registerModule(new JavaTimeModule()), modeService, meterRegistry)
         successfulCounter = meterRegistry.counter('storage-health-check.successful')
         failedCounter = meterRegistry.counter('storage-health-check.failed')
     }

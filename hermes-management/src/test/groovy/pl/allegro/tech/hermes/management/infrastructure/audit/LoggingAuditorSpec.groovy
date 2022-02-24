@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.audit
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.javers.core.Javers
 import org.javers.core.JaversBuilder
 import org.javers.core.metamodel.clazz.EntityDefinitionBuilder
@@ -23,7 +24,7 @@ class LoggingAuditorSpec extends Specification {
     static final String UPDATED_CLIENT_SECRET = "UPDATED_CLIENT_SECRET"
 
     MockAppender mockAppender
-    LoggingAuditor auditor = new LoggingAuditor(javers(), new ObjectMapper())
+    LoggingAuditor auditor = new LoggingAuditor(javers(), new ObjectMapper().registerModule(new JavaTimeModule()))
 
     @Before
     def createAndAddMockAppenderToLogger() {

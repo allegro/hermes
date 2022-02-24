@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.consistency
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.Topic
@@ -12,6 +13,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class DcConsistencyServiceSpec extends Specification {
+
+    def objectMapper = new ObjectMapper().registerModule(new JavaTimeModule())
 
     def "should return empty list when given groups are consistent"() {
         given:
@@ -27,7 +30,7 @@ class DcConsistencyServiceSpec extends Specification {
                 .addGroup(group)
                 .addTopic(topic)
                 .addSubscription(subscription)
-        DcConsistencyService dcConsistencyService = new DcConsistencyService(repositoryManager, new ObjectMapper(),
+        DcConsistencyService dcConsistencyService = new DcConsistencyService(repositoryManager, objectMapper,
                 new ConsistencyCheckerProperties())
 
         when:
@@ -45,7 +48,7 @@ class DcConsistencyServiceSpec extends Specification {
         repositoryManager.datacenter("dc2")
                 .addGroup(group("testGroup").build())
                 .addGroup(group("testGroup-dc2").build())
-        DcConsistencyService consistencyService = new DcConsistencyService(repositoryManager, new ObjectMapper(),
+        DcConsistencyService consistencyService = new DcConsistencyService(repositoryManager, objectMapper,
                 new ConsistencyCheckerProperties())
 
         when:
@@ -64,7 +67,7 @@ class DcConsistencyServiceSpec extends Specification {
         repositoryManager.datacenter("dc2")
                 .addGroup(group)
                 .addTopic(topic(group.groupName, "testTopic").withDescription("dc2").build())
-        DcConsistencyService consistencyService = new DcConsistencyService(repositoryManager, new ObjectMapper(),
+        DcConsistencyService consistencyService = new DcConsistencyService(repositoryManager, objectMapper,
                 new ConsistencyCheckerProperties())
 
         when:
@@ -86,7 +89,7 @@ class DcConsistencyServiceSpec extends Specification {
                 .addGroup(group)
                 .addTopic(topic)
                 .addSubscription(subscription(topic, "testSubscription").withDescription("dc2").build())
-        DcConsistencyService consistencyService = new DcConsistencyService(repositoryManager, new ObjectMapper(),
+        DcConsistencyService consistencyService = new DcConsistencyService(repositoryManager, objectMapper,
                 new ConsistencyCheckerProperties())
 
         when:
@@ -104,7 +107,7 @@ class DcConsistencyServiceSpec extends Specification {
         repositoryManager.datacenter("dc2")
                 .addGroup(group("testGroup").build())
                 .addGroup(group("testGroup-dc2").build())
-        DcConsistencyService consistencyService = new DcConsistencyService(repositoryManager, new ObjectMapper(),
+        DcConsistencyService consistencyService = new DcConsistencyService(repositoryManager, objectMapper,
                 new ConsistencyCheckerProperties())
 
         when:
