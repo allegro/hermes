@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.server
 
 import org.apache.avro.Schema
-import org.glassfish.hk2.api.ServiceLocator
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache
@@ -31,10 +30,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
     @Shared Topic avroTopic3 = avroTopic("g2.topic1")
 
     @Shared CompiledSchema<Schema> schema = new AvroUser().getCompiledSchema()
-
-    @Shared
-    ServiceLocator serviceLocator = Mock()
-
+    
     def "should load topic schema for Avro topics"() {
         given:
         CompiledSchemaRepository<Schema> compiledSchemaRepository = Mock()
@@ -45,7 +41,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         1 * compiledSchemaRepository.getSchema(avroTopic1, version) >> schema
@@ -64,7 +60,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         1 * compiledSchemaRepository.getSchema(avroTopic1, version) >> { throw new RuntimeException("an error") }
@@ -97,7 +93,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         1 * compiledSchemaRepository.getSchema(avroTopic1, version) >> schema
@@ -116,7 +112,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         3 * compiledSchemaRepository.getSchema(avroTopic1, version) >> { throw new RuntimeException("an error") }
@@ -133,7 +129,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         noExceptionThrown()
