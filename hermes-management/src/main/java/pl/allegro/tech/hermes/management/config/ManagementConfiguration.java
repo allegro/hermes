@@ -10,20 +10,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
-import pl.allegro.tech.hermes.management.api.ReadOnlyFilter;
-import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
 
 import java.time.Clock;
-
-import static javax.servlet.DispatcherType.REQUEST;
 
 @Configuration
 @EnableConfigurationProperties({

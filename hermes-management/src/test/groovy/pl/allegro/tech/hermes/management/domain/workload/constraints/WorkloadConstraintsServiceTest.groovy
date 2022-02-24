@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.workload.constraints
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import pl.allegro.tech.hermes.api.Constraints
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
@@ -33,7 +34,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
     ModeService modeService
     MultiDatacenterRepositoryCommandExecutor executor
 
-    def objectMapper = new ObjectMapper()
+    def objectMapper = new ObjectMapper().registerModule(new JavaTimeModule())
     def paths = new ZookeeperPaths('/hermes')
 
     def setup() {
