@@ -1,3 +1,15 @@
+## 1.11.1 (24.02.2022)
+
+## Enhancements
+
+#### ([1461](https://github.com/allegro/hermes/pull/1461)) Waiting for KafkaFeature during topic creation
+#### ([1462](https://github.com/allegro/hermes/pull/1462)) Test living audit events endpoint
+#### ([1465](https://github.com/allegro/hermes/pull/1465)) Choosing owner from autocomplete source prevents manual entries
+
+### Fixes
+
+#### ([1466](https://github.com/allegro/hermes/pull/1466)) Use one object mapper across hermes-management
+
 ## 1.11.0 (15.02.2022)
 
 ## Enhancements
