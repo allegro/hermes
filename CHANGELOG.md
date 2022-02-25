@@ -1,3 +1,9 @@
+## 1.11.2 (28.02.2022)
+
+### Fixes
+
+#### ([1468](https://github.com/allegro/hermes/pull/1468)) Explicitly releasing direct buffers in hermes-consumers
+
 ## 1.11.1 (24.02.2022)
 
 ## Enhancements
