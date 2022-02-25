@@ -15,13 +15,13 @@ class DirectBufferUtils {
     static {
         DirectBufferCleaner cleaner;
         try {
-            cleaner = new Java11DirectBufferCleaner();
-        } catch (ReflectiveOperationException e) {
-            try {
+            if ("1.8".equals(System.getProperty("java.specification.version"))) {
                 cleaner = new Java8DirectBufferCleaner();
-            } catch (ReflectiveOperationException ex) {
-                cleaner = null;
+            } else {
+                cleaner = new Java11DirectBufferCleaner();
             }
+        } catch (ReflectiveOperationException e) {
+            cleaner = null;
         }
         CLEANER = cleaner;
     }
