@@ -52,8 +52,8 @@ allprojects {
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 
     project.ext.versions = [
             kafka             : '2.7.0',
