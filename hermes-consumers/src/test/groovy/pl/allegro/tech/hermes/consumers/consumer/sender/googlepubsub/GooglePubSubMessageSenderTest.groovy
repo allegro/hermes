@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.pubsub
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub
 
 
 import com.google.api.core.SettableApiFuture
@@ -17,19 +17,14 @@ import spock.lang.Subject
 
 import java.util.concurrent.TimeUnit
 
-class PubSubMessageSenderTest extends Specification {
+class GooglePubSubMessageSenderTest extends Specification {
 
-    @Shared
     Publisher publisher = Mock(Publisher)
-
-    @Shared
-    ConfigFactory configFactory = new MutableConfigFactory()
-
-    @Shared
-    PubSubClient client = new PubSubClient(publisher, new PubSubMessages(new PubSubMetadataAppender(configFactory)))
+    GooglePubSubClient client = new GooglePubSubClient(publisher, new GooglePubSubMessages(
+            new GooglePubSubMetadataAppender()))
 
     @Subject
-    PubSubMessageSender sender = new PubSubMessageSender(client)
+    GooglePubSubMessageSender sender = new GooglePubSubMessageSender(client)
 
     def 'should return result on a happy path'() {
         given:

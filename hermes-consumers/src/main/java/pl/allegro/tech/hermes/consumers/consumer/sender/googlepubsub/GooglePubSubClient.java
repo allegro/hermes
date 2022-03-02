@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.pubsub;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -12,12 +12,12 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class PubSubClient {
+public class GooglePubSubClient {
 
     private final Publisher publisher;
-    private final PubSubMessages messageCreator;
+    private final GooglePubSubMessages messageCreator;
 
-    PubSubClient(Publisher publisher, PubSubMessages messageCreator) {
+    GooglePubSubClient(Publisher publisher, GooglePubSubMessages messageCreator) {
         this.publisher = publisher;
         this.messageCreator = messageCreator;
     }
@@ -26,6 +26,6 @@ public class PubSubClient {
             throws IOException, ExecutionException, InterruptedException {
         PubsubMessage pubsubMessage = messageCreator.fromHermesMessage(message);
         ApiFuture<String> future = publisher.publish(pubsubMessage);
-        ApiFutures.addCallback(future, new MessageSentCallback(message, resultFuture), MoreExecutors.directExecutor());
+        ApiFutures.addCallback(future, new GooglePubSubMessageSentCallback(message, resultFuture), MoreExecutors.directExecutor());
     }
 }

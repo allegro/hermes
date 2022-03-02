@@ -1,14 +1,15 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.pubsub;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
-import com.google.common.base.Objects;
 import com.google.pubsub.v1.TopicName;
 
-public class PubSubSenderTarget {
+import java.util.Objects;
+
+public class GooglePubSubSenderTarget {
 
     private final TopicName topicName;
     private final String pubSubEndpoint;
 
-    private PubSubSenderTarget(TopicName topicName, String pubSubEndpoint) {
+    private GooglePubSubSenderTarget(TopicName topicName, String pubSubEndpoint) {
         this.topicName = topicName;
         this.pubSubEndpoint = pubSubEndpoint;
     }
@@ -25,13 +26,13 @@ public class PubSubSenderTarget {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PubSubSenderTarget that = (PubSubSenderTarget) o;
-        return Objects.equal(topicName, that.topicName) && Objects.equal(pubSubEndpoint, that.pubSubEndpoint);
+        GooglePubSubSenderTarget that = (GooglePubSubSenderTarget) o;
+        return Objects.equals(topicName, that.topicName) && Objects.equals(pubSubEndpoint, that.pubSubEndpoint);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(topicName, pubSubEndpoint);
+        return Objects.hash(topicName, pubSubEndpoint);
     }
 
     public static PubSubTargetBuilder builder() {
@@ -60,8 +61,8 @@ public class PubSubSenderTarget {
             return this;
         }
 
-        public PubSubSenderTarget build() {
-            return new PubSubSenderTarget(topicName, pubSubEndpoint);
+        public GooglePubSubSenderTarget build() {
+            return new GooglePubSubSenderTarget(topicName, pubSubEndpoint);
         }
     }
 }

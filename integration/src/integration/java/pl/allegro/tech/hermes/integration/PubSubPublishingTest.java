@@ -17,11 +17,10 @@ import org.testcontainers.containers.PubSubEmulatorContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.pubsub.PubSubMessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSender;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.test.HermesAssertions;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -48,7 +47,7 @@ public class PubSubPublishingTest extends IntegrationTest {
     private static RemoteServiceEndpoint remoteService;
 
     @InjectMocks
-    private PubSubMessageSender messageSender;
+    private GooglePubSubMessageSender messageSender;
 
     private static final Message SOME_MESSAGE = Message.message().withData("hello world".getBytes(StandardCharsets.UTF_8)).build();
     public static PubSubEmulatorContainer pubSubEmulator = new PubSubEmulatorContainer(DockerImageName.parse("gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators"));
