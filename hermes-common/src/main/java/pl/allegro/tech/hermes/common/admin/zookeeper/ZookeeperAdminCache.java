@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.common.admin.AdminOperationsCallback;
 import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import java.time.Clock;
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ public class ZookeeperAdminCache extends PathChildrenCache implements PathChildr
 
     private long initializationTime;
 
-    @Inject
     public ZookeeperAdminCache(ZookeeperPaths zookeeperPaths,
                                @Named(CuratorType.HERMES) CuratorFramework client,
                                ObjectMapper objectMapper,

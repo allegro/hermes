@@ -47,8 +47,12 @@ public class AuditConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "audit", value = "isEventAuditEnabled", havingValue = "true")
-    public EventAuditor eventAuditor(AuditProperties auditProperties, @Qualifier("eventAuditorRestTemplate") RestTemplate eventAuditorRestTemplate) {
-        return new EventAuditor(javers(), eventAuditorRestTemplate, auditProperties.getEventUrl(), new ObjectMapper());
+    public EventAuditor eventAuditor(
+            AuditProperties auditProperties,
+            @Qualifier("eventAuditorRestTemplate") RestTemplate eventAuditorRestTemplate,
+            ObjectMapper objectMapper
+    ) {
+        return new EventAuditor(javers(), eventAuditorRestTemplate, auditProperties.getEventUrl(), objectMapper);
     }
 
     @Bean

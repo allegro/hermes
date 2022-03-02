@@ -188,6 +188,7 @@ public final class DirectBufferPool {
                 buffer.clear();
                 this.free.add(buffer);
             } else {
+                DirectBufferUtils.release(buffer);
                 this.availableMemory += size;
             }
             Condition moreMem = this.waiters.peekFirst();

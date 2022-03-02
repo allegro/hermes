@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.api.reader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.json.JsonQueryParser;
@@ -19,6 +20,13 @@ import java.lang.reflect.Type;
 @Provider
 public class QueryBodyReader implements MessageBodyReader<Query> {
 
+    private final ObjectMapper objectMapper;
+
+    @Autowired
+    public QueryBodyReader(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return type == Query.class;
@@ -36,7 +44,7 @@ public class QueryBodyReader implements MessageBodyReader<Query> {
         if (genericType instanceof ParameterizedType) {
             queryType = (Class<?>) ((ParameterizedType) genericType).getRawType();
         }
-        QueryParser parser = new JsonQueryParser(new ObjectMapper());
+        QueryParser parser = new JsonQueryParser(objectMapper);
         return parser.parse(entityStream, queryType);
     }
 }
