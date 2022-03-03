@@ -5,7 +5,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -160,7 +159,7 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
-    @ConditionalOnBean(GooglePubSubCredentialsProvider.class)
+    @Conditional(OnGoogleDefaultCredentials.class)
     public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
             GooglePubSubSenderTargetResolver targetResolver,
             GooglePubSubPublishersCache cache,
