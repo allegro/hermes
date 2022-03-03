@@ -1,22 +1,16 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import com.google.api.gax.batching.BatchingSettings;
-import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
-import com.google.api.gax.core.FixedExecutorProvider;
-import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.threeten.bp.Duration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
@@ -29,12 +23,10 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth.ApplicationDefaultGooglePubSubCredentialsProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth.GooglePubSubCredentialsProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.cache.GooglePubSubPublishersCache;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.cache.GooglePubSubPublishersCacheLoader;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
@@ -60,9 +52,7 @@ import javax.jms.Message;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING;
@@ -170,6 +160,7 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
+    @ConditionalOnBean(GooglePubSubCredentialsProvider.class)
     public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
             GooglePubSubSenderTargetResolver targetResolver,
             GooglePubSubPublishersCache cache,
@@ -179,84 +170,11 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public GooglePubSubMessages pubSubMessages(GooglePubSubMetadataAppender googlePubSubMetadataAppender) {
-        return new GooglePubSubMessages(googlePubSubMetadataAppender);
-    }
-
-    @Bean
-    public GooglePubSubMetadataAppender pubSubMetadataAppender() {
-        return new GooglePubSubMetadataAppender();
-    }
-
-    @Bean
+    @Conditional(OnGoogleDefaultCredentials.class)
     @ConditionalOnMissingBean(GooglePubSubCredentialsProvider.class)
     public GooglePubSubCredentialsProvider pubSubCredentialsProvider() throws IOException {
         return new ApplicationDefaultGooglePubSubCredentialsProvider(
                 FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault()));
-    }
-
-    @Bean
-    public GooglePubSubSenderTargetResolver pubSubSenderTargetResolver() {
-        return new GooglePubSubSenderTargetResolver();
-    }
-
-    @Bean(name = "googlePubSubPublishingExecutor", destroyMethod = "shutdown")
-    public ScheduledExecutorService googlePubSubPublishingExecutor(ConfigFactory configFactory) {
-        return Executors.newScheduledThreadPool(configFactory.getIntProperty(Configs.GOOGLE_PUBSUB_SENDER_CORE_POOL_SIZE),
-                new ThreadFactoryBuilder().setNameFormat("pubsub-publisher-%d").build());
-    }
-
-    @Bean
-    public ExecutorProvider googlePubSubPublishingExecutorProvider(
-            @Named("googlePubSubPublishingExecutor") ScheduledExecutorService googlePubSubPublishingExecutor) {
-
-        return FixedExecutorProvider.create(googlePubSubPublishingExecutor);
-    }
-
-    @Bean
-    public GooglePubSubPublishersCacheLoader googlePubSubPublishersCacheLoader(
-            GooglePubSubCredentialsProvider credentialsProvider,
-            ExecutorProvider executorProvider,
-            RetrySettings retrySettings,
-            BatchingSettings batchingSettings) throws IOException {
-
-        return new GooglePubSubPublishersCacheLoader(credentialsProvider.getProvider(), executorProvider, retrySettings,
-                batchingSettings);
-    }
-
-    @Bean(name = "googlePubSubPublishersCache")
-    public GooglePubSubPublishersCache googlePubSubPublishersCache(GooglePubSubPublishersCacheLoader cacheLoader, ConfigFactory configFactory) {
-
-        return new GooglePubSubPublishersCache(
-                CacheBuilder.newBuilder()
-                    .maximumSize(configFactory.getLongProperty(Configs.GOOGLE_PUBSUB_PUBLISHERS_CACHE_SIZE))
-                    .expireAfterAccess(configFactory.getLongProperty(Configs.GOOGLE_PUBSUB_PUBLISHERS_CACHE_EXPIRE_AFTER_ACCESS_SECONDS), TimeUnit.SECONDS)
-                    .build(cacheLoader)
-        );
-    }
-
-    @Bean
-    public BatchingSettings batchingSettings(ConfigFactory configFactory) {
-        long requestBytesThreshold = configFactory.getLongProperty(Configs.GOOGLE_PUBSUB_SENDER_REQUEST_BYTES_THRESHOLD);
-        long messageCountBatchSize = configFactory.getLongProperty(Configs.GOOGLE_PUBSUB_SENDER_MESSAGE_COUNT_BATCH_SIZE);
-        Duration publishDelayThreshold = Duration.ofMillis(configFactory.getLongProperty(Configs.GOOGLE_PUBSUB_SENDER_PUBLISH_DELAY_THRESHOLD));
-
-        return BatchingSettings.newBuilder()
-                .setElementCountThreshold(messageCountBatchSize)
-                .setRequestByteThreshold(requestBytesThreshold)
-                .setDelayThreshold(publishDelayThreshold)
-                .build();
-    }
-
-    @Bean
-    public RetrySettings retrySettings(ConfigFactory configFactory) {
-        Duration totalTimeout = Duration.ofMillis(
-                configFactory.getLongProperty(Configs.GOOGLE_PUBSUB_SENDER_TOTAL_TIMEOUT));
-
-        return RetrySettings.newBuilder()
-                .setTotalTimeout(totalTimeout)
-                .setMaxAttempts(1)
-                .build();
     }
 
     @Bean
