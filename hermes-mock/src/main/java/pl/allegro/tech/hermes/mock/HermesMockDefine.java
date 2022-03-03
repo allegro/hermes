@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.mock;
 
+import org.apache.avro.Schema;
 import org.apache.http.HttpStatus;
+
+import java.util.function.Predicate;
 
 import static pl.allegro.tech.hermes.mock.Response.Builder.aResponse;
 
@@ -37,7 +40,14 @@ public class HermesMockDefine {
         addTopic(topicName, response, AVRO_BINARY);
     }
 
+    public <T> void avroTopic(String topicName, Response response, Schema schema, Class<T> clazz, Predicate<T> predicate){
+        AvroMatchesPattern<T> avroMatchesPattern = new AvroMatchesPattern<>(predicate, schema, clazz);
+        addTopic(topicName, response, avroMatchesPattern);
+    }
     private void addTopic(String topicName, Response response, String contentType) {
         hermesMockHelper.addStub(topicName, response, contentType);
+    }
+    private void addTopic(String topicName, Response response, AvroMatchesPattern avroMatchesPattern) {
+        hermesMockHelper.addStub(topicName, response, AVRO_BINARY, avroMatchesPattern);
     }
 }

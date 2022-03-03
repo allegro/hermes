@@ -36,6 +36,9 @@ public class HermesMock {
     public void resetReceivedRequest() {
         wireMockServer.resetRequests();
     }
+    public void resetMappings() {
+        wireMockServer.resetMappings();
+    }
 
     public void start() {
         wireMockServer.start();

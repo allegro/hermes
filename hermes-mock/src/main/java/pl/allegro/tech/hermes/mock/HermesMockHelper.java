@@ -80,6 +80,16 @@ public class HermesMockHelper {
                         .withFixedDelay(toIntMilliseconds(response.getFixedDelay())))
         );
     }
+    public void addStub(String topicName, Response response, String contentType, AvroMatchesPattern pattern) {
+        wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
+                .withRequestBody(pattern)
+                .withHeader("Content-Type", startsWith(contentType))
+                .willReturn(aResponse()
+                        .withStatus(response.getStatusCode())
+                        .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
+                )
+        );
+    }
 
     private static Integer toIntMilliseconds(Duration duration) {
         return Optional.ofNullable(duration)
