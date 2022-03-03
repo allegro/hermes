@@ -324,8 +324,6 @@ public enum Configs {
     GOOGLE_PUBSUB_SENDER_REQUEST_BYTES_THRESHOLD("googlepubsub.sender.batching.request.bytes.threshold", 1024L),
     GOOGLE_PUBSUB_SENDER_MESSAGE_COUNT_BATCH_SIZE("googlepubsub.sender.batching.message.count.bytes.size", 1L),
     GOOGLE_PUBSUB_SENDER_PUBLISH_DELAY_THRESHOLD("googlepubsub.sender.batching.publish.delay.threshold.ms", 1L),
-    GOOGLE_PUBSUB_PUBLISHERS_CACHE_SIZE("googlepubsub.publishers.cache.size", 1000L),
-    GOOGLE_PUBSUB_PUBLISHERS_CACHE_EXPIRE_AFTER_ACCESS_SECONDS("googlepubsub.publishers.expire.after.access.seconds", 86400L),
 
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 

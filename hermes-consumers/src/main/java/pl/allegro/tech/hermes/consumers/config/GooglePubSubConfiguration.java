@@ -2,16 +2,11 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.threeten.bp.Duration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -19,16 +14,11 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth.ApplicationDefaultGooglePubSubCredentialsProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth.GooglePubSubCredentialsProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.cache.GooglePubSubPublishersCache;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.cache.GooglePubSubPublishersCacheLoader;
 
 import javax.inject.Named;
-import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 @ConditionalOnBean(GooglePubSubCredentialsProvider.class)
@@ -60,27 +50,6 @@ public class GooglePubSubConfiguration {
             @Named("googlePubSubPublishingExecutor") ScheduledExecutorService googlePubSubPublishingExecutor) {
 
         return FixedExecutorProvider.create(googlePubSubPublishingExecutor);
-    }
-
-    @Bean
-    public GooglePubSubPublishersCacheLoader googlePubSubPublishersCacheLoader(
-            GooglePubSubCredentialsProvider credentialsProvider,
-            ExecutorProvider executorProvider,
-            RetrySettings retrySettings,
-            BatchingSettings batchingSettings) throws IOException {
-
-        return new GooglePubSubPublishersCacheLoader(credentialsProvider.getProvider(), executorProvider, retrySettings,
-                batchingSettings);
-    }
-
-    @Bean(name = "googlePubSubPublishersCache")
-    public GooglePubSubPublishersCache googlePubSubPublishersCache(GooglePubSubPublishersCacheLoader cacheLoader, ConfigFactory configFactory) {
-        return new GooglePubSubPublishersCache(
-                CacheBuilder.newBuilder()
-                        .maximumSize(configFactory.getLongProperty(Configs.GOOGLE_PUBSUB_PUBLISHERS_CACHE_SIZE))
-                        .expireAfterAccess(configFactory.getLongProperty(Configs.GOOGLE_PUBSUB_PUBLISHERS_CACHE_EXPIRE_AFTER_ACCESS_SECONDS), TimeUnit.SECONDS)
-                        .build(cacheLoader)
-        );
     }
 
     @Bean

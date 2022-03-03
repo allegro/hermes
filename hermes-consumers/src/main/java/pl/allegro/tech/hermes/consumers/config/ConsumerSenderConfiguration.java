@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import com.google.api.gax.batching.BatchingSettings;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
@@ -26,7 +29,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSu
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth.ApplicationDefaultGooglePubSubCredentialsProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth.GooglePubSubCredentialsProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.cache.GooglePubSubPublishersCache;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
@@ -163,10 +165,20 @@ public class ConsumerSenderConfiguration {
     @ConditionalOnBean(GooglePubSubCredentialsProvider.class)
     public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
             GooglePubSubSenderTargetResolver targetResolver,
-            GooglePubSubPublishersCache cache,
-            GooglePubSubMessages googlePubSubMessages) {
+            GooglePubSubCredentialsProvider credentialsProvider,
+            ExecutorProvider executorProvider,
+            RetrySettings retrySettings,
+            BatchingSettings batchingSettings,
+            GooglePubSubMessages googlePubSubMessages) throws IOException {
 
-        return new GooglePubSubMessageSenderProvider(targetResolver, cache, googlePubSubMessages);
+        return new GooglePubSubMessageSenderProvider(
+                targetResolver,
+                credentialsProvider,
+                executorProvider,
+                retrySettings,
+                batchingSettings,
+                googlePubSubMessages
+        );
     }
 
     @Bean

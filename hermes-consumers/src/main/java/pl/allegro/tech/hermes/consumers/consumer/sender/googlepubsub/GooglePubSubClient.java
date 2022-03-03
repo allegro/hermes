@@ -5,14 +5,19 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class GooglePubSubClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClient.class);
 
     private final Publisher publisher;
     private final GooglePubSubMessages messageCreator;
@@ -27,5 +32,14 @@ public class GooglePubSubClient {
         PubsubMessage pubsubMessage = messageCreator.fromHermesMessage(message);
         ApiFuture<String> future = publisher.publish(pubsubMessage);
         ApiFutures.addCallback(future, new GooglePubSubMessageSentCallback(message, resultFuture), MoreExecutors.directExecutor());
+    }
+
+    void shutdown() {
+        publisher.shutdown();
+        try {
+            publisher.awaitTermination(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.error("Interrupted termination of the PubSub publisher.");
+        }
     }
 }

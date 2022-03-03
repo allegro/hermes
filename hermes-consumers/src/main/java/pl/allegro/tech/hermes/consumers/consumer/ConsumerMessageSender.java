@@ -158,6 +158,7 @@ public class ConsumerMessageSender {
 
         if (endpointUpdated || subscriptionPolicyUpdated || endpointAddressResolverMetadataChanged
                 || oAuthPolicyChanged || httpClientChanged) {
+            this.messageSender.stop();
             this.messageSender = messageSenderFactory.create(newSubscription);
         }
     }
