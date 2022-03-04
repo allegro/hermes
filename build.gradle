@@ -69,7 +69,7 @@ allprojects {
             spock             : '1.3-groovy-2.5',
             alpn_api          : '1.1.2.v20150522',
             avro              : '1.9.1',
-            json2avro         : '0.2.10',
+            json2avro         : '0.2.12',
             okhttp            : '3.9.1',
             undertow          : '2.0.29.Final',
             spring_web        : '5.1.5.RELEASE',
