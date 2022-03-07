@@ -1,10 +1,9 @@
 package pl.allegro.tech.hermes.frontend.publishing.message
 
+import groovy.json.JsonOutput
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import spock.lang.Specification
-
-import static groovy.json.JsonOutput.toJson
 
 class MessageToJsonConverterTest extends Specification {
 
@@ -16,7 +15,7 @@ class MessageToJsonConverterTest extends Specification {
         def converted = new MessageToJsonConverter().convert(new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, "partition-key"), false)
 
         then:
-        new String(converted) == toJson([__metadata: null, name: 'name', age: 16, favoriteColor: 'favourite-colour'])
+        new String(converted) == JsonOutput.toJson([__metadata: null, name: 'name', age: 16, favoriteColor: 'favourite-colour'])
     }
 
     def 'should return bytes when decoding fails'() {
