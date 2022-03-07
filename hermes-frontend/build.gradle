@@ -27,7 +27,6 @@ dependencies {
     }
     testCompile group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
     testCompile group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
-    testCompile group: 'org.codehaus.groovy', name: 'groovy-json', version: '3.0.9'
 }
 
 if (project.hasProperty('distribution')) {

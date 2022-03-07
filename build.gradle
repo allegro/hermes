@@ -67,6 +67,7 @@ allprojects {
             wiremock          : '2.19.0',
             fongo             : '1.6.1',
             spock             : '2.0-groovy-3.0',
+            groovy            : '3.0.9',
             alpn_api          : '1.1.2.v20150522',
             avro              : '1.9.1',
             json2avro         : '0.2.13',
@@ -95,6 +96,7 @@ allprojects {
         testCompile group: 'org.assertj', name: 'assertj-core', version: versions.assertj
         testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
         testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+        testCompile group: 'org.codehaus.groovy', name: 'groovy-json', version: versions.groovy
     }
 
     test {
