@@ -76,7 +76,8 @@ allprojects {
             failsafe          : '2.3.1',
             junit_jupiter     : '5.8.2',
             testcontainers    : '1.15.3',
-            spring            : '2.4.2'
+            spring            : '2.4.2',
+            assertj           : '3.22.0'
     ]
 
     repositories {
@@ -91,7 +92,7 @@ allprojects {
         testCompile group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
         testCompile group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
         testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
-        testCompile group: 'org.assertj', name: 'assertj-core', version: '3.1.0'
+        testCompile group: 'org.assertj', name: 'assertj-core', version: versions.assertj
         testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
         testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
     }
