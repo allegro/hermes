@@ -96,7 +96,6 @@ allprojects {
         testCompile group: 'org.assertj', name: 'assertj-core', version: versions.assertj
         testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
         testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
-        testCompile group: 'org.codehaus.groovy', name: 'groovy-json', version: versions.groovy
     }
 
     test {
