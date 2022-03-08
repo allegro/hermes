@@ -13,9 +13,14 @@ import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingRes
 public class GooglePubSubMessageSender extends CompletableFutureAwareMessageSender {
 
     private final GooglePubSubClient googlePubSubClient;
+    private final GooglePubSubSenderTarget resolvedTarget;
+    private final GooglePubSubClientsPool clientsPool;
 
-    public GooglePubSubMessageSender(GooglePubSubClient client) {
-        this.googlePubSubClient = client;
+    public GooglePubSubMessageSender(GooglePubSubSenderTarget resolvedTarget,
+                                     GooglePubSubClientsPool clientsPool) throws IOException {
+        this.googlePubSubClient = clientsPool.acquire(resolvedTarget);
+        this.resolvedTarget = resolvedTarget;
+        this.clientsPool = clientsPool;
     }
 
     @Override
@@ -29,5 +34,6 @@ public class GooglePubSubMessageSender extends CompletableFutureAwareMessageSend
 
     @Override
     public void stop() {
+        clientsPool.release(resolvedTarget);
     }
 }
