@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview;
 
 import com.google.common.util.concurrent.AtomicLongMap;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -33,10 +34,10 @@ public class MessagePreviewLog {
         this.previewSizePerTopic = previewSizePerTopic;
     }
 
-    public void add(TopicName topicName, Message message) {
-        long counter = limiter.getAndIncrement(topicName);
+    public void add(Topic topic, Message message) {
+        long counter = limiter.getAndIncrement(topic.getName());
         if (counter < previewSizePerTopic) {
-            messages.add(new MessagePreviewSnapshot(topicName, messagePreviewFactory.create(message)));
+            messages.add(new MessagePreviewSnapshot(topic.getName(), messagePreviewFactory.create(message, topic.isSchemaIdAwareSerializationEnabled())));
         }
     }
 

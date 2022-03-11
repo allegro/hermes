@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public interface AvroRecordToBytesConverter {
 
-    static GenericRecord bytesToRecord(byte [] data, Schema schema) {
+    static GenericRecord bytesToRecord(byte[] data, Schema schema) {
         return AvroBinaryDecoders.decodeReusingThreadLocalBinaryDecoder(data, schema);
     }
 
