@@ -162,7 +162,7 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
-    @ConditionalOnBean(GooglePubSubCredentialsProvider.class)
+    @Conditional(OnGoogleDefaultCredentials.class)
     public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
             GooglePubSubSenderTargetResolver targetResolver,
             GooglePubSubCredentialsProvider credentialsProvider,
