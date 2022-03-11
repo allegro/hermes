@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwareSerDe
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage
@@ -107,12 +105,6 @@ class MessagePreviewLogTest extends Specification {
 
         cleanup:
         executorService.shutdown()
-    }
-
-    static ObjectMapper createObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        return mapper;
     }
 
 }
