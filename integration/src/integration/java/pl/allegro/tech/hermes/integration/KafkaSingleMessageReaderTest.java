@@ -14,12 +14,13 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static java.util.stream.IntStream.range;
+import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,14 +65,14 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldFetchSingleAvroMessage() throws IOException {
+    public void shouldFetchSingleAvroMessage() {
         // given
         Topic topic = randomTopic("avro", "fetch").withContentType(AVRO).withAck(ALL).build();
         TopicWithSchema topicWithSchema = topicWithSchema(topic, avroUser.getSchemaAsString());
         operations.buildTopicWithSchema(topicWithSchema);
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
-        HermesAssertions.assertThat(response).hasStatus(CREATED);
+        HermesAssertions.assertThat(response).hasStatus(Arrays.asList(CREATED, ACCEPTED));
 
         // when
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
@@ -84,7 +85,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() throws IOException {
+    public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() {
         // given
         Topic topic = randomTopic("avro", "fetchSchemaAwareSerialization")
                 .withSchemaIdAwareSerialization()
@@ -95,7 +96,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         operations.buildTopicWithSchema(topicWithSchema);
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
-        HermesAssertions.assertThat(response).hasStatus(CREATED);
+        HermesAssertions.assertThat(response).hasStatus(Arrays.asList(CREATED, ACCEPTED));
 
         // when
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
