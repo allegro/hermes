@@ -42,7 +42,6 @@ public class RemoteServiceEndpoint {
     private List<String> expectedMessages = new ArrayList<>();
 
     private int returnedStatusCode = 200;
-    private int retryStatusCode = 503;
     private int delay = 0;
 
     public RemoteServiceEndpoint(WireMockServer service) {
@@ -86,7 +85,7 @@ public class RemoteServiceEndpoint {
     public void redirectMessage(String message) {
         receivedRequests.clear();
 
-        expectedMessages = Arrays.asList(message);
+        expectedMessages = Collections.singletonList(message);
 
         listener.register(
             post(urlEqualTo(path))
@@ -98,6 +97,7 @@ public class RemoteServiceEndpoint {
     public void retryMessage(String message, int delay) {
         receivedRequests.clear();
         expectedMessages = Arrays.asList(message, message);
+        int retryStatusCode = 503;
         listener.register(
                 post(urlEqualTo(path))
                         .inScenario("retrying")
@@ -144,7 +144,7 @@ public class RemoteServiceEndpoint {
         await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
                 assertThat(receivedRequests.size()).isGreaterThanOrEqualTo(numberOfExpectedMessages));
         synchronized (receivedRequests) {
-            receivedRequests.stream().forEach(requestBodyConsumer::accept);
+            receivedRequests.forEach(requestBodyConsumer);
         }
     }
 
@@ -152,7 +152,7 @@ public class RemoteServiceEndpoint {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
         await().atMost(duration).until(() -> assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
         synchronized (receivedRequests) {
-            receivedRequests.stream().forEach(requestBodyConsumer::accept);
+            receivedRequests.forEach(requestBodyConsumer);
         }
     }
 
