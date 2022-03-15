@@ -22,7 +22,7 @@ public class HttpResponseAssertion extends AbstractAssert<HttpResponseAssertion,
         return this;
     }
 
-    public HttpResponseAssertion hasStatus(List<Response.Status> statuses) {
+    public HttpResponseAssertion hasOneOfStatus(List<Response.Status> statuses) {
         assertThat(statuses.contains(Response.Status.fromStatusCode(actual.getStatus()))).isEqualTo(true);
         return this;
     }

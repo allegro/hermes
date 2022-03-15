@@ -144,7 +144,7 @@ public class RemoteServiceEndpoint {
         await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
                 assertThat(receivedRequests.size()).isGreaterThanOrEqualTo(numberOfExpectedMessages));
         synchronized (receivedRequests) {
-            receivedRequests.forEach(requestBodyConsumer);
+            receivedRequests.stream().forEach(requestBodyConsumer::accept);
         }
     }
 
@@ -152,7 +152,7 @@ public class RemoteServiceEndpoint {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
         await().atMost(duration).until(() -> assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
         synchronized (receivedRequests) {
-            receivedRequests.forEach(requestBodyConsumer);
+            receivedRequests.stream().forEach(requestBodyConsumer::accept);
         }
     }
 

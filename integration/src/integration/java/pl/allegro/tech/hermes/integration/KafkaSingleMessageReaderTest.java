@@ -72,7 +72,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         operations.buildTopicWithSchema(topicWithSchema);
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
-        HermesAssertions.assertThat(response).hasStatus(Arrays.asList(CREATED, ACCEPTED));
+        HermesAssertions.assertThat(response).hasOneOfStatus(Arrays.asList(CREATED, ACCEPTED));
 
         // when
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
@@ -96,7 +96,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         operations.buildTopicWithSchema(topicWithSchema);
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
-        HermesAssertions.assertThat(response).hasStatus(Arrays.asList(CREATED, ACCEPTED));
+        HermesAssertions.assertThat(response).hasOneOfStatus(Arrays.asList(CREATED, ACCEPTED));
 
         // when
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
