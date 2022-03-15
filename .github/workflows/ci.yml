@@ -11,9 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ '8','11' ]
+        java: [ '11' ]
         tests: [ 'check', 'integrationTest', 'jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0' ]
       fail-fast: false
+      max-parallel: 1
     name: Java ${{ matrix.java }} ${{ matrix.tests }}
 
     steps:
