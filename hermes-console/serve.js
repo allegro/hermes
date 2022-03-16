@@ -33,6 +33,7 @@ function startServer(config) {
 
     var file = new static.Server('./static');
     require('http').createServer((request, response) => {
+        response.setHeader('Pragma', 'no-cache');
         if(request.url == '/console') {
             response.setHeader('Content-Type', 'application/json');
             response.end('var config = ' + JSON.stringify(config) + ';', 'UTF-8');
