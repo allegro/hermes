@@ -4,6 +4,7 @@ import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-class GooglePubSubClientsPool {
+public class GooglePubSubClientsPool {
     private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClientsPool.class);
 
     private final CredentialsProvider credentialsProvider;
@@ -23,16 +24,28 @@ class GooglePubSubClientsPool {
     private final Map<GooglePubSubSenderTarget, GooglePubSubClient> clients = new HashMap<>();
     private final Map<GooglePubSubSenderTarget, Integer> counters = new HashMap<>();
 
-    GooglePubSubClientsPool(CredentialsProvider credentialsProvider,
-                            ExecutorProvider publishingExecutorProvider,
-                            RetrySettings retrySettings,
-                            BatchingSettings batchingSettings,
-                            GooglePubSubMessages pubSubMessages) {
+    private TransportChannelProvider transportChannelProvider = null;
+
+    public GooglePubSubClientsPool(CredentialsProvider credentialsProvider,
+                                    ExecutorProvider publishingExecutorProvider,
+                                    RetrySettings retrySettings,
+                                    BatchingSettings batchingSettings,
+                                    GooglePubSubMessages pubSubMessages) {
         this.credentialsProvider = credentialsProvider;
         this.publishingExecutorProvider = publishingExecutorProvider;
         this.retrySettings = retrySettings;
         this.batchingSettings = batchingSettings;
         this.pubSubMessages = pubSubMessages;
+    }
+
+    public GooglePubSubClientsPool(CredentialsProvider credentialsProvider,
+                                   ExecutorProvider publishingExecutorProvider,
+                                   RetrySettings retrySettings,
+                                   BatchingSettings batchingSettings,
+                                   GooglePubSubMessages pubSubMessages,
+                                   TransportChannelProvider transportChannelProvider) {
+        this(credentialsProvider, publishingExecutorProvider, retrySettings, batchingSettings, pubSubMessages);
+        this.transportChannelProvider = transportChannelProvider;
     }
 
     synchronized GooglePubSubClient acquire(GooglePubSubSenderTarget resolvedTarget) throws IOException {
@@ -66,13 +79,19 @@ class GooglePubSubClientsPool {
     }
 
     private GooglePubSubClient createClient(GooglePubSubSenderTarget resolvedTarget) throws IOException {
-        Publisher publisher = Publisher.newBuilder(resolvedTarget.getTopicName())
+        final Publisher.Builder builder = Publisher.newBuilder(resolvedTarget.getTopicName())
                 .setEndpoint(resolvedTarget.getPubSubEndpoint())
                 .setCredentialsProvider(credentialsProvider)
                 .setRetrySettings(retrySettings)
                 .setBatchingSettings(batchingSettings)
-                .setExecutorProvider(publishingExecutorProvider)
-                .build();
+                .setExecutorProvider(publishingExecutorProvider);
+
+        Publisher publisher;
+        if (transportChannelProvider == null) {
+            publisher = builder.build();
+        } else {
+            publisher = builder.setChannelProvider(transportChannelProvider).build();
+        }
         return new GooglePubSubClient(publisher, pubSubMessages);
     }
 }

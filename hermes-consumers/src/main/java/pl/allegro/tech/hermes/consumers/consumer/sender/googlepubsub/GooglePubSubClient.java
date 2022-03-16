@@ -31,7 +31,7 @@ public class GooglePubSubClient {
             throws IOException, ExecutionException, InterruptedException {
         PubsubMessage pubsubMessage = messageCreator.fromHermesMessage(message);
         ApiFuture<String> future = publisher.publish(pubsubMessage);
-        ApiFutures.addCallback(future, new GooglePubSubMessageSentCallback(message, resultFuture), MoreExecutors.directExecutor());
+        ApiFutures.addCallback(future, new GooglePubSubMessageSentCallback(resultFuture), MoreExecutors.directExecutor());
     }
 
     void shutdown() {

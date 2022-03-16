@@ -1,13 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.FixedCredentialsProvider;
 
 public class ApplicationDefaultGooglePubSubCredentialsProvider implements GooglePubSubCredentialsProvider {
 
-    private final FixedCredentialsProvider provider;
+    private final CredentialsProvider provider;
 
-    public ApplicationDefaultGooglePubSubCredentialsProvider(FixedCredentialsProvider provider) {
+    public ApplicationDefaultGooglePubSubCredentialsProvider(CredentialsProvider provider) {
         this.provider = provider;
     }
 
