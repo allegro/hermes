@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
@@ -61,6 +63,17 @@ public class AvroMessageContentWrapperTest {
         assertThat(metadata.get(METADATA_MESSAGE_ID_KEY).toString()).isEqualTo(id);
         assertThat(valueOf(metadata.get(METADATA_TIMESTAMP_KEY).toString())).isEqualTo(timestamp);
         assertThat(wrappedMessage).contains(content);
+    }
+
+    @Test
+    public void shouldWrappedMessageBeUnchangedWhenSchemaNotContainsMetadata() throws IOException {
+        // when
+        Schema schemaWithoutMetadata = new Schema.Parser().parse(IOUtils.toString(getClass().getResourceAsStream("/schema/user_no_metadata.avsc"), StandardCharsets.UTF_8));
+        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, schemaWithoutMetadata, Collections.emptyMap());
+
+        // then
+        GenericRecord wrappedMessageAsRecord = bytesToRecord(wrappedMessage, avroUser.getSchema());
+        assertThat(wrappedMessageAsRecord.get(METADATA_MARKER)).isNull();
     }
 
     @Test

@@ -44,6 +44,7 @@ public class HermesManagementInstance {
         private int replicationFactor = 1;
         private boolean uncleanLeaderElectionEnabled = false;
         private String schemaRegistry;
+        private boolean avroContentTypeMetadataRequired = true;
 
         public Starter port(int port) {
             this.port = port;
@@ -75,6 +76,12 @@ public class HermesManagementInstance {
             kafkaClusters.add(new ClusterInfo(dc, connectionString));
             return this;
         }
+
+        public Starter avroContentTypeMetadataRequired(boolean avroContentTypeMetadataRequired) {
+            this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
+            return this;
+        }
+
 
         public HermesManagementInstance start() {
             try {
@@ -115,6 +122,7 @@ public class HermesManagementInstance {
             }
             args.add("--topic.replicationFactor=" + replicationFactor);
             args.add("--topic.uncleanLeaderElectionEnabled=" + uncleanLeaderElectionEnabled);
+            args.add("--topic.avroContentTypeMetadataRequired=" + avroContentTypeMetadataRequired);
             args.add("--schema.repository.serverUrl=" + schemaRegistry);
             HermesManagement.main(args.toArray(new String[0]));
         }

@@ -6,7 +6,7 @@ import spock.lang.Specification
 
 class AvroSchemaValidatorTest extends Specification {
 
-    private AvroSchemaValidator avroSchemaValidator = new AvroSchemaValidator();
+    private AvroSchemaValidator avroSchemaValidator = new AvroSchemaValidator(true);
 
     def "should accept valid schema"() {
         given:
@@ -57,6 +57,15 @@ class AvroSchemaValidatorTest extends Specification {
         then:
         def e = thrown InvalidSchemaException
         e.message == "Error while trying to validate schema: Missing Hermes __metadata field"
+    }
+
+    def "should not require __metadata field when metadataFieldIsRequired is turned off"() {
+        given:
+        def schema = readSchema("/schema/user_no_metadata.avsc")
+        AvroSchemaValidator validatorWithMetadataFieldNotRequired = new AvroSchemaValidator(false)
+
+        expect:
+        validatorWithMetadataFieldNotRequired.check(schema)
     }
 
     def "should throw exception in case of incorrect types used in __metadata field"() {
