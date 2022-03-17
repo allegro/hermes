@@ -144,10 +144,10 @@ public class PublishingTest extends IntegrationTest {
         Topic topic = operations.buildTopic(randomTopic("publishMultipleGroup", "topic").build());
 
         RemoteServiceEndpoint endpoint1 = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/1/");
-        operations.createSubscription(topic, "subscription1", endpoint1.getUrl().toString() + "1/");
-
         RemoteServiceEndpoint endpoint2 = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/2/");
-        operations.createSubscription(topic, "subscription2", endpoint2.getUrl().toString() + "2/");
+
+        operations.createSubscription(topic, "subscription1", endpoint1.getUrl().toString());
+        operations.createSubscription(topic, "subscription2", endpoint2.getUrl().toString());
 
         endpoint1.expectMessages(message.body());
         endpoint2.expectMessages(message.body());
@@ -167,7 +167,7 @@ public class PublishingTest extends IntegrationTest {
 
         TestMessage message = TestMessage.of("template", "hello");
         RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
-        operations.createSubscription(topic, "subscription", interpolatedEndpoint.getUrl().toString() + "{template}/");
+        operations.createSubscription(topic, "subscription", "http://localhost:" + interpolatedEndpoint.getServicePort() + "/{template}/");
         interpolatedEndpoint.expectMessages(message.body());
 
         // when
