@@ -139,15 +139,17 @@ public class PublishingTest extends IntegrationTest {
     @Test
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
-        Topic topic = operations.buildTopic(randomTopic("publishMultipleGroup", "topic").build());
-        operations.createSubscription(topic, "subscription1", remoteService.getUrl().toString() + "1/");
-        operations.createSubscription(topic, "subscription2", remoteService.getUrl().toString() + "2/");
-
         TestMessage message = TestMessage.of("hello", "world");
 
+        Topic topic = operations.buildTopic(randomTopic("publishMultipleGroup", "topic").build());
+
         RemoteServiceEndpoint endpoint1 = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/1/");
-        endpoint1.expectMessages(message.body());
+        operations.createSubscription(topic, "subscription1", endpoint1.getUrl().toString() + "1/");
+
         RemoteServiceEndpoint endpoint2 = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/2/");
+        operations.createSubscription(topic, "subscription2", endpoint2.getUrl().toString() + "2/");
+
+        endpoint1.expectMessages(message.body());
         endpoint2.expectMessages(message.body());
 
         // when
@@ -162,10 +164,10 @@ public class PublishingTest extends IntegrationTest {
     public void shouldPublishMessageToEndpointWithInterpolatedURI() {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishInterpolatedGroup", "topic").build());
-        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString() + "{template}/");
 
         TestMessage message = TestMessage.of("template", "hello");
         RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
+        operations.createSubscription(topic, "subscription", interpolatedEndpoint.getUrl().toString() + "{template}/");
         interpolatedEndpoint.expectMessages(message.body());
 
         // when
@@ -180,15 +182,15 @@ public class PublishingTest extends IntegrationTest {
     public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishInvalidInterpolatedGroup", "topic").build());
+        RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
         Subscription subscription = subscription(topic, "subscription")
-                .withEndpoint(EndpointAddress.of(remoteService.getUrl().toString() + "{template}/"))
+                .withEndpoint(EndpointAddress.of(interpolatedEndpoint.getUrl().toString() + "{template}/"))
                 .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().withMessageTtl(1).build()
                 ).build();
         operations.createSubscription(topic, subscription);
 
         TestMessage message = TestMessage.of("hello", "world");
-        RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
 
         // when
         assertThat(publisher.publish(topic.getQualifiedName(), message.body())).hasStatus(CREATED);
