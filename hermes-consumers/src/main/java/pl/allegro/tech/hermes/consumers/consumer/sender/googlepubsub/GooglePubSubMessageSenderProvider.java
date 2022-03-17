@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.common.collect.ImmutableSet;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -24,6 +25,7 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
                                              ExecutorProvider executorProvider,
                                              RetrySettings retrySettings,
                                              BatchingSettings batchingSettings,
+                                             TransportChannelProvider transportChannelProvider,
                                              GooglePubSubMessages pubSubMessages) throws IOException {
 
         this.resolver = resolver;
@@ -32,7 +34,8 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
                 executorProvider,
                 retrySettings,
                 batchingSettings,
-                pubSubMessages
+                pubSubMessages,
+                transportChannelProvider
         );
     }
 

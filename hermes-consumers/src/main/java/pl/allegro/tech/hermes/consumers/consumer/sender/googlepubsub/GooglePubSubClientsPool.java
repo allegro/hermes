@@ -24,19 +24,7 @@ public class GooglePubSubClientsPool {
     private final Map<GooglePubSubSenderTarget, GooglePubSubClient> clients = new HashMap<>();
     private final Map<GooglePubSubSenderTarget, Integer> counters = new HashMap<>();
 
-    private TransportChannelProvider transportChannelProvider = null;
-
-    public GooglePubSubClientsPool(CredentialsProvider credentialsProvider,
-                                    ExecutorProvider publishingExecutorProvider,
-                                    RetrySettings retrySettings,
-                                    BatchingSettings batchingSettings,
-                                    GooglePubSubMessages pubSubMessages) {
-        this.credentialsProvider = credentialsProvider;
-        this.publishingExecutorProvider = publishingExecutorProvider;
-        this.retrySettings = retrySettings;
-        this.batchingSettings = batchingSettings;
-        this.pubSubMessages = pubSubMessages;
-    }
+    private final TransportChannelProvider transportChannelProvider;
 
     public GooglePubSubClientsPool(CredentialsProvider credentialsProvider,
                                    ExecutorProvider publishingExecutorProvider,
@@ -44,7 +32,11 @@ public class GooglePubSubClientsPool {
                                    BatchingSettings batchingSettings,
                                    GooglePubSubMessages pubSubMessages,
                                    TransportChannelProvider transportChannelProvider) {
-        this(credentialsProvider, publishingExecutorProvider, retrySettings, batchingSettings, pubSubMessages);
+        this.credentialsProvider = credentialsProvider;
+        this.publishingExecutorProvider = publishingExecutorProvider;
+        this.retrySettings = retrySettings;
+        this.batchingSettings = batchingSettings;
+        this.pubSubMessages = pubSubMessages;
         this.transportChannelProvider = transportChannelProvider;
     }
 

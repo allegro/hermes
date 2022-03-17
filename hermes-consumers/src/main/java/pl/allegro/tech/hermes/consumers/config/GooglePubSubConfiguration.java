@@ -3,10 +3,20 @@ package pl.allegro.tech.hermes.consumers.config;
 import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.threeten.bp.Duration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -20,6 +30,21 @@ import java.util.concurrent.ScheduledExecutorService;
 
 @Configuration
 public class GooglePubSubConfiguration {
+
+    @Bean
+    @Profile("!integration")
+    public TransportChannelProvider transportChannelProvider() {
+        return TopicAdminSettings.defaultGrpcTransportProviderBuilder().setChannelsPerCpu(1).build();
+    }
+
+    @Bean
+    @Profile("integration")
+    public TransportChannelProvider integrationTransportChannelProvider(ConfigFactory configFactory) {
+        final ManagedChannel channel = ManagedChannelBuilder.forTarget(
+                configFactory.getStringProperty(Configs.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS))
+                .usePlaintext().build();
+        return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+    }
 
     @Bean
     public GooglePubSubMessages pubSubMessages(GooglePubSubMetadataAppender googlePubSubMetadataAppender) {
