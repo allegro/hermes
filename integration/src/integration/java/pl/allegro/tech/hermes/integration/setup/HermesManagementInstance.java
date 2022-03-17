@@ -90,7 +90,7 @@ public class HermesManagementInstance {
         }
 
         private void waitUntilStructureInZookeeperIsCreated(CuratorFramework zookeeper) {
-            waitAtMost(adjust(90), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath("/hermes/groups") != null);
+            waitAtMost(adjust(120), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath("/hermes/groups") != null);
         }
 
         private void startManagement() {
