@@ -1,13 +1,11 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.google.pubsub.v1.ProjectSubscriptionName;
-import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.integration.test.HermesAssertions;
 import pl.allegro.tech.hermes.test.helper.endpoint.GooglePubSubEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -31,12 +29,12 @@ public class PubSubPublishingTest extends IntegrationTest {
     }
 
     @AfterClass
-    public static void cleanup() {
+    public static void cleanUp() {
         googlePubSubEndpoint.stop();
     }
 
     @Test
-    public void shouldConsumeMessagesOnMultipleSubscriptions() throws IOException {
+    public void shouldSendMessageToPubSubWhenPublishedOnPubSubSubscription() throws IOException {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "topic").build());
         operations.createSubscription(topic, "subscription", GOOGLE_PUBSUB_ENDPOINT_URL);
