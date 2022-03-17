@@ -16,7 +16,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
-public class GooglePubSubPublishingTest extends IntegrationTest {
+public class GooglePubSubConsumingTest extends IntegrationTest {
 
     private static GooglePubSubEndpoint googlePubSubEndpoint;
 
@@ -34,10 +34,11 @@ public class GooglePubSubPublishingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldSendMessageToPubSubWhenPublishedOnPubSubSubscription() throws IOException {
+    public void shouldDeliverMessageToGooglePubSub() throws IOException {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "topic").build());
         operations.createSubscription(topic, "subscription", GOOGLE_PUBSUB_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, "subscription");
         TestMessage message = TestMessage.simple();
 
         // when

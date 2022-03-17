@@ -11,7 +11,7 @@ import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingRes
 class GooglePubSubMessageSentCallback implements ApiFutureCallback<String> {
     private final CompletableFuture<MessageSendingResult> resultFuture;
 
-    public GooglePubSubMessageSentCallback(CompletableFuture<MessageSendingResult> resultFuture) {
+    GooglePubSubMessageSentCallback(CompletableFuture<MessageSendingResult> resultFuture) {
         this.resultFuture = resultFuture;
     }
 

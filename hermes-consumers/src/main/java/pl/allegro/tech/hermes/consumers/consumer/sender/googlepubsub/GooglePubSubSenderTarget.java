@@ -4,7 +4,7 @@ import com.google.pubsub.v1.TopicName;
 
 import java.util.Objects;
 
-public class GooglePubSubSenderTarget {
+class GooglePubSubSenderTarget {
 
     private final TopicName topicName;
     private final String pubSubEndpoint;
@@ -14,11 +14,11 @@ public class GooglePubSubSenderTarget {
         this.pubSubEndpoint = pubSubEndpoint;
     }
 
-    public TopicName getTopicName() {
+    TopicName getTopicName() {
         return topicName;
     }
 
-    public String getPubSubEndpoint() {
+    String getPubSubEndpoint() {
         return pubSubEndpoint;
     }
 
@@ -35,33 +35,28 @@ public class GooglePubSubSenderTarget {
         return Objects.hash(topicName, pubSubEndpoint);
     }
 
-    public static PubSubTargetBuilder builder() {
+    static PubSubTargetBuilder builder() {
         return new PubSubTargetBuilder();
     }
 
-
-    public static final class PubSubTargetBuilder {
+    static final class PubSubTargetBuilder {
         private TopicName topicName;
         private String pubSubEndpoint;
 
         private PubSubTargetBuilder() {
         }
 
-        public static PubSubTargetBuilder aPubSubTarget() {
-            return new PubSubTargetBuilder();
-        }
-
-        public PubSubTargetBuilder withTopicName(TopicName topicName) {
+        PubSubTargetBuilder withTopicName(TopicName topicName) {
             this.topicName = topicName;
             return this;
         }
 
-        public PubSubTargetBuilder withPubSubEndpoint(String pubSubEndpoint) {
+        PubSubTargetBuilder withPubSubEndpoint(String pubSubEndpoint) {
             this.pubSubEndpoint = pubSubEndpoint;
             return this;
         }
 
-        public GooglePubSubSenderTarget build() {
+        GooglePubSubSenderTarget build() {
             return new GooglePubSubSenderTarget(topicName, pubSubEndpoint);
         }
     }

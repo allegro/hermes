@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import com.google.api.gax.batching.BatchingSettings;
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -14,7 +15,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
@@ -29,8 +29,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderPro
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth.ApplicationDefaultGooglePubSubCredentialsProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.auth.GooglePubSubCredentialsProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
@@ -164,15 +162,13 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
-    public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
-            GooglePubSubSenderTargetResolver targetResolver,
-            GooglePubSubCredentialsProvider credentialsProvider,
-            ExecutorProvider executorProvider,
-            RetrySettings retrySettings,
-            BatchingSettings batchingSettings,
-            GooglePubSubMessages googlePubSubMessages,
-            TransportChannelProvider transportChannelProvider) throws IOException {
-
+    public ProtocolMessageSenderProvider pubSubMessageSenderProvider(GooglePubSubSenderTargetResolver targetResolver,
+                                                                     CredentialsProvider credentialsProvider,
+                                                                     ExecutorProvider executorProvider,
+                                                                     RetrySettings retrySettings,
+                                                                     BatchingSettings batchingSettings,
+                                                                     GooglePubSubMessages googlePubSubMessages,
+                                                                     TransportChannelProvider transportChannelProvider) {
         return new GooglePubSubMessageSenderProvider(
                 targetResolver,
                 credentialsProvider,
@@ -185,17 +181,15 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    @Profile("!integration")
     @Conditional(OnGoogleDefaultCredentials.class)
-    public GooglePubSubCredentialsProvider applicationDefaultGooglePubSubCredentialsProvider() throws IOException {
-        return new ApplicationDefaultGooglePubSubCredentialsProvider(
-                FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault()));
+    public CredentialsProvider applicationDefaultCredentialsProvider() throws IOException {
+        return FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault());
     }
 
     @Bean
-    @ConditionalOnMissingBean(GooglePubSubCredentialsProvider.class)
-    public GooglePubSubCredentialsProvider noGooglePubSubCredentialsProvider() {
-        return new ApplicationDefaultGooglePubSubCredentialsProvider(NoCredentialsProvider.create());
+    @ConditionalOnMissingBean(CredentialsProvider.class)
+    public CredentialsProvider noCredentialsProvider() {
+        return NoCredentialsProvider.create();
     }
 
     @Bean

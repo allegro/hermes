@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GooglePubSubClientsPool {
+class GooglePubSubClientsPool {
     private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClientsPool.class);
 
     private final CredentialsProvider credentialsProvider;
@@ -26,12 +26,12 @@ public class GooglePubSubClientsPool {
 
     private final TransportChannelProvider transportChannelProvider;
 
-    public GooglePubSubClientsPool(CredentialsProvider credentialsProvider,
-                                   ExecutorProvider publishingExecutorProvider,
-                                   RetrySettings retrySettings,
-                                   BatchingSettings batchingSettings,
-                                   GooglePubSubMessages pubSubMessages,
-                                   TransportChannelProvider transportChannelProvider) {
+    GooglePubSubClientsPool(CredentialsProvider credentialsProvider,
+                            ExecutorProvider publishingExecutorProvider,
+                            RetrySettings retrySettings,
+                            BatchingSettings batchingSettings,
+                            GooglePubSubMessages pubSubMessages,
+                            TransportChannelProvider transportChannelProvider) {
         this.credentialsProvider = credentialsProvider;
         this.publishingExecutorProvider = publishingExecutorProvider;
         this.retrySettings = retrySettings;

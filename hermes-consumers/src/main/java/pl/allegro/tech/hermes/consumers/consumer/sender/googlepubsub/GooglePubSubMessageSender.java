@@ -10,13 +10,13 @@ import java.util.concurrent.ExecutionException;
 
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 
-public class GooglePubSubMessageSender extends CompletableFutureAwareMessageSender {
+class GooglePubSubMessageSender extends CompletableFutureAwareMessageSender {
 
     private final GooglePubSubClient googlePubSubClient;
     private final GooglePubSubSenderTarget resolvedTarget;
     private final GooglePubSubClientsPool clientsPool;
 
-    public GooglePubSubMessageSender(GooglePubSubSenderTarget resolvedTarget,
+    GooglePubSubMessageSender(GooglePubSubSenderTarget resolvedTarget,
                                      GooglePubSubClientsPool clientsPool) throws IOException {
         this.googlePubSubClient = clientsPool.acquire(resolvedTarget);
         this.resolvedTarget = resolvedTarget;

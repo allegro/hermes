@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class GooglePubSubClient {
+class GooglePubSubClient {
 
     private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClient.class);
 
@@ -27,7 +27,7 @@ public class GooglePubSubClient {
         this.messageCreator = messageCreator;
     }
 
-    public void publish(Message message, CompletableFuture<MessageSendingResult> resultFuture)
+    void publish(Message message, CompletableFuture<MessageSendingResult> resultFuture)
             throws IOException, ExecutionException, InterruptedException {
         PubsubMessage pubsubMessage = messageCreator.fromHermesMessage(message);
         ApiFuture<String> future = publisher.publish(pubsubMessage);
