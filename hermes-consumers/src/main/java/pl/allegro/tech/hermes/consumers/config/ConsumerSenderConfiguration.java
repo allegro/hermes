@@ -164,7 +164,6 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
-    @Conditional(OnGoogleDefaultCredentials.class)
     public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
             GooglePubSubSenderTargetResolver targetResolver,
             GooglePubSubCredentialsProvider credentialsProvider,
@@ -186,17 +185,16 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    @Conditional(OnGoogleDefaultCredentials.class)
-    @ConditionalOnMissingBean(GooglePubSubCredentialsProvider.class)
     @Profile("!integration")
-    public GooglePubSubCredentialsProvider pubSubCredentialsProvider() throws IOException {
+    @Conditional(OnGoogleDefaultCredentials.class)
+    public GooglePubSubCredentialsProvider applicationDefaultGooglePubSubCredentialsProvider() throws IOException {
         return new ApplicationDefaultGooglePubSubCredentialsProvider(
                 FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault()));
     }
 
-    @Profile("integration")
     @Bean
-    public GooglePubSubCredentialsProvider noCredentialsProvider() {
+    @ConditionalOnMissingBean(GooglePubSubCredentialsProvider.class)
+    public GooglePubSubCredentialsProvider noGooglePubSubCredentialsProvider() {
         return new ApplicationDefaultGooglePubSubCredentialsProvider(NoCredentialsProvider.create());
     }
 
