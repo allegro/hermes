@@ -213,6 +213,10 @@ public class RemoteServiceEndpoint {
         return url;
     }
 
+    public int getServicePort() {
+        return this.service.port();
+    }
+
     public void stop() {
         listener.shutdown();
         service.shutdown();

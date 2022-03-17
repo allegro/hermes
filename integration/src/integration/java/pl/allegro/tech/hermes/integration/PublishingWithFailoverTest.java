@@ -27,7 +27,7 @@ public class PublishingWithFailoverTest extends IntegrationTest {
         TestMessage message = TestMessage.of("hello", "world");
 
         Topic topic = operations.buildTopic(randomTopic("inMemory", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
         remoteService.expectMessages(message.body(), message.body());
         //we must send first message to a working kafka because producer need to fetch metadata
         assertThat(publisher.publish(topic.getQualifiedName(), message.body()).getStatus()).isEqualTo(201);

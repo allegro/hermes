@@ -56,7 +56,7 @@ public class PublishingTest extends IntegrationTest {
     public void shouldPublishAndConsumeMessage() {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription",remoteService.getUrl().toString());
 
         TestMessage message = TestMessage.of("hello", "world");
         remoteService.expectMessages(message.body());
@@ -102,7 +102,7 @@ public class PublishingTest extends IntegrationTest {
     public void shouldMarkSubscriptionAsActiveAfterReceivingFirstMessage() {
         // given
         Topic topic = operations.buildTopic(randomTopic("markAsActiveGroup", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
 
         TestMessage message = TestMessage.of("hello", "world");
         remoteService.expectMessages(message.body());
@@ -122,7 +122,7 @@ public class PublishingTest extends IntegrationTest {
         String subscription = "publishingTestSubscription";
 
         Topic topic = operations.buildTopic(randomTopic("publishSuspendedGroup", "publishingTestTopic").build());
-        operations.createSubscription(topic, subscription, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, subscription, remoteService.getUrl().toString());
         wait.untilSubscriptionIsActivated(topic, subscription);
         operations.suspendSubscription(topic, subscription);
         wait.untilSubscriptionIsSuspended(topic, subscription);
@@ -140,8 +140,8 @@ public class PublishingTest extends IntegrationTest {
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishMultipleGroup", "topic").build());
-        operations.createSubscription(topic, "subscription1", HTTP_ENDPOINT_URL + "1/");
-        operations.createSubscription(topic, "subscription2", HTTP_ENDPOINT_URL + "2/");
+        operations.createSubscription(topic, "subscription1", remoteService.getUrl().toString() + "1/");
+        operations.createSubscription(topic, "subscription2", remoteService.getUrl().toString() + "2/");
 
         TestMessage message = TestMessage.of("hello", "world");
 
@@ -162,7 +162,7 @@ public class PublishingTest extends IntegrationTest {
     public void shouldPublishMessageToEndpointWithInterpolatedURI() {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishInterpolatedGroup", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "{template}/");
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString() + "{template}/");
 
         TestMessage message = TestMessage.of("template", "hello");
         RemoteServiceEndpoint interpolatedEndpoint = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/hello/");
@@ -181,7 +181,7 @@ public class PublishingTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishInvalidInterpolatedGroup", "topic").build());
         Subscription subscription = subscription(topic, "subscription")
-                .withEndpoint(EndpointAddress.of(HTTP_ENDPOINT_URL + "{template}/"))
+                .withEndpoint(EndpointAddress.of(remoteService.getUrl().toString() + "{template}/"))
                 .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy().applyDefaults().withMessageTtl(1).build()
                 ).build();
@@ -205,7 +205,7 @@ public class PublishingTest extends IntegrationTest {
     public void shouldNotPublishMessageIfContentLengthDoNotMatch() throws IOException, InterruptedException {
         // given
         Topic topic = operations.buildTopic(randomTopic("invalidContentType", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
 
         // when
         publishEventWithInvalidContentLength(topic.getQualifiedName());
@@ -268,7 +268,7 @@ public class PublishingTest extends IntegrationTest {
 
         // and
         Topic topic = operations.buildTopic(randomTopic("traceSendAndReceiveGroup", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
         remoteService.expectMessages(message);
         WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
 
@@ -292,7 +292,7 @@ public class PublishingTest extends IntegrationTest {
 
         // and
         Topic topic = operations.buildTopic(randomTopic("traceSendAndReceiveGroup", "topic2").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
         remoteService.expectMessages(message);
         Invocation.Builder request = createRequestWithTraceHeaders(FRONTEND_URL, topic.getQualifiedName(), trace);
 
@@ -308,7 +308,7 @@ public class PublishingTest extends IntegrationTest {
     public void shouldConsumeMessageWithKeepAliveHeader() {
         // given
         Topic topic = operations.buildTopic("group", "topic");
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
 
         TestMessage message = TestMessage.of("hello", "world");
 
@@ -331,7 +331,7 @@ public class PublishingTest extends IntegrationTest {
 
         // and
         Topic topic = operations.buildTopic(randomTopic("retryAfterTopic", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
 
         // when
         publisher.publish(topic.getQualifiedName(), message);
@@ -351,7 +351,7 @@ public class PublishingTest extends IntegrationTest {
         Topic topic = operations.buildTopic(randomTopic("headersTestGroup", "topic").build());
 
         Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl().toString())
                 .withHeader("MY-HEADER", "myHeader123")
                 .build();
         operations.createSubscription(topic, subscription);
@@ -375,7 +375,7 @@ public class PublishingTest extends IntegrationTest {
         Topic topic = operations.buildTopic(randomTopic("headersAndTracesTestGroup", "topic").build());
 
         Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl().toString())
                 .withHeader("Trace-Id", "defaultValue")
                 .build();
         operations.createSubscription(topic, subscription);
@@ -399,7 +399,7 @@ public class PublishingTest extends IntegrationTest {
         int delay = 2000;
         Topic topic = operations.buildTopic(randomTopic("publishWithDelay", "topic").build());
         Subscription subscriptionWithDelay = subscription(topic, "subscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl().toString())
                 .withContentType(ContentType.JSON)
                 .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
                         .withSendingDelay(delay)
@@ -428,7 +428,7 @@ public class PublishingTest extends IntegrationTest {
         String message = "abcd";
         Topic topic = operations.buildTopic(randomTopic("deliverWithSubscriptionIdentityHeaders", "topic").build());
         Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl().toString())
                 .withAttachingIdentityHeadersEnabled(true)
                 .build();
         operations.createSubscription(topic, subscription);
@@ -450,7 +450,7 @@ public class PublishingTest extends IntegrationTest {
         String message = "abcd";
         Topic topic = operations.buildTopic(randomTopic("deliverWithoutSubscriptionIdentityHeaders", "topic").build());
         Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl().toString())
                 .withAttachingIdentityHeadersEnabled(false)
                 .build();
         operations.createSubscription(topic, subscription);

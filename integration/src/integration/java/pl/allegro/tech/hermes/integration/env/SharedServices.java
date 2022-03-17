@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.integration.env;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import org.apache.curator.framework.CuratorFramework;
 import org.assertj.core.api.Assertions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
@@ -14,6 +15,8 @@ import java.util.Map;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 public final class SharedServices {
+
+    Logger logger = LoggerFactory.getLogger(SharedServices.class);
 
     private static SharedServices services;
 
@@ -36,9 +39,13 @@ public final class SharedServices {
     }
 
     public WireMockServer serviceMock() {
-        WireMockServer wireMockServer = new WireMockServer(wireMockConfig().dynamicPort());
-        wireMockServer.start();
-        return wireMockServer;
+        WireMockStarter wireMockStarter = new WireMockStarter(wireMockConfig().dynamicPort().portNumber());
+        try {
+            wireMockStarter.start();
+        } catch(Exception exception) {
+            logger.error("Error while starting wiremock server");
+        }
+        return wireMockStarter.instance();
     }
 
     public WireMockServer graphiteHttpMock() {

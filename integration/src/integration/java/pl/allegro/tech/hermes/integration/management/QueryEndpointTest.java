@@ -218,8 +218,8 @@ public class QueryEndpointTest extends IntegrationTest {
         Topic topic1 = operations.buildTopic("subscriptionsMetricsTestGroup1", "topic");
         Topic topic2 = operations.buildTopic("subscriptionsMetricsTestGroup2", "topic");
 
-        Subscription subscription1 = operations.createSubscription(topic1, "subscription1", HTTP_ENDPOINT_URL);
-        Subscription subscription2 = operations.createSubscription(topic2, "subscription2", HTTP_ENDPOINT_URL);
+        Subscription subscription1 = operations.createSubscription(topic1, "subscription1", remoteService.getUrl().toString());
+        Subscription subscription2 = operations.createSubscription(topic2, "subscription2", remoteService.getUrl().toString());
 
         String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
         String queryGetSubscriptionsMetricsWithPositiveThroughput = "{\"query\": {\"throughput\": {\"gt\": 0}}}";
@@ -264,7 +264,7 @@ public class QueryEndpointTest extends IntegrationTest {
     public void shouldHandleUnavailableSubscriptionsMetrics() {
         // given
         Topic topic = operations.buildTopic("unavailableMetricsGroup", "topic");
-        Subscription subscription = operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        Subscription subscription = operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
 
         String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
         String queryGetSubscriptionsMetricsWithPositiveRate = "{\"query\": {\"rate\": {\"gt\": 0}}}";

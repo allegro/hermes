@@ -46,7 +46,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     public void shouldFetchSingleMessageByTopicPartitionAndOffset() {
         // given
         Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "topic").withAck(ALL).build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
 
         List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
 
@@ -112,7 +112,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     public void shouldReturnNotFoundErrorForNonExistingOffset() {
         // given
         Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "offsetTestTopic").withAck(ALL).build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
         List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
 
         remoteService.expectMessages(messages);
