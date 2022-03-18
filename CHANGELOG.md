@@ -1,3 +1,12 @@
+## 1.12.0 (18.03.2022)
+
+## Enhancements
+
+#### ([1474](https://github.com/allegro/hermes/pull/1474)) Updated json2avro converter to 0.2.13
+#### ([1463](https://github.com/allegro/hermes/pull/1463)) Added integration with Google PubSub in hermes-consumers
+
+Thanks @wikp for this contribution!
+
 ## 1.11.2 (28.02.2022)
 
 ### Fixes
