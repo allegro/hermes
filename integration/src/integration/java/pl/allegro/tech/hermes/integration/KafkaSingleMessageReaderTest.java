@@ -70,9 +70,11 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         Topic topic = randomTopic("avro", "fetch").withContentType(AVRO).withAck(ALL).build();
         TopicWithSchema topicWithSchema = topicWithSchema(topic, avroUser.getSchemaAsString());
         operations.buildTopicWithSchema(topicWithSchema);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
         HermesAssertions.assertThat(response).hasOneOfStatus(Arrays.asList(CREATED, ACCEPTED));
+        remoteService.waitUntilReceived();
 
         // when
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
@@ -94,9 +96,11 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
                 .build();
         TopicWithSchema topicWithSchema = topicWithSchema(topic, avroUser.getSchemaAsString());
         operations.buildTopicWithSchema(topicWithSchema);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
         HermesAssertions.assertThat(response).hasOneOfStatus(Arrays.asList(CREATED, ACCEPTED));
+        remoteService.waitUntilReceived();
 
         // when
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
