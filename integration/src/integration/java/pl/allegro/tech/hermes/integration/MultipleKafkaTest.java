@@ -63,7 +63,7 @@ public class MultipleKafkaTest extends IntegrationTest {
     public void shouldPublishAndConsumeThroughSecondaryKafka() throws Exception {
         // given
         Topic topic = hermesManagement.operations().buildTopic(randomTopic("secondaryKafka", "topic").build());
-        Subscription subscription = hermesManagement.operations().createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        Subscription subscription = hermesManagement.operations().createSubscription(topic, "subscription", remoteService.getUrl());
         wait.untilSubscriptionIsActivated(topic, subscription.getName());
         remoteService.expectMessages("message");
 

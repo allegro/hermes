@@ -100,7 +100,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         //when
         management.subscription().update(topic.getQualifiedName(), "anotherOneSubscription",
-                patchData().set("endpoint", EndpointAddress.of(HTTP_ENDPOINT_URL)).build());
+                patchData().set("endpoint", EndpointAddress.of(remoteService.getUrl())).build());
 
         //then
         assertThat(
@@ -162,7 +162,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     public void shouldSuspendSubscription() {
         // given
         Topic topic = operations.buildTopic(randomTopic("suspendSubscriptionGroup", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
         wait.untilSubscriptionIsActivated(topic, "subscription");
 
         // when
@@ -179,19 +179,19 @@ public class SubscriptionManagementTest extends IntegrationTest {
     public void shouldUpdateSubscriptionEndpoint() throws Throwable {
         //given
         Topic topic = operations.buildTopic(randomTopic("updateSubscriptionEndpointAddressGroup", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "v1/");
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString() + "v1/");
         wait.untilSubscriptionIsActivated(topic, "subscription");
 
         // when
         Response response = management.subscription().update(
                 topic.getQualifiedName(),
                 "subscription",
-                patchData().set("endpoint", EndpointAddress.of(HTTP_ENDPOINT_URL)).build()
+                patchData().set("endpoint", EndpointAddress.of(remoteService.getUrl())).build()
         );
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
-        wait.untilSubscriptionEndpointAddressChanged(topic, "subscription", EndpointAddress.of(HTTP_ENDPOINT_URL));
+        wait.untilSubscriptionEndpointAddressChanged(topic, "subscription", EndpointAddress.of(remoteService.getUrl()));
 
         publishMessage(topic.getQualifiedName(), MESSAGE.body());
         auditEvents.getLastRequest();
@@ -201,7 +201,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     public void shouldUpdateSubscriptionPolicy() {
         // given
         Topic topic = operations.buildTopic(randomTopic("updateSubscriptionPolicy", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL + "v1/");
+        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString() + "v1/");
         wait.untilSubscriptionIsActivated(topic, "subscription");
 
         PatchData patchData = patchData().set("subscriptionPolicy", ImmutableMap.builder()
@@ -240,7 +240,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     public void shouldRemoveSubscription() {
         // given
         Topic topic = operations.buildTopic(randomTopic("removeSubscriptionGroup", "topic").build());
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
         // when
         Response response = management.subscription().remove(topic.getQualifiedName(), "subscription");
@@ -258,7 +258,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         Topic topic = operations.buildTopic(randomTopic("eventStatus", "topic").withContentType(ContentType.JSON)
                 .withTrackingEnabled(true).build());
 
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription", HTTP_ENDPOINT_URL)
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription", remoteService.getUrl())
                 .withTrackingMode(TrackingMode.TRACK_ALL)
                 .build();
 
@@ -283,10 +283,10 @@ public class SubscriptionManagementTest extends IntegrationTest {
     public void shouldReturnSubscriptionsThatAreCurrentlyTrackedForGivenTopic() {
         // given
         Topic topic = operations.buildTopic(randomTopic("tracked", "topic").build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription", HTTP_ENDPOINT_URL)
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription", remoteService.getUrl())
                 .withTrackingMode(TrackingMode.TRACK_ALL).build();
         operations.createSubscription(topic, subscription);
-        operations.createSubscription(topic, "sub2", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "sub2", remoteService.getUrl());
 
         // when
         List<String> tracked = management.subscription().list(topic.getQualifiedName(), true);
@@ -336,7 +336,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // and
         operations.buildTopic(topic);
-        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
         graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 100);
         graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription").withRate(100).build());
 
@@ -355,7 +355,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // and
         operations.buildTopic(topic);
-        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
         graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
         graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription").withRate(50).withStatusRate(500, 11).build());
 
@@ -376,7 +376,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // and
         operations.buildTopic(topic);
-        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
         graphiteEndpoint.returnServerErrorForAllTopics();
         graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription").withRate(100).build());
 
@@ -411,7 +411,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // given
         String subscriptionName = "subscription";
         Topic topic = operations.buildTopic(randomTopic("topicGroup", "test").build());
-        operations.createSubscription(topic, subscriptionName, HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
 
         TestMessage message = TestMessage.of("hello", "world");
         remoteService.expectMessages(message.body());

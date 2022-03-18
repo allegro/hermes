@@ -65,7 +65,7 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withContentType(AVRO)
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), user.asBytes());
@@ -82,7 +82,7 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withContentType(AVRO)
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl(), ContentType.AVRO);
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), user.asJson(), singletonMap("Content-Type", TEXT_PLAIN));
@@ -98,7 +98,7 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withContentType(AVRO)
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl(), ContentType.AVRO);
 
         // when
         Response response = publisher.publish(topic.getQualifiedName(), user.asBytes());
@@ -113,7 +113,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // given
         Topic topic = randomTopic("publishAvroAfterTopicEditing", "topic").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, JSON);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl(), JSON);
 
         Response response = publisher.publish(topic.getQualifiedName(), user.asBytes());
         assertThat(response).hasStatus(CREATED);
@@ -271,7 +271,7 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.buildTopic(topic);
         operations.saveSchema(topic, user.getSchemaAsString());
 
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
         TestMessage message = TestMessage.random();
         remoteService.expectMessages(message);
 
@@ -294,7 +294,7 @@ public class PublishingAvroTest extends IntegrationTest {
         operations.buildTopic(topic);
         operations.saveSchema(topic, schema.toString());
 
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
         remoteService.expectMessages(user.asJson());
 
         // when
@@ -313,7 +313,7 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withContentType(JSON)
                 .build()
         );
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
         TestMessage beforeMigrationMessage = new AvroUser("Bob", 50, "blue").asTestMessage();
         TestMessage afterMigrationMessage = new AvroUser("Barney", 35, "yellow").asTestMessage();
@@ -347,7 +347,7 @@ public class PublishingAvroTest extends IntegrationTest {
         // and
         Topic topic = randomTopic("publishAvroConsumeJsonWithTraceId", "topic").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
         remoteService.expectMessages(user.asJson());
         WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
@@ -371,7 +371,7 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withSchemaIdAwareSerialization()
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl(), ContentType.AVRO);
 
         operations.saveSchema(topic, load("/schema/user_v2.avsc").toString());
 
@@ -397,7 +397,7 @@ public class PublishingAvroTest extends IntegrationTest {
                 .withSchemaIdAwareSerialization()
                 .build();
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl(), ContentType.AVRO);
 
         operations.saveSchema(topic, load("/schema/user_v2.avsc").toString());
 
@@ -419,7 +419,7 @@ public class PublishingAvroTest extends IntegrationTest {
         Topic topic = randomTopic("latestSchemaVersionUpdate", "topic").withContentType(AVRO).build();
 
         operations.buildTopicWithSchema(topicWithSchema(topic, load("/schema/user.avsc").toString()));
-        operations.createSubscription(topic, "subscription", HTTP_ENDPOINT_URL, ContentType.AVRO);
+        operations.createSubscription(topic, "subscription", remoteService.getUrl(), ContentType.AVRO);
 
         HermesMessage message = hermesMessage(topic.getQualifiedName(), user.asBytes()).withContentType(AVRO_BINARY).build();
 
