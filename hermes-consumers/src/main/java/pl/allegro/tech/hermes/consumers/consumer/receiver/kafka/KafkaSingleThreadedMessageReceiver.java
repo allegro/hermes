@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
@@ -25,7 +24,6 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOff
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.KafkaConsumerOffsetMover;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
-import java.time.Clock;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -40,44 +38,37 @@ import java.util.stream.Collectors;
 public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaSingleThreadedMessageReceiver.class);
 
-    private KafkaConsumer<byte[], byte[]> consumer;
-    private final MessageContentReader messageContentReader;
-    private final Clock clock;
+    private final KafkaConsumer<byte[], byte[]> consumer;
+    private final KafkaMessageConverter messageConverter;
 
     private final BlockingQueue<Message> readQueue;
     private final KafkaConsumerOffsetMover offsetMover;
 
     private final HermesMetrics metrics;
-    private Topic topic;
     private volatile Subscription subscription;
-
-    private Map<String, KafkaTopic> topics;
 
     private final int pollTimeout;
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
 
     public KafkaSingleThreadedMessageReceiver(KafkaConsumer<byte[], byte[]> consumer,
-                                              MessageContentReader messageContentReader,
+                                              KafkaMessageConverterFactory messageConverterFactory,
                                               HermesMetrics metrics,
                                               KafkaNamesMapper kafkaNamesMapper,
                                               Topic topic,
                                               Subscription subscription,
-                                              Clock clock,
                                               int pollTimeout,
                                               int readQueueCapacity,
                                               ConsumerPartitionAssignmentState partitionAssignmentState) {
         this.metrics = metrics;
-        this.topic = topic;
         this.subscription = subscription;
         this.pollTimeout = pollTimeout;
         this.partitionAssignmentState = partitionAssignmentState;
-        this.topics = getKafkaTopics(topic, kafkaNamesMapper).stream()
-                .collect(Collectors.toMap(t -> t.name().asString(), Function.identity()));
         this.consumer = consumer;
-        this.messageContentReader = messageContentReader;
-        this.clock = clock;
         this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
         this.offsetMover = new KafkaConsumerOffsetMover(subscription.getQualifiedName(), consumer);
+        Map<String, KafkaTopic> topics = getKafkaTopics(topic, kafkaNamesMapper).stream()
+                .collect(Collectors.toMap(t -> t.name().asString(), Function.identity()));
+        this.messageConverter = messageConverterFactory.create(topic, subscription, topics);
         this.consumer.subscribe(topics.keySet(),
                 new OffsetCommitterConsumerRebalanceListener(subscription.getQualifiedName(), partitionAssignmentState));
     }
@@ -126,24 +117,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     }
 
     private Message convertToMessage(ConsumerRecord<byte[], byte[]> record) {
-        KafkaTopic kafkaTopic = topics.get(record.topic());
-        UnwrappedMessageContent unwrappedContent = messageContentReader.read(record, kafkaTopic.contentType());
         long currentTerm = partitionAssignmentState.currentTerm(subscription.getQualifiedName());
-        return new Message(
-                unwrappedContent.getMessageMetadata().getId(),
-                topic.getQualifiedName(),
-                unwrappedContent.getContent(),
-                kafkaTopic.contentType(),
-                unwrappedContent.getSchema(),
-                unwrappedContent.getMessageMetadata().getTimestamp(),
-                clock.millis(),
-                new PartitionOffset(kafkaTopic.name(), record.offset(), record.partition()),
-                currentTerm,
-                unwrappedContent.getMessageMetadata().getExternalMetadata(),
-                subscription.getHeaders(),
-                subscription.getName(),
-                subscription.isSubscriptionIdentityHeadersEnabled()
-        );
+        return messageConverter.convertToMessage(record, currentTerm);
     }
 
     @Override
@@ -160,6 +135,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     @Override
     public void update(Subscription newSubscription) {
         this.subscription = newSubscription;
+        messageConverter.update(subscription);
     }
 
     @Override
