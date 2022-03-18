@@ -39,4 +39,5 @@ dependencies {
 
     compile group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
     compile group: 'org.testcontainers', name: 'toxiproxy', version: versions.testcontainers
+    compile group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
 }

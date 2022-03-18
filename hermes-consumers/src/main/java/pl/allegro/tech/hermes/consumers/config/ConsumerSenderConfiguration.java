@@ -1,9 +1,19 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import com.google.api.gax.batching.BatchingSettings;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -16,6 +26,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactor
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
@@ -38,6 +51,7 @@ import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import javax.inject.Named;
 import javax.jms.Message;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
@@ -145,6 +159,37 @@ public class ConsumerSenderConfiguration {
     @Bean
     public MetadataAppender<Message> jmsMetadataAppender() {
         return new JmsMetadataAppender();
+    }
+
+    @Bean(name = "defaultPubSubMessageSenderProvider")
+    public ProtocolMessageSenderProvider pubSubMessageSenderProvider(GooglePubSubSenderTargetResolver targetResolver,
+                                                                     CredentialsProvider credentialsProvider,
+                                                                     ExecutorProvider executorProvider,
+                                                                     RetrySettings retrySettings,
+                                                                     BatchingSettings batchingSettings,
+                                                                     GooglePubSubMessages googlePubSubMessages,
+                                                                     TransportChannelProvider transportChannelProvider) {
+        return new GooglePubSubMessageSenderProvider(
+                targetResolver,
+                credentialsProvider,
+                executorProvider,
+                retrySettings,
+                batchingSettings,
+                transportChannelProvider,
+                googlePubSubMessages
+        );
+    }
+
+    @Bean
+    @Conditional(OnGoogleDefaultCredentials.class)
+    public CredentialsProvider applicationDefaultCredentialsProvider() throws IOException {
+        return FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CredentialsProvider.class)
+    public CredentialsProvider noCredentialsProvider() {
+        return NoCredentialsProvider.create();
     }
 
     @Bean
