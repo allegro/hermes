@@ -29,7 +29,7 @@ import java.time.ZoneOffset
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
-class KafkaMessageConverterTest extends Specification {
+class KafkaConsumerRecordToMessageConverterTest extends Specification {
 
     def schema = SchemaBuilder.record("FooRecord").fields()
             .name("avroRecordField").type().stringType().noDefault()
@@ -53,7 +53,7 @@ class KafkaMessageConverterTest extends Specification {
         def sub = subscription(topic, "sub1")
                 .withHeader("subscriptionHeader", "subscriptionHeaderValue").build()
         BasicMessageContentReader contentReader = createContentReader(topic, false, false)
-        KafkaMessageConverter converter = createKafkaMessageConverter(topic, sub, ContentType.AVRO, contentReader)
+        KafkaConsumerRecordToMessageConverter converter = createKafkaMessageConverter(topic, sub, ContentType.AVRO, contentReader)
 
         byte[] data = serializeRecordInConfluentFormat()
         def kafkaRecordTimestamp = 345L
@@ -116,10 +116,10 @@ class KafkaMessageConverterTest extends Specification {
         new BasicMessageContentReader(wrapper, headerExtractor, topic)
     }
 
-    private KafkaMessageConverter createKafkaMessageConverter(Topic topic, Subscription sub, ContentType contentType, BasicMessageContentReader contentReader) {
+    private KafkaConsumerRecordToMessageConverter createKafkaMessageConverter(Topic topic, Subscription sub, ContentType contentType, BasicMessageContentReader contentReader) {
         def topics = Collections.singletonMap(
                 topic.getQualifiedName(), new KafkaTopic(KafkaTopicName.valueOf(topic.getQualifiedName()), contentType))
-        new KafkaMessageConverter(topic, sub, topics, contentReader, clockUsedByConverter)
+        new KafkaConsumerRecordToMessageConverter(topic, sub, topics, contentReader, clockUsedByConverter)
     }
 
     private byte[] serializeRecordInConfluentFormat() {

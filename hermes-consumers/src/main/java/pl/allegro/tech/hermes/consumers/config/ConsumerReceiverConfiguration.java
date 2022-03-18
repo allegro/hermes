@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageConverterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
@@ -24,7 +24,7 @@ public class ConsumerReceiverConfiguration {
 
     @Bean
     public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
-                                                       KafkaMessageConverterFactory messageConverterFactory,
+                                                       KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                                        HermesMetrics hermesMetrics,
                                                        OffsetQueue offsetQueue,
                                                        KafkaNamesMapper kafkaNamesMapper,
@@ -44,9 +44,9 @@ public class ConsumerReceiverConfiguration {
     }
 
     @Bean
-    public KafkaMessageConverterFactory kafkaMessageConverterFactory(MessageContentReaderFactory messageContentReaderFactory,
-                                                                     Clock clock) {
-        return new KafkaMessageConverterFactory(messageContentReaderFactory, clock);
+    public KafkaConsumerRecordToMessageConverterFactory kafkaMessageConverterFactory(MessageContentReaderFactory messageContentReaderFactory,
+                                                                                     Clock clock) {
+        return new KafkaConsumerRecordToMessageConverterFactory(messageContentReaderFactory, clock);
     }
 
     @Bean

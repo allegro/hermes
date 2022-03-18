@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 import java.time.Clock;
 import java.util.Map;
 
-public class KafkaMessageConverter {
+public class KafkaConsumerRecordToMessageConverter {
 
     private final Topic topic;
     private volatile Subscription subscription;
@@ -19,11 +19,11 @@ public class KafkaMessageConverter {
     private final MessageContentReader messageContentReader;
     private final Clock clock;
 
-    public KafkaMessageConverter(Topic topic,
-                                 Subscription subscription,
-                                 Map<String, KafkaTopic> topics,
-                                 MessageContentReader messageContentReader,
-                                 Clock clock) {
+    public KafkaConsumerRecordToMessageConverter(Topic topic,
+                                                 Subscription subscription,
+                                                 Map<String, KafkaTopic> topics,
+                                                 MessageContentReader messageContentReader,
+                                                 Clock clock) {
         this.topic = topic;
         this.subscription = subscription;
         this.topics = topics;

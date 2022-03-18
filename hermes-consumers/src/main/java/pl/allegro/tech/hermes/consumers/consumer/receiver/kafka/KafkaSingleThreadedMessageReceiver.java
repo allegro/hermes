@@ -39,7 +39,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaSingleThreadedMessageReceiver.class);
 
     private final KafkaConsumer<byte[], byte[]> consumer;
-    private final KafkaMessageConverter messageConverter;
+    private final KafkaConsumerRecordToMessageConverter messageConverter;
 
     private final BlockingQueue<Message> readQueue;
     private final KafkaConsumerOffsetMover offsetMover;
@@ -51,7 +51,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
 
     public KafkaSingleThreadedMessageReceiver(KafkaConsumer<byte[], byte[]> consumer,
-                                              KafkaMessageConverterFactory messageConverterFactory,
+                                              KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                               HermesMetrics metrics,
                                               KafkaNamesMapper kafkaNamesMapper,
                                               Topic topic,

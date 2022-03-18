@@ -58,7 +58,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_U
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
-    private final KafkaMessageConverterFactory messageConverterFactory;
+    private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
     private final HermesMetrics hermesMetrics;
     private final OffsetQueue offsetQueue;
     private final KafkaNamesMapper kafkaNamesMapper;
@@ -67,7 +67,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
 
     public KafkaMessageReceiverFactory(ConfigFactory configs,
-                                       KafkaMessageConverterFactory messageConverterFactory,
+                                       KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
                                        KafkaNamesMapper kafkaNamesMapper,

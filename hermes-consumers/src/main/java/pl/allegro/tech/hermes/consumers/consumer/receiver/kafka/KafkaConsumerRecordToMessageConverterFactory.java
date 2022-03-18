@@ -7,18 +7,18 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import java.time.Clock;
 import java.util.Map;
 
-public class KafkaMessageConverterFactory {
+public class KafkaConsumerRecordToMessageConverterFactory {
 
     private final MessageContentReaderFactory messageContentReaderFactory;
     private final Clock clock;
 
-    public KafkaMessageConverterFactory(MessageContentReaderFactory messageContentReaderFactory, Clock clock) {
+    public KafkaConsumerRecordToMessageConverterFactory(MessageContentReaderFactory messageContentReaderFactory, Clock clock) {
         this.messageContentReaderFactory = messageContentReaderFactory;
         this.clock = clock;
     }
 
-    public KafkaMessageConverter create(Topic topic, Subscription subscription, Map<String, KafkaTopic> topics) {
-        return new KafkaMessageConverter(topic, subscription, topics, messageContentReaderFactory.provide(topic), clock);
+    public KafkaConsumerRecordToMessageConverter create(Topic topic, Subscription subscription, Map<String, KafkaTopic> topics) {
+        return new KafkaConsumerRecordToMessageConverter(topic, subscription, topics, messageContentReaderFactory.provide(topic), clock);
     }
 
 }
