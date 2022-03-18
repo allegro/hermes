@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import javax.ws.rs.core.Response;
 
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
@@ -83,6 +84,10 @@ public class HermesAPIOperations {
         wait.untilSchemaCreated(topic);
     }
 
+    public Subscription createSubscription(Topic topic, String subscriptionName, URI endpoint) {
+        return createSubscription(topic, subscriptionName, endpoint.toString(), ContentType.JSON);
+    }
+
     public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint) {
         return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON);
     }
@@ -91,8 +96,16 @@ public class HermesAPIOperations {
         return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON, SubscriptionMode.ANYCAST, state);
     }
 
+    public Subscription createSubscription(Topic topic, String subscriptionName, URI endpoint, Subscription.State state) {
+        return createSubscription(topic, subscriptionName, endpoint.toString(), ContentType.JSON, SubscriptionMode.ANYCAST, state);
+    }
+
     public Subscription createSubscription(Topic topic, String subscriptionName, String endpoint, ContentType contentType) {
         return createSubscription(topic, subscriptionName, endpoint, contentType, SubscriptionMode.ANYCAST, Subscription.State.PENDING);
+    }
+
+    public Subscription createSubscription(Topic topic, String subscriptionName, URI endpoint, ContentType contentType) {
+        return createSubscription(topic, subscriptionName, endpoint.toString(), contentType, SubscriptionMode.ANYCAST, Subscription.State.PENDING);
     }
 
     public Subscription createBroadcastSubscription(Topic topic, String subscriptionName, String endpoint) {
@@ -195,6 +208,10 @@ public class HermesAPIOperations {
                 .build();
 
         createSubscription(topic, subscription);
+    }
+
+    public void createBatchSubscription(Topic topic, URI endpoint, BatchSubscriptionPolicy policy) {
+        createBatchSubscription(topic, endpoint.toString(), policy);
     }
 
     public void createOAuthProvider(OAuthProvider oAuthProvider) {

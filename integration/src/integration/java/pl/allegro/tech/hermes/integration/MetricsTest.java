@@ -51,7 +51,7 @@ public class MetricsTest extends IntegrationTest {
     public void shouldIncreaseTopicMetricsAfterMessageHasBeenPublished() {
         // given
         Topic topic = operations.buildTopic(randomTopic("group", "topic_metrics").build());
-        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
         graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 10, 15);
 
         remoteService.expectMessages(TestMessage.simple().body());
@@ -76,7 +76,7 @@ public class MetricsTest extends IntegrationTest {
     public void shouldIncreaseSubscriptionDeliveredMetricsAfterMessageDelivered() {
         // given
         Topic topic = operations.buildTopic(randomTopic("pl.group", "topic").build());
-        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
         graphiteEndpoint.returnMetric(
                 subscriptionMetricsStub("pl_group." + topic.getName().getName() + ".subscription").withRate(15).build());
 
@@ -119,7 +119,7 @@ public class MetricsTest extends IntegrationTest {
     public void shouldReadSubscriptionDeliveryRate() {
         // given
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
-        operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", remoteService.getUrl().toString());
+        operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", remoteService.getUrl());
         graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_subscription").withRate(15).build());
 
         wait.until(() -> {
@@ -166,7 +166,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("metricsAfterSubscriptionRemovedGroup", "topic");
         String subscriptionName1 = "subscription";
-        operations.createSubscription(topic, subscriptionName1, remoteService.getUrl().toString());
+        operations.createSubscription(topic, subscriptionName1, remoteService.getUrl());
         remoteService.expectMessages(TestMessage.simple().body());
 
         assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body())).isEqualTo(CREATED);
@@ -181,7 +181,7 @@ public class MetricsTest extends IntegrationTest {
         wait.untilSubscriptionMetricsIsRemoved(topic.getName(), subscriptionName1);
 
         String subscriptionName2 = "subscription2";
-        operations.createSubscription(topic, subscriptionName2, remoteService.getUrl().toString());
+        operations.createSubscription(topic, subscriptionName2, remoteService.getUrl());
         management.topic().publishMessage(topic.getQualifiedName(), TestMessage.simple().body());
         wait.untilSubscriptionMetricsIsCreated(topic.getName(), subscriptionName2);
         wait.untilSubscriptionMetricsIsRemoved(topic.getName(), subscriptionName1);
@@ -193,7 +193,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("statusErrorGroup", "topic");
         operations.createSubscription(topic, subscription(topic, "subscription")
-                .withEndpoint(remoteService.getUrl().toString())
+                .withEndpoint(remoteService.getUrl())
                 .withSubscriptionPolicy(SubscriptionPolicy.Builder.subscriptionPolicy()
                         .applyDefaults()
                         .withMessageTtl(0)
@@ -219,7 +219,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("statusSuccessGroup", "topic");
         String subscriptionName = "subscription";
-        operations.createSubscription(topic, subscriptionName, remoteService.getUrl().toString());
+        operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
         graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.statusSuccessGroup.topic.subscription.2xx.200.count"), 1);
         graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.status.statusSuccessGroup.topic.subscription.2xx.count"), 1);
         remoteService.expectMessages(TestMessage.simple().body());
@@ -237,7 +237,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("filteredGroup", "topic");
         operations.createSubscription(topic, subscription(topic.getName(), "subscription")
-                .withEndpoint(remoteService.getUrl().toString())
+                .withEndpoint(remoteService.getUrl())
                 .withFilter(filterMatchingHeaderByPattern("Trace-Id", "^vte.*"))
                 .build());
         graphiteServer.expectMetric(metricNameWithPrefix("consumer.*.meter.filteredGroup.topic.subscription.filtered.count"), 1);
@@ -255,7 +255,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("successBatchGroup", "topic");
         operations.createSubscription(topic, subscription(topic, "subscription")
-                .withEndpoint(remoteService.getUrl().toString())
+                .withEndpoint(remoteService.getUrl())
                 .withSubscriptionPolicy(batchSubscriptionPolicy()
                         .withBatchSize(2)
                         .withMessageTtl(MAX_VALUE)
@@ -284,7 +284,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("errorBatchGroup", "topic");
         operations.createSubscription(topic, subscription(topic, "subscription")
-                .withEndpoint(remoteService.getUrl().toString())
+                .withEndpoint(remoteService.getUrl())
                 .withSubscriptionPolicy(batchSubscriptionPolicy()
                         .withBatchSize(2)
                         .withMessageTtl(0)

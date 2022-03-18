@@ -48,7 +48,7 @@ public class FilteringAvroTest extends IntegrationTest {
         operations.buildTopicWithSchema(topicWithSchema(topic, schema));
 
         final Subscription subscription = subscription(topic.getName(), "subscription")
-                .withEndpoint(remoteService.getUrl().toString())
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withFilter(MESSAGE_NAME_FILTER)
                 .build();
@@ -74,7 +74,7 @@ public class FilteringAvroTest extends IntegrationTest {
         operations.buildTopicWithSchema(topicWithSchema(topic, schema));
 
         final Subscription subscription = subscription(topic.getName(), "subscription")
-                .withEndpoint(remoteService.getUrl().toString())
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withFilter(MESSAGE_NAME_FILTER)
                 .withFilter(MESSAGE_COLOR_FILTER)

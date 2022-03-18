@@ -46,7 +46,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     public void shouldFetchSingleMessageByTopicPartitionAndOffset() {
         // given
         Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "topic").withAck(ALL).build());
-        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
         List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
 
@@ -70,10 +70,10 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         Topic topic = randomTopic("avro", "fetch").withContentType(AVRO).withAck(ALL).build();
         TopicWithSchema topicWithSchema = topicWithSchema(topic, avroUser.getSchemaAsString());
         operations.buildTopicWithSchema(topicWithSchema);
-        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
-        HermesAssertions.assertThat(response).hasOneOfStatus(Arrays.asList(CREATED, ACCEPTED));
+        HermesAssertions.assertThat(response).hasStatusFamily(Response.Status.Family.SUCCESSFUL);
         remoteService.waitUntilReceived();
 
         // when
@@ -96,10 +96,10 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
                 .build();
         TopicWithSchema topicWithSchema = topicWithSchema(topic, avroUser.getSchemaAsString());
         operations.buildTopicWithSchema(topicWithSchema);
-        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
         Response response = publisher.publish(topic.getQualifiedName(), avroUser.asBytes());
-        HermesAssertions.assertThat(response).hasOneOfStatus(Arrays.asList(CREATED, ACCEPTED));
+        HermesAssertions.assertThat(response).hasStatusFamily(Response.Status.Family.SUCCESSFUL);
         remoteService.waitUntilReceived();
 
         // when
@@ -116,7 +116,7 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
     public void shouldReturnNotFoundErrorForNonExistingOffset() {
         // given
         Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "offsetTestTopic").withAck(ALL).build());
-        operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
         List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
 
         remoteService.expectMessages(messages);

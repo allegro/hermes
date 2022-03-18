@@ -22,8 +22,8 @@ public class HttpResponseAssertion extends AbstractAssert<HttpResponseAssertion,
         return this;
     }
 
-    public HttpResponseAssertion hasOneOfStatus(List<Response.Status> statuses) {
-        assertThat(statuses.contains(Response.Status.fromStatusCode(actual.getStatus()))).isEqualTo(true);
+    public HttpResponseAssertion hasStatusFamily(Response.Status.Family statusFamily) {
+        assertThat(actual.getStatusInfo().getFamily()).isEqualTo(statusFamily);
         return this;
     }
 

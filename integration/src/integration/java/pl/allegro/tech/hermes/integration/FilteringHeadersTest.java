@@ -42,7 +42,7 @@ public class FilteringHeadersTest extends IntegrationTest {
         operations.buildTopic(topic);
 
         Subscription subscription = subscription(topic.getName(), "subscription")
-                .withEndpoint(remoteService.getUrl().toString())
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withFilter(TRACE_ID_HEADER_FILTER)
                 .withFilter(SPAN_ID_HEADER_FILTER)

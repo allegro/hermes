@@ -46,8 +46,8 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         String subscription = "subscription";
 
         Topic topic = operations.buildTopic(randomTopic("resetOffsetGroup", "topic").build());
-        operations.createSubscription(topic, subscription, remoteService.getUrl().toString());
-        operations.createSubscription(topic, "subscriptionSuspended", remoteService.getUrl().toString(), Subscription.State.SUSPENDED);
+        operations.createSubscription(topic, subscription, remoteService.getUrl());
+        operations.createSubscription(topic, "subscriptionSuspended", remoteService.getUrl(), Subscription.State.SUSPENDED);
 
         sendMessagesOnTopic(topic, 4);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
@@ -72,7 +72,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         String subscription = "subscription";
 
         Topic topic = operations.buildTopic(randomTopic("resetOffsetGroup", "topicDryRun").build());
-        operations.createSubscription(topic, subscription, remoteService.getUrl().toString());
+        operations.createSubscription(topic, subscription, remoteService.getUrl());
 
         // we have 2 partitions, thus 4 messages to get 2 per partition
         sendMessagesOnTopic(topic, 4);
@@ -98,8 +98,8 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("resetOffsetGroup", "migratedTopicDryRun").build());
         long currentTime = clock.millis();
-        Subscription subscription = operations.createSubscription(topic, "subscription", remoteService.getUrl().toString());
-        operations.createSubscription(topic, "subscriptionSuspended", remoteService.getUrl().toString(), Subscription.State.SUSPENDED);
+        Subscription subscription = operations.createSubscription(topic, "subscription", remoteService.getUrl());
+        operations.createSubscription(topic, "subscriptionSuspended", remoteService.getUrl(), Subscription.State.SUSPENDED);
 
         wait.untilSubscriptionIsActivated(currentTime, topic, subscription.getName());
 
