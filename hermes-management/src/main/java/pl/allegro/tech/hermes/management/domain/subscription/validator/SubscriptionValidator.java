@@ -63,5 +63,4 @@ public class SubscriptionValidator {
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
         subscriptionRepository.ensureSubscriptionExists(toCheck.getTopicName(), toCheck.getName());
     }
-
 }
