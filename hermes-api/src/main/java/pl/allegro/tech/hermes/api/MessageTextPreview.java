@@ -1,12 +1,16 @@
 package pl.allegro.tech.hermes.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class MessageTextPreview {
 
     private final String content;
 
     private final boolean truncated;
 
-    public MessageTextPreview(String content, boolean truncated) {
+    @JsonCreator
+    public MessageTextPreview(@JsonProperty("content") String content, @JsonProperty("truncated") boolean truncated) {
         this.content = content;
         this.truncated = truncated;
     }

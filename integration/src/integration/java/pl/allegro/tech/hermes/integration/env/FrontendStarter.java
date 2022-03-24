@@ -17,13 +17,7 @@ import pl.allegro.tech.hermes.tracker.mongo.frontend.MongoLogRepository;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static javax.ws.rs.core.Response.Status.OK;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_FIXED_MAX;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_TYPE;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.*;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class FrontendStarter implements Starter<HermesFrontend> {
@@ -45,6 +39,8 @@ public class FrontendStarter implements Starter<HermesFrontend> {
         configFactory.overrideProperty(FRONTEND_THROUGHPUT_TYPE, "fixed");
         configFactory.overrideProperty(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
         configFactory.overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
+        configFactory.overrideProperty(FRONTEND_MESSAGE_PREVIEW_ENABLED, true);
+        configFactory.overrideProperty(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, 1);
     }
 
     public FrontendStarter(int port, boolean sslEnabled) {
