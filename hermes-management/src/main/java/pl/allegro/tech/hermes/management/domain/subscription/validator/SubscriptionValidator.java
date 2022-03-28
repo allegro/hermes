@@ -7,9 +7,12 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionAlreadyExistsExcep
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
+import pl.allegro.tech.hermes.management.domain.owner.validator.EndpointOwnershipValidator;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+
+import java.util.Optional;
 
 @Component
 public class SubscriptionValidator {
@@ -19,23 +22,27 @@ public class SubscriptionValidator {
     private final MessageFilterTypeValidator messageFilterTypeValidator;
     private final TopicService topicService;
     private final SubscriptionRepository subscriptionRepository;
+    private final Optional<EndpointOwnershipValidator> endpointOwnershipValidator;
 
     @Autowired
     public SubscriptionValidator(OwnerIdValidator ownerIdValidator,
                                  ApiPreconditions apiPreconditions,
                                  MessageFilterTypeValidator messageFilterTypeValidator,
                                  TopicService topicService,
-                                 SubscriptionRepository subscriptionRepository) {
+                                 SubscriptionRepository subscriptionRepository,
+                                 Optional<EndpointOwnershipValidator> endpointOwnershipValidator) {
         this.ownerIdValidator = ownerIdValidator;
         this.apiPreconditions = apiPreconditions;
         this.messageFilterTypeValidator = messageFilterTypeValidator;
         this.topicService = topicService;
         this.subscriptionRepository = subscriptionRepository;
+        this.endpointOwnershipValidator = endpointOwnershipValidator;
     }
 
     public void checkCreation(Subscription toCheck, CreatorRights<Subscription> creatorRights) {
         apiPreconditions.checkConstraints(toCheck, false);
         ownerIdValidator.check(toCheck.getOwner());
+        endpointOwnershipValidator.ifPresent(validator -> validator.check(toCheck.getOwner(), toCheck.getEndpoint()));
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
 
         if (!creatorRights.allowedToCreate(toCheck)) {
@@ -52,8 +59,8 @@ public class SubscriptionValidator {
     public void checkModification(Subscription toCheck) {
         apiPreconditions.checkConstraints(toCheck, false);
         ownerIdValidator.check(toCheck.getOwner());
+        endpointOwnershipValidator.ifPresent(validator -> validator.check(toCheck.getOwner(), toCheck.getEndpoint()));
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
         subscriptionRepository.ensureSubscriptionExists(toCheck.getTopicName(), toCheck.getName());
     }
-
 }
