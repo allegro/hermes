@@ -13,8 +13,8 @@ import static pl.allegro.tech.hermes.client.ReactiveHermesClientBuilder.hermesCl
 
 class ReactiveHermesClientMetricsTest extends Specification {
 
-    private final MetricRegistry metrics = new MetricRegistry()
-    private final MetricsProvider metricsProvider = new DropwizardMetricsProvider(metrics)
+    private MetricRegistry metrics = new MetricRegistry()
+    private MetricsProvider metricsProvider = new DropwizardMetricsProvider(metrics)
 
     def "should measure publish latency"() {
         given:

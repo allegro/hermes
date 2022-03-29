@@ -8,7 +8,7 @@ import spock.lang.Specification
 
 class HttpAuthorizationProviderFactoryTest extends Specification {
 
-    private final HttpAuthorizationProviderFactory factory = new HttpAuthorizationProviderFactory(null)
+    private HttpAuthorizationProviderFactory factory = new HttpAuthorizationProviderFactory(null)
 
     def "should return empty when URL has no credentials"() {
         given:
