@@ -1,3 +1,16 @@
+## 1.12.1 (29.03.2022)
+
+### Enhancements
+
+#### ([1482](https://github.com/allegro/hermes/pull/1482)) Added EndpointOwnershipValidator
+
+### Fixes
+
+#### ([1476](https://github.com/allegro/hermes/pull/1476)) Fixed unstable tests
+#### ([1475](https://github.com/allegro/hermes/pull/1475)) Fix preview for avro topic with schemaId aware serialization
+
+Thanks @dswiecki for this contribution!
+
 ## 1.12.0 (18.03.2022)
 
 ## Enhancements
