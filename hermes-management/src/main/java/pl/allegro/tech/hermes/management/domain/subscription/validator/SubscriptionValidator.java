@@ -23,6 +23,7 @@ public class SubscriptionValidator {
     private final TopicService topicService;
     private final SubscriptionRepository subscriptionRepository;
     private final Optional<EndpointOwnershipValidator> endpointOwnershipValidator;
+    private final Optional<SubscriptionEndpointValidator> subscriptionEndpointValidator;
 
     @Autowired
     public SubscriptionValidator(OwnerIdValidator ownerIdValidator,
@@ -30,20 +31,19 @@ public class SubscriptionValidator {
                                  MessageFilterTypeValidator messageFilterTypeValidator,
                                  TopicService topicService,
                                  SubscriptionRepository subscriptionRepository,
-                                 Optional<EndpointOwnershipValidator> endpointOwnershipValidator) {
+                                 Optional<EndpointOwnershipValidator> endpointOwnershipValidator,
+                                 Optional<SubscriptionEndpointValidator> subscriptionEndpointValidator) {
         this.ownerIdValidator = ownerIdValidator;
         this.apiPreconditions = apiPreconditions;
         this.messageFilterTypeValidator = messageFilterTypeValidator;
         this.topicService = topicService;
         this.subscriptionRepository = subscriptionRepository;
         this.endpointOwnershipValidator = endpointOwnershipValidator;
+        this.subscriptionEndpointValidator = subscriptionEndpointValidator;
     }
 
     public void checkCreation(Subscription toCheck, CreatorRights<Subscription> creatorRights) {
-        apiPreconditions.checkConstraints(toCheck, false);
-        ownerIdValidator.check(toCheck.getOwner());
-        endpointOwnershipValidator.ifPresent(validator -> validator.check(toCheck.getOwner(), toCheck.getEndpoint()));
-        messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
+        checkWhileCreationOrModification(toCheck);
 
         if (!creatorRights.allowedToCreate(toCheck)) {
             throw new PermissionDeniedException("You are not allowed to create subscriptions for this topic.");
@@ -57,10 +57,15 @@ public class SubscriptionValidator {
     }
 
     public void checkModification(Subscription toCheck) {
+        checkWhileCreationOrModification(toCheck);
+        subscriptionRepository.ensureSubscriptionExists(toCheck.getTopicName(), toCheck.getName());
+    }
+
+    private void checkWhileCreationOrModification(Subscription toCheck) {
         apiPreconditions.checkConstraints(toCheck, false);
         ownerIdValidator.check(toCheck.getOwner());
         endpointOwnershipValidator.ifPresent(validator -> validator.check(toCheck.getOwner(), toCheck.getEndpoint()));
+        subscriptionEndpointValidator.ifPresent(validator -> validator.check(toCheck.getEndpoint()));
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
-        subscriptionRepository.ensureSubscriptionExists(toCheck.getTopicName(), toCheck.getName());
     }
 }
