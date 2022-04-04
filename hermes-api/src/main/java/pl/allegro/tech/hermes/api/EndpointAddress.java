@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import pl.allegro.tech.hermes.api.constraints.ValidAddress;
 import pl.allegro.tech.hermes.api.jackson.EndpointAddressDeserializer;
 import pl.allegro.tech.hermes.api.jackson.EndpointAddressSerializer;
 
@@ -40,7 +39,6 @@ public class EndpointAddress implements Anonymizable {
 
     private final String password;
 
-    @ValidAddress(message = "Endpoint address is invalid")
     private final String endpoint;
 
     private final String rawEndpoint;
