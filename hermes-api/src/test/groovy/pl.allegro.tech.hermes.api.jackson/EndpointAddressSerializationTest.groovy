@@ -6,7 +6,7 @@ import spock.lang.Specification
 
 class EndpointAddressSerializationTest extends Specification {
 
-    private final ObjectMapper mapper = new ObjectMapper()
+    private ObjectMapper mapper = new ObjectMapper()
 
     def "should deserialize string to endpoint address"() {
         given:

@@ -24,11 +24,11 @@ import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalT
 
 class SignalsFilterTest extends Specification {
 
-    private final Clock clock = Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault())
+    private Clock clock = Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault())
 
-    private final MpscQueue<Signal> taskQueue = new WaitFreeDrainMpscQueue<>(10)
+    private MpscQueue<Signal> taskQueue = new WaitFreeDrainMpscQueue<>(10)
 
-    private final SignalsFilter filter = new SignalsFilter(taskQueue, clock)
+    private SignalsFilter filter = new SignalsFilter(taskQueue, clock)
 
     def "should filter out contradicting signals like START & STOP or STOP & START for the same subscription"() {
         given:

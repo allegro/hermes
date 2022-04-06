@@ -54,7 +54,7 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         assertThat(allTasks.get(0).getEndTimestamp()).isEqualTo(request.getEndTimestamp());
         assertThat(allTasks.get(0).getSourceTopic()).isEqualTo(request.getSourceTopic());
         assertThat(allTasks.get(0).getTargetTopic()).isEqualTo(request.getTargetTopic());
-        assertThat(allTasks.get(0).getCreatedAt()).isLessThan(now);
+        assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
     }
 
 
