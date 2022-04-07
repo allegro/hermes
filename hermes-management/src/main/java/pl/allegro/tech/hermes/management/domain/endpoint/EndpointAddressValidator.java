@@ -49,7 +49,7 @@ public class EndpointAddressValidator {
     private boolean isInvalidHost(UriTemplate template) {
         Map<String, Object> uriKeysWithEmptyValues = asList(template.getVariables()).stream().collect(toMap(identity(), v -> "empty"));
 
-        //check if host is null due to bug in jdk http://bugs.java.com/view_bug.do?bug_id=6587184
+        //check if host is null due to bug in jdk https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6587184
         return URI.create(template.expand(uriKeysWithEmptyValues)).getHost() == null;
     }
 }

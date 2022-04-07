@@ -44,11 +44,7 @@ public class SubscriptionValidator {
     }
 
     public void checkCreation(Subscription toCheck, CreatorRights<Subscription> creatorRights) {
-        apiPreconditions.checkConstraints(toCheck, false);
-        ownerIdValidator.check(toCheck.getOwner());
-        endpointAddressValidator.check(toCheck.getEndpoint());
-        endpointOwnershipValidator.ifPresent(validator -> validator.check(toCheck.getOwner(), toCheck.getEndpoint()));
-        messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
+        checkWhileCreationOrModification(toCheck);
 
         if (!creatorRights.allowedToCreate(toCheck)) {
             throw new PermissionDeniedException("You are not allowed to create subscriptions for this topic.");
@@ -62,11 +58,15 @@ public class SubscriptionValidator {
     }
 
     public void checkModification(Subscription toCheck) {
+        checkWhileCreationOrModification(toCheck);
+        subscriptionRepository.ensureSubscriptionExists(toCheck.getTopicName(), toCheck.getName());
+    }
+
+    private void checkWhileCreationOrModification(Subscription toCheck) {
         apiPreconditions.checkConstraints(toCheck, false);
         ownerIdValidator.check(toCheck.getOwner());
         endpointAddressValidator.check(toCheck.getEndpoint());
         endpointOwnershipValidator.ifPresent(validator -> validator.check(toCheck.getOwner(), toCheck.getEndpoint()));
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
-        subscriptionRepository.ensureSubscriptionExists(toCheck.getTopicName(), toCheck.getName());
     }
 }
