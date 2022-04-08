@@ -1,3 +1,9 @@
+## 1.12.2 (08.04.2022)
+
+### Enhancements
+
+#### ([1485](https://github.com/allegro/hermes/pull/1485)) Refactor endpoint address validator so we can add custom validator
+
 ## 1.12.1 (29.03.2022)
 
 ### Enhancements
