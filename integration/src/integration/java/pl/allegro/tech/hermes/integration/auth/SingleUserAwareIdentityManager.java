@@ -24,6 +24,7 @@ public class SingleUserAwareIdentityManager implements IdentityManager {
         this.password = password;
     }
 
+
     @Override
     public Account verify(Account account) {
         return null;
