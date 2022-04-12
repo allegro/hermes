@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.mock;
+package pl.allegro.tech.hermes.mock.exchange;
 
 import org.apache.http.HttpStatus;
 

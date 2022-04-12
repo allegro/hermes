@@ -11,7 +11,7 @@ import java.time.Duration
 import java.time.Instant
 
 import static java.time.Instant.now
-import static pl.allegro.tech.hermes.mock.Response.Builder.aResponse
+import static pl.allegro.tech.hermes.mock.exchange.Response.Builder.aResponse
 
 class HermesMockJsonTest extends Specification {
 
@@ -26,50 +26,88 @@ class HermesMockJsonTest extends Specification {
 
     def setup() {
         hermes.resetReceivedRequest()
+        hermes.resetMappings()
+    }
+
+    def "should receive a Json message matched by pattern"() {
+        given: "define wiremock response for matching json pattern"
+            def topicName = "my-test-json-topic"
+            hermes.define().jsonTopic(topicName,
+                    aResponse().withStatusCode(201).build(),
+                    TestMessage,
+                    { it -> it.key == "test-key-pattern" })
+
+        when: "message with matching pattern is published on topic"
+            def message = new TestMessage("test-key-pattern", "test-key-value")
+            def response = publishJson(topicName, message.asJson())
+
+        then: "check for any single message on the topic and check for correct response"
+            hermes.expect().singleMessageOnTopic(topicName)
+            response.status == HttpStatus.SC_CREATED
+    }
+
+    def "should not match json pattern"() {
+        given: "define wiremock response for matching json pattern"
+            def topicName = "my-test-json-topic"
+            hermes.define().jsonTopic(topicName,
+                    aResponse().withStatusCode(201).build(),
+                    TestMessage,
+                    { it -> it.key == "non-existing-key" })
+
+        when: "message with non-matching pattern is published on topic"
+            def message = new TestMessage("test-key-pattern", "test-key-value")
+            def response = publishJson(topicName, message.asJson())
+
+        then: "check for correct response status"
+            response.status == HttpStatus.SC_NOT_FOUND
     }
 
     def "should receive an json message"() {
         given:
-        def topicName = "my-test-json-topic"
-        hermes.define().jsonTopic(topicName, HttpStatus.SC_OK)
+            def topicName = "my-test-json-topic"
+            hermes.define().jsonTopic(topicName, HttpStatus.SC_OK)
 
         when:
-        def response = publisher.publish(topicName, "Basic Request")
+            def response = publisher.publish(topicName, "Basic Request")
 
         then:
-        hermes.expect().singleMessageOnTopic(topicName)
-        response.status == HttpStatus.SC_OK
+            hermes.expect().singleMessageOnTopic(topicName)
+            response.status == HttpStatus.SC_OK
     }
 
     def "should respond with a delay"() {
         given:
-        def topicName = "my-test-json-topic"
-        Duration fixedDelay = Duration.ofMillis(500)
-        hermes.define().jsonTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
-        Instant start = now()
+            def topicName = "my-test-json-topic"
+            Duration fixedDelay = Duration.ofMillis(500)
+            hermes.define().jsonTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
+            Instant start = now()
 
         when:
-        publisher.publish(topicName, "Basic Request")
+            publisher.publish(topicName, "Basic Request")
 
         then:
-        hermes.expect().singleMessageOnTopic(topicName)
-        Duration.between(start, now()) >= fixedDelay
+            hermes.expect().singleMessageOnTopic(topicName)
+            Duration.between(start, now()) >= fixedDelay
     }
 
     def "should respond for a message send with delay"() {
         given:
-        def topicName = "my-test-json-topic"
-        def delayInMillis = 2_000
-        hermes.define().jsonTopic(topicName)
+            def topicName = "my-test-json-topic"
+            def delayInMillis = 2_000
+            hermes.define().jsonTopic(topicName)
 
         when:
-        Thread.start {
-            Thread.sleep(delayInMillis)
-            publisher.publish(topicName, TestMessage.random().asJson())
-        }
+            Thread.start {
+                Thread.sleep(delayInMillis)
+                publisher.publish(topicName, TestMessage.random().asJson())
+            }
 
         then:
-        hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
+            hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
     }
 
+
+    def publishJson(String topic, String message) {
+        publisher.publish(topic, message.bytes)
+    }
 }

@@ -14,10 +14,9 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
 import java.time.Duration
 import java.time.Instant
-import java.util.function.Predicate
 
 import static java.time.Instant.now
-import static pl.allegro.tech.hermes.mock.Response.Builder.aResponse
+import static pl.allegro.tech.hermes.mock.exchange.Response.Builder.aResponse
 
 class HermesMockAvroTest extends Specification {
 
