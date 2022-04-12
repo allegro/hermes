@@ -31,8 +31,7 @@ public class ManagementRights {
     }
 
     public boolean isUserAllowedToCreateSubscription(Subscription subscription, ContainerRequestContext requestContext) {
-        return !topicRepository.isSubscribingRestricted(subscription.getTopicName()) ||
-                isAdmin(requestContext) || isTopicOwner(subscription, requestContext);
+        return !topicRepository.isSubscribingRestricted(subscription.getTopicName()) || isAdmin(requestContext);
     }
 
     public boolean isUserAllowedToCreateGroup(ContainerRequestContext requestContext) {
@@ -44,12 +43,7 @@ public class ManagementRights {
     }
 
     public boolean isUserAllowedToManageSubscription(Subscription subscription, ContainerRequestContext requestContext) {
-        return isAdmin(requestContext) || isTopicOwner(subscription, requestContext) ||
-                isSubscriptionOwner(subscription, requestContext);
-    }
-
-    private boolean isTopicOwner(Subscription subscription, ContainerRequestContext requestContext) {
-        return getOwnershipResolver(requestContext).isUserAnOwner(topicRepository.getTopicDetails(subscription.getTopicName()).getOwner());
+        return isAdmin(requestContext) || isSubscriptionOwner(subscription, requestContext);
     }
 
     private boolean isSubscriptionOwner(Subscription subscription, ContainerRequestContext requestContext) {
