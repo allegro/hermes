@@ -44,15 +44,7 @@ public class HermesMockHelper {
         }
     }
 
-    public <T> T deserializeJson(com.github.tomakehurst.wiremock.http.Request request, Class<T> clazz) {
-        return deserializeJson(request.getBody(), clazz);
-    }
-
     public <T> T deserializeAvro(Request request, Schema schema, Class<T> clazz) {
-        return deserializeAvro(request.getBody(), schema, clazz);
-    }
-
-    public <T> T deserializeAvro(com.github.tomakehurst.wiremock.http.Request request, Schema schema, Class<T> clazz) {
         return deserializeAvro(request.getBody(), schema, clazz);
     }
 
