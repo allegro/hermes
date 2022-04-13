@@ -8,13 +8,13 @@ import pl.allegro.tech.hermes.mock.HermesMockHelper;
 
 import java.util.function.Predicate;
 
-public class JsonContentMatcher<T> implements ValueMatcher<Request> {
+class JsonContentMatcher<T> implements ValueMatcher<Request> {
 
     private final Predicate<T> predicate;
     private final Class<T> clazz;
     private final HermesMockHelper hermesMockHelper;
 
-    public JsonContentMatcher(HermesMockHelper hermesMockHelper, Predicate<T> predicate , Class<T> clazz) {
+    JsonContentMatcher(HermesMockHelper hermesMockHelper, Predicate<T> predicate, Class<T> clazz) {
         this.hermesMockHelper = hermesMockHelper;
         this.predicate = predicate;
         this.clazz = clazz;
@@ -22,7 +22,7 @@ public class JsonContentMatcher<T> implements ValueMatcher<Request> {
 
     @Override
     public MatchResult match(Request actual) {
-        T body = this.hermesMockHelper.deserializeJson(actual, clazz);
+        T body = this.hermesMockHelper.deserializeJson(actual.getBody(), clazz);
 
         return MatchResult.of(predicate.test(body));
     }

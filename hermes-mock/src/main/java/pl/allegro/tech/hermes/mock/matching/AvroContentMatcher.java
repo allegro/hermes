@@ -8,22 +8,23 @@ import pl.allegro.tech.hermes.mock.HermesMockHelper;
 
 import java.util.function.Predicate;
 
-public class AvroContentMatcher<T> implements ValueMatcher<Request>{
+class AvroContentMatcher<T> implements ValueMatcher<Request> {
 
     private final Predicate<T> predicate;
     private final Schema schema;
     private final Class<T> clazz;
     private final HermesMockHelper hermesMockHelper;
 
-        public AvroContentMatcher(HermesMockHelper hermesMockHelper, Predicate<T> predicate, Schema schema, Class<T> clazz) {
+    AvroContentMatcher(HermesMockHelper hermesMockHelper, Predicate<T> predicate, Schema schema, Class<T> clazz) {
         this.hermesMockHelper = hermesMockHelper;
         this.predicate = predicate;
         this.schema = schema;
         this.clazz = clazz;
     }
+
     @Override
     public MatchResult match(Request actual) {
-        T body = this.hermesMockHelper.deserializeAvro(actual, schema, clazz);
+        T body = this.hermesMockHelper.deserializeAvro(actual.getBody(), schema, clazz);
 
         return MatchResult.of(predicate.test(body));
     }
