@@ -1,8 +1,15 @@
 package pl.allegro.tech.hermes.mock;
 
+import com.github.tomakehurst.wiremock.http.Request;
+import com.github.tomakehurst.wiremock.matching.ValueMatcher;
+import org.apache.avro.Schema;
 import org.apache.http.HttpStatus;
+import pl.allegro.tech.hermes.mock.exchange.Response;
+import pl.allegro.tech.hermes.mock.matching.ContentMatchers;
 
-import static pl.allegro.tech.hermes.mock.Response.Builder.aResponse;
+import java.util.function.Predicate;
+
+import static pl.allegro.tech.hermes.mock.exchange.Response.Builder.aResponse;
 
 public class HermesMockDefine {
     private static final String APPLICATION_JSON = "application/json";
@@ -37,7 +44,21 @@ public class HermesMockDefine {
         addTopic(topicName, response, AVRO_BINARY);
     }
 
+    public <T> void avroTopic(String topicName, Response response, Schema schema, Class<T> clazz, Predicate<T> predicate) {
+        ValueMatcher<Request> avroMatchesPattern = ContentMatchers.matchAvro(hermesMockHelper, predicate, schema, clazz);
+        addTopic(topicName, response, AVRO_BINARY, avroMatchesPattern);
+    }
+
+    public <T> void jsonTopic(String topicName, Response response, Class<T> clazz, Predicate<T> predicate) {
+        ValueMatcher<Request> jsonMatchesPattern = ContentMatchers.matchJson(hermesMockHelper, predicate, clazz);
+        addTopic(topicName, response, APPLICATION_JSON, jsonMatchesPattern);
+    }
+
     private void addTopic(String topicName, Response response, String contentType) {
         hermesMockHelper.addStub(topicName, response, contentType);
+    }
+
+    private void addTopic(String topicName, Response response, String contentType, ValueMatcher<Request> valueMatcher) {
+        hermesMockHelper.addStub(topicName, response, contentType, valueMatcher);
     }
 }
