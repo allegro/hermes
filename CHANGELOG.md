@@ -1,3 +1,11 @@
+## 1.12.3 (13.04.2022)
+
+### Enhancements
+
+#### ([1472](https://github.com/allegro/hermes/pull/1472)) Allow matching avro field while defining wiremock stubs
+
+Thanks @sobelek for this contribution!
+
 ## 1.12.2 (08.04.2022)
 
 ### Enhancements
