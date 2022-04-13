@@ -10,7 +10,7 @@ class ResponseTest extends Specification {
 
     def "should use status code 201 as a default"() {
         when:
-            Response response = aResponse().build()
+        Response response = aResponse().build()
 
         then:
         response.statusCode == HttpStatus.SC_CREATED

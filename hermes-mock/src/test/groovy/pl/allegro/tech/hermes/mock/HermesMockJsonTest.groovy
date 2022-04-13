@@ -64,50 +64,49 @@ class HermesMockJsonTest extends Specification {
 
     def "should receive an json message"() {
         given:
-            def topicName = "my-test-json-topic"
-            hermes.define().jsonTopic(topicName, HttpStatus.SC_OK)
+        def topicName = "my-test-json-topic"
+        hermes.define().jsonTopic(topicName, HttpStatus.SC_OK)
 
         when:
-            def response = publisher.publish(topicName, "Basic Request")
+        def response = publisher.publish(topicName, "Basic Request")
 
         then:
-            hermes.expect().singleMessageOnTopic(topicName)
-            response.status == HttpStatus.SC_OK
+        hermes.expect().singleMessageOnTopic(topicName)
+        response.status == HttpStatus.SC_OK
     }
 
     def "should respond with a delay"() {
         given:
-            def topicName = "my-test-json-topic"
-            Duration fixedDelay = Duration.ofMillis(500)
-            hermes.define().jsonTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
-            Instant start = now()
+        def topicName = "my-test-json-topic"
+        Duration fixedDelay = Duration.ofMillis(500)
+        hermes.define().jsonTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
+        Instant start = now()
 
         when:
-            publisher.publish(topicName, "Basic Request")
+        publisher.publish(topicName, "Basic Request")
 
         then:
-            hermes.expect().singleMessageOnTopic(topicName)
-            Duration.between(start, now()) >= fixedDelay
+        hermes.expect().singleMessageOnTopic(topicName)
+        Duration.between(start, now()) >= fixedDelay
     }
 
     def "should respond for a message send with delay"() {
         given:
-            def topicName = "my-test-json-topic"
-            def delayInMillis = 2_000
-            hermes.define().jsonTopic(topicName)
+        def topicName = "my-test-json-topic"
+        def delayInMillis = 2_000
+        hermes.define().jsonTopic(topicName)
 
         when:
-            Thread.start {
-                Thread.sleep(delayInMillis)
-                publisher.publish(topicName, TestMessage.random().asJson())
-            }
+        Thread.start {
+            Thread.sleep(delayInMillis)
+            publisher.publish(topicName, TestMessage.random().asJson())
+        }
 
         then:
-            hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
+        hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
     }
 
-
-    def publishJson(String topic, String message) {
-        publisher.publish(topic, message.bytes)
+    private def publishJson(String topic, String message) {
+        publisher.publish(topic, message)
     }
 }
