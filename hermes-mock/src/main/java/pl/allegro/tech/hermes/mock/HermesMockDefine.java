@@ -46,19 +46,19 @@ public class HermesMockDefine {
 
     public <T> void avroTopic(String topicName, Response response, Schema schema, Class<T> clazz, Predicate<T> predicate) {
         ValueMatcher<Request> avroMatchesPattern = ContentMatchers.matchAvro(hermesMockHelper, predicate, schema, clazz);
-        addTopic(topicName, response, avroMatchesPattern);
+        addTopic(topicName, response, AVRO_BINARY, avroMatchesPattern);
     }
 
     public <T> void jsonTopic(String topicName, Response response, Class<T> clazz, Predicate<T> predicate) {
         ValueMatcher<Request> jsonMatchesPattern = ContentMatchers.matchJson(hermesMockHelper, predicate, clazz);
-        addTopic(topicName, response, jsonMatchesPattern);
+        addTopic(topicName, response, APPLICATION_JSON, jsonMatchesPattern);
     }
 
     private void addTopic(String topicName, Response response, String contentType) {
         hermesMockHelper.addStub(topicName, response, contentType);
     }
 
-    private void addTopic(String topicName, Response response, ValueMatcher<Request> valueMatcher) {
-        hermesMockHelper.addStub(topicName, response, AVRO_BINARY, valueMatcher);
+    private void addTopic(String topicName, Response response, String contentType, ValueMatcher<Request> valueMatcher) {
+        hermesMockHelper.addStub(topicName, response, contentType, valueMatcher);
     }
 }
