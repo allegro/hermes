@@ -6,6 +6,17 @@
 
 Thanks @sobelek for this contribution!
 
+#### ([1480](https://github.com/allegro/hermes/pull/1480)) Refactor: Message to kafka ProducerRecord conversion logic extracted from KafkaBrokerMessageProducer
+#### ([1477](https://github.com/allegro/hermes/pull/1477)) Feature flag determining if __metadata field is required for avro content type
+
+Thanks @arkadius for these contributions!
+
+#### ([1486](https://github.com/allegro/hermes/pull/1486)) Added audit logs for subscription retransmission
+
+### Fixes
+
+#### ([1491](https://github.com/allegro/hermes/pull/1491)) Topic owner is not allowed to create a subscription with any owner
+
 ## 1.12.2 (08.04.2022)
 
 ### Enhancements
