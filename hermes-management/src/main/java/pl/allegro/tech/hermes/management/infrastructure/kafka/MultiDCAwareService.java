@@ -1,9 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
@@ -15,28 +11,31 @@ import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.retransmit.RetransmitCommand;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
-import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
 import pl.allegro.tech.hermes.management.domain.topic.UnableToMoveOffsetsException;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
 public class MultiDCAwareService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TopicContentTypeMigrationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MultiDCAwareService.class);
 
     private final List<BrokersClusterService> clusters;
     private final Clock clock;
     private final Duration intervalBetweenCheckingIfOffsetsMoved;
     private final Duration offsetsMovedTimeout;
-    private MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
+    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     public MultiDCAwareService(List<BrokersClusterService> clusters, Clock clock,
                                Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
@@ -68,9 +67,12 @@ public class MultiDCAwareService {
                 cluster.indicateOffsetChange(topic, subscriptionName, timestamp, dryRun)));
 
         if (!dryRun) {
-            logger.info("Preparing retransmission for subscription {}", topic.getQualifiedName() + "$" + subscriptionName);
+            logger.info("Starting retransmission for subscription {}. Requested by {}. Retransmission timestamp: {}",
+                    topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
             multiDcExecutor.executeByUser(new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())), requester);
             clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
+            logger.info("Successfully moved offsets for retransmission of subscription {}. Requested by user: {}. Retransmission timestamp: {}",
+                    topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
         }
 
         return multiDCOffsetChangeSummary;

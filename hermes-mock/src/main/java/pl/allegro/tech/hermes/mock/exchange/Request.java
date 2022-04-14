@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.mock;
+package pl.allegro.tech.hermes.mock.exchange;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;

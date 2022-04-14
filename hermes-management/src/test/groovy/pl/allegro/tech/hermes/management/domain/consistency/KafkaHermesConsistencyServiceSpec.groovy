@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.consistency
 
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import pl.allegro.tech.hermes.management.domain.topic.TopicService
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService
 import spock.lang.Specification
@@ -83,9 +84,10 @@ class KafkaHermesConsistencyServiceSpec extends Specification {
     def "should remove topic in kafka cluster"() {
         given:
         def topicName = "pl.allegro.test.FirstTopic_avro"
+        def requestUser = new RequestUser("username", true)
 
         when:
-        kafkaHermesConsistencyService.removeTopic(topicName)
+        kafkaHermesConsistencyService.removeTopic(topicName, requestUser)
 
         then:
         1 * multiDCAwareService.removeTopicByName(topicName)

@@ -34,6 +34,10 @@ public class HermesMockRule implements MethodRule, TestRule {
         hermesMock.resetReceivedRequest();
     }
 
+    public void resetMappings(){
+        hermesMock.resetMappings();
+    }
+
     @Override
     public Statement apply(Statement base, FrameworkMethod method, Object target) {
         return runHermesMock(base);
