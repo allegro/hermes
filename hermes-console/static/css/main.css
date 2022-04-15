@@ -26,6 +26,11 @@ body {
     margin-top: 10px;
 }
 
+.padding-lr-2 {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
 .input-dropdown-menu {
     margin-top: 35px;
 }
