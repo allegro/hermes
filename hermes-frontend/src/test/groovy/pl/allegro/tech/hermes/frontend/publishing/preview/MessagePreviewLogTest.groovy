@@ -52,7 +52,7 @@ class MessagePreviewLogTest extends Specification {
     def "should persist Avro messages for schema aware topics"() {
         given:
         def avroUser = new AvroUser()
-        def message = new AvroMessage('message-id', SchemaAwareSerDe.serialize(avroUser.compiledSchema.id, avroUser.asBytes()), 0L, avroUser.compiledSchema, null)
+        def message = new AvroMessage('message-id', SchemaAwareSerDe.serialize(avroUser.compiledSchema.id, avroUser.asBytes()), 0L, avroUser.compiledSchema, null, ImmutableMap.of())
 
         log.add(TopicBuilder.topic('group.topic-1').withSchemaIdAwareSerialization().build(), message)
 
