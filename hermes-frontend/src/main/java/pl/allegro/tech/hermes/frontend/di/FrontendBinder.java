@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -76,6 +77,7 @@ public class FrontendBinder extends AbstractBinder {
         bindSingleton(HealthCheckService.class);
         bindSingleton(ReadinessChecker.class);
         bind(DefaultHeadersPropagator.class).to(HeadersPropagator.class).in(Singleton.class);
+        bindSingleton(MessageToKafkaProducerRecordConverter.class);
 
         bindFactory(HandlersChainFactory.class).to(HttpHandler.class).in(Singleton.class);
         bindFactory(KafkaMessageProducerFactory.class).to(Producers.class).in(Singleton.class);

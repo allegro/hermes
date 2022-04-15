@@ -13,11 +13,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
-import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
-import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import javax.ws.rs.core.Response;
 import java.util.Collections;
@@ -42,7 +40,6 @@ public class TopicManagementTest extends IntegrationTest {
     @Test
     public void shouldEmmitAuditEventWhenTopicCreated() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("testGroupName");
         Topic topic = topic("testGroupName", "testTopicName").build();
 
@@ -51,14 +48,13 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("CREATED", "Topic", topic.getQualifiedName());
     }
 
     @Test
     public void shouldEmmitAuditEventWhenTopicRemoved() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("anotherTestGroupName");
         Topic topic = topic("anotherTestGroupName", "anotherTestTopicName").build();
         operations.createTopic(topicWithSchema(topic));
@@ -68,14 +64,13 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("REMOVED", topic.getQualifiedName());
     }
 
     @Test
     public void shouldEmmitAuditEventWhenTopicUpdated() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("someTestGroupName");
         Topic topic = topic("someTestGroupName", "someTestTopicName").withMaxMessageSize(1024).build();
         operations.createTopic(topicWithSchema(topic));
@@ -86,14 +81,13 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("UPDATED", "someTestTopicName");
     }
 
     @Test
     public void shouldEmmitAuditEventBeforeUpdateWhenWrongPatchDataKeyProvided() {
         //given
-        RemoteServiceEndpoint remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock(), "/audit-events");
         operations.createGroup("testGroupName");
         Topic topic = topic("testGroupName", "testTopicName").withMaxMessageSize(1024).build();
         operations.createTopic(topicWithSchema(topic));
@@ -104,7 +98,7 @@ public class TopicManagementTest extends IntegrationTest {
 
         //then
         assertThat(
-                remoteService.waitAndGetLastRequest().getBodyAsString()
+                auditEvents.getLastRequest().getBodyAsString()
         ).contains("BEFORE_UPDATE", "testGroupName.testTopicName", "someValue", "2048");
     }
 

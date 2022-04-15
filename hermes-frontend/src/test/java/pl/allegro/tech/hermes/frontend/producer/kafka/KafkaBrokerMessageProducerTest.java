@@ -60,7 +60,8 @@ public class KafkaBrokerMessageProducerTest {
     @Before
     public void before() {
         cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
-        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, kafkaHeaderFactory, configFactory);
+        MessageToKafkaProducerRecordConverter messageConverter = new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, configFactory);
+        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, messageConverter);
     }
 
     @After

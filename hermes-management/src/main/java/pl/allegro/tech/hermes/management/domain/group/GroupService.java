@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
 import pl.allegro.tech.hermes.management.domain.Auditor;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.group.commands.CreateGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.group.commands.RemoveGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.group.commands.UpdateGroupRepositoryCommand;
@@ -55,16 +56,16 @@ public class GroupService {
     }
 
     public void createGroup(Group group,
-                            String createdBy,
+                            RequestUser createdBy,
                             CreatorRights<Group> creatorRights) {
         validator.checkCreation(group, creatorRights);
-        multiDcExecutor.execute(new CreateGroupRepositoryCommand(group));
-        auditor.objectCreated(createdBy, group);
+        multiDcExecutor.executeByUser(new CreateGroupRepositoryCommand(group), createdBy);
+        auditor.objectCreated(createdBy.getUsername(), group);
     }
 
-    public void removeGroup(String groupName, String removedBy) {
-        multiDcExecutor.execute(new RemoveGroupRepositoryCommand(groupName));
-        auditor.objectRemoved(removedBy, Group.from(groupName));
+    public void removeGroup(String groupName, RequestUser removedBy) {
+        multiDcExecutor.executeByUser(new RemoveGroupRepositoryCommand(groupName), removedBy);
+        auditor.objectRemoved(removedBy.getUsername(), Group.from(groupName));
     }
 
     public void checkGroupExists(String groupName) {
@@ -73,13 +74,13 @@ public class GroupService {
         }
     }
 
-    public void updateGroup(String groupName, PatchData patch, String modifiedBy) {
+    public void updateGroup(String groupName, PatchData patch, RequestUser modifiedBy) {
         try {
             Group retrieved = groupRepository.getGroupDetails(groupName);
             Group modified = Patch.apply(retrieved, patch);
-            multiDcExecutor.execute(new UpdateGroupRepositoryCommand(modified));
+            multiDcExecutor.executeByUser(new UpdateGroupRepositoryCommand(modified), modifiedBy);
             groupRepository.updateGroup(modified);
-            auditor.objectUpdated(modifiedBy, retrieved, modified);
+            auditor.objectUpdated(modifiedBy.getUsername(), retrieved, modified);
         } catch (MalformedDataException exception) {
             logger.warn("Problem with reading details of group {}.", groupName);
             throw exception;

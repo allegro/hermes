@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.parser.json
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.Query
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.ParseException
@@ -55,7 +56,7 @@ class JsonQueryParserTest extends Specification {
                 new MultifieldObject(firstField: "unavailable", secondField: "15"),
         ] as List<MultifieldObject>
 
-        queryParser = new JsonQueryParser(new ObjectMapper())
+        queryParser = new JsonQueryParser(new ObjectMapper().registerModule(new JavaTimeModule()))
     }
 
     def "should fail to parse query"() {

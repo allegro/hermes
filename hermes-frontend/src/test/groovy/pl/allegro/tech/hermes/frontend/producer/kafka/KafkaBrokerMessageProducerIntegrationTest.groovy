@@ -101,8 +101,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, configFactory),
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
-                new KafkaHeaderFactory(configFactory),
-                configFactory)
+                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(configFactory), configFactory))
     }
 
     def "should publish messages on only one partition for the same partition-key"() {

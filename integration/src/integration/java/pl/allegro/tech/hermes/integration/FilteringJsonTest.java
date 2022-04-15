@@ -44,7 +44,7 @@ public class FilteringJsonTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("filteredTopicJson", "topic").build());
         final Subscription subscription = subscription(topic.getName(), "subscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
                 .withFilter(MESSAGE_NAME_FILTER)
@@ -66,7 +66,7 @@ public class FilteringJsonTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("filteredChainedTopicJson", "topic").build());
         final Subscription subscription = subscription(topic.getName(), "subscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
                 .withFilter(MESSAGE_NAME_FILTER)
@@ -91,7 +91,7 @@ public class FilteringJsonTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("filteredJsonTopicHavingSubscriptionWithHeaders", "topic").build());
         final Subscription subscription = subscription(topic.getName(), "subscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withSubscriptionPolicy(SUBSCRIPTION_POLICY)
                 .withFilter(MESSAGE_NAME_FILTER)

@@ -9,6 +9,7 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ public abstract class ZookeeperBasedRepository {
 
     protected void ensureConnected() {
         if (!zookeeper.getZookeeperClient().isConnected()) {
-            throw new InternalProcessingException("Could not establish connection to a Zookeeper instance");
+            throw new RepositoryNotAvailableException("Could not establish connection to a Zookeeper instance");
         }
     }
 

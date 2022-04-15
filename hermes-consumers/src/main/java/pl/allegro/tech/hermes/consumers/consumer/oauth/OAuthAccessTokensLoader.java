@@ -12,8 +12,6 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthTokenRequest;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
-import javax.inject.Inject;
-
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.GrantType.USERNAME_PASSWORD;
 import static pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthTokenRequest.oAuthTokenRequest;
 
@@ -27,7 +25,6 @@ public class OAuthAccessTokensLoader extends CacheLoader<SubscriptionName, OAuth
 
     private final HermesMetrics metrics;
 
-    @Inject
     public OAuthAccessTokensLoader(SubscriptionRepository subscriptionRepository,
                                    OAuthProviderRepository oAuthProviderRepository,
                                    OAuthClient oAuthClient,

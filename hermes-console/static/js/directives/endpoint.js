@@ -14,6 +14,7 @@ directives.directive('endpoint', function () {
                     "http",
                     "service",
                     "jms",
+                    "googlepubsub",
                     "hdfs",
                     "zmq",
                     "ems"

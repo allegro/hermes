@@ -5,11 +5,9 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.queue.FullDrainMpscQueue;
+import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
 import pl.allegro.tech.hermes.consumers.queue.WaitFreeDrainMpscQueue;
-import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
-
-import javax.inject.Inject;
 
 public class OffsetQueue {
 
@@ -17,7 +15,6 @@ public class OffsetQueue {
 
     private final MpscQueue<SubscriptionPartitionOffset> commitOffsetsQueue;
 
-    @Inject
     public OffsetQueue(HermesMetrics metrics, ConfigFactory configFactory) {
         int queueSize = configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_QUEUES_SIZE);
 

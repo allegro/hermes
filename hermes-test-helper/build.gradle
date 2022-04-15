@@ -22,10 +22,10 @@ dependencies {
     }
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
     compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
-    compile group: 'org.assertj', name: 'assertj-core', version: '3.3.0'
+    compile group: 'org.assertj', name: 'assertj-core', version: versions.assertj
     compile group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: '1.5.5'
     compile group: 'junit', name: 'junit', version: '4.11'
-    compile group: 'org.testng', name: 'testng', version: '6.8.8'
+    compile group: 'org.testng', name: 'testng', version: '7.4.0'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
@@ -39,4 +39,5 @@ dependencies {
 
     compile group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
     compile group: 'org.testcontainers', name: 'toxiproxy', version: versions.testcontainers
+    compile group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
 }

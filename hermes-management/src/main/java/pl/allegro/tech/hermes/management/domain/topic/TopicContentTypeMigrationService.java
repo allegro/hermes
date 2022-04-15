@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 import java.time.Clock;
@@ -38,12 +39,12 @@ public class TopicContentTypeMigrationService {
         this.clock = clock;
     }
 
-    void notifySubscriptions(Topic topic, Instant beforeMigrationInstant) {
+    void notifySubscriptions(Topic topic, Instant beforeMigrationInstant, RequestUser requester) {
         waitUntilOffsetsAvailableOnAllKafkaTopics(topic, CHECK_OFFSETS_AVAILABLE_TIMEOUT);
         logger.info("Offsets available on all partitions of topic {}", topic.getQualifiedName());
         notSuspendedSubscriptionsForTopic(topic)
                 .map(Subscription::getName)
-                .forEach(sub -> notifySingleSubscription(topic, beforeMigrationInstant, sub));
+                .forEach(sub -> notifySingleSubscription(topic, beforeMigrationInstant, sub, requester));
     }
 
     void waitUntilAllSubscriptionsHasConsumersAssigned(Topic topic, Duration assignmentCompletedTimeout) {
@@ -57,8 +58,8 @@ public class TopicContentTypeMigrationService {
         }
     }
 
-    private void notifySingleSubscription(Topic topic, Instant beforeMigrationInstant, String subscriptionName) {
-        multiDCAwareService.moveOffset(topic, subscriptionName, beforeMigrationInstant.toEpochMilli(), false);
+    private void notifySingleSubscription(Topic topic, Instant beforeMigrationInstant, String subscriptionName, RequestUser requester) {
+        multiDCAwareService.moveOffset(topic, subscriptionName, beforeMigrationInstant.toEpochMilli(), false, requester);
     }
 
     private void waitUntilOffsetsAvailableOnAllKafkaTopics(Topic topic, Duration offsetsAvailableTimeout) {

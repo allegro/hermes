@@ -44,10 +44,6 @@ public class ModelAwareZookeeperNotifyingCacheFactory implements Factory<ModelAw
 
     @Override
     public void dispose(ModelAwareZookeeperNotifyingCache instance) {
-        try {
-            instance.stop();
-        } catch (Exception e) {
-            logger.warn("Failed to stop Zookeeper cache", e);
-        }
+        instance.stop();
     }
 }

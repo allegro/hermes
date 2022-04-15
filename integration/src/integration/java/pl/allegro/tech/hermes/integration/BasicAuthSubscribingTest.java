@@ -24,7 +24,7 @@ public class BasicAuthSubscribingTest extends IntegrationTest {
     public void shouldAuthorizeUsingBasicAuthWhenSubscriptionHasCredentials() {
         // given
         Topic topic = operations.buildTopic("basicAuthGroup", "topic");
-        operations.createSubscription(topic, "subscription", "http://user:password@localhost:" + HTTP_ENDPOINT_PORT + "/");
+        operations.createSubscription(topic, "subscription", "http://user:password@localhost:" + remoteService.getServicePort() + "/");
 
         TestMessage message = TestMessage.of("hello", "world");
         remoteService.expectMessages(message.body());

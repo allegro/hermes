@@ -28,6 +28,10 @@ with a given response code.
 
 - `avroTopic(String topicName, Response response)` - defines an Avro topic that when published on responds
   with a given response.
+- `avroTopic(String topicName, Response response, Schema schema, Class<T> clazz, Predicate<T> predicate)` - defines an 
+Avro topic with predicate to match request by field in schema
+- `jsonTopic(String topicName, Response response, Class<T> clazz, Predicate<T> predicate)` - defines a
+ Json topic with predicate to match request by field
 
 `Response` allows to define the following elements:
 - `statusCode` - a HTTP response code

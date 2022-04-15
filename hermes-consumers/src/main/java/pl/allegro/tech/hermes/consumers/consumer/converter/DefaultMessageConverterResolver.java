@@ -4,14 +4,11 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
-import javax.inject.Inject;
-
 public class DefaultMessageConverterResolver implements MessageConverterResolver {
 
     private final AvroToJsonMessageConverter avroToJsonMessageConverter;
     private final NoOperationMessageConverter noOperationMessageConverter;
 
-    @Inject
     public DefaultMessageConverterResolver(AvroToJsonMessageConverter avroToJsonMessageConverter,
                                            NoOperationMessageConverter noOperationMessageConverter) {
         this.avroToJsonMessageConverter = avroToJsonMessageConverter;

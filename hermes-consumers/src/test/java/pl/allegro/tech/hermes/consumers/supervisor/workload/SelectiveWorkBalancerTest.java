@@ -5,14 +5,13 @@ import com.google.common.collect.ImmutableMap;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
-import org.assertj.core.api.ListAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Constraints;
-import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.WorkBalancingResult;
+import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
 
 import java.util.List;
 import java.util.UUID;
@@ -299,12 +298,13 @@ public class SelectiveWorkBalancerTest {
         return SubscriptionName.fromString("tech.topic$s" + UUID.randomUUID().getMostSignificantBits());
     }
 
-    private ListAssert<String> assertThatSubscriptionIsAssignedTo(SubscriptionAssignmentView work, SubscriptionName sub, String... nodeIds) {
-        return assertThatSubscriptionIsAssignedTo(work, sub, asList(nodeIds));
+    private void assertThatSubscriptionIsAssignedTo(SubscriptionAssignmentView work, SubscriptionName sub, String... nodeIds) {
+        assertThatSubscriptionIsAssignedTo(work, sub, asList(nodeIds));
     }
 
-    private ListAssert<String> assertThatSubscriptionIsAssignedTo(SubscriptionAssignmentView work, SubscriptionName sub, List<String> nodeIds) {
-        return assertThat(work.getAssignmentsForSubscription(sub))
-                .extracting(SubscriptionAssignment::getConsumerNodeId).containsOnly(nodeIds.stream().toArray(String[]::new));
+    private void assertThatSubscriptionIsAssignedTo(SubscriptionAssignmentView work, SubscriptionName sub, List<String> nodeIds) {
+        assertThat(work.getAssignmentsForSubscription(sub))
+                .extracting(SubscriptionAssignment::getConsumerNodeId)
+                .containsOnly(nodeIds.toArray(String[]::new));
     }
 }

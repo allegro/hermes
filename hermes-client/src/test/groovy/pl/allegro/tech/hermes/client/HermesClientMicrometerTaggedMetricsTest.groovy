@@ -16,8 +16,8 @@ import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient
 
 class HermesClientMicrometerTaggedMetricsTest extends Specification {
 
-    private final MeterRegistry metrics = new SimpleMeterRegistry()
-    private final MetricsProvider metricsProvider = new MicrometerTaggedMetricsProvider(metrics)
+    private MeterRegistry metrics = new SimpleMeterRegistry()
+    private MetricsProvider metricsProvider = new MicrometerTaggedMetricsProvider(metrics)
 
     def "should measure publish latency"() {
         given:

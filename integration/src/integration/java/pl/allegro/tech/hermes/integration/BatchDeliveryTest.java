@@ -43,7 +43,7 @@ public class BatchDeliveryTest extends IntegrationTest {
     public void shouldDeliverMessagesInBatch() throws IOException {
         // given
         Topic topic = operations.buildTopic("batchSizeTest", "topic");
-        operations.createBatchSubscription(topic, HTTP_ENDPOINT_URL, buildBatchPolicy()
+        operations.createBatchSubscription(topic, remoteService.getUrl(), buildBatchPolicy()
                 .withBatchSize(2)
                 .withBatchTime(Integer.MAX_VALUE)
                 .withBatchVolume(1024)
@@ -62,7 +62,7 @@ public class BatchDeliveryTest extends IntegrationTest {
     public void shouldDeliverBatchInGivenTimePeriod() throws IOException {
         // given
         Topic topic = operations.buildTopic("deliverBatchInGivenTimePeriod", "topic");
-        operations.createBatchSubscription(topic, HTTP_ENDPOINT_URL, buildBatchPolicy()
+        operations.createBatchSubscription(topic, remoteService.getUrl(), buildBatchPolicy()
                 .withBatchSize(100)
                 .withBatchTime(1)
                 .withBatchVolume(1024)
@@ -82,7 +82,7 @@ public class BatchDeliveryTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("deliverBatchInGivenVolume", "topic");
         int batchVolumeThatFitsOneMessageOnly = 150;
-        operations.createBatchSubscription(topic, HTTP_ENDPOINT_URL, buildBatchPolicy()
+        operations.createBatchSubscription(topic, remoteService.getUrl(), buildBatchPolicy()
                 .withBatchSize(100)
                 .withBatchTime(Integer.MAX_VALUE)
                 .withBatchVolume(batchVolumeThatFitsOneMessageOnly)
@@ -105,7 +105,7 @@ public class BatchDeliveryTest extends IntegrationTest {
         Topic topic = topic("batch.avro.topic").build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
 
-        operations.createBatchSubscription(topic, HTTP_ENDPOINT_URL, buildBatchPolicy()
+        operations.createBatchSubscription(topic, remoteService.getUrl(), buildBatchPolicy()
                 .withBatchSize(2)
                 .withBatchTime(Integer.MAX_VALUE)
                 .withBatchVolume(1024)
@@ -131,7 +131,7 @@ public class BatchDeliveryTest extends IntegrationTest {
                 .withBatchVolume(1024)
                 .build();
         Subscription subscription = subscription(topic, "batchSubscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withSubscriptionPolicy(policy)
                 .withHeader("MY-HEADER", "myHeaderValue")
@@ -161,7 +161,7 @@ public class BatchDeliveryTest extends IntegrationTest {
                 .withBatchVolume(1024)
                 .build();
         Subscription subscription = subscription(topic, "batchSubscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withSubscriptionPolicy(policy)
                 .withAttachingIdentityHeadersEnabled(true)
@@ -189,7 +189,7 @@ public class BatchDeliveryTest extends IntegrationTest {
                 .withBatchVolume(1024)
                 .build();
         Subscription subscription = subscription(topic, "batchSubscription")
-                .withEndpoint(HTTP_ENDPOINT_URL)
+                .withEndpoint(remoteService.getUrl())
                 .withContentType(ContentType.JSON)
                 .withSubscriptionPolicy(policy)
                 .withAttachingIdentityHeadersEnabled(false)

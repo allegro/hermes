@@ -5,6 +5,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.PubSubEmulatorContainer;
 import org.testcontainers.lifecycle.Startable;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
@@ -16,6 +17,7 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.setup.HermesManagementInstance;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
+import pl.allegro.tech.hermes.test.helper.containers.GooglePubSubContainer;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
@@ -26,12 +28,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
-import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 @Listeners({RetryListener.class})
 public class HermesIntegrationEnvironment implements EnvironmentAware {
@@ -48,6 +47,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     public static final KafkaContainerCluster kafkaClusterTwo = new KafkaContainerCluster(NUMBER_OF_BROKERS_PER_CLUSTER);
     public static final ZookeeperContainer hermesZookeeperOne = new ZookeeperContainer();
     public static final ZookeeperContainer hermesZookeeperTwo = new ZookeeperContainer();
+    public static final GooglePubSubContainer googlePubSubEmulator = new GooglePubSubContainer();
     public static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
             .withKafkaCluster(kafkaClusterOne);
     public static HermesManagementInstance managementStarter;
@@ -64,13 +64,14 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         STARTERS.put(WireMockStarter.class, new WireMockStarter(HTTP_ENDPOINT_PORT));
         STARTERS.put(GraphiteHttpMockStarter.class, new GraphiteHttpMockStarter());
         STARTERS.put(OAuthServerMockStarter.class, new OAuthServerMockStarter());
+        STARTERS.put(AuditEventMockStarter.class, new AuditEventMockStarter());
         STARTERS.put(JmsStarter.class, new JmsStarter());
     }
 
     @BeforeSuite
     public void prepareEnvironment(ITestContext context) throws Exception {
         try {
-            Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne, hermesZookeeperTwo)
+            Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne, hermesZookeeperTwo, googlePubSubEmulator)
                     .parallel()
                     .forEach(Startable::start);
 
@@ -97,6 +98,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             consumersStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             consumersStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
             consumersStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+            consumersStarter.overrideProperty(Configs.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());
             consumersStarter.start();
 
             FrontendStarter frontendStarter = new FrontendStarter(FRONTEND_PORT);
@@ -107,13 +109,13 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             frontendStarter.start();
 
             for (ITestNGMethod method : context.getAllTestMethods()) {
-                method.setRetryAnalyzer(new Retry());
+                method.setRetryAnalyzerClass(Retry.class);
             }
 
             SharedServices.initialize(STARTERS, zookeeper);
             logger.info("Environment was prepared");
         } catch (Exception e) {
-            logger.error("Exception during environment preparation", e);
+            throw new RuntimeException("Exception during environment preparation", e);
         }
     }
 

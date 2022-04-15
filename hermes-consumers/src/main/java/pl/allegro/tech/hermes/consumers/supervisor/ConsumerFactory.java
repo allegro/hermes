@@ -21,7 +21,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactor
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import javax.inject.Inject;
 import java.time.Clock;
 
 public class ConsumerFactory {
@@ -42,7 +41,6 @@ public class ConsumerFactory {
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final Clock clock;
 
-    @Inject
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
                            HermesMetrics hermesMetrics,
                            ConfigFactory configFactory,

@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
-import javax.inject.Inject;
 import java.util.Optional;
 
 public class OAuthSubscriptionHandlerFactory {
@@ -19,7 +18,6 @@ public class OAuthSubscriptionHandlerFactory {
 
     private final OAuthTokenRequestRateLimiterFactory rateLimiterLoader;
 
-    @Inject
     public OAuthSubscriptionHandlerFactory(SubscriptionRepository subscriptionRepository,
                                            OAuthAccessTokens accessTokens,
                                            OAuthTokenRequestRateLimiterFactory rateLimiterLoader) {

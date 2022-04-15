@@ -36,7 +36,7 @@ rolesModule.factory('Visibility', ['DiscoveryService', '$resource', '$rootScope'
                     const rolesList = commaSeparatedRoles.toString().split(',');
                     $rootScope.admin = isAdmin(rolesList);
                     $rootScope.userHasSufficientPrivileges = hasSufficientPrivileges(rolesList);
-                    $rootScope.userWithoutAccess = !$rootScope.userHasSufficientPrivileges || $rootScope.readOnly;
+                    $rootScope.userWithoutAccess = $rootScope.readOnly ? !$rootScope.admin : !$rootScope.userHasSufficientPrivileges;
                 },
                 function() {
                     $rootScope.admin = false;

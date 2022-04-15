@@ -6,8 +6,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 
-import javax.inject.Inject;
-
 import static pl.allegro.tech.hermes.common.config.Configs.OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR;
 
 public class OAuthTokenRequestRateLimiterFactory {
@@ -16,7 +14,6 @@ public class OAuthTokenRequestRateLimiterFactory {
 
     private final double rateReductionFactor;
 
-    @Inject
     public OAuthTokenRequestRateLimiterFactory(OAuthProviderRepository oAuthProviderRepository,
                                                ConfigFactory configFactory) {
         this.oAuthProviderRepository = oAuthProviderRepository;

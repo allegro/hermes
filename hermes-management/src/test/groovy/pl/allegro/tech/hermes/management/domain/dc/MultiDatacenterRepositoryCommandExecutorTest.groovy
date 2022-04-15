@@ -1,10 +1,16 @@
 package pl.allegro.tech.hermes.management.domain.dc
 
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException
+import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser
+import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import spock.lang.Specification
 
 
 class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
+
+    private static ADMIN = new RequestUser("ADMIN", true)
+    private static NON_ADMIN = new RequestUser("USER", false)
 
     def "should execute backup if rollback is enabled"() {
         given:
@@ -35,7 +41,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], true)
+        def executor = buildExecutor([holder1, holder2], true, false)
 
         def command = Mock(RepositoryCommand)
 
@@ -52,7 +58,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], true)
+        def executor = buildExecutor([holder1, holder2], true, false)
 
         def command = Mock(RepositoryCommand)
         command.execute(holder2) >> { throw new Exception() }
@@ -71,7 +77,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         def holder1 = Stub(DatacenterBoundRepositoryHolder)
         def holder2 = Stub(DatacenterBoundRepositoryHolder)
 
-        def executor = buildExecutor([holder1, holder2], false)
+        def executor = buildExecutor([holder1, holder2], false, false)
 
         def command = Mock(RepositoryCommand)
         command.execute(holder2) >> { throw new Exception() }
@@ -85,15 +91,94 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         thrown InternalProcessingException
     }
 
-    private buildExecutor(boolean rollbackEnabled) {
-        def repositoryManager = Stub(RepositoryManager)
-        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled)
+    def "should rollback and fail when executing user is admin and mode is not read only"() {
+        given:
+        def holder1 = Stub(DatacenterBoundRepositoryHolder)
+        def holder2 = Stub(DatacenterBoundRepositoryHolder)
+
+        def executor = buildExecutor([holder1, holder2], true, false)
+
+        def command = Mock(RepositoryCommand)
+        command.execute(holder2) >> { throw new Exception() }
+
+        when:
+        executor.executeByUser(command, ADMIN)
+
+        then:
+        1 * command.rollback(holder1)
+
+        thrown InternalProcessingException
     }
 
-    private buildExecutor(List dcHolders, boolean rollbackEnabled) {
+    def "should not rollback and should fail when executing user is admin and mode is read only and general fail occurs"() {
+        given:
+        def holder1 = Stub(DatacenterBoundRepositoryHolder)
+        def holder2 = Stub(DatacenterBoundRepositoryHolder)
+
+        def executor = buildExecutor([holder1, holder2], false, true)
+
+        def command = Mock(RepositoryCommand)
+        command.execute(holder2) >> { throw new Exception() }
+
+        when:
+        executor.executeByUser(command, ADMIN)
+
+        then:
+        0 * command.rollback(holder1)
+
+        thrown InternalProcessingException
+    }
+
+    def "should not rollback and not fail when executing user is admin and Zookeper node is broken"() {
+        given:
+        def holder1 = Stub(DatacenterBoundRepositoryHolder)
+        def holder2 = Stub(DatacenterBoundRepositoryHolder)
+
+        def executor = buildExecutor([holder1, holder2], true, true)
+
+        def command = Mock(RepositoryCommand)
+        command.execute(holder2) >> { throw new RepositoryNotAvailableException("") }
+
+        when:
+        executor.executeByUser(command, ADMIN)
+
+        then:
+        0 * command.rollback(holder1)
+    }
+
+    def "should use executor rollback and fail when executing user is not admin"() {
+        given:
+        def isRollbackEnabled = true
+        def holder1 = Stub(DatacenterBoundRepositoryHolder)
+        def holder2 = Stub(DatacenterBoundRepositoryHolder)
+
+        def executor = buildExecutor([holder1, holder2], isRollbackEnabled, false)
+
+        def command = Mock(RepositoryCommand)
+        command.execute(holder2) >> { throw new Exception() }
+
+        when:
+        executor.executeByUser(command, NON_ADMIN)
+
+        then:
+        1 * command.rollback(holder1)
+
+        thrown InternalProcessingException
+    }
+
+    private buildExecutor(boolean rollbackEnabled) {
+        def repositoryManager = Stub(RepositoryManager)
+        def modeService = Stub(ModeService)
+        modeService.isReadOnlyEnabled() >> false
+        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled, modeService)
+    }
+
+    private buildExecutor(List dcHolders, boolean rollbackEnabled, boolean isReadOnly) {
         def repositoryManager = Stub(RepositoryManager)
         repositoryManager.getRepositories(_) >> dcHolders
-        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled)
+        def modeService = Stub(ModeService)
+        modeService.isReadOnlyEnabled() >> isReadOnly
+        return new MultiDatacenterRepositoryCommandExecutor(repositoryManager, rollbackEnabled, modeService)
     }
 
 }

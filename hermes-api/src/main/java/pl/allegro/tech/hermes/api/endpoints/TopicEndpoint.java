@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
+import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -62,6 +63,11 @@ public interface TopicEndpoint {
     @Produces(APPLICATION_JSON)
     @Path("/{topicName}/metrics")
     TopicMetrics getMetrics(@PathParam("topicName") String qualifiedTopicName);
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @Path("/{topicName}/preview")
+    List<MessageTextPreview> getPreview(@PathParam("topicName") String qualifiedTopicName);
 
     @POST
     @Consumes(APPLICATION_JSON)

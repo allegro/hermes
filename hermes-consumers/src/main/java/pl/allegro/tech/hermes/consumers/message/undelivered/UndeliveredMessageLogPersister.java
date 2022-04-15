@@ -5,7 +5,6 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 
-import javax.inject.Inject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -15,9 +14,8 @@ public class UndeliveredMessageLogPersister {
 
     private final int periodMs;
     private final UndeliveredMessageLog undeliveredMessageLog;
-    private ScheduledExecutorService scheduledExecutorService;
+    private final ScheduledExecutorService scheduledExecutorService;
 
-    @Inject
     public UndeliveredMessageLogPersister(UndeliveredMessageLog undeliveredMessageLog, ConfigFactory configFactory) {
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.periodMs = configFactory.getIntProperty(Configs.UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS);

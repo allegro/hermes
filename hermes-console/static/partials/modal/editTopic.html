@@ -170,7 +170,7 @@
                     <a href="http://hermes-pubsub.rtfd.org/en/latest/user/publishing-avro/" target="_blank">AVRO schema</a>
                 </label>
                 <div class="col-md-9">
-                    <div class="alert alert-info">
+                    <div class="alert alert-info" ng-hide="config.avroContentTypeMetadataRequired === false">
                         Schema definition <b>must contain</b> an additional field for Hermes internal use:<br>
                         <pre>
 {

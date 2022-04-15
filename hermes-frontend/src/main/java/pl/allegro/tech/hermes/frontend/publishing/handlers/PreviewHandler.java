@@ -21,7 +21,7 @@ public class PreviewHandler implements HttpHandler {
         try {
             next.handleRequest(exchange);
         } finally {
-            messagePreviewLog.add(attachment.getTopic().getName(), attachment.getMessage());
+            messagePreviewLog.add(attachment.getTopic(), attachment.getMessage());
         }
     }
 }

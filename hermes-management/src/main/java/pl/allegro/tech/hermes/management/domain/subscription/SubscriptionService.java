@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.Auditor;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
@@ -123,15 +124,15 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    public void createSubscription(Subscription subscription, String createdBy, CreatorRights creatorRights, String qualifiedTopicName) {
-        auditor.beforeObjectCreation(createdBy, subscription);
+    public void createSubscription(Subscription subscription, RequestUser createdBy, CreatorRights creatorRights, String qualifiedTopicName) {
+        auditor.beforeObjectCreation(createdBy.getUsername(), subscription);
         subscriptionValidator.checkCreation(subscription, creatorRights);
 
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
         multiDCAwareService.createConsumerGroups(topic, subscription);
 
-        multiDcExecutor.execute(new CreateSubscriptionRepositoryCommand(subscription));
-        auditor.objectCreated(createdBy, subscription);
+        multiDcExecutor.executeByUser(new CreateSubscriptionRepositoryCommand(subscription), createdBy);
+        auditor.objectCreated(createdBy.getUsername(), subscription);
         subscriptionOwnerCache.onCreatedSubscription(subscription);
     }
 
@@ -175,19 +176,19 @@ public class SubscriptionService {
         return states;
     }
 
-    public void removeSubscription(TopicName topicName, String subscriptionName, String removedBy) {
-        auditor.beforeObjectRemoval(removedBy, Subscription.class.getSimpleName(), subscriptionName);
+    public void removeSubscription(TopicName topicName, String subscriptionName, RequestUser removedBy) {
+        auditor.beforeObjectRemoval(removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);
         Subscription subscription = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
-        multiDcExecutor.execute(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName));
-        auditor.objectRemoved(removedBy, subscription);
+        multiDcExecutor.executeByUser(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
+        auditor.objectRemoved(removedBy.getUsername(), subscription);
         subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
     }
 
     public void updateSubscription(TopicName topicName,
                                    String subscriptionName,
                                    PatchData patch,
-                                   String modifiedBy) {
-        auditor.beforeObjectUpdate(modifiedBy, Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patch);
+                                   RequestUser modifiedBy) {
+        auditor.beforeObjectUpdate(modifiedBy.getUsername(), Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patch);
 
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription.State oldState = retrieved.getState();
@@ -197,8 +198,8 @@ public class SubscriptionService {
         subscriptionOwnerCache.onUpdatedSubscription(retrieved, updated);
 
         if (!retrieved.equals(updated)) {
-            multiDcExecutor.execute(new UpdateSubscriptionRepositoryCommand(updated));
-            auditor.objectUpdated(modifiedBy, retrieved, updated);
+            multiDcExecutor.executeByUser(new UpdateSubscriptionRepositoryCommand(updated), modifiedBy);
+            auditor.objectUpdated(modifiedBy.getUsername(), retrieved, updated);
         }
     }
 
@@ -208,15 +209,15 @@ public class SubscriptionService {
         }
     }
 
-    public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state, String modifiedBy) {
+    public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state, RequestUser modifiedBy) {
         if (state != Subscription.State.PENDING) {
             PatchData patchData = PatchData.patchData().set("state", state).build();
-            auditor.beforeObjectUpdate(modifiedBy, Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patchData);
+            auditor.beforeObjectUpdate(modifiedBy.getUsername(), Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patchData);
             Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
             if (!retrieved.getState().equals(state)) {
                 Subscription updated = Patch.apply(retrieved, patchData);
-                multiDcExecutor.execute(new UpdateSubscriptionRepositoryCommand(updated));
-                auditor.objectUpdated(modifiedBy, retrieved, updated);
+                multiDcExecutor.executeByUser(new UpdateSubscriptionRepositoryCommand(updated), modifiedBy);
+                auditor.objectUpdated(modifiedBy.getUsername(), retrieved, updated);
             }
         }
     }

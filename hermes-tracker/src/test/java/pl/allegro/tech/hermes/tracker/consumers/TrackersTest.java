@@ -1,40 +1,38 @@
 package pl.allegro.tech.hermes.tracker.consumers;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TrackingMode;
 
+import java.util.ArrayList;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.TrackingMode.TRACKING_OFF;
+import static pl.allegro.tech.hermes.api.TrackingMode.TRACK_ALL;
+import static pl.allegro.tech.hermes.api.TrackingMode.TRACK_DISCARDED_ONLY;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
-@RunWith(MockitoJUnitRunner.class)
 public class TrackersTest {
-
-    @Mock
-    SendingMessageTracker messageDeliveryTracker;
-
-    @Mock
-    NoOperationSendingTracker noOperationDeliveryTracker;
-
-    @Mock
-    DiscardedSendingTracker discardedSendingTracker;
-
-    @InjectMocks
-    Trackers trackers;
 
     @Test
     public void shouldDispatchCorrectTracker() {
-        assertThat(trackers.get(subscription("group.topic", "sub").withTrackingMode(TrackingMode.TRACKING_OFF)
-                .build())).isEqualTo(noOperationDeliveryTracker);
-        assertThat(trackers.get(subscription("group.topic", "sub")
-                .withTrackingMode(TrackingMode.TRACK_DISCARDED_ONLY).build())).isEqualTo(discardedSendingTracker);
+        // given
+        Trackers trackers = new Trackers(new ArrayList<>());
 
+        // when
+        SendingTracker trackingOffTracker = trackers.get(subscriptionWithTrackingMode(TRACKING_OFF));
+        SendingTracker trackDiscardedOnlyTracker = trackers.get(subscriptionWithTrackingMode(TRACK_DISCARDED_ONLY));
+        SendingTracker trackAllTracker = trackers.get(subscriptionWithTrackingMode(TRACK_ALL));
 
-        assertThat(trackers.get(subscription("group.topic", "sub").withTrackingMode(TrackingMode.TRACK_ALL)
-                .build())).isEqualTo(messageDeliveryTracker);
+        // then
+        assertThat(trackingOffTracker.getClass()).isEqualTo(NoOperationSendingTracker.class);
+        assertThat(trackDiscardedOnlyTracker.getClass()).isEqualTo(DiscardedSendingTracker.class);
+        assertThat(trackAllTracker.getClass()).isEqualTo(SendingMessageTracker.class);
     }
 
+    private static Subscription subscriptionWithTrackingMode(TrackingMode trackingMode) {
+        return subscription("group.topic", "sub")
+                .withTrackingMode(trackingMode)
+                .build();
+    }
 }

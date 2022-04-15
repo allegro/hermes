@@ -98,7 +98,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         Topic topic = randomTopic("backupGroup", "topic").withContentType(ContentType.JSON).build();
         backupFileWithOneMessage(tempDirPath, topic);
 
-        operations.createSubscription(operations.buildTopic(topic), "subscription", HTTP_ENDPOINT_URL);
+        operations.createSubscription(operations.buildTopic(topic), "subscription", remoteService.getUrl());
 
         remoteService.expectMessages("message");
 

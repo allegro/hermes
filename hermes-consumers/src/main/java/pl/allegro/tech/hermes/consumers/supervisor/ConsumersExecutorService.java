@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcess;
 
-import javax.inject.Inject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
@@ -20,7 +19,6 @@ public class ConsumersExecutorService {
     private static final Logger logger = LoggerFactory.getLogger(ConsumersExecutorService.class);
     private final ThreadPoolExecutor executor;
 
-    @Inject
     public ConsumersExecutorService(ConfigFactory configFactory, HermesMetrics hermesMetrics) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
             .setNameFormat("Consumer-%d")

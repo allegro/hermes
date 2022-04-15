@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.test.helper.builder;
 
 import pl.allegro.tech.hermes.api.*;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +84,10 @@ public class SubscriptionBuilder {
         return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, EndpointAddress.of(endpoint));
     }
 
+    public static SubscriptionBuilder subscription(String topicQualifiedName, String subscriptionName, URI endpoint) {
+        return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, EndpointAddress.of(endpoint));
+    }
+
     public static SubscriptionBuilder subscription(String topicQualifiedName, String subscriptionName, EndpointAddress endpoint) {
         return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, endpoint);
     }
@@ -112,6 +117,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withEndpoint(String endpoint) {
         this.endpoint = EndpointAddress.of(endpoint);
+        return this;
+    }
+
+    public SubscriptionBuilder withEndpoint(URI endpoint) {
+        this.endpoint = EndpointAddress.of(endpoint.toString());
         return this;
     }
 

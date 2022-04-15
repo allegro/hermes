@@ -9,7 +9,7 @@ public class RetryListener extends TestListenerAdapter {
 
     @Override
     public void onTestFailure(ITestResult result) {
-        IRetryAnalyzer analyzer = result.getMethod().getRetryAnalyzer();
+        IRetryAnalyzer analyzer = result.getMethod().getRetryAnalyzer(result);
         if (analyzer != null && analyzer instanceof Retry) {
             result.setStatus(((Retry) analyzer).isRetryAvailable()? ITestResult.SKIP : ITestResult.FAILURE);
             Reporter.setCurrentTestResult(result);

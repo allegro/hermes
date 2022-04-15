@@ -325,6 +325,7 @@ public class ConsoleProperties {
         private String buttonsExtension = "";
         private boolean removeSchema = false;
         private boolean schemaIdAwareSerializationEnabled = false;
+        private boolean avroContentTypeMetadataRequired = true;
         private List<TopicContentType> contentTypes = Lists.newArrayList(
                 new TopicContentType("AVRO", "AVRO"),
                 new TopicContentType("JSON", "JSON")
@@ -407,6 +408,14 @@ public class ConsoleProperties {
 
         public void setSchemaIdAwareSerializationEnabled(boolean schemaIdAwareSerializationEnabled) {
             this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
+        }
+
+        public boolean isAvroContentTypeMetadataRequired() {
+            return avroContentTypeMetadataRequired;
+        }
+
+        public void setAvroContentTypeMetadataRequired(boolean avroContentTypeMetadataRequired) {
+            this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
         }
 
         public boolean isReadOnlyModeEnabled() {

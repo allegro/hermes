@@ -36,6 +36,11 @@ class InMemoryLogRepository implements LogRepository {
         filtered.add(message)
     }
 
+    @Override
+    void close() {
+
+    }
+
     boolean hasSuccessfulLog(String kafkaTopic, int partition, long offset) {
         return logContains(successful, kafkaTopic, partition, offset)
     }
