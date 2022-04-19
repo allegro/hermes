@@ -60,7 +60,7 @@ Create any type of runnable (*distZip* or *fatJar*) and deploy it.
 
 ### Consumers
 
-The Consumers module is a [Spring Boot](http://projects.spring.io/spring-boot/) project. Thus, it can be extended
+The Consumers module is a [Spring Boot](https://spring.io/projects/spring-boot/) project. Thus, it can be extended
 like any other Spring application.
 
 ```groovy
@@ -86,7 +86,7 @@ Create any type of runnable (*distZip* or *fatJar*) and deploy it.
 
 ### Management
 
-Hermes management is a simple [Spring Boot](http://projects.spring.io/spring-boot/) project. Thus, it can be extended
+Hermes management is a simple [Spring Boot](https://spring.io/projects/spring-boot/) project. Thus, it can be extended
 like any other Spring application.
 
 ```groovy
