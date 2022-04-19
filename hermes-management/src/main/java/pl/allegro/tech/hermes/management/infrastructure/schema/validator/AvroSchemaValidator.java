@@ -3,7 +3,9 @@ package pl.allegro.tech.hermes.management.infrastructure.schema.validator;
 import org.apache.commons.io.IOUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.management.config.TopicProperties;
 
 import java.io.IOException;
 
@@ -13,6 +15,17 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 @Component
 public class AvroSchemaValidator implements SchemaValidator {
 
+    private final boolean metadataFieldIsRequired;
+
+    public AvroSchemaValidator(boolean metadataFieldIsRequired) {
+        this.metadataFieldIsRequired = metadataFieldIsRequired;
+    }
+
+    @Autowired
+    public AvroSchemaValidator(TopicProperties topicProperties) {
+        this(topicProperties.isAvroContentTypeMetadataRequired());
+    }
+
     private static final Schema HERMES_METADATA_SCHEMA =
             metadataFieldSchema(readAndParseResourceSchema("/avro-schema-metadata-field.avsc"));
 
@@ -20,7 +33,9 @@ public class AvroSchemaValidator implements SchemaValidator {
     public void check(String schema) throws InvalidSchemaException {
         checkArgument(!isNullOrEmpty(schema), "Message schema cannot be empty");
         Schema parsedSchema = parseSchema(schema);
-        checkHermesMetadataField(parsedSchema);
+        if (metadataFieldIsRequired) {
+            checkHermesMetadataField(parsedSchema);
+        }
     }
 
     private void checkHermesMetadataField(Schema parsedSchema) {

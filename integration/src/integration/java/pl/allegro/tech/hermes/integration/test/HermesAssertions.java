@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.test;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.google.pubsub.v1.PubsubMessage;
 import org.apache.curator.framework.CuratorFramework;
 import org.assertj.core.api.Assertions;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -23,5 +24,9 @@ public final class HermesAssertions extends Assertions {
 
     public static JmsMessageAssertion assertThat(Message message) {
         return new JmsMessageAssertion(message);
+    }
+
+    public static GooglePubSubAssertion assertThat(PubsubMessage message) {
+        return new GooglePubSubAssertion(message);
     }
 }

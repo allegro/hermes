@@ -89,6 +89,7 @@ public class ConsumerMessageSender {
 
     public void shutdown() {
         running = false;
+        messageSender.stop();
         retrySingleThreadExecutor.shutdownNow();
         try {
             retrySingleThreadExecutor.awaitTermination(1, TimeUnit.MINUTES);
@@ -158,6 +159,7 @@ public class ConsumerMessageSender {
 
         if (endpointUpdated || subscriptionPolicyUpdated || endpointAddressResolverMetadataChanged
                 || oAuthPolicyChanged || httpClientChanged) {
+            this.messageSender.stop();
             this.messageSender = messageSenderFactory.create(newSubscription);
         }
     }

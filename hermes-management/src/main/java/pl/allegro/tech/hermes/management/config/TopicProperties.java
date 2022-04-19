@@ -34,6 +34,8 @@ public class TopicProperties {
 
     private boolean defaultSchemaIdAwareSerializationEnabled = false;
 
+    private boolean avroContentTypeMetadataRequired = true;
+
     /**
      * Introduced in Kafka 0.11.0.0 mechanism of splitting oversized batches does not respect configuration of maximum
      * message size which broker can accept. It can cause an infinite loop of resending the same records in one batch.
@@ -142,4 +144,13 @@ public class TopicProperties {
     public boolean isDefaultSchemaIdAwareSerializationEnabled() {
         return defaultSchemaIdAwareSerializationEnabled;
     }
+
+    public boolean isAvroContentTypeMetadataRequired() {
+        return avroContentTypeMetadataRequired;
+    }
+
+    public void setAvroContentTypeMetadataRequired(boolean avroContentTypeMetadataRequired) {
+        this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
+    }
+
 }

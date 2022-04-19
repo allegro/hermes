@@ -1,3 +1,50 @@
+## 1.12.3 (13.04.2022)
+
+### Enhancements
+
+#### ([1472](https://github.com/allegro/hermes/pull/1472)) Allow matching avro field while defining wiremock stubs
+
+Thanks @sobelek for this contribution!
+
+#### ([1480](https://github.com/allegro/hermes/pull/1480)) Refactor: Message to kafka ProducerRecord conversion logic extracted from KafkaBrokerMessageProducer
+#### ([1477](https://github.com/allegro/hermes/pull/1477)) Feature flag determining if __metadata field is required for avro content type
+
+Thanks @arkadius for these contributions!
+
+#### ([1486](https://github.com/allegro/hermes/pull/1486)) Added audit logs for subscription retransmission
+
+### Fixes
+
+#### ([1491](https://github.com/allegro/hermes/pull/1491)) Topic owner is not allowed to create a subscription with any owner
+
+## 1.12.2 (08.04.2022)
+
+### Enhancements
+
+#### ([1485](https://github.com/allegro/hermes/pull/1485)) Refactor endpoint address validator so we can add custom validator
+
+## 1.12.1 (29.03.2022)
+
+### Enhancements
+
+#### ([1482](https://github.com/allegro/hermes/pull/1482)) Added EndpointOwnershipValidator
+
+### Fixes
+
+#### ([1476](https://github.com/allegro/hermes/pull/1476)) Fixed unstable tests
+#### ([1475](https://github.com/allegro/hermes/pull/1475)) Fix preview for avro topic with schemaId aware serialization
+
+Thanks @dswiecki for this contribution!
+
+## 1.12.0 (18.03.2022)
+
+## Enhancements
+
+#### ([1474](https://github.com/allegro/hermes/pull/1474)) Updated json2avro converter to 0.2.13
+#### ([1463](https://github.com/allegro/hermes/pull/1463)) Added integration with Google PubSub in hermes-consumers
+
+Thanks @wikp for this contribution!
+
 ## 1.11.2 (28.02.2022)
 
 ### Fixes

@@ -8,12 +8,7 @@ dependencies {
     compile project(':hermes-schema')
 
     compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
-    if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-        compile group: 'org.eclipse.jetty', name: 'jetty-client', version: versions.jetty
-        compile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: versions.jetty
-    } else {
-        compile group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
-    }
+    compile group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
     compile group: 'org.eclipse.jetty.http2', name: 'http2-http-client-transport', version: versions.jetty
 
     compile group: 'org.jctools', name: 'jctools-core', version: '1.2'
@@ -21,7 +16,7 @@ dependencies {
     compile group: 'javax.jms', name: 'javax.jms-api', version: '2.0'
     compile group: 'joda-time', name: 'joda-time', version: '2.5'
 
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
     compile(group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0') {
         exclude module: 'guava'
     }
@@ -31,6 +26,8 @@ dependencies {
     compile(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
+
+    compile(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
 
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator

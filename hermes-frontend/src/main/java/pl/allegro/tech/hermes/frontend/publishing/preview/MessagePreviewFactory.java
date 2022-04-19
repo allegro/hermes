@@ -24,8 +24,8 @@ public class MessagePreviewFactory {
         converter = new MessageToJsonConverter();
     }
 
-    public MessagePreview create(Message message) {
-        byte[] content = converter.convert(message);
+    public MessagePreview create(Message message, boolean schemaIdAwareSerializationEnabled) {
+        byte[] content = converter.convert(message, schemaIdAwareSerializationEnabled);
         final boolean truncated = (content.length > maxMessagePreviewLength);
 
         if (truncated) {

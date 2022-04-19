@@ -16,7 +16,7 @@ import java.time.Duration
 import java.time.Instant
 
 import static java.time.Instant.now
-import static pl.allegro.tech.hermes.mock.Response.Builder.aResponse
+import static pl.allegro.tech.hermes.mock.exchange.Response.Builder.aResponse
 
 class HermesMockAvroTest extends Specification {
 
@@ -35,6 +35,41 @@ class HermesMockAvroTest extends Specification {
 
     def setup() {
         hermes.resetReceivedRequest()
+        hermes.resetMappings()
+    }
+
+    def "should receive an Avro message matched by pattern"() {
+        given: "define wiremock response for matching avro pattern"
+            def topicName = "my-test-avro-topic"
+            hermes.define().avroTopic(topicName,
+                    aResponse().withStatusCode(201).build(),
+                    schema,
+                    TestMessage,
+                    {it -> it.key == "test-key-pattern"})
+
+        when: "message with matching pattern is published on topic"
+            def message = new TestMessage("test-key-pattern", "test-key-value")
+            def response = publish(topicName, message)
+
+        then: "check for any single message on the topic and check for correct response"
+            hermes.expect().singleMessageOnTopic(topicName)
+            response.status == HttpStatus.SC_CREATED
+    }
+    def "should not match avro pattern"() {
+        given: "define wiremock response for matching avro pattern"
+            def topicName = "my-test-avro-topic"
+            hermes.define().avroTopic(topicName,
+                    aResponse().withStatusCode(201).build(),
+                    schema,
+                    TestMessage,
+                    {it -> it.key == "non-existing-key"})
+
+        when: "message with non-matching pattern is published on topic"
+            def message = new TestMessage("test-key-pattern", "test-key-value")
+            def response = publish(topicName, message)
+
+        then: "check for correct response status"
+            response.status == HttpStatus.SC_NOT_FOUND
     }
 
     def "should receive an Avro message"() {

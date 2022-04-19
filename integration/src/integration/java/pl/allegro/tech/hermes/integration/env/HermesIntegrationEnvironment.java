@@ -5,6 +5,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.PubSubEmulatorContainer;
 import org.testcontainers.lifecycle.Startable;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
@@ -16,6 +17,7 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.setup.HermesManagementInstance;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
+import pl.allegro.tech.hermes.test.helper.containers.GooglePubSubContainer;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
@@ -52,6 +54,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     public static final KafkaContainerCluster kafkaClusterTwo = new KafkaContainerCluster(NUMBER_OF_BROKERS_PER_CLUSTER);
     public static final ZookeeperContainer hermesZookeeperOne = new ZookeeperContainer();
     public static final ZookeeperContainer hermesZookeeperTwo = new ZookeeperContainer();
+    public static final GooglePubSubContainer googlePubSubEmulator = new GooglePubSubContainer();
     public static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
             .withKafkaCluster(kafkaClusterOne);
     public static HermesManagementInstance managementStarter;
@@ -75,7 +78,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     @BeforeSuite
     public void prepareEnvironment(ITestContext context) throws Exception {
         try {
-            Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne, hermesZookeeperTwo)
+            Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne, hermesZookeeperTwo, googlePubSubEmulator)
                     .parallel()
                     .forEach(Startable::start);
 
@@ -102,6 +105,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             consumersStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             consumersStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
             consumersStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+            consumersStarter.overrideProperty(Configs.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());
             consumersStarter.start();
 
             FrontendStarter frontendStarter = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT);

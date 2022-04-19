@@ -38,6 +38,10 @@ public final class MessageBuilder {
     private MessageBuilder() {
     }
 
+    public static MessageBuilder newBuilder() {
+        return new MessageBuilder();
+    }
+
     public static Message testMessage() {
         return MessageBuilder.withTestMessage().build();
     }

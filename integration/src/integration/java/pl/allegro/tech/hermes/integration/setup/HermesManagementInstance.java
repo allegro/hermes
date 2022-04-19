@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
@@ -44,6 +45,7 @@ public class HermesManagementInstance {
         private int replicationFactor = 1;
         private boolean uncleanLeaderElectionEnabled = false;
         private String schemaRegistry;
+        private boolean avroContentTypeMetadataRequired = true;
 
         public Starter port(int port) {
             this.port = port;
@@ -76,6 +78,12 @@ public class HermesManagementInstance {
             return this;
         }
 
+        public Starter avroContentTypeMetadataRequired(boolean avroContentTypeMetadataRequired) {
+            this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
+            return this;
+        }
+
+
         public HermesManagementInstance start() {
             try {
                 startManagement();
@@ -89,7 +97,7 @@ public class HermesManagementInstance {
         }
 
         private void waitUntilStructureInZookeeperIsCreated(CuratorFramework zookeeper) {
-            waitAtMost(adjust(90), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath("/hermes/groups") != null);
+            waitAtMost(adjust(120), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath("/hermes/groups") != null);
         }
 
         private void startManagement() {
@@ -115,6 +123,7 @@ public class HermesManagementInstance {
             }
             args.add("--topic.replicationFactor=" + replicationFactor);
             args.add("--topic.uncleanLeaderElectionEnabled=" + uncleanLeaderElectionEnabled);
+            args.add("--topic.avroContentTypeMetadataRequired=" + avroContentTypeMetadataRequired);
             args.add("--schema.repository.serverUrl=" + schemaRegistry);
             HermesManagement.main(args.toArray(new String[0]));
         }
@@ -130,7 +139,11 @@ public class HermesManagementInstance {
 
         private CuratorFramework startZookeeperClient() {
             final CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-                    .connectString(zkClusters.get(0).getConnectionString())
+                    .connectString(
+                            zkClusters.stream()
+                                    .map(ClusterInfo::getConnectionString)
+                                    .collect(Collectors.joining(","))
+                    )
                     .retryPolicy(new ExponentialBackoffRetry(1000, 3))
                     .build();
             zookeeperClient.start();
