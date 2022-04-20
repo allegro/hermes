@@ -5,7 +5,13 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.producer.kafka.*;
+import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
 
 @Configuration
 public class FrontendProducerConfiguration {
@@ -31,5 +37,10 @@ public class FrontendProducerConfiguration {
     @Bean(destroyMethod = "close")
     public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(ConfigFactory configFactory) {
         return new KafkaTopicMetadataFetcherFactory(configFactory).provide();
+    }
+
+    @Bean
+    public MessageToKafkaProducerRecordConverter messageToKafkaProducerRecordConverter(KafkaHeaderFactory kafkaHeaderFactory, ConfigFactory configFactory) {
+        return new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, configFactory);
     }
 }
