@@ -28,4 +28,5 @@ public class AllTopicClientsEndpoint {
     public List<String> getTopicClients(@PathParam("topic") String topic) {
         return allTopicClientsService.getAllClientsByTopic(fromQualifiedName(topic));
     }
+
 }
