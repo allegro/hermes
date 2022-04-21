@@ -36,14 +36,14 @@ public class MessageEndProcessor {
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
         trackers.get(attachment.getTopic()).logPublished(
                 attachment.getMessageId(), attachment.getTopic().getName(), readHostAndPort(exchange),
-                extraHeadersExtractor.extractExtraRequestHeaders(exchange));
+                extraHeadersExtractor.extractHeadersToLog(exchange));
         sendResponse(exchange, attachment, StatusCodes.CREATED);
         attachment.getCachedTopic().incrementPublished();
     }
 
     public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
         trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(),
-                readHostAndPort(exchange), message.getExtraRequestHeaders());
+                readHostAndPort(exchange), extraHeadersExtractor.extractHeadersToLog(exchange));
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
         cachedTopic.incrementPublished();
     }
@@ -57,7 +57,7 @@ public class MessageEndProcessor {
         Topic topic = attachment.getTopic();
         brokerListeners.onTimeout(attachment.getMessage(), topic);
         trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName(), readHostAndPort(exchange),
-                extraHeadersExtractor.extractExtraRequestHeaders(exchange));
+                extraHeadersExtractor.extractHeadersToLog(exchange));
         handleRaceConditionBetweenAckAndTimeout(attachment, topic);
         sendResponse(exchange, attachment, StatusCodes.ACCEPTED);
     }

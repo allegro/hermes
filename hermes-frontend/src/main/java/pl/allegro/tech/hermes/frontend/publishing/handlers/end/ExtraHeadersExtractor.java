@@ -16,7 +16,7 @@ public class ExtraHeadersExtractor {
         this.headersPropagator = headersPropagator;
     }
 
-    public Map<String, String> extractExtraRequestHeaders(HttpServerExchange exchange) {
-        return headersPropagator.extract(toHeadersMap(exchange.getRequestHeaders()));
+    public Map<String, String> extractHeadersToLog(HttpServerExchange exchange) {
+        return headersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders()));
     }
 }
