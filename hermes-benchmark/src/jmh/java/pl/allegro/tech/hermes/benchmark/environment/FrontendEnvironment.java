@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
+import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.io.IOException;
 
@@ -36,7 +37,7 @@ public class FrontendEnvironment {
     private static final Logger logger = LoggerFactory.getLogger(FrontendEnvironment.class);
     private static final int MAX_CONNECTIONS_PER_ROUTE = 200;
 
-    private HermesFrontend hermesFrontend;
+    private FrontendStarter frontendStarter;
     private ZookeeperContainer zookeeperContainer;
     private KafkaContainerCluster kafkaContainerCluster;
     private HermesPublisher publisher;
@@ -58,22 +59,17 @@ public class FrontendEnvironment {
         kafkaContainerCluster = new KafkaContainerCluster(1);
         kafkaContainerCluster.start();
 
-        ConfigFactory configFactory = new MutableConfigFactory()
-                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperContainer.getConnectionString())
-                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaContainerCluster.getBootstrapServersForExternalClients());
+        frontendStarter = new FrontendStarter(Ports.nextAvailable());
+        frontendStarter.addSpringProfiles("benchmark");
 
-        hermesFrontend = HermesFrontend.frontend()//TODO: change to FrontEndStarter
-                .withDisabledGlobalShutdownHook()//TODO
-                .withDisabledFlushLogsShutdownHook()//TODO
-                .withBinding(configFactory, ConfigFactory.class)
-                .withBinding(
-                        new InMemorySchemaClient(fromQualifiedName("bench.topic"), loadMessageResource("schema"), 1, 1),
-                        RawSchemaClient.class)
-                .build();
-        hermesFrontend.start(); //TODO
+        frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, zookeeperContainer.getConnectionString());
+        frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaContainerCluster.getBootstrapServersForExternalClients());
 
-        GroupRepository groupRepository = hermesFrontend.getService(GroupRepository.class);
-        TopicRepository topicRepository = hermesFrontend.getService(TopicRepository.class);
+        frontendStarter.start();
+
+        GroupRepository groupRepository = frontendStarter.instance().getBean(GroupRepository.class);
+        TopicRepository topicRepository = frontendStarter.instance().getBean(TopicRepository.class);
+
         groupRepository.createGroup(Group.from("bench"));
         Topic topic = topic("bench.topic").withContentType(AVRO).build();
         topicRepository.createTopic(topic);
@@ -89,7 +85,7 @@ public class FrontendEnvironment {
 
     @TearDown(Level.Trial)
     public void shutdownServers() throws Exception {
-        hermesFrontend.stop();
+        frontendStarter.stop();
         kafkaContainerCluster.stop();
         zookeeperContainer.stop();
     }
