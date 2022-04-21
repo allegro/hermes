@@ -12,6 +12,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.shaded.okhttp3.OkHttpClient;
 import org.testcontainers.shaded.okhttp3.Request;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.frontend.BenchmarkConfiguration;
 import pl.allegro.tech.hermes.frontend.ConfigFactoryConfiguration;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
@@ -48,9 +49,11 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         LOGGER.info("Starting Hermes Frontend");
         client = new OkHttpClient();
         ConfigFactoryConfiguration configFactoryConfiguration = new ConfigFactoryConfiguration();
+        BenchmarkConfiguration benchmarkConfiguration = new BenchmarkConfiguration();
         setSpringProfilesArg();
         ConfigurableListableBeanFactory beanFactory = applicationContext.getBeanFactory();
         beanFactory.registerSingleton(configFactoryConfiguration.getClass().getCanonicalName(), configFactoryConfiguration);
+        beanFactory.registerSingleton(benchmarkConfiguration.getClass().getCanonicalName(), benchmarkConfiguration);
         applicationContext = application.run(args.toArray(new String[0]));
         waitForStartup();
     }
