@@ -205,6 +205,19 @@ public class TopicManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldNotCreateTopicWithMissingGroup() {
+        // given no group
+
+        // when
+        Topic topic = topic("nonExistingGroup", "topic").build();
+        Response response = management.topic().create(topicWithSchema(topic, SCHEMA));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.NOT_FOUND).hasErrorCode(ErrorCode.GROUP_NOT_EXISTS);
+        assertThat(operations.getSchema(topic)).isNull();
+    }
+
+    @Test
     public void shouldNotAllowOnCreatingSameTopicTwice() {
         // given
         operations.createGroup("overrideTopicGroup");

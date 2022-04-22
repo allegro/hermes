@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Readiness;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
@@ -82,6 +83,11 @@ public class HermesAPIOperations {
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilSchemaCreated(topic);
+    }
+
+    public RawSchema getSchema(Topic topic) {
+        Response response = endpoints.schema().get(topic.getQualifiedName());
+        return response.readEntity(RawSchema.class);
     }
 
     public Subscription createSubscription(Topic topic, String subscriptionName, URI endpoint) {
