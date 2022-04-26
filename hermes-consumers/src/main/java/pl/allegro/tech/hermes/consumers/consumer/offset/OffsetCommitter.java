@@ -154,7 +154,7 @@ public class OffsetCommitter implements Runnable {
                         .min(Comparator.comparing(SubscriptionPartitionOffset::getLastCommittedMessageTimestamp))
                         .orElseThrow(NoSuchElementException::new);
                 //TODO add metric
-                logger.info("reporting last commited timestamp: {}", offsetToReport.getLastCommittedMessageTimestamp());
+                logger.info("reporting last commited timestamp: {}, for subscription: {}", offsetToReport.getLastCommittedMessageTimestamp(), offsetToReport.getSubscriptionName());
             } catch(Exception exception) {
                 logger.error("Failed to meter last committed message with error: {}", exception.getMessage(), exception);
             }
