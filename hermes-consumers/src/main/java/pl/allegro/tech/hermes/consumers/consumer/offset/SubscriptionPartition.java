@@ -15,11 +15,14 @@ public class SubscriptionPartition {
 
     private final long partitionAssignmentTerm;
 
-    public SubscriptionPartition(KafkaTopicName kafkaTopicName, SubscriptionName subscriptionName, int partition, long partitionAssignmentTerm) {
+    private final long lastCommittedMessageTimestamp;
+
+    public SubscriptionPartition(KafkaTopicName kafkaTopicName, SubscriptionName subscriptionName, int partition, long partitionAssignmentTerm, long lastCommittedMessageTimestamp) {
         this.kafkaTopicName = kafkaTopicName;
         this.subscriptionName = subscriptionName;
         this.partition = partition;
         this.partitionAssignmentTerm = partitionAssignmentTerm;
+        this.lastCommittedMessageTimestamp = lastCommittedMessageTimestamp;
     }
 
     public KafkaTopicName getKafkaTopicName() {
@@ -36,6 +39,10 @@ public class SubscriptionPartition {
 
     public long getPartitionAssignmentTerm() {
         return partitionAssignmentTerm;
+    }
+
+    public long getLastCommittedMessageTimestamp() {
+        return lastCommittedMessageTimestamp;
     }
 
     @Override

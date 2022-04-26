@@ -24,7 +24,7 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
     @Override
     public void handleSuccess(Message message, Subscription subscription, MessageSendingResult result) {
         offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
-                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm(), message.getPublishingTimestamp()));
 
         updateMeters(message, subscription, result);
         updateMetrics(Counters.DELIVERED, message, subscription);

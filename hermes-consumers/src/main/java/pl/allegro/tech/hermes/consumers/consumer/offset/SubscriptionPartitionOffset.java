@@ -17,13 +17,14 @@ public class SubscriptionPartitionOffset {
         this.offset = offset;
     }
 
-    public static SubscriptionPartitionOffset subscriptionPartitionOffset(SubscriptionName subscriptionName, PartitionOffset partitionOffset, long partitionAssignmentTerm) {
+    public static SubscriptionPartitionOffset subscriptionPartitionOffset(SubscriptionName subscriptionName, PartitionOffset partitionOffset, long partitionAssignmentTerm, long messagePublishedTimestamp) {
         return new SubscriptionPartitionOffset(
                 new SubscriptionPartition(
                         partitionOffset.getTopic(),
                         subscriptionName,
                         partitionOffset.getPartition(),
-                        partitionAssignmentTerm
+                        partitionAssignmentTerm,
+                        messagePublishedTimestamp
                 ),
                 partitionOffset.getOffset());
     }
@@ -50,6 +51,10 @@ public class SubscriptionPartitionOffset {
 
     public SubscriptionPartition getSubscriptionPartition() {
         return subscriptionPartition;
+    }
+
+    public long getLastCommittedMessageTimestamp() {
+        return subscriptionPartition.getLastCommittedMessageTimestamp();
     }
 
     @Override

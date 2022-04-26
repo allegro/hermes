@@ -90,8 +90,8 @@ class ConsumerPartitionAssignmentStateTest extends Specification {
         return SubscriptionName.fromString("group.topic\$$name")
     }
 
-    private SubscriptionPartition subscriptionPartition(SubscriptionName subscription, partition, term) {
-        new SubscriptionPartition(KafkaTopicName.valueOf('group_topic'), subscription, partition, term)
+    private static SubscriptionPartition subscriptionPartition(SubscriptionName subscription, partition, term) {
+        new SubscriptionPartition(KafkaTopicName.valueOf('group_topic'), subscription, partition, term, 0L)
     }
 
 }

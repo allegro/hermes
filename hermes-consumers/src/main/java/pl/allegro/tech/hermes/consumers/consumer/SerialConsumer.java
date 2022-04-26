@@ -116,7 +116,7 @@ public class SerialConsumer implements Consumer {
     }
 
     private void sendMessage(Message message) {
-        offsetQueue.offerInflightOffset(subscriptionPartitionOffset(subscription.getQualifiedName(), message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
+        offsetQueue.offerInflightOffset(subscriptionPartitionOffset(subscription.getQualifiedName(), message.getPartitionOffset(), message.getPartitionAssignmentTerm(), message.getPublishingTimestamp()));
 
         hermesMetrics.incrementInflightCounter(subscription);
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));

@@ -42,7 +42,7 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         logResult(message, subscription, result);
 
         offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
-                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm(), message.getPublishingTimestamp()));
 
         updateMeters(subscription);
         updateMetrics(Counters.DISCARDED, message, subscription);

@@ -116,6 +116,6 @@ class SignalsFilterTest extends Specification {
 
     private static SubscriptionPartitionOffset offset(int partition, long offset) {
         return subscriptionPartitionOffset(fromString('group.topic$sub'),
-                new PartitionOffset(KafkaTopicName.valueOf('group_topic'), offset, partition), -1)
+                new PartitionOffset(KafkaTopicName.valueOf('group_topic'), offset, partition), -1, 0L)
     }
 }

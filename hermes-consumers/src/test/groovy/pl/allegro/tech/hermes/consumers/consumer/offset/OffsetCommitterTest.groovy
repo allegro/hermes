@@ -350,7 +350,7 @@ class OffsetCommitterTest extends Specification {
     }
 
     private SubscriptionPartitionOffset offsetFromTerm(int partition, long offset, long term) {
-        def partitionOffset = new SubscriptionPartition(KAFKA_TOPIC_NAME, SUBSCRIPTION_NAME, partition, term)
+        def partitionOffset = new SubscriptionPartition(KAFKA_TOPIC_NAME, SUBSCRIPTION_NAME, partition, term, 0L)
         return new SubscriptionPartitionOffset(partitionOffset, offset)
     }
 

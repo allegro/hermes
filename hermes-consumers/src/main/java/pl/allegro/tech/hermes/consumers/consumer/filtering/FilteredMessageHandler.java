@@ -41,7 +41,7 @@ public class FilteredMessageHandler {
             }
 
             offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
-                    message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
+                    message.getPartitionOffset(), message.getPartitionAssignmentTerm(), message.getPublishingTimestamp()));
 
             updateMetrics(subscription);
 

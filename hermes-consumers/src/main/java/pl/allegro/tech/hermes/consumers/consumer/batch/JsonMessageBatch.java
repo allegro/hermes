@@ -114,7 +114,7 @@ public class JsonMessageBatch implements MessageBatch {
     public List<SubscriptionPartitionOffset> getPartitionOffsets() {
         return metadata.stream()
                 .map(m -> subscriptionPartitionOffset(this.subscription,
-                        new PartitionOffset(KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()), m.getPartitionAssignmentTerm()))
+                        new PartitionOffset(KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()), m.getPartitionAssignmentTerm(), m.getPublishingTimestamp()))
                 .collect(Collectors.toList());
     }
 

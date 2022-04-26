@@ -6,13 +6,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jctools.queues.MessagePassingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -138,6 +136,8 @@ public class OffsetCommitter implements Runnable {
             committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
             messageCommitter.commitOffsets(offsetsToCommit);
 
+            meterLastCommittedMessage(offsetsToCommit);
+
             metrics.counter("offset-committer.obsolete").inc(obsoleteCount);
             metrics.counter("offset-committer.committed").inc(scheduledToCommitCount);
 
@@ -145,6 +145,20 @@ public class OffsetCommitter implements Runnable {
         } catch (Exception exception) {
             logger.error("Failed to run offset committer: {}", exception.getMessage(), exception);
         }
+    }
+
+    private void meterLastCommittedMessage(OffsetsToCommit offsetsToCommit) {
+        offsetsToCommit.subscriptionNames().forEach(subscriptionName -> {
+            try {
+                SubscriptionPartitionOffset offsetToReport = offsetsToCommit.batchFor(subscriptionName).stream()
+                        .min(Comparator.comparing(SubscriptionPartitionOffset::getLastCommittedMessageTimestamp))
+                        .orElseThrow(NoSuchElementException::new);
+                //TODO add metric
+                logger.info("reporting last commited timestamp: {}", offsetToReport.getLastCommittedMessageTimestamp());
+            } catch(Exception exception) {
+                logger.error("Failed to meter last committed message with error: {}", exception.getMessage(), exception);
+            }
+        });
     }
 
     private ReducingConsumer processCommittedOffsets() {
