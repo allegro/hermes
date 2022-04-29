@@ -217,7 +217,7 @@ public class TopicManagementTest extends IntegrationTest {
         Response schemaResponse = operations.getSchemaResponse(topicWithSchema);
 
         // then
-//        assertThat(createTopicResponse).hasStatus(Response.Status.NOT_FOUND).hasErrorCode(ErrorCode.GROUP_NOT_EXISTS);
+        assertThat(createTopicResponse).hasStatus(Response.Status.NOT_FOUND).hasErrorCode(ErrorCode.GROUP_NOT_EXISTS);
 
         // and
         assertThat(schemaResponse).hasStatus(Response.Status.NO_CONTENT);
