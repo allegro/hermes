@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.ErrorDescription;
@@ -11,7 +12,7 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
-import pl.allegro.tech.hermes.api.BlacklistStatus;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
@@ -209,12 +210,17 @@ public class TopicManagementTest extends IntegrationTest {
         // given no group
 
         // when
-        Topic topic = topic("nonExistingGroup", "topic").build();
-        Response response = management.topic().create(topicWithSchema(topic, SCHEMA));
+        TopicWithSchema topicWithSchema = topicWithSchema(topic("nonExistingGroup", "topic")
+                .withContentType(AVRO)
+                .withTrackingEnabled(false).build(), SCHEMA);
+        Response createTopicResponse = operations.createTopicResponse(topicWithSchema);
+        Response schemaResponse = operations.getSchemaResponse(topicWithSchema);
 
         // then
-        assertThat(response).hasStatus(Response.Status.NOT_FOUND).hasErrorCode(ErrorCode.GROUP_NOT_EXISTS);
-        assertThat(operations.getSchema(topic)).isNull();
+//        assertThat(createTopicResponse).hasStatus(Response.Status.NOT_FOUND).hasErrorCode(ErrorCode.GROUP_NOT_EXISTS);
+
+        // and
+        assertThat(schemaResponse).hasStatus(Response.Status.NO_CONTENT);
     }
 
     @Test

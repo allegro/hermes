@@ -72,10 +72,14 @@ public class HermesAPIOperations {
         if (endpoints.findTopics(topicWithSchema, topicWithSchema.isTrackingEnabled()).contains(topicWithSchema.getQualifiedName())) {
             return topicWithSchema;
         }
-        assertThat(endpoints.topic().create(topicWithSchema).getStatus()).isEqualTo(CREATED.getStatusCode());
+        assertThat(createTopicResponse(topicWithSchema).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilTopicCreated(topicWithSchema);
         return topicWithSchema;
+    }
+
+    public Response createTopicResponse(TopicWithSchema topicWithSchema) {
+        return endpoints.topic().create(topicWithSchema);
     }
 
     public void saveSchema(Topic topic, String schema) {
@@ -85,9 +89,10 @@ public class HermesAPIOperations {
         wait.untilSchemaCreated(topic);
     }
 
-    public RawSchema getSchema(Topic topic) {
+    public Response getSchemaResponse(Topic topic) {
         Response response = endpoints.schema().get(topic.getQualifiedName());
-        return response.readEntity(RawSchema.class);
+        System.out.println(response.toString());
+        return response;
     }
 
     public Subscription createSubscription(Topic topic, String subscriptionName, URI endpoint) {
