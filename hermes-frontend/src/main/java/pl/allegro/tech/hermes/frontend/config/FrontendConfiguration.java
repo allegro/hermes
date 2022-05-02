@@ -69,13 +69,13 @@ public class FrontendConfiguration {
     }
 
     @Bean(initMethod = "startup")
-    public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(@Named(CuratorType.HERMES) CuratorFramework curator,
+    public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(CuratorFramework curator,
                                                                              ZookeeperPaths zookeeperPaths) {
         return new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
     }
 
     @Bean(destroyMethod = "close")
-    public ReadinessRepository zookeeperDatacenterReadinessRepository(@Named(CuratorType.HERMES) CuratorFramework zookeeper,
+    public ReadinessRepository zookeeperDatacenterReadinessRepository(CuratorFramework zookeeper,
                                                                       ZookeeperPaths paths,
                                                                       ObjectMapper mapper) {
         return new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);

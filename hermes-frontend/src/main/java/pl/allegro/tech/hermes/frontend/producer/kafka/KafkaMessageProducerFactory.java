@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
@@ -51,10 +53,13 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SE
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE;
 
 public class KafkaMessageProducerFactory {
+
+    private static Logger logger = LoggerFactory.getLogger(KafkaMessageProducerFactory.class);
+
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
-    private ConfigFactory configFactory;
+    private final ConfigFactory configFactory;
 
     @Inject
     public KafkaMessageProducerFactory(ConfigFactory configFactory) {
@@ -89,6 +94,8 @@ public class KafkaMessageProducerFactory {
                             + "password=\"" + getString(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
         }
+
+        logger.info("Providing kafka message producer with props: {}", props);
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));
         Producer<byte[], byte[]> everyoneConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_ALL));
