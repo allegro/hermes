@@ -6,6 +6,9 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.collect.HashBiMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
@@ -22,6 +25,8 @@ import static pl.allegro.tech.hermes.common.metric.Timers.SUBSCRIPTION_LATENCY;
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 public class HermesMetrics {
+
+    private final Logger logger = LoggerFactory.getLogger(HermesMetrics.class);
 
     public static final String REPLACEMENT_CHAR = "_";
 
@@ -153,7 +158,12 @@ public class HermesMetrics {
     }
 
     private double getDoubleValue(String gauge) {
-        return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
+        try {
+            return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
+        } catch (NullPointerException exception) {
+            logger.warn("Specified key is null for gauge: {}", gauge);
+            return 0;
+        }
     }
 
     private Counter getInflightCounter(Subscription subscription) {

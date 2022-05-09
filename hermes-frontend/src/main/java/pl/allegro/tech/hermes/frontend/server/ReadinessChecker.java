@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READINESS_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
 
-public class ReadinessChecker {
+public class ReadinessChecker implements IReadinessChecker {
     private static final Logger logger = LoggerFactory.getLogger(ReadinessChecker.class);
 
     private final boolean enabled;
@@ -40,6 +40,7 @@ public class ReadinessChecker {
         this.scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
+    @Override
     public boolean isReady() {
         if (!enabled) {
             return true;
@@ -47,6 +48,7 @@ public class ReadinessChecker {
         return ready;
     }
 
+    @Override
     public void start() {
         if (enabled) {
             ReadinessCheckerJob job = new ReadinessCheckerJob();
@@ -55,6 +57,7 @@ public class ReadinessChecker {
         }
     }
 
+    @Override
     public void stop() throws InterruptedException {
         scheduler.shutdown();
         scheduler.awaitTermination(1, TimeUnit.MINUTES);

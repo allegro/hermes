@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED;
 
-public class MessagePreviewPersister {
+public class MessagePreviewPersister implements IMessagePreviewPersister {
 
     private final int period;
 
@@ -34,6 +34,7 @@ public class MessagePreviewPersister {
                 new ThreadFactoryBuilder().setNameFormat("message-preview-persister-%d").build())) : Optional.empty();
     }
 
+    @Override
     public void start() {
         scheduledExecutorService.ifPresent(s -> s.scheduleAtFixedRate(this::persist, period, period, TimeUnit.SECONDS));
     }
@@ -42,6 +43,7 @@ public class MessagePreviewPersister {
         repository.persist(messagePreviewLog.snapshotAndClean());
     }
 
+    @Override
     public void shutdown() {
         scheduledExecutorService.ifPresent(s -> s.shutdown());
     }

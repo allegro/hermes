@@ -32,15 +32,13 @@ public class FrontendServerConfiguration {
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
-                                     HealthCheckService healthCheckService,
                                      ReadinessChecker readinessChecker,
                                      MessagePreviewPersister messagePreviewPersister,
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
-                                     SslContextFactoryProvider sslContextFactoryProvider,
-                                     ConfigurableApplicationContext applicationContext) {
-        return new HermesServer(configFactory, hermesMetrics, publishingHandler, healthCheckService, readinessChecker,
-                messagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider, applicationContext);
+                                     SslContextFactoryProvider sslContextFactoryProvider) {
+        return new HermesServer(configFactory, hermesMetrics, publishingHandler, readinessChecker,
+                messagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider);
     }
 
     @Bean

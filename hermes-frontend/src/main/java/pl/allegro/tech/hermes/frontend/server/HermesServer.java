@@ -4,14 +4,12 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.xnio.SslClientAuthMode;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
-import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
+import pl.allegro.tech.hermes.frontend.publishing.preview.IMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
@@ -56,33 +54,30 @@ public class HermesServer {
     private final ConfigFactory configFactory;
     private final HttpHandler publishingHandler;
     private final HealthCheckService healthCheckService;
-    private final ReadinessChecker readinessChecker;
-    private final MessagePreviewPersister messagePreviewPersister;
+    private final IReadinessChecker readinessChecker;
+    private final IMessagePreviewPersister messagePreviewPersister;
     private final int port;
     private final int sslPort;
     private final String host;
     private final ThroughputLimiter throughputLimiter;
     private final TopicMetadataLoadingJob topicMetadataLoadingJob;
     private final SslContextFactoryProvider sslContextFactoryProvider;
-    private final ConfigurableApplicationContext applicationContext;
 
     @Inject
     public HermesServer(
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
-            HealthCheckService healthCheckService,
-            ReadinessChecker readinessChecker,
-            MessagePreviewPersister messagePreviewPersister,
+            IReadinessChecker readinessChecker,
+            IMessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
             TopicMetadataLoadingJob topicMetadataLoadingJob,
-            SslContextFactoryProvider sslContextFactoryProvider,
-            ConfigurableApplicationContext applicationContext) {
+            SslContextFactoryProvider sslContextFactoryProvider) {
 
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
-        this.healthCheckService = healthCheckService;
+        this.healthCheckService = new HealthCheckService();
         this.readinessChecker = readinessChecker;
         this.messagePreviewPersister = messagePreviewPersister;
         this.topicMetadataLoadingJob = topicMetadataLoadingJob;
@@ -92,19 +87,18 @@ public class HermesServer {
         this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
         this.host = configFactory.getStringProperty(FRONTEND_HOST);
         this.throughputLimiter = throughputLimiter;
-
-        this.applicationContext = applicationContext;
     }
 
     public void start() {
         configureServer().start();
-        messagePreviewPersister.start();
+//        messagePreviewPersister.start();
         throughputLimiter.start();
 
         if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
             topicMetadataLoadingJob.start();
         }
-        readinessChecker.start();
+        healthCheckService.startup();
+//        readinessChecker.start();
     }
 
     public void stop() throws InterruptedException {
@@ -113,7 +107,6 @@ public class HermesServer {
             gracefulShutdown();
         }
         shutdown();
-        applicationContext.close();
     }
 
     public void gracefulShutdown() throws InterruptedException {

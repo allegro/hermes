@@ -4,14 +4,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
 import org.apache.avro.Schema;
-import org.apache.commons.io.IOUtils;
-import org.openjdk.jmh.annotations.Level;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
@@ -58,28 +50,14 @@ import java.util.Optional;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+import static pl.allegro.tech.hermes.benchmark.environment.FrontendEnvironment.loadMessageResource;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
-@State(Scope.Benchmark)
-public class FrontendEnvironment {
+public class BenchmarkProviders {
 
-    private static final Logger logger = LoggerFactory.getLogger(FrontendEnvironment.class);
-    private static final int MAX_CONNECTIONS_PER_ROUTE = 200;
-
-    private HermesPublisher publisher;
-    private MetricRegistry metricRegistry;
-
-    private HermesServer hermesServer;
-
-    public static void main(String[] args) throws Exception {
-        new FrontendEnvironment().setupEnvironment();
-    }
-
-    @Setup(Level.Trial)
-    public void setupEnvironment() throws Exception {
-
+    HermesServer provideHermesServer() throws IOException {
         ThroughputLimiter throughputLimiter = (topic, throughput) -> quotaConfirmed();
         HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
         TopicsCache topicsCache = new TopicsCache() {
@@ -165,7 +143,7 @@ public class FrontendEnvironment {
                 null
         ).provide();
 
-        hermesServer = new HermesServer(
+        return new HermesServer(
                 configFactory,
                 hermesMetrics,
                 httpHandler,
@@ -196,37 +174,5 @@ public class FrontendEnvironment {
                 null,
                 null
         );
-        hermesServer.start();
-    }
-
-    @Setup(Level.Trial)
-    public void setupPublisher() throws Exception {
-        metricRegistry = new MetricRegistry();
-
-        String messageBody = loadMessageResource("completeMessage");
-        publisher = new HermesPublisher(MAX_CONNECTIONS_PER_ROUTE, "http://localhost:8080/topics/bench.topic", messageBody, metricRegistry);
-    }
-
-    @TearDown(Level.Trial)
-    public void shutdownServers() throws Exception {
-        hermesServer.stop();
-    }
-
-    @TearDown(Level.Trial)
-    public void shutdownPublisherAndReportMetrics() throws Exception {
-        reportMetrics();
-        publisher.stop();
-    }
-
-    public HermesPublisher publisher() {
-        return publisher;
-    }
-
-    public static String loadMessageResource(String name) throws IOException {
-        return IOUtils.toString(FrontendEnvironment.class.getResourceAsStream(String.format("/message/%s.json", name)));
-    }
-
-    private void reportMetrics() {
-        metricRegistry.getCounters().forEach((key, value) -> logger.info(key + ": " + value.getCount()));
     }
 }

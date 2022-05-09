@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroInvalidMetadataException;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.IMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.WrappingException;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
@@ -43,7 +43,7 @@ public class MessageFactory {
     private final AvroEnforcer enforcer;
     private final SchemaRepository schemaRepository;
     private final HeadersPropagator headersPropagator;
-    private final MessageContentWrapper messageContentWrapper;
+    private final IMessageContentWrapper messageContentWrapper;
     private final Clock clock;
     private final boolean schemaIdHeaderEnabled;
 
@@ -52,7 +52,7 @@ public class MessageFactory {
                           AvroEnforcer enforcer,
                           SchemaRepository schemaRepository,
                           HeadersPropagator headersPropagator,
-                          MessageContentWrapper messageContentWrapper,
+                          IMessageContentWrapper messageContentWrapper,
                           Clock clock,
                           ConfigFactory configFactory) {
         this.validators = validators;

@@ -13,7 +13,7 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentUnwrapperResult.AvroMessageContentUnwrapperResultStatus.SUCCESS;
 
-public class MessageContentWrapper {
+public class MessageContentWrapper implements IMessageContentWrapper{
 
     private static final Logger logger = LoggerFactory.getLogger(MessageContentWrapper.class);
 
