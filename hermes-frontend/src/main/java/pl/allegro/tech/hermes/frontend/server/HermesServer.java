@@ -91,14 +91,14 @@ public class HermesServer {
 
     public void start() {
         configureServer().start();
-//        messagePreviewPersister.start();
+        messagePreviewPersister.start();
         throughputLimiter.start();
 
         if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
             topicMetadataLoadingJob.start();
         }
         healthCheckService.startup();
-//        readinessChecker.start();
+        readinessChecker.start();
     }
 
     public void stop() throws InterruptedException {
