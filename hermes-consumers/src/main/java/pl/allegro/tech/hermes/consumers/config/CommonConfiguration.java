@@ -192,7 +192,7 @@ public class CommonConfiguration {
 
     @Bean
     public ConfigFactory prodConfigFactory() {
-        return new ConfigFactoryCreator().provide();
+        return new ConfigFactoryCreator().provide(null);
     }
 
     @Bean

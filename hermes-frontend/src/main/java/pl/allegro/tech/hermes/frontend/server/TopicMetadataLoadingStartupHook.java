@@ -10,16 +10,22 @@ public class TopicMetadataLoadingStartupHook {
 
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;
 
-    @Inject
-    public TopicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner) {
+    private final boolean isTopicMetadataLoadingStartupHookEnabled;
+
+    public TopicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, boolean isTopicMetadataLoadingStartupHookEnabled) {
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
+        this.isTopicMetadataLoadingStartupHookEnabled = isTopicMetadataLoadingStartupHookEnabled;
     }
 
     public void run() {
-        try {
-            topicMetadataLoadingRunner.refreshMetadata();
-        } catch (Exception e) {
-            logger.error("An error occurred while refreshing topic metadata", e);
+        if(isTopicMetadataLoadingStartupHookEnabled) {
+            try {
+                topicMetadataLoadingRunner.refreshMetadata();
+            } catch (Exception e) {
+                logger.error("An error occurred while refreshing topic metadata", e);
+            }
+        } else {
+            logger.info("Topic metadata loading startup hook is disabled");
         }
     }
 }

@@ -38,7 +38,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
             getTopics() >> [cachedTopic(avroTopic1), cachedTopic(avroTopic2), cachedTopic(jsonTopic1), cachedTopic(avroTopic3)]
         }
         def schemaRepository = new SchemaRepository(schemaVersionsRepositoryForAvroTopics(), compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
         hook.run()
@@ -57,7 +57,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
             getTopics() >> [cachedTopic(avroTopic1), cachedTopic(avroTopic2), cachedTopic(jsonTopic1), cachedTopic(avroTopic3)]
         }
         def schemaRepository = new SchemaRepository(schemaVersionsRepositoryForAvroTopics(), compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
         hook.run()
@@ -90,7 +90,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
                 }
         ] as SchemaVersionsRepository
         def schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
         hook.run()
@@ -109,7 +109,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
             getTopics() >> [cachedTopic(avroTopic1)]
         }
         def schemaRepository = new SchemaRepository(schemaVersionsRepositoryForAvroTopics(), compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
         hook.run()
@@ -126,7 +126,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         CompiledSchemaRepository<Schema> compiledSchemaRepository = Mock()
         SchemaVersionsRepository schemaVersionsRepository = Mock()
         def schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
         hook.run()

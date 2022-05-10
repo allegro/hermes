@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import io.undertow.server.HttpHandler;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -20,10 +18,11 @@ import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
-import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.util.Optional;
+
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED;
 
 @Configuration
 public class FrontendServerConfiguration {
@@ -68,13 +67,11 @@ public class FrontendServerConfiguration {
     }
 
     @Bean(initMethod = "run")
-    @Conditional(TopicMetadataLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
-    public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner) {
-        return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner);
+    public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, ConfigFactory configFactory) {
+        return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner, configFactory.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED));
     }
 
     @Bean(initMethod = "run")
-    @Conditional(TopicSchemaLoadingStartupHookCondition.class)//TODO: eventually change to ConditionalOnProperty
     public TopicSchemaLoadingStartupHook topicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                                                        SchemaRepository schemaRepository,
                                                                        ConfigFactory config) {

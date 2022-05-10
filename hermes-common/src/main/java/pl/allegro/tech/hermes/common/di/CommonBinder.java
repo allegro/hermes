@@ -67,7 +67,6 @@ public class CommonBinder extends AbstractBinder {
 
         bindSingleton(CuratorClientFactory.class);
         bindSingleton(HermesMetrics.class);
-        bindSingletonFactory(ConfigFactoryCreator.class);
         bindSingleton(MessageContentWrapper.class);
         bindSingleton(DeserializationMetrics.class);
         bindSingleton(JsonMessageContentWrapper.class);

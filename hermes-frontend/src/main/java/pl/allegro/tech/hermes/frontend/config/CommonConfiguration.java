@@ -2,6 +2,13 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.config.AbstractPollingScheduler;
+import com.netflix.config.ConcurrentCompositeConfiguration;
+import com.netflix.config.DynamicConfiguration;
+import com.netflix.config.sources.URLConfigurationSource;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.apache.commons.configuration.EnvironmentConfiguration;
+import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +81,13 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import javax.inject.Named;
 import java.time.Clock;
 import java.util.List;
+
+import static com.netflix.config.ConfigurationManager.APPLICATION_PROPERTIES;
+import static com.netflix.config.ConfigurationManager.DISABLE_DEFAULT_ENV_CONFIG;
+import static com.netflix.config.ConfigurationManager.DISABLE_DEFAULT_SYS_CONFIG;
+import static com.netflix.config.ConfigurationManager.ENV_CONFIG_NAME;
+import static com.netflix.config.ConfigurationManager.SYS_CONFIG_NAME;
+import static com.netflix.config.ConfigurationManager.URL_CONFIG_NAME;
 
 @Configuration
 public class CommonConfiguration {
@@ -246,11 +260,48 @@ public class CommonConfiguration {
         return new KafkaNamesMapperFactory(configFactory).provide();
     }
 
+    private AbstractPollingScheduler createDisabledPollingScheduler() {
+        return new AbstractPollingScheduler() {
+            @Override
+            protected void schedule(Runnable pollingRunnable) {
+                logger.info("Periodical polling of a configuration source is turned off!");
+            }
+
+            @Override
+            public void stop() {
+
+            }
+        };
+    }
+
     @Bean
-    public ConfigFactory prodConfigFactory() {
-        ConfigFactory configFactory = new ConfigFactoryCreator().provide();
+    public AbstractConfiguration createConfigInstance() {
+        ConcurrentCompositeConfiguration config = new ConcurrentCompositeConfiguration();
+        try {
+            DynamicConfiguration urlConfig = new DynamicConfiguration(new URLConfigurationSource(), createDisabledPollingScheduler());
+            config.addConfiguration(urlConfig, URL_CONFIG_NAME);
+        } catch (Throwable e) {
+            logger.warn("Failed to create default dynamic configuration", e);
+        }
+        if (!Boolean.getBoolean(DISABLE_DEFAULT_SYS_CONFIG)) {
+            SystemConfiguration sysConfig = new SystemConfiguration();
+            config.addConfiguration(sysConfig, SYS_CONFIG_NAME);
+        }
+        if (!Boolean.getBoolean(DISABLE_DEFAULT_ENV_CONFIG)) {
+            EnvironmentConfiguration envConfig = new EnvironmentConfiguration();
+            config.addConfiguration(envConfig, ENV_CONFIG_NAME);
+        }
+        ConcurrentCompositeConfiguration appOverrideConfig = new ConcurrentCompositeConfiguration();
+        config.addConfiguration(appOverrideConfig, APPLICATION_PROPERTIES);
+        config.setContainerConfigurationIndex(config.getIndexOfConfiguration(appOverrideConfig));
+        return config;
+    }
+
+    @Bean
+    public ConfigFactory prodConfigFactory(AbstractConfiguration abstractConfiguration) {
+        ConfigFactory configFactory = new ConfigFactoryCreator().provide(abstractConfiguration);
         logger.info("Provided config factory with kafka broker list: {}", configFactory.getStringProperty(Configs.KAFKA_BROKER_LIST));
-        return new ConfigFactoryCreator().provide();
+        return new ConfigFactoryCreator().provide(abstractConfiguration);
     }
 
     @Bean
@@ -344,5 +395,4 @@ public class CommonConfiguration {
                                                                       ZookeeperPaths paths) {
         return new ZookeeperMessagePreviewRepository(zookeeper, mapper, paths);
     }
-
 }
