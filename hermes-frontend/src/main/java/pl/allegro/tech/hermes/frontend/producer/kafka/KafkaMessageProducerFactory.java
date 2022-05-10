@@ -54,8 +54,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFER
 
 public class KafkaMessageProducerFactory {
 
-    private static Logger logger = LoggerFactory.getLogger(KafkaMessageProducerFactory.class);
-
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
@@ -94,8 +92,6 @@ public class KafkaMessageProducerFactory {
                             + "password=\"" + getString(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
         }
-
-        logger.info("Providing kafka message producer with props: {}", props);
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));
         Producer<byte[], byte[]> everyoneConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_ALL));
