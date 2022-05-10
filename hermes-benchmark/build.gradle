@@ -30,7 +30,6 @@ dependencies {
     jmh group: 'org.openjdk.jmh', name: 'jmh-generator-annprocess', version: '1.12'
     jmh group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.1'
     jmh group: 'org.spf4j', name: 'spf4j-jmh', version: '8.0.3'
-    jmh group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
     jmh project(':hermes-frontend')
     jmh project(':hermes-test-helper')
 }
