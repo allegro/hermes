@@ -23,8 +23,6 @@ class InMemoryTopicsCache implements TopicsCache {
 
     InMemoryTopicsCache(HermesMetrics hermesMetrics) {
         this.hermesMetrics = hermesMetrics;
-
-        Topic topic = topic(HermesServerEnvironment.BENCHMARK_TOPIC).withContentType(AVRO).build();
         this.kafkaTopics = new KafkaTopics(new KafkaTopic(KafkaTopicName.valueOf(topic.getQualifiedName()), topic.getContentType()));
     }
 
