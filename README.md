@@ -20,13 +20,13 @@ Questions? We are on [gitter](https://gitter.im/allegro/hermes).
 
 ## Development
 
-File docker/docker-compose.development.yml disable deployment of hermes frontend, management and consumers.
+File docker/docker-compose.development.yml disables deployment of hermes frontend, management, and consumers.
 
-We have to provide environment (Kafka, ZooKeeper, Graphite, Schema Registry) by command executed in project directory:
+We have to provide an environment (Kafka, ZooKeeper, Graphite, Schema Registry) with command executed in the project directory:
 
 `docker-compose -f docker/docker-compose.yml -f docker/docker-compose.development.yml up`
 
-To start hermes frontend, management and consumers we can use commands
+To start hermes frontend, management and consumers we can use the following commands
 
 `./gradlew -p hermes-frontend run`
 
