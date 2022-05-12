@@ -14,22 +14,27 @@ import java.util.Optional;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
-public class InMemoryTopicsCache implements TopicsCache {
+class InMemoryTopicsCache implements TopicsCache {
 
     private final HermesMetrics hermesMetrics;
+    private final KafkaTopics kafkaTopics;
+    private final Topic topic = topic(HermesServerEnvironment.BENCHMARK_TOPIC).withContentType(AVRO).build();
 
-    public InMemoryTopicsCache(HermesMetrics hermesMetrics) {
+
+    InMemoryTopicsCache(HermesMetrics hermesMetrics) {
         this.hermesMetrics = hermesMetrics;
+
+        Topic topic = topic(HermesServerEnvironment.BENCHMARK_TOPIC).withContentType(AVRO).build();
+        this.kafkaTopics = new KafkaTopics(new KafkaTopic(KafkaTopicName.valueOf(topic.getQualifiedName()), topic.getContentType()));
     }
 
     @Override
     public Optional<CachedTopic> getTopic(String qualifiedTopicName) {
-        Topic topic = topic("bench.topic").withContentType(AVRO).build();
         return Optional.of(
                 new CachedTopic(
                         topic,
                         hermesMetrics,
-                        new KafkaTopics(new KafkaTopic(KafkaTopicName.valueOf(""), AVRO))
+                        kafkaTopics
                 )
         );
     }

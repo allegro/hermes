@@ -110,13 +110,11 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     }
 
     private void waitForStartup() {
-        await().atMost(adjust(TEN_SECONDS)).until(() -> {
-            Request request = new Request.Builder()
-                    .url("http://localhost:" + port + "/status/ping")
-                    .build();
+        Request request = new Request.Builder()
+                .url("http://localhost:" + port + "/status/ping")
+                .build();
 
-            return client.newCall(request).execute().code() == OK.getStatusCode();
-        });
+        await().atMost(adjust(TEN_SECONDS)).until(() -> client.newCall(request).execute().code() == OK.getStatusCode());
     }
 
     private static String getArgument(Configs config, Object value) {

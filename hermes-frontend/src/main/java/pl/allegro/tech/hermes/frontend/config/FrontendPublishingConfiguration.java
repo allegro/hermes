@@ -41,7 +41,7 @@ public class FrontendPublishingConfiguration {
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                    ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, configFactory, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig.orElse(null)).provide();
+                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig).provide();
     }
 
     @Bean

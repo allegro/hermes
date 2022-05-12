@@ -12,12 +12,15 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @State(Scope.Benchmark)
 public class HermesServerEnvironment {
 
     private static final Logger logger = LoggerFactory.getLogger(HermesServerEnvironment.class);
     private static final int MAX_CONNECTIONS_PER_ROUTE = 200;
+    
+    public static final String BENCHMARK_TOPIC = "bench.topic";
 
     private HermesPublisher publisher;
     private MetricRegistry metricRegistry;
@@ -39,7 +42,7 @@ public class HermesServerEnvironment {
         metricRegistry = new MetricRegistry();
 
         String messageBody = loadMessageResource("completeMessage");
-        publisher = new HermesPublisher(MAX_CONNECTIONS_PER_ROUTE, "http://localhost:8080/topics/bench.topic", messageBody, metricRegistry);
+        publisher = new HermesPublisher(MAX_CONNECTIONS_PER_ROUTE, "http://localhost:8080/topics/" + BENCHMARK_TOPIC, messageBody, metricRegistry);
     }
 
     @TearDown(Level.Trial)
@@ -58,7 +61,7 @@ public class HermesServerEnvironment {
     }
 
     public static String loadMessageResource(String name) throws IOException {
-        return IOUtils.toString(HermesServerEnvironment.class.getResourceAsStream(String.format("/message/%s.json", name)));
+        return IOUtils.toString(Objects.requireNonNull(HermesServerEnvironment.class.getResourceAsStream(String.format("/message/%s.json", name))));
     }
 
     private void reportMetrics() {

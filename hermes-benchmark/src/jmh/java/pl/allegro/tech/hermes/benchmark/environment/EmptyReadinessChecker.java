@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.benchmark.environment;
 
 import pl.allegro.tech.hermes.frontend.server.IReadinessChecker;
 
-public class EmptyReadinessChecker implements IReadinessChecker {
+class EmptyReadinessChecker implements IReadinessChecker {
 
     @Override
     public boolean isReady() {

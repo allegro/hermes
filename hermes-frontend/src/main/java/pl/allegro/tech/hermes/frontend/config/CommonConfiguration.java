@@ -163,7 +163,6 @@ public class CommonConfiguration {
         return new ObjectMapperFactory(configFactory).provide();
     }
 
-
     @Bean
     public MessageContentWrapper messageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
                                                        AvroMessageContentWrapper avroMessageContentWrapper,
@@ -344,5 +343,4 @@ public class CommonConfiguration {
                                                                       ZookeeperPaths paths) {
         return new ZookeeperMessagePreviewRepository(zookeeper, mapper, paths);
     }
-
 }

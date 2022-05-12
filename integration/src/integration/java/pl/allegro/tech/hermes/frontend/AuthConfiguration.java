@@ -5,7 +5,6 @@ import io.undertow.security.impl.BasicAuthenticationMechanism;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
@@ -22,16 +21,14 @@ public class AuthConfiguration {
     private String password;
 
     @Bean
-    @Primary
     @Profile("authRequired")
-    public AuthenticationConfiguration authenticationConfiguration() {
+    public AuthenticationConfiguration requiredAuthenticationConfiguration() {
         return getAuthConfig(true);
     }
 
     @Bean
-    @Primary
     @Profile("authNonRequired")
-    public AuthenticationConfiguration authenticationConfiguration2() {
+    public AuthenticationConfiguration notRequiredAuthenticationConfiguration() {
         return getAuthConfig(false);
     }
 

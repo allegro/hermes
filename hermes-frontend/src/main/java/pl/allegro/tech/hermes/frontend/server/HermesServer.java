@@ -36,7 +36,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_HEADERS;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_PARAMETERS;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READ_TIMEOUT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_DUMPER;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_PARSE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALIVE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_AUTH_MODE;
@@ -104,12 +103,12 @@ public class HermesServer {
     public void stop() throws InterruptedException {
         boolean isGraceful = configFactory.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED);
         if(isGraceful) {
-            gracefulShutdown();
+            gracefullyPrepareForShutdown();
         }
         shutdown();
     }
 
-    public void gracefulShutdown() throws InterruptedException {
+    public void gracefullyPrepareForShutdown() throws InterruptedException {
         healthCheckService.shutdown();
 
         Thread.sleep(configFactory.getIntProperty(Configs.FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS));
@@ -166,10 +165,10 @@ public class HermesServer {
                 .get("/status/ready", readinessHandler)
                 .get("/", healthCheckHandler);
 
-        return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) : routingHandler;
+        return isFrontendRequestDumperEnabled() ? new RequestDumpingHandler(routingHandler) : routingHandler;
     }
 
-    private boolean isEnabled(Configs property) {
-        return configFactory.getBooleanProperty(property);
+    private boolean isFrontendRequestDumperEnabled() {
+        return configFactory.getBooleanProperty(Configs.FRONTEND_REQUEST_DUMPER);
     }
 }

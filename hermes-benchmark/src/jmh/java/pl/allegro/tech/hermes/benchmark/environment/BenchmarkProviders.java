@@ -32,18 +32,19 @@ import java.time.Clock;
 import java.util.Collections;
 
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.BENCHMARK_TOPIC;
 import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 
-public class BenchmarkProviders {
+class BenchmarkProviders {
 
     static HermesServer provideHermesServer() throws IOException {
         ThroughputLimiter throughputLimiter = (topic, throughput) -> quotaConfirmed();
         HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
         TopicsCache topicsCache = new InMemoryTopicsCache(hermesMetrics);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
-        RawSchemaClient rawSchemaClient = new InMemorySchemaClient(fromQualifiedName("bench.topic"), loadMessageResource("schema"), 1, 1);
+        RawSchemaClient rawSchemaClient = new InMemorySchemaClient(fromQualifiedName(BENCHMARK_TOPIC), loadMessageResource("schema"), 1, 1);
         ConfigFactory configFactory = new MutableConfigFactory()
                 .overrideProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED, false);
         Trackers trackers = new Trackers(Collections.emptyList());
@@ -73,7 +74,7 @@ public class BenchmarkProviders {
                         new MessageContentTypeEnforcer(),
                         new SchemaRepository(
                                 new DirectSchemaVersionsRepository(rawSchemaClient),
-                                new DirectCompiledSchemaRepository(rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler())
+                                new DirectCompiledSchemaRepository<>(rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler())
                         ),
                         new DefaultHeadersPropagator(configFactory),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),

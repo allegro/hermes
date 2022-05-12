@@ -5,7 +5,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -25,7 +24,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperDatacenterReadin
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
-import javax.inject.Named;
 import java.time.Clock;
 import java.util.List;
 
@@ -92,7 +90,6 @@ public class FrontendConfiguration {
     }
 
     @Bean
-    @Named("moduleName")
     public String moduleName() {
         return "producer";
     }

@@ -7,7 +7,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
@@ -16,7 +15,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 public class GoogleTransportChannelProviderConfiguration {
 
     @Bean
-    @Primary
     @Profile("integration")
     public TransportChannelProvider integrationTransportChannelProvider(ConfigFactory configFactory) {
         final ManagedChannel channel = ManagedChannelBuilder.forTarget(

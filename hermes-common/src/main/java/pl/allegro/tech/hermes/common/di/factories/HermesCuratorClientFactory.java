@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.common.di.factories;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.glassfish.hk2.api.Factory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
@@ -11,8 +9,6 @@ import javax.inject.Inject;
 import java.util.Optional;
 
 public class HermesCuratorClientFactory implements Factory<CuratorFramework> {
-
-    private final Logger logger = LoggerFactory.getLogger(HermesCuratorClientFactory.class);
 
     private final ConfigFactory configFactory;
     private final CuratorClientFactory curatorClientFactory;

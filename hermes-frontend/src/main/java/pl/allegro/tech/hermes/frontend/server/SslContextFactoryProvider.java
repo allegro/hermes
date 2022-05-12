@@ -29,8 +29,8 @@ import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 
 public class SslContextFactoryProvider {
 
-    SslContextFactory sslContextFactory;
-    ConfigFactory configFactory;
+    private final SslContextFactory sslContextFactory;
+    private final ConfigFactory configFactory;
 
     public SslContextFactoryProvider(SslContextFactory sslContextFactory, ConfigFactory configFactory) {
         this.sslContextFactory = sslContextFactory;

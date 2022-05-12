@@ -8,11 +8,11 @@ import java.util.Map;
 
 public interface IMessageContentWrapper {
 
-    public UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion);
+    UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion);
 
-    public UnwrappedMessageContent unwrapJson(byte[] data);
+    UnwrappedMessageContent unwrapJson(byte[] data);
 
-    public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata);
+    byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata);
 
-    public byte[] wrapJson(byte[] data, String id, long timestamp, Map<String, String> externalMetadata);
+    byte[] wrapJson(byte[] data, String id, long timestamp, Map<String, String> externalMetadata);
 }

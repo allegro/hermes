@@ -47,7 +47,6 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         frontendStarter.addSpringProfiles("authRequired");
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "constraint_driven");//the only one specific property
         frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true);
         frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
