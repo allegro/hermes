@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.api;
 
 import org.glassfish.jersey.server.ContainerRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.api.auth.AuthorizationFilter;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
@@ -13,6 +14,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 
+@Component
 @Provider
 @Priority(AuthorizationFilter.AUTHORIZATION_FILTER_PRIORITY + 2)
 public class ReadOnlyFilter implements ContainerRequestFilter {
@@ -50,9 +52,6 @@ public class ReadOnlyFilter implements ContainerRequestFilter {
         if (requestURI.startsWith("/mode")) {
             return true;
         }
-        if (requestURI.startsWith("/topics") && requestURI.endsWith("query")) {
-            return true;
-        }
-        return false;
+        return requestURI.startsWith("/topics") && requestURI.endsWith("query");
     }
 }

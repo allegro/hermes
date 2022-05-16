@@ -16,7 +16,7 @@ public enum Operator {
     LOWER_THAN("lt");
 
 
-    private String name;
+    private final String name;
 
     Operator(String name) {
         this.name = name;

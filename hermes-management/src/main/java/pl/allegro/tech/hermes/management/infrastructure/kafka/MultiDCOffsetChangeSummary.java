@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class MultiDCOffsetChangeSummary {
 
-    private Map<String, List<PartitionOffset>> partitionOffsetListPerBrokerName = new HashMap<>();
+    private final Map<String, List<PartitionOffset>> partitionOffsetListPerBrokerName = new HashMap<>();
 
     public MultiDCOffsetChangeSummary() {
     }

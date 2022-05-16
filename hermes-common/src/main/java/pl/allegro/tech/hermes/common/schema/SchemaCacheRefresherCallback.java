@@ -20,10 +20,10 @@ class SchemaCacheRefresherCallback implements TopicCallback {
     public static final boolean REFRESH_ONLINE = true;
 
     private final CachedSchemaVersionsRepository schemaVersionsRepository;
-    private final CachedCompiledSchemaRepository compiledSchemaRepository;
+    private final CachedCompiledSchemaRepository<?> compiledSchemaRepository;
 
     public SchemaCacheRefresherCallback(CachedSchemaVersionsRepository schemaVersionsRepository,
-                                        CachedCompiledSchemaRepository compiledSchemaRepository) {
+                                        CachedCompiledSchemaRepository<?> compiledSchemaRepository) {
         this.schemaVersionsRepository = schemaVersionsRepository;
         this.compiledSchemaRepository = compiledSchemaRepository;
     }

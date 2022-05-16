@@ -1,13 +1,14 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import pl.allegro.tech.hermes.management.infrastructure.dc.DcNameSource;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @ConfigurationProperties(prefix = "storage")
+@EnableConfigurationProperties(StorageAuthorizationProperties.class)
 public class StorageClustersProperties {
 
     private String pathPrefix = "/hermes";
@@ -24,7 +25,6 @@ public class StorageClustersProperties {
     private int adminReaperInterval = 180000;
     private List<StorageProperties> clusters = new ArrayList<>();
 
-    @NestedConfigurationProperty
     private StorageAuthorizationProperties authorization;
 
     public String getPathPrefix() {

@@ -9,7 +9,6 @@ public class KafkaSaslProperties {
     private String protocol = "PLAINTEXT";
     private String username = "admin";
     private String password = "admin-secret";
-    private String jaasConfig;
 
     public boolean isEnabled() {
         return isEnabled;
@@ -55,9 +54,5 @@ public class KafkaSaslProperties {
         return "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
                 + "username=\"" + username + "\"\n"
                 + "password=\"" + password + "\";";
-    }
-
-    public void setJaasConfig(String jaasConfig) {
-        this.jaasConfig = jaasConfig;
     }
 }

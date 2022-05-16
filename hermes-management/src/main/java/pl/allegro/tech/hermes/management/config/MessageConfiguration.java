@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,26 +22,15 @@ import java.time.Clock;
 @EnableConfigurationProperties(MessageProperties.class)
 public class MessageConfiguration {
 
-    @Autowired
-    MessageProperties messageProperties;
-
-    @Autowired
-    Clock clock;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    SchemaRepository schemaRepository;
-
-    @Autowired
-    MetricRegistry metricRegistry;
-
     @Bean
-    MessageContentWrapper messageContentWrapper() {
+    MessageContentWrapper messageContentWrapper(MessageProperties messageProperties,
+                                                Clock clock,
+                                                ObjectMapper objectMapper,
+                                                SchemaRepository schemaRepository,
+                                                MetricRegistry metricRegistry) {
         DeserializationMetrics metrics = new DeserializationMetrics(metricRegistry);
         AvroMessageContentWrapper avroWrapper = new AvroMessageContentWrapper(clock);
-        JsonMessageContentWrapper jsonWrapper = jsonMessageContentWrapper();
+        JsonMessageContentWrapper jsonWrapper = jsonMessageContentWrapper(messageProperties, objectMapper);
 
         AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
                 new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, () -> true, avroWrapper, metrics);
@@ -69,8 +57,7 @@ public class MessageConfiguration {
                 schemaVersionTruncationContentWrapper);
     }
 
-    private JsonMessageContentWrapper jsonMessageContentWrapper() {
+    private JsonMessageContentWrapper jsonMessageContentWrapper(MessageProperties messageProperties, ObjectMapper objectMapper) {
         return new JsonMessageContentWrapper(messageProperties.getContentRoot(), messageProperties.getMetadataContentRoot(), objectMapper);
     }
-
 }

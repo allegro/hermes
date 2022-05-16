@@ -46,8 +46,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final ObjectMapper mapper;
     private final ZookeeperPaths paths;
     private final ZookeeperClientManager clientManager;
-    private ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
-    private Integer adminReaperInterval;
+    private final ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
+    private final Integer adminReaperInterval;
 
     private final Map<Class<?>, Object> repositoryByType = new HashMap<>();
 
@@ -141,7 +141,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         return getRepositoriesByType(repositoryType)
                 .entrySet()
                 .stream()
-                .sorted(Comparator.comparing(Map.Entry::getKey))
+                .sorted(Map.Entry.comparingByKey())
                 .map(entry -> new DatacenterBoundRepositoryHolder<>(entry.getValue(), entry.getKey()))
                 .collect(Collectors.toList());
     }

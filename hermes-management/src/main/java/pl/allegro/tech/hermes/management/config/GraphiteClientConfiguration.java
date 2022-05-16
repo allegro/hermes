@@ -24,12 +24,12 @@ import static com.google.common.base.Ticker.systemTicker;
 @EnableConfigurationProperties({MetricsProperties.class, GraphiteClientProperties.class})
 public class GraphiteClientConfiguration {
 
-    @Autowired
-    MetricsProperties metricsProperties;
+    private final MetricsProperties metricsProperties;
 
     @Autowired
-    GraphiteClientProperties graphiteClientProperties;
-
+    public GraphiteClientConfiguration(MetricsProperties metricsProperties) {
+        this.metricsProperties = metricsProperties;
+    }
 
     @Bean
     public MetricsPaths metricsPaths() {
@@ -37,7 +37,8 @@ public class GraphiteClientConfiguration {
     }
 
     @Bean
-    public GraphiteClient graphiteClient(@Qualifier("graphiteRestTemplate") RestTemplate graphiteRestTemplate) {
+    public GraphiteClient graphiteClient(@Qualifier("graphiteRestTemplate") RestTemplate graphiteRestTemplate,
+                                         GraphiteClientProperties graphiteClientProperties) {
         RestTemplateGraphiteClient underlyingGraphiteClient = new RestTemplateGraphiteClient(graphiteRestTemplate, URI.create(metricsProperties.getGraphiteHttpUri()));
         return new CachingGraphiteClient(
                 underlyingGraphiteClient,

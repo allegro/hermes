@@ -126,7 +126,7 @@ public class BrokersClusterService {
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {
         Collection<ConsumerGroupDescription> consumerGroupsDescriptions = adminClient.describeConsumerGroups(consumerGroupsIds).all().get().values();
         Stream<MemberDescription> memberDescriptions = consumerGroupsDescriptions.stream().flatMap(desc -> desc.members().stream());
-        return memberDescriptions.flatMap(memberDescription -> memberDescription.assignment().topicPartitions().stream()).collect(Collectors.toList()).size();
+        return (int) memberDescriptions.flatMap(memberDescription -> memberDescription.assignment().topicPartitions().stream()).count();
     }
 
     private int numberOfPartitionsForTopic(Topic topic) throws ExecutionException, InterruptedException {

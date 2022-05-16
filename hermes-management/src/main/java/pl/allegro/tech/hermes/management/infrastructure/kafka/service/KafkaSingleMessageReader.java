@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class KafkaSingleMessageReader implements SingleMessageReader {
     private final KafkaRawMessageReader kafkaRawMessageReader;
@@ -30,7 +30,7 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
         if (topic.getContentType() == ContentType.AVRO) {
             bytes = convertAvroToJson(topic, bytes);
         }
-        return new String(bytes, Charset.forName("UTF-8"));
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     private byte[] convertAvroToJson(Topic topic, byte[] bytes) {

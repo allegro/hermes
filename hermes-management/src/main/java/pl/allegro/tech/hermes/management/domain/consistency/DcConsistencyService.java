@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.management.domain.consistency;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
@@ -37,6 +39,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 @Component
+@EnableConfigurationProperties(ConsistencyCheckerProperties.class)
 public class DcConsistencyService {
     private final ExecutorService executor;
     private final List<DatacenterBoundRepositoryHolder<GroupRepository>> groupRepositories;
@@ -44,6 +47,7 @@ public class DcConsistencyService {
     private final List<DatacenterBoundRepositoryHolder<SubscriptionRepository>> subscriptionRepositories;
     private final ObjectMapper objectMapper;
 
+    @Autowired
     public DcConsistencyService(RepositoryManager repositoryManager,
                               ObjectMapper objectMapper,
                               ConsistencyCheckerProperties properties) {

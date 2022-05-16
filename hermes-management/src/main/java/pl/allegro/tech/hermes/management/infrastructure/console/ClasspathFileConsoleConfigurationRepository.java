@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 public class ClasspathFileConsoleConfigurationRepository implements ConsoleConfigurationRepository {
 
-    private String configuration;
+    private final String configuration;
 
     public ClasspathFileConsoleConfigurationRepository(ConsoleConfigProperties properties) {
         configuration = loadConfiguration(properties.getLocation());

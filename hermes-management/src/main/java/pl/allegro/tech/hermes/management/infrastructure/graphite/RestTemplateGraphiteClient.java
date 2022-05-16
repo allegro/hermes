@@ -11,7 +11,6 @@ import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
 
 import javax.ws.rs.core.UriBuilder;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class RestTemplateGraphiteClient implements GraphiteClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RestTemplateGraphiteClient.class);
 
-    private static final ParameterizedTypeReference<List<GraphiteResponse>> GRAPHITE_RESPONSE_TYPE = new ParameterizedTypeReference<List<GraphiteResponse>>() {
+    private static final ParameterizedTypeReference<List<GraphiteResponse>> GRAPHITE_RESPONSE_TYPE = new ParameterizedTypeReference<>() {
     };
 
     private static final String DEFAULT_VALUE = "0.0";
@@ -42,7 +41,7 @@ public class RestTemplateGraphiteClient implements GraphiteClient {
     public GraphiteMetrics readMetrics(String... metricPaths) {
         try {
             GraphiteMetrics response = new GraphiteMetrics();
-            queryGraphite(metricPaths).stream().forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
+            queryGraphite(metricPaths).forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
             return response;
         } catch (Exception exception) {
             logger.warn("Unable to read from Graphite: {}", getRootCauseMessage(exception));
@@ -71,7 +70,7 @@ public class RestTemplateGraphiteClient implements GraphiteClient {
         return !graphiteResponse.getDatapoints().isEmpty() && !graphiteResponse.getDatapoints().get(0).isEmpty();
     }
 
-    private List<GraphiteResponse> queryGraphite(String... queries) throws UnsupportedEncodingException {
+    private List<GraphiteResponse> queryGraphite(String... queries) {
         UriBuilder builder = UriBuilder.fromUri(graphiteUri)
                 .path("render")
                 .queryParam("from", "-5minutes")

@@ -14,5 +14,4 @@ public class LogRepositoryConfiguration {
     public LogRepository logRepository() {
         return new NoOperationLogRepository();
     }
-
 }

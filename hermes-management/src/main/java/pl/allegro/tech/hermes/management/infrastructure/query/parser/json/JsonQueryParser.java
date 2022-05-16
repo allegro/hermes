@@ -149,7 +149,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
             throw new MatcherNotFoundException(
                     String.format(
                             "The object must define exactly one member, but defines %s",
-                            Lists.newArrayList(node.fieldNames()).toString()
+                            Lists.newArrayList(node.fieldNames())
                     )
             );
         }

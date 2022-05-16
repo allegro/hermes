@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
@@ -22,8 +21,6 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-
-import static java.util.stream.Collectors.toList;
 
 @Component
 public class SubscriptionOwnerCache {

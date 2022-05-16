@@ -49,11 +49,14 @@ import static java.util.stream.Collectors.toList;
 @EnableConfigurationProperties(StorageClustersProperties.class)
 public class StorageConfiguration {
 
-    @Autowired
-    StorageClustersProperties storageClustersProperties;
+    private final StorageClustersProperties storageClustersProperties;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    public StorageConfiguration(StorageClustersProperties storageClustersProperties, ObjectMapper objectMapper) {
+        this.storageClustersProperties = storageClustersProperties;
+        this.objectMapper = objectMapper;
+    }
 
     @Bean
     DatacenterNameProvider dcNameProvider() {

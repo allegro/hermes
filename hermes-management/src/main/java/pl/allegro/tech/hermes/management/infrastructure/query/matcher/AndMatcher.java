@@ -4,7 +4,7 @@ import java.util.Collection;
 
 public class AndMatcher implements Matcher {
 
-    private Collection<Matcher> matchers;
+    private final Collection<Matcher> matchers;
 
     public AndMatcher(Collection<Matcher> matchers) {
         this.matchers = matchers;

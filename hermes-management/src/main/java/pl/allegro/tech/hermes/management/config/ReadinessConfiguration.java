@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.management.domain.readiness.ReadinessService;
 
 @Configuration
 public class ReadinessConfiguration {
+
     @Bean
     ReadinessService readinessService(MultiDatacenterRepositoryCommandExecutor commandExecutor,
                                       MultiDatacenterRepositoryQueryExecutor queryExecutor) {

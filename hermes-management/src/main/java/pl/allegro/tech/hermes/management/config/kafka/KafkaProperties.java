@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+
+@EnableConfigurationProperties(KafkaSaslProperties.class)
 public class KafkaProperties {
 
     private String datacenter = "datacenter";

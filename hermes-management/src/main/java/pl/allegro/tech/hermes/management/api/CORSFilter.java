@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.management.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.config.CorsProperties;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -9,7 +11,9 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 
+@Component
 @Provider
+@EnableConfigurationProperties(CorsProperties.class)
 public class CORSFilter implements ContainerResponseFilter {
 
     private final CorsProperties corsProperties;

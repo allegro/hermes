@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmission
 
 @Configuration
 public class OfflineRetransmissionConfiguration {
+
     @Bean
     @Qualifier("dcAwareOfflineRetransmissionRepository")
     OfflineRetransmissionRepository dcAwareOfflineRetransmissionRepository(

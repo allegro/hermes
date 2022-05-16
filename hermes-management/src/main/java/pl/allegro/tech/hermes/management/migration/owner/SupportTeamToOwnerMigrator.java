@@ -98,7 +98,7 @@ public class SupportTeamToOwnerMigrator {
 
     private static class EntityMigrationCounters {
         private int migrated = 0;
-        private Map<String, Integer> skipped = new HashMap<>();
+        private final Map<String, Integer> skipped = new HashMap<>();
 
         void markMigrated() {
             migrated += 1;

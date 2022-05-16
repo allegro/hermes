@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.api.reader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.json.JsonQueryParser;
@@ -11,13 +12,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 @Provider
+@Component
 public class QueryBodyReader implements MessageBodyReader<Query> {
 
     private final ObjectMapper objectMapper;
@@ -38,7 +39,7 @@ public class QueryBodyReader implements MessageBodyReader<Query> {
                           Annotation[] annotations,
                           MediaType mediaType,
                           MultivaluedMap<String, String> httpHeaders,
-                          InputStream entityStream) throws IOException, WebApplicationException {
+                          InputStream entityStream) throws WebApplicationException {
 
         Class<?> queryType = Object.class;
         if (genericType instanceof ParameterizedType) {

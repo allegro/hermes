@@ -26,7 +26,7 @@ public class MessageFilterTypeValidator {
         subscription.getFilters()
                 .stream()
                 .map(filter -> new ContentTypeFilterTypePair(topic.getContentType(), filter.getType()))
-                .forEach(pair -> checkTypeMaching(pair));
+                .forEach(this::checkTypeMaching);
     }
 
     private void checkTypeMaching(ContentTypeFilterTypePair pair) {
@@ -36,8 +36,8 @@ public class MessageFilterTypeValidator {
     }
 
     static class ContentTypeFilterTypePair {
-        private ContentType contentType;
-        private String filterType;
+        private final ContentType contentType;
+        private final String filterType;
 
         ContentTypeFilterTypePair(ContentType contentType, String filterType) {
             this.contentType = contentType;

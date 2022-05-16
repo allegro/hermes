@@ -21,13 +21,13 @@ public class SchemaVersionsRepositoryFactory implements Factory<SchemaVersionsRe
     private final RawSchemaClient rawSchemaClient;
     private final ConfigFactory configFactory;
     private final InternalNotificationsBus notificationsBus;
-    private final CompiledSchemaRepository compiledSchemaRepository;
+    private final CompiledSchemaRepository<?> compiledSchemaRepository;
 
     @Inject
     public SchemaVersionsRepositoryFactory(RawSchemaClient rawSchemaClient,
                                            ConfigFactory configFactory,
                                            InternalNotificationsBus notificationsBus,
-                                           CompiledSchemaRepository compiledSchemaRepository) {
+                                           CompiledSchemaRepository<?> compiledSchemaRepository) {
         this.rawSchemaClient = rawSchemaClient;
         this.configFactory = configFactory;
         this.notificationsBus = notificationsBus;
@@ -46,7 +46,7 @@ public class SchemaVersionsRepositoryFactory implements Factory<SchemaVersionsRe
             notificationsBus.registerTopicCallback(
                     new SchemaCacheRefresherCallback(
                             cachedSchemaVersionsRepository,
-                            (CachedCompiledSchemaRepository) compiledSchemaRepository));
+                            (CachedCompiledSchemaRepository<?>) compiledSchemaRepository));
 
             return cachedSchemaVersionsRepository;
         }

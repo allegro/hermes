@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;

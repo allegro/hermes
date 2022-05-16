@@ -67,7 +67,7 @@ public class ManagementRights {
     }
 
     class SubscriptionCreatorRights implements CreatorRights<Subscription> {
-        private ContainerRequestContext requestContext;
+        private final ContainerRequestContext requestContext;
 
         SubscriptionCreatorRights(ContainerRequestContext requestContext) {
             this.requestContext = requestContext;
@@ -85,7 +85,7 @@ public class ManagementRights {
     }
 
     class GroupCreatorRights implements CreatorRights<Group> {
-        private ContainerRequestContext requestContext;
+        private final ContainerRequestContext requestContext;
 
         GroupCreatorRights(ContainerRequestContext requestContext) {
             this.requestContext = requestContext;

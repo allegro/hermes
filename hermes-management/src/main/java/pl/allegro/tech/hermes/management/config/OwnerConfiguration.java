@@ -16,5 +16,4 @@ public class OwnerConfiguration {
     public OwnerSources ownerSources(List<OwnerSource> ownerSources) {
         return new OwnerSources(ownerSources);
     }
-
 }

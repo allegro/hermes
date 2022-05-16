@@ -27,7 +27,7 @@ public class SummedSharedCounter {
     public long getValue(String path) {
         return distributedAtomicLongCaches.stream()
                 .map(distAtomicLong -> getValue(distAtomicLong, path))
-                .reduce(0L, (a, b) -> a + b);
+                .reduce(0L, Long::sum);
     }
 
     private long getValue(LoadingCache<String, DistributedAtomicLong> distAtomicLong, String path) {
@@ -42,7 +42,7 @@ public class SummedSharedCounter {
                                                                           int distributedLoaderBackoff, int distributedLoaderRetries) {
         return CacheBuilder.newBuilder()
                 .expireAfterAccess(expireAfter, TimeUnit.HOURS)
-                .build(new CacheLoader<String, DistributedAtomicLong>() {
+                .build(new CacheLoader<>() {
                            @Override
                            public DistributedAtomicLong load(String key) {
                                return new DistributedAtomicLong(curatorClient, key,

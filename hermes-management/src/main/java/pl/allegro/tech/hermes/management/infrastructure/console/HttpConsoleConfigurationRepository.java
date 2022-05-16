@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.management.domain.console.ConsoleConfigurationRepo
 
 public class HttpConsoleConfigurationRepository implements ConsoleConfigurationRepository {
 
-    private String configuration;
+    private final String configuration;
 
     public HttpConsoleConfigurationRepository(ConsoleConfigProperties properties, RestTemplate restTemplate) {
         configuration = loadConfiguration(properties.getLocation(), restTemplate);

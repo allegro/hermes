@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -20,18 +19,11 @@ import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscription
 import java.time.Clock;
 
 @Configuration
-@EnableConfigurationProperties({
-        TopicProperties.class,
-        MetricsProperties.class,
-        HttpClientProperties.class,
-        ConsistencyCheckerProperties.class})
+@EnableConfigurationProperties(TopicProperties.class)
 public class ManagementConfiguration {
 
-    @Autowired
-    TopicProperties topicProperties;
-
     @Bean
-    public ObjectMapper objectMapper() {
+    public ObjectMapper objectMapper(TopicProperties topicProperties) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -62,6 +54,4 @@ public class ManagementConfiguration {
     public Clock clock() {
         return new ClockFactory().provide();
     }
-
-
 }

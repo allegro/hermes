@@ -40,7 +40,7 @@ public class TopicContentTypeMigrationService {
     }
 
     void notifySubscriptions(Topic topic, Instant beforeMigrationInstant, RequestUser requester) {
-        waitUntilOffsetsAvailableOnAllKafkaTopics(topic, CHECK_OFFSETS_AVAILABLE_TIMEOUT);
+        waitUntilOffsetsAvailableOnAllKafkaTopics(topic);
         logger.info("Offsets available on all partitions of topic {}", topic.getQualifiedName());
         notSuspendedSubscriptionsForTopic(topic)
                 .map(Subscription::getName)
@@ -62,8 +62,8 @@ public class TopicContentTypeMigrationService {
         multiDCAwareService.moveOffset(topic, subscriptionName, beforeMigrationInstant.toEpochMilli(), false, requester);
     }
 
-    private void waitUntilOffsetsAvailableOnAllKafkaTopics(Topic topic, Duration offsetsAvailableTimeout) {
-        Instant abortAttemptsInstant = clock.instant().plus(offsetsAvailableTimeout);
+    private void waitUntilOffsetsAvailableOnAllKafkaTopics(Topic topic) {
+        Instant abortAttemptsInstant = clock.instant().plus(TopicContentTypeMigrationService.CHECK_OFFSETS_AVAILABLE_TIMEOUT);
 
         while (!multiDCAwareService.areOffsetsAvailableOnAllKafkaTopics(topic)) {
             if (clock.instant().isAfter(abortAttemptsInstant)) {

@@ -15,7 +15,7 @@ import javax.ws.rs.Produces;
 @Api(value = "/", description = "Hermes console")
 public class ConsoleEndpoint {
 
-    private ConsoleService service;
+    private final ConsoleService service;
 
     public ConsoleEndpoint(ConsoleService service) {
         this.service = service;

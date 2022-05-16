@@ -31,8 +31,7 @@ public class InMatcher implements Matcher {
     }
 
     private boolean contains(Object actual) {
-        return Arrays.stream(values)
-                .anyMatch(actual::equals);
+        return Arrays.asList(values).contains(actual);
     }
 
     private String asString(Object actual) {

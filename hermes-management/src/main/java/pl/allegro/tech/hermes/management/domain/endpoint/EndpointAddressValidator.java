@@ -4,12 +4,12 @@ import com.damnhandy.uri.template.UriTemplate;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
@@ -47,7 +47,7 @@ public class EndpointAddressValidator {
     }
 
     private boolean isInvalidHost(UriTemplate template) {
-        Map<String, Object> uriKeysWithEmptyValues = asList(template.getVariables()).stream().collect(toMap(identity(), v -> "empty"));
+        Map<String, Object> uriKeysWithEmptyValues = Arrays.stream(template.getVariables()).collect(toMap(identity(), v -> "empty"));
 
         //check if host is null due to bug in jdk https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6587184
         return URI.create(template.expand(uriKeysWithEmptyValues)).getHost() == null;
