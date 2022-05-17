@@ -161,7 +161,7 @@ public class HermesMetrics {
         try {
             return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
         } catch (NullPointerException exception) {
-            logger.warn("Specified key is null for gauge: {}", gauge);
+            logger.warn("Specified gauge doesn't exist: {}", gauge);
             return 0;
         }
     }

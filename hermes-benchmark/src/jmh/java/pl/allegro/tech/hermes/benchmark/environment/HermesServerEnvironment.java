@@ -33,7 +33,7 @@ public class HermesServerEnvironment {
 
     @Setup(Level.Trial)
     public void setupEnvironment() throws Exception {
-        hermesServer = BenchmarkProviders.provideHermesServer();
+        hermesServer = HermesServerFactory.provideHermesServer();
         hermesServer.start();
     }
 

@@ -3,14 +3,14 @@ package pl.allegro.tech.hermes.benchmark.environment;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.IMessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwareSerDe;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
 import java.util.Map;
 
-public class BenchmarkMessageContentWrapper implements IMessageContentWrapper {
+public class BenchmarkMessageContentWrapper implements MessageContentWrapper {
 
     private final AvroMessageContentWrapper avroMessageContentWrapper;
 

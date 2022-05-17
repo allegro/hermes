@@ -39,7 +39,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareCon
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksWaitingRateLimiter;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -164,14 +164,14 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MessageContentWrapper messageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
-                                                       AvroMessageContentWrapper avroMessageContentWrapper,
-                                                       AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
-                                                       AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
-                                                       AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
-                                                       AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper,
-                                                       AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
-        return new MessageContentWrapper(jsonMessageContentWrapper, avroMessageContentWrapper, schemaIdAwareContentWrapper,
+    public CompositeMessageContentWrapper messageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
+                                                                AvroMessageContentWrapper avroMessageContentWrapper,
+                                                                AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
+                                                                AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
+                                                                AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
+                                                                AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper,
+                                                                AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
+        return new CompositeMessageContentWrapper(jsonMessageContentWrapper, avroMessageContentWrapper, schemaIdAwareContentWrapper,
                 headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper, anySchemaVersionContentWrapper,
                 schemaVersionTruncationContentWrapper);
     }

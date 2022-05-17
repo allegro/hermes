@@ -10,9 +10,9 @@ import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
-import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
+import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
-import pl.allegro.tech.hermes.frontend.server.ReadinessChecker;
+import pl.allegro.tech.hermes.frontend.server.DefaultReadinessChecker;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
@@ -31,20 +31,20 @@ public class FrontendServerConfiguration {
     public HermesServer hermesServer(ConfigFactory configFactory,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
-                                     ReadinessChecker readinessChecker,
-                                     MessagePreviewPersister messagePreviewPersister,
+                                     DefaultReadinessChecker defaultReadinessChecker,
+                                     DefaultMessagePreviewPersister defaultMessagePreviewPersister,
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider) {
-        return new HermesServer(configFactory, hermesMetrics, publishingHandler, readinessChecker,
-                messagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider);
+        return new HermesServer(configFactory, hermesMetrics, publishingHandler, defaultReadinessChecker,
+                defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider);
     }
 
     @Bean
-    public ReadinessChecker readinessChecker(ConfigFactory config,
-                                             TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                             ReadinessRepository readinessRepository) {
-        return new ReadinessChecker(config, topicMetadataLoadingRunner, readinessRepository);
+    public DefaultReadinessChecker readinessChecker(ConfigFactory config,
+                                                    TopicMetadataLoadingRunner topicMetadataLoadingRunner,
+                                                    ReadinessRepository readinessRepository) {
+        return new DefaultReadinessChecker(config, topicMetadataLoadingRunner, readinessRepository);
     }
 
     @Bean

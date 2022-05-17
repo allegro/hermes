@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
-import pl.allegro.tech.hermes.frontend.publishing.preview.IMessagePreviewPersister;
+import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
 import javax.inject.Inject;
@@ -53,8 +53,8 @@ public class HermesServer {
     private final ConfigFactory configFactory;
     private final HttpHandler publishingHandler;
     private final HealthCheckService healthCheckService;
-    private final IReadinessChecker readinessChecker;
-    private final IMessagePreviewPersister messagePreviewPersister;
+    private final ReadinessChecker readinessChecker;
+    private final MessagePreviewPersister messagePreviewPersister;
     private final int port;
     private final int sslPort;
     private final String host;
@@ -67,8 +67,8 @@ public class HermesServer {
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
-            IReadinessChecker readinessChecker,
-            IMessagePreviewPersister messagePreviewPersister,
+            ReadinessChecker readinessChecker,
+            MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
             TopicMetadataLoadingJob topicMetadataLoadingJob,
             SslContextFactoryProvider sslContextFactoryProvider) {
@@ -103,12 +103,12 @@ public class HermesServer {
     public void stop() throws InterruptedException {
         boolean isGraceful = configFactory.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED);
         if(isGraceful) {
-            gracefullyPrepareForShutdown();
+            prepareForGracefulShutdown();
         }
         shutdown();
     }
 
-    public void gracefullyPrepareForShutdown() throws InterruptedException {
+    public void prepareForGracefulShutdown() throws InterruptedException {
         healthCheckService.shutdown();
 
         Thread.sleep(configFactory.getIntProperty(Configs.FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS));

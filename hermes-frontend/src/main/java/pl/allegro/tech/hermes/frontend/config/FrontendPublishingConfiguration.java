@@ -5,7 +5,7 @@ import io.undertow.server.HttpHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
@@ -23,7 +23,7 @@ import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropaga
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
-import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
+import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -69,10 +69,10 @@ public class FrontendPublishingConfiguration {
                                          AvroEnforcer enforcer,
                                          SchemaRepository schemaRepository,
                                          HeadersPropagator headersPropagator,
-                                         MessageContentWrapper messageContentWrapper,
+                                         CompositeMessageContentWrapper compositeMessageContentWrapper,
                                          Clock clock,
                                          ConfigFactory configFactory) {
-        return new MessageFactory(validators, enforcer, schemaRepository, headersPropagator, messageContentWrapper,
+        return new MessageFactory(validators, enforcer, schemaRepository, headersPropagator, compositeMessageContentWrapper,
                 clock, configFactory);
     }
 
@@ -93,9 +93,9 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public MessagePreviewPersister messagePreviewPersister(MessagePreviewLog messagePreviewLog,
-                                                           MessagePreviewRepository repository,
-                                                           ConfigFactory configFactory) {
-        return new MessagePreviewPersister(messagePreviewLog, repository, configFactory);
+    public DefaultMessagePreviewPersister messagePreviewPersister(MessagePreviewLog messagePreviewLog,
+                                                                  MessagePreviewRepository repository,
+                                                                  ConfigFactory configFactory) {
+        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, configFactory);
     }
 }

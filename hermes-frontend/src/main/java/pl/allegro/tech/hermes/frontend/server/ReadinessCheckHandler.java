@@ -9,10 +9,10 @@ import static io.undertow.util.StatusCodes.SERVICE_UNAVAILABLE;
 
 public class ReadinessCheckHandler implements HttpHandler {
 
-    private final IReadinessChecker readinessChecker;
+    private final ReadinessChecker readinessChecker;
     private final HealthCheckService healthCheckService;
 
-    public ReadinessCheckHandler(IReadinessChecker readinessChecker, HealthCheckService healthCheckService) {
+    public ReadinessCheckHandler(ReadinessChecker readinessChecker, HealthCheckService healthCheckService) {
         this.readinessChecker = readinessChecker;
         this.healthCheckService = healthCheckService;
     }

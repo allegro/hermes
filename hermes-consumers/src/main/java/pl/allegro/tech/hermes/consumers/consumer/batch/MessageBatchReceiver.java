@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -36,7 +36,7 @@ public class MessageBatchReceiver {
     private final MessageReceiver receiver;
     private final MessageBatchFactory batchFactory;
     private final MessageConverterResolver messageConverterResolver;
-    private final MessageContentWrapper messageContentWrapper;
+    private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final HermesMetrics hermesMetrics;
     private final Trackers trackers;
     private final Queue<Message> inflight;
@@ -47,14 +47,14 @@ public class MessageBatchReceiver {
                                 MessageBatchFactory batchFactory,
                                 HermesMetrics hermesMetrics,
                                 MessageConverterResolver messageConverterResolver,
-                                MessageContentWrapper messageContentWrapper,
+                                CompositeMessageContentWrapper compositeMessageContentWrapper,
                                 Topic topic,
                                 Trackers trackers) {
         this.receiver = receiver;
         this.batchFactory = batchFactory;
         this.hermesMetrics = hermesMetrics;
         this.messageConverterResolver = messageConverterResolver;
-        this.messageContentWrapper = messageContentWrapper;
+        this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.topic = topic;
         this.trackers = trackers;
         this.inflight = new ArrayDeque<>(1);
@@ -120,9 +120,9 @@ public class MessageBatchReceiver {
     private byte[] wrap(Subscription subscription, Message next) {
         switch (subscription.getContentType()) {
             case AVRO:
-                return messageContentWrapper.wrapAvro(next.getData(), next.getId(), next.getPublishingTimestamp(), topic, next.<Schema>getSchema().get(), next.getExternalMetadata());
+                return compositeMessageContentWrapper.wrapAvro(next.getData(), next.getId(), next.getPublishingTimestamp(), topic, next.<Schema>getSchema().get(), next.getExternalMetadata());
             case JSON:
-                return messageContentWrapper.wrapJson(next.getData(), next.getId(), next.getPublishingTimestamp(), next.getExternalMetadata());
+                return compositeMessageContentWrapper.wrapJson(next.getData(), next.getId(), next.getPublishingTimestamp(), next.getExternalMetadata());
             default:
                 throw new UnsupportedContentTypeException(subscription);
         }
