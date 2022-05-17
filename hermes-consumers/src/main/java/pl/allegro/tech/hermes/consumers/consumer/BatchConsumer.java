@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.batch.BatchMonitoring;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
@@ -49,7 +49,7 @@ public class BatchConsumer implements Consumer {
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configs;
     private final MessageConverterResolver messageConverterResolver;
-    private final MessageContentWrapper messageContentWrapper;
+    private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final Trackers trackers;
 
     private Topic topic;
@@ -66,7 +66,7 @@ public class BatchConsumer implements Consumer {
                          MessageBatchFactory batchFactory,
                          OffsetQueue offsetQueue,
                          MessageConverterResolver messageConverterResolver,
-                         MessageContentWrapper messageContentWrapper,
+                         CompositeMessageContentWrapper compositeMessageContentWrapper,
                          HermesMetrics hermesMetrics,
                          Trackers trackers,
                          Subscription subscription,
@@ -81,7 +81,7 @@ public class BatchConsumer implements Consumer {
         this.configs = configs;
         this.monitoring = new BatchMonitoring(hermesMetrics, trackers);
         this.messageConverterResolver = messageConverterResolver;
-        this.messageContentWrapper = messageContentWrapper;
+        this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.topic = topic;
         this.trackers = trackers;
     }
@@ -128,7 +128,7 @@ public class BatchConsumer implements Consumer {
         MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(topic, subscription, new BatchConsumerRateLimiter());
 
         logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());
-        this.receiver = new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, messageContentWrapper, topic, trackers);
+        this.receiver = new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, compositeMessageContentWrapper, topic, trackers);
     }
 
     @Override

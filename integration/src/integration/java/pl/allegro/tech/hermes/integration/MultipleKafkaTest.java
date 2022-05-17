@@ -92,10 +92,8 @@ public class MultipleKafkaTest extends IntegrationTest {
     }
 
     private FrontendStarter setupFrontend() throws Exception {
-        FrontendStarter frontend = new FrontendStarter(FRONTEND_PORT, false);
-        frontend.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
+        FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT, false);
         frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
-        frontend.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
         frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperTwo.getConnectionString());
@@ -110,5 +108,4 @@ public class MultipleKafkaTest extends IntegrationTest {
 
         return frontend;
     }
-
 }

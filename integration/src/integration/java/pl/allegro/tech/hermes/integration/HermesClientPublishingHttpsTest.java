@@ -22,7 +22,10 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
-import static pl.allegro.tech.hermes.common.config.Configs.*;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLED;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_KEYSTORE_SOURCE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_SOURCE;
+import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class HermesClientPublishingHttpsTest extends IntegrationTest {
@@ -80,7 +83,7 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
     }
 
     private FrontendStarter startFrontend(int port, int sslPort) throws Exception {
-        FrontendStarter frontend = new FrontendStarter(port, true);
+        FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(port, true);
 
         frontend.overrideProperty(FRONTEND_HTTP2_ENABLED, true);
         frontend.overrideProperty(Configs.FRONTEND_SSL_PORT, sslPort);

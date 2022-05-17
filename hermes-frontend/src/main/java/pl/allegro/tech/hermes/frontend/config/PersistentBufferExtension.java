@@ -1,9 +1,8 @@
-package pl.allegro.tech.hermes.frontend.di;
+package pl.allegro.tech.hermes.frontend.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.hook.HooksHandler;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
@@ -36,8 +35,6 @@ public class PersistentBufferExtension {
 
     private final BrokerListeners listeners;
 
-    private final HooksHandler hooksHandler;
-
     private final BackupMessagesLoader backupMessagesLoader;
     private final HermesMetrics hermesMetrics;
 
@@ -48,13 +45,11 @@ public class PersistentBufferExtension {
     public PersistentBufferExtension(ConfigFactory configFactory,
                                      Clock clock,
                                      BrokerListeners listeners,
-                                     HooksHandler hooksHandler,
                                      BackupMessagesLoader backupMessagesLoader,
                                      HermesMetrics hermesMetrics) {
         this.config = configFactory;
         this.clock = clock;
         this.listeners = listeners;
-        this.hooksHandler = hooksHandler;
         this.backupMessagesLoader = backupMessagesLoader;
         this.hermesMetrics = hermesMetrics;
     }
@@ -86,21 +81,16 @@ public class PersistentBufferExtension {
     private void loadTemporaryBackupV2Files(BackupFilesManager backupFilesManager) {
         String temporaryDir = config.getStringProperty(MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY);
         List<File> temporaryBackupV2Files = backupFilesManager.getTemporaryBackupV2Files(temporaryDir);
-        hooksHandler.addStartupHook((s) -> {
-            temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
-            backupMessagesLoader.clearTopicsAvailabilityCache();
-        });
+        temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
+        backupMessagesLoader.clearTopicsAvailabilityCache();
     }
 
     private void rollBackupFiles(BackupFilesManager backupFilesManager, List<File> rolledBackupFiles) {
         logger.info("Backup files were found. Number of files: {}. Files: {}",
                 rolledBackupFiles.size(),
                 rolledBackupFiles.stream().map(File::getName).collect(joining(", ")));
-
-        hooksHandler.addStartupHook((s) -> {
-            rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
+        rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
             backupMessagesLoader.clearTopicsAvailabilityCache();
-        });
     }
 
     private void enableLocalStorage(BackupFilesManager backupFilesManager) {

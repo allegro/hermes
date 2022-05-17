@@ -7,7 +7,7 @@
         </encoder>
     </appender>
 
-    <logger name="pl.allegro.tech.hermes.benchmark.environment.FrontendEnvironment" level="INFO"/>
+    <logger name="pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment" level="INFO"/>
     <logger name="org.apache.kafka.common.network.Selector" level="ERROR"/>
 
     <root level="ERROR">

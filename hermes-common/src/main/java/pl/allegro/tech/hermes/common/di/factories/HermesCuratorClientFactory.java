@@ -22,6 +22,7 @@ public class HermesCuratorClientFactory implements Factory<CuratorFramework> {
     @Override
     public CuratorFramework provide() {
         String connectString = configFactory.getStringProperty(Configs.ZOOKEEPER_CONNECT_STRING);
+
         Optional<CuratorClientFactory.ZookeeperAuthorization> authorization = Optional.empty();
 
         if (configFactory.getBooleanProperty(Configs.ZOOKEEPER_AUTHORIZATION_ENABLED)) {

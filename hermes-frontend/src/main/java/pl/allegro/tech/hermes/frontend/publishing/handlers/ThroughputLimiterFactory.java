@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -16,9 +15,9 @@ import java.util.concurrent.ThreadFactory;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 
-public class ThroughputLimiterFactory implements Factory<ThroughputLimiter> {
-    private ConfigFactory configs;
-    private HermesMetrics hermesMetrics;
+public class ThroughputLimiterFactory {
+    private final ConfigFactory configs;
+    private final HermesMetrics hermesMetrics;
 
     private enum ThroughputLimiterType { UNLIMITED, FIXED, DYNAMIC }
 
@@ -28,7 +27,6 @@ public class ThroughputLimiterFactory implements Factory<ThroughputLimiter> {
         this.hermesMetrics = hermesMetrics;
     }
 
-    @Override
     public ThroughputLimiter provide() {
         switch (ThroughputLimiterType.valueOf(configs.getStringProperty(Configs.FRONTEND_THROUGHPUT_TYPE).toUpperCase())) {
             case UNLIMITED:
@@ -56,10 +54,5 @@ public class ThroughputLimiterFactory implements Factory<ThroughputLimiter> {
                 .setNameFormat("ThroughputLimiterExecutor-%d")
                 .setUncaughtExceptionHandler((t, e) -> logger.error("ThroughputLimiterExecutor failed {}", t.getName(), e)).build();
         return newScheduledThreadPool(1, threadFactory);
-    }
-
-    @Override
-    public void dispose(ThroughputLimiter instance) {
-
     }
 }

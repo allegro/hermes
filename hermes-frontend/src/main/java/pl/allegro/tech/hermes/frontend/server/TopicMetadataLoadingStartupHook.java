@@ -1,35 +1,31 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.hook.Hook;
-import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 
 import javax.inject.Inject;
 
-public class TopicMetadataLoadingStartupHook implements ServiceAwareHook {
+public class TopicMetadataLoadingStartupHook {
     private static final Logger logger = LoggerFactory.getLogger(TopicMetadataLoadingStartupHook.class);
 
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;
 
-    @Inject
-    public TopicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner) {
+    private final boolean isTopicMetadataLoadingStartupHookEnabled;
+
+    public TopicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, boolean isTopicMetadataLoadingStartupHookEnabled) {
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
+        this.isTopicMetadataLoadingStartupHookEnabled = isTopicMetadataLoadingStartupHookEnabled;
     }
 
-    @Override
-    public void accept(ServiceLocator serviceLocator) {
-        try {
-            topicMetadataLoadingRunner.refreshMetadata();
-        } catch (Exception e) {
-            logger.error("An error occurred while refreshing topic metadata", e);
+    public void run() {
+        if(isTopicMetadataLoadingStartupHookEnabled) {
+            try {
+                topicMetadataLoadingRunner.refreshMetadata();
+            } catch (Exception e) {
+                logger.error("An error occurred while refreshing topic metadata", e);
+            }
+        } else {
+            logger.info("Topic metadata loading startup hook is disabled");
         }
     }
-
-    @Override
-    public int getPriority() {
-        return Hook.NORMAL_PRIORITY;
-    }
-
 }

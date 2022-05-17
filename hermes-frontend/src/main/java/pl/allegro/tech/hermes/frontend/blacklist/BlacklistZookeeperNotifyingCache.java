@@ -44,6 +44,14 @@ public class BlacklistZookeeperNotifyingCache extends PathChildrenCache implemen
         }
     }
 
+    public void startup() {
+        try {
+            this.start();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to start Zookeeper Topic Blacklist cache", e);
+        }
+    }
+
     private String getTopicName(PathChildrenCacheEvent event) {
         String[] paths = event.getData().getPath().split("/");
         return paths[paths.length - 1];
