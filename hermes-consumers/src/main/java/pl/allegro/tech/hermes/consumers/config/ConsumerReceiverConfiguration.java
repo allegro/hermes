@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
@@ -23,20 +24,18 @@ public class ConsumerReceiverConfiguration {
 
     @Bean
     public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
-                                                       MessageContentReaderFactory messageContentReaderFactory,
+                                                       KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                                        HermesMetrics hermesMetrics,
                                                        OffsetQueue offsetQueue,
-                                                       Clock clock,
                                                        KafkaNamesMapper kafkaNamesMapper,
                                                        FilterChainFactory filterChainFactory,
                                                        Trackers trackers,
                                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         return new KafkaMessageReceiverFactory(
                 configs,
-                messageContentReaderFactory,
+                messageConverterFactory,
                 hermesMetrics,
                 offsetQueue,
-                clock,
                 kafkaNamesMapper,
                 filterChainFactory,
                 trackers,
@@ -45,7 +44,13 @@ public class ConsumerReceiverConfiguration {
     }
 
     @Bean
-    public MessageContentReaderFactory messageContentReaderFactory(CompositeMessageContentWrapper compositeMessageContentWrapper,
+    public KafkaConsumerRecordToMessageConverterFactory kafkaMessageConverterFactory(MessageContentReaderFactory messageContentReaderFactory,
+                                                                                     Clock clock) {
+        return new KafkaConsumerRecordToMessageConverterFactory(messageContentReaderFactory, clock);
+    }
+
+    @Bean
+    public MessageContentReaderFactory messageContentReaderFactory(CompositeMessageContentWrapper messageContentWrapper,
                                                                    KafkaHeaderExtractor kafkaHeaderExtractor) {
         return new BasicMessageContentReaderFactory(compositeMessageContentWrapper, kafkaHeaderExtractor);
     }

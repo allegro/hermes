@@ -91,6 +91,7 @@ public class HermesMockHelper {
                 .willReturn(aResponse()
                         .withStatus(response.getStatusCode())
                         .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
+                        .withFixedDelay(toIntMilliseconds(response.getFixedDelay()))
                 )
         );
     }

@@ -1,3 +1,27 @@
+## 1.12.4 (12.05.2022)
+
+### Enhancements
+
+#### ([1503](https://github.com/allegro/hermes/pull/1503)) Check if topic group exists before topic creation
+#### ([1501](https://github.com/allegro/hermes/pull/1501)) Bumped json2avro to 0.2.14
+#### ([1479](https://github.com/allegro/hermes/pull/1479)) Refactor: kafka message conversion extracted from topic consuming logic
+
+Thanks @arkadius for this contribution!
+
+#### ([1502](https://github.com/allegro/hermes/pull/1502)) Add fix delay to stub created with ValueMatcher in hermes mock
+
+Thanks @sobelek for this contribution!
+
+#### ([1497](https://github.com/allegro/hermes/pull/1497)) Increased the width of the search bar for issue #1488
+
+Thanks @zzzzz1st for this contribution!
+
+### Fixes
+
+#### ([1495](https://github.com/allegro/hermes/pull/1495)) Fix dead links in documentation - fixes #1494
+
+Thanks @AleksanderBrzozowski for this contribution!
+
 ## 1.12.3 (13.04.2022)
 
 ### Enhancements
