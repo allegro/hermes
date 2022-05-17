@@ -158,12 +158,7 @@ public class HermesMetrics {
     }
 
     private double getDoubleValue(String gauge) {
-        try {
-            return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
-        } catch (NullPointerException exception) {
-            logger.warn("Specified gauge doesn't exist: {}", gauge);
-            return 0;
-        }
+        return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
     }
 
     private Counter getInflightCounter(Subscription subscription) {
