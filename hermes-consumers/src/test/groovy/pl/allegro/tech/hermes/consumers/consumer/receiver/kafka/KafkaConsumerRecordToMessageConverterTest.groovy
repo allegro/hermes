@@ -106,7 +106,7 @@ class KafkaConsumerRecordToMessageConverterTest extends Specification {
         }
         def schemaRepository = new SchemaRepository(schemaVersionRepository, compiledAvroSchemaRepository)
         def metrics = new DeserializationMetrics(new MetricRegistry())
-        def wrapper = new MessageContentWrapper(null, avroMessageContentWrapper,
+        def wrapper = new CompositeMessageContentWrapper(null, avroMessageContentWrapper,
                 new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroMessageContentWrapper, metrics),
                 new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroMessageContentWrapper, metrics),
                 new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper, metrics, schemaIdHeaderEnabled),
