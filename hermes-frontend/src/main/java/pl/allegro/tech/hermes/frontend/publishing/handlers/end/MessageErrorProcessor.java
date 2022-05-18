@@ -11,10 +11,10 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
@@ -27,7 +27,6 @@ public class MessageErrorProcessor {
     private final Trackers trackers;
     private final HttpString messageIdHeader = new HttpString(MESSAGE_ID.getName());
 
-    @Inject
     public MessageErrorProcessor(ObjectMapper objectMapper, Trackers trackers) {
         this.objectMapper = objectMapper;
         this.trackers = trackers;
@@ -85,33 +84,29 @@ public class MessageErrorProcessor {
         exchange.setStatusCode(error.getCode().getHttpCode());
         exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         exchange.getResponseHeaders().add(messageIdHeader, messageId);
-        exchange.getResponseSender().send(objectMapper.writeValueAsString(error), Charset.forName("UTF-8"),
+        exchange.getResponseSender().send(objectMapper.writeValueAsString(error), StandardCharsets.UTF_8,
                 ResponseReadyIoCallback.INSTANCE);
     }
 
     private void log(String errorMessage, Topic topic, String messageId, String hostAndPort) {
-        logger.error(new StringBuilder()
-                .append(errorMessage)
-                .append("; publishing on topic: ")
-                .append(topic.getQualifiedName())
-                .append("; message id: ")
-                .append(messageId)
-                .append("; remote host: ")
-                .append(hostAndPort)
-                .toString());
+        logger.error(errorMessage +
+                "; publishing on topic: " +
+                topic.getQualifiedName() +
+                "; message id: " +
+                messageId +
+                "; remote host: " +
+                hostAndPort);
         trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort);
     }
 
     private void log(String errorMessage, Topic topic, String messageId, String hostAndPort, Exception exception) {
-        logger.error(new StringBuilder()
-                        .append(errorMessage)
-                        .append("; publishing on topic: ")
-                        .append(topic.getQualifiedName())
-                        .append("; message id: ")
-                        .append(messageId)
-                        .append("; remote host: ")
-                        .append(hostAndPort)
-                        .toString(),
+        logger.error(errorMessage +
+                        "; publishing on topic: " +
+                        topic.getQualifiedName() +
+                        "; message id: " +
+                        messageId +
+                        "; remote host: " +
+                        hostAndPort,
                 exception);
         trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort);
     }

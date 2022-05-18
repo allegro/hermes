@@ -7,7 +7,7 @@ import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimi
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaViolation;
 
 public class FixedThroughputLimiter implements ThroughputLimiter {
-    private long limit;
+    private final long limit;
 
     public FixedThroughputLimiter(long limit) {
         this.limit = limit;

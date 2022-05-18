@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 public class BrokerListener implements BrokerAcknowledgeListener, BrokerTimeoutListener, BrokerErrorListener {
 
-    private MessageRepository messageRepository;
+    private final MessageRepository messageRepository;
 
     public BrokerListener(MessageRepository messageRepository) {
         this.messageRepository = messageRepository;

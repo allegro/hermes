@@ -3,11 +3,10 @@ package pl.allegro.tech.hermes.frontend.publishing.metadata;
 import com.google.common.collect.ImmutableMap;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
@@ -20,12 +19,11 @@ public class DefaultHeadersPropagator implements HeadersPropagator {
     private final boolean propagate;
     private final Set<String> supportedHeaders;
 
-    @Inject
     public DefaultHeadersPropagator(ConfigFactory config) {
         if (config.getBooleanProperty(FRONTEND_HEADER_PROPAGATION_ENABLED)) {
             propagate = true;
-            supportedHeaders = asList(config.getStringProperty(FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER).split(",")).stream()
-                    .map(v -> v.trim())
+            supportedHeaders = Arrays.stream(config.getStringProperty(FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER).split(","))
+                    .map(String::trim)
                     .filter(v -> v.length() > 0)
                     .collect(toSet());
         } else {

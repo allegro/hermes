@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.frontend.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-
 public class TopicMetadataLoadingStartupHook {
     private static final Logger logger = LoggerFactory.getLogger(TopicMetadataLoadingStartupHook.class);
 

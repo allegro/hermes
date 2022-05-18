@@ -3,12 +3,9 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
-import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +56,6 @@ public class KafkaMessageProducerFactory {
 
     private final ConfigFactory configFactory;
 
-    @Inject
     public KafkaMessageProducerFactory(ConfigFactory configFactory) {
         this.configFactory = configFactory;
     }

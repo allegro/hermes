@@ -145,15 +145,15 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         ] as SchemaVersionsRepository
     }
 
-    private Topic avroTopic(String name) {
+    private static Topic avroTopic(String name) {
         createTopic(name, ContentType.AVRO)
     }
 
-    private Topic jsonTopic(String name) {
+    private static Topic jsonTopic(String name) {
         createTopic(name, ContentType.JSON)
     }
 
-    private Topic createTopic(String name, ContentType contentType) {
+    private static Topic createTopic(String name, ContentType contentType) {
         TopicBuilder.topic(name).withContentType(contentType).build()
     }
 }

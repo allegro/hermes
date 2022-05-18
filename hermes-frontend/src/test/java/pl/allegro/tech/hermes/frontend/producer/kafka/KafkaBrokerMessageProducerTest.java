@@ -38,15 +38,15 @@ public class KafkaBrokerMessageProducerTest {
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
     private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, PARTITION_KEY);
 
-    private ByteArraySerializer serializer = new ByteArraySerializer();
-    private MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
-    private MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
-    private ConfigFactory configFactory = new ConfigFactory(DynamicPropertyFactory.getInstance());
-    private Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, configFactory);
+    private final ByteArraySerializer serializer = new ByteArraySerializer();
+    private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
+    private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
+    private final ConfigFactory configFactory = new ConfigFactory(DynamicPropertyFactory.getInstance());
+    private final Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, configFactory);
 
     private KafkaBrokerMessageProducer producer;
-    private KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
-    private KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(configFactory);
+    private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
+    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(configFactory);
 
     @Mock
     private HermesMetrics hermesMetrics;
@@ -70,7 +70,7 @@ public class KafkaBrokerMessageProducerTest {
     }
 
     @Test
-    public void shouldPublishOnTopicUsingKafkaTopicName() throws InterruptedException {
+    public void shouldPublishOnTopicUsingKafkaTopicName() {
         //when
         producer.send(MESSAGE, cachedTopic, new DoNothing());
 
@@ -94,7 +94,7 @@ public class KafkaBrokerMessageProducerTest {
     }
 
     @Test
-    public void shouldCallCallbackOnSend() throws InterruptedException {
+    public void shouldCallCallbackOnSend() {
         //given
         final AtomicBoolean callbackCalled = new AtomicBoolean(false);
 

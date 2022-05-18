@@ -34,7 +34,7 @@ read and sent to Kafka.
 
 ## Custom implementation
 
-To register callbacks use methods exposed in `HermesFrontend.Builder`:
+To register custom callbacks register the implementations as a beans:
 
 ```java
 class BrokerListener implements BrokerAcknowledgedListener,
@@ -56,16 +56,25 @@ class BrokerListener implements BrokerAcknowledgedListener,
         /* ... */
     }
 }
+```
 
-class HermesStarter {
+```java
+@Configuration
+public class CustomHermesFrontendConfiguration {
+    
+    @Bean
+    public BrokerAcknowledgeListener myBrokerAcknowledgeListener() {
+        return new BrokerListener();
+    }
 
-    public void start(BrokerListener listener) {
-        HermesFrontend frontend = HermesFrontend.frontend()
-            .withBrokerAcknowledgeListener(brokerListener)
-            .withBrokerTimeoutListener(brokerListener)
-            .withBrokerErrorListener(brokerListener)
-            .build();
-        frontend.start();
+    @Bean
+    public BrokerTimeoutListener myBrokerTimeoutListener() {
+        return new BrokerListener();
+    }
+
+    @Bean
+    public BrokerErrorListener myBrokerErrorListener() {
+        return new BrokerListener();
     }
 }
 ```

@@ -83,7 +83,7 @@ class TopicHandler implements HttpHandler {
 
     private boolean hasPermission(HttpServerExchange exchange, Topic topic) {
         Optional<Account> account = extractAccount(exchange);
-        return account.isPresent() ? hasPermission(topic, account.get()) : topic.isUnauthenticatedAccessEnabled();
+        return account.map(value -> hasPermission(topic, value)).orElseGet(topic::isUnauthenticatedAccessEnabled);
     }
 
     private boolean hasPermission(Topic topic, Account publisher) {

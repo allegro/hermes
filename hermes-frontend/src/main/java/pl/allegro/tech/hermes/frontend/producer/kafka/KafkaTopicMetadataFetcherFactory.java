@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import org.apache.kafka.clients.admin.AdminClient;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
-import javax.inject.Inject;
 import java.util.Properties;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
@@ -23,7 +22,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 public class KafkaTopicMetadataFetcherFactory {
     private final ConfigFactory configFactory;
 
-    @Inject
     public KafkaTopicMetadataFetcherFactory(ConfigFactory configFactory) {
         this.configFactory = configFactory;
     }

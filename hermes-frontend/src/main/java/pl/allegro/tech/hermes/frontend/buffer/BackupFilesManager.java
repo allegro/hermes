@@ -73,7 +73,7 @@ public class BackupFilesManager {
                     .map(Path::toFile)
                     .collect(toList());
         } catch (IOException e) {
-            logger.error("Error while scanning temporary backup v2 files from path.",
+            logger.error("Error while scanning temporary backup v2 files from absolute path: {}",
                     backupFile.getAbsolutePath(),
                     e);
             return Collections.emptyList();

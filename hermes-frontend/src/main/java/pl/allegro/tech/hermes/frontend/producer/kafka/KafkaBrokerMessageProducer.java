@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
 
@@ -25,7 +24,6 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private final HermesMetrics metrics;
     private final MessageToKafkaProducerRecordConverter messageConverter;
 
-    @Inject
     public KafkaBrokerMessageProducer(Producers producers,
                                       KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
                                       HermesMetrics metrics,

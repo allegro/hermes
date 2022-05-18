@@ -12,8 +12,6 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
-import javax.inject.Inject;
-
 import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static io.undertow.UndertowOptions.MAX_COOKIES;
@@ -62,7 +60,6 @@ public class HermesServer {
     private final TopicMetadataLoadingJob topicMetadataLoadingJob;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
-    @Inject
     public HermesServer(
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,

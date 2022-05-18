@@ -7,8 +7,6 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
-import javax.inject.Inject;
-
 public class KafkaHeaderFactory {
 
     private final String messageIdHeaderName;
@@ -16,7 +14,6 @@ public class KafkaHeaderFactory {
     private final String schemaVersionHeaderName;
     private final String schemaIdHeaderName;
 
-    @Inject
     public KafkaHeaderFactory(ConfigFactory configFactory) {
         this.messageIdHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_MESSAGE_ID);
         this.timestampHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_TIMESTAMP);
