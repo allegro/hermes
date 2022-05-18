@@ -11,8 +11,6 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
-import javax.inject.Inject;
-
 public class AvroMessageSchemaVersionTruncationContentWrapper implements AvroMessageContentUnwrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(AvroMessageSchemaVersionTruncationContentWrapper.class);
@@ -24,7 +22,6 @@ public class AvroMessageSchemaVersionTruncationContentWrapper implements AvroMes
     private final Counter deserializationWithSchemaVersionTruncation;
     private final Counter deserializationErrorsWithSchemaVersionTruncation;
 
-    @Inject
     public AvroMessageSchemaVersionTruncationContentWrapper(SchemaRepository schemaRepository,
                                                             AvroMessageContentWrapper avroMessageContentWrapper,
                                                             DeserializationMetrics deserializationMetrics,

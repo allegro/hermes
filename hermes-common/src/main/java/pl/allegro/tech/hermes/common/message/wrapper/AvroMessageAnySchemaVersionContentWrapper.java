@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
 import java.util.List;
 
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentUnwrapperResult.AvroMessageContentUnwrapperResultStatus.SUCCESS;
@@ -27,7 +26,6 @@ public class AvroMessageAnySchemaVersionContentWrapper implements AvroMessageCon
     private final Counter deserializationErrorsForAnyOnlineSchemaVersion;
     private final Counter deserializationUsingAnySchemaVersion;
 
-    @Inject
     public AvroMessageAnySchemaVersionContentWrapper(SchemaRepository schemaRepository,
                                                      SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter,
                                                      AvroMessageContentWrapper avroMessageContentWrapper,

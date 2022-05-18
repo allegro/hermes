@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.common.schema;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -12,29 +11,26 @@ import pl.allegro.tech.hermes.schema.DirectSchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 
-import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class SchemaVersionsRepositoryFactory implements Factory<SchemaVersionsRepository> {
+public class SchemaVersionsRepositoryFactory {
 
     private final RawSchemaClient rawSchemaClient;
     private final ConfigFactory configFactory;
     private final InternalNotificationsBus notificationsBus;
-    private final CompiledSchemaRepository compiledSchemaRepository;
+    private final CompiledSchemaRepository<?> compiledSchemaRepository;
 
-    @Inject
     public SchemaVersionsRepositoryFactory(RawSchemaClient rawSchemaClient,
                                            ConfigFactory configFactory,
                                            InternalNotificationsBus notificationsBus,
-                                           CompiledSchemaRepository compiledSchemaRepository) {
+                                           CompiledSchemaRepository<?> compiledSchemaRepository) {
         this.rawSchemaClient = rawSchemaClient;
         this.configFactory = configFactory;
         this.notificationsBus = notificationsBus;
         this.compiledSchemaRepository = compiledSchemaRepository;
     }
 
-    @Override
     public SchemaVersionsRepository provide() {
         if (configFactory.getBooleanProperty(Configs.SCHEMA_CACHE_ENABLED)) {
             CachedSchemaVersionsRepository cachedSchemaVersionsRepository = new CachedSchemaVersionsRepository(
@@ -46,7 +42,7 @@ public class SchemaVersionsRepositoryFactory implements Factory<SchemaVersionsRe
             notificationsBus.registerTopicCallback(
                     new SchemaCacheRefresherCallback(
                             cachedSchemaVersionsRepository,
-                            (CachedCompiledSchemaRepository) compiledSchemaRepository));
+                            (CachedCompiledSchemaRepository<?>) compiledSchemaRepository));
 
             return cachedSchemaVersionsRepository;
         }
@@ -57,10 +53,5 @@ public class SchemaVersionsRepositoryFactory implements Factory<SchemaVersionsRe
         return Executors.newFixedThreadPool(
                 configFactory.getIntProperty(Configs.SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE),
                 new ThreadFactoryBuilder().setNameFormat("schema-source-reloader-%d").build());
-    }
-
-    @Override
-    public void dispose(SchemaVersionsRepository instance) {
-
     }
 }

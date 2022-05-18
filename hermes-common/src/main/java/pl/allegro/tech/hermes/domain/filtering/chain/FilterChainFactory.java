@@ -4,7 +4,6 @@ import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilterSource;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,7 +13,6 @@ import static java.util.stream.Stream.concat;
 public class FilterChainFactory {
     private final MessageFilterSource availableFilters;
 
-    @Inject
     public FilterChainFactory(MessageFilterSource filters) {
         this.availableFilters = filters;
     }

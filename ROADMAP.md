@@ -23,7 +23,6 @@ Please create PRs with changes if you want to add or reprioritize goals.
 ## Going to happen someday
 
 * Unify tech stack for Consumers/Management/Frontend: using totally different technologies is confusing and counterproductive
-* Changing Dependency Injection in Frontend and Consumers: we have way too much boilerplate code with `hk2`
 * Improvements in Management handling of data: each API query ends up in Zookeeper, we can be more efficient
 * Switch from Zookeeper events to Kafka for broadcasting changes: we use ZK events as kind of internal message bus, but at
   some point it will stop scaling; we have perfectly suitable message bus available: Kafka
