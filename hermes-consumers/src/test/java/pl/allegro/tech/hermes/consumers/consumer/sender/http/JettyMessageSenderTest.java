@@ -54,7 +54,7 @@ public class JettyMessageSenderTest {
     private RemoteServiceEndpoint remoteServiceEndpoint;
     private JettyMessageSender messageSender;
 
-    private HttpHeadersProvider headersProvider = new HermesHeadersProvider(Collections.singleton(new Http1HeadersProvider()));
+    private final HttpHeadersProvider headersProvider = new HermesHeadersProvider(Collections.singleton(new Http1HeadersProvider()));
 
     @BeforeClass
     public static void setupEnvironment() throws Exception {

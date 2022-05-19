@@ -3,14 +3,11 @@ package pl.allegro.tech.hermes.frontend.config;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
@@ -77,8 +74,6 @@ import java.util.List;
 
 @Configuration
 public class CommonConfiguration {
-
-    private final Logger logger = LoggerFactory.getLogger(CommonConfiguration.class);
 
     @Bean
     public SubscriptionRepository subscriptionRepository(CuratorFramework zookeeper,
@@ -247,8 +242,6 @@ public class CommonConfiguration {
 
     @Bean
     public ConfigFactory prodConfigFactory() {
-        ConfigFactory configFactory = new ConfigFactoryCreator().provide();
-        logger.info("Provided config factory with kafka broker list: {}", configFactory.getStringProperty(Configs.KAFKA_BROKER_LIST));
         return new ConfigFactoryCreator().provide();
     }
 
