@@ -89,6 +89,7 @@
                     <a class="navbar-brand console-title" href="#/">
                         <span><img class="logo-mini" src="img/hermes-logo.png" alt="Hermes"/></span>
                         &nbsp;&nbsp; {{console.title}}
+                        <span ng-class="{true:'alert alert-danger', false:'alert alert-warning'}[console.isDangerEnvironment]" style="padding: 10px"><strong>{{console.environment}}</strong></span>
                     </a>
                 </div>
                 <auth-pane ng-show="enabled"></auth-pane>

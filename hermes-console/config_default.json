@@ -1,6 +1,8 @@
 {
   "console": {
-    "title": "hermes console"
+    "title": "hermes console",
+    "isDangerEnvironment": false,
+    "environment": "LOCAL"
   },
   "dashboard": {
     "docs": "http://hermes-pubsub.rtfd.org"
