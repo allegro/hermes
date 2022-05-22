@@ -17,25 +17,6 @@ Visit our page: [hermes.allegro.tech](http://hermes.allegro.tech)
 See our full documentation: [http://hermes-pubsub.readthedocs.org/en/latest/](http://hermes-pubsub.readthedocs.org/en/latest/)
 
 Questions? We are on [gitter](https://gitter.im/allegro/hermes).
-
-## Development
-
-File docker/docker-compose.development.yml disables deployment of hermes frontend, management, and consumers.
-
-We have to provide an environment (Kafka, ZooKeeper, Graphite, Schema Registry) with command executed in the project directory:
-
-`docker-compose -f docker/docker-compose.yml -f docker/docker-compose.development.yml up`
-
-To start hermes frontend, management and consumers we can use the following commands
-
-`./gradlew -p hermes-frontend run`
-
-`./gradlew -p hermes-management run`
-
-`./gradlew -p hermes-consumers run`
-
-or use `Run/Debug Configurations` in IntelliJ
-
 ## License
 
 **hermes** is published under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
