@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.common.config.Configs
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
 import pl.allegro.tech.hermes.consumers.config.ConsumerConfiguration
+import pl.allegro.tech.hermes.consumers.config.SslContextProperties
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -34,7 +35,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
     }
 
     def setup() {
-        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, configFactory)
+        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties().toSslContextParams())
         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration()
         client = consumerConfiguration.http1Client(new HttpClientsFactory(
                 configFactory,

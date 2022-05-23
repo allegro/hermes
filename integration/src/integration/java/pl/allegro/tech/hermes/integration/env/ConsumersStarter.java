@@ -23,8 +23,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_REQUES
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_SOURCE;
 
 public class ConsumersStarter implements Starter<ConfigurableApplicationContext> {
 
@@ -50,8 +48,6 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
         overrideProperty(KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG, 10000);
         overrideProperty(KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG, 50);
         overrideProperty(CONSUMER_USE_TOPIC_MESSAGE_SIZE, true);
-        overrideProperty(CONSUMER_SSL_KEYSTORE_SOURCE, "provided");
-        overrideProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE, "provided");
         setSpringProfiles("integration");
 
         applicationContext = application.run(args.toArray(new String[0]));

@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.KeystoreConfigurationException;
@@ -16,29 +14,22 @@ import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
 
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_FORMAT;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_LOCATION;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_PASSWORD;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_FORMAT;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_LOCATION;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_PASSWORD;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_SOURCE;
 import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JRE;
 import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 
 public class SslContextFactoryProvider {
 
     private final SslContextFactory sslContextFactory;
-    private final ConfigFactory configFactory;
 
-    public SslContextFactoryProvider(SslContextFactory sslContextFactory, ConfigFactory configFactory) {
+    private final SslContextParameters sslContextParams;
+
+    public SslContextFactoryProvider(SslContextFactory sslContextFactory, SslContextParameters sslContextParams) {
         this.sslContextFactory = sslContextFactory;
-        this.configFactory = configFactory;
+        this.sslContextParams = sslContextParams;
     }
 
     public Optional<org.eclipse.jetty.util.ssl.SslContextFactory> provideSslContextFactory() {
-        if (configFactory.getBooleanProperty(Configs.CONSUMER_SSL_ENABLED)) {
+        if (sslContextParams.isEnabled()) {
             org.eclipse.jetty.util.ssl.SslContextFactory sslCtx = new org.eclipse.jetty.util.ssl.SslContextFactory();
             sslCtx.setEndpointIdentificationAlgorithm("HTTPS");
             sslCtx.setSslContext(sslContextFactory().create().getSslContext());
@@ -53,19 +44,19 @@ public class SslContextFactoryProvider {
     }
 
     private SslContextFactory defaultSslContextFactory() {
-        String protocol = configFactory.getStringProperty(Configs.CONSUMER_SSL_PROTOCOL);
+        String protocol = sslContextParams.getProtocol();
         KeyManagersProvider keyManagersProvider = createKeyManagersProvider();
         TrustManagersProvider trustManagersProvider = createTrustManagersProvider();
         return new DefaultSslContextFactory(protocol, keyManagersProvider, trustManagersProvider);
     }
 
     private KeyManagersProvider createKeyManagersProvider() {
-        String keystoreSource = configFactory.getStringProperty(CONSUMER_SSL_KEYSTORE_SOURCE);
+        String keystoreSource = sslContextParams.getKeystoreSource();
         if (PROVIDED.getValue().equals(keystoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
-                    configFactory.getStringProperty(CONSUMER_SSL_KEYSTORE_LOCATION),
-                    configFactory.getStringProperty(CONSUMER_SSL_KEYSTORE_FORMAT),
-                    configFactory.getStringProperty(CONSUMER_SSL_KEYSTORE_PASSWORD)
+                    sslContextParams.getKeystoreLocation(),
+                    sslContextParams.getKeystoreFormat(),
+                    sslContextParams.getKeystorePassword()
             );
             return new ProvidedKeyManagersProvider(properties);
         }
@@ -76,12 +67,12 @@ public class SslContextFactoryProvider {
     }
 
     public TrustManagersProvider createTrustManagersProvider() {
-        String truststoreSource = configFactory.getStringProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE);
+        String truststoreSource = sslContextParams.getTruststoreSource();
         if (PROVIDED.getValue().equals(truststoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
-                    configFactory.getStringProperty(CONSUMER_SSL_TRUSTSTORE_LOCATION),
-                    configFactory.getStringProperty(CONSUMER_SSL_TRUSTSTORE_FORMAT),
-                    configFactory.getStringProperty(CONSUMER_SSL_TRUSTSTORE_PASSWORD)
+                    sslContextParams.getTruststoreLocation(),
+                    sslContextParams.getTruststoreFormat(),
+                    sslContextParams.getTruststorePassword()
             );
             return new ProvidedTrustManagersProvider(properties);
         }

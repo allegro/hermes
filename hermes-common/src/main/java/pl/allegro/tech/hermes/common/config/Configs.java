@@ -62,11 +62,6 @@ public enum Configs {
     KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG("kafka.consumer.max.poll.records", 1),
     KAFKA_CONSUMER_MAX_POLL_INTERVAL_CONFIG("kafka.consumer.max.poll.interval.ms", Integer.MAX_VALUE),
 
-    KAFKA_SIMPLE_CONSUMER_TIMEOUT_MS("kafka.simple.consumer.timeout.ms", 5000),
-    KAFKA_SIMPLE_CONSUMER_BUFFER_SIZE("kafka.simple.consumer.buffer.size", 64 * 1024),
-    KAFKA_SIMPLE_CONSUMER_ID_PREFIX("kafka.simple.consumer.id.prefix", "offsetChecker"),
-    KAFKA_SIMPLE_CONSUMER_CACHE_EXPIRATION_IN_SECONDS("kafka.simple.consumer.cache.expiration.in.seconds", 60),
-
     KAFKA_PRODUCER_MAX_BLOCK_MS("kafka.producer.max.block.ms", 500),
     KAFKA_PRODUCER_METADATA_MAX_AGE("kafka.producer.metadata.max.age.ms", 5 * 60 * 1000),
     KAFKA_PRODUCER_COMPRESSION_CODEC("kafka.producer.compression.codec", "none"),
@@ -142,19 +137,6 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
-
-    CONSUMER_SSL_ENABLED("consumer.ssl.enabled", true),
-    CONSUMER_SSL_PROTOCOL("consumer.ssl.protocol", "TLS"),
-
-    CONSUMER_SSL_KEYSTORE_SOURCE("consumer.ssl.keystore.source", "jre"),
-    CONSUMER_SSL_KEYSTORE_LOCATION("consumer.ssl.keystore.location", "classpath:client.keystore"),
-    CONSUMER_SSL_KEYSTORE_PASSWORD("consumer.ssl.keystore.password", "password"),
-    CONSUMER_SSL_KEYSTORE_FORMAT("consumer.ssl.keystore.format", "JKS"),
-
-    CONSUMER_SSL_TRUSTSTORE_SOURCE("consumer.ssl.truststore.source", "jre"),
-    CONSUMER_SSL_TRUSTSTORE_LOCATION("consumer.ssl.truststore.location", "classpath:client.truststore"),
-    CONSUMER_SSL_TRUSTSTORE_PASSWORD("consumer.ssl.truststore.password", "password"),
-    CONSUMER_SSL_TRUSTSTORE_FORMAT("consumer.ssl.truststore.format", "JKS"),
 
     FRONTEND_AUTHENTICATION_ENABLED("frontend.authentication.enabled", false),
     FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),

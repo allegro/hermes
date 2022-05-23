@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
+import pl.allegro.tech.hermes.consumers.config.SslContextProperties;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
@@ -54,7 +55,7 @@ public class JettyMessageSenderTest {
     private RemoteServiceEndpoint remoteServiceEndpoint;
     private JettyMessageSender messageSender;
 
-    private HttpHeadersProvider headersProvider = new HermesHeadersProvider(Collections.singleton(new Http1HeadersProvider()));
+    private final HttpHeadersProvider headersProvider = new HermesHeadersProvider(Collections.singleton(new Http1HeadersProvider()));
 
     @BeforeClass
     public static void setupEnvironment() throws Exception {
@@ -62,7 +63,7 @@ public class JettyMessageSenderTest {
         wireMockServer.start();
 
         ConfigFactory configFactory = new MutableConfigFactory();
-        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, configFactory);
+        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties().toSslContextParams());
         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration();
         client = consumerConfiguration.http1Client(
                 new HttpClientsFactory(
