@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -61,6 +62,9 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE;
 
 @Configuration
+@EnableConfigurationProperties(
+        SslContextProperties.class
+)
 public class ConsumerSenderConfiguration {
 
     @Bean
@@ -141,8 +145,8 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory, ConfigFactory configFactory) {
-        return new SslContextFactoryProvider(sslContextFactory.orElse(null), configFactory);
+    public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory, SslContextProperties sslContextProperties) {
+        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslContextProperties);
     }
 
     @Bean
