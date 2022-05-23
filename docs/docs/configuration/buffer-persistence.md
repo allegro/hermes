@@ -62,21 +62,17 @@ class MyCustomBrokerListener implements BrokerAcknowledgedListener,
 @Configuration
 public class CustomHermesFrontendConfiguration {
 
-    @Bean(initMethod = "extend")
-    public PersistentBufferExtension persistentBufferExtension(ConfigFactory configFactory,
-                                                               Clock clock,
-                                                               BrokerListeners listeners,
-                                                               BackupMessagesLoader backupMessagesLoader,
-                                                               HermesMetrics hermesMetrics) {
+    @Primary
+    @Bean
+    public BrokerListeners myBrokerListeners() {
         BrokerListener customBrokerListener = new MyCustomBrokerListener();
         BrokerListeners brokerListeners = new BrokerListeners();
-        
+
         brokerListeners.addAcknowledgeListener(customBrokerListener);
         brokerListeners.addTimeoutListener(customBrokerListener);
         brokerListeners.addErrorListener(customBrokerListener);
-        
-        return new PersistentBufferExtension(configFactory, clock, brokerListeners, backupMessagesLoader,
-                hermesMetrics);
+
+        return brokerListeners;
     }
 }
 ```
