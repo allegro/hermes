@@ -37,7 +37,7 @@ read and sent to Kafka.
 To register custom callbacks register the implementations as a beans:
 
 ```java
-class BrokerListener implements BrokerAcknowledgedListener,
+class MyCustomBrokerListener implements BrokerAcknowledgedListener,
                                 BrokerTimeoutListener,
                                 BrokerErrorListener {
 
@@ -61,20 +61,22 @@ class BrokerListener implements BrokerAcknowledgedListener,
 ```java
 @Configuration
 public class CustomHermesFrontendConfiguration {
-    
-    @Bean
-    public BrokerAcknowledgeListener myBrokerAcknowledgeListener() {
-        return new BrokerListener();
-    }
 
-    @Bean
-    public BrokerTimeoutListener myBrokerTimeoutListener() {
-        return new BrokerListener();
-    }
-
-    @Bean
-    public BrokerErrorListener myBrokerErrorListener() {
-        return new BrokerListener();
+    @Bean(initMethod = "extend")
+    public PersistentBufferExtension persistentBufferExtension(ConfigFactory configFactory,
+                                                               Clock clock,
+                                                               BrokerListeners listeners,
+                                                               BackupMessagesLoader backupMessagesLoader,
+                                                               HermesMetrics hermesMetrics) {
+        BrokerListener customBrokerListener = new MyCustomBrokerListener();
+        BrokerListeners brokerListeners = new BrokerListeners();
+        
+        brokerListeners.addAcknowledgeListener(customBrokerListener);
+        brokerListeners.addTimeoutListener(customBrokerListener);
+        brokerListeners.addErrorListener(customBrokerListener);
+        
+        return new PersistentBufferExtension(configFactory, clock, brokerListeners, backupMessagesLoader,
+                hermesMetrics);
     }
 }
 ```
