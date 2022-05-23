@@ -13,10 +13,10 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
 import pl.allegro.tech.hermes.consumers.config.SupervisorConfiguration;
+import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -167,15 +167,15 @@ class ConsumerTestRuntimeEnvironment {
         SupervisorConfiguration supervisorConfiguration = new SupervisorConfiguration();
 
         ConsumerAssignmentCache consumerAssignmentCache = supervisorConfiguration.consumerAssignmentCache(
-                curator, consumerConfig, zookeeperPaths, subscriptionsCache, subscriptionIds
+                curator, consumerConfig, zookeeperPaths, subscriptionIds
         );
 
         ClusterAssignmentCache clusterAssignmentCache = supervisorConfiguration.clusterAssignmentCache(
-                curator, consumerConfig, consumerAssignmentCache, zookeeperPaths, subscriptionIds, nodesRegistry
+                curator, consumerConfig, zookeeperPaths, subscriptionIds, nodesRegistry
         );
 
         ConsumerAssignmentRegistry consumerAssignmentRegistry = supervisorConfiguration.consumerAssignmentRegistry(
-                curator, consumerConfig, zookeeperPaths, consumerAssignmentCache, subscriptionIds
+                curator, consumerConfig, zookeeperPaths, subscriptionIds
         );
 
 

@@ -4,14 +4,14 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMERS_WORKLOAD_PATH;
 
-class FlatBinaryWorkloadRegistryPaths {
+class WorkloadRegistryPaths {
 
     private final static String WORKLOAD_BINARY_RUNTIME_PATH = "runtime-bin";
 
     private final ZookeeperPaths zookeeperPaths;
     private final String clusterName;
 
-    FlatBinaryWorkloadRegistryPaths(ZookeeperPaths zookeeperPaths, String clusterName) {
+    WorkloadRegistryPaths(ZookeeperPaths zookeeperPaths, String clusterName) {
         this.zookeeperPaths = zookeeperPaths;
         this.clusterName = clusterName;
     }
