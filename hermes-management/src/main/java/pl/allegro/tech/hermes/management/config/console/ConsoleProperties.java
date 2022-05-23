@@ -85,7 +85,8 @@ public class ConsoleProperties {
     public static final class Console {
         private String title = "hermes console";
         private String footer = "";
-
+        private String environmentName = "LOCAL";
+        private boolean isDangerEnvironment = false;
 
         public String getTitle() {
             return title;
@@ -101,6 +102,22 @@ public class ConsoleProperties {
 
         public void setFooter(String footer) {
             this.footer = footer;
+        }
+
+        public boolean isDangerEnvironment() {
+            return isDangerEnvironment;
+        }
+
+        public void setDangerEnvironment(boolean dangerEnvironment) {
+            isDangerEnvironment = dangerEnvironment;
+        }
+
+        public String getEnvironmentName() {
+            return environmentName;
+        }
+
+        public void setEnvironmentName(String environmentName) {
+            this.environmentName = environmentName;
         }
     }
 
