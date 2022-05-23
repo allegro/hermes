@@ -24,6 +24,8 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
 
     private static final int DOCUMENT_EXPECTED_SIZE = 1024;
 
+    private final Client elasticClient;
+
     private FrontendElasticsearchLogRepository(Client elasticClient,
                                                String clusterName,
                                                String hostname,
@@ -35,6 +37,7 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
                                                PathsCompiler pathsCompiler) {
         super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
 
+        this.elasticClient = elasticClient;
         registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
         registerRemainingCapacityGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
 
@@ -55,6 +58,11 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
     @Override
     public void logInflight(String messageId, long timestamp, String topicName, String hostname) {
         queue.offer(build(() -> document(messageId, timestamp, topicName, INFLIGHT, hostname)));
+    }
+
+    @Override
+    public void close() {
+        this.elasticClient.close();
     }
 
     private XContentBuilder document(String messageId,
