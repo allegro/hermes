@@ -11,30 +11,30 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
-import pl.allegro.tech.hermes.benchmark.environment.FrontendEnvironment;
+import pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment;
 
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
-public class FrontendBenchmark {
+public class HermesServerBenchmark {
 
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
     @OutputTimeUnit(TimeUnit.SECONDS)
-    public int benchmarkPublishingThroughput(FrontendEnvironment frontendEnvironment) {
-        return frontendEnvironment.publisher().publish();
+    public int benchmarkPublishingThroughput(HermesServerEnvironment hermesServerEnvironment) {
+        return hermesServerEnvironment.publisher().publish();
     }
 
     @Benchmark
     @BenchmarkMode(Mode.SampleTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public int benchmarkPublishingLatency(FrontendEnvironment frontendEnvironment) {
-        return frontendEnvironment.publisher().publish();
+    public int benchmarkPublishingLatency(HermesServerEnvironment hermesServerEnvironment) {
+        return hermesServerEnvironment.publisher().publish();
     }
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(".*" + FrontendBenchmark.class.getSimpleName() + ".*")
+                .include(".*" + HermesServerBenchmark.class.getSimpleName() + ".*")
                 .warmupIterations(4)
                 .measurementIterations(4)
 //                .addProfiler(JmhFlightRecorderProfiler.class)

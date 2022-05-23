@@ -1,17 +1,23 @@
 package pl.allegro.tech.hermes.management.domain.consistency;
 
-import static java.util.Arrays.asList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+
+import static java.util.Arrays.asList;
 
 @Component
 public class KafkaHermesConsistencyService {
+
+    private static final Logger logger = LoggerFactory.getLogger(KafkaHermesConsistencyService.class);
 
     private final static String AVRO_SUFFIX = "_avro";
     private final static List<String> IGNORED_TOPIC = asList("__consumer_offsets");
@@ -38,8 +44,10 @@ public class KafkaHermesConsistencyService {
             .collect(Collectors.toSet());
     }
 
-    public void removeTopic(String topicName) {
+    public void removeTopic(String topicName, RequestUser requestUser) {
+        logger.info("Removing topic {} only on brokers. Requested by {}", topicName, requestUser.getUsername());
         multiDCAwareService.removeTopicByName(topicName);
+        logger.info("Successfully removed topic {} on brokers. Requested by {}", topicName, requestUser.getUsername());
     }
 
     private String mapToHermesFormat(String topic) {

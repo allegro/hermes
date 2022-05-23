@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
@@ -116,7 +116,7 @@ public class SupervisorConfiguration {
                                            TopicRepository topicRepository,
                                            MessageConverterResolver messageConverterResolver,
                                            MessageBatchFactory byteBufferMessageBatchFactory,
-                                           MessageContentWrapper messageContentWrapper,
+                                           CompositeMessageContentWrapper compositeMessageContentWrapper,
                                            MessageBatchSenderFactory batchSenderFactory,
                                            ConsumerAuthorizationHandler consumerAuthorizationHandler,
                                            Clock clock) {
@@ -132,7 +132,7 @@ public class SupervisorConfiguration {
                 topicRepository,
                 messageConverterResolver,
                 byteBufferMessageBatchFactory,
-                messageContentWrapper,
+                compositeMessageContentWrapper,
                 batchSenderFactory,
                 consumerAuthorizationHandler,
                 clock

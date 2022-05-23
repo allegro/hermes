@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.ThrottlingMessageRecei
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import java.time.Clock;
 import java.util.Properties;
 
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
@@ -59,29 +58,26 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_U
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
-    private final MessageContentReaderFactory messageContentReaderFactory;
+    private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
     private final HermesMetrics hermesMetrics;
     private final OffsetQueue offsetQueue;
-    private final Clock clock;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final FilterChainFactory filterChainFactory;
     private final Trackers trackers;
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
 
     public KafkaMessageReceiverFactory(ConfigFactory configs,
-                                       MessageContentReaderFactory messageContentReaderFactory,
+                                       KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
-                                       Clock clock,
                                        KafkaNamesMapper kafkaNamesMapper,
                                        FilterChainFactory filterChainFactory,
                                        Trackers trackers,
                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         this.configs = configs;
-        this.messageContentReaderFactory = messageContentReaderFactory;
+        this.messageConverterFactory = messageConverterFactory;
         this.hermesMetrics = hermesMetrics;
         this.offsetQueue = offsetQueue;
-        this.clock = clock;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.filterChainFactory = filterChainFactory;
         this.trackers = trackers;
@@ -95,12 +91,11 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
         MessageReceiver receiver = new KafkaSingleThreadedMessageReceiver(
                 createKafkaConsumer(topic, subscription),
-                messageContentReaderFactory.provide(topic),
+                messageConverterFactory,
                 hermesMetrics,
                 kafkaNamesMapper,
                 topic,
                 subscription,
-                clock,
                 configs.getIntProperty(Configs.CONSUMER_RECEIVER_POOL_TIMEOUT),
                 configs.getIntProperty(Configs.CONSUMER_RECEIVER_READ_QUEUE_CAPACITY),
                 consumerPartitionAssignmentState);

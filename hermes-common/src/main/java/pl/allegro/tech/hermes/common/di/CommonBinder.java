@@ -26,7 +26,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksWaitingRateLimiter;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
@@ -68,7 +68,7 @@ public class CommonBinder extends AbstractBinder {
         bindSingleton(CuratorClientFactory.class);
         bindSingleton(HermesMetrics.class);
         bindSingletonFactory(ConfigFactoryCreator.class);
-        bindSingleton(MessageContentWrapper.class);
+        bindSingleton(CompositeMessageContentWrapper.class);
         bindSingleton(DeserializationMetrics.class);
         bindSingleton(JsonMessageContentWrapper.class);
         bindSingleton(AvroMessageContentWrapper.class);

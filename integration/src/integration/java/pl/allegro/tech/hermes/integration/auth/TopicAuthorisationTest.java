@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.integration.auth;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.util.StatusCodes;
 import org.assertj.core.description.Description;
 import org.assertj.core.description.TextDescription;
@@ -10,13 +8,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
@@ -43,41 +38,30 @@ public class TopicAuthorisationTest extends IntegrationTest {
 
     protected HermesPublisher publisher;
 
-    private HermesFrontend hermesFrontend;
+    private FrontendStarter frontendStarter;
 
     @BeforeClass
     public void setup() throws Exception {
-        ConfigFactory configFactory = new MutableConfigFactory()
-                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
-                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
-                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "pro_active")
-                .overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true)
-                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
-                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
-                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString())
-                .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl())
-                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
+        frontendStarter = new FrontendStarter(FRONTEND_PORT);
+        frontendStarter.addSpringProfiles("authNonRequired");
+        frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
+        frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "pro_active");
+        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true);
+        frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+        frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
+        frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
-        AuthenticationConfiguration authConfig = new AuthenticationConfiguration(
-                exchange -> false,
-                Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
-                new SingleUserAwareIdentityManager(USERNAME, PASSWORD));
-
-        hermesFrontend = HermesFrontend.frontend()
-                .withBinding(configFactory, ConfigFactory.class)
-                .withAuthenticationConfiguration(authConfig)
-                .build();
-
-        hermesFrontend.start();
-
+        frontendStarter.start();
         publisher = new HermesPublisher(FRONTEND_URL);
-
         operations.buildTopic("someGroup", "topicWithAuthorization");
     }
 
     @AfterClass
-    public void tearDown() throws InterruptedException {
-        hermesFrontend.stop();
+    public void tearDown() throws Exception {
+        frontendStarter.stop();
     }
 
     @Test

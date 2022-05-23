@@ -4,17 +4,20 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
+import com.github.tomakehurst.wiremock.matching.ValueMatcher;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
+import pl.allegro.tech.hermes.mock.exchange.Request;
+import pl.allegro.tech.hermes.mock.exchange.Response;
 import pl.allegro.tech.hermes.mock.matching.StartsWithPattern;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
@@ -78,6 +81,18 @@ public class HermesMockHelper {
                         .withStatus(response.getStatusCode())
                         .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
                         .withFixedDelay(toIntMilliseconds(response.getFixedDelay())))
+        );
+    }
+
+    public void addStub(String topicName, Response response, String contentType, ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher) {
+        wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
+                .andMatching(valueMatcher)
+                .withHeader("Content-Type", startsWith(contentType))
+                .willReturn(aResponse()
+                        .withStatus(response.getStatusCode())
+                        .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
+                        .withFixedDelay(toIntMilliseconds(response.getFixedDelay()))
+                )
         );
     }
 

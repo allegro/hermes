@@ -7,6 +7,7 @@ dependencies {
     compile project(':hermes-metrics')
     compile project(':hermes-schema')
 
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     compile group: 'io.undertow', name: 'undertow-core', version: versions.undertow
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     compile (group: 'net.openhft', name: 'chronicle-map', version: '3.21.86') {

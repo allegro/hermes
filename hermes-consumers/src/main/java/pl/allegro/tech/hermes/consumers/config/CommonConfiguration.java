@@ -36,7 +36,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareCon
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksWaitingRateLimiter;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -150,16 +150,16 @@ public class CommonConfiguration {
 
 
     @Bean
-    public MessageContentWrapper messageContentWrapper(ConfigFactory config,
-                                                       ObjectMapper mapper,
-                                                       Clock clock,
-                                                       SchemaRepository schemaRepository,
-                                                       DeserializationMetrics deserializationMetrics,
-                                                       ConfigFactory configFactory,
-                                                       SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter) {
+    public CompositeMessageContentWrapper messageContentWrapper(ConfigFactory config,
+                                                                ObjectMapper mapper,
+                                                                Clock clock,
+                                                                SchemaRepository schemaRepository,
+                                                                DeserializationMetrics deserializationMetrics,
+                                                                ConfigFactory configFactory,
+                                                                SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter) {
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(clock);
 
-        return new MessageContentWrapper(
+        return new CompositeMessageContentWrapper(
                 new JsonMessageContentWrapper(config, mapper),
                 avroMessageContentWrapper,
                 new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroMessageContentWrapper,

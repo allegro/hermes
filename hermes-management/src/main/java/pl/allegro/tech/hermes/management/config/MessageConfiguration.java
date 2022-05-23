@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareCon
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.time.Clock;
@@ -39,7 +39,7 @@ public class MessageConfiguration {
     MetricRegistry metricRegistry;
 
     @Bean
-    MessageContentWrapper messageContentWrapper() {
+    CompositeMessageContentWrapper messageContentWrapper() {
         DeserializationMetrics metrics = new DeserializationMetrics(metricRegistry);
         AvroMessageContentWrapper avroWrapper = new AvroMessageContentWrapper(clock);
         JsonMessageContentWrapper jsonWrapper = jsonMessageContentWrapper();
@@ -59,7 +59,7 @@ public class MessageConfiguration {
         AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper =
                 new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroWrapper, metrics, messageProperties.isSchemaVersionTruncationEnabled());
 
-        return new MessageContentWrapper(
+        return new CompositeMessageContentWrapper(
                 jsonWrapper,
                 avroWrapper,
                 schemaAwareWrapper,

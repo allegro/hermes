@@ -109,6 +109,7 @@ public class TopicService {
     public void createTopicWithSchema(TopicWithSchema topicWithSchema, RequestUser createdBy, CreatorRights isAllowedToManage) {
         Topic topic = topicWithSchema.getTopic();
         auditor.beforeObjectCreation(createdBy.getUsername(), topic);
+        groupService.checkGroupExists(topic.getName().getGroupName());
         topicValidator.ensureCreatedTopicIsValid(topic, createdBy, isAllowedToManage);
         ensureTopicDoesNotExist(topic);
 
