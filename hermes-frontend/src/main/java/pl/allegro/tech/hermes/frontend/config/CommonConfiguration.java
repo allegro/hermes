@@ -110,11 +110,11 @@ public class CommonConfiguration {
         return new GroupRepositoryFactory(zookeeper, paths, mapper).provide();
     }
 
-    @Bean(destroyMethod = "close")
-    public CuratorFramework hermesCurator(ConfigFactory configFactory,
-                                          CuratorClientFactory curatorClientFactory) {
-        return new HermesCuratorClientFactory(configFactory, curatorClientFactory).provide();
-    }
+//    @Bean(destroyMethod = "close")
+//    public CuratorFramework hermesCurator(ConfigFactory configFactory,
+//                                          CuratorClientFactory curatorClientFactory) {
+//        return new HermesCuratorClientFactory(configFactory, curatorClientFactory).provide();
+//    }
 
     @Bean
     public CuratorClientFactory curatorClientFactory(ConfigFactory configFactory) {
