@@ -34,7 +34,7 @@ read and sent to Kafka.
 
 ## Custom implementation
 
-To register custom callbacks register the implementations as a beans:
+To register custom callbacks register the implementations as beans:
 
 ```java
 class MyCustomBrokerListener implements BrokerAcknowledgedListener,
