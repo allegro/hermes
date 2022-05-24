@@ -11,8 +11,6 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
-import javax.inject.Inject;
-
 public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageContentUnwrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(AvroMessageHeaderSchemaIdContentWrapper.class);
@@ -24,7 +22,6 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
     private final Counter deserializationUsingHeaderSchemaId;
     private final boolean schemaIdHeaderEnabled;
 
-    @Inject
     public AvroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
                                                    AvroMessageContentWrapper avroMessageContentWrapper,
                                                    DeserializationMetrics deserializationMetrics,

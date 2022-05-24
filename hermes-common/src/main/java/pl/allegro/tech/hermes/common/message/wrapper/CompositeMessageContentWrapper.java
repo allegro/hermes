@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
-import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Map;
 
@@ -21,7 +20,6 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
     private final AvroMessageContentWrapper avroMessageContentWrapper;
     private final Collection<AvroMessageContentUnwrapper> avroMessageContentUnwrappers;
 
-    @Inject
     public CompositeMessageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
                                           AvroMessageContentWrapper avroMessageContentWrapper,
                                           AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,

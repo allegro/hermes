@@ -70,7 +70,7 @@ public class SchemaConfiguration {
     public SchemaVersionsRepository schemaVersionsRepositoryFactory(RawSchemaClient rawSchemaClient,
                                                                     ConfigFactory configFactory,
                                                                     InternalNotificationsBus notificationsBus,
-                                                                    CompiledSchemaRepository compiledSchemaRepository) {
+                                                                    CompiledSchemaRepository<?> compiledSchemaRepository) {
         return new SchemaVersionsRepositoryFactory(rawSchemaClient, configFactory, notificationsBus, compiledSchemaRepository)
                 .provide();
     }

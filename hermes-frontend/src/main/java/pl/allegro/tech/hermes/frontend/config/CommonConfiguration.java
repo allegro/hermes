@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.frontend.config;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
@@ -13,24 +11,15 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.GroupRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
-import pl.allegro.tech.hermes.common.di.factories.OAuthProviderRepositoryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
-import pl.allegro.tech.hermes.common.di.factories.PathsCompilerFactory;
-import pl.allegro.tech.hermes.common.di.factories.SharedCounterFactory;
-import pl.allegro.tech.hermes.common.di.factories.SubscriptionOffsetChangeIndicatorFactory;
-import pl.allegro.tech.hermes.common.di.factories.SubscriptionRepositoryFactory;
-import pl.allegro.tech.hermes.common.di.factories.TopicRepositoryFactory;
-import pl.allegro.tech.hermes.common.di.factories.UndeliveredMessageLogFactory;
-import pl.allegro.tech.hermes.common.di.factories.WorkloadConstraintsRepositoryFactory;
-import pl.allegro.tech.hermes.common.di.factories.ZookeeperPathsFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
@@ -63,8 +52,14 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffsetChangeIndicator;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
@@ -78,21 +73,19 @@ import java.util.List;
 @Configuration
 public class CommonConfiguration {
 
-    private final Logger logger = LoggerFactory.getLogger(CommonConfiguration.class);
-
     @Bean
     public SubscriptionRepository subscriptionRepository(CuratorFramework zookeeper,
                                                          ZookeeperPaths paths,
                                                          ObjectMapper mapper,
                                                          TopicRepository topicRepository) {
-        return new SubscriptionRepositoryFactory(zookeeper, paths, mapper, topicRepository).provide();
+        return new ZookeeperSubscriptionRepository(zookeeper, mapper, paths, topicRepository);
     }
 
     @Bean
     public OAuthProviderRepository oAuthProviderRepository(CuratorFramework zookeeper,
                                                            ZookeeperPaths paths,
                                                            ObjectMapper mapper) {
-        return new OAuthProviderRepositoryFactory(zookeeper, paths, mapper).provide();
+        return new ZookeeperOAuthProviderRepository(zookeeper, mapper, paths);
     }
 
     @Bean
@@ -100,14 +93,14 @@ public class CommonConfiguration {
                                            ZookeeperPaths paths,
                                            ObjectMapper mapper,
                                            GroupRepository groupRepository) {
-        return new TopicRepositoryFactory(zookeeper, paths, mapper, groupRepository).provide();
+        return new ZookeeperTopicRepository(zookeeper, mapper, paths, groupRepository);
     }
 
     @Bean
     public GroupRepository groupRepository(CuratorFramework zookeeper,
                                            ZookeeperPaths paths,
                                            ObjectMapper mapper) {
-        return new GroupRepositoryFactory(zookeeper, paths, mapper).provide();
+        return new ZookeeperGroupRepository(zookeeper, mapper, paths);
     }
 
     @Bean(destroyMethod = "close")
@@ -142,7 +135,7 @@ public class CommonConfiguration {
     public UndeliveredMessageLog undeliveredMessageLog(CuratorFramework zookeeper,
                                                        ZookeeperPaths paths,
                                                        ObjectMapper mapper) {
-        return new UndeliveredMessageLogFactory(zookeeper, paths, mapper).provide();
+        return new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
     }
 
     @Bean
@@ -247,8 +240,6 @@ public class CommonConfiguration {
 
     @Bean
     public ConfigFactory prodConfigFactory() {
-        ConfigFactory configFactory = new ConfigFactoryCreator().provide();
-        logger.info("Provided config factory with kafka broker list: {}", configFactory.getStringProperty(Configs.KAFKA_BROKER_LIST));
         return new ConfigFactoryCreator().provide();
     }
 
@@ -259,14 +250,14 @@ public class CommonConfiguration {
 
     @Bean
     public ZookeeperPaths zookeeperPaths(ConfigFactory configFactory) {
-        return new ZookeeperPathsFactory(configFactory).provide();
+        return new ZookeeperPaths(configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT));
     }
 
     @Bean
     public WorkloadConstraintsRepository workloadConstraintsRepository(CuratorFramework curator,
                                                                        ObjectMapper mapper,
                                                                        ZookeeperPaths paths) {
-        return new WorkloadConstraintsRepositoryFactory(curator, mapper, paths).provide();
+        return new ZookeeperWorkloadConstraintsRepository(curator, mapper, paths);
     }
 
     @Bean
@@ -286,7 +277,7 @@ public class CommonConfiguration {
 
     @Bean
     public PathsCompiler pathsCompiler(InstanceIdResolver instanceIdResolver) {
-        return new PathsCompilerFactory(instanceIdResolver).provide();
+        return new PathsCompiler(instanceIdResolver.resolve());
     }
 
     @Bean
@@ -300,8 +291,11 @@ public class CommonConfiguration {
     @Bean
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
                                        ConfigFactory config) {
-        return new SharedCounterFactory(zookeeper, config).provide();
-    }
+        return new SharedCounter(zookeeper,
+                config.getIntProperty(Configs.METRICS_COUNTER_EXPIRE_AFTER_ACCESS),
+                config.getIntProperty(Configs.ZOOKEEPER_BASE_SLEEP_TIME),
+                config.getIntProperty(Configs.ZOOKEEPER_MAX_RETRIES)
+        );    }
 
     @Bean
     public InstanceIdResolver instanceIdResolver() {
@@ -313,7 +307,7 @@ public class CommonConfiguration {
             CuratorFramework zookeeper,
             ZookeeperPaths paths,
             SubscriptionRepository subscriptionRepository) {
-        return new SubscriptionOffsetChangeIndicatorFactory(zookeeper, paths, subscriptionRepository).provide();
+        return new ZookeeperSubscriptionOffsetChangeIndicator(zookeeper, paths, subscriptionRepository);
     }
 
     @Bean

@@ -18,8 +18,6 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationPredicateAwareConstraintHandler;
 
-import javax.inject.Inject;
-
 import java.util.Optional;
 
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_AUTHENTICATION_ENABLED;
@@ -41,7 +39,6 @@ public class HandlersChainFactory {
     private final ThroughputLimiter throughputLimiter;
     private final Optional<AuthenticationConfiguration> authenticationConfiguration;
 
-    @Inject
     public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                 MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
                                 BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,

@@ -23,7 +23,7 @@ public class FrontendTrackerConfiguration {
         return new NoOperationPublishingTracker();
     }
 
-    @Bean
+    @Bean(destroyMethod = "close")
     public Trackers trackers(List<LogRepository> repositories) {
         return new Trackers(repositories);
     }

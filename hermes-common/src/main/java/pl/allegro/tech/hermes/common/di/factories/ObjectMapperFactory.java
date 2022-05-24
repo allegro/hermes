@@ -6,23 +6,18 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.glassfish.hk2.api.Factory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
-import javax.inject.Inject;
-
-public class ObjectMapperFactory implements Factory<ObjectMapper> {
+public class ObjectMapperFactory {
 
     private final ConfigFactory configFactory;
 
-    @Inject
     public ObjectMapperFactory(ConfigFactory configFactory) {
         this.configFactory = configFactory;
     }
 
-    @Override
     public ObjectMapper provide() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -35,10 +30,5 @@ public class ObjectMapperFactory implements Factory<ObjectMapper> {
         objectMapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 
         return objectMapper;
-    }
-
-    @Override
-    public void dispose(ObjectMapper instance) {
-
     }
 }

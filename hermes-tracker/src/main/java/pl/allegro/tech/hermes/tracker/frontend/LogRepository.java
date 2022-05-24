@@ -8,4 +8,5 @@ public interface LogRepository {
 
     void logInflight(String messageId, long timestamp, String topicName, String hostname);
 
+    void close();
 }

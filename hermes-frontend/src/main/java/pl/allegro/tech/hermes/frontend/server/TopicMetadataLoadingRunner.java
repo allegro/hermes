@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +34,6 @@ public class TopicMetadataLoadingRunner {
 
     private final int threadPoolSize;
 
-    @Inject
     public TopicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
                                       TopicsCache topicsCache,
                                       ConfigFactory config) {

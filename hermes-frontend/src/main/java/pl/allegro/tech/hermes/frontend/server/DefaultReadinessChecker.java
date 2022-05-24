@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,7 +26,6 @@ public class DefaultReadinessChecker implements ReadinessChecker {
 
     private volatile boolean ready = false;
 
-    @Inject
     public DefaultReadinessChecker(ConfigFactory config,
                                    TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                    ReadinessRepository readinessRepository) {

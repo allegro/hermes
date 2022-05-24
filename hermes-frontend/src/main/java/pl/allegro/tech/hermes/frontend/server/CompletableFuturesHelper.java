@@ -8,7 +8,7 @@ import static java.util.stream.Collectors.toList;
 class CompletableFuturesHelper {
 
     static <T> CompletableFuture<List<T>> allComplete(List<CompletableFuture<T>> futures) {
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()]))
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0]))
                 .thenApply(v -> futures.stream().map(CompletableFuture::join).collect(toList()));
     }
 }

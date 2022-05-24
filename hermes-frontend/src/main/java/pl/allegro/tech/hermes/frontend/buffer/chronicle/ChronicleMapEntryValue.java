@@ -38,7 +38,7 @@ public class ChronicleMapEntryValue implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof ChronicleMapEntryValue)) return false;
+        if (!(o instanceof ChronicleMapEntryValue)) return false;
         ChronicleMapEntryValue that = (ChronicleMapEntryValue) o;
         return Objects.equals(timestamp, that.timestamp) &&
                 Arrays.equals(data, that.data) &&

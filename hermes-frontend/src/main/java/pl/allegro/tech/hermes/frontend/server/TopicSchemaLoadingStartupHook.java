@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
-import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ public class TopicSchemaLoadingStartupHook {
 
     private final boolean isTopicSchemaLoadingStartupHookEnabled;
 
-    @Inject
     public TopicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                          SchemaRepository schemaRepository,
                                          ConfigFactory config) {

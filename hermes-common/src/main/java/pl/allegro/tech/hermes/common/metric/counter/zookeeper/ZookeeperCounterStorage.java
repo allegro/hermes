@@ -13,8 +13,6 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 
-import javax.inject.Inject;
-
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
@@ -37,7 +35,6 @@ public class ZookeeperCounterStorage implements CounterStorage {
     private final PathsCompiler pathsCompiler;
     private final String zookeeperRoot;
 
-    @Inject
     public ZookeeperCounterStorage(SharedCounter sharedCounter,
                                    SubscriptionRepository subscriptionRepository,
                                    PathsCompiler pathsCompiler,

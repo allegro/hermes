@@ -12,7 +12,6 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
-import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -25,7 +24,6 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -34,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class MetricRegistryFactory implements Factory<MetricRegistry> {
+public class MetricRegistryFactory {
 
     private final ConfigFactory configFactory;
     private final CounterStorage counterStorage;
@@ -42,7 +40,6 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
     private final String moduleName;
     private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
 
-    @Inject
     public MetricRegistryFactory(ConfigFactory configFactory,
                                  CounterStorage counterStorage,
                                  InstanceIdResolver instanceIdResolver,
@@ -54,7 +51,6 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
 
     }
 
-    @Override
     public MetricRegistry provide() {
         MetricRegistry registry = createMetricsRegistry();
 
@@ -135,9 +131,5 @@ public class MetricRegistryFactory implements Factory<MetricRegistry> {
         );
 
         return disabledAttributes;
-    }
-
-    @Override
-    public void dispose(MetricRegistry instance) {
     }
 }

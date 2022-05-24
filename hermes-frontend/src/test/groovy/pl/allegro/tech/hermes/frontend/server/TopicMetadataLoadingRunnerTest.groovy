@@ -26,7 +26,6 @@ class TopicMetadataLoadingRunnerTest extends Specification {
         }
         topicsCache = Mock() {
             getTopics() >> ImmutableList.copyOf(cachedTopics.values())
-            getTopic(_) >> { String topic -> Optional.of(cachedTopics.get(topic)) }
         }
     }
 

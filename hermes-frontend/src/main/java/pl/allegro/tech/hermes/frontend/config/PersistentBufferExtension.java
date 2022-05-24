@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.time.Clock;
 import java.util.List;
@@ -41,7 +40,6 @@ public class PersistentBufferExtension {
     private int entries;
     private int avgMessageSize;
 
-    @Inject
     public PersistentBufferExtension(ConfigFactory configFactory,
                                      Clock clock,
                                      BrokerListeners listeners,

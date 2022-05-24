@@ -12,7 +12,7 @@ import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_JSON;
 
 public class MessageContentTypeEnforcer implements AvroEnforcer {
 
-    private final JsonAvroConverter defaultJsonAvroconverter = new JsonAvroConverter();
+    private final JsonAvroConverter defaultJsonAvroConverter = new JsonAvroConverter();
     private final AvroEncodedJsonAvroConverter avroEncodedJsonAvroConverter = new AvroEncodedJsonAvroConverter();
 
     private static final String APPLICATION_JSON_WITH_DELIM = APPLICATION_JSON + ";";
@@ -23,7 +23,7 @@ public class MessageContentTypeEnforcer implements AvroEnforcer {
     public byte[] enforceAvro(String payloadContentType, byte[] data, Schema schema, Topic topic) {
         String contentTypeLowerCase = StringUtils.lowerCase(payloadContentType);
         if (isJSON(contentTypeLowerCase)) {
-            return defaultJsonAvroconverter.convertToAvro(data, schema);
+            return defaultJsonAvroConverter.convertToAvro(data, schema);
         } else if (isAvroJSON(contentTypeLowerCase)) {
             return avroEncodedJsonAvroConverter.convertToAvro(data, schema);
         } else if (isAvroBinary(contentTypeLowerCase)) {

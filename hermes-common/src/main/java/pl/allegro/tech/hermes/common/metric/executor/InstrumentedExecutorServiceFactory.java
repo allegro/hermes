@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.common.metric.executor;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
-import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,7 +14,6 @@ public class InstrumentedExecutorServiceFactory {
 
     private final HermesMetrics hermesMetrics;
 
-    @Inject
     public InstrumentedExecutorServiceFactory(HermesMetrics hermesMetrics) {
         this.hermesMetrics = hermesMetrics;
     }

@@ -3,14 +3,11 @@ package pl.allegro.tech.hermes.common.message.wrapper;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 
-import javax.inject.Inject;
-
 import static com.codahale.metrics.MetricRegistry.name;
 
 public class DeserializationMetrics {
     private final MetricRegistry metricRegistry;
 
-    @Inject
     public DeserializationMetrics(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
     }

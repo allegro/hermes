@@ -37,22 +37,21 @@ Add dependency on Frontend module:
 compile group: 'pl.allegro.tech.hermes', name: 'hermes-frontend', version: versions.hermes
 ```
 
-Use `HermesFrontend.Builder` to create usable `HermesFrontend` instance and start it:
+The Frontend module is a [Spring Boot](https://spring.io/projects/spring-boot/) project. Thus, it can be extended
+like any other Spring application.
 
 ```java
+@ComponentScan(
+        basePackages = {"pl.allegro.tech.hermes.frontend", "com.example.my-hermes.frontend"},
+        excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = HermesFrontend.class)}
+)
+@SpringBootApplication
 public class MyHermesFrontend {
 
-    private static final Logger logger = LoggerFactory.logger(MyHermesFrontend.class);
-
-    public static final void main(String... args) {
-        HermesFrontend.Builder builder = HermesFrontend.frontend()
-            .withStartupHook((serviceLocator) -> logger.info("Starting MyHermes"))
-            .withShutdownHook((serviceLocator) -> logger.info("Stopping MyHermes"));
-        /* introduce additional configuration - brokerListeners etc */
-
-        HermesFrontend frontend = builder.build();
-        frontend.start();
+    public static void main(String... args) {
+        SpringApplication.run(MyHermesFrontend.class, args);
     }
+    
 }
 ```
 

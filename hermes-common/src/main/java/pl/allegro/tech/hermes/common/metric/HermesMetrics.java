@@ -6,16 +6,11 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.common.collect.HashBiMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
-
-import javax.inject.Inject;
 
 import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
@@ -26,14 +21,11 @@ import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 public class HermesMetrics {
 
-    private final Logger logger = LoggerFactory.getLogger(HermesMetrics.class);
-
     public static final String REPLACEMENT_CHAR = "_";
 
     private final MetricRegistry metricRegistry;
     private final PathsCompiler pathCompiler;
 
-    @Inject
     public HermesMetrics(
             MetricRegistry metricRegistry,
             PathsCompiler pathCompiler) {

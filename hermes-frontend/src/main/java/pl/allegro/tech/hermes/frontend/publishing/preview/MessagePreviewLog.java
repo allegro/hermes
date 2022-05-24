@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.TopicsMessagesPreview;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -24,7 +23,6 @@ public class MessagePreviewLog {
 
     private final ConcurrentLinkedDeque<MessagePreviewSnapshot> messages = new ConcurrentLinkedDeque<>();
 
-    @Inject
     public MessagePreviewLog(MessagePreviewFactory messagePreviewFactory, ConfigFactory configFactory) {
         this(messagePreviewFactory, configFactory.getIntProperty(Configs.FRONTEND_MESSAGE_PREVIEW_SIZE));
     }
