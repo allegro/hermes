@@ -1,7 +1,7 @@
 {
   "console": {
     "title": "hermes console",
-    "isDangerEnvironment": false,
+    "isDangerousEnvironment": false,
     "environmentName": "LOCAL"
   },
   "dashboard": {

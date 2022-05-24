@@ -2,7 +2,7 @@
     "console": {
         "title": "hermes console" // page title
         "footer": "<a href=\"http://hermes.allegro.tech\">hermes.allegro.tech</a>" // page footer
-        "isDangerEnvironment": false  // should env alert be alert-danger
+        "isDangerousEnvironment": false  // should env alert be alert-danger
         "environmentName": "LOCAL"  // console environment displayed in navbar
     },
     "dashboard": {
