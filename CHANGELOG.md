@@ -1,3 +1,16 @@
+## 1.13.0 (24.05.2022)
+
+## Enhancements
+
+#### ([1507](https://github.com/allegro/hermes/pull/1507)) Added environment label in hermes-console
+#### ([1498](https://github.com/allegro/hermes/pull/1498)) Migrated hermes-frontend to the Spring framework
+
+If you add custom implementations of some parts of `hermes-frontend`, please take a look at
+[1506](https://github.com/allegro/hermes/pull/1506). The documentation changes introduced there should help you  
+migrate to version `1.13.0`.
+
+Thanks to @pmajorczyk-allegro for this contribution!
+
 ## 1.12.4 (12.05.2022)
 
 ### Enhancements
