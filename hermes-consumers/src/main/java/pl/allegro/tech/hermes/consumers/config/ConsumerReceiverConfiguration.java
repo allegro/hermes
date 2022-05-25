@@ -22,7 +22,6 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.time.Clock;
 
 @Configuration
-@EnableConfigurationProperties(ConsumerReceiverProperties.class)
 public class ConsumerReceiverConfiguration {
 
     @Bean
