@@ -56,7 +56,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_U
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
-    private final ConsumerReceiverParameters consumerReceiverParameters;
+    private final KafkaReceiverParameters consumerReceiverParameters;
     private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
     private final HermesMetrics hermesMetrics;
     private final OffsetQueue offsetQueue;
@@ -66,7 +66,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
 
     public KafkaMessageReceiverFactory(ConfigFactory configs,
-                                       ConsumerReceiverParameters consumerReceiverParameters,
+                                       KafkaReceiverParameters consumerReceiverParameters,
                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
@@ -102,7 +102,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 consumerPartitionAssignmentState);
 
 
-        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPolls()) {
+        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPollsEnabled()) {
             IdleTimeCalculator idleTimeCalculator = new ExponentiallyGrowingIdleTimeCalculator(
                     consumerReceiverParameters.getInitialIdleTime(),
                     consumerReceiverParameters.getMaxIdleTime()

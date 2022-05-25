@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,13 +21,8 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.time.Clock;
 
 @Configuration
+@EnableConfigurationProperties(ConsumerReceiverProperties.class)
 public class ConsumerReceiverConfiguration {
-
-    @Bean
-    @ConfigurationProperties(prefix = "consumer.receiver")
-    public ConsumerReceiverProperties consumerReceiverProperties() {
-        return new ConsumerReceiverProperties();
-    }
 
     @Bean
     public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
