@@ -146,7 +146,7 @@ public class ConsumerSenderConfiguration {
 
     @Bean
     public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory, SslContextProperties sslContextProperties) {
-        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslContextProperties);
+        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslContextProperties.toSslContextParams());
     }
 
     @Bean

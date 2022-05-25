@@ -138,19 +138,6 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 
-    CONSUMER_SSL_ENABLED("consumer.ssl.enabled", true),
-    CONSUMER_SSL_PROTOCOL("consumer.ssl.protocol", "TLS"),
-
-    CONSUMER_SSL_KEYSTORE_SOURCE("consumer.ssl.keystore.source", "jre"),
-    CONSUMER_SSL_KEYSTORE_LOCATION("consumer.ssl.keystore.location", "classpath:client.keystore"),
-    CONSUMER_SSL_KEYSTORE_PASSWORD("consumer.ssl.keystore.password", "password"),
-    CONSUMER_SSL_KEYSTORE_FORMAT("consumer.ssl.keystore.format", "JKS"),
-
-    CONSUMER_SSL_TRUSTSTORE_SOURCE("consumer.ssl.truststore.source", "jre"),
-    CONSUMER_SSL_TRUSTSTORE_LOCATION("consumer.ssl.truststore.location", "classpath:client.truststore"),
-    CONSUMER_SSL_TRUSTSTORE_PASSWORD("consumer.ssl.truststore.password", "password"),
-    CONSUMER_SSL_TRUSTSTORE_FORMAT("consumer.ssl.truststore.format", "JKS"),
-
     FRONTEND_AUTHENTICATION_ENABLED("frontend.authentication.enabled", false),
     FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),
 

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextParameters;
 
 @ConfigurationProperties(prefix = "consumer.ssl")
 public class SslContextProperties {
@@ -103,5 +104,20 @@ public class SslContextProperties {
 
     public void setTruststoreFormat(String truststoreFormat) {
         this.truststoreFormat = truststoreFormat;
+    }
+
+    public SslContextParameters toSslContextParams() {
+        return new SslContextParameters(
+                this.enabled,
+                this.protocol,
+                this.keystoreSource,
+                this.keystoreLocation,
+                this.keystorePassword,
+                this.keystoreFormat,
+                this.truststoreSource,
+                this.truststoreLocation,
+                this.truststorePassword,
+                this.truststoreFormat
+        );
     }
 }

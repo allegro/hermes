@@ -23,15 +23,15 @@ public class SslContextFactoryProvider {
 
     private final SslContextFactory sslContextFactory;
 
-    private final SslContextProperties sslContextProperties;
+    private final SslContextParameters sslContextParams;
 
-    public SslContextFactoryProvider(SslContextFactory sslContextFactory, SslContextProperties sslContextProperties) {
+    public SslContextFactoryProvider(SslContextFactory sslContextFactory, SslContextParameters sslContextParams) {
         this.sslContextFactory = sslContextFactory;
-        this.sslContextProperties = sslContextProperties;
+        this.sslContextParams = sslContextParams;
     }
 
     public Optional<org.eclipse.jetty.util.ssl.SslContextFactory> provideSslContextFactory() {
-        if (sslContextProperties.isEnabled()) {
+        if (sslContextParams.isEnabled()) {
             org.eclipse.jetty.util.ssl.SslContextFactory sslCtx = new org.eclipse.jetty.util.ssl.SslContextFactory();
             sslCtx.setEndpointIdentificationAlgorithm("HTTPS");
             sslCtx.setSslContext(sslContextFactory().create().getSslContext());
@@ -46,19 +46,19 @@ public class SslContextFactoryProvider {
     }
 
     private SslContextFactory defaultSslContextFactory() {
-        String protocol = sslContextProperties.getProtocol();
+        String protocol = sslContextParams.getProtocol();
         KeyManagersProvider keyManagersProvider = createKeyManagersProvider();
         TrustManagersProvider trustManagersProvider = createTrustManagersProvider();
         return new DefaultSslContextFactory(protocol, keyManagersProvider, trustManagersProvider);
     }
 
     private KeyManagersProvider createKeyManagersProvider() {
-        String keystoreSource = sslContextProperties.getKeystoreSource();
+        String keystoreSource = sslContextParams.getKeystoreSource();
         if (PROVIDED.getValue().equals(keystoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
-                    sslContextProperties.getKeystoreLocation(),
-                    sslContextProperties.getKeystoreFormat(),
-                    sslContextProperties.getKeystorePassword()
+                    sslContextParams.getKeystoreLocation(),
+                    sslContextParams.getKeystoreFormat(),
+                    sslContextParams.getKeystorePassword()
             );
             return new ProvidedKeyManagersProvider(properties);
         }
@@ -69,12 +69,12 @@ public class SslContextFactoryProvider {
     }
 
     public TrustManagersProvider createTrustManagersProvider() {
-        String truststoreSource = sslContextProperties.getTruststoreSource();
+        String truststoreSource = sslContextParams.getTruststoreSource();
         if (PROVIDED.getValue().equals(truststoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
-                    sslContextProperties.getKeystoreLocation(),
-                    sslContextProperties.getKeystoreFormat(),
-                    sslContextProperties.getKeystorePassword()
+                    sslContextParams.getTruststoreLocation(),
+                    sslContextParams.getTruststoreFormat(),
+                    sslContextParams.getTruststorePassword()
             );
             return new ProvidedTrustManagersProvider(properties);
         }

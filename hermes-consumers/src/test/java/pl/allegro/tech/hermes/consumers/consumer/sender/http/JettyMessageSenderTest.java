@@ -63,7 +63,7 @@ public class JettyMessageSenderTest {
         wireMockServer.start();
 
         ConfigFactory configFactory = new MutableConfigFactory();
-        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties());
+        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties().toSslContextParams());
         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration();
         client = consumerConfiguration.http1Client(
                 new HttpClientsFactory(
