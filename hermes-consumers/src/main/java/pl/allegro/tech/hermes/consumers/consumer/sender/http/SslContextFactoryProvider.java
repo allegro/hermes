@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.KeystoreConfigurationException;
@@ -12,7 +11,6 @@ import pl.allegro.tech.hermes.common.ssl.jvm.JvmKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.jvm.JvmTrustManagerProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
-import pl.allegro.tech.hermes.consumers.config.SslContextProperties;
 
 import java.util.Optional;
 
