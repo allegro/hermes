@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.consumers.config.ConsumerReceiverProperties;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.ExponentiallyGrowingIdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.IdleTimeCalculator;
@@ -57,7 +56,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_U
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
-    private final ConsumerReceiverProperties consumerReceiverProperties;
+    private final ConsumerReceiverParameters consumerReceiverParameters;
     private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
     private final HermesMetrics hermesMetrics;
     private final OffsetQueue offsetQueue;
@@ -67,7 +66,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
 
     public KafkaMessageReceiverFactory(ConfigFactory configs,
-                                       ConsumerReceiverProperties consumerReceiverProperties,
+                                       ConsumerReceiverParameters consumerReceiverParameters,
                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
@@ -76,7 +75,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                        Trackers trackers,
                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         this.configs = configs;
-        this.consumerReceiverProperties = consumerReceiverProperties;
+        this.consumerReceiverParameters = consumerReceiverParameters;
         this.messageConverterFactory = messageConverterFactory;
         this.hermesMetrics = hermesMetrics;
         this.offsetQueue = offsetQueue;
@@ -98,15 +97,15 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 kafkaNamesMapper,
                 topic,
                 subscription,
-                consumerReceiverProperties.getPoolTimeout(),
-                consumerReceiverProperties.getReadQueueCapacity(),
+                consumerReceiverParameters.getPoolTimeout(),
+                consumerReceiverParameters.getReadQueueCapacity(),
                 consumerPartitionAssignmentState);
 
 
-        if (consumerReceiverProperties.isWaitBetweenUnsuccessfulPolls()) {
+        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPolls()) {
             IdleTimeCalculator idleTimeCalculator = new ExponentiallyGrowingIdleTimeCalculator(
-                    consumerReceiverProperties.getInitialIdleTime(),
-                    consumerReceiverProperties.getMaxIdleTime()
+                    consumerReceiverParameters.getInitialIdleTime(),
+                    consumerReceiverParameters.getMaxIdleTime()
             );
             receiver = new ThrottlingMessageReceiver(receiver, idleTimeCalculator, subscription, hermesMetrics);
         }

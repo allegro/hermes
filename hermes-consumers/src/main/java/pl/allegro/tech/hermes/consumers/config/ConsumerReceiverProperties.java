@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.ConsumerReceiverParameters;
 
-@ConfigurationProperties(prefix = "consumer.receiver")
 public class ConsumerReceiverProperties {
 
     private int poolTimeout = 30;
@@ -53,5 +52,15 @@ public class ConsumerReceiverProperties {
 
     public void setMaxIdleTime(int maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
+    }
+
+    protected ConsumerReceiverParameters toKafkaReceiverParams() {
+        return new ConsumerReceiverParameters(
+                this.poolTimeout,
+                this.readQueueCapacity,
+                this.waitBetweenUnsuccessfulPolls,
+                this.initialIdleTime,
+                this.maxIdleTime
+        );
     }
 }
