@@ -57,14 +57,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_HTTP2_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE;
 
 @Configuration
-@EnableConfigurationProperties(
-        SslContextProperties.class
-)
+@EnableConfigurationProperties({
+        SslContextProperties.class,
+        HttpClientProperties.class,
+        Http2ClientProperties.class
+})
 public class ConsumerSenderConfiguration {
 
     @Bean
@@ -121,8 +122,8 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public Http2ClientHolder http2ClientHolder(HttpClientsFactory httpClientsFactory, ConfigFactory configFactory) {
-        if (!configFactory.getBooleanProperty(CONSUMER_HTTP2_ENABLED)) {
+    public Http2ClientHolder http2ClientHolder(HttpClientsFactory httpClientsFactory, Http2ClientProperties http2ClientProperties) {
+        if (!http2ClientProperties.isEnabled()) {
             return new Http2ClientHolder(null);
         } else {
             return new Http2ClientHolder(httpClientsFactory.createClientForHttp2());
@@ -130,18 +131,19 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public HttpClientsFactory httpClientsFactory(ConfigFactory configFactory,
+    public HttpClientsFactory httpClientsFactory(HttpClientProperties httpClientProperties,
+                                                 Http2ClientProperties http2ClientProperties,
                                                  InstrumentedExecutorServiceFactory executorFactory,
                                                  SslContextFactoryProvider sslContextFactoryProvider) {
-        return new HttpClientsFactory(configFactory, executorFactory, sslContextFactoryProvider);
+        return new HttpClientsFactory(httpClientProperties.toHttpClientParameters(), http2ClientProperties.toHttp2ClientParameters(), executorFactory, sslContextFactoryProvider);
     }
 
     @Bean(initMethod = "start")
     public HttpClientsWorkloadReporter httpClientsWorkloadReporter(HermesMetrics metrics,
                                                                    @Named("http-1-client") HttpClient httpClient,
                                                                    Http2ClientHolder http2ClientHolder,
-                                                                   ConfigFactory configFactory) {
-        return new HttpClientsWorkloadReporter(metrics, httpClient, http2ClientHolder, configFactory);
+                                                                   HttpClientProperties httpClientProperties) {
+        return new HttpClientsWorkloadReporter(metrics, httpClient, http2ClientHolder, httpClientProperties.isRequestQueueMonitoringEnabled(), httpClientProperties.isConnectionPoolMonitoringEnabled());
     }
 
     @Bean

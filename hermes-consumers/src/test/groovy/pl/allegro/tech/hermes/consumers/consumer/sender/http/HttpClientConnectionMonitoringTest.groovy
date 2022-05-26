@@ -7,6 +7,8 @@ import pl.allegro.tech.hermes.common.config.Configs
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
 import pl.allegro.tech.hermes.consumers.config.ConsumerConfiguration
+import pl.allegro.tech.hermes.consumers.config.Http2ClientProperties
+import pl.allegro.tech.hermes.consumers.config.HttpClientProperties
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
@@ -22,7 +24,6 @@ class HttpClientConnectionMonitoringTest extends Specification {
     @Shared int port
     @Shared WireMockServer wireMock
 
-    MutableConfigFactory configFactory = new MutableConfigFactory()
     HttpClient client
     MetricRegistry metricRegistry = new MetricRegistry()
     HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
@@ -38,18 +39,16 @@ class HttpClientConnectionMonitoringTest extends Specification {
         SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties().toSslContextParams())
         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration()
         client = consumerConfiguration.http1Client(new HttpClientsFactory(
-                configFactory,
+                new HttpClientProperties().toHttpClientParameters(),
+                new Http2ClientProperties().toHttp2ClientParameters(),
                 new InstrumentedExecutorServiceFactory(hermesMetrics),
                 sslContextFactoryProvider))
         client.start()
-
-        configFactory.overrideProperty(Configs.CONSUMER_HTTP_CLIENT_REQUEST_QUEUE_MONITORING_ENABLED, false)
     }
 
     def "should measure http client connections"() {
         given:
-        configFactory.overrideProperty(Configs.CONSUMER_HTTP_CLIENT_CONNECTION_POOL_MONITORING_ENABLED, true)
-        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, new Http2ClientHolder(null), configFactory)
+        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, new Http2ClientHolder(null), false, true)
         reporter.start()
 
         when:
@@ -65,9 +64,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
 
     def "should not register connection gauges for disabled http connection monitoring"() {
         given:
-        configFactory.overrideProperty(Configs.CONSUMER_HTTP_CLIENT_CONNECTION_POOL_MONITORING_ENABLED, false)
-
-        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, new Http2ClientHolder(null), configFactory)
+        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, new Http2ClientHolder(null), false, false)
 
         when:
         reporter.start()

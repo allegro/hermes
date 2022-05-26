@@ -19,20 +19,21 @@ public class HttpClientsWorkloadReporter {
     private final HermesMetrics metrics;
     private final HttpClient httpClient;
     private final Http2ClientHolder http2ClientHolder;
-    private final boolean isConnectionPoolMonitoringEnabled;
     private final boolean isRequestQueueMonitoringEnabled;
+    private final boolean isConnectionPoolMonitoringEnabled;
 
     public HttpClientsWorkloadReporter(
             HermesMetrics metrics,
             HttpClient httpClient,
             Http2ClientHolder http2ClientHolder,
-            ConfigFactory configFactory
+            boolean isRequestQueueMonitoringEnabled,
+            boolean isConnectionPoolMonitoringEnabled
     ) {
         this.metrics = metrics;
         this.httpClient = httpClient;
         this.http2ClientHolder = http2ClientHolder;
-        this.isRequestQueueMonitoringEnabled = configFactory.getBooleanProperty(Configs.CONSUMER_HTTP_CLIENT_REQUEST_QUEUE_MONITORING_ENABLED);
-        this.isConnectionPoolMonitoringEnabled = configFactory.getBooleanProperty(Configs.CONSUMER_HTTP_CLIENT_CONNECTION_POOL_MONITORING_ENABLED);
+        this.isRequestQueueMonitoringEnabled = isRequestQueueMonitoringEnabled;
+        this.isConnectionPoolMonitoringEnabled = isConnectionPoolMonitoringEnabled;
     }
 
     public void start() {
