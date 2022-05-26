@@ -48,6 +48,8 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
         overrideProperty(KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG, 10000);
         overrideProperty(KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG, 50);
         overrideProperty(CONSUMER_USE_TOPIC_MESSAGE_SIZE, true);
+        overrideProperty("consumer.ssl.keystoreSource", "provided");
+        overrideProperty("consumer.ssl.truststoreSource", "provided");
         setSpringProfiles("integration");
 
         applicationContext = application.run(args.toArray(new String[0]));
@@ -66,6 +68,10 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
 
     public void overrideProperty(Configs config, Object value) {
         args.add("--" + config.getName() + "=" + value);
+    }
+
+    public void overrideProperty(String configName, Object value) {
+        args.add("--" + configName + "=" + value);
     }
 
     public void setSpringProfiles(String... profiles) {
