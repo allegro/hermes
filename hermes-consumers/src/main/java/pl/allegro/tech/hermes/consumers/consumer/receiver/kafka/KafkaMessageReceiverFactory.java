@@ -47,8 +47,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.SEND_BUFFER_CONFI
 import static org.apache.kafka.clients.consumer.ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RECEIVER_INITIAL_IDLE_TIME;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RECEIVER_MAX_IDLE_TIME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_MECHANISM;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
@@ -58,6 +56,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_U
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
+    private final KafkaReceiverParameters consumerReceiverParameters;
     private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
     private final HermesMetrics hermesMetrics;
     private final OffsetQueue offsetQueue;
@@ -67,6 +66,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
 
     public KafkaMessageReceiverFactory(ConfigFactory configs,
+                                       KafkaReceiverParameters consumerReceiverParameters,
                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
@@ -75,6 +75,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                        Trackers trackers,
                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         this.configs = configs;
+        this.consumerReceiverParameters = consumerReceiverParameters;
         this.messageConverterFactory = messageConverterFactory;
         this.hermesMetrics = hermesMetrics;
         this.offsetQueue = offsetQueue;
@@ -96,15 +97,15 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 kafkaNamesMapper,
                 topic,
                 subscription,
-                configs.getIntProperty(Configs.CONSUMER_RECEIVER_POOL_TIMEOUT),
-                configs.getIntProperty(Configs.CONSUMER_RECEIVER_READ_QUEUE_CAPACITY),
+                consumerReceiverParameters.getPoolTimeout(),
+                consumerReceiverParameters.getReadQueueCapacity(),
                 consumerPartitionAssignmentState);
 
 
-        if (configs.getBooleanProperty(Configs.CONSUMER_RECEIVER_WAIT_BETWEEN_UNSUCCESSFUL_POLLS)) {
+        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPollsEnabled()) {
             IdleTimeCalculator idleTimeCalculator = new ExponentiallyGrowingIdleTimeCalculator(
-                    configs.getIntProperty(CONSUMER_RECEIVER_INITIAL_IDLE_TIME),
-                    configs.getIntProperty(CONSUMER_RECEIVER_MAX_IDLE_TIME)
+                    consumerReceiverParameters.getInitialIdleTime(),
+                    consumerReceiverParameters.getMaxIdleTime()
             );
             receiver = new ThrottlingMessageReceiver(receiver, idleTimeCalculator, subscription, hermesMetrics);
         }

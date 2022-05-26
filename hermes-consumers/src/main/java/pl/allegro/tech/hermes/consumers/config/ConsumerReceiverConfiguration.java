@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -20,10 +21,12 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.time.Clock;
 
 @Configuration
+@EnableConfigurationProperties(ConsumerReceiverProperties.class)
 public class ConsumerReceiverConfiguration {
 
     @Bean
     public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
+                                                       ConsumerReceiverProperties consumerReceiverProperties,
                                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                                        HermesMetrics hermesMetrics,
                                                        OffsetQueue offsetQueue,
@@ -33,6 +36,7 @@ public class ConsumerReceiverConfiguration {
                                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         return new KafkaMessageReceiverFactory(
                 configs,
+                consumerReceiverProperties.toKafkaReceiverParams(),
                 messageConverterFactory,
                 hermesMetrics,
                 offsetQueue,
