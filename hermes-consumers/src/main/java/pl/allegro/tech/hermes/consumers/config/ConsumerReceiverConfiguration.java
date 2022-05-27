@@ -22,7 +22,10 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.time.Clock;
 
 @Configuration
-@EnableConfigurationProperties({ConsumerReceiverProperties.class, KafkaConsumerProperties.class})
+@EnableConfigurationProperties({
+        ConsumerReceiverProperties.class,
+        KafkaConsumerProperties.class
+})
 public class ConsumerReceiverConfiguration {
 
     @Bean
