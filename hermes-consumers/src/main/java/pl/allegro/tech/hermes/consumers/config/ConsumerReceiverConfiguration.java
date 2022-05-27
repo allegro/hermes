@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignm
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
@@ -21,12 +22,16 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.time.Clock;
 
 @Configuration
-@EnableConfigurationProperties(ConsumerReceiverProperties.class)
+@EnableConfigurationProperties({
+        ConsumerReceiverProperties.class,
+        KafkaConsumerProperties.class
+})
 public class ConsumerReceiverConfiguration {
 
     @Bean
     public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
                                                        ConsumerReceiverProperties consumerReceiverProperties,
+                                                       KafkaConsumerProperties kafkaConsumerProperties,
                                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                                        HermesMetrics hermesMetrics,
                                                        OffsetQueue offsetQueue,
@@ -37,6 +42,7 @@ public class ConsumerReceiverConfiguration {
         return new KafkaMessageReceiverFactory(
                 configs,
                 consumerReceiverProperties.toKafkaReceiverParams(),
+                kafkaConsumerProperties.toKafkaConsumerParameters(),
                 messageConverterFactory,
                 hermesMetrics,
                 offsetQueue,

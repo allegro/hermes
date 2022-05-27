@@ -57,6 +57,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
     private final KafkaReceiverParameters consumerReceiverParameters;
+    private final KafkaConsumerParameters kafkaConsumerParameters;
     private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
     private final HermesMetrics hermesMetrics;
     private final OffsetQueue offsetQueue;
@@ -67,6 +68,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     public KafkaMessageReceiverFactory(ConfigFactory configs,
                                        KafkaReceiverParameters consumerReceiverParameters,
+                                       KafkaConsumerParameters kafkaConsumerParameters,
                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
@@ -76,6 +78,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         this.configs = configs;
         this.consumerReceiverParameters = consumerReceiverParameters;
+        this.kafkaConsumerParameters = kafkaConsumerParameters;
         this.messageConverterFactory = messageConverterFactory;
         this.hermesMetrics = hermesMetrics;
         this.offsetQueue = offsetQueue;
@@ -90,7 +93,22 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                                  Subscription subscription,
                                                  ConsumerRateLimiter consumerRateLimiter) {
 
-        MessageReceiver receiver = new KafkaSingleThreadedMessageReceiver(
+        MessageReceiver receiver = createKafkaSingleThreadedMessageReceiver(topic, subscription);
+
+        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPollsEnabled()) {
+            receiver = createThrottlingMessageReceiver(receiver, subscription);
+        }
+
+        if (configs.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
+            receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription);
+        }
+
+        return receiver;
+    }
+
+    private MessageReceiver createKafkaSingleThreadedMessageReceiver(Topic topic,
+                                                                     Subscription subscription) {
+        return new KafkaSingleThreadedMessageReceiver(
                 createKafkaConsumer(topic, subscription),
                 messageConverterFactory,
                 hermesMetrics,
@@ -100,26 +118,26 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 consumerReceiverParameters.getPoolTimeout(),
                 consumerReceiverParameters.getReadQueueCapacity(),
                 consumerPartitionAssignmentState);
+    }
 
+    private MessageReceiver createThrottlingMessageReceiver(MessageReceiver receiver, Subscription subscription) {
+        IdleTimeCalculator idleTimeCalculator = new ExponentiallyGrowingIdleTimeCalculator(
+                consumerReceiverParameters.getInitialIdleTime(),
+                consumerReceiverParameters.getMaxIdleTime());
 
-        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPollsEnabled()) {
-            IdleTimeCalculator idleTimeCalculator = new ExponentiallyGrowingIdleTimeCalculator(
-                    consumerReceiverParameters.getInitialIdleTime(),
-                    consumerReceiverParameters.getMaxIdleTime()
-            );
-            receiver = new ThrottlingMessageReceiver(receiver, idleTimeCalculator, subscription, hermesMetrics);
-        }
+        return new ThrottlingMessageReceiver(receiver, idleTimeCalculator, subscription, hermesMetrics);
+    }
 
+    private MessageReceiver createFilteringMessageReceiver(MessageReceiver receiver,
+                                                           ConsumerRateLimiter consumerRateLimiter,
+                                                           Subscription subscription) {
         boolean filteringRateLimitEnabled = configs.getBooleanProperty(Configs.CONSUMER_FILTERING_RATE_LIMITER_ENABLED);
-        if (configs.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
-            FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
-                    offsetQueue,
-                    filteringRateLimitEnabled ? consumerRateLimiter : null,
-                    trackers,
-                    hermesMetrics);
-            receiver = new FilteringMessageReceiver(receiver, filteredMessageHandler, filterChainFactory, subscription);
-        }
-        return receiver;
+        FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
+                offsetQueue,
+                filteringRateLimitEnabled ? consumerRateLimiter : null,
+                trackers,
+                hermesMetrics);
+        return new FilteringMessageReceiver(receiver, filteredMessageHandler, filterChainFactory, subscription);
     }
 
     private KafkaConsumer<byte[], byte[]> createKafkaConsumer(Topic topic, Subscription subscription) {
@@ -132,6 +150,12 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         props.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
 
+        addKafkaAuthorizationParameters(props);
+        addKafkaConsumerParameters(props, topic);
+        return new KafkaConsumer<>(props);
+    }
+
+    private void addKafkaAuthorizationParameters(Properties props) {
         if (configs.getBooleanProperty(KAFKA_AUTHORIZATION_ENABLED)) {
             props.put(SASL_MECHANISM, configs.getStringProperty(KAFKA_AUTHORIZATION_MECHANISM));
             props.put(SECURITY_PROTOCOL_CONFIG, configs.getStringProperty(KAFKA_AUTHORIZATION_PROTOCOL));
@@ -141,35 +165,37 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                             + "password=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
             );
         }
-        props.put(AUTO_OFFSET_RESET_CONFIG, configs.getStringProperty(Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG));
-        props.put(SESSION_TIMEOUT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG));
-        props.put(HEARTBEAT_INTERVAL_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG));
-        props.put(METADATA_MAX_AGE_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_METADATA_MAX_AGE_CONFIG));
+    }
+
+    private void addKafkaConsumerParameters(Properties props, Topic topic) {
+        props.put(AUTO_OFFSET_RESET_CONFIG, kafkaConsumerParameters.getAutoOffsetReset());
+        props.put(SESSION_TIMEOUT_MS_CONFIG, kafkaConsumerParameters.getSessionTimeoutMs());
+        props.put(HEARTBEAT_INTERVAL_MS_CONFIG, kafkaConsumerParameters.getHeartbeatIntervalMs());
+        props.put(METADATA_MAX_AGE_CONFIG, kafkaConsumerParameters.getMetadataMaxAgeMs());
         props.put(MAX_PARTITION_FETCH_BYTES_CONFIG, getMaxPartitionFetch(topic, configs));
-        props.put(SEND_BUFFER_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_SEND_BUFFER_CONFIG));
-        props.put(RECEIVE_BUFFER_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_RECEIVE_BUFFER_CONFIG));
-        props.put(FETCH_MIN_BYTES_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_FETCH_MIN_BYTES_CONFIG));
-        props.put(FETCH_MAX_WAIT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_FETCH_MAX_WAIT_MS_CONFIG));
-        props.put(RECONNECT_BACKOFF_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG));
-        props.put(RETRY_BACKOFF_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG));
-        props.put(CHECK_CRCS_CONFIG, configs.getBooleanProperty(Configs.KAFKA_CONSUMER_CHECK_CRCS_CONFIG));
-        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_METRICS_SAMPLE_WINDOW_MS_CONFIG));
-        props.put(METRICS_NUM_SAMPLES_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_METRICS_NUM_SAMPLES_CONFIG));
-        props.put(REQUEST_TIMEOUT_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG));
-        props.put(CONNECTIONS_MAX_IDLE_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_CONNECTIONS_MAX_IDLE_MS_CONFIG));
-        props.put(MAX_POLL_RECORDS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG));
-        props.put(MAX_POLL_INTERVAL_MS_CONFIG, configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_POLL_INTERVAL_CONFIG));
-        return new KafkaConsumer<>(props);
+        props.put(SEND_BUFFER_CONFIG, kafkaConsumerParameters.getSendBufferBytes());
+        props.put(RECEIVE_BUFFER_CONFIG, kafkaConsumerParameters.getReceiveBufferBytes());
+        props.put(FETCH_MIN_BYTES_CONFIG, kafkaConsumerParameters.getFetchMinBytes());
+        props.put(FETCH_MAX_WAIT_MS_CONFIG, kafkaConsumerParameters.getFetchMaxWaitMs());
+        props.put(RECONNECT_BACKOFF_MS_CONFIG, kafkaConsumerParameters.getReconnectBackoffMs());
+        props.put(RETRY_BACKOFF_MS_CONFIG, kafkaConsumerParameters.getRetryBackoffMs());
+        props.put(CHECK_CRCS_CONFIG, kafkaConsumerParameters.isCheckCrcsEnabled());
+        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, kafkaConsumerParameters.getMetricsSampleWindowMs());
+        props.put(METRICS_NUM_SAMPLES_CONFIG, kafkaConsumerParameters.getMetricsNumSamples());
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaConsumerParameters.getRequestTimeoutMs());
+        props.put(CONNECTIONS_MAX_IDLE_MS_CONFIG, kafkaConsumerParameters.getConnectionsMaxIdleMs());
+        props.put(MAX_POLL_RECORDS_CONFIG, kafkaConsumerParameters.getMaxPollRecords());
+        props.put(MAX_POLL_INTERVAL_MS_CONFIG, kafkaConsumerParameters.getMaxPollIntervalMs());
     }
 
     private int getMaxPartitionFetch(Topic topic, ConfigFactory configs) {
         if (configs.getBooleanProperty(Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE)) {
             int topicMessageSize = topic.getMaxMessageSize();
-            int min = configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_PARTITION_FETCH_MIN_BYTES_CONFIG);
-            int max = configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_PARTITION_FETCH_MAX_BYTES_CONFIG);
+            int min = kafkaConsumerParameters.getMaxPartitionFetchMin();
+            int max = kafkaConsumerParameters.getMaxPartitionFetchMax();
             return Math.max(Math.min(topicMessageSize, max), min);
         } else {
-            return configs.getIntProperty(Configs.KAFKA_CONSUMER_MAX_PARTITION_FETCH_MAX_BYTES_CONFIG);
+            return kafkaConsumerParameters.getMaxPartitionFetchMax();
         }
     }
 }

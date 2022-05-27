@@ -15,14 +15,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG;
 
 public class ConsumersStarter implements Starter<ConfigurableApplicationContext> {
 
@@ -64,6 +64,10 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
     public void stop() throws Exception {
         LOGGER.info("Stopping Hermes Consumers");
         instance().close();
+    }
+
+    public void overrideProperty(String config, Object value) {
+        args.add("--" + config + "=" + value);
     }
 
     public void overrideProperty(Configs config, Object value) {
