@@ -62,14 +62,15 @@ import java.util.concurrent.ScheduledExecutorService;
         SslContextProperties.class,
         HttpClientProperties.class,
         Http2ClientProperties.class,
-        SenderAsyncTimeoutProperties.class
+        SenderAsyncTimeoutProperties.class,
+        BatchProperties.class
 })
 public class ConsumerSenderConfiguration {
 
     @Bean
-    public MessageBatchSenderFactory httpMessageBatchSenderFactory(ConfigFactory configFactory,
-                                                                   SendingResultHandlers resultHandlers) {
-        return new HttpMessageBatchSenderFactory(configFactory, resultHandlers);
+    public MessageBatchSenderFactory httpMessageBatchSenderFactory(SendingResultHandlers resultHandlers,
+                                                                   BatchProperties batchProperties) {
+        return new HttpMessageBatchSenderFactory(resultHandlers, batchProperties.getConnectionTimeout(), batchProperties.getConnectionRequestTimeout());
     }
 
     @Bean(destroyMethod = "closeProviders")
