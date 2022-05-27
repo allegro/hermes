@@ -50,6 +50,8 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
         overrideProperty(CONSUMER_USE_TOPIC_MESSAGE_SIZE, true);
         overrideProperty("consumer.ssl.keystoreSource", "provided");
         overrideProperty("consumer.ssl.truststoreSource", "provided");
+        overrideProperty("consumer.commit.offset.queuesInflightDrainFullEnabled", true);
+        overrideProperty("consumer.commit.offset.period", 1);
         setSpringProfiles("integration");
 
         applicationContext = application.run(args.toArray(new String[0]));

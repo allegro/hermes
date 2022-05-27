@@ -54,7 +54,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Configuration
 @EnableConfigurationProperties({
         CommitOffsetProperties.class,
-        SenderAsyncTimeoutProperties.class
+        SenderAsyncTimeoutProperties.class,
+        RateProperties.class
 })
 public class ConsumerConfiguration {
     private static final Logger logger = getLogger(ConsumerConfiguration.class);
@@ -146,8 +147,8 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(ConfigFactory configFactory) {
-        return new ConsumerRateLimitSupervisor(configFactory);
+    public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(RateProperties rateProperties) {
+        return new ConsumerRateLimitSupervisor(rateProperties.getLimiterSupervisorPeriod());
     }
 
     @Bean
@@ -164,9 +165,9 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public OutputRateCalculatorFactory outputRateCalculatorFactory(ConfigFactory configFactory,
+    public OutputRateCalculatorFactory outputRateCalculatorFactory(RateProperties rateProperties,
                                                                    MaxRateProviderFactory maxRateProviderFactory) {
-        return new OutputRateCalculatorFactory(configFactory, maxRateProviderFactory);
+        return new OutputRateCalculatorFactory(rateProperties.toRateCalculatorParameters(), maxRateProviderFactory);
     }
 
     @Bean
@@ -203,7 +204,8 @@ public class ConsumerConfiguration {
                                                                      UndeliveredMessageLog undeliveredMessageLog, Clock clock,
                                                                      InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
                                                                      ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                                                                     SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
+                                                                     SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
+                                                                     RateProperties rateProperties) {
         return new ConsumerMessageSenderFactory(
                 configFactory,
                 hermesMetrics,
@@ -214,7 +216,9 @@ public class ConsumerConfiguration {
                 clock,
                 instrumentedExecutorServiceFactory,
                 consumerAuthorizationHandler,
-                senderAsyncTimeoutProperties.getMilliseconds()
+                senderAsyncTimeoutProperties.getMilliseconds(),
+                rateProperties.getLimiterReportingThreadPoolSize(),
+                rateProperties.isLimiterReportingThreadMonitoringEnabled()
         );
     }
 

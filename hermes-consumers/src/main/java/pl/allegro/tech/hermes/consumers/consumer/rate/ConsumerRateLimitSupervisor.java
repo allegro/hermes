@@ -19,11 +19,10 @@ public class ConsumerRateLimitSupervisor implements Runnable {
 
     private final Set<ConsumerRateLimiter> consumerRateLimiters = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public ConsumerRateLimitSupervisor(ConfigFactory configFactory) {
-        int period = configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_SUPERVISOR_PERIOD);
+    public ConsumerRateLimitSupervisor(int rateLimiterSupervisorPeriod) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("rate-limit-supervisor-%d").build();
         Executors.newSingleThreadScheduledExecutor(threadFactory)
-                .scheduleAtFixedRate(this, period, period, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(this, rateLimiterSupervisorPeriod, rateLimiterSupervisorPeriod, TimeUnit.SECONDS);
     }
 
     @Override

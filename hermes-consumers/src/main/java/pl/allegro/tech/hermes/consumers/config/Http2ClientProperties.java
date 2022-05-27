@@ -58,7 +58,6 @@ public class Http2ClientProperties {
 
     public Http2ClientParameters toHttp2ClientParameters() {
         return new Http2ClientParameters(
-                this.enabled,
                 this.threadPoolSize,
                 this.threadPoolMonitoringEnabled,
                 this.idleTimeout,
