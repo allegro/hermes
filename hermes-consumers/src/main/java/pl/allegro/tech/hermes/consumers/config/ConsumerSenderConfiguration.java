@@ -57,14 +57,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE;
-
 @Configuration
 @EnableConfigurationProperties({
         SslContextProperties.class,
         HttpClientProperties.class,
-        Http2ClientProperties.class
+        Http2ClientProperties.class,
+        SenderAsyncTimeoutProperties.class
 })
 public class ConsumerSenderConfiguration {
 
@@ -204,12 +202,12 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeoutFactory(ConfigFactory configFactory,
-                                                                              InstrumentedExecutorServiceFactory executorFactory) {
+    public FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeoutFactory(InstrumentedExecutorServiceFactory executorFactory,
+                                                                              SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
         ScheduledExecutorService timeoutExecutorService = executorFactory.getScheduledExecutorService(
                 "async-timeout",
-                configFactory.getIntProperty(CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE),
-                configFactory.getBooleanProperty(CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING)
+                senderAsyncTimeoutProperties.getThreadPoolSize(),
+                senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled()
         );
         return new FutureAsyncTimeout<>(MessageSendingResult::failedResult, timeoutExecutorService);
     }

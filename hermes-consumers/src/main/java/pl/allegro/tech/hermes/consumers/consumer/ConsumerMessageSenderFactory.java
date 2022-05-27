@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SENDER_ASYNC_TIMEOUT_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class ConsumerMessageSenderFactory {
@@ -38,12 +37,14 @@ public class ConsumerMessageSenderFactory {
     private final Clock clock;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final ExecutorService rateLimiterReportingExecutor;
+    private final int senderAsyncTimeoutMs;
 
     public ConsumerMessageSenderFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics, MessageSenderFactory messageSenderFactory,
                                         Trackers trackers, FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
                                         UndeliveredMessageLog undeliveredMessageLog, Clock clock,
                                         InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
-                                        ConsumerAuthorizationHandler consumerAuthorizationHandler) {
+                                        ConsumerAuthorizationHandler consumerAuthorizationHandler,
+                                        int senderAsyncTimeoutMs) {
 
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
@@ -56,6 +57,7 @@ public class ConsumerMessageSenderFactory {
         this.rateLimiterReportingExecutor = instrumentedExecutorServiceFactory.getExecutorService(
                 "rate-limiter-reporter", configFactory.getIntProperty(CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE),
                 configFactory.getBooleanProperty(Configs.CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_MONITORING));
+        this.senderAsyncTimeoutMs = senderAsyncTimeoutMs;
     }
 
     public ConsumerMessageSender create(Subscription subscription, SerialConsumerRateLimiter consumerRateLimiter,
@@ -78,7 +80,7 @@ public class ConsumerMessageSenderFactory {
                 rateLimiterReportingExecutor,
                 inflight,
                 hermesMetrics,
-                configFactory.getIntProperty(CONSUMER_SENDER_ASYNC_TIMEOUT_MS),
+                senderAsyncTimeoutMs,
                 futureAsyncTimeout,
                 clock);
     }

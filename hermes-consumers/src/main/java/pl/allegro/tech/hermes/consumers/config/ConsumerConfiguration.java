@@ -53,7 +53,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration
 @EnableConfigurationProperties({
-        CommitOffsetProperties.class
+        CommitOffsetProperties.class,
+        SenderAsyncTimeoutProperties.class
 })
 public class ConsumerConfiguration {
     private static final Logger logger = getLogger(ConsumerConfiguration.class);
@@ -201,7 +202,8 @@ public class ConsumerConfiguration {
                                                                      FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
                                                                      UndeliveredMessageLog undeliveredMessageLog, Clock clock,
                                                                      InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
-                                                                     ConsumerAuthorizationHandler consumerAuthorizationHandler) {
+                                                                     ConsumerAuthorizationHandler consumerAuthorizationHandler,
+                                                                     SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
         return new ConsumerMessageSenderFactory(
                 configFactory,
                 hermesMetrics,
@@ -211,7 +213,8 @@ public class ConsumerConfiguration {
                 undeliveredMessageLog,
                 clock,
                 instrumentedExecutorServiceFactory,
-                consumerAuthorizationHandler
+                consumerAuthorizationHandler,
+                senderAsyncTimeoutProperties.getMilliseconds()
         );
     }
 
