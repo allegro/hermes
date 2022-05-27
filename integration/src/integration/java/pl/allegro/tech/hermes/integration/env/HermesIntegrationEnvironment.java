@@ -37,6 +37,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_FIXED_MAX;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_TYPE;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS;
 import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 @Listeners({RetryListener.class})
@@ -76,7 +77,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     }
 
     @BeforeSuite
-    public void prepareEnvironment(ITestContext context) throws Exception {
+    public void prepareEnvironment(ITestContext context) {
         try {
             Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne, hermesZookeeperTwo, googlePubSubEmulator)
                     .parallel()
@@ -105,7 +106,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             consumersStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             consumersStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
             consumersStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
-            consumersStarter.overrideProperty(Configs.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());
+            consumersStarter.overrideProperty(GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());
             consumersStarter.start();
 
             FrontendStarter frontendStarter = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT);
@@ -126,7 +127,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         }
     }
 
-    private CuratorFramework startZookeeperClient() throws InterruptedException {
+    private CuratorFramework startZookeeperClient() {
         final CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
                 .connectString(hermesZookeeperOne.getConnectionString())
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
