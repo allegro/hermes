@@ -18,12 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class BackupFilesManagerTest {
 
-    private Clock clock = Clock.fixed(Instant.ofEpochMilli(12345), ZoneId.systemDefault());
+    private final Clock clock = Clock.fixed(Instant.ofEpochMilli(12345), ZoneId.systemDefault());
 
     private File tempDir;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() {
         tempDir = Files.createTempDir();
     }
 

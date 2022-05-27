@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 
-import javax.inject.Inject;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
@@ -21,7 +20,6 @@ public class ThroughputLimiterFactory {
 
     private enum ThroughputLimiterType { UNLIMITED, FIXED, DYNAMIC }
 
-    @Inject
     public ThroughputLimiterFactory(ConfigFactory configs, HermesMetrics hermesMetrics) {
         this.configs = configs;
         this.hermesMetrics = hermesMetrics;

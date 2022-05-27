@@ -160,18 +160,18 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         partitionsWithMessagesData.size() == NUMBER_OF_PARTITION
     }
 
-    private AvroMessage generateAvroMessage(String partitionKey) {
+    private static AvroMessage generateAvroMessage(String partitionKey) {
         def avroUser = new AvroUser()
         return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema, partitionKey)
     }
 
-    private def createTestSubscription(Topic topic, String subscriptionName) {
+    private static def createTestSubscription(Topic topic, String subscriptionName) {
         Subscription.create(topic.getQualifiedName(), subscriptionName, null, Subscription.State.PENDING, "test", [:], false, null, null,
                 null, null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false
         )
     }
 
-    private def createAvroTopic(String topicName) {
+    private static def createAvroTopic(String topicName) {
         TopicBuilder.topic(topicName)
                 .migratedFromJsonType()
                 .withContentType(ContentType.AVRO)

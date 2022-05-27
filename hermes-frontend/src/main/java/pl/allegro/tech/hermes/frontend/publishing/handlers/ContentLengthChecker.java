@@ -16,7 +16,7 @@ import static java.lang.String.format;
 final class ContentLengthChecker {
     private static final Logger logger = LoggerFactory.getLogger(ContentLengthChecker.class);
 
-    private boolean forceMaxMessageSizePerTopic;
+    private final boolean forceMaxMessageSizePerTopic;
 
     ContentLengthChecker(ConfigFactory configs) {
         this.forceMaxMessageSizePerTopic = configs.getBooleanProperty(Configs.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE);

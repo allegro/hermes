@@ -5,8 +5,8 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 
-import javax.inject.Inject;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,9 +21,8 @@ public class DefaultMessagePreviewPersister implements MessagePreviewPersister {
 
     private final MessagePreviewRepository repository;
 
-    private Optional<ScheduledExecutorService> scheduledExecutorService;
+    private final Optional<ScheduledExecutorService> scheduledExecutorService;
 
-    @Inject
     public DefaultMessagePreviewPersister(MessagePreviewLog messagePreviewLog, MessagePreviewRepository repository, ConfigFactory configFactory) {
         this.messagePreviewLog = messagePreviewLog;
         this.repository = repository;
@@ -45,7 +44,7 @@ public class DefaultMessagePreviewPersister implements MessagePreviewPersister {
 
     @Override
     public void shutdown() {
-        scheduledExecutorService.ifPresent(s -> s.shutdown());
+        scheduledExecutorService.ifPresent(ExecutorService::shutdown);
     }
 
 }

@@ -33,8 +33,6 @@ import java.time.Clock;
 import java.util.Collections;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
-import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.BENCHMARK_TOPIC;
 import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;

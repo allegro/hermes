@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
 import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -28,7 +27,6 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
 
     private final ModelAwareZookeeperNotifyingCache modelNotifyingCache;
 
-    @Inject
     public ZookeeperInternalNotificationBus(ObjectMapper objectMapper, ModelAwareZookeeperNotifyingCache modelNotifyingCache) {
         this.objectMapper = objectMapper;
         this.modelNotifyingCache = modelNotifyingCache;
@@ -39,13 +37,13 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
         modelNotifyingCache.registerSubscriptionCallback((e) -> {
             switch (e.getType()) {
                 case CHILD_ADDED:
-                    readSilently(e.getData(), Subscription.class).ifPresent(sub -> callback.onSubscriptionCreated(sub));
+                    readSilently(e.getData(), Subscription.class).ifPresent(callback::onSubscriptionCreated);
                     break;
                 case CHILD_UPDATED:
-                    readSilently(e.getData(), Subscription.class).ifPresent(sub -> callback.onSubscriptionChanged(sub));
+                    readSilently(e.getData(), Subscription.class).ifPresent(callback::onSubscriptionChanged);
                     break;
                 case CHILD_REMOVED:
-                    readSilently(e.getData(), Subscription.class).ifPresent(sub -> callback.onSubscriptionRemoved(sub));
+                    readSilently(e.getData(), Subscription.class).ifPresent(callback::onSubscriptionRemoved);
                     break;
                 default:
                     break;
@@ -58,13 +56,13 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
         modelNotifyingCache.registerTopicCallback((e) -> {
             switch (e.getType()) {
                 case CHILD_ADDED:
-                    readSilently(e.getData(), Topic.class).ifPresent(topic -> callback.onTopicCreated(topic));
+                    readSilently(e.getData(), Topic.class).ifPresent(callback::onTopicCreated);
                     break;
                 case CHILD_UPDATED:
-                    readSilently(e.getData(), Topic.class).ifPresent(topic -> callback.onTopicChanged(topic));
+                    readSilently(e.getData(), Topic.class).ifPresent(callback::onTopicChanged);
                     break;
                 case CHILD_REMOVED:
-                    readSilently(e.getData(), Topic.class).ifPresent(topic -> callback.onTopicRemoved(topic));
+                    readSilently(e.getData(), Topic.class).ifPresent(callback::onTopicRemoved);
                     break;
                 default:
                     break;

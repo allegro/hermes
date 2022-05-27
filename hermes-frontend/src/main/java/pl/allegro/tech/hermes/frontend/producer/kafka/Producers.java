@@ -24,8 +24,8 @@ public class Producers {
     private final Producer<byte[], byte[]> leaderConfirms;
     private final Producer<byte[], byte[]> everyoneConfirms;
 
-    private boolean reportNodeMetrics;
-    private AtomicBoolean nodeMetricsRegistered = new AtomicBoolean(false);
+    private final boolean reportNodeMetrics;
+    private final AtomicBoolean nodeMetricsRegistered = new AtomicBoolean(false);
 
     public Producers(Producer<byte[], byte[]> leaderConfirms,
                      Producer<byte[], byte[]> everyoneConfirms,
@@ -118,7 +118,7 @@ public class Producers {
         metrics.registerGauge(gauge, () -> {
             Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                     producer.metrics().entrySet().stream().filter(predicate).findFirst();
-            double value = first.isPresent() ? first.get().getValue().value() : 0.0;
+            double value = first.map(metricNameEntry -> metricNameEntry.getValue().value()).orElse(0.0);
             return value < 0? 0.0 : value;
         });
     }

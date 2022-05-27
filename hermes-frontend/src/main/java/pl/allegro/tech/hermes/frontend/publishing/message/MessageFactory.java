@@ -25,7 +25,6 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Map;
 import java.util.Optional;
@@ -47,7 +46,6 @@ public class MessageFactory {
     private final Clock clock;
     private final boolean schemaIdHeaderEnabled;
 
-    @Inject
     public MessageFactory(MessageValidators validators,
                           AvroEnforcer enforcer,
                           SchemaRepository schemaRepository,

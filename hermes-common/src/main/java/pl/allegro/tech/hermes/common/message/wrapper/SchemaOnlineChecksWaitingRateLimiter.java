@@ -4,7 +4,6 @@ import com.google.common.util.concurrent.RateLimiter;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
-import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
 
 public class SchemaOnlineChecksWaitingRateLimiter implements SchemaOnlineChecksRateLimiter {
@@ -13,7 +12,6 @@ public class SchemaOnlineChecksWaitingRateLimiter implements SchemaOnlineChecksR
 
     private final int onlineCheckAcquireWaitMs;
 
-    @Inject
     public SchemaOnlineChecksWaitingRateLimiter(ConfigFactory configFactory) {
         double onlineCheckPermitsPerSeconds = configFactory.getDoubleProperty(Configs.SCHEMA_REPOSITORY_ONLINE_CHECK_PERMITS_PER_SECOND);
         this.rateLimiter = RateLimiter.create(onlineCheckPermitsPerSeconds);

@@ -8,8 +8,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
-import javax.inject.Inject;
-
 public class AvroMessageSchemaIdAwareContentWrapper implements AvroMessageContentUnwrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(AvroMessageSchemaIdAwareContentWrapper.class);
@@ -21,7 +19,6 @@ public class AvroMessageSchemaIdAwareContentWrapper implements AvroMessageConten
     private final Counter deserializationErrorsForSchemaIdAwarePayload;
     private final Counter deserializationWithMissedSchemaIdInPayload;
 
-    @Inject
     public AvroMessageSchemaIdAwareContentWrapper(SchemaRepository schemaRepository,
                                                   AvroMessageContentWrapper avroMessageContentWrapper,
                                                   DeserializationMetrics deserializationMetrics) {

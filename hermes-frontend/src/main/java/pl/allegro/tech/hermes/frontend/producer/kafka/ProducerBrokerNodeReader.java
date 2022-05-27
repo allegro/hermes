@@ -15,9 +15,9 @@ import static java.util.Collections.singletonList;
 public class ProducerBrokerNodeReader {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProducerBrokerNodeReader.class);
 
-    public static List<Node> read(Producer producer) {
+    public static List<Node> read(Producer<?, ?> producer) {
         if (producer instanceof KafkaProducer) {
-            KafkaProducer kafkaProducer = (KafkaProducer) producer;
+            KafkaProducer<?, ?> kafkaProducer = (KafkaProducer<?, ?>) producer;
             try {
                 Field field = KafkaProducer.class.getDeclaredField("metadata");
                 field.setAccessible(true);

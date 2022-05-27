@@ -21,7 +21,7 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
     private final ScheduledExecutorService executor;
     private final int checkInterval;
 
-    private ConcurrentHashMap<TopicName, Throughput> users = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<TopicName, Throughput> users = new ConcurrentHashMap<>();
 
     public DynamicThroughputLimiter(long max,
                                     long threshold,
@@ -68,7 +68,7 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
         users.entrySet().removeIf(entry -> entry.getValue().getOneMinuteRate() <= idleThreshold);
         int userCount = users.size();
         if (userCount > 0) {
-            long total = users.reduceValuesToLong(Long.MAX_VALUE, Throughput::getRoundedOneMinuteRate, 0, ((left, right) -> left + right));
+            long total = users.reduceValuesToLong(Long.MAX_VALUE, Throughput::getRoundedOneMinuteRate, 0, (Long::sum));
             long mean = total / userCount;
             long desiredMean = desired / userCount;
             users.entrySet()

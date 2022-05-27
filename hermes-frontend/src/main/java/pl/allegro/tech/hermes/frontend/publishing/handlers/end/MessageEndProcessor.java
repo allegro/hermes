@@ -12,8 +12,6 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
-import javax.inject.Inject;
-
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.end.RemoteHostReader.readHostAndPort;
 
@@ -25,7 +23,6 @@ public class MessageEndProcessor {
     private final Trackers trackers;
     private final BrokerListeners brokerListeners;
 
-    @Inject
     public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners) {
         this.trackers = trackers;
         this.brokerListeners = brokerListeners;

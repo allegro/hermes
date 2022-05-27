@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
-import pl.allegro.tech.hermes.common.di.factories.WorkloadConstraintsRepositoryFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
@@ -42,6 +41,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
@@ -102,9 +102,8 @@ class ConsumerTestRuntimeEnvironment {
                 curator, objectMapper, zookeeperPaths, topicRepository
         );
 
-        WorkloadConstraintsRepositoryFactory workloadConstraintsRepositoryFactory =
-                new WorkloadConstraintsRepositoryFactory(curator, objectMapper, zookeeperPaths);
-        this.workloadConstraintsRepository = workloadConstraintsRepositoryFactory.provide();
+        this.workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(curator, objectMapper, zookeeperPaths);
+
 
         this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
         this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, CLUSTER_NAME);
