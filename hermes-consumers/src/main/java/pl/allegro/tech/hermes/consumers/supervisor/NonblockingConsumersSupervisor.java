@@ -54,7 +54,8 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                                           SubscriptionRepository subscriptionRepository,
                                           HermesMetrics metrics,
                                           ConsumerMonitor monitor,
-                                          Clock clock) {
+                                          Clock clock,
+                                          int commitOffsetPeriod) {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.configs = configFactory;
@@ -67,13 +68,11 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                 (offsets) -> offsets.subscriptionNames().forEach(subscription ->
                         backgroundProcess.accept(Signal.of(COMMIT, subscription, offsets.batchFor(subscription)))
                 ),
-                configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_PERIOD),
+                commitOffsetPeriod,
                 metrics
         );
         monitor.register(SUBSCRIPTIONS, backgroundProcess::runningSubscriptionsStatus);
         monitor.register(SUBSCRIPTIONS_COUNT, backgroundProcess::countRunningProcesses);
-
-
     }
 
     private ScheduledExecutorService createExecutorForSupervision() {

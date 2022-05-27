@@ -79,19 +79,18 @@ class ConsumerTestRuntimeEnvironment {
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
     private final Supplier<CuratorFramework> curatorSupplier;
 
-    private GroupRepository groupRepository;
-    private TopicRepository topicRepository;
-    private SubscriptionRepository subscriptionRepository;
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private Supplier<HermesMetrics> metricsSupplier;
-    private ConsumerNodesRegistry consumersRegistry;
-    private WorkloadConstraintsRepository workloadConstraintsRepository;
-    private CuratorFramework curator;
+    private final GroupRepository groupRepository;
+    private final TopicRepository topicRepository;
+    private final SubscriptionRepository subscriptionRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Supplier<HermesMetrics> metricsSupplier;
+    private final WorkloadConstraintsRepository workloadConstraintsRepository;
+    private final CuratorFramework curator;
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
 
-    private Map<String, CuratorFramework> consumerZookeeperConnections = Maps.newHashMap();
-    private List<SubscriptionsCache> subscriptionsCaches = new ArrayList<>();
+    private final Map<String, CuratorFramework> consumerZookeeperConnections = Maps.newHashMap();
+    private final List<SubscriptionsCache> subscriptionsCaches = new ArrayList<>();
 
     ConsumerTestRuntimeEnvironment(Supplier<CuratorFramework> curatorSupplier) {
         this.curatorSupplier = curatorSupplier;
@@ -121,15 +120,12 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     ConfigFactory consumerConfig(String consumerId) {
-        MutableConfigFactory consumerConfig = new MutableConfigFactory();
-        consumerConfig
+        return new MutableConfigFactory()
                 .overrideProperty(Configs.CONSUMER_WORKLOAD_NODE_ID, consumerId)
                 .overrideProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL, 1)
                 .overrideProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION, 2)
                 .overrideProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL, 1000)
                 .overrideProperty(Configs.CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL, 1);
-        ;
-        return consumerConfig;
     }
 
     private ConsumerControllers createConsumer(String consumerId,
@@ -209,7 +205,8 @@ class ConsumerTestRuntimeEnvironment {
                 subscriptionRepository,
                 metrics,
                 mock(ConsumerMonitor.class),
-                Clock.systemDefaultZone());
+                Clock.systemDefaultZone(),
+                60);
     }
 
     ConsumersRuntimeMonitor monitor(String consumerId,
@@ -254,7 +251,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void killAll() {
-        consumerZookeeperConnections.values().stream().forEach(CuratorFramework::close);
+        consumerZookeeperConnections.values().forEach(CuratorFramework::close);
     }
 
     private ConsumerControllers startNode(ConsumerControllers consumerControllers) {
