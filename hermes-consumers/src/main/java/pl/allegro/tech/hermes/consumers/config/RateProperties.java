@@ -86,7 +86,7 @@ public class RateProperties {
         this.failuresSpeedUpToleranceRatio = failuresSpeedUpToleranceRatio;
     }
 
-    public RateCalculatorParameters toRateCalculatorParameters() {
+    protected RateCalculatorParameters toRateCalculatorParameters() {
         return new RateCalculatorParameters(
                 this.limiterHeartbeatModeDelay,
                 this.limiterSlowModeDelay,
