@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
 import org.eclipse.jetty.client.HttpClient;
 import org.slf4j.Logger;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -53,6 +52,11 @@ import java.util.List;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration
+@EnableConfigurationProperties({
+        CommitOffsetProperties.class,
+        SenderAsyncTimeoutProperties.class,
+        RateProperties.class
+})
 public class ConsumerConfiguration {
     private static final Logger logger = getLogger(ConsumerConfiguration.class);
 
@@ -138,13 +142,13 @@ public class ConsumerConfiguration {
 
     @Bean
     public OffsetQueue offsetQueue(HermesMetrics metrics,
-                                   ConfigFactory configFactory) {
-        return new OffsetQueue(metrics, configFactory);
+                                   CommitOffsetProperties commitOffsetProperties) {
+        return new OffsetQueue(metrics, commitOffsetProperties.getQueuesSize(), commitOffsetProperties.isQueuesInflightDrainFullEnabled());
     }
 
     @Bean
-    public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(ConfigFactory configFactory) {
-        return new ConsumerRateLimitSupervisor(configFactory);
+    public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(RateProperties rateProperties) {
+        return new ConsumerRateLimitSupervisor(rateProperties.getLimiterSupervisorPeriod());
     }
 
     @Bean
@@ -161,9 +165,9 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public OutputRateCalculatorFactory outputRateCalculatorFactory(ConfigFactory configFactory,
+    public OutputRateCalculatorFactory outputRateCalculatorFactory(RateProperties rateProperties,
                                                                    MaxRateProviderFactory maxRateProviderFactory) {
-        return new OutputRateCalculatorFactory(configFactory, maxRateProviderFactory);
+        return new OutputRateCalculatorFactory(rateProperties.toRateCalculatorParameters(), maxRateProviderFactory);
     }
 
     @Bean
@@ -199,7 +203,9 @@ public class ConsumerConfiguration {
                                                                      FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
                                                                      UndeliveredMessageLog undeliveredMessageLog, Clock clock,
                                                                      InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
-                                                                     ConsumerAuthorizationHandler consumerAuthorizationHandler) {
+                                                                     ConsumerAuthorizationHandler consumerAuthorizationHandler,
+                                                                     SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
+                                                                     RateProperties rateProperties) {
         return new ConsumerMessageSenderFactory(
                 configFactory,
                 hermesMetrics,
@@ -209,7 +215,10 @@ public class ConsumerConfiguration {
                 undeliveredMessageLog,
                 clock,
                 instrumentedExecutorServiceFactory,
-                consumerAuthorizationHandler
+                consumerAuthorizationHandler,
+                senderAsyncTimeoutProperties.getMilliseconds(),
+                rateProperties.getLimiterReportingThreadPoolSize(),
+                rateProperties.isLimiterReportingThreadMonitoringEnabled()
         );
     }
 

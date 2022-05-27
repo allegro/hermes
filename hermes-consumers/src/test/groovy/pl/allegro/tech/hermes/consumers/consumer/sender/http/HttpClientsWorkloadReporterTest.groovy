@@ -27,7 +27,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
         def http2Client = Mock(HttpClient)
         http2Client.getDestinations() >> [http2Destination]
 
-        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, new Http2ClientHolder(http2Client), new MutableConfigFactory())
+        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, new Http2ClientHolder(http2Client), true, false)
 
         expect:
         reporter.queuesSize == 6
@@ -45,7 +45,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
         def http1Client = Mock(HttpClient)
         http1Client.getDestinations() >> [http1Destination1, http1Destination2]
 
-        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, new Http2ClientHolder(null), new MutableConfigFactory())
+        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, new Http2ClientHolder(null), true, false)
 
         expect:
         reporter.queuesSize == 3

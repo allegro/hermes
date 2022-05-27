@@ -8,18 +8,18 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFac
 
 public class OutputRateCalculatorFactory {
 
-    private final ConfigFactory configFactory;
+    private final RateCalculatorParameters rateCalculatorParameters;
     private final MaxRateProviderFactory maxRateProviderFactory;
 
-    public OutputRateCalculatorFactory(ConfigFactory configFactory,
+    public OutputRateCalculatorFactory(RateCalculatorParameters rateCalculatorParameters,
                                        MaxRateProviderFactory maxRateProviderFactory) {
-        this.configFactory = configFactory;
+        this.rateCalculatorParameters = rateCalculatorParameters;
         this.maxRateProviderFactory = maxRateProviderFactory;
     }
 
     public OutputRateCalculator createCalculator(Subscription subscription, SendCounters sendCounters) {
         MaxRateProvider maxRateProvider =
                 maxRateProviderFactory.create(subscription, sendCounters);
-        return new OutputRateCalculator(configFactory, maxRateProvider);
+        return new OutputRateCalculator(rateCalculatorParameters, maxRateProvider);
     }
 }

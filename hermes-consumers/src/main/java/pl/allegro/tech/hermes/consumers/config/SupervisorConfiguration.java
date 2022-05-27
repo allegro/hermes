@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
@@ -63,6 +64,9 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalConsumerAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
 @Configuration
+@EnableConfigurationProperties({
+        CommitOffsetProperties.class
+})
 public class SupervisorConfiguration {
     private static final Logger logger = getLogger(SupervisorConfiguration.class);
 
@@ -156,10 +160,11 @@ public class SupervisorConfiguration {
                                                               SubscriptionRepository subscriptionRepository,
                                                               HermesMetrics metrics,
                                                               ConsumerMonitor monitor,
-                                                              Clock clock) {
+                                                              Clock clock,
+                                                              CommitOffsetProperties commitOffsetProperties) {
         return new NonblockingConsumersSupervisor(configFactory, executor, consumerFactory, offsetQueue,
                 consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
-                subscriptionRepository, metrics, monitor, clock);
+                subscriptionRepository, metrics, monitor, clock, commitOffsetProperties.getPeriod());
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")

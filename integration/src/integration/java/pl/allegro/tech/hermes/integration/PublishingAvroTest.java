@@ -46,7 +46,7 @@ public class PublishingAvroTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
     private AvroUser user;
-    private Clock clock = Clock.systemDefaultZone();
+    private final Clock clock = Clock.systemDefaultZone();
 
     @BeforeClass
     public void initialize() {

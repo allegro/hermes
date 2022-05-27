@@ -33,7 +33,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
     private final AvroUser user = new AvroUser();
-    private Clock clock = Clock.systemDefaultZone();
+    private final Clock clock = Clock.systemDefaultZone();
 
     @BeforeMethod
     public void initializeAlways() {
@@ -135,8 +135,8 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
                 summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME)
         );
 
-        assertThat(offsets.jsonPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(1);
-        assertThat(offsets.avroPartitionOffsets.stream().collect(summingLong(PartitionOffset::getOffset))).isEqualTo(0);
+        assertThat((Long) offsets.jsonPartitionOffsets.stream().mapToLong(PartitionOffset::getOffset).sum()).isEqualTo(1);
+        assertThat((Long) offsets.avroPartitionOffsets.stream().mapToLong(PartitionOffset::getOffset).sum()).isEqualTo(0);
     }
 
     private void sendAvroMessageOnTopic(Topic topic, TestMessage message) {

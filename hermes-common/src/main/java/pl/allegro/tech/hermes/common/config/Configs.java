@@ -18,7 +18,6 @@ public enum Configs {
     ZOOKEEPER_MAX_RETRIES("zookeeper.max.retries", 29),
     ZOOKEEPER_CONNECTION_TIMEOUT("zookeeper.connection.timeout", 10000),
     ZOOKEEPER_SESSION_TIMEOUT("zookeeper.session.timeout", 10000),
-    ZOOKEEPER_MAX_INFLIGHT_REQUESTS("zookeeper.max.inflight.requests", 10),
 
     ZOOKEEPER_AUTHORIZATION_ENABLED("zookeeper.authorization.enabled", false),
     ZOOKEEPER_AUTHORIZATION_SCHEME("zookeeper.authorization.scheme", "digest"),
@@ -26,10 +25,8 @@ public enum Configs {
     ZOOKEEPER_AUTHORIZATION_PASSWORD("zookeeper.authorization.password", "password"),
 
     ZOOKEEPER_ROOT("zookeeper.root", "/hermes"),
-    ZOOKEEPER_CACHE_THREAD_POOL_SIZE("zookeeper.cache.thread.pool.size", 5),
     ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE("zookeeper.cache.processing.thread.pool.size", 5),
 
-    ENVIRONMENT_NAME("environment.name", "dev"),
     HOSTNAME("hostname", new InetAddressInstanceIdResolver().resolve()),
 
     KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary-dc"),
@@ -61,7 +58,6 @@ public enum Configs {
     KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS("kafka.producer.metrics.sample.window.ms", 30000),
     KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION("kafka.producer.max.in.flight.requests.per.connection", 5),
     KAFKA_PRODUCER_REPORT_NODE_METRICS("kafka.producer.report.node.metrics", false),
-    KAFKA_STREAM_COUNT("kafka.stream.count", 1),
     KAFKA_ADMIN_REQUEST_TIMEOUT_MS("kafka.admin.request.timeout.ms", 5 * 60 * 1000),
 
     KAFKA_AUTHORIZATION_ENABLED("kafka.authorization.enabled", false),
@@ -86,7 +82,6 @@ public enum Configs {
     FRONTEND_SET_KEEP_ALIVE("frontend.keep.alive", false),
     FRONTEND_REQUEST_DUMPER("frontend.request.dumper", false),
     FRONTEND_BUFFER_SIZE("frontend.buffer.size", 16384),
-    FRONTEND_REQUEST_CHUNK_SIZE("frontend.request.chunk.size", 1024),
     FRONTEND_GRACEFUL_SHUTDOWN_ENABLED("frontend.graceful.shutdown.enabled", true),
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
     FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
@@ -98,7 +93,6 @@ public enum Configs {
     FRONTEND_THROUGHPUT_DYNAMIC_DESIRED("frontend.throughput.dynamic.desired", Long.MAX_VALUE),
     FRONTEND_THROUGHPUT_DYNAMIC_IDLE("frontend.throughput.dynamic.idle", 0.5),
     FRONTEND_THROUGHPUT_DYNAMIC_CHECK_INTERVAL("frontend.throughput.dynamic.interval.seconds", 30),
-    FRONTEND_RESPONSE_ERROR_LOGGER_ENABLED("frontend.response.error.logger.enabled", false),
 
     FRONTEND_KEEP_ALIVE_HEADER_ENABLED("frontend.keep.alive.header.enabled", false),
     FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS("frontend.keep.alive.header.timeout.seconds", 1),
@@ -156,42 +150,10 @@ public enum Configs {
     MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO("frontend.messages.loading.wait.for.broker.topic.info", 5),
     MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED("frontend.messages.local.storage.size.reporting.enabled", true),
 
-    CONSUMER_COMMIT_OFFSET_PERIOD("consumer.commit.offset.period", 60),
-    CONSUMER_COMMIT_OFFSET_QUEUES_SIZE("consumer.commit.offset.queues.size", 200_000),
-    CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL("consumer.commit.offset.queues.inflight.drain.full", false),
-
-    CONSUMER_SENDER_ASYNC_TIMEOUT_MS("consumer.sender.async.timeout.ms", 5_000),
-    CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_SIZE("consumer.sender.async.timeout.thread.pool.size", 32),
-    CONSUMER_SENDER_ASYNC_TIMEOUT_THREAD_POOL_MONITORING("consumer.sender.async.timeout.thread.pool.monitoring", false),
     CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
-    CONSUMER_HTTP_CLIENT_CONNECTION_POOL_MONITORING_ENABLED("consumer.http.client.connection.pool.monitoring.enabled", false),
-    CONSUMER_HTTP_CLIENT_REQUEST_QUEUE_MONITORING_ENABLED("consumer.http.client.request.queue.monitoring.enabled", true),
-    CONSUMER_HTTP_CLIENT_THREAD_POOL_SIZE("consumer.http.client.thread.pool.size", 30),
-    CONSUMER_HTTP_CLIENT_THREAD_POOL_MONITORING("consumer.http.client.thread.pool.monitoring", false),
-    CONSUMER_HTTP_CLIENT_FOLLOW_REDIRECTS("consumer.http.client.follow.redirects", false),
-    CONSUMER_HTTP_CLIENT_MAX_CONNECTIONS_PER_DESTINATION("consumer.http.client.max.connections.per.destination", 100),
-    CONSUMER_HTTP_CLIENT_VALIDATE_CERTS("consumer.http.client.validate.certs", true),
-    CONSUMER_HTTP_CLIENT_VALIDATE_PEER_CERTS("consumer.http.client.validate.peer.certs", true),
-    CONSUMER_HTTP_CLIENT_ENABLE_CRLDP("consumer.http.client.enable.crldp", true),
-    CONSUMER_HTTP_CLIENT_IDLE_TIMEOUT("consumer.http.client.idle.timeout", 0),
-    CONSUMER_HTTP_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION("consumer.http.client.max.requests.queued.per.destination", 100),
-
-    CONSUMER_HTTP2_ENABLED("consumer.http2.enabled", true),
-    CONSUMER_HTTP2_CLIENT_THREAD_POOL_SIZE("consumer.http2.client.thread.pool.size", 10),
-    CONSUMER_HTTP2_CLIENT_THREAD_POOL_MONITORING("consumer.http2.client.thread.pool.monitoring", false),
-    CONSUMER_HTTP2_CLIENT_IDLE_TIMEOUT("consumer.http2.client.idle.timeout", 0),
-    CONSUMER_HTTP2_CLIENT_MAX_REQUESTS_QUEUED_PER_DESTINATION("consumer.http2.client.max.requests.queued.per.destination", 100),
 
     CONSUMER_INFLIGHT_SIZE("consumer.inflight.size", 100),
-    CONSUMER_RATE_LIMITER_SUPERVISOR_PERIOD("consumer.rate.limiter.supervisor.period", 30),
-    CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_SIZE("consumer.rate.limiter.reporting.thread.pool.size", 30),
-    CONSUMER_RATE_LIMITER_REPORTING_THREAD_POOL_MONITORING("consumer.rate.limiter.reporting.thread.pool.monitoring", false),
-    CONSUMER_RATE_LIMITER_HEARTBEAT_MODE_DELAY("consumer.rate.limiter.hearbeat.mode.delay", 60),
-    CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY("consumer.rate.limiter.slow.mode.delay", 1),
     CONSUMER_FILTERING_RATE_LIMITER_ENABLED("consumer.filtering.rate.limiter.enabled", false),
-    CONSUMER_RATE_CONVERGENCE_FACTOR("consumer.rate.convergence.factor", 0.2),
-    CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO("consumer.rate.failures.nochange.tolerance.ratio", 0.05),
-    CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO("consumer.rate.failures.speedup.tolerance.ratio", 0.01),
     CONSUMER_MAXRATE_REGISTRY_TYPE("consumer.maxrate.registry.type", "hierarchical"),
     CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_MAX_RATE_BUFFER_SIZE_BYTES("consumer.maxrate.registry.binary.encoder.max.rate.buffer.size.bytes", 100_000),
     CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_HISTORY_BUFFER_SIZE_BYTES("consumer.maxrate.registry.binary.encoder.history.buffer.size.bytes", 100_000),
@@ -242,7 +204,6 @@ public enum Configs {
     GRAPHITE_HTTP_PORT("graphite.http.port", 8082),
     REPORT_PERIOD("report.period", 20),
 
-    METRICS_REGISTRY_NAME("metrics.registry.name", null),
     METRICS_ZOOKEEPER_REPORTER("metrics.zookeeper.reporter", true),
     METRICS_GRAPHITE_REPORTER("metrics.graphite.reporter", false),
     METRICS_CONSOLE_REPORTER("metrics.console.reporter", false),
@@ -250,8 +211,6 @@ public enum Configs {
     METRICS_RESERVOIR_TYPE("metrics.reservoir.type", "exponentially_decaying"),
 
     METRICS_DISABLED_ATTRIBUTES("metrics.disabled.attributes", "M15_RATE, M5_RATE, MEAN, MEAN_RATE, MIN, STDDEV"),
-
-    GLOBAL_SHUTDOWN_HOOK_REGISTERED("global.shutdown.hook.registered", true),
 
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),
     METADATA_CONTENT_ROOT("metadata.content.root", "metadata"),
