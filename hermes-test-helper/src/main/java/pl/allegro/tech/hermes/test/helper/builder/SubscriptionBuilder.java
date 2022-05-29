@@ -32,8 +32,6 @@ public class SubscriptionBuilder {
 
     private OwnerId owner = new OwnerId("Plaintext", "some team");
 
-    private String supportTeam = "team";
-
     private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
 
     private DeliveryType deliveryType = DeliveryType.SERIAL;
@@ -97,14 +95,14 @@ public class SubscriptionBuilder {
             return Subscription.createSerialSubscription(
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy, trackingEnabled,
-                    trackingMode, owner, supportTeam, monitoringDetails, contentType,
+                    trackingMode, owner, monitoringDetails, contentType,
                     filters, mode, headers, metadata, oAuthPolicy, http2Enabled, attachingIdentityHeadersEnabled
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy, trackingEnabled,
-                    trackingMode, owner, supportTeam, monitoringDetails, contentType,
+                    trackingMode, owner, monitoringDetails, contentType,
                     filters, headers, metadata, oAuthPolicy, http2Enabled, attachingIdentityHeadersEnabled
             );
         }
@@ -168,12 +166,6 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withOwner(OwnerId owner) {
         this.owner = owner;
-        return this;
-    }
-
-    @Deprecated
-    public SubscriptionBuilder withSupportTeam(String supportTeam) {
-        this.supportTeam = supportTeam;
         return this;
     }
 
