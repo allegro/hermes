@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.domain.endpoint;
+package pl.allegro.tech.hermes.management.domain.subscription.validator;
 
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.management.domain.ManagementException;

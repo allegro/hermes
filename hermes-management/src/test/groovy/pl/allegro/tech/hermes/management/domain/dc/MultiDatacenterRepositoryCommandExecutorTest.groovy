@@ -2,15 +2,14 @@ package pl.allegro.tech.hermes.management.domain.dc
 
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException
 import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException
-import pl.allegro.tech.hermes.management.domain.auth.RequestUser
+import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import spock.lang.Specification
 
-
 class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
 
-    private static ADMIN = new RequestUser("ADMIN", true)
-    private static NON_ADMIN = new RequestUser("USER", false)
+    private static ADMIN = new TestRequestUser("ADMIN", true)
+    private static NON_ADMIN = new TestRequestUser("USER", false)
 
     def "should execute backup if rollback is enabled"() {
         given:

@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistService;
@@ -18,9 +19,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -64,8 +65,8 @@ public class BlacklistEndpoint {
     @ApiOperation(value = "Blacklist topics", httpMethod = HttpMethod.POST)
     public Response blacklistTopics(
             List<String> qualifiedTopicNames,
-            @Context SecurityContext securityContext) {
-        RequestUser blacklistRequester = RequestUser.fromSecurityContext(securityContext);
+            @Context ContainerRequestContext requestContext) {
+        RequestUser blacklistRequester = new HermesSecurityAwareRequestUser(requestContext);
         qualifiedTopicNames.forEach(topicName -> topicBlacklistService.blacklist(topicName, blacklistRequester));
         return status(Response.Status.OK).build();
     }
@@ -77,8 +78,8 @@ public class BlacklistEndpoint {
     @ApiOperation(value = "Unblacklist topic", httpMethod = HttpMethod.DELETE)
     public Response unblacklistTopic(
             @PathParam("topicName") String qualifiedTopicName,
-            @Context SecurityContext securityContext) {
-        RequestUser unblacklistRequester = RequestUser.fromSecurityContext(securityContext);
+            @Context ContainerRequestContext requestContext) {
+        RequestUser unblacklistRequester = new HermesSecurityAwareRequestUser(requestContext);
         topicBlacklistService.unblacklist(qualifiedTopicName, unblacklistRequester);
         return status(Response.Status.OK).build();
     }
