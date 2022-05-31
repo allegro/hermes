@@ -64,13 +64,6 @@ public class Subscription implements Anonymizable {
     @NotNull
     private OwnerId owner;
 
-    /**
-     * Use owner field instead. This field remains deprecated
-     * for a while for migration purposes.
-     */
-    @Deprecated
-    private String supportTeam;
-
     @NotNull
     private final MonitoringDetails monitoringDetails;
 
@@ -110,7 +103,6 @@ public class Subscription implements Anonymizable {
                          boolean trackingEnabled,
                          TrackingMode trackingMode,
                          OwnerId owner,
-                         String supportTeam,
                          MonitoringDetails monitoringDetails,
                          ContentType contentType,
                          DeliveryType deliveryType,
@@ -129,7 +121,6 @@ public class Subscription implements Anonymizable {
         this.trackingEnabled = trackingEnabled;
         this.trackingMode = trackingMode;
         this.owner = owner;
-        this.supportTeam = supportTeam;
         this.monitoringDetails = monitoringDetails == null ? MonitoringDetails.EMPTY : monitoringDetails;
         this.contentType = contentType == null ? ContentType.JSON : contentType;
         this.deliveryType = deliveryType;
@@ -154,7 +145,6 @@ public class Subscription implements Anonymizable {
                                                         boolean trackingEnabled,
                                                         TrackingMode trackingMode,
                                                         OwnerId owner,
-                                                        String supportTeam,
                                                         MonitoringDetails monitoringDetails,
                                                         ContentType contentType,
                                                         List<MessageFilterSpecification> filters,
@@ -165,7 +155,7 @@ public class Subscription implements Anonymizable {
                                                         boolean http2Enabled,
                                                         boolean subscriptionIdentityHeadersEnabled) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
-                owner, supportTeam, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
+                owner, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled);
     }
 
@@ -178,7 +168,6 @@ public class Subscription implements Anonymizable {
                                                        boolean trackingEnabled,
                                                        TrackingMode trackingMode,
                                                        OwnerId owner,
-                                                       String supportTeam,
                                                        MonitoringDetails monitoringDetails,
                                                        ContentType contentType,
                                                        List<MessageFilterSpecification> filters,
@@ -188,7 +177,7 @@ public class Subscription implements Anonymizable {
                                                        boolean http2Enabled,
                                                        boolean subscriptionIdentityHeadersEnabled) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
-                owner, supportTeam, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
+                owner, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled);
     }
 
@@ -203,7 +192,6 @@ public class Subscription implements Anonymizable {
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("trackingMode") String trackingMode,
             @JsonProperty("owner") OwnerId owner,
-            @JsonProperty("supportTeam") String supportTeam,
             @JsonProperty("monitoringDetails") MonitoringDetails monitoringDetails,
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("deliveryType") DeliveryType deliveryType,
@@ -234,7 +222,6 @@ public class Subscription implements Anonymizable {
                 validTrackingEnabled,
                 validTrackingMode,
                 owner,
-                supportTeam,
                 monitoringDetails,
                 contentType,
                 validDeliveryType,
@@ -251,7 +238,7 @@ public class Subscription implements Anonymizable {
     @Override
     public int hashCode() {
         return Objects.hash(endpoint, topicName, name, description, serialSubscriptionPolicy, batchSubscriptionPolicy,
-                trackingEnabled, trackingMode, owner, supportTeam, monitoringDetails, contentType, filters, mode, headers,
+                trackingEnabled, trackingMode, owner, monitoringDetails, contentType, filters, mode, headers,
                 endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled);
     }
 
@@ -274,7 +261,6 @@ public class Subscription implements Anonymizable {
                 && Objects.equals(this.trackingEnabled, other.trackingEnabled)
                 && Objects.equals(this.trackingMode, other.trackingMode)
                 && Objects.equals(this.owner, other.owner)
-                && Objects.equals(this.supportTeam, other.supportTeam)
                 && Objects.equals(this.monitoringDetails, other.monitoringDetails)
                 && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.filters, other.filters)
@@ -346,14 +332,6 @@ public class Subscription implements Anonymizable {
 
     public OwnerId getOwner() {
         return owner;
-    }
-
-    /**
-     * Use getOwner() instead.
-     */
-    @Deprecated
-    public String getSupportTeam() {
-        return supportTeam;
     }
 
     public MonitoringDetails getMonitoringDetails() {
@@ -456,7 +434,6 @@ public class Subscription implements Anonymizable {
                     trackingEnabled,
                     trackingMode,
                     owner,
-                    supportTeam,
                     monitoringDetails,
                     contentType,
                     deliveryType,

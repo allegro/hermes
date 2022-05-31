@@ -6,8 +6,6 @@ public class GroupBuilder {
 
     private final String groupName;
 
-    private String supportTeam = "team";
-
     private GroupBuilder(String name) {
         this.groupName = name;
     }
@@ -17,13 +15,6 @@ public class GroupBuilder {
     }
 
     public Group build() {
-        return new Group(groupName, supportTeam);
+        return new Group(groupName);
     }
-
-    @Deprecated
-    public GroupBuilder withSupportTeam(String supportTeam) {
-        this.supportTeam = supportTeam;
-        return this;
-    }
-
 }

@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.endpoints.AllTopicClientsEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.FilterEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.ModeEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OfflineRetransmissionEndpoint;
@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.AllTopicClientsEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 import pl.allegro.tech.hermes.test.helper.client.Hermes;
 
@@ -46,8 +45,6 @@ public class HermesEndpoints {
 
     private final BlacklistEndpoint blacklistEndpoint;
 
-    private final MigrationEndpoint migrationEndpoint;
-
     private final UnhealthyEndpoint unhealthyEndpoint;
 
     private final ModeEndpoint modeEndpoint;
@@ -69,7 +66,6 @@ public class HermesEndpoints {
         this.oAuthProviderEndpoint = hermes.createOAuthProviderEndpoint();
         this.consumerEndpoint = hermes.createConsumerEndpoint();
         this.ownerEndpoint = hermes.createOwnerEndpoint();
-        this.migrationEndpoint = hermes.createMigrationEndpoint();
         this.unhealthyEndpoint = hermes.unhealthyEndpoint();
         this.modeEndpoint = hermes.modeEndpoint();
         this.filterEndpoint = hermes.createFilterEndpoint();
@@ -118,10 +114,6 @@ public class HermesEndpoints {
 
     public OwnerEndpoint owner() {
         return ownerEndpoint;
-    }
-
-    public MigrationEndpoint migration() {
-        return migrationEndpoint;
     }
 
     public UnhealthyEndpoint unhealthyEndpoint() {

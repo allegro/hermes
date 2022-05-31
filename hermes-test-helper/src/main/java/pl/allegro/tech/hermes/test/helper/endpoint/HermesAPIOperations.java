@@ -40,14 +40,10 @@ public class HermesAPIOperations {
     }
 
     public void createGroup(String group) {
-        createGroup(group, "team");
-    }
-
-    public void createGroup(String group, String supportTeam) {
         if (endpoints.group().list().contains(group)) {
             return;
         }
-        assertThat(endpoints.group().create(new Group(group, supportTeam)).getStatus()).isEqualTo(CREATED.getStatusCode());
+        assertThat(endpoints.group().create(new Group(group)).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilGroupCreated(group);
     }
