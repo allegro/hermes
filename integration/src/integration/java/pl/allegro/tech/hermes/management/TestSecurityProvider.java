@@ -1,31 +1,42 @@
 package pl.allegro.tech.hermes.management;
 
 import org.apache.commons.lang.NotImplementedException;
+import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.stream.Collectors.toSet;
 
 public class TestSecurityProvider implements SecurityProvider {
 
     private static volatile boolean userIsAdmin = true;
-    private static volatile boolean isOwner = true;
+    private static final Set<OwnerId> ownerIds = ConcurrentHashMap.newKeySet();
 
-    public static synchronized void setUserIsAdmin(boolean userIsAdmin) {
+    public static void setUserIsAdmin(boolean userIsAdmin) {
         TestSecurityProvider.userIsAdmin = userIsAdmin;
     }
 
-    public static synchronized void setIsOwner(boolean userIsOwner) {
-        TestSecurityProvider.isOwner = userIsOwner;
+    public static void setUserAsOwner(OwnerId ...ownerIds) {
+        TestSecurityProvider.ownerIds.addAll(Arrays.stream(ownerIds).collect(toSet()));
+    }
+
+    public static void reset() {
+        userIsAdmin = true;
+        ownerIds.clear();
     }
 
     @Override
     public HermesSecurity security(ContainerRequestContext requestContext) {
-        return new HermesSecurity(securityContext(requestContext), ownerId -> isOwner);
+        return new HermesSecurity(securityContext(), ownerIds::contains);
     }
 
-    private SecurityContext securityContext(ContainerRequestContext requestContext) {
+    private SecurityContext securityContext() {
 
         return new SecurityContext() {
             @Override
@@ -50,7 +61,7 @@ public class TestSecurityProvider implements SecurityProvider {
         };
     }
 
-    private synchronized boolean checkRoles(String role) {
+    private boolean checkRoles(String role) {
         if (role.equalsIgnoreCase("admin")) {
             return userIsAdmin;
         } else {

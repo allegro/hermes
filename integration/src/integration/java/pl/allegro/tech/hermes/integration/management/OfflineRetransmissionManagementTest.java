@@ -207,7 +207,7 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
 
         // when
         TestSecurityProvider.setUserIsAdmin(false);
-        TestSecurityProvider.setIsOwner(false);
+        TestSecurityProvider.setUserAsOwner(sourceTopic.getOwner(), targetTopic.getOwner());
 
         OfflineRetransmissionRequest request = createRequest(
                 sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
@@ -219,8 +219,7 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         assertThat(management.offlineRetransmission().getAllTasks().size()).isEqualTo(0);
 
         // cleanup
-        TestSecurityProvider.setUserIsAdmin(true);
-        TestSecurityProvider.setIsOwner(true);
+        TestSecurityProvider.reset();
     }
 
     private OfflineRetransmissionRequest createRequest(String sourceTopic, String targetTopic) {
