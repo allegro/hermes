@@ -177,10 +177,6 @@ public enum Configs {
     CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL("consumer.workload.monitor.scan.interval.seconds", 120),
     CONSUMER_WORKLOAD_AUTO_REBALANCE("consumer.workload.rebalance.auto", true),
     CONSUMER_WORKLOAD_DEAD_AFTER_SECONDS("consumer.workload.dead.after.seconds", 120),
-    CONSUMER_BATCH_POOLABLE_SIZE("consumer.batch.poolable.size", 1024),
-    CONSUMER_BATCH_MAX_POOL_SIZE("consumer.batch.max.pool.size", 64 * 1024 * 1024),
-    CONSUMER_BATCH_CONNECTION_TIMEOUT("consumer.batch.connection.timeout", 500),
-    CONSUMER_BATCH_CONNECTION_REQUEST_TIMEOUT("consumer.batch.connection.request.timeout", 500),
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
     CONSUMER_SUBSCRIPTION_IDS_CACHE_REMOVED_EXPIRE_AFTER_ACCESS_SECONDS("consumer.subscription.ids.cache.removed.expire.after.access.seconds", 60L),
 
@@ -232,13 +228,6 @@ public enum Configs {
     SCHEMA_ID_HEADER_ENABLED ("schema.id.header.enabled", false),
     SCHEMA_ID_SERIALIZATION_ENABLED("schema.id.serialization.enabled", false),
     SCHEMA_VERSION_TRUNCATION_ENABLED("schema.version.truncation.enabled", false),
-
-    GOOGLE_PUBSUB_SENDER_CORE_POOL_SIZE("googlepubsub.sender.core.pool.size", 4),
-    GOOGLE_PUBSUB_SENDER_TOTAL_TIMEOUT("googlepubsub.sender.total.timeout.ms", 600_000L),
-    GOOGLE_PUBSUB_SENDER_REQUEST_BYTES_THRESHOLD("googlepubsub.sender.batching.request.bytes.threshold", 1024L),
-    GOOGLE_PUBSUB_SENDER_MESSAGE_COUNT_BATCH_SIZE("googlepubsub.sender.batching.message.count.bytes.size", 1L),
-    GOOGLE_PUBSUB_SENDER_PUBLISH_DELAY_THRESHOLD("googlepubsub.sender.batching.publish.delay.threshold.ms", 1L),
-    GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS("googlepubsub.sender.transport.channel.provider.address", "integration"),
 
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 

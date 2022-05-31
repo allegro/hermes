@@ -55,7 +55,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 @EnableConfigurationProperties({
         CommitOffsetProperties.class,
         SenderAsyncTimeoutProperties.class,
-        RateProperties.class
+        RateProperties.class,
+        BatchProperties.class
 })
 public class ConsumerConfiguration {
     private static final Logger logger = getLogger(ConsumerConfiguration.class);
@@ -173,10 +174,8 @@ public class ConsumerConfiguration {
     @Bean
     public MessageBatchFactory messageBatchFactory(HermesMetrics hermesMetrics,
                                                    Clock clock,
-                                                   ConfigFactory configFactory) {
-        int poolableSize = configFactory.getIntProperty(Configs.CONSUMER_BATCH_POOLABLE_SIZE);
-        int maxPoolSize = configFactory.getIntProperty(Configs.CONSUMER_BATCH_MAX_POOL_SIZE);
-        return new ByteBufferMessageBatchFactory(poolableSize, maxPoolSize, clock, hermesMetrics);
+                                                   BatchProperties batchProperties) {
+        return new ByteBufferMessageBatchFactory(batchProperties.getPoolableSize(), batchProperties.getMaxPoolSize(), clock, hermesMetrics);
     }
 
     @Bean
