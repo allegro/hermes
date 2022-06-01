@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class FlatBinaryMaxRateRegistryTest extends ZookeeperBaseTest {
+public class MaxRateRegistryTest extends ZookeeperBaseTest {
 
     private final SubscriptionName subscription1 = SubscriptionName.fromString("pl.allegro.tech.hermes$testSubscription");
     private final SubscriptionId subscriptionId1 = SubscriptionId.from(subscription1, 1L);
@@ -45,10 +45,10 @@ public class FlatBinaryMaxRateRegistryTest extends ZookeeperBaseTest {
     private final ConsumerAssignmentCache consumerAssignmentCache = mock(ConsumerAssignmentCache.class);
     private final ClusterAssignmentCache clusterAssignmentCache = mock(ClusterAssignmentCache.class);
 
-    private final FlatBinaryMaxRateRegistry maxRateRegistry = new FlatBinaryMaxRateRegistry(configFactory,
+    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(configFactory,
             clusterAssignmentCache, consumerAssignmentCache, zookeeperClient, zookeeperPaths, subscriptionIds);
 
-    private final FlatBinaryMaxRateRegistryPaths paths = new FlatBinaryMaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);
+    private final MaxRateRegistryPaths paths = new MaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);
 
     @Before
     public void setUp() {

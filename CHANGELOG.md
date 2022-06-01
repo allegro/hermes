@@ -1,6 +1,19 @@
+## Unreleased
+
+### Enhancements
+
+#### ([1510](https://github.com/allegro/hermes/pull/1510)) Removed hierarchical registries
+
+This change switches the default implementation of registries (internal data structures used by Hermes) to the one introduced in
+[1110](https://github.com/allegro/hermes/pull/1110) and [1086](https://github.com/allegro/hermes/pull/1086).
+
+After deploying a Hermes version that includes this change, you can manually remove the following zookeeper nodes (if they exist):
+* `{zookeeper.root}/consumers-workload/{kafka.cluster.name}/runtime`
+* `{zookeeper.root}/consumers-rate/{kafka.cluster.name}/runtime`
+
 ## 1.13.0 (24.05.2022)
 
-## Enhancements
+### Enhancements
 
 #### ([1507](https://github.com/allegro/hermes/pull/1507)) Added environment label in hermes-console
 #### ([1498](https://github.com/allegro/hermes/pull/1498)) Migrated hermes-frontend to the Spring framework
