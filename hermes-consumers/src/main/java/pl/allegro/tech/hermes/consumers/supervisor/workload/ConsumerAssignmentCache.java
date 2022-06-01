@@ -29,8 +29,6 @@ public class ConsumerAssignmentCache implements NodeCacheListener {
     private final Set<SubscriptionName> currentlyAssignedSubscriptions = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Set<SubscriptionAssignmentAware> callbacks = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    private volatile boolean started = false;
-
     public ConsumerAssignmentCache(CuratorFramework curator,
                                    String consumerId,
                                    String clusterName,
@@ -55,7 +53,6 @@ public class ConsumerAssignmentCache implements NodeCacheListener {
             throw new IllegalStateException("Could not start node cache for consumer workload", e);
         }
         refreshConsumerWorkload();
-        started = true;
     }
 
     private void refreshConsumerWorkload() {
@@ -95,15 +92,10 @@ public class ConsumerAssignmentCache implements NodeCacheListener {
     public void stop() throws Exception {
         try {
             logger.info("Stopping binary workload assignment cache");
-            started = false;
             workloadNodeCache.close();
         } catch (IOException e) {
             throw new RuntimeException("Could not stop node cache for consumer workload", e);
         }
-    }
-
-    public boolean isStarted() {
-        return started;
     }
 
     public boolean isAssignedTo(SubscriptionName subscription) {

@@ -8,7 +8,7 @@ import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.MAX
 
 class MaxRateRegistryPaths {
 
-    private final static String RATE_BINARY_RUNTIME_PATH = "runtime-bin";
+    private final static String RATE_RUNTIME_PATH = "runtime-bin";
 
     private final ZookeeperPaths zookeeperPaths;
     private final String clusterName;
@@ -33,7 +33,7 @@ class MaxRateRegistryPaths {
     }
 
     String consumersRateCurrentClusterRuntimeBinaryPath() {
-        return zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_RATE_PATH, clusterName, RATE_BINARY_RUNTIME_PATH);
+        return zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_RATE_PATH, clusterName, RATE_RUNTIME_PATH);
     }
 
     String currentConsumerRateHistoryPath() {
