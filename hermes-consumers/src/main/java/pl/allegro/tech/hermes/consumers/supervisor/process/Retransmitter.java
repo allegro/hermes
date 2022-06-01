@@ -3,14 +3,11 @@ package pl.allegro.tech.hermes.consumers.supervisor.process;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.RetransmissionException;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
-
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class Retransmitter {
 
@@ -20,9 +17,9 @@ public class Retransmitter {
     private final String brokersClusterName;
 
     public Retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
-                         ConfigFactory configs) {
+                         String kafkaClusterName) {
         this.subscriptionOffsetChangeIndicator = subscriptionOffsetChangeIndicator;
-        this.brokersClusterName = configs.getStringProperty(KAFKA_CLUSTER_NAME);
+        this.brokersClusterName = kafkaClusterName;
     }
 
     public void reloadOffsets(SubscriptionName subscriptionName, Consumer consumer) {

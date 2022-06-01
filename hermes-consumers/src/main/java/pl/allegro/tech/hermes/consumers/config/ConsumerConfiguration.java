@@ -56,7 +56,8 @@ import static org.slf4j.LoggerFactory.getLogger;
         CommitOffsetProperties.class,
         SenderAsyncTimeoutProperties.class,
         RateProperties.class,
-        BatchProperties.class
+        BatchProperties.class,
+        KafkaProperties.class
 })
 public class ConsumerConfiguration {
     private static final Logger logger = getLogger(ConsumerConfiguration.class);
@@ -78,6 +79,7 @@ public class ConsumerConfiguration {
 
     @Bean
     public MaxRateRegistry maxRateRegistry(ConfigFactory configFactory,
+                                           KafkaProperties kafkaProperties,
                                            CuratorFramework curator,
                                            ObjectMapper objectMapper,
                                            ZookeeperPaths zookeeperPaths,
@@ -99,7 +101,7 @@ public class ConsumerConfiguration {
         switch (type) {
             case HIERARCHICAL:
                 return new HierarchicalCacheMaxRateRegistry(
-                        configFactory,
+                        kafkaProperties.getClusterName(),
                         curator,
                         objectMapper,
                         zookeeperPaths,
@@ -109,6 +111,7 @@ public class ConsumerConfiguration {
             case FLAT_BINARY:
                 return new FlatBinaryMaxRateRegistry(
                         configFactory,
+                        kafkaProperties.getClusterName(),
                         clusterAssignmentCache,
                         assignmentCache,
                         curator,
@@ -195,7 +198,7 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public ConsumerMessageSenderFactory consumerMessageSenderFactory(ConfigFactory configFactory,
+    public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaProperties kafkaProperties,
                                                                      HermesMetrics hermesMetrics,
                                                                      MessageSenderFactory messageSenderFactory,
                                                                      Trackers trackers,
@@ -206,7 +209,7 @@ public class ConsumerConfiguration {
                                                                      SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
                                                                      RateProperties rateProperties) {
         return new ConsumerMessageSenderFactory(
-                configFactory,
+                kafkaProperties.getClusterName(),
                 hermesMetrics,
                 messageSenderFactory,
                 trackers,

@@ -40,12 +40,12 @@ public class FlatBinaryMaxRateRegistryTest extends ZookeeperBaseTest {
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
     private final ConfigFactory configFactory = new MutableConfigFactory();
     private final String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
-    private final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+    private final String cluster = "primary-dc";
 
     private final ConsumerAssignmentCache consumerAssignmentCache = mock(ConsumerAssignmentCache.class);
     private final ClusterAssignmentCache clusterAssignmentCache = mock(ClusterAssignmentCache.class);
 
-    private final FlatBinaryMaxRateRegistry maxRateRegistry = new FlatBinaryMaxRateRegistry(configFactory,
+    private final FlatBinaryMaxRateRegistry maxRateRegistry = new FlatBinaryMaxRateRegistry(configFactory, cluster,
             clusterAssignmentCache, consumerAssignmentCache, zookeeperClient, zookeeperPaths, subscriptionIds);
 
     private final FlatBinaryMaxRateRegistryPaths paths = new FlatBinaryMaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);

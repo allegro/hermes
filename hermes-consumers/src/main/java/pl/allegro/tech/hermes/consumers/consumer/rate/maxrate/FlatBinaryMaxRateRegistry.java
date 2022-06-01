@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
@@ -52,16 +53,16 @@ public class FlatBinaryMaxRateRegistry implements MaxRateRegistry, NodeCacheList
     private final FlatBinaryMaxRateRegistryPaths registryPaths;
 
     public FlatBinaryMaxRateRegistry(ConfigFactory configFactory,
-                              ClusterAssignmentCache clusterAssignmentCache,
-                              ConsumerAssignmentCache consumerAssignmentCache,
-                              CuratorFramework curator,
-                              ZookeeperPaths zookeeperPaths,
-                              SubscriptionIds subscriptionIds) {
+                                     String clusterName,
+                                     ClusterAssignmentCache clusterAssignmentCache,
+                                     ConsumerAssignmentCache consumerAssignmentCache,
+                                     CuratorFramework curator,
+                                     ZookeeperPaths zookeeperPaths,
+                                     SubscriptionIds subscriptionIds) {
 
         this.consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
         this.clusterAssignmentCache = clusterAssignmentCache;
         this.consumerAssignmentCache = consumerAssignmentCache;
-        final String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
         this.currentConsumerRateHistories = new ConsumerRateHistory();
         this.currentConsumerMaxRates = new ConsumerMaxRates();

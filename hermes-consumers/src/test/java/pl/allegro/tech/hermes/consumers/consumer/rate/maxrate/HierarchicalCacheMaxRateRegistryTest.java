@@ -32,10 +32,10 @@ public class HierarchicalCacheMaxRateRegistryTest extends ZookeeperBaseTest {
     private final MaxRatePathSerializer pathSerializer = new MaxRatePathSerializer();
     private final SubscriptionsCache subscriptionsCache = mock(SubscriptionsCache.class);
     private final ConfigFactory configFactory = new MutableConfigFactory();
-    private final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+    private final String cluster = "primary-dc";
 
     private final HierarchicalCacheMaxRateRegistry maxRateRegistry = new HierarchicalCacheMaxRateRegistry(
-            configFactory, zookeeperClient, objectMapper, zookeeperPaths, pathSerializer, subscriptionsCache
+            cluster, zookeeperClient, objectMapper, zookeeperPaths, pathSerializer, subscriptionsCache
     );
 
 

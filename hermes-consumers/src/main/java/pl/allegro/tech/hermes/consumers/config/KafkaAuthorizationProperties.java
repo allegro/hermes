@@ -1,9 +1,5 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaAuthorizationParameters;
-
-@ConfigurationProperties(prefix = "kafka.authorization")
 public class KafkaAuthorizationProperties {
 
     private boolean enabled = false;
@@ -50,15 +46,5 @@ public class KafkaAuthorizationProperties {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    protected KafkaAuthorizationParameters toKafkaAuthorizationParameters() {
-        return new KafkaAuthorizationParameters(
-                this.enabled,
-                this.mechanism,
-                this.protocol,
-                this.username,
-                this.password
-        );
     }
 }

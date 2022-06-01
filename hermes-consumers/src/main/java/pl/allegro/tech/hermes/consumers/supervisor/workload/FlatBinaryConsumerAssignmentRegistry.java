@@ -25,14 +25,14 @@ public class FlatBinaryConsumerAssignmentRegistry implements ConsumerAssignmentR
             CuratorFramework curator,
             ConfigFactory configFactory,
             ZookeeperPaths zookeeperPaths,
+            String kafkaClusterName,
             SubscriptionIds subscriptionIds
     ) {
         this.zookeeper = new ZookeeperOperations(curator);
         int assignmentsEncoderBufferSize = configFactory.getIntProperty(Configs.CONSUMER_WORKLOAD_REGISTRY_BINARY_ENCODER_ASSIGNMENTS_BUFFER_SIZE_BYTES);
         this.consumerAssignmentsEncoder = new ConsumerWorkloadEncoder(subscriptionIds, assignmentsEncoderBufferSize);
 
-        final String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-        this.paths = new FlatBinaryWorkloadRegistryPaths(zookeeperPaths, clusterName);
+        this.paths = new FlatBinaryWorkloadRegistryPaths(zookeeperPaths, kafkaClusterName);
     }
 
     public WorkDistributionChanges updateAssignments(

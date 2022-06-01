@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS;
 import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
+import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 @Listeners({RetryListener.class})
@@ -96,7 +97,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             ConsumersStarter consumersStarter = new ConsumersStarter();
             consumersStarter.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
             consumersStarter.overrideProperty(Configs.KAFKA_CLUSTER_NAME, PRIMARY_KAFKA_CLUSTER_NAME);
-            consumersStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+            consumersStarter.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             consumersStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
             consumersStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             consumersStarter.overrideProperty(GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());
@@ -104,7 +105,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
             FrontendStarter frontendStarter = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT);
             frontendStarter.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
-            frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+            frontendStarter.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
             frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             frontendStarter.start();

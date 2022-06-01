@@ -36,8 +36,10 @@ public class FlatBinaryWorkloadRegistryTest extends ZookeeperBaseTest {
 
     private static final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
 
+    private static final String clusterName = "primary-dc";
+
     private static final FlatBinaryWorkloadRegistryPaths registryPaths =
-            new FlatBinaryWorkloadRegistryPaths(zookeeperPaths, configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME));
+            new FlatBinaryWorkloadRegistryPaths(zookeeperPaths, clusterName);
 
     private static final SubscriptionIds subscriptionIds =
             new TestSubscriptionIds(ImmutableList.of(
@@ -47,7 +49,7 @@ public class FlatBinaryWorkloadRegistryTest extends ZookeeperBaseTest {
             ));
 
     private static final ConsumerAssignmentRegistry registry =
-            new FlatBinaryConsumerAssignmentRegistry(zookeeperClient, configFactory, zookeeperPaths, subscriptionIds);
+            new FlatBinaryConsumerAssignmentRegistry(zookeeperClient, configFactory, zookeeperPaths, clusterName, subscriptionIds);
 
     private static final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 

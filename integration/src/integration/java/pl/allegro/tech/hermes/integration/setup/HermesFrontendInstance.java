@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
+import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_BROKER_LIST;
 
 public class HermesFrontendInstance {
     private final String frontendUrl;
@@ -80,7 +81,7 @@ public class HermesFrontendInstance {
         }
 
         public Starter kafkaConnectionString(String connectionString) {
-            frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, connectionString);
+            frontend.overrideProperty(KAFKA_BROKER_LIST, connectionString);
             return this;
         }
 

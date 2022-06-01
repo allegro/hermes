@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignm
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
@@ -25,7 +24,7 @@ import java.time.Clock;
 @EnableConfigurationProperties({
         ConsumerReceiverProperties.class,
         KafkaConsumerProperties.class,
-        KafkaAuthorizationProperties.class
+        KafkaProperties.class
 })
 public class ConsumerReceiverConfiguration {
 
@@ -33,7 +32,7 @@ public class ConsumerReceiverConfiguration {
     public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
                                                        ConsumerReceiverProperties consumerReceiverProperties,
                                                        KafkaConsumerProperties kafkaConsumerProperties,
-                                                       KafkaAuthorizationProperties kafkaAuthorizationProperties,
+                                                       KafkaProperties kafkaAuthorizationProperties,
                                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                                        HermesMetrics hermesMetrics,
                                                        OffsetQueue offsetQueue,

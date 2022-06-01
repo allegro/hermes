@@ -27,7 +27,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CON
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 
 public class SelectiveSupervisorController implements SupervisorController {
 
@@ -54,6 +53,7 @@ public class SelectiveSupervisorController implements SupervisorController {
                                          ZookeeperAdminCache adminCache,
                                          ExecutorService assignmentExecutor,
                                          ConfigFactory configFactory,
+                                         String kafkaClusterName,
                                          HermesMetrics metrics,
                                          WorkloadConstraintsRepository workloadConstraintsRepository) {
 
@@ -74,7 +74,7 @@ public class SelectiveSupervisorController implements SupervisorController {
                 new SelectiveWorkBalancer(),
                 metrics,
                 configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
-                configFactory.getStringProperty(KAFKA_CLUSTER_NAME),
+                kafkaClusterName,
                 workloadConstraintsRepository);
     }
 

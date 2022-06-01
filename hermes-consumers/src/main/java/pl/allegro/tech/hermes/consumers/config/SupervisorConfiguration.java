@@ -60,12 +60,12 @@ import java.util.concurrent.ThreadFactory;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalConsumerAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
 @Configuration
 @EnableConfigurationProperties({
-        CommitOffsetProperties.class
+        CommitOffsetProperties.class,
+        KafkaProperties.class
 })
 public class SupervisorConfiguration {
     private static final Logger logger = getLogger(SupervisorConfiguration.class);
@@ -81,6 +81,7 @@ public class SupervisorConfiguration {
                                                      ZookeeperAdminCache adminCache,
                                                      HermesMetrics metrics,
                                                      ConfigFactory configs,
+                                                     KafkaProperties kafkaProperties,
                                                      WorkloadConstraintsRepository workloadConstraintsRepository) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("AssignmentExecutor-%d")
@@ -97,6 +98,7 @@ public class SupervisorConfiguration {
                 adminCache,
                 assignmentExecutor,
                 configs,
+                kafkaProperties.getClusterName(),
                 metrics,
                 workloadConstraintsRepository
         );
@@ -104,8 +106,8 @@ public class SupervisorConfiguration {
 
     @Bean
     public Retransmitter retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
-                                       ConfigFactory configs) {
-        return new Retransmitter(subscriptionOffsetChangeIndicator, configs);
+                                       KafkaProperties kafkaProperties) {
+        return new Retransmitter(subscriptionOffsetChangeIndicator, kafkaProperties.getClusterName());
     }
 
     @Bean
@@ -185,6 +187,7 @@ public class SupervisorConfiguration {
     @Bean
     public ConsumerAssignmentRegistry consumerAssignmentRegistry(CuratorFramework curator,
                                                                  ConfigFactory configFactory,
+                                                                 KafkaProperties kafkaProperties,
                                                                  ZookeeperPaths zookeeperPaths,
                                                                  ConsumerAssignmentCache consumerAssignmentCache,
                                                                  SubscriptionIds subscriptionIds) {
@@ -200,8 +203,7 @@ public class SupervisorConfiguration {
 
         switch (type) {
             case HIERARCHICAL:
-                String cluster = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
-                String consumersRuntimePath = zookeeperPaths.consumersRuntimePath(cluster);
+                String consumersRuntimePath = zookeeperPaths.consumersRuntimePath(kafkaProperties.getClusterName());
                 SubscriptionAssignmentPathSerializer pathSerializer = new SubscriptionAssignmentPathSerializer(consumersRuntimePath, AUTO_ASSIGNED_MARKER);
                 CreateMode assignmentNodeCreationMode = CreateMode.PERSISTENT;
                 return new HierarchicalConsumerAssignmentRegistry(
@@ -211,7 +213,7 @@ public class SupervisorConfiguration {
                         assignmentNodeCreationMode
                 );
             case FLAT_BINARY:
-                return new FlatBinaryConsumerAssignmentRegistry(curator, configFactory, zookeeperPaths, subscriptionIds);
+                return new FlatBinaryConsumerAssignmentRegistry(curator, configFactory, zookeeperPaths, kafkaProperties.getClusterName(), subscriptionIds);
             default:
                 throw new UnsupportedOperationException("Max-rate type not supported.");
         }
@@ -220,6 +222,7 @@ public class SupervisorConfiguration {
     @Bean
     public ClusterAssignmentCache clusterAssignmentCache(CuratorFramework curator,
                                                          ConfigFactory configFactory,
+                                                         KafkaProperties kafkaProperties,
                                                          ConsumerAssignmentCache consumerAssignmentCache,
                                                          ZookeeperPaths zookeeperPaths,
                                                          SubscriptionIds subscriptionIds,
@@ -233,8 +236,6 @@ public class SupervisorConfiguration {
             throw e;
         }
 
-        String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-
         switch (type) {
             case HIERARCHICAL:
                 if (consumerAssignmentCache instanceof HierarchicalConsumerAssignmentCache) {
@@ -243,7 +244,7 @@ public class SupervisorConfiguration {
                     throw new IllegalStateException("Invalid type of HierarchicalConsumerAssignmentCache was registered for this type of workload registry");
                 }
             case FLAT_BINARY:
-                return new FlatBinaryClusterAssignmentCache(curator, clusterName, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
+                return new FlatBinaryClusterAssignmentCache(curator, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds, consumerNodesRegistry);
             default:
                 throw new UnsupportedOperationException("Workload registry type not supported.");
         }
@@ -252,6 +253,7 @@ public class SupervisorConfiguration {
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerAssignmentCache consumerAssignmentCache(CuratorFramework curator,
                                                            ConfigFactory configFactory,
+                                                           KafkaProperties kafkaProperties,
                                                            ZookeeperPaths zookeeperPaths,
                                                            SubscriptionsCache subscriptionsCache,
                                                            SubscriptionIds subscriptionIds) {
@@ -265,7 +267,7 @@ public class SupervisorConfiguration {
         }
 
         String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
-        String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+        String clusterName = kafkaProperties.getClusterName();
 
         switch (type) {
             case HIERARCHICAL:

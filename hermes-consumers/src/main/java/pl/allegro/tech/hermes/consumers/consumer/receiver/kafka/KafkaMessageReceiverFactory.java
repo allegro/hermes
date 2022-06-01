@@ -51,7 +51,7 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
-    private final KafkaAuthorizationParameters kafkaAuthorizationParameters;
+    private final KafkaParameters kafkaAuthorizationParameters;
     private final KafkaReceiverParameters consumerReceiverParameters;
     private final KafkaConsumerParameters kafkaConsumerParameters;
     private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
@@ -65,7 +65,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     public KafkaMessageReceiverFactory(ConfigFactory configs,
                                        KafkaReceiverParameters consumerReceiverParameters,
                                        KafkaConsumerParameters kafkaConsumerParameters,
-                                       KafkaAuthorizationParameters kafkaAuthorizationParameters,
+                                       KafkaParameters kafkaAuthorizationParameters,
                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
@@ -141,7 +141,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private KafkaConsumer<byte[], byte[]> createKafkaConsumer(Topic topic, Subscription subscription) {
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
         Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, configs.getStringProperty(Configs.KAFKA_BROKER_LIST));
+        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaAuthorizationParameters.getBrokerList());
         props.put(CLIENT_ID_CONFIG, configs.getStringProperty(Configs.CONSUMER_CLIENT_ID) + "_" + groupId.asString());
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, "false");

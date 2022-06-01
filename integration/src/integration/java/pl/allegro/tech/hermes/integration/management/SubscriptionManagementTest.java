@@ -276,7 +276,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(traces.get(0)).containsEntry("status", "SUCCESS").containsKey("cluster");
         assertThat(traces.get(1)).containsEntry("status", "INFLIGHT").containsKey("cluster");
         assertThat(traces.get(2)).containsEntry("status", "SUCCESS").containsKey("cluster");
-        traces.forEach(trace -> assertThat(trace).containsEntry("cluster", Configs.KAFKA_CLUSTER_NAME.getDefaultValue()));
+        traces.forEach(trace -> assertThat(trace).containsEntry("cluster", "primary-dc"));
     }
 
     @Test
