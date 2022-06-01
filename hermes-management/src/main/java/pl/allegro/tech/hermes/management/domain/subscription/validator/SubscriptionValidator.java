@@ -8,12 +8,10 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
-import pl.allegro.tech.hermes.management.domain.endpoint.EndpointAddressValidator;
-import pl.allegro.tech.hermes.management.domain.owner.validator.EndpointOwnershipValidator;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
-import java.util.Optional;
+import java.util.List;
 
 @Component
 public class SubscriptionValidator {
@@ -23,8 +21,8 @@ public class SubscriptionValidator {
     private final MessageFilterTypeValidator messageFilterTypeValidator;
     private final TopicService topicService;
     private final SubscriptionRepository subscriptionRepository;
-    private final Optional<EndpointOwnershipValidator> endpointOwnershipValidator;
-    private final EndpointAddressValidator endpointAddressValidator;
+    private final EndpointOwnershipValidator endpointOwnershipValidator;
+    private final List<EndpointAddressValidator> endpointAddressValidators;
 
     @Autowired
     public SubscriptionValidator(OwnerIdValidator ownerIdValidator,
@@ -32,15 +30,15 @@ public class SubscriptionValidator {
                                  MessageFilterTypeValidator messageFilterTypeValidator,
                                  TopicService topicService,
                                  SubscriptionRepository subscriptionRepository,
-                                 Optional<EndpointOwnershipValidator> endpointOwnershipValidator,
-                                 EndpointAddressValidator endpointAddressValidator) {
+                                 EndpointOwnershipValidator endpointOwnershipValidator,
+                                 List<EndpointAddressValidator> endpointAddressValidators) {
         this.ownerIdValidator = ownerIdValidator;
         this.apiPreconditions = apiPreconditions;
         this.messageFilterTypeValidator = messageFilterTypeValidator;
         this.topicService = topicService;
         this.subscriptionRepository = subscriptionRepository;
         this.endpointOwnershipValidator = endpointOwnershipValidator;
-        this.endpointAddressValidator = endpointAddressValidator;
+        this.endpointAddressValidators = endpointAddressValidators;
     }
 
     public void checkCreation(Subscription toCheck, CreatorRights<Subscription> creatorRights) {
@@ -65,8 +63,8 @@ public class SubscriptionValidator {
     private void checkWhileCreationOrModification(Subscription toCheck) {
         apiPreconditions.checkConstraints(toCheck, false);
         ownerIdValidator.check(toCheck.getOwner());
-        endpointAddressValidator.check(toCheck.getEndpoint());
-        endpointOwnershipValidator.ifPresent(validator -> validator.check(toCheck.getOwner(), toCheck.getEndpoint()));
+        endpointAddressValidators.forEach(validator -> validator.check(toCheck.getEndpoint()));
+        endpointOwnershipValidator.check(toCheck.getOwner(), toCheck.getEndpoint());
         messageFilterTypeValidator.check(toCheck, topicService.getTopicDetails(toCheck.getTopicName()));
     }
 }

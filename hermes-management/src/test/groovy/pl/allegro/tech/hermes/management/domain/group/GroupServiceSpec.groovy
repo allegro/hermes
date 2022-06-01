@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.management.domain.Auditor
 import pl.allegro.tech.hermes.management.domain.GroupNameIsNotAllowedException
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser
+import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
 import spock.lang.Specification
@@ -19,7 +20,7 @@ import java.security.Principal
 class GroupServiceSpec extends Specification {
 
     static String TEST_USERNAME = "testUser"
-    static RequestUser USER = new RequestUser(TEST_USERNAME, true)
+    static RequestUser USER = new TestRequestUser(TEST_USERNAME, true)
 
     GroupRepository groupRepository = Stub()
     Auditor auditor = Mock()
