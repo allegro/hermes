@@ -652,7 +652,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // then
         assertThat(response)
-                .hasStatus(BAD_REQUEST)
+                .hasStatus(FORBIDDEN)
                 .containsMessage("Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription.");
     }
 
@@ -666,7 +666,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     private Topic createTopicWithSubscribingRestricted() {
         return operations.buildTopic(
-                randomTopic("restricted", "topic")
+                randomTopic("restrictedGroup", "topic")
                         .withSubscribingRestricted()
                         .withOwner(new OwnerId("Plaintext", "topicOwner"))
                         .build()
