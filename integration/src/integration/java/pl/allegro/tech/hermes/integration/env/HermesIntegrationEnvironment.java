@@ -5,7 +5,6 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.PubSubEmulatorContainer;
 import org.testcontainers.lifecycle.Startable;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
@@ -16,8 +15,8 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.integration.setup.HermesManagementInstance;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
-import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.GooglePubSubContainer;
+import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
@@ -30,14 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_FIXED_MAX;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_TYPE;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS;
+import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
 import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 @Listeners({RetryListener.class})
@@ -101,7 +94,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             zookeeper = startZookeeperClient();
 
             ConsumersStarter consumersStarter = new ConsumersStarter();
-            consumersStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+            consumersStarter.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
             consumersStarter.overrideProperty(Configs.KAFKA_CLUSTER_NAME, PRIMARY_KAFKA_CLUSTER_NAME);
             consumersStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             consumersStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
@@ -110,7 +103,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             consumersStarter.start();
 
             FrontendStarter frontendStarter = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT);
-            frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+            frontendStarter.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
             frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
             frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());

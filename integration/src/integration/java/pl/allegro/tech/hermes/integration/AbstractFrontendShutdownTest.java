@@ -8,6 +8,9 @@ import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
+import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
+
+
 public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
 
     public static final int FRONTEND_PORT = Ports.nextAvailable();
@@ -22,7 +25,7 @@ public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
         frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+        frontendStarter.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
         frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
         frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());

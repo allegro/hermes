@@ -26,6 +26,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLE
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_KEYSTORE_SOURCE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_SOURCE;
 import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
+import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class HermesClientPublishingHttpsTest extends IntegrationTest {
@@ -90,7 +91,7 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
         frontend.overrideProperty(FRONTEND_SSL_KEYSTORE_SOURCE, "provided");
         frontend.overrideProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE, "provided");
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_ENABLED, false);
-        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+        frontend.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
         frontend.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());

@@ -24,7 +24,8 @@ import java.time.Clock;
 @Configuration
 @EnableConfigurationProperties({
         ConsumerReceiverProperties.class,
-        KafkaConsumerProperties.class
+        KafkaConsumerProperties.class,
+        KafkaAuthorizationProperties.class
 })
 public class ConsumerReceiverConfiguration {
 
@@ -32,6 +33,7 @@ public class ConsumerReceiverConfiguration {
     public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
                                                        ConsumerReceiverProperties consumerReceiverProperties,
                                                        KafkaConsumerProperties kafkaConsumerProperties,
+                                                       KafkaAuthorizationProperties kafkaAuthorizationProperties,
                                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                                        HermesMetrics hermesMetrics,
                                                        OffsetQueue offsetQueue,
@@ -43,6 +45,7 @@ public class ConsumerReceiverConfiguration {
                 configs,
                 consumerReceiverProperties.toKafkaReceiverParams(),
                 kafkaConsumerProperties.toKafkaConsumerParameters(),
+                kafkaAuthorizationProperties.toKafkaAuthorizationParameters(),
                 messageConverterFactory,
                 hermesMetrics,
                 offsetQueue,
