@@ -49,7 +49,8 @@ import java.util.List;
         CommitOffsetProperties.class,
         SenderAsyncTimeoutProperties.class,
         RateProperties.class,
-        BatchProperties.class
+        BatchProperties.class,
+        KafkaProperties.class
 })
 public class ConsumerConfiguration {
 
@@ -70,6 +71,7 @@ public class ConsumerConfiguration {
 
     @Bean
     public MaxRateRegistry maxRateRegistry(ConfigFactory configFactory,
+                                           KafkaProperties kafkaProperties,
                                            CuratorFramework curator,
                                            ZookeeperPaths zookeeperPaths,
                                            SubscriptionIds subscriptionIds,
@@ -77,6 +79,7 @@ public class ConsumerConfiguration {
                                            ClusterAssignmentCache clusterAssignmentCache) {
         return new MaxRateRegistry(
                 configFactory,
+                kafkaProperties.getClusterName(),
                 clusterAssignmentCache,
                 assignmentCache,
                 curator,
@@ -160,7 +163,7 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public ConsumerMessageSenderFactory consumerMessageSenderFactory(ConfigFactory configFactory,
+    public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaProperties kafkaProperties,
                                                                      HermesMetrics hermesMetrics,
                                                                      MessageSenderFactory messageSenderFactory,
                                                                      Trackers trackers,
@@ -171,7 +174,7 @@ public class ConsumerConfiguration {
                                                                      SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
                                                                      RateProperties rateProperties) {
         return new ConsumerMessageSenderFactory(
-                configFactory,
+                kafkaProperties.getClusterName(),
                 hermesMetrics,
                 messageSenderFactory,
                 trackers,

@@ -13,6 +13,9 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
+import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
 import pl.allegro.tech.hermes.consumers.config.SupervisorConfiguration;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
@@ -69,7 +72,8 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 class ConsumerTestRuntimeEnvironment {
 
     private static final int DEATH_OF_CONSUMER_AFTER_SECONDS = 300;
-    private final static String CLUSTER_NAME = "primary-dc";
+    private KafkaProperties kafkaProperties = new KafkaProperties();
+
     private final ConsumerNodesRegistryPaths nodesRegistryPaths;
 
     private int consumerIdSequence = 0;
@@ -104,9 +108,8 @@ class ConsumerTestRuntimeEnvironment {
 
         this.workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(curator, objectMapper, zookeeperPaths);
 
-
         this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
-        this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, CLUSTER_NAME);
+        this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, kafkaProperties.getClusterName());
     }
 
     SelectiveSupervisorController findLeader(List<SelectiveSupervisorController> supervisors) {
@@ -165,22 +168,22 @@ class ConsumerTestRuntimeEnvironment {
         SupervisorConfiguration supervisorConfiguration = new SupervisorConfiguration();
 
         ConsumerAssignmentCache consumerAssignmentCache = supervisorConfiguration.consumerAssignmentCache(
-                curator, consumerConfig, zookeeperPaths, subscriptionIds
+                curator, consumerConfig, kafkaProperties, zookeeperPaths, subscriptionIds
         );
 
         ClusterAssignmentCache clusterAssignmentCache = supervisorConfiguration.clusterAssignmentCache(
-                curator, consumerConfig, zookeeperPaths, subscriptionIds, nodesRegistry
+                curator, kafkaProperties, zookeeperPaths, subscriptionIds, nodesRegistry
         );
 
         ConsumerAssignmentRegistry consumerAssignmentRegistry = supervisorConfiguration.consumerAssignmentRegistry(
-                curator, consumerConfig, zookeeperPaths, subscriptionIds
+                curator, consumerConfig, kafkaProperties, zookeeperPaths, subscriptionIds
         );
 
 
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
                 consumersSupervisor, notificationsBus, subscriptionsCache, consumerAssignmentCache, consumerAssignmentRegistry,
                 clusterAssignmentCache, nodesRegistry,
-                mock(ZookeeperAdminCache.class), executorService, consumerConfig, metricsSupplier.get(),
+                mock(ZookeeperAdminCache.class), executorService, consumerConfig, kafkaProperties.getClusterName(), metricsSupplier.get(),
                 workloadConstraintsRepository
         );
 

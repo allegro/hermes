@@ -52,6 +52,7 @@ public class MaxRateRegistry implements NodeCacheListener {
     private final MaxRateRegistryPaths registryPaths;
 
     public MaxRateRegistry(ConfigFactory configFactory,
+                           String clusterName,
                            ClusterAssignmentCache clusterAssignmentCache,
                            ConsumerAssignmentCache consumerAssignmentCache,
                            CuratorFramework curator,
@@ -60,7 +61,6 @@ public class MaxRateRegistry implements NodeCacheListener {
         this.consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
         this.clusterAssignmentCache = clusterAssignmentCache;
         this.consumerAssignmentCache = consumerAssignmentCache;
-        final String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
         this.currentConsumerRateHistories = new ConsumerRateHistory();
         this.currentConsumerMaxRates = new ConsumerMaxRates();

@@ -9,6 +9,7 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
@@ -40,12 +41,12 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
     private final ConfigFactory configFactory = new MutableConfigFactory();
     private final String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
-    private final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+    private final String cluster = new KafkaProperties().getClusterName();
 
     private final ConsumerAssignmentCache consumerAssignmentCache = mock(ConsumerAssignmentCache.class);
     private final ClusterAssignmentCache clusterAssignmentCache = mock(ClusterAssignmentCache.class);
 
-    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(configFactory,
+    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(configFactory, cluster,
             clusterAssignmentCache, consumerAssignmentCache, zookeeperClient, zookeeperPaths, subscriptionIds);
 
     private final MaxRateRegistryPaths paths = new MaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);

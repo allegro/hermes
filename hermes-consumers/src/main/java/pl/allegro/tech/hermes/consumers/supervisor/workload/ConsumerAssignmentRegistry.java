@@ -22,13 +22,13 @@ public class ConsumerAssignmentRegistry {
 
     public ConsumerAssignmentRegistry(CuratorFramework curator,
                                       ConfigFactory configFactory,
+                                      String clusterName,
                                       ZookeeperPaths zookeeperPaths,
                                       SubscriptionIds subscriptionIds) {
         this.zookeeper = new ZookeeperOperations(curator);
         int assignmentsEncoderBufferSize = configFactory.getIntProperty(Configs.CONSUMER_WORKLOAD_REGISTRY_BINARY_ENCODER_ASSIGNMENTS_BUFFER_SIZE_BYTES);
         this.consumerAssignmentsEncoder = new ConsumerWorkloadEncoder(subscriptionIds, assignmentsEncoderBufferSize);
 
-        final String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
         this.paths = new WorkloadRegistryPaths(zookeeperPaths, clusterName);
     }
 

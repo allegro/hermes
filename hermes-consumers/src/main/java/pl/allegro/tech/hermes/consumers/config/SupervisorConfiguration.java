@@ -55,7 +55,8 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASS
 
 @Configuration
 @EnableConfigurationProperties({
-        CommitOffsetProperties.class
+        CommitOffsetProperties.class,
+        KafkaProperties.class
 })
 public class SupervisorConfiguration {
     private static final Logger logger = getLogger(SupervisorConfiguration.class);
@@ -71,6 +72,7 @@ public class SupervisorConfiguration {
                                                      ZookeeperAdminCache adminCache,
                                                      HermesMetrics metrics,
                                                      ConfigFactory configs,
+                                                     KafkaProperties kafkaProperties,
                                                      WorkloadConstraintsRepository workloadConstraintsRepository) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("AssignmentExecutor-%d")
@@ -87,6 +89,7 @@ public class SupervisorConfiguration {
                 adminCache,
                 assignmentExecutor,
                 configs,
+                kafkaProperties.getClusterName(),
                 metrics,
                 workloadConstraintsRepository
         );
@@ -94,8 +97,8 @@ public class SupervisorConfiguration {
 
     @Bean
     public Retransmitter retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
-                                       ConfigFactory configs) {
-        return new Retransmitter(subscriptionOffsetChangeIndicator, configs);
+                                       KafkaProperties kafkaProperties) {
+        return new Retransmitter(subscriptionOffsetChangeIndicator, kafkaProperties.getClusterName());
     }
 
     @Bean
@@ -175,28 +178,28 @@ public class SupervisorConfiguration {
     @Bean
     public ConsumerAssignmentRegistry consumerAssignmentRegistry(CuratorFramework curator,
                                                                  ConfigFactory configFactory,
+                                                                 KafkaProperties kafkaProperties,
                                                                  ZookeeperPaths zookeeperPaths,
                                                                  SubscriptionIds subscriptionIds) {
-        return new ConsumerAssignmentRegistry(curator, configFactory, zookeeperPaths, subscriptionIds);
+        return new ConsumerAssignmentRegistry(curator, configFactory, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
     }
 
     @Bean
     public ClusterAssignmentCache clusterAssignmentCache(CuratorFramework curator,
-                                                         ConfigFactory configFactory,
+                                                         KafkaProperties kafkaProperties,
                                                          ZookeeperPaths zookeeperPaths,
                                                          SubscriptionIds subscriptionIds,
                                                          ConsumerNodesRegistry consumerNodesRegistry) {
-        String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-        return new ClusterAssignmentCache(curator, clusterName, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
+        return new ClusterAssignmentCache(curator, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds, consumerNodesRegistry);
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerAssignmentCache consumerAssignmentCache(CuratorFramework curator,
                                                            ConfigFactory configFactory,
+                                                           KafkaProperties kafkaProperties,
                                                            ZookeeperPaths zookeeperPaths,
                                                            SubscriptionIds subscriptionIds) {
         String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
-        String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-        return new ConsumerAssignmentCache(curator, consumerId, clusterName, zookeeperPaths, subscriptionIds);
+        return new ConsumerAssignmentCache(curator, consumerId, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
     }
 }

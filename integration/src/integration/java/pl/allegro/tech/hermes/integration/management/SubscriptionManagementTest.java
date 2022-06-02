@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
@@ -257,6 +258,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("eventStatus", "topic").withContentType(ContentType.JSON)
                 .withTrackingEnabled(true).build());
+        String clusterName = new KafkaProperties().getClusterName();
 
         Subscription subscription = subscription(topic.getQualifiedName(), "subscription", remoteService.getUrl())
                 .withTrackingMode(TrackingMode.TRACK_ALL)
@@ -276,7 +278,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(traces.get(0)).containsEntry("status", "SUCCESS").containsKey("cluster");
         assertThat(traces.get(1)).containsEntry("status", "INFLIGHT").containsKey("cluster");
         assertThat(traces.get(2)).containsEntry("status", "SUCCESS").containsKey("cluster");
-        traces.forEach(trace -> assertThat(trace).containsEntry("cluster", Configs.KAFKA_CLUSTER_NAME.getDefaultValue()));
+        traces.forEach(trace -> assertThat(trace).containsEntry("cluster", clusterName));
     }
 
     @Test

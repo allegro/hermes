@@ -47,15 +47,11 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.SEND_BUFFER_CONFI
 import static org.apache.kafka.clients.consumer.ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_MECHANISM;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
 
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final ConfigFactory configs;
+    private final KafkaParameters kafkaAuthorizationParameters;
     private final KafkaReceiverParameters consumerReceiverParameters;
     private final KafkaConsumerParameters kafkaConsumerParameters;
     private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
@@ -69,6 +65,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     public KafkaMessageReceiverFactory(ConfigFactory configs,
                                        KafkaReceiverParameters consumerReceiverParameters,
                                        KafkaConsumerParameters kafkaConsumerParameters,
+                                       KafkaParameters kafkaAuthorizationParameters,
                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        HermesMetrics hermesMetrics,
                                        OffsetQueue offsetQueue,
@@ -79,6 +76,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         this.configs = configs;
         this.consumerReceiverParameters = consumerReceiverParameters;
         this.kafkaConsumerParameters = kafkaConsumerParameters;
+        this.kafkaAuthorizationParameters = kafkaAuthorizationParameters;
         this.messageConverterFactory = messageConverterFactory;
         this.hermesMetrics = hermesMetrics;
         this.offsetQueue = offsetQueue;
@@ -143,7 +141,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private KafkaConsumer<byte[], byte[]> createKafkaConsumer(Topic topic, Subscription subscription) {
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
         Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, configs.getStringProperty(Configs.KAFKA_BROKER_LIST));
+        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaAuthorizationParameters.getBrokerList());
         props.put(CLIENT_ID_CONFIG, configs.getStringProperty(Configs.CONSUMER_CLIENT_ID) + "_" + groupId.asString());
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, "false");
@@ -156,13 +154,13 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     private void addKafkaAuthorizationParameters(Properties props) {
-        if (configs.getBooleanProperty(KAFKA_AUTHORIZATION_ENABLED)) {
-            props.put(SASL_MECHANISM, configs.getStringProperty(KAFKA_AUTHORIZATION_MECHANISM));
-            props.put(SECURITY_PROTOCOL_CONFIG, configs.getStringProperty(KAFKA_AUTHORIZATION_PROTOCOL));
+        if (kafkaAuthorizationParameters.isEnabled()) {
+            props.put(SASL_MECHANISM, kafkaAuthorizationParameters.getMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaAuthorizationParameters.getProtocol());
             props.put(SASL_JAAS_CONFIG,
                     "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
-                            + "username=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
-                            + "password=\"" + configs.getStringProperty(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
+                            + "username=\"" + kafkaAuthorizationParameters.getUsername() + "\"\n"
+                            + "password=\"" + kafkaAuthorizationParameters.getPassword() + "\";"
             );
         }
     }
@@ -172,7 +170,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put(SESSION_TIMEOUT_MS_CONFIG, kafkaConsumerParameters.getSessionTimeoutMs());
         props.put(HEARTBEAT_INTERVAL_MS_CONFIG, kafkaConsumerParameters.getHeartbeatIntervalMs());
         props.put(METADATA_MAX_AGE_CONFIG, kafkaConsumerParameters.getMetadataMaxAgeMs());
-        props.put(MAX_PARTITION_FETCH_BYTES_CONFIG, getMaxPartitionFetch(topic, configs));
+        props.put(MAX_PARTITION_FETCH_BYTES_CONFIG, getMaxPartitionFetch(topic));
         props.put(SEND_BUFFER_CONFIG, kafkaConsumerParameters.getSendBufferBytes());
         props.put(RECEIVE_BUFFER_CONFIG, kafkaConsumerParameters.getReceiveBufferBytes());
         props.put(FETCH_MIN_BYTES_CONFIG, kafkaConsumerParameters.getFetchMinBytes());
@@ -188,7 +186,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put(MAX_POLL_INTERVAL_MS_CONFIG, kafkaConsumerParameters.getMaxPollIntervalMs());
     }
 
-    private int getMaxPartitionFetch(Topic topic, ConfigFactory configs) {
+    private int getMaxPartitionFetch(Topic topic) {
         if (configs.getBooleanProperty(Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE)) {
             int topicMessageSize = topic.getMaxMessageSize();
             int min = kafkaConsumerParameters.getMaxPartitionFetchMin();
