@@ -98,6 +98,10 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         args.add("--" + config + "=" + value);
     }
 
+    public void overrideProperty(String config, Object value) {
+        args.add("--" + config + "=" + value);
+    }
+
     public void addSpringProfiles(String... profiles) {
         String profilesString = Arrays.stream(profiles).collect(Collectors.joining(",", "", ""));
         this.profiles.add(profilesString);
