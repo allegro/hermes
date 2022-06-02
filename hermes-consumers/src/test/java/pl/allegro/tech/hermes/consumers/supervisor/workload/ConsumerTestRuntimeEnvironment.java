@@ -72,9 +72,8 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 class ConsumerTestRuntimeEnvironment {
 
     private static final int DEATH_OF_CONSUMER_AFTER_SECONDS = 300;
-    private final static String CLUSTER_NAME = "primary-dc";
-
     private KafkaProperties kafkaProperties = new KafkaProperties();
+
     private final ConsumerNodesRegistryPaths nodesRegistryPaths;
 
     private int consumerIdSequence = 0;
@@ -108,10 +107,9 @@ class ConsumerTestRuntimeEnvironment {
         );
 
         this.workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(curator, objectMapper, zookeeperPaths);
-        this.kafkaProperties.setClusterName(CLUSTER_NAME);
 
         this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
-        this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, CLUSTER_NAME);
+        this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, kafkaProperties.getClusterName());
     }
 
     SelectiveSupervisorController findLeader(List<SelectiveSupervisorController> supervisors) {
@@ -185,7 +183,7 @@ class ConsumerTestRuntimeEnvironment {
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
                 consumersSupervisor, notificationsBus, subscriptionsCache, consumerAssignmentCache, consumerAssignmentRegistry,
                 clusterAssignmentCache, nodesRegistry,
-                mock(ZookeeperAdminCache.class), executorService, consumerConfig, CLUSTER_NAME, metricsSupplier.get(),
+                mock(ZookeeperAdminCache.class), executorService, consumerConfig, kafkaProperties.getClusterName(), metricsSupplier.get(),
                 workloadConstraintsRepository
         );
 
