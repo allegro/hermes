@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class FlatBinaryWorkloadRegistryTest extends ZookeeperBaseTest {
+public class WorkloadRegistryTest extends ZookeeperBaseTest {
 
     private static final SubscriptionName subscription1 = SubscriptionName.fromString("pl.allegro.tech.hermes$testSubscription");
     private static final SubscriptionName subscription2 = SubscriptionName.fromString("pl.allegro.tech.hermes$testSubscription2");
@@ -36,8 +36,8 @@ public class FlatBinaryWorkloadRegistryTest extends ZookeeperBaseTest {
 
     private static final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
 
-    private static final FlatBinaryWorkloadRegistryPaths registryPaths =
-            new FlatBinaryWorkloadRegistryPaths(zookeeperPaths, configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME));
+    private static final WorkloadRegistryPaths registryPaths =
+            new WorkloadRegistryPaths(zookeeperPaths, configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME));
 
     private static final SubscriptionIds subscriptionIds =
             new TestSubscriptionIds(ImmutableList.of(
@@ -47,19 +47,19 @@ public class FlatBinaryWorkloadRegistryTest extends ZookeeperBaseTest {
             ));
 
     private static final ConsumerAssignmentRegistry registry =
-            new FlatBinaryConsumerAssignmentRegistry(zookeeperClient, configFactory, zookeeperPaths, subscriptionIds);
+            new ConsumerAssignmentRegistry(zookeeperClient, configFactory, zookeeperPaths, subscriptionIds);
 
     private static final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 
-    private static final FlatBinaryConsumerAssignmentCache assignmentCacheOfConsumer1 =
-            new FlatBinaryConsumerAssignmentCache(zookeeperClient, consumer1, cluster, zookeeperPaths, subscriptionIds);
+    private static final ConsumerAssignmentCache assignmentCacheOfConsumer1 =
+            new ConsumerAssignmentCache(zookeeperClient, consumer1, cluster, zookeeperPaths, subscriptionIds);
 
-    private static final FlatBinaryConsumerAssignmentCache assignmentCacheOfConsumer2 =
-            new FlatBinaryConsumerAssignmentCache(zookeeperClient, consumer2, cluster, zookeeperPaths, subscriptionIds);
+    private static final ConsumerAssignmentCache assignmentCacheOfConsumer2 =
+            new ConsumerAssignmentCache(zookeeperClient, consumer2, cluster, zookeeperPaths, subscriptionIds);
 
     private static final ConsumerNodesRegistry consumerNodesRegistry = mock(ConsumerNodesRegistry.class);
 
-    private static final FlatBinaryClusterAssignmentCache clusterAssignmentCache = new FlatBinaryClusterAssignmentCache(zookeeperClient, cluster, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
+    private static final ClusterAssignmentCache clusterAssignmentCache = new ClusterAssignmentCache(zookeeperClient, cluster, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
 
     @BeforeClass
     public static void setUp() throws Exception {

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -22,9 +23,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -80,10 +81,10 @@ public class SchemaEndpoint {
     @ApiOperation(value = "Save schema", httpMethod = HttpMethod.POST)
     public Response save(@PathParam("topicName") String qualifiedTopicName,
                          @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
-                         @Context SecurityContext securityContext,
+                         @Context ContainerRequestContext requestContext,
                          String schema) {
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
-        RequestUser user = RequestUser.fromSecurityContext(securityContext);
+        RequestUser user = new HermesSecurityAwareRequestUser(requestContext);
         schemaService.registerSchema(topic, schema, validate);
         notifyFrontendSchemaChanged(qualifiedTopicName, user);
         return Response.status(Response.Status.CREATED).build();

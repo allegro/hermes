@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 
 import javax.annotation.security.RolesAllowed;
@@ -25,7 +25,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -70,9 +69,13 @@ public class GroupsEndpoint {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Create group", response = String.class, httpMethod = HttpMethod.POST)
     @RolesAllowed(Roles.ANY)
-    public Response create(Group group, @Context SecurityContext securityContext, @Context ContainerRequestContext requestContext) {
+    public Response create(Group group, @Context ContainerRequestContext requestContext) {
         preconditions.checkConstraints(group, false);
-        groupService.createGroup(group, RequestUser.fromSecurityContext(securityContext), managementRights.getGroupCreatorRights(requestContext));
+        groupService.createGroup(
+                group,
+                new HermesSecurityAwareRequestUser(requestContext),
+                managementRights.getGroupCreatorRights(requestContext)
+        );
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -84,8 +87,8 @@ public class GroupsEndpoint {
     @RolesAllowed(Roles.ADMIN)
     public Response update(@PathParam("groupName") String groupName,
                            PatchData patch,
-                           @Context SecurityContext securityContext) {
-        groupService.updateGroup(groupName, patch, RequestUser.fromSecurityContext(securityContext));
+                           @Context ContainerRequestContext requestContext) {
+        groupService.updateGroup(groupName, patch, new HermesSecurityAwareRequestUser(requestContext));
         return responseStatus(Response.Status.NO_CONTENT);
     }
 
@@ -93,8 +96,8 @@ public class GroupsEndpoint {
     @Path("/{groupName}")
     @ApiOperation(value = "Remove group", response = String.class, httpMethod = HttpMethod.DELETE)
     @RolesAllowed(Roles.ADMIN)
-    public Response delete(@PathParam("groupName") String groupName, @Context SecurityContext securityContext) {
-        groupService.removeGroup(groupName, RequestUser.fromSecurityContext(securityContext));
+    public Response delete(@PathParam("groupName") String groupName, @Context ContainerRequestContext requestContext) {
+        groupService.removeGroup(groupName, new HermesSecurityAwareRequestUser(requestContext));
         return responseStatus(Response.Status.OK);
     }
 

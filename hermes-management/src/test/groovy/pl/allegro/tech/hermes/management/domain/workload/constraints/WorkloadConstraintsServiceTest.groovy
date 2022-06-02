@@ -15,7 +15,7 @@ import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRep
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository
 import pl.allegro.tech.hermes.management.config.storage.DefaultZookeeperGroupRepositoryFactory
-import pl.allegro.tech.hermes.management.domain.auth.RequestUser
+import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
@@ -26,7 +26,7 @@ import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
 class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
 
     static WORKLOAD_CONSTRAINTS_PATH = '/hermes/consumers-workload-constraints'
-    static USER = new RequestUser("username", false);
+    static USER = new TestRequestUser("username", false);
     ZookeeperClientManager manager
     WorkloadConstraintsService service
     WorkloadConstraintsRepository repository

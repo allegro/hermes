@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicConstraints;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.WorkloadConstraintsService;
@@ -22,10 +23,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -59,8 +59,8 @@ public class WorkloadConstraintsEndpoint {
     @ApiOperation(value = "Create or update topic constraints", response = String.class, httpMethod = HttpMethod.PUT)
     public Response createOrUpdateTopicConstraints(
             @Valid TopicConstraints topicConstraints,
-            @Context SecurityContext securityContext) {
-        RequestUser requestUser = RequestUser.fromSecurityContext(securityContext);
+            @Context ContainerRequestContext requestContext) {
+        RequestUser requestUser = new HermesSecurityAwareRequestUser(requestContext);
         if (service.constraintsExist(topicConstraints.getTopicName())) {
             service.updateConstraints(topicConstraints.getTopicName(), topicConstraints.getConstraints(), requestUser);
             return Response.status(OK).build();
@@ -76,8 +76,8 @@ public class WorkloadConstraintsEndpoint {
     @ApiOperation(value = "Remove topic constraints", response = String.class, httpMethod = HttpMethod.DELETE)
     public Response deleteTopicConstraints(
             @PathParam("topicName") String topicName,
-            @Context SecurityContext securityContext) {
-        service.deleteConstraints(TopicName.fromQualifiedName(topicName), RequestUser.fromSecurityContext(securityContext));
+            @Context ContainerRequestContext requestContext) {
+        service.deleteConstraints(TopicName.fromQualifiedName(topicName), new HermesSecurityAwareRequestUser(requestContext));
         return Response.status(OK).build();
     }
 
@@ -89,8 +89,8 @@ public class WorkloadConstraintsEndpoint {
     @ApiOperation(value = "Create or update subscription constraints", response = String.class, httpMethod = HttpMethod.PUT)
     public Response createOrUpdateSubscriptionConstraints(
             @Valid SubscriptionConstraints subscriptionConstraints,
-            @Context SecurityContext securityContext) {
-        RequestUser requestUser = RequestUser.fromSecurityContext(securityContext);
+            @Context ContainerRequestContext requestContext) {
+        RequestUser requestUser = new HermesSecurityAwareRequestUser(requestContext);
         if (service.constraintsExist(subscriptionConstraints.getSubscriptionName())) {
             service.updateConstraints(subscriptionConstraints.getSubscriptionName(), subscriptionConstraints.getConstraints(), requestUser);
             return Response.status(OK).build();
@@ -106,8 +106,11 @@ public class WorkloadConstraintsEndpoint {
     @ApiOperation(value = "Remove subscription constraints", response = String.class, httpMethod = HttpMethod.DELETE)
     public Response deleteSubscriptionConstraints(@PathParam("topicName") String topicName,
                                                   @PathParam("subscriptionName") String subscriptionName,
-                                                  @Context SecurityContext securityContext) {
-        service.deleteConstraints(new SubscriptionName(subscriptionName, TopicName.fromQualifiedName(topicName)), RequestUser.fromSecurityContext(securityContext));
+                                                  @Context ContainerRequestContext requestContext) {
+        service.deleteConstraints(
+                new SubscriptionName(subscriptionName, TopicName.fromQualifiedName(topicName)),
+                new HermesSecurityAwareRequestUser(requestContext)
+        );
         return Response.status(OK).build();
     }
 }
