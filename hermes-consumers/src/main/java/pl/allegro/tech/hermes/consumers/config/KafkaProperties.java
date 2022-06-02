@@ -8,7 +8,7 @@ public class KafkaProperties {
 
     private KafkaAuthorizationProperties authorization;
     private String clusterName = "primary-dc";
-    private String brokerList = "kafka.broker.list, localhost:9092";
+    private String brokerList = "localhost:9092";
 
     public KafkaAuthorizationProperties getAuthorization() {
         return authorization;
