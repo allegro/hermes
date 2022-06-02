@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.oauth.OAuthProviderService;
@@ -20,6 +21,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -61,8 +63,8 @@ public class OAuthProvidersEndpoint {
     @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Create OAuth provider", httpMethod = HttpMethod.POST)
     public Response create(OAuthProvider oAuthProvider,
-                           @Context SecurityContext securityContext) {
-        service.createOAuthProvider(oAuthProvider, RequestUser.fromSecurityContext(securityContext));
+                           @Context ContainerRequestContext requestContext) {
+        service.createOAuthProvider(oAuthProvider, new HermesSecurityAwareRequestUser(requestContext));
         return status(Response.Status.CREATED).build();
     }
 
@@ -73,8 +75,8 @@ public class OAuthProvidersEndpoint {
     @Path("/{oAuthProviderName}")
     @ApiOperation(value = "Update OAuth provider", httpMethod = HttpMethod.PUT)
     public Response update(@PathParam("oAuthProviderName") String oAuthProviderName, PatchData patch,
-                           @Context SecurityContext securityContext) {
-        service.updateOAuthProvider(oAuthProviderName, patch, RequestUser.fromSecurityContext(securityContext));
+                           @Context ContainerRequestContext requestContext) {
+        service.updateOAuthProvider(oAuthProviderName, patch, new HermesSecurityAwareRequestUser(requestContext));
         return status(Response.Status.OK).build();
     }
 
@@ -84,8 +86,8 @@ public class OAuthProvidersEndpoint {
     @Path("/{oAuthProviderName}")
     @ApiOperation(value = "Remove OAuth provider", httpMethod = HttpMethod.DELETE)
     public Response remove(@PathParam("oAuthProviderName") String oAuthProviderName,
-                           @Context SecurityContext securityContext) {
-        service.removeOAuthProvider(oAuthProviderName, RequestUser.fromSecurityContext(securityContext));
+                           @Context ContainerRequestContext requestContext) {
+        service.removeOAuthProvider(oAuthProviderName, new HermesSecurityAwareRequestUser(requestContext));
         return status(Response.Status.OK).build();
     }
 }

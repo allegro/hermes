@@ -44,9 +44,6 @@ class MaxRateCalculator {
 
     void calculate() {
         try {
-            if (!clusterAssignmentCache.isReady()) {
-                return;
-            }
             logger.info("Max rate calculation started");
 
             long start = clock.millis();

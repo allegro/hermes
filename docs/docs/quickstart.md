@@ -78,6 +78,24 @@ If you want to run a specific hermes release simply add a given version to the i
 image: allegro/hermes-management:hermes-[specific version tag]
 ```
 
+## Development
+
+File docker/docker-compose.development.yml disables deployment of hermes frontend, management, and consumers.
+
+We have to provide an environment (Kafka, ZooKeeper, Graphite, Schema Registry) with command executed in the project directory:
+
+`docker-compose -f docker/docker-compose.yml -f docker/docker-compose.development.yml up`
+
+To start hermes frontend, management and consumers we can use the following commands
+
+`./gradlew -p hermes-frontend run`
+
+`./gradlew -p hermes-management run`
+
+`./gradlew -p hermes-consumers run`
+
+or use `Run/Debug Configurations` in IntelliJ
+
 ## Creating group and topic
 
 Now you're ready to create a **topic** for publishing messages.

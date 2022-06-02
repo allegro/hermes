@@ -154,7 +154,6 @@ public enum Configs {
 
     CONSUMER_INFLIGHT_SIZE("consumer.inflight.size", 100),
     CONSUMER_FILTERING_RATE_LIMITER_ENABLED("consumer.filtering.rate.limiter.enabled", false),
-    CONSUMER_MAXRATE_REGISTRY_TYPE("consumer.maxrate.registry.type", "hierarchical"),
     CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_MAX_RATE_BUFFER_SIZE_BYTES("consumer.maxrate.registry.binary.encoder.max.rate.buffer.size.bytes", 100_000),
     CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_HISTORY_BUFFER_SIZE_BYTES("consumer.maxrate.registry.binary.encoder.history.buffer.size.bytes", 100_000),
     CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS("consumer.maxrate.balance.interval.seconds", 30),
@@ -166,7 +165,6 @@ public enum Configs {
     CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT("consumer.maxrate.min.significant.update.percent", 9.0),
 
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
-    CONSUMER_WORKLOAD_REGISTRY_TYPE("consumer.workload.registry.type", "hierarchical"),
     CONSUMER_WORKLOAD_REGISTRY_BINARY_ENCODER_ASSIGNMENTS_BUFFER_SIZE_BYTES("consumer.workload.registry.binary.encoder.assignments.buffer.size.bytes", 100_000),
     CONSUMER_WORKLOAD_REBALANCE_INTERVAL("consumer.workload.rebalance.interval.seconds", 30),
     CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION("consumer.workload.consumers.per.subscription", 2),

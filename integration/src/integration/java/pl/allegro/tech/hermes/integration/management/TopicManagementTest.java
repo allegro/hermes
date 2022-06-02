@@ -427,7 +427,7 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldCreateTopicWithMaxMessageSize() {
         // given
         Topic topic = TopicBuilder.topic("messageSize", "topic").withMaxMessageSize(2048).build();
-        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "a"))).hasStatus(CREATED);
+        assertThat(management.group().create(new Group(topic.getName().getGroupName()))).hasStatus(CREATED);
 
         // when
         Response response = management.topic().create(topicWithSchema(topic));
@@ -455,7 +455,7 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldCreateTopicWithRestrictedSubscribing() {
         // given
         Topic topic = TopicBuilder.topic("restricted", "topic").withSubscribingRestricted().build();
-        assertThat(management.group().create(new Group(topic.getName().getGroupName(), "topic"))).hasStatus(CREATED);
+        assertThat(management.group().create(new Group(topic.getName().getGroupName()))).hasStatus(CREATED);
 
         // when
         Response response = management.topic().create(topicWithSchema(topic));

@@ -1,23 +1,16 @@
-package pl.allegro.tech.hermes.management.domain.endpoint
+package pl.allegro.tech.hermes.management.domain.subscription.validator
 
 import com.damnhandy.uri.template.MalformedUriTemplateException
-import org.assertj.core.util.Lists
 import pl.allegro.tech.hermes.api.EndpointAddress
 import spock.lang.Shared
 import spock.lang.Specification
 
-class EndpointAddressValidatorTest extends Specification {
+import static java.util.Collections.emptyList
+
+class EndpointAddressFormatValidatorTest extends Specification {
 
     @Shared
-    EndpointAddressValidator endpointAddressValidator
-
-    AdditionalEndpointAddressValidator defaultAdditionalEndpointAddressValidator() {
-        return { address -> }
-    }
-
-    def setupSpec() {
-        endpointAddressValidator = new EndpointAddressValidator(Lists.emptyList(), defaultAdditionalEndpointAddressValidator())
-    }
+    EndpointAddressFormatValidator endpointAddressValidator = new EndpointAddressFormatValidator(emptyList())
 
     def "should validate valid endpoint"() {
         given:

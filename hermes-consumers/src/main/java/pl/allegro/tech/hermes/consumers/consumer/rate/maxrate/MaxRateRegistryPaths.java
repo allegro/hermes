@@ -6,15 +6,15 @@ import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CON
 import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.MAX_RATE_HISTORY_PATH;
 import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.MAX_RATE_PATH;
 
-class FlatBinaryMaxRateRegistryPaths {
+class MaxRateRegistryPaths {
 
-    private final static String RATE_BINARY_RUNTIME_PATH = "runtime-bin";
+    private final static String RATE_RUNTIME_PATH = "runtime-bin";
 
     private final ZookeeperPaths zookeeperPaths;
     private final String clusterName;
     private final String currentConsumerRateHistoryPath;
 
-    FlatBinaryMaxRateRegistryPaths(ZookeeperPaths zookeeperPaths, String currentConsumerId, String clusterName) {
+    MaxRateRegistryPaths(ZookeeperPaths zookeeperPaths, String currentConsumerId, String clusterName) {
         this.zookeeperPaths = zookeeperPaths;
         this.clusterName = clusterName;
         this.currentConsumerRateHistoryPath = consumerRateHistoryPath(currentConsumerId);
@@ -33,7 +33,7 @@ class FlatBinaryMaxRateRegistryPaths {
     }
 
     String consumersRateCurrentClusterRuntimeBinaryPath() {
-        return zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_RATE_PATH, clusterName, RATE_BINARY_RUNTIME_PATH);
+        return zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_RATE_PATH, clusterName, RATE_RUNTIME_PATH);
     }
 
     String currentConsumerRateHistoryPath() {

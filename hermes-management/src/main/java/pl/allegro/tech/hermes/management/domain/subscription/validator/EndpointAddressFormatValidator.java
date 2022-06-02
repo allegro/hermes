@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.domain.endpoint;
+package pl.allegro.tech.hermes.management.domain.subscription.validator;
 
 import com.damnhandy.uri.template.UriTemplate;
 import pl.allegro.tech.hermes.api.EndpointAddress;
@@ -13,13 +13,10 @@ import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
-public class EndpointAddressValidator {
-    private final AdditionalEndpointAddressValidator additionalEndpointAddressValidator;
+public class EndpointAddressFormatValidator implements EndpointAddressValidator {
     private final Set<String> availableProtocol = new HashSet<>();
 
-    public EndpointAddressValidator(List<String> additionalEndpointProtocols,
-                                    AdditionalEndpointAddressValidator additionalEndpointAddressValidator) {
-        this.additionalEndpointAddressValidator = additionalEndpointAddressValidator;
+    public EndpointAddressFormatValidator(List<String> additionalEndpointProtocols) {
         this.availableProtocol.addAll(additionalEndpointProtocols);
         this.availableProtocol.add("http");
         this.availableProtocol.add("https");
@@ -27,10 +24,10 @@ public class EndpointAddressValidator {
         this.availableProtocol.add("googlepubsub");
     }
 
+    @Override
     public void check(EndpointAddress address) {
         checkIfProtocolIsValid(address);
         checkIfUriIsValid(address);
-        additionalEndpointAddressValidator.check(address);
     }
 
     private void checkIfProtocolIsValid(EndpointAddress address) {

@@ -18,6 +18,8 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignm
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
 import pl.allegro.tech.hermes.consumers.config.SupervisorConfiguration;
+import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -168,15 +170,15 @@ class ConsumerTestRuntimeEnvironment {
         SupervisorConfiguration supervisorConfiguration = new SupervisorConfiguration();
 
         ConsumerAssignmentCache consumerAssignmentCache = supervisorConfiguration.consumerAssignmentCache(
-                curator, consumerConfig, kafkaProperties, zookeeperPaths, subscriptionsCache, subscriptionIds
+                curator, consumerConfig, kafkaProperties, zookeeperPaths, subscriptionIds
         );
 
         ClusterAssignmentCache clusterAssignmentCache = supervisorConfiguration.clusterAssignmentCache(
-                curator, consumerConfig, kafkaProperties, consumerAssignmentCache, zookeeperPaths, subscriptionIds, nodesRegistry
+                curator, kafkaProperties, zookeeperPaths, subscriptionIds, nodesRegistry
         );
 
         ConsumerAssignmentRegistry consumerAssignmentRegistry = supervisorConfiguration.consumerAssignmentRegistry(
-                curator, consumerConfig, kafkaProperties, zookeeperPaths, consumerAssignmentCache, subscriptionIds
+                curator, consumerConfig, kafkaProperties, zookeeperPaths, subscriptionIds
         );
 
 

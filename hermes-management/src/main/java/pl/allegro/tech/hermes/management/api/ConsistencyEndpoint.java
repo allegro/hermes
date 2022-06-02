@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.management.api;
 
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.consistency.DcConsistencyService;
 import pl.allegro.tech.hermes.management.domain.consistency.KafkaHermesConsistencyService;
 
@@ -13,10 +13,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,8 +58,8 @@ public class ConsistencyEndpoint {
     @DELETE
     @Produces({APPLICATION_JSON})
     @Path("/inconsistencies/topics")
-    public Response removeTopicByName(@QueryParam("topicName") String topicName, @Context SecurityContext securityContext) {
-        kafkaHermesConsistencyService.removeTopic(topicName, RequestUser.fromSecurityContext(securityContext));
+    public Response removeTopicByName(@QueryParam("topicName") String topicName, @Context ContainerRequestContext requestContext) {
+        kafkaHermesConsistencyService.removeTopic(topicName, new HermesSecurityAwareRequestUser(requestContext));
         return Response.ok().build();
     }
 
