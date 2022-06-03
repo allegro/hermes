@@ -37,14 +37,18 @@ public class SubscriptionConfiguration {
                 subscriptionRepository,
                 endpointAddressValidators,
                 endpointOwnershipValidator,
-                subscriptionProperties.getSubscribersWithAccessToAnyTopic().stream()
-                        .map(subscriber -> new SubscriberWithAccessToAnyTopic(
-                                subscriber.getOwnerSource(),
-                                subscriber.getOwnerId(),
-                                subscriber.getProtocols())
-                        )
-                        .collect(toList())
+                createListOfSubscribersWithAccessToAnyTopic(subscriptionProperties)
         );
+    }
+
+    private List<SubscriberWithAccessToAnyTopic> createListOfSubscribersWithAccessToAnyTopic(SubscriptionProperties subscriptionProperties) {
+        return subscriptionProperties.getSubscribersWithAccessToAnyTopic().stream()
+                .map(subscriber -> new SubscriberWithAccessToAnyTopic(
+                        subscriber.getOwnerSource(),
+                        subscriber.getOwnerId(),
+                        subscriber.getProtocols())
+                )
+                .collect(toList());
     }
 
     @Bean
