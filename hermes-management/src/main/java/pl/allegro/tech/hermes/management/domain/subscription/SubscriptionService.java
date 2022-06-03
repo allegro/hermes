@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -13,7 +14,6 @@ import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
-import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -21,7 +21,6 @@ import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
@@ -124,9 +123,9 @@ public class SubscriptionService {
         return subscriptionRepository.listSubscriptions(topicName);
     }
 
-    public void createSubscription(Subscription subscription, RequestUser createdBy, CreatorRights creatorRights, String qualifiedTopicName) {
+    public void createSubscription(Subscription subscription, RequestUser createdBy, String qualifiedTopicName) {
         auditor.beforeObjectCreation(createdBy.getUsername(), subscription);
-        subscriptionValidator.checkCreation(subscription, creatorRights);
+        subscriptionValidator.checkCreation(subscription, createdBy);
 
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
         multiDCAwareService.createConsumerGroups(topic, subscription);
@@ -194,7 +193,7 @@ public class SubscriptionService {
         Subscription.State oldState = retrieved.getState();
         Subscription updated = Patch.apply(retrieved, patch);
         revertStateIfChangedToPending(updated, oldState);
-        subscriptionValidator.checkModification(updated);
+        subscriptionValidator.checkModification(updated, modifiedBy, retrieved);
         subscriptionOwnerCache.onUpdatedSubscription(retrieved, updated);
 
         if (!retrieved.equals(updated)) {

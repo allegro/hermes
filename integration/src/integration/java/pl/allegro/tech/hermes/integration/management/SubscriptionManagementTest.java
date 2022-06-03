@@ -1,12 +1,15 @@
 package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableMap;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
@@ -21,6 +24,8 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.management.TestSecurityProvider;
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -37,9 +42,14 @@ import java.util.stream.Stream;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -61,6 +71,11 @@ public class SubscriptionManagementTest extends IntegrationTest {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
         client = hermesClient(new JerseyHermesSender(newClient())).withURI(create("http://localhost:" + FRONTEND_PORT)).build();
         graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
+    }
+
+    @AfterMethod
+    public void cleanup() {
+        TestSecurityProvider.reset();
     }
 
     @Test
@@ -431,6 +446,231 @@ public class SubscriptionManagementTest extends IntegrationTest {
                     .usingElementComparatorIgnoringFields("partition", "topic", "offsetMetadata", "contentType")
                     .containsOnlyOnce(new TopicPartition(-1, "any", 0, 1, "any", topic.getContentType()));
         });
+    }
+
+    @Test
+    public void shouldNotCreateSubscriptionNotOwnedByTheUser() {
+        // given
+        Topic topic = createTopic();
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
+                .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
+                .build();
+        TestSecurityProvider.setUserIsAdmin(false);
+
+        // when
+        Response response = management.subscription().create(topic.getQualifiedName(), subscription);
+
+        // then
+        assertThat(response)
+                .hasStatus(BAD_REQUEST)
+                .containsMessage("Provide an owner that includes you, you would not be able to manage this subscription later");
+    }
+
+    @Test
+    public void shouldNotUpdateSubscriptionNotOwnedByTheUser() {
+        // given
+        Topic topic = createTopic();
+        Subscription subscription = operations.createSubscription(topic, "subscription", "http://localhost:8081/topics/test-topic");
+        TestSecurityProvider.setUserIsAdmin(false);
+
+        // when
+        Response response = management.subscription().update(
+                topic.getQualifiedName(),
+                subscription.getName(),
+                patchData().set("endpoint", EndpointAddress.of("http://localhost:7777/topics/test-topic")).build()
+        );
+
+        // then
+        assertThat(response)
+                .hasStatus(BAD_REQUEST)
+                .containsMessage("Provide an owner that includes you, you would not be able to manage this subscription later");
+    }
+
+    @Test
+    public void shouldAllowAdminToBypassSubscribingRestrictions() {
+        // given
+        Topic topic = createTopicWithSubscribingRestricted();
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
+                .withEndpoint("http://localhost:8081/topics/test-topic")
+                .build();
+        TestSecurityProvider.setUserIsAdmin(true);
+
+        // when
+        Response createResponse = management.subscription().create(topic.getQualifiedName(), subscription);
+
+        // then
+        assertThat(createResponse).hasStatus(CREATED);
+
+        // when
+        Response updateResponse = management.subscription().update(
+                topic.getQualifiedName(),
+                subscription.getName(),
+                patchData().set("endpoint", EndpointAddress.of("http://localhost:7777/topics/test-topic")).build()
+        );
+
+        // then
+        assertThat(updateResponse).hasStatus(OK);
+    }
+
+    @Test
+    public void shouldAllowTopicOwnerToBypassSubscribingRestrictions() {
+        // given
+        Topic topic = createTopicWithSubscribingRestricted();
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
+                .withEndpoint("http://localhost:8081/topics/test-topic")
+                .build();
+        TestSecurityProvider.setUserIsAdmin(false);
+        TestSecurityProvider.setUserAsOwner(topic.getOwner(), subscription.getOwner());
+
+        // when
+        Response response = management.subscription().create(topic.getQualifiedName(), subscription);
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+
+        // when
+        Response updateResponse = management.subscription().update(
+                topic.getQualifiedName(),
+                subscription.getName(),
+                patchData().set("endpoint", EndpointAddress.of("http://localhost:7777/topics/test-topic")).build()
+        );
+
+        // then
+        assertThat(updateResponse).hasStatus(OK);
+    }
+
+    @Test
+    public void shouldAllowPrivilegedSubscriberToBypassSubscribingRestrictions() {
+        // given
+        Topic topic = createTopicWithSubscribingRestricted();
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
+                .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
+                .withEndpoint("http://localhost:8081/topics/test-topic")
+                .build();
+        TestSecurityProvider.setUserIsAdmin(false);
+        TestSecurityProvider.setUserAsOwner(subscription.getOwner());
+
+        // when
+        Response response = management.subscription().create(topic.getQualifiedName(), subscription);
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+
+        // when
+        Response updateResponse = management.subscription().update(
+                topic.getQualifiedName(),
+                subscription.getName(),
+                patchData().set("endpoint", EndpointAddress.of("http://localhost:7777/topics/test-topic")).build()
+        );
+
+        // then
+        assertThat(updateResponse).hasStatus(OK);
+    }
+
+    @Test
+    public void shouldRespectPrivilegedSubscriberProtocolsWhileCreatingSubscription() {
+        // given
+        Topic topic = createTopicWithSubscribingRestricted();
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
+                .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
+                .withEndpoint("googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic")
+                .build();
+        TestSecurityProvider.setUserIsAdmin(false);
+        TestSecurityProvider.setUserAsOwner(subscription.getOwner());
+
+        // when
+        Response response = management.subscription().create(topic.getQualifiedName(), subscription);
+
+        // then
+        assertThat(response)
+                .hasStatus(FORBIDDEN)
+                .containsMessage("Subscribing to this topic has been restricted. Contact the topic owner to create a new subscription.");
+    }
+
+    @Test
+    public void shouldRespectPrivilegedSubscriberProtocolsWhileUpdatingEndpoint() {
+        // given
+        Topic topic = createTopicWithSubscribingRestricted();
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
+                .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
+                .withEndpoint("http://localhost:8081/topics/test-topic")
+                .build();
+        operations.createSubscription(topic, subscription);
+        TestSecurityProvider.setUserIsAdmin(false);
+        TestSecurityProvider.setUserAsOwner(subscription.getOwner());
+
+        // when
+        Response response = management.subscription().update(
+                topic.getQualifiedName(),
+                subscription.getName(),
+                patchData().set("endpoint", EndpointAddress.of("googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic")).build()
+        );
+
+        // then
+        assertThat(response)
+                .hasStatus(FORBIDDEN)
+                .containsMessage("Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription.");
+    }
+
+    @Test
+    public void shouldNotAllowUnprivilegedUserToCreateSubscriptionWhenSubscribingIsRestricted() {
+        // given
+        Topic topic = createTopicWithSubscribingRestricted();
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
+                .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
+                .build();
+        TestSecurityProvider.setUserIsAdmin(false);
+        TestSecurityProvider.setUserAsOwner(subscription.getOwner());
+
+        // when
+        Response response = management.subscription().create(topic.getQualifiedName(), subscription);
+
+        // then
+        assertThat(response)
+                .hasStatus(FORBIDDEN)
+                .containsMessage("Subscribing to this topic has been restricted. Contact the topic owner to create a new subscription.");
+    }
+
+    @Test
+    public void shouldNotAllowUnprivilegedUserToUpdateEndpointWhenSubscribingIsRestricted() {
+        // given
+        Topic topic = createTopicWithSubscribingRestricted();
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
+                .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
+                .withEndpoint("http://localhost:8081/topics/test-topic")
+                .build();
+        operations.createSubscription(topic, subscription);
+        TestSecurityProvider.setUserIsAdmin(false);
+        TestSecurityProvider.setUserAsOwner(subscription.getOwner());
+
+        // when
+        Response response = management.subscription().update(
+                topic.getQualifiedName(),
+                subscription.getName(),
+                patchData().set("endpoint", EndpointAddress.of("http://localhost:7777/topics/test-topic")).build()
+        );
+
+        // then
+        assertThat(response)
+                .hasStatus(FORBIDDEN)
+                .containsMessage("Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription.");
+    }
+
+    private Topic createTopic() {
+        return operations.buildTopic(
+                randomTopic("group", "topic")
+                        .withOwner(new OwnerId("Plaintext", "topicOwner"))
+                        .build()
+        );
+    }
+
+    private Topic createTopicWithSubscribingRestricted() {
+        return operations.buildTopic(
+                randomTopic("restrictedGroup", "topic")
+                        .withSubscribingRestricted()
+                        .withOwner(new OwnerId("Plaintext", "topicOwner"))
+                        .build()
+        );
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
