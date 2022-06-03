@@ -7,7 +7,7 @@ consumer:
     maxIdleTime: 1000
   batch:
     poolableSize: 1024
-    maxPoolSize: 64 * 1024 * 1024
+    maxPoolSize: 67108864 # 64 x 1024 x 1024
     connectionTimeout: 500
     connectionRequestTimeout: 500
   commit:
