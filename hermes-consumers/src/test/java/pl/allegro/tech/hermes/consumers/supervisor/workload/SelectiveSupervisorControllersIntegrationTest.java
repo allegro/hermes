@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -117,6 +118,7 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     }
 
     @Test
+    @Ignore
     public void shouldRecreateMissingConsumer() throws InterruptedException {
         // given
         ConsumerFactory consumerFactory = mock(ConsumerFactory.class);

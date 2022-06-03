@@ -1,79 +1,79 @@
-consumer:
-  receiver:
-    poolTimeout: 30
-    readQueueCapacity: 1000
-    waitBetweenUnsuccessfulPolls: true
-    initialIdleTime: 10
-    maxIdleTime: 1000
-  batch:
-    poolableSize: 1024
-    maxPoolSize: 67108864 # 64 x 1024 x 1024
-    connectionTimeout: 500
-    connectionRequestTimeout: 500
-  commit:
-    offset:
-      period: 60
-      queuesSize: 200_000
-      queuesInflightDrainFullEnabled: false
-  rate:
-    limiterSupervisorPeriod: 30
-    limiterReportingThreadPoolSize: 30
-    limiterReportingThreadMonitoringEnabled: false
-    limiterHeartbeatModeDelay: 60
-    limiterSlowModeDelay: 60
-    convergenceFactor: 0.2
-    failuresNoChangeToleranceRatio: 0.05
-    failuresSpeedUpToleranceRatio: 0.01
-  sender:
-    async:
-      timeout:
-        http2:
-          milliseconds: 5_000
-          threadPoolSize: 32
-          threadPoolMonitoringEnabled: false
-  ssl:
-    enabled: true
-    protocol: TLS
-    keystoreSource: jre
-    keystoreLocation: classpath:client.keystore
-    keystorePassword: password
-    keystoreFormat: JKS
-    truststoreSource: jre
-    truststoreLocation: classpath:client.truststore
-    truststorePassword: password
-    truststoreFormat: JKS
-  http2:
-    client:
-      enabled: true
-      threadPoolSize: 10
-      threadPoolMonitoringEnabled: false
-      idleTimeout: 0
-      maxRequestsQueuedPerDestination: 100
-  http:
-    client:
-      connectionPoolMonitoringEnabled: false
-      requestQueueMonitoringEnabled: true
-      threadPoolSize: 30
-      threadPoolMonitoringEnabled: false
-      followRedirectsEnabled: false
-      maxConnectionsPerDestination: 100
-      idleTimeout: 0
-      maxRequestsQueuedPerDestination: 100
-
-kafka:
-  authorization:
-    enabled: false
-    mechanism: PLAIN
-    protocol: SASL_PLAINTEXT
-    username: username
-    password: password
-
-google:
-  pubsub:
-    sender:
-      corePoolSize: 4
-      totalTimeoutsMilliseconds: 600_000
-      batchingRequestBytesThreshold: 1024
-      batchingMessageCountBytesSize: 1
-      batchingPublishDelayThresholdMilliseconds: 1
-      transportChannelProviderAddress: integration
+#consumer:
+#  receiver:
+#    poolTimeout: 30
+#    readQueueCapacity: 1000
+#    waitBetweenUnsuccessfulPolls: true
+#    initialIdleTime: 10
+#    maxIdleTime: 1000
+#  batch:
+#    poolableSize: 1024
+#    maxPoolSize: 67108864 # 64 x 1024 x 1024
+#    connectionTimeout: 500
+#    connectionRequestTimeout: 500
+#  commit:
+#    offset:
+#      period: 60
+#      queuesSize: 200_000
+#      queuesInflightDrainFullEnabled: false
+#  rate:
+#    limiterSupervisorPeriod: 30
+#    limiterReportingThreadPoolSize: 30
+#    limiterReportingThreadMonitoringEnabled: false
+#    limiterHeartbeatModeDelay: 60
+#    limiterSlowModeDelay: 60
+#    convergenceFactor: 0.2
+#    failuresNoChangeToleranceRatio: 0.05
+#    failuresSpeedUpToleranceRatio: 0.01
+#  sender:
+#    async:
+#      timeout:
+#        http2:
+#          milliseconds: 5_000
+#          threadPoolSize: 32
+#          threadPoolMonitoringEnabled: false
+#  ssl:
+#    enabled: true
+#    protocol: TLS
+#    keystoreSource: jre
+#    keystoreLocation: classpath:client.keystore
+#    keystorePassword: password
+#    keystoreFormat: JKS
+#    truststoreSource: jre
+#    truststoreLocation: classpath:client.truststore
+#    truststorePassword: password
+#    truststoreFormat: JKS
+#  http2:
+#    client:
+#      enabled: true
+#      threadPoolSize: 10
+#      threadPoolMonitoringEnabled: false
+#      idleTimeout: 0
+#      maxRequestsQueuedPerDestination: 100
+#  http:
+#    client:
+#      connectionPoolMonitoringEnabled: false
+#      requestQueueMonitoringEnabled: true
+#      threadPoolSize: 30
+#      threadPoolMonitoringEnabled: false
+#      followRedirectsEnabled: false
+#      maxConnectionsPerDestination: 100
+#      idleTimeout: 0
+#      maxRequestsQueuedPerDestination: 100
+#
+#kafka:
+#  authorization:
+#    enabled: false
+#    mechanism: PLAIN
+#    protocol: SASL_PLAINTEXT
+#    username: username
+#    password: password
+#
+#google:
+#  pubsub:
+#    sender:
+#      corePoolSize: 4
+#      totalTimeoutsMilliseconds: 600_000
+#      batchingRequestBytesThreshold: 1024
+#      batchingMessageCountBytesSize: 1
+#      batchingPublishDelayThresholdMilliseconds: 1
+#      transportChannelProviderAddress: integration
