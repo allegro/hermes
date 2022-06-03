@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
+import pl.allegro.tech.hermes.consumers.config.WorkloadProperties;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
@@ -49,7 +50,7 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
             ));
 
     private static final ConsumerAssignmentRegistry registry =
-            new ConsumerAssignmentRegistry(zookeeperClient, configFactory, clusterName, zookeeperPaths, subscriptionIds);
+            new ConsumerAssignmentRegistry(zookeeperClient, new WorkloadProperties().getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), clusterName, zookeeperPaths, subscriptionIds);
 
     private static final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
 

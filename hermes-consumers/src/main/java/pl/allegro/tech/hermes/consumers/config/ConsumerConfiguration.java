@@ -50,7 +50,8 @@ import java.util.List;
         SenderAsyncTimeoutProperties.class,
         RateProperties.class,
         BatchProperties.class,
-        KafkaProperties.class
+        KafkaProperties.class,
+        WorkloadProperties.class
 })
 public class ConsumerConfiguration {
 
@@ -72,6 +73,7 @@ public class ConsumerConfiguration {
     @Bean
     public MaxRateRegistry maxRateRegistry(ConfigFactory configFactory,
                                            KafkaProperties kafkaProperties,
+                                           WorkloadProperties workloadProperties,
                                            CuratorFramework curator,
                                            ZookeeperPaths zookeeperPaths,
                                            SubscriptionIds subscriptionIds,
@@ -79,6 +81,7 @@ public class ConsumerConfiguration {
                                            ClusterAssignmentCache clusterAssignmentCache) {
         return new MaxRateRegistry(
                 configFactory,
+                workloadProperties.getNodeId(),
                 kafkaProperties.getClusterName(),
                 clusterAssignmentCache,
                 assignmentCache,
@@ -124,8 +127,9 @@ public class ConsumerConfiguration {
     public MaxRateProviderFactory maxRateProviderFactory(ConfigFactory configFactory,
                                                          MaxRateRegistry maxRateRegistry,
                                                          MaxRateSupervisor maxRateSupervisor,
-                                                         HermesMetrics metrics) {
-        return new MaxRateProviderFactory(configFactory, maxRateRegistry, maxRateSupervisor, metrics);
+                                                         HermesMetrics metrics,
+                                                         WorkloadProperties workloadProperties) {
+        return new MaxRateProviderFactory(configFactory, workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor, metrics);
     }
 
     @Bean

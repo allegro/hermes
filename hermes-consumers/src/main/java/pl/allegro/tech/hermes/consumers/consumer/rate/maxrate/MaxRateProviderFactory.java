@@ -10,26 +10,25 @@ import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_BUSY
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_HISTORY_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_MAX_RATE;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 
 public class MaxRateProviderFactory {
 
     private final Creator providerCreator;
 
     public MaxRateProviderFactory(ConfigFactory configFactory,
+                                  String nodeId,
                                   MaxRateRegistry maxRateRegistry,
                                   MaxRateSupervisor maxRateSupervisor,
                                   HermesMetrics metrics) {
 
         checkNegotiatedSettings(configFactory);
         providerCreator = (subscription, sendCounters) -> {
-            String consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
             int historyLimit = configFactory.getIntProperty(CONSUMER_MAXRATE_HISTORY_SIZE);
             double initialMaxRate = configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_MAX_RATE);
             double minSignificantChange =
                     configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT) / 100;
 
-            return new NegotiatedMaxRateProvider(consumerId, maxRateRegistry, maxRateSupervisor,
+            return new NegotiatedMaxRateProvider(nodeId, maxRateRegistry, maxRateSupervisor,
                     subscription, sendCounters, metrics, initialMaxRate, minSignificantChange, historyLimit);
         };
     }

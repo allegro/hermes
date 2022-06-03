@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 
 public class MaxRateRegistry implements NodeCacheListener {
 
@@ -52,13 +51,14 @@ public class MaxRateRegistry implements NodeCacheListener {
     private final MaxRateRegistryPaths registryPaths;
 
     public MaxRateRegistry(ConfigFactory configFactory,
+                           String nodeId,
                            String clusterName,
                            ClusterAssignmentCache clusterAssignmentCache,
                            ConsumerAssignmentCache consumerAssignmentCache,
                            CuratorFramework curator,
                            ZookeeperPaths zookeeperPaths,
                            SubscriptionIds subscriptionIds) {
-        this.consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
+        this.consumerId = nodeId;
         this.clusterAssignmentCache = clusterAssignmentCache;
         this.consumerAssignmentCache = consumerAssignmentCache;
 

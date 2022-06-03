@@ -14,12 +14,11 @@ import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCa
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
+import pl.allegro.tech.hermes.consumers.config.WorkloadProperties;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
 import pl.allegro.tech.hermes.consumers.config.SupervisorConfiguration;
-import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -63,8 +62,6 @@ import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.mock;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
@@ -72,7 +69,7 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 class ConsumerTestRuntimeEnvironment {
 
     private static final int DEATH_OF_CONSUMER_AFTER_SECONDS = 300;
-    private KafkaProperties kafkaProperties = new KafkaProperties();
+    private final KafkaProperties kafkaProperties = new KafkaProperties();
 
     private final ConsumerNodesRegistryPaths nodesRegistryPaths;
 
@@ -123,11 +120,7 @@ class ConsumerTestRuntimeEnvironment {
 
     ConfigFactory consumerConfig(String consumerId) {
         return new MutableConfigFactory()
-                .overrideProperty(Configs.CONSUMER_WORKLOAD_NODE_ID, consumerId)
-                .overrideProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL, 1)
-                .overrideProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION, 2)
-                .overrideProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL, 1000)
-                .overrideProperty(Configs.CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL, 1);
+                .overrideProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL, 1000);
     }
 
     private ConsumerControllers createConsumer(String consumerId,
@@ -149,6 +142,9 @@ class ConsumerTestRuntimeEnvironment {
             throw new IllegalStateException(e);
         }
 
+        WorkloadProperties workloadProperties = new WorkloadProperties();
+        workloadProperties.setNodeId(consumerId);
+
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
                 curator, consumerConfig
         ).provide();
@@ -168,7 +164,7 @@ class ConsumerTestRuntimeEnvironment {
         SupervisorConfiguration supervisorConfiguration = new SupervisorConfiguration();
 
         ConsumerAssignmentCache consumerAssignmentCache = supervisorConfiguration.consumerAssignmentCache(
-                curator, consumerConfig, kafkaProperties, zookeeperPaths, subscriptionIds
+                curator, workloadProperties, kafkaProperties, zookeeperPaths, subscriptionIds
         );
 
         ClusterAssignmentCache clusterAssignmentCache = supervisorConfiguration.clusterAssignmentCache(
@@ -176,14 +172,14 @@ class ConsumerTestRuntimeEnvironment {
         );
 
         ConsumerAssignmentRegistry consumerAssignmentRegistry = supervisorConfiguration.consumerAssignmentRegistry(
-                curator, consumerConfig, kafkaProperties, zookeeperPaths, subscriptionIds
+                curator, workloadProperties, kafkaProperties, zookeeperPaths, subscriptionIds
         );
 
 
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
                 consumersSupervisor, notificationsBus, subscriptionsCache, consumerAssignmentCache, consumerAssignmentRegistry,
                 clusterAssignmentCache, nodesRegistry,
-                mock(ZookeeperAdminCache.class), executorService, consumerConfig, kafkaProperties.getClusterName(), metricsSupplier.get(),
+                mock(ZookeeperAdminCache.class), executorService, workloadProperties.toSelectiveSupervisorParameters(), kafkaProperties.getClusterName(), metricsSupplier.get(),
                 workloadConstraintsRepository
         );
 
@@ -229,7 +225,7 @@ class ConsumerTestRuntimeEnvironment {
                 supervisorController,
                 metricsSupplier.get(),
                 subscriptionsCache,
-                config);
+                new WorkloadProperties().getMonitorScanInterval());
     }
 
     private List<ConsumerControllers> createConsumers(int howMany) {

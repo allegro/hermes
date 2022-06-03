@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -51,12 +50,12 @@ import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
 
 @Configuration
 @EnableConfigurationProperties({
         CommitOffsetProperties.class,
-        KafkaProperties.class
+        KafkaProperties.class,
+        WorkloadProperties.class
 })
 public class SupervisorConfiguration {
     private static final Logger logger = getLogger(SupervisorConfiguration.class);
@@ -71,13 +70,13 @@ public class SupervisorConfiguration {
                                                      ConsumersSupervisor supervisor,
                                                      ZookeeperAdminCache adminCache,
                                                      HermesMetrics metrics,
-                                                     ConfigFactory configs,
+                                                     WorkloadProperties workloadProperties,
                                                      KafkaProperties kafkaProperties,
                                                      WorkloadConstraintsRepository workloadConstraintsRepository) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("AssignmentExecutor-%d")
                 .setUncaughtExceptionHandler((t, e) -> logger.error("AssignmentExecutor failed {}", t.getName(), e)).build();
-        ExecutorService assignmentExecutor = newFixedThreadPool(configs.getIntProperty(CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE), threadFactory);
+        ExecutorService assignmentExecutor = newFixedThreadPool(workloadProperties.getAssignmentProcessingThreadPoolSize(), threadFactory);
         return new SelectiveSupervisorController(
                 supervisor,
                 notificationsBus,
@@ -88,7 +87,7 @@ public class SupervisorConfiguration {
                 consumerNodesRegistry,
                 adminCache,
                 assignmentExecutor,
-                configs,
+                workloadProperties.toSelectiveSupervisorParameters(),
                 kafkaProperties.getClusterName(),
                 metrics,
                 workloadConstraintsRepository
@@ -165,23 +164,23 @@ public class SupervisorConfiguration {
                                                            SupervisorController workloadSupervisor,
                                                            HermesMetrics hermesMetrics,
                                                            SubscriptionsCache subscriptionsCache,
-                                                           ConfigFactory configFactory) {
+                                                           WorkloadProperties workloadProperties) {
         return new ConsumersRuntimeMonitor(
                 consumerSupervisor,
                 workloadSupervisor,
                 hermesMetrics,
                 subscriptionsCache,
-                configFactory
+                workloadProperties.getMonitorScanInterval()
         );
     }
 
     @Bean
     public ConsumerAssignmentRegistry consumerAssignmentRegistry(CuratorFramework curator,
-                                                                 ConfigFactory configFactory,
+                                                                 WorkloadProperties workloadProperties,
                                                                  KafkaProperties kafkaProperties,
                                                                  ZookeeperPaths zookeeperPaths,
                                                                  SubscriptionIds subscriptionIds) {
-        return new ConsumerAssignmentRegistry(curator, configFactory, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
+        return new ConsumerAssignmentRegistry(curator, workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
     }
 
     @Bean
@@ -195,11 +194,11 @@ public class SupervisorConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerAssignmentCache consumerAssignmentCache(CuratorFramework curator,
-                                                           ConfigFactory configFactory,
+                                                           WorkloadProperties workloadProperties,
                                                            KafkaProperties kafkaProperties,
                                                            ZookeeperPaths zookeeperPaths,
                                                            SubscriptionIds subscriptionIds) {
-        String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
+        String consumerId = workloadProperties.getNodeId();
         return new ConsumerAssignmentCache(curator, consumerId, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
     }
 }
