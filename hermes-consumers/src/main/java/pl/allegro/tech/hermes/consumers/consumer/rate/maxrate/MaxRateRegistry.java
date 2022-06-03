@@ -50,8 +50,7 @@ public class MaxRateRegistry implements NodeCacheListener {
 
     private final MaxRateRegistryPaths registryPaths;
 
-    public MaxRateRegistry(int historiesEncoderBufferSize,
-                           int maxRateEncoderBufferSize,
+    public MaxRateRegistry(ConfigFactory configFactory,
                            String nodeId,
                            String clusterName,
                            ClusterAssignmentCache clusterAssignmentCache,
@@ -69,9 +68,11 @@ public class MaxRateRegistry implements NodeCacheListener {
         this.registryPaths = new MaxRateRegistryPaths(zookeeperPaths, consumerId, clusterName);
         this.zookeeper = new ZookeeperOperations(curator);
 
+        int historiesEncoderBufferSize = configFactory.getIntProperty(Configs.CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_HISTORY_BUFFER_SIZE_BYTES);
         this.consumerRateHistoriesEncoder = new ConsumerRateHistoriesEncoder(subscriptionIds, historiesEncoderBufferSize);
         this.consumerRateHistoriesDecoder = new ConsumerRateHistoriesDecoder(subscriptionIds);
 
+        int maxRateEncoderBufferSize = configFactory.getIntProperty(Configs.CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_MAX_RATE_BUFFER_SIZE_BYTES);
         this.consumerMaxRatesEncoder = new ConsumerMaxRatesEncoder(subscriptionIds, maxRateEncoderBufferSize);
         this.consumerMaxRatesDecoder = new ConsumerMaxRatesDecoder(subscriptionIds);
 
