@@ -216,7 +216,7 @@ public class BackupMessagesLoader {
             @Override
             public void onPublished(Message message, Topic topic) {
                 brokerTimers.close();
-                cachedTopic.incrementPublished();
+                cachedTopic.incrementPublishedAndLastPublishedMessageTimestamp(message.getTimestamp());
                 brokerListeners.onAcknowledge(message, topic);
                 trackers.get(topic).logPublished(message.getId(), topic.getName(), "");
             }

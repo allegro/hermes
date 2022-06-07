@@ -35,13 +35,13 @@ public class MessageEndProcessor {
         trackers.get(attachment.getTopic()).logPublished(
                 attachment.getMessageId(), attachment.getTopic().getName(), readHostAndPort(exchange));
         sendResponse(exchange, attachment, StatusCodes.CREATED);
-        attachment.getCachedTopic().incrementPublished();
+        attachment.getCachedTopic().incrementPublishedAndLastPublishedMessageTimestamp(attachment.getMessage().getTimestamp());
     }
 
     public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
         trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(), readHostAndPort(exchange));
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
-        cachedTopic.incrementPublished();
+        cachedTopic.incrementPublishedAndLastPublishedMessageTimestamp(message.getTimestamp());
     }
 
     public void bufferedButDelayedProcessing(HttpServerExchange exchange, AttachmentContent attachment) {

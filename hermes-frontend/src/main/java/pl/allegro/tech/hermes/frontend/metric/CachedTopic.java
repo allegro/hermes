@@ -1,10 +1,13 @@
 package pl.allegro.tech.hermes.frontend.metric;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metered;
 import com.codahale.metrics.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
@@ -14,10 +17,13 @@ import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CachedTopic {
+
+    private final Logger logger = LoggerFactory.getLogger(CachedTopic.class);
 
     private final Topic topic;
     private final KafkaTopics kafkaTopics;
@@ -49,6 +55,8 @@ public class CachedTopic {
     private final Meter globalThroughputMeter;
 
     private final Counter published;
+
+    private long lastPublishedMessageTimestamp = 0L;
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
@@ -147,8 +155,10 @@ public class CachedTopic {
         return new StartedTimersPair(topicBrokerLatencyTimer, globalBrokerLatencyTimer);
     }
 
-    public void incrementPublished() {
+    public void incrementPublishedAndLastPublishedMessageTimestamp(long messageTimestamp) {
         published.inc();
+        lastPublishedMessageTimestamp = messageTimestamp;
+        logger.info("Last published message timestamp: {} for topic: {}", lastPublishedMessageTimestamp, topic.getName());
     }
 
     public void reportMessageContentSize(int size) {
