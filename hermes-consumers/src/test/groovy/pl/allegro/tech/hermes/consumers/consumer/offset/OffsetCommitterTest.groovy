@@ -365,4 +365,5 @@ class OffsetCommitterTest extends Specification {
     private revokeAllPartitions() {
         state.revokeAll(SUBSCRIPTION_NAME)
     }
+
 }
