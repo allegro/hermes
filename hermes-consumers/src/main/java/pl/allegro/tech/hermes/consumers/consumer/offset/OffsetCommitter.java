@@ -155,6 +155,8 @@ public class OffsetCommitter implements Runnable {
                         .orElseThrow(NoSuchElementException::new);
                 //TODO add metric
                 logger.info("reporting last commited timestamp: {}, for subscription: {}", offsetToReport.getLastCommittedMessageTimestamp(), offsetToReport.getSubscriptionName());
+                long lag = System.currentTimeMillis() - offsetToReport.getLastCommittedMessageTimestamp();
+                logger.info("lag for message is: {}", lag);
             } catch(Exception exception) {
                 logger.error("Failed to meter last committed message with error: {}", exception.getMessage(), exception);
             }

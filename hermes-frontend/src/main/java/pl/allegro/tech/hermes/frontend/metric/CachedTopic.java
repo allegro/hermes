@@ -56,7 +56,7 @@ public class CachedTopic {
 
     private final Counter published;
 
-    private long lastPublishedMessageTimestamp = 0L;
+    private volatile long lastPublishedMessageTimestamp = 0L;
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
@@ -69,6 +69,12 @@ public class CachedTopic {
         this.kafkaTopics = kafkaTopics;
         this.hermesMetrics = hermesMetrics;
         this.blacklisted = blacklisted;
+
+        hermesMetrics.registerGaugeForTopic(
+                "last-published-message-timestamp.",
+                topic.getName(),
+                () -> lastPublishedMessageTimestamp
+        );
 
         globalRequestMeter = hermesMetrics.meter(Meters.METER);
         topicRequestMeter = hermesMetrics.meter(Meters.TOPIC_METER, topic.getName());

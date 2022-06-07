@@ -167,6 +167,18 @@ public class HermesMetrics {
         }
     }
 
+    public void registerGaugeForTopic(String name, TopicName topicName, Gauge<?> gauge) {
+        PathContext pathContext = PathContext.pathContext()
+                .withGroup(escapeDots(topicName.getGroupName()))
+                .withTopic(escapeDots(topicName.getName())).build();
+
+        String path = pathCompiler.compile(name, pathContext);
+
+        if (!metricRegistry.getGauges().containsKey(name)) {
+            metricRegistry.register(path, gauge);
+        }
+    }
+
     private String metricRegistryName(String metricDisplayName, TopicName topicName, String subscription) {
         PathContext pathContext = PathContext.pathContext()
                 .withGroup(escapeDots(topicName.getGroupName()))
