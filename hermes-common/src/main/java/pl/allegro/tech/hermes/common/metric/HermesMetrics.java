@@ -7,6 +7,7 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.metrics.PathContext;
@@ -171,6 +172,19 @@ public class HermesMetrics {
         PathContext pathContext = PathContext.pathContext()
                 .withGroup(escapeDots(topicName.getGroupName()))
                 .withTopic(escapeDots(topicName.getName())).build();
+
+        String path = pathCompiler.compile(name, pathContext);
+
+        if (!metricRegistry.getGauges().containsKey(name)) {
+            metricRegistry.register(path, gauge);
+        }
+    }
+
+    public void registerGaugeForSubscription(String name, SubscriptionName subscriptionName, Gauge<?> gauge) {
+        PathContext pathContext = PathContext.pathContext()
+                .withGroup(escapeDots(subscriptionName.getTopicName().getGroupName()))
+                .withTopic(escapeDots(subscriptionName.getTopicName().getName()))
+                .withSubscription(escapeDots(subscriptionName.getName())).build();
 
         String path = pathCompiler.compile(name, pathContext);
 
