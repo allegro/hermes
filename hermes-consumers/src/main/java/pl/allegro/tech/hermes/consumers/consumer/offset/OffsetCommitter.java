@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -76,6 +77,7 @@ public class OffsetCommitter implements Runnable {
 
     private final Set<SubscriptionPartitionOffset> inflightOffsets = new HashSet<>();
     private final Map<SubscriptionPartition, Long> maxCommittedOffsets = new HashMap<>();
+    private final Map<SubscriptionName, AtomicLong> lastCommittedMessageTimestamps = new HashMap<>();
 
     public OffsetCommitter(
             OffsetQueue offsetQueue,
@@ -136,7 +138,7 @@ public class OffsetCommitter implements Runnable {
             committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
             messageCommitter.commitOffsets(offsetsToCommit);
 
-            meterLastCommittedMessage(offsetsToCommit);
+            reportLastCommittedMessageTimestamp(offsetsToCommit);
 
             metrics.counter("offset-committer.obsolete").inc(obsoleteCount);
             metrics.counter("offset-committer.committed").inc(scheduledToCommitCount);
@@ -147,20 +149,33 @@ public class OffsetCommitter implements Runnable {
         }
     }
 
-    private void meterLastCommittedMessage(OffsetsToCommit offsetsToCommit) {
+    private void reportLastCommittedMessageTimestamp(OffsetsToCommit offsetsToCommit) {
         offsetsToCommit.subscriptionNames().forEach(subscriptionName -> {
             try {
                 SubscriptionPartitionOffset offsetToReport = offsetsToCommit.batchFor(subscriptionName).stream()
                         .min(Comparator.comparing(SubscriptionPartitionOffset::getLastCommittedMessageTimestamp))
                         .orElseThrow(NoSuchElementException::new);
-                //TODO add metric
-                logger.info("reporting last commited timestamp: {}, for subscription: {}", offsetToReport.getLastCommittedMessageTimestamp(), offsetToReport.getSubscriptionName());
+                logger.info("reporting last committed timestamp: {}, for subscription: {}", offsetToReport.getLastCommittedMessageTimestamp(), offsetToReport.getSubscriptionName());
                 long lag = System.currentTimeMillis() - offsetToReport.getLastCommittedMessageTimestamp();
                 logger.info("lag for message is: {}", lag);
-            } catch(Exception exception) {
+                updateGauge(subscriptionName);
+            } catch (Exception exception) {
                 logger.error("Failed to meter last committed message with error: {}", exception.getMessage(), exception);
             }
         });
+    }
+
+    private void updateGauge(SubscriptionName subscriptionName) {
+        if (!lastCommittedMessageTimestamps.containsKey(subscriptionName)) {
+            lastCommittedMessageTimestamps.put(subscriptionName, new AtomicLong(0L));
+            metrics.registerGaugeForSubscription(
+                    "last-committed-message-timestamp.",
+                    subscriptionName,
+                    () -> lastCommittedMessageTimestamps.get(subscriptionName).get()
+            );
+        }
+
+        lastCommittedMessageTimestamps.get(subscriptionName).set(System.currentTimeMillis());
     }
 
     private ReducingConsumer processCommittedOffsets() {
