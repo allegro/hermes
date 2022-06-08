@@ -6,7 +6,9 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateParameters;
 @ConfigurationProperties(prefix = "consumer.maxrate")
 public class MaxRateProperties {
 
-    private RegistryBinaryEncoderProperties registryBinaryEncoder = new RegistryBinaryEncoderProperties();
+    private int registryBinaryEncoderMaxRateBufferSizeBytes = 100_000;
+
+    private int registryBinaryEncoderHistoryBufferSizeBytes = 100_000;
 
     private int balanceIntervalSeconds = 30;
 
@@ -22,12 +24,20 @@ public class MaxRateProperties {
 
     private double minSignificantUpdatePercent = 9.0;
 
-    public RegistryBinaryEncoderProperties getRegistryBinaryEncoder() {
-        return registryBinaryEncoder;
+    public int getRegistryBinaryEncoderMaxRateBufferSizeBytes() {
+        return registryBinaryEncoderMaxRateBufferSizeBytes;
     }
 
-    public void setRegistryBinaryEncoder(RegistryBinaryEncoderProperties registryBinaryEncoder) {
-        this.registryBinaryEncoder = registryBinaryEncoder;
+    public void setRegistryBinaryEncoderMaxRateBufferSizeBytes(int registryBinaryEncoderMaxRateBufferSizeBytes) {
+        this.registryBinaryEncoderMaxRateBufferSizeBytes = registryBinaryEncoderMaxRateBufferSizeBytes;
+    }
+
+    public int getRegistryBinaryEncoderHistoryBufferSizeBytes() {
+        return registryBinaryEncoderHistoryBufferSizeBytes;
+    }
+
+    public void setRegistryBinaryEncoderHistoryBufferSizeBytes(int registryBinaryEncoderHistoryBufferSizeBytes) {
+        this.registryBinaryEncoderHistoryBufferSizeBytes = registryBinaryEncoderHistoryBufferSizeBytes;
     }
 
     public int getBalanceIntervalSeconds() {
