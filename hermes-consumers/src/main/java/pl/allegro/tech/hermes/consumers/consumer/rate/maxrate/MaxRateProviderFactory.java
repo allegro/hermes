@@ -2,31 +2,25 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.base.Preconditions;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
-
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_BUSY_TOLERANCE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_HISTORY_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_MAX_RATE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT;
 
 public class MaxRateProviderFactory {
 
     private final Creator providerCreator;
 
-    public MaxRateProviderFactory(ConfigFactory configFactory,
+    public MaxRateProviderFactory(MaxRateParameters maxRateParameters,
                                   String nodeId,
                                   MaxRateRegistry maxRateRegistry,
                                   MaxRateSupervisor maxRateSupervisor,
                                   HermesMetrics metrics) {
 
-        checkNegotiatedSettings(configFactory);
+        checkNegotiatedSettings(maxRateParameters.getMinSignificantUpdatePercent() / 100, maxRateParameters.getBusyTolerance());
         providerCreator = (subscription, sendCounters) -> {
-            int historyLimit = configFactory.getIntProperty(CONSUMER_MAXRATE_HISTORY_SIZE);
-            double initialMaxRate = configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_MAX_RATE);
+            int historyLimit = maxRateParameters.getHistorySize();
+            double initialMaxRate = maxRateParameters.getMinMaxRate();
             double minSignificantChange =
-                    configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT) / 100;
+                    maxRateParameters.getMinSignificantUpdatePercent() / 100;
 
             return new NegotiatedMaxRateProvider(nodeId, maxRateRegistry, maxRateSupervisor,
                     subscription, sendCounters, metrics, initialMaxRate, minSignificantChange, historyLimit);
@@ -41,9 +35,7 @@ public class MaxRateProviderFactory {
         MaxRateProvider create(Subscription subscription, SendCounters sendCounters);
     }
 
-    private void checkNegotiatedSettings(ConfigFactory configFactory) {
-        double minSignificantChange = configFactory.getDoubleProperty(CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT) / 100;
-        double busyTolerance = configFactory.getDoubleProperty(CONSUMER_MAXRATE_BUSY_TOLERANCE);
+    private void checkNegotiatedSettings(double minSignificantChange, double busyTolerance) {
         Preconditions.checkArgument(busyTolerance > minSignificantChange,
                 "Significant rate change (%s) can't be higher than busy tolerance (%s)",
                 minSignificantChange, busyTolerance);

@@ -7,9 +7,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
+import pl.allegro.tech.hermes.consumers.config.MaxRateProperties;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
@@ -18,7 +17,6 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCac
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.TestSubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.util.Collections;
@@ -40,14 +38,14 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     private final SubscriptionIds subscriptionIds = new TestSubscriptionIds(ImmutableList.of(subscriptionId1, subscriptionId2));
 
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
-    private final ConfigFactory configFactory = new MutableConfigFactory();
+    private final MaxRateProperties maxRateProperties = new MaxRateProperties();
     private final String consumerId = new WorkloadProperties().getNodeId();
     private final String cluster = new KafkaProperties().getClusterName();
 
     private final ConsumerAssignmentCache consumerAssignmentCache = mock(ConsumerAssignmentCache.class);
     private final ClusterAssignmentCache clusterAssignmentCache = mock(ClusterAssignmentCache.class);
 
-    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(configFactory, consumerId, cluster,
+    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(maxRateProperties.getRegistryBinaryEncoderHistoryBufferSizeBytes(), maxRateProperties.getRegistryBinaryEncoderMaxRateBufferSizeBytes(), consumerId, cluster,
             clusterAssignmentCache, consumerAssignmentCache, zookeeperClient, zookeeperPaths, subscriptionIds);
 
     private final MaxRateRegistryPaths paths = new MaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);

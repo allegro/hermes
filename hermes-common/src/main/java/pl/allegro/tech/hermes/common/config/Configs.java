@@ -154,15 +154,6 @@ public enum Configs {
 
     CONSUMER_INFLIGHT_SIZE("consumer.inflight.size", 100),
     CONSUMER_FILTERING_RATE_LIMITER_ENABLED("consumer.filtering.rate.limiter.enabled", false),
-    CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_MAX_RATE_BUFFER_SIZE_BYTES("consumer.maxrate.registry.binary.encoder.max.rate.buffer.size.bytes", 100_000),
-    CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_HISTORY_BUFFER_SIZE_BYTES("consumer.maxrate.registry.binary.encoder.history.buffer.size.bytes", 100_000),
-    CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS("consumer.maxrate.balance.interval.seconds", 30),
-    CONSUMER_MAXRATE_UPDATE_INTERVAL_SECONDS("consumer.maxrate.update.interval.seconds", 15),
-    CONSUMER_MAXRATE_HISTORY_SIZE("consumer.maxrate.history.size", 1),
-    CONSUMER_MAXRATE_BUSY_TOLERANCE("consumer.maxrate.busy.tolerance", 0.1),
-    CONSUMER_MAXRATE_MIN_MAX_RATE("consumer.maxrate.min.value", 1.0),
-    CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT("consumer.maxrate.min.allowed.change.percent", 1.0),
-    CONSUMER_MAXRATE_MIN_SIGNIFICANT_UPDATE_PERCENT("consumer.maxrate.min.significant.update.percent", 9.0),
 
     CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
     CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
