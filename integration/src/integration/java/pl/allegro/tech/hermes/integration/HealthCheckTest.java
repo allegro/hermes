@@ -18,7 +18,7 @@ public class HealthCheckTest extends AbstractFrontendShutdownTest {
         WebTarget client = JerseyClientFactory.create().target(FRONTEND_URL).path("status").path("ping");
 
         // when
-        hermesServer.gracefulShutdown();
+        hermesServer.prepareForGracefulShutdown();
 
         // then
         await().atMost(5, TimeUnit.SECONDS).until(() -> assertThat(client.request().get()).hasStatus(SERVICE_UNAVAILABLE));

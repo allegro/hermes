@@ -9,7 +9,6 @@ import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.FilterEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.MigrationEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.ModeEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OAuthProviderEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.OfflineRetransmissionEndpoint;
@@ -115,10 +114,6 @@ public class Hermes {
 
     public AllTopicClientsEndpoint createAllTopicClientsEndpoint() {
         return createProxy(url, AllTopicClientsEndpoint.class, managementConfig);
-    }
-
-    public MigrationEndpoint createMigrationEndpoint() {
-        return createProxy(url, MigrationEndpoint.class, managementConfig);
     }
 
     public UnhealthyEndpoint unhealthyEndpoint() {

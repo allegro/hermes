@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPoolConfig;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.management.config.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
@@ -33,9 +33,7 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-import javax.annotation.PreDestroy;
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -64,7 +62,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     SubscriptionProperties subscriptionProperties;
 
     @Autowired
-    MessageContentWrapper messageContentWrapper;
+    CompositeMessageContentWrapper compositeMessageContentWrapper;
 
     @Autowired
     ZookeeperRepositoryManager zookeeperRepositoryManager;

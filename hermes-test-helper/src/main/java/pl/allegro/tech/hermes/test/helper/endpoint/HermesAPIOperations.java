@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Readiness;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
@@ -39,14 +40,10 @@ public class HermesAPIOperations {
     }
 
     public void createGroup(String group) {
-        createGroup(group, "team");
-    }
-
-    public void createGroup(String group, String supportTeam) {
         if (endpoints.group().list().contains(group)) {
             return;
         }
-        assertThat(endpoints.group().create(new Group(group, supportTeam)).getStatus()).isEqualTo(CREATED.getStatusCode());
+        assertThat(endpoints.group().create(new Group(group)).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilGroupCreated(group);
     }
@@ -71,10 +68,14 @@ public class HermesAPIOperations {
         if (endpoints.findTopics(topicWithSchema, topicWithSchema.isTrackingEnabled()).contains(topicWithSchema.getQualifiedName())) {
             return topicWithSchema;
         }
-        assertThat(endpoints.topic().create(topicWithSchema).getStatus()).isEqualTo(CREATED.getStatusCode());
+        assertThat(createTopicResponse(topicWithSchema).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilTopicCreated(topicWithSchema);
         return topicWithSchema;
+    }
+
+    public Response createTopicResponse(TopicWithSchema topicWithSchema) {
+        return endpoints.topic().create(topicWithSchema);
     }
 
     public void saveSchema(Topic topic, String schema) {
@@ -82,6 +83,12 @@ public class HermesAPIOperations {
         assertThat(response.getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilSchemaCreated(topic);
+    }
+
+    public Response getSchemaResponse(Topic topic) {
+        Response response = endpoints.schema().get(topic.getQualifiedName());
+        System.out.println(response.toString());
+        return response;
     }
 
     public Subscription createSubscription(Topic topic, String subscriptionName, URI endpoint) {

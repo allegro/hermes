@@ -9,6 +9,7 @@ import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.DescribeConfigsResult;
 import org.apache.kafka.common.config.ConfigResource;
+import org.jetbrains.annotations.NotNull;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import java.util.Map;
@@ -42,7 +43,7 @@ public class KafkaTopicMetadataFetcher {
     private class MinInSyncReplicasLoader extends CacheLoader<String, Integer> {
 
         @Override
-        public Integer load(String kafkaTopicName) throws Exception {
+        public Integer load(@NotNull String kafkaTopicName) throws Exception {
             ConfigResource resource = new ConfigResource(TOPIC, kafkaTopicName);
             DescribeConfigsResult describeTopicsResult = adminClient.describeConfigs(ImmutableList.of(resource));
             Map<ConfigResource, Config> configMap = describeTopicsResult.all().get();

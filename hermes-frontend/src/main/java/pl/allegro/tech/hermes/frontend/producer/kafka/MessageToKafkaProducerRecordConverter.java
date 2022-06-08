@@ -5,14 +5,12 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
-import javax.inject.Inject;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,7 +22,6 @@ public class MessageToKafkaProducerRecordConverter {
     private final KafkaHeaderFactory kafkaHeaderFactory;
     private final boolean schemaIdHeaderEnabled;
 
-    @Inject
     public MessageToKafkaProducerRecordConverter(KafkaHeaderFactory kafkaHeaderFactory,
                                                  ConfigFactory configFactory) {
         this.kafkaHeaderFactory = kafkaHeaderFactory;
@@ -37,7 +34,7 @@ public class MessageToKafkaProducerRecordConverter {
         Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
         byte[] partitionKey = ofNullable(message.getPartitionKey()).map(String::getBytes).orElse(null);
 
-        return new ProducerRecord<byte[], byte[]>(kafkaTopicName.asString(), null, partitionKey, message.getData(), headers);
+        return new ProducerRecord<>(kafkaTopicName.asString(), null, partitionKey, message.getData(), headers);
     }
 
     private Optional<SchemaId> createSchemaId(Message message) {

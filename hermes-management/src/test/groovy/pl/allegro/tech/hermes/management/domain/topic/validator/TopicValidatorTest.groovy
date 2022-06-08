@@ -1,14 +1,13 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator
 
-
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicLabel
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
 import pl.allegro.tech.hermes.management.config.TopicProperties
+import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidationException
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
-import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
 import pl.allegro.tech.hermes.schema.SchemaRepository
@@ -25,7 +24,7 @@ class TopicValidatorTest extends Specification {
 
     static MANAGABLE = { true }
     static NOT_MANAGABLE = { false }
-    private static USER = new RequestUser("username", false)
+    private static USER = new TestRequestUser("username", false)
 
     static Set<TopicLabel> allowedLabels
 

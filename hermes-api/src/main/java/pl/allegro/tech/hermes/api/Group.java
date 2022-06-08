@@ -12,31 +12,17 @@ public class Group {
     @NotNull
     private String groupName;
 
-    /**
-     * To be removed after migration to topics' owner field
-     */
-    @Deprecated
-    private String supportTeam;
-
     @JsonCreator
-    public Group(@JsonProperty("groupName") String groupName,
-                 @JsonProperty("supportTeam") String supportTeam
-    ) {
+    public Group(@JsonProperty("groupName") String groupName) {
         this.groupName = groupName;
-        this.supportTeam = supportTeam;
     }
 
     public static Group from(String groupName) {
-        return new Group(groupName, null);
+        return new Group(groupName);
     }
 
     public String getGroupName() {
         return groupName;
-    }
-
-    @Deprecated
-    public String getSupportTeam() {
-        return supportTeam;
     }
 
     @Override
@@ -49,13 +35,12 @@ public class Group {
         }
         Group group = (Group) o;
 
-        return Objects.equals(this.getGroupName(), group.getGroupName())
-                && Objects.equals(this.getSupportTeam(), group.getSupportTeam());
+        return Objects.equals(this.getGroupName(), group.getGroupName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupName, supportTeam);
+        return Objects.hash(groupName);
     }
 
     @Override

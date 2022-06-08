@@ -10,4 +10,5 @@ public interface LogRepository {
 
     void logInflight(String messageId, long timestamp, String topicName, String hostname, Map<String, String> extraRequestHeaders);
 
+    void close();
 }

@@ -12,7 +12,7 @@ public class HermesServerGracefulShutdownTest extends AbstractFrontendShutdownTe
     @Test
     public void shouldShutdownGracefully() throws Throwable {
         //given
-        hermesServer.gracefulShutdown();
+        hermesServer.prepareForGracefulShutdown();
 
         //when
         Response response = publisher.publish("topic", TestMessage.of("hello", "world").body());

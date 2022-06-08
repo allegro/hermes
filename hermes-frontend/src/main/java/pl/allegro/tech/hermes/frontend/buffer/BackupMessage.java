@@ -52,7 +52,7 @@ public class BackupMessage implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof BackupMessage)) return false;
+        if (!(o instanceof BackupMessage)) return false;
         BackupMessage that = (BackupMessage) o;
         return Objects.equals(timestamp, that.timestamp) &&
                 Objects.equals(messageId, that.messageId) &&

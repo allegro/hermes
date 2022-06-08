@@ -7,12 +7,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.frontend.HermesFrontend;
+import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
@@ -33,34 +31,30 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
 
     protected HermesPublisher publisher;
 
-    private HermesFrontend hermesFrontend;
+    private FrontendStarter frontendStarter;
 
     private WireMockServer emptySchemaRegistryMock = new WireMockServer(Ports.nextAvailable());
 
     @BeforeClass
-    public void setup() {
+    public void setup() throws Exception {
         emptySchemaRegistryMock.start();
-        ConfigFactory configFactory = new MutableConfigFactory()
-                .overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT)
-                .overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, "http://localhost:" + emptySchemaRegistryMock.port())
-                .overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false)
-                .overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients())
-                .overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString())
-                .overrideProperty(Configs.FRONTEND_SSL_ENABLED, false)
-                .overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
+        frontendStarter = new FrontendStarter(FRONTEND_PORT);
+        frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
+        frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, "http://localhost:" + emptySchemaRegistryMock.port());
+        frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
+        frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
+        frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
-        hermesFrontend = HermesFrontend.frontend()
-                .withBinding(configFactory, ConfigFactory.class)
-                .build();
-
-        hermesFrontend.start();
+        frontendStarter.start();
         publisher = new HermesPublisher(FRONTEND_URL);
     }
 
     @AfterClass
-    public void tearDown() throws InterruptedException {
+    public void tearDown() throws Exception {
         emptySchemaRegistryMock.stop();
-        hermesFrontend.stop();
+        frontendStarter.stop();
     }
 
     @Test

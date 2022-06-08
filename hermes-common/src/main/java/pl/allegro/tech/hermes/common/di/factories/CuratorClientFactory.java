@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
-import javax.inject.Inject;
 import java.util.Optional;
 import java.util.concurrent.ThreadFactory;
 
@@ -42,7 +41,6 @@ public class CuratorClientFactory {
     private static final Logger logger = LoggerFactory.getLogger(CuratorClientFactory.class);
     private final ConfigFactory configFactory;
 
-    @Inject
     public CuratorClientFactory(ConfigFactory configFactory) {
         this.configFactory = configFactory;
     }

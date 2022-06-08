@@ -34,4 +34,8 @@ public class PublishingMessageTracker implements PublishingTracker {
     public void add(LogRepository logRepository) {
         repositories.add(logRepository);
     }
+
+    public void close() {
+        repositories.forEach(LogRepository::close);
+    }
 }

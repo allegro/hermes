@@ -7,10 +7,8 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.AdminOperationsCallback;
-import pl.allegro.tech.hermes.common.di.CuratorType;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-import javax.inject.Named;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +20,10 @@ public class ZookeeperAdminCache extends PathChildrenCache implements PathChildr
     private final ObjectMapper objectMapper;
     private final List<AdminOperationsCallback> adminCallbacks = new ArrayList<>();
 
-    private long initializationTime;
+    private final long initializationTime;
 
     public ZookeeperAdminCache(ZookeeperPaths zookeeperPaths,
-                               @Named(CuratorType.HERMES) CuratorFramework client,
+                               CuratorFramework client,
                                ObjectMapper objectMapper,
                                Clock clock) {
         super(client, zookeeperPaths.adminPath(), true);

@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
-import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
@@ -31,7 +30,6 @@ public class JsonMessageContentWrapper {
     private final byte[] contentRootField;
     private final byte[] metadataRootField;
 
-    @Inject
     public JsonMessageContentWrapper(ConfigFactory config, ObjectMapper mapper) {
         this(config.getStringProperty(MESSAGE_CONTENT_ROOT), config.getStringProperty(METADATA_CONTENT_ROOT), mapper);
     }
@@ -69,7 +67,7 @@ public class JsonMessageContentWrapper {
             return unwrapMessageContent(json);
         } else {
             UUID id = UUID.randomUUID();
-            LOGGER.warn("Unwrapped message read by consumer (size={}, id={}).", json.length, id.toString());
+            LOGGER.warn("Unwrapped message read by consumer (size={}, id={}).", json.length, id);
             return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString(), ImmutableMap.of()), json);
         }
     }

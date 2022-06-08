@@ -45,17 +45,17 @@ public class BackupMessagesLoaderTest {
     private static final int ENTRIES = 100;
     private static final int AVERAGE_MESSAGE_SIZE = 600;
 
-    private BrokerMessageProducer producer = mock(BrokerMessageProducer.class);
+    private final BrokerMessageProducer producer = mock(BrokerMessageProducer.class);
 
-    private BrokerListeners listeners = mock(BrokerListeners.class);
+    private final BrokerListeners listeners = mock(BrokerListeners.class);
 
-    private TopicsCache topicsCache = mock(TopicsCache.class);
+    private final TopicsCache topicsCache = mock(TopicsCache.class);
 
-    private Trackers trackers = mock(Trackers.class);
+    private final Trackers trackers = mock(Trackers.class);
 
-    private ConfigFactory configFactory = mock(ConfigFactory.class);
+    private final ConfigFactory configFactory = mock(ConfigFactory.class);
 
-    private CachedTopic cachedTopic = mock(CachedTopic.class);
+    private final CachedTopic cachedTopic = mock(CachedTopic.class);
 
     private File tempDir;
 

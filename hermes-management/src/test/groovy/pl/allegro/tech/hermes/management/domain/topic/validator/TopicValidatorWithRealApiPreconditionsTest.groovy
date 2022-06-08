@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.management.domain.topic.validator
 
 import pl.allegro.tech.hermes.api.RetentionTime
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
+import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
-import pl.allegro.tech.hermes.management.domain.auth.RequestUser
 import pl.allegro.tech.hermes.schema.SchemaRepository
 import spock.lang.Specification
 import spock.lang.Subject
@@ -19,8 +19,8 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
     private static MANAGEABLE = { true }
     private static retentionTime7Days = new RetentionTime(7, DAYS)
     private static retentionTime8Days = new RetentionTime(8, DAYS)
-    private static regularUser = new RequestUser("regularUser", false)
-    private static admin = new RequestUser("admin", true)
+    private static regularUser = new TestRequestUser("regularUser", false)
+    private static admin = new TestRequestUser("admin", true)
 
     def schemaRepository = Stub(SchemaRepository)
     def ownerDescriptorValidator = Stub(OwnerIdValidator)

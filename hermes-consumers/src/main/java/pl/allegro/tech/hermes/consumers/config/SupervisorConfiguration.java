@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +9,7 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
@@ -36,13 +35,6 @@ import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerWorkloadRegistryType;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.FlatBinaryClusterAssignmentCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.FlatBinaryConsumerAssignmentCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.FlatBinaryConsumerAssignmentRegistry;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalConsumerAssignmentCache;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalConsumerAssignmentRegistry;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentPathSerializer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -59,8 +51,6 @@ import java.util.concurrent.ThreadFactory;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
-import static pl.allegro.tech.hermes.consumers.supervisor.workload.HierarchicalConsumerAssignmentRegistry.AUTO_ASSIGNED_MARKER;
 
 @Configuration
 public class SupervisorConfiguration {
@@ -116,7 +106,7 @@ public class SupervisorConfiguration {
                                            TopicRepository topicRepository,
                                            MessageConverterResolver messageConverterResolver,
                                            MessageBatchFactory byteBufferMessageBatchFactory,
-                                           MessageContentWrapper messageContentWrapper,
+                                           CompositeMessageContentWrapper compositeMessageContentWrapper,
                                            MessageBatchSenderFactory batchSenderFactory,
                                            ConsumerAuthorizationHandler consumerAuthorizationHandler,
                                            Clock clock) {
@@ -132,7 +122,7 @@ public class SupervisorConfiguration {
                 topicRepository,
                 messageConverterResolver,
                 byteBufferMessageBatchFactory,
-                messageContentWrapper,
+                compositeMessageContentWrapper,
                 batchSenderFactory,
                 consumerAuthorizationHandler,
                 clock
@@ -181,94 +171,27 @@ public class SupervisorConfiguration {
     public ConsumerAssignmentRegistry consumerAssignmentRegistry(CuratorFramework curator,
                                                                  ConfigFactory configFactory,
                                                                  ZookeeperPaths zookeeperPaths,
-                                                                 ConsumerAssignmentCache consumerAssignmentCache,
                                                                  SubscriptionIds subscriptionIds) {
-        ConsumerWorkloadRegistryType type;
-        try {
-            String typeString = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_REGISTRY_TYPE);
-            type = ConsumerWorkloadRegistryType.fromString(typeString);
-        } catch (Exception e) {
-            logger.error("Could not configure consumer workload registry", e);
-            throw e;
-        }
-        logger.info("Consumer workload registry type chosen: {}", type.getConfigValue());
-
-        switch (type) {
-            case HIERARCHICAL:
-                String cluster = configFactory.getStringProperty(KAFKA_CLUSTER_NAME);
-                String consumersRuntimePath = zookeeperPaths.consumersRuntimePath(cluster);
-                SubscriptionAssignmentPathSerializer pathSerializer = new SubscriptionAssignmentPathSerializer(consumersRuntimePath, AUTO_ASSIGNED_MARKER);
-                CreateMode assignmentNodeCreationMode = CreateMode.PERSISTENT;
-                return new HierarchicalConsumerAssignmentRegistry(
-                        curator,
-                        consumerAssignmentCache,
-                        pathSerializer,
-                        assignmentNodeCreationMode
-                );
-            case FLAT_BINARY:
-                return new FlatBinaryConsumerAssignmentRegistry(curator, configFactory, zookeeperPaths, subscriptionIds);
-            default:
-                throw new UnsupportedOperationException("Max-rate type not supported.");
-        }
+        return new ConsumerAssignmentRegistry(curator, configFactory, zookeeperPaths, subscriptionIds);
     }
 
     @Bean
     public ClusterAssignmentCache clusterAssignmentCache(CuratorFramework curator,
                                                          ConfigFactory configFactory,
-                                                         ConsumerAssignmentCache consumerAssignmentCache,
                                                          ZookeeperPaths zookeeperPaths,
                                                          SubscriptionIds subscriptionIds,
                                                          ConsumerNodesRegistry consumerNodesRegistry) {
-        ConsumerWorkloadRegistryType type;
-        try {
-            String typeString = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_REGISTRY_TYPE);
-            type = ConsumerWorkloadRegistryType.fromString(typeString);
-        } catch (Exception e) {
-            logger.error("Could not configure subscription assignment notifying repository based on specified consumer workload registry type", e);
-            throw e;
-        }
-
         String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-
-        switch (type) {
-            case HIERARCHICAL:
-                if (consumerAssignmentCache instanceof HierarchicalConsumerAssignmentCache) {
-                    return (HierarchicalConsumerAssignmentCache) consumerAssignmentCache;
-                } else {
-                    throw new IllegalStateException("Invalid type of HierarchicalConsumerAssignmentCache was registered for this type of workload registry");
-                }
-            case FLAT_BINARY:
-                return new FlatBinaryClusterAssignmentCache(curator, clusterName, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
-            default:
-                throw new UnsupportedOperationException("Workload registry type not supported.");
-        }
+        return new ClusterAssignmentCache(curator, clusterName, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerAssignmentCache consumerAssignmentCache(CuratorFramework curator,
                                                            ConfigFactory configFactory,
                                                            ZookeeperPaths zookeeperPaths,
-                                                           SubscriptionsCache subscriptionsCache,
                                                            SubscriptionIds subscriptionIds) {
-        ConsumerWorkloadRegistryType type;
-        try {
-            String typeString = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_REGISTRY_TYPE);
-            type = ConsumerWorkloadRegistryType.fromString(typeString);
-        } catch (Exception e) {
-            logger.error("Could not configure consumer assignment notifying cache based on specified consumer workload registry type", e);
-            throw e;
-        }
-
         String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
         String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-
-        switch (type) {
-            case HIERARCHICAL:
-                return new HierarchicalConsumerAssignmentCache(curator, consumerId, clusterName, zookeeperPaths, subscriptionsCache);
-            case FLAT_BINARY:
-                return new FlatBinaryConsumerAssignmentCache(curator, consumerId, clusterName, zookeeperPaths, subscriptionIds);
-            default:
-                throw new UnsupportedOperationException("Workload registry type not supported.");
-        }
+        return new ConsumerAssignmentCache(curator, consumerId, clusterName, zookeeperPaths, subscriptionIds);
     }
 }

@@ -17,7 +17,6 @@ Visit our page: [hermes.allegro.tech](http://hermes.allegro.tech)
 See our full documentation: [http://hermes-pubsub.readthedocs.org/en/latest/](http://hermes-pubsub.readthedocs.org/en/latest/)
 
 Questions? We are on [gitter](https://gitter.im/allegro/hermes).
-
 ## License
 
 **hermes** is published under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).

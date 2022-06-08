@@ -1,19 +1,15 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.hook.Hook;
-import pl.allegro.tech.hermes.common.hook.ServiceAwareHook;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
-import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE;
 import static pl.allegro.tech.hermes.frontend.server.CompletableFuturesHelper.allComplete;
@@ -29,7 +26,7 @@ import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.FA
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.MISSING;
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.SUCCESS;
 
-public class TopicSchemaLoadingStartupHook implements ServiceAwareHook {
+public class TopicSchemaLoadingStartupHook {
 
     private static final Logger logger = LoggerFactory.getLogger(TopicSchemaLoadingStartupHook.class);
 
@@ -41,34 +38,40 @@ public class TopicSchemaLoadingStartupHook implements ServiceAwareHook {
 
     private final int threadPoolSize;
 
-    @Inject
+    private final boolean isTopicSchemaLoadingStartupHookEnabled;
+
     public TopicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                          SchemaRepository schemaRepository,
                                          ConfigFactory config) {
 
         this(topicsCache, schemaRepository,
                 config.getIntProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT),
-                config.getIntProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE));
+                config.getIntProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE),
+                config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED));
     }
 
     TopicSchemaLoadingStartupHook(TopicsCache topicsCache,
-                                         SchemaRepository schemaRepository,
-                                         int retryCount,
-                                         int threadPoolSize) {
+                                  SchemaRepository schemaRepository,
+                                  int retryCount,
+                                  int threadPoolSize,
+                                  boolean isTopicSchemaLoadingStartupHookEnabled) {
         this.topicsCache = topicsCache;
         this.schemaRepository = schemaRepository;
         this.retryCount = retryCount;
         this.threadPoolSize = threadPoolSize;
+        this.isTopicSchemaLoadingStartupHookEnabled = isTopicSchemaLoadingStartupHookEnabled;
     }
 
-    @Override
-    public void accept(ServiceLocator serviceLocator) {
-
-        long start = System.currentTimeMillis();
-        logger.info("Loading topic schemas");
-        List<Topic> topics = getAvroTopics();
-        List<SchemaLoadingResult> allResults = loadSchemasForTopics(topics);
-        logResultInfo(allResults, System.currentTimeMillis() - start);
+    public void run() {
+        if(isTopicSchemaLoadingStartupHookEnabled) {
+            long start = System.currentTimeMillis();
+            logger.info("Loading topic schemas");
+            List<Topic> topics = getAvroTopics();
+            List<SchemaLoadingResult> allResults = loadSchemasForTopics(topics);
+            logResultInfo(allResults, System.currentTimeMillis() - start);
+        } else {
+            logger.info("Loading topic schemas is disabled");
+        }
     }
 
     private List<Topic> getAvroTopics() {
@@ -109,10 +112,5 @@ public class TopicSchemaLoadingStartupHook implements ServiceAwareHook {
 
     private Map<Type, List<SchemaLoadingResult>> getGroupedResults(List<SchemaLoadingResult> allResults) {
         return allResults.stream().collect(Collectors.groupingBy(SchemaLoadingResult::getType, Collectors.toList()));
-    }
-
-    @Override
-    public int getPriority() {
-        return Hook.HIGHER_PRIORITY;
     }
 }

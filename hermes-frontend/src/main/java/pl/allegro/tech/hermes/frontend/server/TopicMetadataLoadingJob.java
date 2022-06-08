@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 
-import javax.inject.Inject;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -21,9 +20,8 @@ public class TopicMetadataLoadingJob implements Runnable {
     private final ScheduledExecutorService executorService;
     private final int intervalSeconds;
 
-    private ScheduledFuture job;
+    private ScheduledFuture<?> job;
 
-    @Inject
     public TopicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                    ConfigFactory config) {
         this(topicMetadataLoadingRunner, config.getIntProperty(Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL_SECONDS));

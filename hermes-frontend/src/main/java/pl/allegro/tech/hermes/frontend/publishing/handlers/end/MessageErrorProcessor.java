@@ -11,11 +11,10 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
@@ -29,8 +28,7 @@ public class MessageErrorProcessor {
     private final HttpString messageIdHeader = new HttpString(MESSAGE_ID.getName());
     private final ExtraHeadersExtractor extraHeadersExtractor;
 
-    @Inject
-    public MessageErrorProcessor(ObjectMapper objectMapper, Trackers trackers, ExtraHeadersExtractor extraHeadersExtractor) {
+    public MessageErrorProcessor(ObjectMapper objectMapper, Trackers trackers) {
         this.objectMapper = objectMapper;
         this.trackers = trackers;
         this.extraHeadersExtractor = extraHeadersExtractor;
@@ -90,33 +88,31 @@ public class MessageErrorProcessor {
         exchange.setStatusCode(error.getCode().getHttpCode());
         exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         exchange.getResponseHeaders().add(messageIdHeader, messageId);
-        exchange.getResponseSender().send(objectMapper.writeValueAsString(error), Charset.forName("UTF-8"),
+        exchange.getResponseSender().send(objectMapper.writeValueAsString(error), StandardCharsets.UTF_8,
                 ResponseReadyIoCallback.INSTANCE);
     }
 
-    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort, Map<String, String> extraRequestHeaders) {
-        logger.error(new StringBuilder()
-                .append(errorMessage)
-                .append("; publishing on topic: ")
-                .append(topic.getQualifiedName())
-                .append("; message id: ")
-                .append(messageId)
-                .append("; remote host: ")
-                .append(hostAndPort)
-                .toString());
+    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort,
+                     Map<String, String> extraRequestHeaders) {
+        logger.error(errorMessage +
+                "; publishing on topic: " +
+                topic.getQualifiedName() +
+                "; message id: " +
+                messageId +
+                "; remote host: " +
+                hostAndPort);
         trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
     }
 
-    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort, Exception exception, Map<String, String> extraRequestHeaders) {
-        logger.error(new StringBuilder()
-                        .append(errorMessage)
-                        .append("; publishing on topic: ")
-                        .append(topic.getQualifiedName())
-                        .append("; message id: ")
-                        .append(messageId)
-                        .append("; remote host: ")
-                        .append(hostAndPort)
-                        .toString(),
+    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort,
+                     Exception exception, Map<String, String> extraRequestHeaders) {
+        logger.error(errorMessage +
+                        "; publishing on topic: " +
+                        topic.getQualifiedName() +
+                        "; message id: " +
+                        messageId +
+                        "; remote host: " +
+                        hostAndPort,
                 exception);
         trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
     }

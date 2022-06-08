@@ -1,9 +1,13 @@
+apply plugin: 'application'
+mainClassName = 'pl.allegro.tech.hermes.frontend.HermesFrontend'
+
 dependencies {
     compile project(':hermes-common')
     compile project(':hermes-tracker')
     compile project(':hermes-metrics')
     compile project(':hermes-schema')
 
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     compile group: 'io.undertow', name: 'undertow-core', version: versions.undertow
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     compile (group: 'net.openhft', name: 'chronicle-map', version: '3.21.86') {
@@ -28,9 +32,4 @@ dependencies {
     }
     testCompile group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
     testCompile group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
-}
-
-if (project.hasProperty('distribution')) {
-    apply plugin: 'application'
-    mainClassName = 'pl.allegro.tech.hermes.frontend.HermesFrontend'
 }

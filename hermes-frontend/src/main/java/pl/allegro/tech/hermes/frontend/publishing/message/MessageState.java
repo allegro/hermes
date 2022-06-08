@@ -23,7 +23,7 @@ public class MessageState {
     }
 
     private volatile boolean timeoutHasPassed = false;
-    private AtomicReference<State> state = new AtomicReference<>(State.INIT);
+    private final AtomicReference<State> state = new AtomicReference<>(State.INIT);
 
     public boolean setReading() {
         return state.compareAndSet(INIT, READING);

@@ -17,7 +17,6 @@ import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -55,7 +54,6 @@ public class BackupMessagesLoader {
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
 
-    @Inject
     public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
                                 BrokerListeners brokerListeners,
                                 TopicsCache topicsCache,

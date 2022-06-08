@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.server
 
 import org.apache.avro.Schema
-import org.glassfish.hk2.api.ServiceLocator
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache
@@ -31,10 +30,7 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
     @Shared Topic avroTopic3 = avroTopic("g2.topic1")
 
     @Shared CompiledSchema<Schema> schema = new AvroUser().getCompiledSchema()
-
-    @Shared
-    ServiceLocator serviceLocator = Mock()
-
+    
     def "should load topic schema for Avro topics"() {
         given:
         CompiledSchemaRepository<Schema> compiledSchemaRepository = Mock()
@@ -42,10 +38,10 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
             getTopics() >> [cachedTopic(avroTopic1), cachedTopic(avroTopic2), cachedTopic(jsonTopic1), cachedTopic(avroTopic3)]
         }
         def schemaRepository = new SchemaRepository(schemaVersionsRepositoryForAvroTopics(), compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         1 * compiledSchemaRepository.getSchema(avroTopic1, version) >> schema
@@ -61,10 +57,10 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
             getTopics() >> [cachedTopic(avroTopic1), cachedTopic(avroTopic2), cachedTopic(jsonTopic1), cachedTopic(avroTopic3)]
         }
         def schemaRepository = new SchemaRepository(schemaVersionsRepositoryForAvroTopics(), compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         1 * compiledSchemaRepository.getSchema(avroTopic1, version) >> { throw new RuntimeException("an error") }
@@ -94,10 +90,10 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
                 }
         ] as SchemaVersionsRepository
         def schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         1 * compiledSchemaRepository.getSchema(avroTopic1, version) >> schema
@@ -113,10 +109,10 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
             getTopics() >> [cachedTopic(avroTopic1)]
         }
         def schemaRepository = new SchemaRepository(schemaVersionsRepositoryForAvroTopics(), compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         3 * compiledSchemaRepository.getSchema(avroTopic1, version) >> { throw new RuntimeException("an error") }
@@ -130,10 +126,10 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         CompiledSchemaRepository<Schema> compiledSchemaRepository = Mock()
         SchemaVersionsRepository schemaVersionsRepository = Mock()
         def schemaRepository = new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository)
-        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2)
+        def hook = new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, 2, 2, true)
 
         when:
-        hook.accept(serviceLocator)
+        hook.run()
 
         then:
         noExceptionThrown()
@@ -149,15 +145,15 @@ class TopicSchemaLoadingStartupHookTest extends Specification {
         ] as SchemaVersionsRepository
     }
 
-    private Topic avroTopic(String name) {
+    private static Topic avroTopic(String name) {
         createTopic(name, ContentType.AVRO)
     }
 
-    private Topic jsonTopic(String name) {
+    private static Topic jsonTopic(String name) {
         createTopic(name, ContentType.JSON)
     }
 
-    private Topic createTopic(String name, ContentType contentType) {
+    private static Topic createTopic(String name, ContentType contentType) {
         TopicBuilder.topic(name).withContentType(contentType).build()
     }
 }

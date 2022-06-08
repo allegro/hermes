@@ -1,3 +1,6 @@
+apply plugin: 'application'
+mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
+
 dependencies {
     compile project(':hermes-api')
     compile project(':hermes-common')
@@ -40,11 +43,6 @@ dependencies {
 
     testCompile group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
     testCompile group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
-}
-
-if (project.hasProperty('distribution')) {
-    apply plugin: 'application'
-    mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
 }
 
 task buildHermesConsole(type: Exec) {

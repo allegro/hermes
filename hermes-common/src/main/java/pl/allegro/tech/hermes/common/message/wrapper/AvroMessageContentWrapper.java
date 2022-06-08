@@ -6,7 +6,6 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ public class AvroMessageContentWrapper {
 
     private final Clock clock;
 
-    @Inject
     public AvroMessageContentWrapper(Clock clock) {
         this.clock = clock;
     }
@@ -60,7 +58,7 @@ public class AvroMessageContentWrapper {
         }
     }
 
-    byte[] wrapContent(byte[] message, String id, long timestamp, Schema schema, Map<String, String> externalMetadata) {
+    public byte[] wrapContent(byte[] message, String id, long timestamp, Schema schema, Map<String, String> externalMetadata) {
         if (schema.getField(METADATA_MARKER) != null) {
             GenericRecord genericRecord = bytesToRecord(message, schema);
             try {

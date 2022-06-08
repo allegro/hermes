@@ -12,8 +12,6 @@ import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
-import javax.inject.Inject;
-
 import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES;
@@ -28,7 +26,6 @@ public class HermesMetrics {
     private final MetricRegistry metricRegistry;
     private final PathsCompiler pathCompiler;
 
-    @Inject
     public HermesMetrics(
             MetricRegistry metricRegistry,
             PathsCompiler pathCompiler) {

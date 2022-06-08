@@ -16,7 +16,7 @@ public class HealthCheckHandler implements HttpHandler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
+    public void handleRequest(HttpServerExchange exchange) {
         if (healthCheckService.isShutdown()) {
             unavailable(exchange);
         } else {

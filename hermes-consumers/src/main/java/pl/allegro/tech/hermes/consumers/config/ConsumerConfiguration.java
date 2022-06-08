@@ -1,13 +1,9 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
 import org.eclipse.jetty.client.HttpClient;
-import org.slf4j.Logger;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.GenericApplicationContext;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -27,9 +23,6 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignm
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.ConsumerMaxRateRegistryType;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.FlatBinaryMaxRateRegistry;
-import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.HierarchicalCacheMaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRatePathSerializer;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
@@ -50,11 +43,8 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.time.Clock;
 import java.util.List;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 @Configuration
 public class ConsumerConfiguration {
-    private static final Logger logger = getLogger(ConsumerConfiguration.class);
 
     @Bean
     public MaxRatePathSerializer maxRatePathSerializer() {
@@ -74,45 +64,18 @@ public class ConsumerConfiguration {
     @Bean
     public MaxRateRegistry maxRateRegistry(ConfigFactory configFactory,
                                            CuratorFramework curator,
-                                           ObjectMapper objectMapper,
                                            ZookeeperPaths zookeeperPaths,
-                                           MaxRatePathSerializer pathSerializer,
-                                           SubscriptionsCache subscriptionCache,
                                            SubscriptionIds subscriptionIds,
                                            ConsumerAssignmentCache assignmentCache,
                                            ClusterAssignmentCache clusterAssignmentCache) {
-        ConsumerMaxRateRegistryType type;
-        try {
-            String typeString = configFactory.getStringProperty(Configs.CONSUMER_MAXRATE_REGISTRY_TYPE);
-            type = ConsumerMaxRateRegistryType.fromString(typeString);
-        } catch (Exception e) {
-            logger.error("Could not configure max rate registry", e);
-            throw e;
-        }
-        logger.info("Max rate registry type chosen: {}", type.getConfigValue());
-
-        switch (type) {
-            case HIERARCHICAL:
-                return new HierarchicalCacheMaxRateRegistry(
-                        configFactory,
-                        curator,
-                        objectMapper,
-                        zookeeperPaths,
-                        pathSerializer,
-                        subscriptionCache
-                );
-            case FLAT_BINARY:
-                return new FlatBinaryMaxRateRegistry(
-                        configFactory,
-                        clusterAssignmentCache,
-                        assignmentCache,
-                        curator,
-                        zookeeperPaths,
-                        subscriptionIds
-                );
-            default:
-                throw new UnsupportedOperationException("Max-rate type not supported.");
-        }
+        return new MaxRateRegistry(
+                configFactory,
+                clusterAssignmentCache,
+                assignmentCache,
+                curator,
+                zookeeperPaths,
+                subscriptionIds
+        );
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")

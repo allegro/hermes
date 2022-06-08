@@ -12,8 +12,6 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
-import javax.inject.Inject;
-
 import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static io.undertow.UndertowOptions.MAX_COOKIES;
@@ -27,6 +25,7 @@ import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_ALWAYS_SET_KEEP_ALIVE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BACKLOG_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BUFFER_SIZE;
+import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HOST;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_IO_THREADS_COUNT;
@@ -35,7 +34,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_HEADERS;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_PARAMETERS;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READ_TIMEOUT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_DUMPER;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_PARSE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALIVE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_AUTH_MODE;
@@ -62,12 +60,10 @@ public class HermesServer {
     private final TopicMetadataLoadingJob topicMetadataLoadingJob;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
-    @Inject
     public HermesServer(
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
-            HealthCheckService healthCheckService,
             ReadinessChecker readinessChecker,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
@@ -77,7 +73,7 @@ public class HermesServer {
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
-        this.healthCheckService = healthCheckService;
+        this.healthCheckService = new HealthCheckService();
         this.readinessChecker = readinessChecker;
         this.messagePreviewPersister = messagePreviewPersister;
         this.topicMetadataLoadingJob = topicMetadataLoadingJob;
@@ -97,10 +93,19 @@ public class HermesServer {
         if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
             topicMetadataLoadingJob.start();
         }
+        healthCheckService.startup();
         readinessChecker.start();
     }
 
-    public void gracefulShutdown() throws InterruptedException {
+    public void stop() throws InterruptedException {
+        boolean isGraceful = configFactory.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED);
+        if(isGraceful) {
+            prepareForGracefulShutdown();
+        }
+        shutdown();
+    }
+
+    public void prepareForGracefulShutdown() throws InterruptedException {
         healthCheckService.shutdown();
 
         Thread.sleep(configFactory.getIntProperty(Configs.FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS));
@@ -157,10 +162,10 @@ public class HermesServer {
                 .get("/status/ready", readinessHandler)
                 .get("/", healthCheckHandler);
 
-        return isEnabled(FRONTEND_REQUEST_DUMPER) ? new RequestDumpingHandler(routingHandler) : routingHandler;
+        return isFrontendRequestDumperEnabled() ? new RequestDumpingHandler(routingHandler) : routingHandler;
     }
 
-    private boolean isEnabled(Configs property) {
-        return configFactory.getBooleanProperty(property);
+    private boolean isFrontendRequestDumperEnabled() {
+        return configFactory.getBooleanProperty(Configs.FRONTEND_REQUEST_DUMPER);
     }
 }

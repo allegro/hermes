@@ -3,20 +3,20 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 
 class BasicMessageContentReader implements MessageContentReader {
 
-    private final MessageContentWrapper messageContentWrapper;
+    private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final Topic topic;
 
-    BasicMessageContentReader(MessageContentWrapper messageContentWrapper,
-                                     KafkaHeaderExtractor kafkaHeaderExtractor,
-                                     Topic topic) {
-        this.messageContentWrapper = messageContentWrapper;
+    BasicMessageContentReader(CompositeMessageContentWrapper compositeMessageContentWrapper,
+                              KafkaHeaderExtractor kafkaHeaderExtractor,
+                              Topic topic) {
+        this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.topic = topic;
     }
@@ -26,9 +26,9 @@ class BasicMessageContentReader implements MessageContentReader {
         if (contentType == ContentType.AVRO) {
             Integer schemaVersion = kafkaHeaderExtractor.extractSchemaVersion(message.headers());
             Integer schemaId = kafkaHeaderExtractor.extractSchemaId(message.headers());
-            return messageContentWrapper.unwrapAvro(message.value(), topic, schemaId, schemaVersion);
+            return compositeMessageContentWrapper.unwrapAvro(message.value(), topic, schemaId, schemaVersion);
         } else if (contentType == ContentType.JSON) {
-            return messageContentWrapper.unwrapJson(message.value());
+            return compositeMessageContentWrapper.unwrapJson(message.value());
         }
         throw new UnsupportedContentTypeException(topic);
     }

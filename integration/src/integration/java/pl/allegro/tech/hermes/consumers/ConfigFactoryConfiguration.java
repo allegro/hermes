@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Configuration
-public class ConfigFactoryConfiguration {
+public class ConfigFactoryConfiguration { //TODO: remove duplicates in packages integration/consumers, integration/frontend
 
     @Bean
     @Primary

@@ -1,3 +1,53 @@
+## Unreleased
+
+### Enhancements
+
+#### ([1510](https://github.com/allegro/hermes/pull/1510)) Removed hierarchical registries
+
+This change switches the default implementation of registries (internal data structures used by Hermes) to the one introduced in
+[1110](https://github.com/allegro/hermes/pull/1110) and [1086](https://github.com/allegro/hermes/pull/1086).
+
+After deploying a Hermes version that includes this change, you can manually remove the following zookeeper nodes (if they exist):
+* `{zookeeper.root}/consumers-workload/{kafka.cluster.name}/runtime`
+* `{zookeeper.root}/consumers-rate/{kafka.cluster.name}/runtime`
+
+## 1.13.0 (24.05.2022)
+
+### Enhancements
+
+#### ([1507](https://github.com/allegro/hermes/pull/1507)) Added environment label in hermes-console
+#### ([1498](https://github.com/allegro/hermes/pull/1498)) Migrated hermes-frontend to the Spring framework
+
+If you add custom implementations of some parts of `hermes-frontend`, please take a look at
+[1506](https://github.com/allegro/hermes/pull/1506). The documentation changes introduced there should help you  
+migrate to version `1.13.0`.
+
+Thanks to @pmajorczyk-allegro for this contribution!
+
+## 1.12.4 (12.05.2022)
+
+### Enhancements
+
+#### ([1503](https://github.com/allegro/hermes/pull/1503)) Check if topic group exists before topic creation
+#### ([1501](https://github.com/allegro/hermes/pull/1501)) Bumped json2avro to 0.2.14
+#### ([1479](https://github.com/allegro/hermes/pull/1479)) Refactor: kafka message conversion extracted from topic consuming logic
+
+Thanks @arkadius for this contribution!
+
+#### ([1502](https://github.com/allegro/hermes/pull/1502)) Add fix delay to stub created with ValueMatcher in hermes mock
+
+Thanks @sobelek for this contribution!
+
+#### ([1497](https://github.com/allegro/hermes/pull/1497)) Increased the width of the search bar for issue #1488
+
+Thanks @zzzzz1st for this contribution!
+
+### Fixes
+
+#### ([1495](https://github.com/allegro/hermes/pull/1495)) Fix dead links in documentation - fixes #1494
+
+Thanks @AleksanderBrzozowski for this contribution!
+
 ## 1.12.3 (13.04.2022)
 
 ### Enhancements

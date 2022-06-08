@@ -26,4 +26,8 @@ public class Trackers {
     public void add(LogRepository logRepository) {
         publishingMessageTracker.add(logRepository);
     }
+
+    public void close() {
+        publishingMessageTracker.close();
+    }
 }

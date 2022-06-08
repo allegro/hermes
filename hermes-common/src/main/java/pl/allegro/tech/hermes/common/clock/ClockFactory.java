@@ -1,17 +1,10 @@
 package pl.allegro.tech.hermes.common.clock;
 
-import org.glassfish.hk2.api.Factory;
-
 import java.time.Clock;
 
-public class ClockFactory implements Factory<Clock> {
-    @Override
+public class ClockFactory {
+
     public Clock provide() {
         return Clock.systemDefaultZone();
-    }
-
-    @Override
-    public void dispose(Clock instance) {
-
     }
 }

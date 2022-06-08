@@ -51,7 +51,13 @@ public class MongoLogRepository extends BatchingLogRepository<DBObject> implemen
         queue.offer(topicLog(messageId, timestamp, topicName, INFLIGHT, extraRequestHeaders));
     }
 
-    private BasicDBObject topicLog(String messageId, long timestamp, String topicName, PublishedMessageTraceStatus status, Map<String, String> extraRequestHeaders) {
+    @Override
+    public void close() {
+
+    }
+
+    private BasicDBObject topicLog(String messageId, long timestamp, String topicName, PublishedMessageTraceStatus status,
+                                   Map<String, String> extraRequestHeaders) {
         return new BasicDBObject()
                 .append(MESSAGE_ID, messageId)
                 .append(TIMESTAMP, timestamp)

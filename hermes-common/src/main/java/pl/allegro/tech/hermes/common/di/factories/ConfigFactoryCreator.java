@@ -9,7 +9,6 @@ import com.netflix.config.sources.URLConfigurationSource;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.EnvironmentConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
-import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -21,22 +20,16 @@ import static com.netflix.config.ConfigurationManager.ENV_CONFIG_NAME;
 import static com.netflix.config.ConfigurationManager.SYS_CONFIG_NAME;
 import static com.netflix.config.ConfigurationManager.URL_CONFIG_NAME;
 
-public class ConfigFactoryCreator implements Factory<ConfigFactory> {
+public class ConfigFactoryCreator {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigFactoryCreator.class);
 
     private static final String DISABLE_CONFIG_POLLING_SCHEDULER = "archaius.fixedDelayPollingScheduler.disabled";
 
-    @Override
     public ConfigFactory provide() {
-        Boolean isConfigPollingSchedulerDisabled = Boolean.valueOf(System.getProperty(DISABLE_CONFIG_POLLING_SCHEDULER, "true"));
+        boolean isConfigPollingSchedulerDisabled = Boolean.parseBoolean(System.getProperty(DISABLE_CONFIG_POLLING_SCHEDULER, "true"));
         DynamicPropertyFactory dynamicPropertyFactory = createDynamicPropertyFactory(isConfigPollingSchedulerDisabled);
         return new ConfigFactory(dynamicPropertyFactory);
-    }
-
-    @Override
-    public void dispose(ConfigFactory instance) {
-
     }
 
     private DynamicPropertyFactory createDynamicPropertyFactory(boolean isConfigPollingSchedulerDisabled) {
