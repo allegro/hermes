@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, consumer-spring-config ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, consumer-spring-config ]
 
 jobs:
   build:

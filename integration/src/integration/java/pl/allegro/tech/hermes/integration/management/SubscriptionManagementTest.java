@@ -437,7 +437,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
         Response response = management.subscription().getMessageTrace(topic, subscription, messageId);
-        return response.readEntity(new GenericType<List<Map<String, String>>>() {
+        return response.readEntity(new GenericType<>() {
         });
     }
 
