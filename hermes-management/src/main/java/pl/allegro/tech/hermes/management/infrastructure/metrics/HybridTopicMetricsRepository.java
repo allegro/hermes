@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -21,6 +20,8 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
     private static final String DELIVERY_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.%s.m1_rate)";
 
     private static final String THROUGHPUT_PATTERN = "sumSeries(%s.producer.*.throughput.%s.%s.m1_rate)";
+
+    private static final String LAST_PUBLISHED_MESSAGE_TIMESTAMP_PATTERN = "%s.producer.*.last-published-message-timestamp.%s.%s";
 
     private final GraphiteClient graphiteClient;
 
@@ -47,6 +48,7 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
         String rateMetric = metricPath(RATE_PATTERN, topicName);
         String deliveryRateMetric = metricPath(DELIVERY_RATE_PATTERN, topicName);
         String throughputMetric = metricPath(THROUGHPUT_PATTERN, topicName);
+        String lastPublishedMessageTimestamp = metricPath(LAST_PUBLISHED_MESSAGE_TIMESTAMP_PATTERN, topicName);
 
         GraphiteMetrics metrics = graphiteClient.readMetrics(rateMetric, deliveryRateMetric);
 
@@ -57,6 +59,7 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
                 .withVolume(summedSharedCounter.getValue(zookeeperPaths.topicMetricPath(topicName, "volume")))
                 .withSubscriptions(subscriptionRepository.listSubscriptionNames(topicName).size())
                 .withThroughput(metrics.metricValue(throughputMetric))
+                .withLastPublishedMessageTimestamp((long) metrics.metricValue(lastPublishedMessageTimestamp).toDouble())
                 .build();
     }
 

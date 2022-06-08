@@ -68,6 +68,7 @@ public class MetricsTest extends IntegrationTest {
             assertThat(metrics.getDeliveryRate()).isEqualTo(MetricDecimalValue.of("15"));
             assertThat(metrics.getPublished()).isEqualTo(1);
             assertThat(metrics.getVolume()).isGreaterThan(1);
+            assertThat(metrics.getLastPublishedMessageTimestamp()).isGreaterThan(0L);
         });
     }
 

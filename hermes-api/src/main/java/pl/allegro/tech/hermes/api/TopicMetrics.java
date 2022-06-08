@@ -11,6 +11,7 @@ public class TopicMetrics {
     private MetricDecimalValue deliveryRate = of("0.0");
     private int subscriptions;
     private MetricDecimalValue throughput = of("0.0");
+    private long lastPublishedMessageTimestamp;
 
     public long getPublished() {
         return published;
@@ -36,9 +37,13 @@ public class TopicMetrics {
         return throughput;
     }
 
+    public long getLastPublishedMessageTimestamp() {
+        return lastPublishedMessageTimestamp;
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput, volume);
+        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput, lastPublishedMessageTimestamp, volume);
     }
 
     @Override
@@ -55,6 +60,7 @@ public class TopicMetrics {
             && Objects.equals(this.deliveryRate, other.deliveryRate)
             && Objects.equals(this.subscriptions, other.subscriptions)
             && Objects.equals(this.throughput, other.throughput)
+            && Objects.equals(this.lastPublishedMessageTimestamp, other.lastPublishedMessageTimestamp)
             && Objects.equals(this.volume, other.volume);
     }
 
@@ -65,6 +71,7 @@ public class TopicMetrics {
                                      .withVolume(0)
                                      .withSubscriptions(0)
                                      .withThroughput(MetricDecimalValue.unavailable())
+                                     .withLastPublishedMessageTimestamp(0)
                                      .build();
     }
 
@@ -97,6 +104,11 @@ public class TopicMetrics {
 
         public Builder withThroughput(MetricDecimalValue throughput) {
             topicMetrics.throughput = throughput;
+            return this;
+        }
+
+        public Builder withLastPublishedMessageTimestamp(long lastPublishedMessageTimestamp) {
+            topicMetrics.lastPublishedMessageTimestamp = lastPublishedMessageTimestamp;
             return this;
         }
 
