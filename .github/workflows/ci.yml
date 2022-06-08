@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ master, consumer-spring-config ]
+    branches: [ master, consumer-spring-config, migrate-consumer-configuration-for-kafka-authorization ]
   pull_request:
     branches: [ master, consumer-spring-config ]
 
