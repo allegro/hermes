@@ -18,6 +18,8 @@ public class SchemaRepositoryProperties {
 
     private boolean subjectNamespaceEnabled = false;
 
+    private SchemaRepositoryAuthorizationProperties authorization = new SchemaRepositoryAuthorizationProperties();
+
     public String getServerUrl() {
         return serverUrl;
     }
@@ -72,5 +74,13 @@ public class SchemaRepositoryProperties {
 
     public void setSubjectNamespaceEnabled(boolean subjectNamespaceEnabled) {
         this.subjectNamespaceEnabled = subjectNamespaceEnabled;
+    }
+
+    public SchemaRepositoryAuthorizationProperties getAuthorization() {
+        return authorization;
+    }
+
+    public void setAuthorization(SchemaRepositoryAuthorizationProperties authorization) {
+        this.authorization = authorization;
     }
 }

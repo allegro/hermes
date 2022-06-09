@@ -5,9 +5,11 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.apache.avro.Schema;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.common.config.SchemaRepositoryAuthorizationProperties;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.schema.AvroCompiledSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
@@ -72,6 +74,11 @@ public class SchemaConfiguration {
                 .property(ClientProperties.CONNECT_TIMEOUT, (int) schemaProperties.getRepository().getHttpConnectTimeout().toMillis())
                 .register(new JacksonJsonProvider(mapper));
 
+        SchemaRepositoryAuthorizationProperties authorization = schemaProperties.getRepository().getAuthorization();
+        if (authorization.isEnabled()) {
+            HttpAuthenticationFeature auth = HttpAuthenticationFeature.basic(authorization.getUsername(), authorization.getPassword());
+            config.register(auth);
+        }
         return ClientBuilder.newClient(config);
     }
 
