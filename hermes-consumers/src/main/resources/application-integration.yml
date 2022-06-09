@@ -59,6 +59,9 @@ consumer:
       maxConnectionsPerDestination: 100
       idleTimeout: 0
       maxRequestsQueuedPerDestination: 100
+  workload:
+    rebalanceInterval: 1
+    consumerPerSubscription: 1
 
 kafka:
   authorization:
