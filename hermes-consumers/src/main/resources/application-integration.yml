@@ -70,13 +70,3 @@ kafka:
     protocol: SASL_PLAINTEXT
     username: username
     password: password
-
-google:
-  pubsub:
-    sender:
-      corePoolSize: 4
-      totalTimeoutsMilliseconds: 600_000
-      batchingRequestBytesThreshold: 1024
-      batchingMessageCountBytesSize: 1
-      batchingPublishDelayThresholdMilliseconds: 1
-      transportChannelProviderAddress: integration
