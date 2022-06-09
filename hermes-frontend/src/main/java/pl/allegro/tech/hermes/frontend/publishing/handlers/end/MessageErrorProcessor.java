@@ -26,29 +26,30 @@ public class MessageErrorProcessor {
     private final ObjectMapper objectMapper;
     private final Trackers trackers;
     private final HttpString messageIdHeader = new HttpString(MESSAGE_ID.getName());
-    private final ExtraHeadersExtractor extraHeadersExtractor;
+    private final TrackingHeadersExtractor trackingHeadersExtractor;
 
-    public MessageErrorProcessor(ObjectMapper objectMapper, Trackers trackers) {
+    public MessageErrorProcessor(ObjectMapper objectMapper, Trackers trackers,
+                                 TrackingHeadersExtractor trackingHeadersExtractor) {
         this.objectMapper = objectMapper;
         this.trackers = trackers;
-        this.extraHeadersExtractor = extraHeadersExtractor;
+        this.trackingHeadersExtractor = trackingHeadersExtractor;
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), extraHeadersExtractor.extractHeadersToLog(exchange));
+        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(exchange));
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error, Exception exception) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
         log(error.getMessage(), topic, messageId, readHostAndPort(exchange), exception,
-                extraHeadersExtractor.extractHeadersToLog(exchange));
+                trackingHeadersExtractor.extractHeadersToLog(exchange));
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, Exception e) {
         ErrorDescription error = error("Error while handling request.", INTERNAL_ERROR);
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), e, extraHeadersExtractor.extractHeadersToLog(exchange));
+        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), e, trackingHeadersExtractor.extractHeadersToLog(exchange));
     }
 
     public void sendAndLog(HttpServerExchange exchange, String errorMessage, Exception e) {
@@ -81,7 +82,7 @@ public class MessageErrorProcessor {
     public void log(HttpServerExchange exchange, String errorMessage, Exception exception) {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
         log(errorMessage, attachment.getTopic(), attachment.getMessageId(), readHostAndPort(exchange), exception,
-                extraHeadersExtractor.extractHeadersToLog(exchange));
+                trackingHeadersExtractor.extractHeadersToLog(exchange));
     }
 
     private void send(HttpServerExchange exchange, ErrorDescription error, String messageId) throws IOException {
