@@ -12,8 +12,8 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.end.DefaultTrackingHeaderExtractor;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersExtractor;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.DefaultTrackingHeaderPropagator;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
@@ -56,10 +56,10 @@ class HermesServerFactory {
                 .overrideProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED, false)
                 .overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
         Trackers trackers = new Trackers(Collections.emptyList());
-        TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor(headers -> headers);
+        TrackingHeadersPropagator trackingHeadersPropagator = new DefaultTrackingHeaderPropagator(headers -> headers);
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
         HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer,
-                rawSchemaClient, configFactory, trackers, avroMessageContentWrapper, trackingHeadersExtractor);
+                rawSchemaClient, configFactory, trackers, avroMessageContentWrapper, trackingHeadersPropagator);
 
 
         return new HermesServer(
@@ -77,11 +77,11 @@ class HermesServerFactory {
     private static HttpHandler provideHttpHandler(
             ThroughputLimiter throughputLimiter, TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
             RawSchemaClient rawSchemaClient, ConfigFactory configFactory, Trackers trackers,
-            AvroMessageContentWrapper avroMessageContentWrapper, TrackingHeadersExtractor trackingHeadersExtractor) {
+            AvroMessageContentWrapper avroMessageContentWrapper, TrackingHeadersPropagator trackingHeadersPropagator) {
         return new HandlersChainFactory(
                 topicsCache,
-                new MessageErrorProcessor(new ObjectMapper(), trackers, trackingHeadersExtractor),
-                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor),
+                new MessageErrorProcessor(new ObjectMapper(), trackers, trackingHeadersPropagator),
+                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersPropagator),
                 configFactory,
                 new MessageFactory(
                         new MessageValidators(Collections.emptyList()),

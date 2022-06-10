@@ -4,10 +4,10 @@ import java.util.Map;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
 
 
-public class DefaultTrackingHeaderExtractor implements TrackingHeadersExtractor {
+public class DefaultTrackingHeaderPropagator implements TrackingHeadersPropagator {
     private final HeadersPropagator headersPropagator;
 
-    public DefaultTrackingHeaderExtractor(HeadersPropagator headersPropagator) {
+    public DefaultTrackingHeaderPropagator(HeadersPropagator headersPropagator) {
         this.headersPropagator = headersPropagator;
     }
 

@@ -14,8 +14,8 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiterFactory;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.end.DefaultTrackingHeaderExtractor;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersExtractor;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.DefaultTrackingHeaderPropagator;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.AvroEnforcer;
@@ -53,19 +53,19 @@ public class FrontendPublishingConfiguration {
 
     @Bean
     public MessageEndProcessor messageEndProcessor(Trackers trackers, BrokerListeners brokerListeners,
-                                                   TrackingHeadersExtractor trackingHeadersExtractor) {
-        return new MessageEndProcessor(trackers, brokerListeners, trackingHeadersExtractor);
+                                                   TrackingHeadersPropagator trackingHeadersPropagator) {
+        return new MessageEndProcessor(trackers, brokerListeners, trackingHeadersPropagator);
     }
 
     @Bean
-    public TrackingHeadersExtractor extraHeadersExtractor(HeadersPropagator headersPropagator) {
-        return new DefaultTrackingHeaderExtractor(headersPropagator);
+    public TrackingHeadersPropagator extraHeadersExtractor(HeadersPropagator headersPropagator) {
+        return new DefaultTrackingHeaderPropagator(headersPropagator);
     }
 
     @Bean
     public MessageErrorProcessor messageErrorProcessor(ObjectMapper objectMapper, Trackers trackers,
-                                                       TrackingHeadersExtractor trackingHeadersExtractor) {
-        return new MessageErrorProcessor(objectMapper, trackers, trackingHeadersExtractor);
+                                                       TrackingHeadersPropagator trackingHeadersPropagator) {
+        return new MessageErrorProcessor(objectMapper, trackers, trackingHeadersPropagator);
     }
 
     @Bean

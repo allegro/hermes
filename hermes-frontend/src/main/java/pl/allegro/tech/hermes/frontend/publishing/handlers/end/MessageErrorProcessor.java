@@ -27,32 +27,32 @@ public class MessageErrorProcessor {
     private final ObjectMapper objectMapper;
     private final Trackers trackers;
     private final HttpString messageIdHeader = new HttpString(MESSAGE_ID.getName());
-    private final TrackingHeadersExtractor trackingHeadersExtractor;
+    private final TrackingHeadersPropagator trackingHeadersPropagator;
 
     public MessageErrorProcessor(ObjectMapper objectMapper, Trackers trackers,
-                                 TrackingHeadersExtractor trackingHeadersExtractor) {
+                                 TrackingHeadersPropagator trackingHeadersPropagator) {
         this.objectMapper = objectMapper;
         this.trackers = trackers;
-        this.trackingHeadersExtractor = trackingHeadersExtractor;
+        this.trackingHeadersPropagator = trackingHeadersPropagator;
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
         log(error.getMessage(), topic, messageId, readHostAndPort(exchange),
-                trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error, Exception exception) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
         log(error.getMessage(), topic, messageId, readHostAndPort(exchange), exception,
-                trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, Exception e) {
         ErrorDescription error = error("Error while handling request.", INTERNAL_ERROR);
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
         log(error.getMessage(), topic, messageId, readHostAndPort(exchange), e,
-                trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
     }
 
     public void sendAndLog(HttpServerExchange exchange, String errorMessage, Exception e) {
@@ -85,7 +85,7 @@ public class MessageErrorProcessor {
     public void log(HttpServerExchange exchange, String errorMessage, Exception exception) {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
         log(errorMessage, attachment.getTopic(), attachment.getMessageId(), readHostAndPort(exchange), exception,
-                trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
     }
 
     private void send(HttpServerExchange exchange, ErrorDescription error, String messageId) throws IOException {

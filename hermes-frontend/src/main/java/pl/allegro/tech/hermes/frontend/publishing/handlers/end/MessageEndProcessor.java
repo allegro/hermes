@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
-import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersToMapTransformer;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
@@ -24,25 +23,25 @@ public class MessageEndProcessor {
 
     private final Trackers trackers;
     private final BrokerListeners brokerListeners;
-    private final TrackingHeadersExtractor trackingHeadersExtractor;
+    private final TrackingHeadersPropagator trackingHeadersPropagator;
 
-    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersExtractor trackingHeadersExtractor) {
+    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersPropagator trackingHeadersPropagator) {
         this.trackers = trackers;
         this.brokerListeners = brokerListeners;
-        this.trackingHeadersExtractor = trackingHeadersExtractor;
+        this.trackingHeadersPropagator = trackingHeadersPropagator;
     }
 
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
         trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(),
                 attachment.getTopic().getName(), readHostAndPort(exchange),
-                trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
         sendResponse(exchange, attachment, StatusCodes.CREATED);
         attachment.getCachedTopic().incrementPublished();
     }
 
     public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
         trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(),
-                readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                readHostAndPort(exchange), trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
         cachedTopic.incrementPublished();
     }
@@ -56,7 +55,7 @@ public class MessageEndProcessor {
         Topic topic = attachment.getTopic();
         brokerListeners.onTimeout(attachment.getMessage(), topic);
         trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName(),
-                readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                readHostAndPort(exchange), trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
         handleRaceConditionBetweenAckAndTimeout(attachment, topic);
         sendResponse(exchange, attachment, StatusCodes.ACCEPTED);
     }
