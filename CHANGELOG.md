@@ -1,7 +1,12 @@
-## Unreleased
+## 1.14.0 (13.06.2022)
 
 ### Enhancements
 
+#### ([1492](https://github.com/allegro/hermes/pull/1492)) Development environment for testing changes locally
+#### ([1517](https://github.com/allegro/hermes/pull/1517)) Allow selected subscribers to bypass subscribing restrictions
+#### ([1511](https://github.com/allegro/hermes/pull/1511)) Renamed the isDangerousEnvironment parameter to isCriticalEnvironment
+#### ([1515](https://github.com/allegro/hermes/pull/1515)) Removed the supportTeam field from groups and subscriptions
+#### ([1523](https://github.com/allegro/hermes/pull/1523)) Removed hermes-tracker-mongo
 #### ([1510](https://github.com/allegro/hermes/pull/1510)) Removed hierarchical registries
 
 This change switches the default implementation of registries (internal data structures used by Hermes) to the one introduced in
