@@ -81,8 +81,8 @@ public class ConsumerConfiguration {
                                            ConsumerAssignmentCache assignmentCache,
                                            ClusterAssignmentCache clusterAssignmentCache) {
         return new MaxRateRegistry(
-                maxRateProperties.getRegistryBinaryEncoderHistoryBufferSizeBytes(),
-                maxRateProperties.getRegistryBinaryEncoderMaxRateBufferSizeBytes(),
+                maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
+                maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
                 workloadProperties.getNodeId(),
                 kafkaProperties.getClusterName(),
                 clusterAssignmentCache,

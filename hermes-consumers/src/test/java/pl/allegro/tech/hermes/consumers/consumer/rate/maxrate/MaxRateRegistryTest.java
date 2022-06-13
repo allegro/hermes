@@ -45,8 +45,17 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     private final ConsumerAssignmentCache consumerAssignmentCache = mock(ConsumerAssignmentCache.class);
     private final ClusterAssignmentCache clusterAssignmentCache = mock(ClusterAssignmentCache.class);
 
-    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(maxRateProperties.getRegistryBinaryEncoderHistoryBufferSizeBytes(), maxRateProperties.getRegistryBinaryEncoderMaxRateBufferSizeBytes(), consumerId, cluster,
-            clusterAssignmentCache, consumerAssignmentCache, zookeeperClient, zookeeperPaths, subscriptionIds);
+    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(
+            maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
+            maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
+            consumerId,
+            cluster,
+            clusterAssignmentCache,
+            consumerAssignmentCache,
+            zookeeperClient,
+            zookeeperPaths,
+            subscriptionIds
+    );
 
     private final MaxRateRegistryPaths paths = new MaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);
 
