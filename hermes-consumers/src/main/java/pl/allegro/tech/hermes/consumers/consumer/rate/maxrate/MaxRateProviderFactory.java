@@ -14,13 +14,11 @@ public class MaxRateProviderFactory {
                                   MaxRateRegistry maxRateRegistry,
                                   MaxRateSupervisor maxRateSupervisor,
                                   HermesMetrics metrics) {
-
-        checkNegotiatedSettings(maxRateParameters.getMinSignificantUpdatePercent() / 100, maxRateParameters.getBusyTolerance());
+        double minSignificantChange = maxRateParameters.getMinSignificantUpdatePercent() / 100;
+        checkNegotiatedSettings(minSignificantChange, maxRateParameters.getBusyTolerance());
         providerCreator = (subscription, sendCounters) -> {
             int historyLimit = maxRateParameters.getHistorySize();
             double initialMaxRate = maxRateParameters.getMinMaxRate();
-            double minSignificantChange =
-                    maxRateParameters.getMinSignificantUpdatePercent() / 100;
 
             return new NegotiatedMaxRateProvider(nodeId, maxRateRegistry, maxRateSupervisor,
                     subscription, sendCounters, metrics, initialMaxRate, minSignificantChange, historyLimit);
