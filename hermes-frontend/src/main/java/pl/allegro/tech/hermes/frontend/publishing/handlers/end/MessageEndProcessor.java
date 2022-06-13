@@ -23,25 +23,25 @@ public class MessageEndProcessor {
 
     private final Trackers trackers;
     private final BrokerListeners brokerListeners;
-    private final TrackingHeadersPropagator trackingHeadersPropagator;
+    private final TrackingHeadersExtractor trackingHeadersExtractor;
 
-    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersPropagator trackingHeadersPropagator) {
+    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersExtractor trackingHeadersExtractor) {
         this.trackers = trackers;
         this.brokerListeners = brokerListeners;
-        this.trackingHeadersPropagator = trackingHeadersPropagator;
+        this.trackingHeadersExtractor = trackingHeadersExtractor;
     }
 
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
         trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(),
                 attachment.getTopic().getName(), readHostAndPort(exchange),
-                trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
         sendResponse(exchange, attachment, StatusCodes.CREATED);
         attachment.getCachedTopic().incrementPublished();
     }
 
     public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
         trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(),
-                readHostAndPort(exchange), trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
         cachedTopic.incrementPublished();
     }
@@ -55,7 +55,7 @@ public class MessageEndProcessor {
         Topic topic = attachment.getTopic();
         brokerListeners.onTimeout(attachment.getMessage(), topic);
         trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName(),
-                readHostAndPort(exchange), trackingHeadersPropagator.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
+                readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(toHeadersMap(exchange.getRequestHeaders())));
         handleRaceConditionBetweenAckAndTimeout(attachment, topic);
         sendResponse(exchange, attachment, StatusCodes.ACCEPTED);
     }
