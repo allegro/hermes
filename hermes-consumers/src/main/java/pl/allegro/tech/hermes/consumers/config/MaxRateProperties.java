@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateParameters;
 @ConfigurationProperties(prefix = "consumer.maxrate")
 public class MaxRateProperties {
 
-    private RegistryBinaryEncoderProperties registryBinaryEncoder;
+    private RegistryBinaryEncoderProperties registryBinaryEncoder = new RegistryBinaryEncoderProperties();
 
     private int balanceIntervalSeconds = 30;
 
