@@ -7,7 +7,7 @@ consumer:
     maxIdleTime: 1000
   batch:
     poolableSize: 1024
-    maxPoolSize: 64 * 1024 * 1024
+    maxPoolSize: 67108864 # 64 x 1024 x 1024
     connectionTimeout: 500
     connectionRequestTimeout: 500
   commit:
@@ -59,6 +59,9 @@ consumer:
       maxConnectionsPerDestination: 100
       idleTimeout: 0
       maxRequestsQueuedPerDestination: 100
+  workload:
+    rebalanceInterval: 1
+    consumerPerSubscription: 1
 
 kafka:
   authorization:
@@ -67,13 +70,3 @@ kafka:
     protocol: SASL_PLAINTEXT
     username: username
     password: password
-
-google:
-  pubsub:
-    sender:
-      corePoolSize: 4
-      totalTimeoutsMilliseconds: 600_000
-      batchingRequestBytesThreshold: 1024
-      batchingMessageCountBytesSize: 1
-      batchingPublishDelayThresholdMilliseconds: 1
-      transportChannelProviderAddress: integration

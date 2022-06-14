@@ -36,16 +36,17 @@ public class ConsumersRuntimeMonitor implements Runnable {
 
     private final MonitorMetrics monitorMetrics = new MonitorMetrics();
 
-    private ScheduledFuture monitoringTask;
+    private ScheduledFuture<?> monitoringTask;
 
     public ConsumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
                                    SupervisorController workloadSupervisor,
                                    HermesMetrics hermesMetrics,
-                                   SubscriptionsCache subscriptionsCache, ConfigFactory configFactory) {
+                                   SubscriptionsCache subscriptionsCache,
+                                   int scanIntervalSeconds) {
         this.consumerSupervisor = consumerSupervisor;
         this.workloadSupervisor = workloadSupervisor;
         this.subscriptionsCache = subscriptionsCache;
-        this.scanIntervalSeconds = configFactory.getIntProperty(Configs.CONSUMER_WORKLOAD_MONITOR_SCAN_INTERVAL);
+        this.scanIntervalSeconds = scanIntervalSeconds;
 
         hermesMetrics.registerGauge("consumers-workload.monitor.running", () -> monitorMetrics.running);
         hermesMetrics.registerGauge("consumers-workload.monitor.assigned", () -> monitorMetrics.assigned);

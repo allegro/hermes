@@ -50,7 +50,9 @@ import java.util.List;
         SenderAsyncTimeoutProperties.class,
         RateProperties.class,
         BatchProperties.class,
-        KafkaProperties.class
+        KafkaProperties.class,
+        WorkloadProperties.class,
+        MaxRateProperties.class
 })
 public class ConsumerConfiguration {
 
@@ -70,15 +72,18 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public MaxRateRegistry maxRateRegistry(ConfigFactory configFactory,
+    public MaxRateRegistry maxRateRegistry(MaxRateProperties maxRateProperties,
                                            KafkaProperties kafkaProperties,
+                                           WorkloadProperties workloadProperties,
                                            CuratorFramework curator,
                                            ZookeeperPaths zookeeperPaths,
                                            SubscriptionIds subscriptionIds,
                                            ConsumerAssignmentCache assignmentCache,
                                            ClusterAssignmentCache clusterAssignmentCache) {
         return new MaxRateRegistry(
-                configFactory,
+                maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
+                maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
+                workloadProperties.getNodeId(),
                 kafkaProperties.getClusterName(),
                 clusterAssignmentCache,
                 assignmentCache,
@@ -89,21 +94,19 @@ public class ConsumerConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    public MaxRateSupervisor maxRateSupervisor(ConfigFactory configFactory,
+    public MaxRateSupervisor maxRateSupervisor(MaxRateProperties maxRateProperties,
                                                ClusterAssignmentCache clusterAssignmentCache,
                                                MaxRateRegistry maxRateRegistry,
                                                ConsumerNodesRegistry consumerNodesRegistry,
                                                SubscriptionsCache subscriptionsCache,
-                                               ZookeeperPaths zookeeperPaths,
                                                HermesMetrics metrics,
                                                Clock clock) {
         return new MaxRateSupervisor(
-                configFactory,
+                maxRateProperties.toMaxRateParameters(),
                 clusterAssignmentCache,
                 maxRateRegistry,
                 consumerNodesRegistry,
                 subscriptionsCache,
-                zookeeperPaths,
                 metrics,
                 clock
         );
@@ -121,11 +124,12 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public MaxRateProviderFactory maxRateProviderFactory(ConfigFactory configFactory,
+    public MaxRateProviderFactory maxRateProviderFactory(MaxRateProperties maxRateProperties,
                                                          MaxRateRegistry maxRateRegistry,
                                                          MaxRateSupervisor maxRateSupervisor,
-                                                         HermesMetrics metrics) {
-        return new MaxRateProviderFactory(configFactory, maxRateRegistry, maxRateSupervisor, metrics);
+                                                         HermesMetrics metrics,
+                                                         WorkloadProperties workloadProperties) {
+        return new MaxRateProviderFactory(maxRateProperties.toMaxRateParameters(), workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor, metrics);
     }
 
     @Bean

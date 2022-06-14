@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
 
 public class MaxRateRegistry implements NodeCacheListener {
 
@@ -51,14 +50,16 @@ public class MaxRateRegistry implements NodeCacheListener {
 
     private final MaxRateRegistryPaths registryPaths;
 
-    public MaxRateRegistry(ConfigFactory configFactory,
+    public MaxRateRegistry(int historiesEncoderBufferSize,
+                           int maxRateEncoderBufferSize,
+                           String nodeId,
                            String clusterName,
                            ClusterAssignmentCache clusterAssignmentCache,
                            ConsumerAssignmentCache consumerAssignmentCache,
                            CuratorFramework curator,
                            ZookeeperPaths zookeeperPaths,
                            SubscriptionIds subscriptionIds) {
-        this.consumerId = configFactory.getStringProperty(CONSUMER_WORKLOAD_NODE_ID);
+        this.consumerId = nodeId;
         this.clusterAssignmentCache = clusterAssignmentCache;
         this.consumerAssignmentCache = consumerAssignmentCache;
 
@@ -68,11 +69,9 @@ public class MaxRateRegistry implements NodeCacheListener {
         this.registryPaths = new MaxRateRegistryPaths(zookeeperPaths, consumerId, clusterName);
         this.zookeeper = new ZookeeperOperations(curator);
 
-        int historiesEncoderBufferSize = configFactory.getIntProperty(Configs.CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_HISTORY_BUFFER_SIZE_BYTES);
         this.consumerRateHistoriesEncoder = new ConsumerRateHistoriesEncoder(subscriptionIds, historiesEncoderBufferSize);
         this.consumerRateHistoriesDecoder = new ConsumerRateHistoriesDecoder(subscriptionIds);
 
-        int maxRateEncoderBufferSize = configFactory.getIntProperty(Configs.CONSUMER_MAXRATE_REGISTRY_BINARY_ENCODER_MAX_RATE_BUFFER_SIZE_BYTES);
         this.consumerMaxRatesEncoder = new ConsumerMaxRatesEncoder(subscriptionIds, maxRateEncoderBufferSize);
         this.consumerMaxRatesDecoder = new ConsumerMaxRatesDecoder(subscriptionIds);
 
