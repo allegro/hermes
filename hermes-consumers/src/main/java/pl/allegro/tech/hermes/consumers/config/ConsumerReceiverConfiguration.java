@@ -24,12 +24,13 @@ import java.time.Clock;
 @EnableConfigurationProperties({
         ConsumerReceiverProperties.class,
         KafkaConsumerProperties.class,
-        KafkaProperties.class
+        KafkaProperties.class,
+        CommonConsumerProperties.class
 })
 public class ConsumerReceiverConfiguration {
 
     @Bean
-    public ReceiverFactory kafkaMessageReceiverFactory(ConfigFactory configs,
+    public ReceiverFactory kafkaMessageReceiverFactory(CommonConsumerProperties commonConsumerProperties,
                                                        ConsumerReceiverProperties consumerReceiverProperties,
                                                        KafkaConsumerProperties kafkaConsumerProperties,
                                                        KafkaProperties kafkaAuthorizationProperties,
@@ -41,7 +42,7 @@ public class ConsumerReceiverConfiguration {
                                                        Trackers trackers,
                                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         return new KafkaMessageReceiverFactory(
-                configs,
+                commonConsumerProperties.toCommonConsumerParameters(),
                 consumerReceiverProperties.toKafkaReceiverParams(),
                 kafkaConsumerProperties.toKafkaConsumerParameters(),
                 kafkaAuthorizationProperties.toKafkaAuthorizationParameters(),

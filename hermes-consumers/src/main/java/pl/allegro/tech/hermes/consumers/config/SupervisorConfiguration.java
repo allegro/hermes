@@ -7,7 +7,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -55,7 +54,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 @EnableConfigurationProperties({
         CommitOffsetProperties.class,
         KafkaProperties.class,
-        WorkloadProperties.class
+        WorkloadProperties.class,
+        CommonConsumerProperties.class
 })
 public class SupervisorConfiguration {
     private static final Logger logger = getLogger(SupervisorConfiguration.class);
@@ -103,7 +103,7 @@ public class SupervisorConfiguration {
     @Bean
     public ConsumerFactory consumerFactory(ReceiverFactory messageReceiverFactory,
                                            HermesMetrics hermesMetrics,
-                                           ConfigFactory configFactory,
+                                           CommonConsumerProperties commonConsumerProperties,
                                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                                            OutputRateCalculatorFactory outputRateCalculatorFactory,
                                            Trackers trackers,
@@ -119,7 +119,7 @@ public class SupervisorConfiguration {
         return new ConsumerFactory(
                 messageReceiverFactory,
                 hermesMetrics,
-                configFactory,
+                commonConsumerProperties.toCommonConsumerParameters(),
                 consumerRateLimitSupervisor,
                 outputRateCalculatorFactory,
                 trackers,
@@ -136,13 +136,13 @@ public class SupervisorConfiguration {
     }
 
     @Bean
-    public ConsumersExecutorService consumersExecutorService(ConfigFactory configFactory,
+    public ConsumersExecutorService consumersExecutorService(CommonConsumerProperties commonConsumerProperties,
                                                              HermesMetrics hermesMetrics) {
-        return new ConsumersExecutorService(configFactory, hermesMetrics);
+        return new ConsumersExecutorService(commonConsumerProperties.getThreadPoolSize(), hermesMetrics);
     }
 
     @Bean
-    public ConsumersSupervisor nonblockingConsumersSupervisor(ConfigFactory configFactory,
+    public ConsumersSupervisor nonblockingConsumersSupervisor(CommonConsumerProperties commonConsumerProperties,
                                                               ConsumersExecutorService executor,
                                                               ConsumerFactory consumerFactory,
                                                               OffsetQueue offsetQueue,
@@ -154,7 +154,7 @@ public class SupervisorConfiguration {
                                                               ConsumerMonitor monitor,
                                                               Clock clock,
                                                               CommitOffsetProperties commitOffsetProperties) {
-        return new NonblockingConsumersSupervisor(configFactory, executor, consumerFactory, offsetQueue,
+        return new NonblockingConsumersSupervisor(commonConsumerProperties.toCommonConsumerParameters(), executor, consumerFactory, offsetQueue,
                 consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
                 subscriptionRepository, metrics, monitor, clock, commitOffsetProperties.getPeriod());
     }

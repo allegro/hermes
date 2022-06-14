@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
@@ -45,17 +43,16 @@ public class ConsumerProcessSupervisor implements Runnable {
     public ConsumerProcessSupervisor(ConsumersExecutorService executor,
                                      Clock clock,
                                      HermesMetrics metrics,
-                                     ConfigFactory configs,
-                                     ConsumerProcessSupplier processFactory) {
+                                     ConsumerProcessSupplier processFactory,
+                                     int signalQueueSize,
+                                     int backgroundSupervisorKillAfter) {
         this.executor = executor;
         this.clock = clock;
         this.metrics = metrics;
-        int signalQueueSize = configs.getIntProperty(Configs.CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE);
         this.taskQueue = new MonitoredMpscQueue<>(new WaitFreeDrainMpscQueue<>(signalQueueSize), metrics, "signalQueue");
         this.signalsFilter = new SignalsFilter(taskQueue, clock);
         this.runningConsumerProcesses = new RunningConsumerProcesses(clock);
-        this.processKiller = new ConsumerProcessKiller(
-                configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER), clock);
+        this.processKiller = new ConsumerProcessKiller(backgroundSupervisorKillAfter, clock);
         this.processFactory = processFactory;
 
         metrics.registerRunningConsumerProcessesCountGauge(runningConsumerProcesses::count);
@@ -203,7 +200,7 @@ public class ConsumerProcessSupervisor implements Runnable {
                 logger.info("Created consumer for {}. {}", subscription.getQualifiedName(), start.getLogWithIdAndType());
 
                 logger.info("Starting consumer process for subscription {}. {}", start.getTarget(), start.getLogWithIdAndType());
-                Future future = executor.execute(process);
+                Future<?> future = executor.execute(process);
                 logger.info("Consumer for {} was added for execution. {}", subscription.getQualifiedName(), start.getLogWithIdAndType());
 
                 runningConsumerProcesses.add(process, future);

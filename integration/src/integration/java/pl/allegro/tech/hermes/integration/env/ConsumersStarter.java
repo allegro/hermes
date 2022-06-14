@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_COMMIT_OFFSET_PERIOD;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL;

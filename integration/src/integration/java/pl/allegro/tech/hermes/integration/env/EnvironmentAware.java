@@ -12,6 +12,8 @@ public interface EnvironmentAware {
 
     int MANAGEMENT_PORT = 18082;
 
+    int CONSUMER_PORT = 8000;
+
     String HTTP_ENDPOINT_URL = "http://localhost:" + HTTP_ENDPOINT_PORT + "/";
 
     String GOOGLE_PUBSUB_ENDPOINT_URL = "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic";
@@ -30,7 +32,7 @@ public interface EnvironmentAware {
 
     String MANAGEMENT_ENDPOINT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
 
-    String CONSUMER_ENDPOINT_URL = "http://localhost:" + CONFIG_FACTORY.getIntProperty(Configs.CONSUMER_HEALTH_CHECK_PORT) + "/";
+    String CONSUMER_ENDPOINT_URL = "http://localhost:" + CONSUMER_PORT + "/";
 
     int GRAPHITE_HTTP_SERVER_PORT = 18089;
 

@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.consumers.supervisor;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.BatchConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
@@ -29,7 +29,7 @@ public class ConsumerFactory {
     private final OutputRateCalculatorFactory outputRateCalculatorFactory;
     private final ReceiverFactory messageReceiverFactory;
     private final HermesMetrics hermesMetrics;
-    private final ConfigFactory configFactory;
+    private final CommonConsumerParameters commonConsumerParameters;
     private final Trackers trackers;
     private final OffsetQueue offsetQueue;
     private final ConsumerMessageSenderFactory consumerMessageSenderFactory;
@@ -43,7 +43,7 @@ public class ConsumerFactory {
 
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
                            HermesMetrics hermesMetrics,
-                           ConfigFactory configFactory,
+                           CommonConsumerParameters commonConsumerParameters,
                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                            OutputRateCalculatorFactory outputRateCalculatorFactory,
                            Trackers trackers,
@@ -59,7 +59,7 @@ public class ConsumerFactory {
 
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
-        this.configFactory = configFactory;
+        this.commonConsumerParameters = commonConsumerParameters;
         this.consumerRateLimitSupervisor = consumerRateLimitSupervisor;
         this.outputRateCalculatorFactory = outputRateCalculatorFactory;
         this.trackers = trackers;
@@ -87,7 +87,7 @@ public class ConsumerFactory {
                     trackers,
                     subscription,
                     topic,
-                    configFactory);
+                    commonConsumerParameters.isUseTopicMessageSizeEnabled());
         } else {
             SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription,
                     outputRateCalculatorFactory, hermesMetrics, consumerRateLimitSupervisor, clock);
@@ -101,7 +101,7 @@ public class ConsumerFactory {
                     trackers,
                     messageConverterResolver,
                     topic,
-                    configFactory,
+                    commonConsumerParameters,
                     offsetQueue,
                     consumerAuthorizationHandler);
         }

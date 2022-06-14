@@ -7,12 +7,11 @@ import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.common.config.Configs
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -59,21 +58,20 @@ class ConsumerProcessSupervisorTest extends Specification {
     def setup() {
         clock = new CurrentTimeClock()
         consumer = new ConsumerStub(subscription1)
-        MutableConfigFactory configFactory = new MutableConfigFactory()
         ConsumerProcessSupplier processFactory = {
             Subscription subscription, Signal startSignal, Consumer<SubscriptionName> onConsumerStopped ->
                 return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
         }
 
-        configFactory.overrideProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER, killAfter)
         metrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))
 
         supervisor = new ConsumerProcessSupervisor(
-                new ConsumersExecutorService(configFactory, metrics),
+                new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 clock,
                 metrics,
-                configFactory,
-                processFactory)
+                processFactory,
+                new CommonConsumerProperties().getSignalProcessingQueueSize(),
+                killAfter)
     }
 
     def cleanup() {

@@ -1,13 +1,9 @@
 package pl.allegro.tech.hermes.common.config;
 
 import com.google.common.io.Files;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 
 import java.util.Arrays;
-
-import static java.lang.Math.abs;
-import static java.util.UUID.randomUUID;
 
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public enum Configs {
@@ -150,24 +146,7 @@ public enum Configs {
     MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO("frontend.messages.loading.wait.for.broker.topic.info", 5),
     MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED("frontend.messages.local.storage.size.reporting.enabled", true),
 
-    CONSUMER_THREAD_POOL_SIZE("consumer.thread.pool.size", 500),
-
-    CONSUMER_INFLIGHT_SIZE("consumer.inflight.size", 100),
-    CONSUMER_FILTERING_RATE_LIMITER_ENABLED("consumer.filtering.rate.limiter.enabled", false),
-
-    CONSUMER_HEALTH_CHECK_PORT("consumer.status.health.port", 8000),
-    CONSUMER_FILTERING_ENABLED("consumer.filtering.enabled", true),
-    CONSUMER_SUBSCRIPTION_IDS_CACHE_REMOVED_EXPIRE_AFTER_ACCESS_SECONDS("consumer.subscription.ids.cache.removed.expire.after.access.seconds", 60L),
-
     CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 20_000),
-    CONSUMER_BACKGROUND_SUPERVISOR_UNHEALTHY_AFTER("consumer.supervisor.background.unhealty.after", 600_000),
-    CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER("consumer.supervisor.background.kill.after", 300_000),
-    CONSUMER_SIGNAL_PROCESSING_INTERVAL("consumer.supervisor.signal.processing.interval.ms", 5_000),
-    CONSUMER_SIGNAL_PROCESSING_QUEUE_SIZE("consumer.supervisor.signal.queue.size", 5_000),
-
-    CONSUMER_USE_TOPIC_MESSAGE_SIZE("consumer.use.topic.message.size", false),
-
-    CONSUMER_CLIENT_ID("consumer.clientId", new InetAddressInstanceIdResolver().resolve()),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),

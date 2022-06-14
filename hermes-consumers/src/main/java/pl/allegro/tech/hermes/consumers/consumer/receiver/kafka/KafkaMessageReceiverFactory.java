@@ -3,11 +3,10 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.ExponentiallyGrowingIdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.IdleTimeCalculator;
@@ -50,7 +49,7 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
-    private final ConfigFactory configs;
+    private final CommonConsumerParameters commonConsumerParameters;
     private final KafkaParameters kafkaAuthorizationParameters;
     private final KafkaReceiverParameters consumerReceiverParameters;
     private final KafkaConsumerParameters kafkaConsumerParameters;
@@ -62,7 +61,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final Trackers trackers;
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
 
-    public KafkaMessageReceiverFactory(ConfigFactory configs,
+    public KafkaMessageReceiverFactory(CommonConsumerParameters commonConsumerParameters,
                                        KafkaReceiverParameters consumerReceiverParameters,
                                        KafkaConsumerParameters kafkaConsumerParameters,
                                        KafkaParameters kafkaAuthorizationParameters,
@@ -73,7 +72,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                        FilterChainFactory filterChainFactory,
                                        Trackers trackers,
                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
-        this.configs = configs;
+        this.commonConsumerParameters = commonConsumerParameters;
         this.consumerReceiverParameters = consumerReceiverParameters;
         this.kafkaConsumerParameters = kafkaConsumerParameters;
         this.kafkaAuthorizationParameters = kafkaAuthorizationParameters;
@@ -97,7 +96,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
             receiver = createThrottlingMessageReceiver(receiver, subscription);
         }
 
-        if (configs.getBooleanProperty(Configs.CONSUMER_FILTERING_ENABLED)) {
+        if (commonConsumerParameters.isFilteringEnabled()) {
             receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription);
         }
 
@@ -129,7 +128,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private MessageReceiver createFilteringMessageReceiver(MessageReceiver receiver,
                                                            ConsumerRateLimiter consumerRateLimiter,
                                                            Subscription subscription) {
-        boolean filteringRateLimitEnabled = configs.getBooleanProperty(Configs.CONSUMER_FILTERING_RATE_LIMITER_ENABLED);
+        boolean filteringRateLimitEnabled = commonConsumerParameters.isFilteringRateLimiterEnabled();
         FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
                 offsetQueue,
                 filteringRateLimitEnabled ? consumerRateLimiter : null,
@@ -142,7 +141,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
         Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaAuthorizationParameters.getBrokerList());
-        props.put(CLIENT_ID_CONFIG, configs.getStringProperty(Configs.CONSUMER_CLIENT_ID) + "_" + groupId.asString());
+        props.put(CLIENT_ID_CONFIG, commonConsumerParameters.getClientId() + "_" + groupId.asString());
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, "false");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
@@ -187,7 +186,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     private int getMaxPartitionFetch(Topic topic) {
-        if (configs.getBooleanProperty(Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE)) {
+        if (commonConsumerParameters.isUseTopicMessageSizeEnabled()) {
             int topicMessageSize = topic.getMaxMessageSize();
             int min = kafkaConsumerParameters.getMaxPartitionFetchMin();
             int max = kafkaConsumerParameters.getMaxPartitionFetchMax();

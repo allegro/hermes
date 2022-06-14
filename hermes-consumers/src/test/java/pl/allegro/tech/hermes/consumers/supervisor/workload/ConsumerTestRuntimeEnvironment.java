@@ -9,10 +9,10 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
@@ -114,13 +114,12 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     private ConsumerControllers createConsumer(String consumerId) {
-        ConfigFactory consumerConfig = consumerConfig(consumerId);
-        return createConsumer(consumerId, consumerConfig, consumersSupervisor(mock(ConsumerFactory.class), consumerConfig));
+        ConfigFactory consumerConfig = consumerConfig();
+        return createConsumer(consumerId, consumerConfig, consumersSupervisor(mock(ConsumerFactory.class)));
     }
 
-    ConfigFactory consumerConfig(String consumerId) {
-        return new MutableConfigFactory()
-                .overrideProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL, 1000);
+    ConfigFactory consumerConfig() {
+        return new MutableConfigFactory();
     }
 
     private ConsumerControllers createConsumer(String consumerId,
@@ -144,6 +143,9 @@ class ConsumerTestRuntimeEnvironment {
 
         WorkloadProperties workloadProperties = new WorkloadProperties();
         workloadProperties.setNodeId(consumerId);
+        workloadProperties.setRebalanceInterval(1);
+        workloadProperties.setConsumerPerSubscription(2);
+        workloadProperties.setMonitorScanInterval(1);
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
                 curator, consumerConfig
@@ -159,7 +161,7 @@ class ConsumerTestRuntimeEnvironment {
 
         SubscriptionConfiguration subscriptionConfiguration = new SubscriptionConfiguration();
         SubscriptionIds subscriptionIds = subscriptionConfiguration.subscriptionIds(notificationsBus, subscriptionsCache,
-                new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths), consumerConfig);
+                new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths), new CommonConsumerProperties());
 
         SupervisorConfiguration supervisorConfiguration = new SupervisorConfiguration();
 
@@ -191,10 +193,12 @@ class ConsumerTestRuntimeEnvironment {
         return startNode(consumerControllers).supervisorController;
     }
 
-    ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory, ConfigFactory consumerConfig) {
+    ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory) {
         HermesMetrics metrics = metricsSupplier.get();
-        return new NonblockingConsumersSupervisor(consumerConfig,
-                new ConsumersExecutorService(consumerConfig, metrics),
+        CommonConsumerProperties commonConsumerProperties = new CommonConsumerProperties();
+        commonConsumerProperties.setBackgroundSupervisorInterval(1000);
+        return new NonblockingConsumersSupervisor(commonConsumerProperties.toCommonConsumerParameters(),
+                new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 consumerFactory,
                 mock(OffsetQueue.class),
                 partitionAssignmentState,
@@ -210,7 +214,8 @@ class ConsumerTestRuntimeEnvironment {
     ConsumersRuntimeMonitor monitor(String consumerId,
                                     ConsumersSupervisor consumersSupervisor,
                                     SupervisorController supervisorController,
-                                    ConfigFactory config) {
+                                    ConfigFactory config,
+                                    int monitorScanInterval) {
         CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
         ModelAwareZookeeperNotifyingCache modelAwareCache =
                 new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();
@@ -225,7 +230,7 @@ class ConsumerTestRuntimeEnvironment {
                 supervisorController,
                 metricsSupplier.get(),
                 subscriptionsCache,
-                new WorkloadProperties().getMonitorScanInterval());
+                monitorScanInterval);
     }
 
     private List<ConsumerControllers> createConsumers(int howMany) {
