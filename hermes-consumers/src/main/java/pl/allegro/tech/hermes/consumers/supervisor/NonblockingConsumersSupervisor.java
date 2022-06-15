@@ -6,9 +6,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
@@ -38,13 +37,13 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     private final ConsumerProcessSupervisor backgroundProcess;
     private final UndeliveredMessageLogPersister undeliveredMessageLogPersister;
-    private final ConfigFactory configs;
+    private final int backgroundSupervisorInterval;
     private final OffsetCommitter offsetCommitter;
     private final SubscriptionRepository subscriptionRepository;
 
     private final ScheduledExecutorService scheduledExecutor;
 
-    public NonblockingConsumersSupervisor(ConfigFactory configFactory,
+    public NonblockingConsumersSupervisor(CommonConsumerParameters commonConsumerParameters,
                                           ConsumersExecutorService executor,
                                           ConsumerFactory consumerFactory,
                                           OffsetQueue offsetQueue,
@@ -58,9 +57,11 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                                           int commitOffsetPeriod) {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
-        this.configs = configFactory;
-        this.backgroundProcess = new ConsumerProcessSupervisor(executor, clock, metrics, configFactory,
-                new ConsumerProcessFactory(retransmitter, consumerFactory, configs, clock));
+        this.backgroundSupervisorInterval = commonConsumerParameters.getBackgroundSupervisorInterval();
+        this.backgroundProcess = new ConsumerProcessSupervisor(executor, clock, metrics,
+                new ConsumerProcessFactory(retransmitter, consumerFactory, commonConsumerParameters.getBackgroundSupervisorUnhealthyAfter(), clock),
+                commonConsumerParameters.getSignalProcessingQueueSize(),
+                commonConsumerParameters.getBackgroundSupervisorKillAfter());
         this.scheduledExecutor = createExecutorForSupervision();
         this.offsetCommitter = new OffsetCommitter(
                 offsetQueue,
@@ -128,8 +129,8 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     public void start() {
         scheduledExecutor.scheduleAtFixedRate(
                 backgroundProcess,
-                configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL),
-                configs.getIntProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL),
+                backgroundSupervisorInterval,
+                backgroundSupervisorInterval,
                 TimeUnit.MILLISECONDS);
         offsetCommitter.start();
         undeliveredMessageLogPersister.start();

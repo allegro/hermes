@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorParameters;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.util.List;
@@ -118,7 +117,6 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
     }
 
     @Test
-    @Ignore
     public void shouldRecreateMissingConsumer() throws InterruptedException {
         // given
         ConsumerFactory consumerFactory = mock(ConsumerFactory.class);
@@ -131,17 +129,15 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
 
         String consumerId = "consumer";
 
-        ConfigFactory config = runtime.consumerConfig(consumerId);
-        WorkloadProperties workloadProperties = new WorkloadProperties();
-        workloadProperties.setNodeId(consumerId);
+        ConfigFactory config = runtime.consumerConfig();
 
-        ConsumersSupervisor supervisor = runtime.consumersSupervisor(consumerFactory, config);
+        ConsumersSupervisor supervisor = runtime.consumersSupervisor(consumerFactory);
         SelectiveSupervisorController node = runtime.spawnConsumer(consumerId, config, supervisor);
 
         runtime.awaitUntilAssignmentExists(runtime.createSubscription(), node);
 
         // when
-        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, config);
+        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, config, 1);
         monitor.start();
 
         // then
@@ -151,7 +147,6 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
         shutdown(supervisor);
         shutdown(node);
         shutdown(monitor);
-
     }
 
     private void shutdown(SelectiveSupervisorController controller) throws InterruptedException {

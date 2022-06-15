@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_HEALTH_CHECK_PORT;
 import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
 import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_CLUSTER_NAME;
@@ -85,7 +86,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         consumers.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperTwo.getConnectionString());
         consumers.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         consumers.overrideProperty(KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
-        consumers.overrideProperty(Configs.CONSUMER_HEALTH_CHECK_PORT, 7454);
+        consumers.overrideProperty(CONSUMER_HEALTH_CHECK_PORT, 7454);
         consumers.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
         consumers.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
 

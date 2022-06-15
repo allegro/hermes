@@ -3,13 +3,11 @@ package pl.allegro.tech.hermes.consumers.health;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
+import java.util.List;
 
 import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS;
@@ -18,13 +16,11 @@ import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS_COUNT
 public class ConsumerHttpServer {
 
     private final HttpServer server;
-    private final ObjectMapper mapper;
 
     private static final String STATUS_UP = "{\"status\": \"UP\"}";
 
-    public ConsumerHttpServer(ConfigFactory configFactory, ConsumerMonitor monitor, ObjectMapper mapper) throws IOException {
-        this.mapper = mapper;
-        server = createServer(configFactory.getIntProperty(Configs.CONSUMER_HEALTH_CHECK_PORT));
+    public ConsumerHttpServer(int healthCheckPort, ConsumerMonitor monitor, ObjectMapper mapper) throws IOException {
+        server = createServer(healthCheckPort);
         server.createContext("/status/health", (exchange) -> respondWithString(exchange, STATUS_UP));
         server.createContext("/status/subscriptions", (exchange) -> respondWithObject(exchange, mapper, monitor.check(SUBSCRIPTIONS)));
         server.createContext("/status/subscriptionsCount", (exchange) -> respondWithObject(exchange, mapper, monitor.check(SUBSCRIPTIONS_COUNT)));
@@ -41,7 +37,7 @@ public class ConsumerHttpServer {
     }
 
     private static void respondWithString(HttpExchange httpExchange, String response) throws IOException {
-        httpExchange.getResponseHeaders().put("Content-Type", Arrays.asList("application/json"));
+        httpExchange.getResponseHeaders().put("Content-Type", List.of("application/json"));
         httpExchange.sendResponseHeaders(OK.getStatusCode(), response.length());
         OutputStream os = httpExchange.getResponseBody();
         os.write(response.getBytes());

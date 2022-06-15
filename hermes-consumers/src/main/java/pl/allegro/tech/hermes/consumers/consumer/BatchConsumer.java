@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -47,18 +45,18 @@ public class BatchConsumer implements Consumer {
     private final MessageBatchSender sender;
     private final MessageBatchFactory batchFactory;
     private final HermesMetrics hermesMetrics;
-    private final ConfigFactory configs;
+    private final boolean useTopicMessageSize;
     private final MessageConverterResolver messageConverterResolver;
     private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final Trackers trackers;
 
     private Topic topic;
-    private OffsetQueue offsetQueue;
+    private final OffsetQueue offsetQueue;
     private Subscription subscription;
 
     private volatile boolean consuming = true;
 
-    private BatchMonitoring monitoring;
+    private final BatchMonitoring monitoring;
     private MessageBatchReceiver receiver;
 
     public BatchConsumer(ReceiverFactory messageReceiverFactory,
@@ -71,14 +69,14 @@ public class BatchConsumer implements Consumer {
                          Trackers trackers,
                          Subscription subscription,
                          Topic topic,
-                         ConfigFactory configs) {
+                         boolean useTopicMessageSize) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.sender = sender;
         this.batchFactory = batchFactory;
         this.offsetQueue = offsetQueue;
         this.subscription = subscription;
         this.hermesMetrics = hermesMetrics;
-        this.configs = configs;
+        this.useTopicMessageSize = useTopicMessageSize;
         this.monitoring = new BatchMonitoring(hermesMetrics, trackers);
         this.messageConverterResolver = messageConverterResolver;
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
@@ -158,7 +156,7 @@ public class BatchConsumer implements Consumer {
 
     private boolean messageSizeChanged(Topic newTopic) {
         return this.topic.getMaxMessageSize() != newTopic.getMaxMessageSize()
-                && configs.getBooleanProperty(Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE);
+                && useTopicMessageSize;
     }
 
     @Override
