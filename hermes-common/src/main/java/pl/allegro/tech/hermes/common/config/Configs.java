@@ -62,6 +62,7 @@ public enum Configs {
     KAFKA_AUTHORIZATION_USERNAME("kafka.authorization.username", "username"),
     KAFKA_AUTHORIZATION_PASSWORD("kafka.authorization.password", "password"),
 
+    // frontend properties
     FRONTEND_PORT("frontend.port", 8080),
     FRONTEND_HOST("frontend.host", "0.0.0.0"),
     FRONTEND_IDLE_TIMEOUT("frontend.idle.timeout", 65),
