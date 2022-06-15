@@ -5,8 +5,6 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
 import org.xnio.SslClientAuthMode;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
@@ -22,25 +20,6 @@ import static org.xnio.Options.BACKLOG;
 import static org.xnio.Options.KEEP_ALIVE;
 import static org.xnio.Options.READ_TIMEOUT;
 import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_ALWAYS_SET_KEEP_ALIVE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BACKLOG_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_BUFFER_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HOST;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_IO_THREADS_COUNT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_COOKIES;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_HEADERS;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MAX_PARAMETERS;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READ_TIMEOUT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_PARSE_TIMEOUT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALIVE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_AUTH_MODE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
 
 public class HermesServer {
 
@@ -48,8 +27,8 @@ public class HermesServer {
     private HermesShutdownHandler gracefulShutdown;
 
     private final HermesMetrics hermesMetrics;
-    private final ConfigFactory configFactory;
     private final HttpHandler publishingHandler;
+    private final HermesServerParameters serverParameters;
     private final HealthCheckService healthCheckService;
     private final ReadinessChecker readinessChecker;
     private final MessagePreviewPersister messagePreviewPersister;
@@ -61,7 +40,7 @@ public class HermesServer {
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
     public HermesServer(
-            ConfigFactory configFactory,
+            HermesServerParameters serverParameters,
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
             ReadinessChecker readinessChecker,
@@ -70,7 +49,7 @@ public class HermesServer {
             TopicMetadataLoadingJob topicMetadataLoadingJob,
             SslContextFactoryProvider sslContextFactoryProvider) {
 
-        this.configFactory = configFactory;
+        this.serverParameters = serverParameters;
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
         this.healthCheckService = new HealthCheckService();
@@ -79,9 +58,9 @@ public class HermesServer {
         this.topicMetadataLoadingJob = topicMetadataLoadingJob;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
 
-        this.port = configFactory.getIntProperty(FRONTEND_PORT);
-        this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
-        this.host = configFactory.getStringProperty(FRONTEND_HOST);
+        this.port = serverParameters.getFrontendPort();
+        this.sslPort = serverParameters.getSslPort();
+        this.host = serverParameters.getFrontHost();
         this.throughputLimiter = throughputLimiter;
     }
 
@@ -90,7 +69,7 @@ public class HermesServer {
         messagePreviewPersister.start();
         throughputLimiter.start();
 
-        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
+        if (serverParameters.isTopicMetadataRefreshJobEnabled()) {
             topicMetadataLoadingJob.start();
         }
         healthCheckService.startup();
@@ -98,8 +77,7 @@ public class HermesServer {
     }
 
     public void stop() throws InterruptedException {
-        boolean isGraceful = configFactory.getBooleanProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED);
-        if(isGraceful) {
+        if(serverParameters.isGracefulShutdownEnabled()) {
             prepareForGracefulShutdown();
         }
         shutdown();
@@ -108,7 +86,7 @@ public class HermesServer {
     public void prepareForGracefulShutdown() throws InterruptedException {
         healthCheckService.shutdown();
 
-        Thread.sleep(configFactory.getIntProperty(Configs.FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS));
+        Thread.sleep(serverParameters.getGracefulShutdownInitialWaitMs());
 
         gracefulShutdown.handleShutdown();
     }
@@ -118,7 +96,7 @@ public class HermesServer {
         messagePreviewPersister.shutdown();
         throughputLimiter.stop();
 
-        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
+        if (serverParameters.isTopicMetadataRefreshJobEnabled()) {
             topicMetadataLoadingJob.stop();
         }
         readinessChecker.stop();
@@ -128,24 +106,24 @@ public class HermesServer {
         gracefulShutdown = new HermesShutdownHandler(handlers(), hermesMetrics);
         Undertow.Builder builder = Undertow.builder()
                 .addHttpListener(port, host)
-                .setServerOption(REQUEST_PARSE_TIMEOUT, configFactory.getIntProperty(FRONTEND_REQUEST_PARSE_TIMEOUT))
-                .setServerOption(MAX_HEADERS, configFactory.getIntProperty(FRONTEND_MAX_HEADERS))
-                .setServerOption(MAX_PARAMETERS, configFactory.getIntProperty(FRONTEND_MAX_PARAMETERS))
-                .setServerOption(MAX_COOKIES, configFactory.getIntProperty(FRONTEND_MAX_COOKIES))
-                .setServerOption(ALWAYS_SET_KEEP_ALIVE, configFactory.getBooleanProperty(FRONTEND_ALWAYS_SET_KEEP_ALIVE))
-                .setServerOption(KEEP_ALIVE, configFactory.getBooleanProperty(FRONTEND_SET_KEEP_ALIVE))
-                .setSocketOption(BACKLOG, configFactory.getIntProperty(FRONTEND_BACKLOG_SIZE))
-                .setSocketOption(READ_TIMEOUT, configFactory.getIntProperty(FRONTEND_READ_TIMEOUT))
-                .setIoThreads(configFactory.getIntProperty(FRONTEND_IO_THREADS_COUNT))
-                .setWorkerThreads(configFactory.getIntProperty(FRONTEND_WORKER_THREADS_COUNT))
-                .setBufferSize(configFactory.getIntProperty(FRONTEND_BUFFER_SIZE))
+                .setServerOption(REQUEST_PARSE_TIMEOUT, serverParameters.getRequestParseTimeout())
+                .setServerOption(MAX_HEADERS, serverParameters.getMaxHeaders())
+                .setServerOption(MAX_PARAMETERS, serverParameters.getMaxParameters())
+                .setServerOption(MAX_COOKIES, serverParameters.getMaxCookies())
+                .setServerOption(ALWAYS_SET_KEEP_ALIVE, serverParameters.isAlwaysSetKepAlive())
+                .setServerOption(KEEP_ALIVE, serverParameters.isSetKeepAlive())
+                .setSocketOption(BACKLOG, serverParameters.getBacklogSize())
+                .setSocketOption(READ_TIMEOUT, serverParameters.getReadTimeout())
+                .setIoThreads(serverParameters.getIoThreadCount())
+                .setWorkerThreads(serverParameters.getWorkerThreadCount())
+                .setBufferSize(serverParameters.getBufferSize())
                 .setHandler(gracefulShutdown);
 
-        if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
+        if (serverParameters.isSslEnabled()) {
             builder.addHttpsListener(sslPort, host, sslContextFactoryProvider.getSslContextFactory().create().getSslContext())
                     .setSocketOption(SSL_CLIENT_AUTH_MODE,
-                            SslClientAuthMode.valueOf(configFactory.getStringProperty(FRONTEND_SSL_CLIENT_AUTH_MODE).toUpperCase()))
-                    .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));
+                            SslClientAuthMode.valueOf(serverParameters.getSslClientAuthMode().toUpperCase()))
+                    .setServerOption(ENABLE_HTTP2, serverParameters.isHttp2Enabled());
         }
         this.undertow = builder.build();
         return undertow;
@@ -162,10 +140,6 @@ public class HermesServer {
                 .get("/status/ready", readinessHandler)
                 .get("/", healthCheckHandler);
 
-        return isFrontendRequestDumperEnabled() ? new RequestDumpingHandler(routingHandler) : routingHandler;
-    }
-
-    private boolean isFrontendRequestDumperEnabled() {
-        return configFactory.getBooleanProperty(Configs.FRONTEND_REQUEST_DUMPER);
+        return serverParameters.isRequestDumper() ? new RequestDumpingHandler(routingHandler) : routingHandler;
     }
 }

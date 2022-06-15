@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.KeystoreConfigurationException;
@@ -16,25 +14,17 @@ import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
 
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_KEYSTORE_FORMAT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_KEYSTORE_LOCATION;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_KEYSTORE_PASSWORD;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_FORMAT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_LOCATION;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_PASSWORD;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_SOURCE;
 import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JRE;
 import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
 
 public class SslContextFactoryProvider {
 
     private final SslContextFactory sslContextFactory;
-    private final ConfigFactory configFactory;
+    private final ContextFactoryParameters contextFactoryParameters;
 
-    public SslContextFactoryProvider(SslContextFactory sslContextFactory, ConfigFactory configFactory) {
+    public SslContextFactoryProvider(SslContextFactory sslContextFactory, ContextFactoryParameters contextFactoryParameters) {
         this.sslContextFactory = sslContextFactory;
-        this.configFactory = configFactory;
+        this.contextFactoryParameters = contextFactoryParameters;
     }
 
     public SslContextFactory getSslContextFactory() {
@@ -42,19 +32,19 @@ public class SslContextFactoryProvider {
     }
 
     private SslContextFactory getDefault() {
-        String protocol = configFactory.getStringProperty(Configs.FRONTEND_SSL_PROTOCOL);
         KeyManagersProvider keyManagersProvider = createKeyManagersProvider();
         TrustManagersProvider trustManagersProvider = createTrustManagersProvider();
-        return new DefaultSslContextFactory(protocol, keyManagersProvider, trustManagersProvider);
+        return new DefaultSslContextFactory(contextFactoryParameters.getFrontendSslProtocol(), keyManagersProvider, trustManagersProvider);
     }
 
     private KeyManagersProvider createKeyManagersProvider() {
-        String keystoreSource = configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_SOURCE);
+        String keystoreSource = contextFactoryParameters.getSslKeystoreSource();
+
         if (PROVIDED.getValue().equals(keystoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
-                    configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_LOCATION),
-                    configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_FORMAT),
-                    configFactory.getStringProperty(FRONTEND_SSL_KEYSTORE_PASSWORD)
+                    contextFactoryParameters.getSslKeystoreLocation(),
+                    contextFactoryParameters.getSslKeystoreFormat(),
+                    contextFactoryParameters.getSslKeystorePassword()
             );
             return new ProvidedKeyManagersProvider(properties);
         }
@@ -65,12 +55,12 @@ public class SslContextFactoryProvider {
     }
 
     public TrustManagersProvider createTrustManagersProvider() {
-        String truststoreSource = configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE);
+        String truststoreSource = contextFactoryParameters.getSslTrustStoreSource();
         if (PROVIDED.getValue().equals(truststoreSource)) {
             KeystoreProperties properties = new KeystoreProperties(
-                    configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_LOCATION),
-                    configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_FORMAT),
-                    configFactory.getStringProperty(FRONTEND_SSL_TRUSTSTORE_PASSWORD)
+                    contextFactoryParameters.getSslTrustStoreLocation(),
+                    contextFactoryParameters.getSslTrustStoreFormat(),
+                    contextFactoryParameters.getSslTrustStorePassword()
             );
             return new ProvidedTrustManagersProvider(properties);
         }

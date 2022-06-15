@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import io.undertow.server.HttpHandler;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -11,8 +12,10 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
+import pl.allegro.tech.hermes.frontend.server.ContextFactoryParameters;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.DefaultReadinessChecker;
+import pl.allegro.tech.hermes.frontend.server.HermesServerParameters;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
@@ -25,10 +28,11 @@ import java.util.Optional;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED;
 
 @Configuration
+@EnableConfigurationProperties({FrontendSslProperties.class})
 public class FrontendServerConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    public HermesServer hermesServer(ConfigFactory configFactory,
+    public HermesServer hermesServer(FrontendSslProperties frontendSslProperties,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
                                      DefaultReadinessChecker defaultReadinessChecker,
@@ -36,7 +40,10 @@ public class FrontendServerConfiguration {
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider) {
-        return new HermesServer(configFactory, hermesMetrics, publishingHandler, defaultReadinessChecker,
+        // todo add necessary properties
+        HermesServerParameters serverParameters = ConfigPropertiesFactory.createHermesServerParameters(frontendSslProperties);
+
+        return new HermesServer(serverParameters, hermesMetrics, publishingHandler, defaultReadinessChecker,
                 defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider);
     }
 
@@ -49,8 +56,9 @@ public class FrontendServerConfiguration {
 
     @Bean
     public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory,
-                                                               ConfigFactory configFactory) {
-        return new SslContextFactoryProvider(sslContextFactory.orElse(null), configFactory);
+                                                               FrontendSslProperties frontendSslProperties) {
+        ContextFactoryParameters contextFactoryParameters = ConfigPropertiesFactory.createContextFactoryParameters(frontendSslProperties);
+        return new SslContextFactoryProvider(sslContextFactory.orElse(null), contextFactoryParameters);
     }
 
     @Bean

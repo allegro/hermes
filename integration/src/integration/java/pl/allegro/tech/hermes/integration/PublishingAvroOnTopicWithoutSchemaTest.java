@@ -20,6 +20,9 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
+import static pl.allegro.tech.hermes.integration.ConfigurationProperties.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
+import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
@@ -44,7 +47,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
         frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
-        frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(FRONTEND_SSL_ENABLED, false);
         frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         frontendStarter.start();
