@@ -58,7 +58,18 @@ public class CommonConsumerParameters {
         return clientId;
     }
 
-    public CommonConsumerParameters(int threadPoolSize, int inflightSize, boolean filteringRateLimiterEnabled, boolean filteringEnabled, int backgroundSupervisorInterval, int backgroundSupervisorUnhealthyAfter, int backgroundSupervisorKillAfter, int signalProcessingIntervalMilliseconds, int signalProcessingQueueSize, boolean useTopicMessageSizeEnabled, String clientId) {
+    public CommonConsumerParameters(
+            int threadPoolSize,
+            int inflightSize,
+            boolean filteringRateLimiterEnabled,
+            boolean filteringEnabled,
+            int backgroundSupervisorInterval,
+            int backgroundSupervisorUnhealthyAfter,
+            int backgroundSupervisorKillAfter,
+            int signalProcessingIntervalMilliseconds,
+            int signalProcessingQueueSize,
+            boolean useTopicMessageSizeEnabled,
+            String clientId) {
         this.threadPoolSize = threadPoolSize;
         this.inflightSize = inflightSize;
         this.filteringRateLimiterEnabled = filteringRateLimiterEnabled;

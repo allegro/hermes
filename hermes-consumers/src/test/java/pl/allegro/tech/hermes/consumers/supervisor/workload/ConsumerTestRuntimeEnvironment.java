@@ -196,7 +196,7 @@ class ConsumerTestRuntimeEnvironment {
     ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory) {
         HermesMetrics metrics = metricsSupplier.get();
         CommonConsumerProperties commonConsumerProperties = new CommonConsumerProperties();
-        commonConsumerProperties.setBackgroundSupervisorInterval(1000);
+        commonConsumerProperties.getBackgroundSupervisor().setInterval(1000);
         return new NonblockingConsumersSupervisor(commonConsumerProperties.toCommonConsumerParameters(),
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 consumerFactory,

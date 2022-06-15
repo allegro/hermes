@@ -19,11 +19,7 @@ public class CommonConsumerProperties {
 
     private long subscriptionIdsCacheRemovedExpireAfterAccessSeconds = 60L;
 
-    private int backgroundSupervisorInterval = 20_000;
-
-    private int backgroundSupervisorUnhealthyAfter = 600_000;
-
-    private int backgroundSupervisorKillAfter = 300_000;
+    private BackgroundSupervisor backgroundSupervisor = new BackgroundSupervisor();
 
     private int signalProcessingIntervalMilliseconds = 5_000;
 
@@ -81,28 +77,12 @@ public class CommonConsumerProperties {
         this.subscriptionIdsCacheRemovedExpireAfterAccessSeconds = subscriptionIdsCacheRemovedExpireAfterAccessSeconds;
     }
 
-    public int getBackgroundSupervisorInterval() {
-        return backgroundSupervisorInterval;
+    public BackgroundSupervisor getBackgroundSupervisor() {
+        return backgroundSupervisor;
     }
 
-    public void setBackgroundSupervisorInterval(int backgroundSupervisorInterval) {
-        this.backgroundSupervisorInterval = backgroundSupervisorInterval;
-    }
-
-    public int getBackgroundSupervisorUnhealthyAfter() {
-        return backgroundSupervisorUnhealthyAfter;
-    }
-
-    public void setBackgroundSupervisorUnhealthyAfter(int backgroundSupervisorUnhealthyAfter) {
-        this.backgroundSupervisorUnhealthyAfter = backgroundSupervisorUnhealthyAfter;
-    }
-
-    public int getBackgroundSupervisorKillAfter() {
-        return backgroundSupervisorKillAfter;
-    }
-
-    public void setBackgroundSupervisorKillAfter(int backgroundSupervisorKillAfter) {
-        this.backgroundSupervisorKillAfter = backgroundSupervisorKillAfter;
+    public void setBackgroundSupervisor(BackgroundSupervisor backgroundSupervisor) {
+        this.backgroundSupervisor = backgroundSupervisor;
     }
 
     public int getSignalProcessingIntervalMilliseconds() {
@@ -137,15 +117,48 @@ public class CommonConsumerProperties {
         this.clientId = clientId;
     }
 
+    public static final class BackgroundSupervisor {
+
+        private int interval = 20_000;
+
+        private int unhealthyAfter = 600_000;
+
+        private int killAfter = 300_000;
+
+        public int getInterval() {
+            return interval;
+        }
+
+        public void setInterval(int interval) {
+            this.interval = interval;
+        }
+
+        public int getUnhealthyAfter() {
+            return unhealthyAfter;
+        }
+
+        public void setUnhealthyAfter(int unhealthyAfter) {
+            this.unhealthyAfter = unhealthyAfter;
+        }
+
+        public int getKillAfter() {
+            return killAfter;
+        }
+
+        public void setKillAfter(int killAfter) {
+            this.killAfter = killAfter;
+        }
+    }
+
     public CommonConsumerParameters toCommonConsumerParameters() {
         return new CommonConsumerParameters(
                 this.threadPoolSize,
                 this.inflightSize,
                 this.filteringRateLimiterEnabled,
                 this.filteringEnabled,
-                this.backgroundSupervisorInterval,
-                this.backgroundSupervisorUnhealthyAfter,
-                this.backgroundSupervisorKillAfter,
+                this.backgroundSupervisor.interval,
+                this.backgroundSupervisor.unhealthyAfter,
+                this.backgroundSupervisor.killAfter,
                 this.signalProcessingIntervalMilliseconds,
                 this.signalProcessingQueueSize,
                 this.useTopicMessageSizeEnabled,
