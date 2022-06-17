@@ -21,8 +21,8 @@ public class HermesServerParameters {
     private final boolean http2Enabled;
     private final boolean requestDumper;
     private final int frontendPort;
-    private final int sslPort;
-    private final String frontHost;
+    private final int frontendSslPort;
+    private final String frontendHost;
 
 
     public HermesServerParameters(boolean topicMetadataRefreshJobEnabled,
@@ -30,7 +30,8 @@ public class HermesServerParameters {
                                   int gracefulShutdownInitialWaitMs,
                                   int requestParseTimeout,
                                   int maxHeaders,
-                                  int maxCookies, int maxParameters,
+                                  int maxCookies,
+                                  int maxParameters,
                                   boolean alwaysSetKepAlive,
                                   boolean setKeepAlive,
                                   int backlogSize,
@@ -41,7 +42,10 @@ public class HermesServerParameters {
                                   boolean sslEnabled,
                                   String sslClientAuthMode,
                                   boolean http2Enabled,
-                                  boolean requestDumper, int frontendPort, int sslPort, String frontHost) {
+                                  boolean requestDumper,
+                                  int frontendPort,
+                                  int frontendSslPort,
+                                  String frontendHost) {
         this.topicMetadataRefreshJobEnabled = topicMetadataRefreshJobEnabled;
         this.gracefulShutdownEnabled = gracefulShutdownEnabled;
         this.gracefulShutdownInitialWaitMs = gracefulShutdownInitialWaitMs;
@@ -61,8 +65,8 @@ public class HermesServerParameters {
         this.http2Enabled = http2Enabled;
         this.requestDumper = requestDumper;
         this.frontendPort = frontendPort;
-        this.sslPort = sslPort;
-        this.frontHost = frontHost;
+        this.frontendSslPort = frontendSslPort;
+        this.frontendHost = frontendHost;
     }
 
     public boolean isTopicMetadataRefreshJobEnabled() {
@@ -141,11 +145,11 @@ public class HermesServerParameters {
         return frontendPort;
     }
 
-    public int getSslPort() {
-        return sslPort;
+    public int getFrontendSslPort() {
+        return frontendSslPort;
     }
 
-    public String getFrontHost() {
-        return frontHost;
+    public String getFrontendHost() {
+        return frontendHost;
     }
 }

@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "frontend.ssl")
 public class FrontendSslProperties {
     private boolean enabled = false;
-    private String prot = "8443";
+    private int prot = 8443;
     private String clientAuthMode = "not_requested";
     private String protocol = "TLS";
     private SslProperties keystore;
@@ -19,11 +19,11 @@ public class FrontendSslProperties {
         this.enabled = enabled;
     }
 
-    public String getProt() {
+    public int getProt() {
         return prot;
     }
 
-    public void setProt(String prot) {
+    public void setProt(int prot) {
         this.prot = prot;
     }
 

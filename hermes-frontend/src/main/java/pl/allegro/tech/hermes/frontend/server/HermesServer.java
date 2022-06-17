@@ -59,8 +59,8 @@ public class HermesServer {
         this.sslContextFactoryProvider = sslContextFactoryProvider;
 
         this.port = serverParameters.getFrontendPort();
-        this.sslPort = serverParameters.getSslPort();
-        this.host = serverParameters.getFrontHost();
+        this.sslPort = serverParameters.getFrontendSslPort();
+        this.host = serverParameters.getFrontendHost();
         this.throughputLimiter = throughputLimiter;
     }
 

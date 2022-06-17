@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnfo
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.frontend.server.HermesServerParameters;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
@@ -58,7 +59,7 @@ class HermesServerFactory {
         HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer, rawSchemaClient, configFactory, trackers, avroMessageContentWrapper);
 
         return new HermesServer(
-                configFactory,
+                new HermesServerParameters(), // todo
                 hermesMetrics,
                 httpHandler,
                 new DisabledReadinessChecker(false),
