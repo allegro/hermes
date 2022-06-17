@@ -111,18 +111,6 @@ public enum Configs {
     FRONTEND_READINESS_CHECK_ENABLED("frontend.readiness.check.enabled", false),
     FRONTEND_READINESS_CHECK_INTERVAL_SECONDS("frontend.readiness.check.interval.seconds", 1),
 
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED("frontend.startup.topic.metadata.loading.enabled", false),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_INTERVAL("frontend.startup.topic.metadata.loading.retry.interval", 1_000L),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_COUNT("frontend.startup.topic.metadata.loading.retry.count", 5),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.metadata.loading.thread.pool.size", 16),
-
-    FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED("frontend.topic.metadata.refresh.job.enabled", true),
-    FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL_SECONDS("frontend.topic.metadata.refresh.job.interval.seconds", 60),
-
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED("frontend.startup.topic.schema.loading.enabled", false),
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT("frontend.startup.topic.schema.loading.retry.count", 3),
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.schema.loading.thread.pool.size", 16),
-
     MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE("frontend.messages.local.buffered.storage.size.bytes", 256 * 1024 * 1024L),
     MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED("frontend.messages.local.storage.v2.migration.enabled", true),
     MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
