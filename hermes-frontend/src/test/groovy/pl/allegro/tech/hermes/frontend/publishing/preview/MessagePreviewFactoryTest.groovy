@@ -32,7 +32,7 @@ class MessagePreviewFactoryTest extends Specification {
         given:
             def avroUser = new AvroUser()
             def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null)
-            factory = new MessagePreviewFactory(avroUser.asJson().length() - 1)
+            factory = new MessagePreviewFactory((avroUser.asJson().length() - 1) / 1024 as int)
         when:
             MessagePreview preview = factory.create(message, false)
         then:
