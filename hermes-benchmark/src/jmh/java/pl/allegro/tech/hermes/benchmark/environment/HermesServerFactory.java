@@ -90,7 +90,8 @@ class HermesServerFactory {
                 brokerMessageProducer,
                 null,
                 throughputLimiter,
-                null
+                null,
+                false
         ).provide();
     }
 }
