@@ -47,7 +47,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_REQUES
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRIES;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_BACKOFF_MS;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE;
 
 public class KafkaMessageProducerFactory {
 
@@ -55,9 +54,11 @@ public class KafkaMessageProducerFactory {
     private static final String ACK_LEADER = "1";
 
     private final ConfigFactory configFactory;
+    private final long bufferedSizeBytes;
 
-    public KafkaMessageProducerFactory(ConfigFactory configFactory) {
+    public KafkaMessageProducerFactory(ConfigFactory configFactory, long bufferedSizeBytes) {
         this.configFactory = configFactory;
+        this.bufferedSizeBytes = bufferedSizeBytes;
     }
 
     public Producers provide() {
@@ -65,7 +66,7 @@ public class KafkaMessageProducerFactory {
         props.put(BOOTSTRAP_SERVERS_CONFIG, getString(KAFKA_BROKER_LIST));
         props.put(MAX_BLOCK_MS_CONFIG, getInt(KAFKA_PRODUCER_MAX_BLOCK_MS));
         props.put(COMPRESSION_TYPE_CONFIG, getString(KAFKA_PRODUCER_COMPRESSION_CODEC));
-        props.put(BUFFER_MEMORY_CONFIG, configFactory.getLongProperty(MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE));
+        props.put(BUFFER_MEMORY_CONFIG, bufferedSizeBytes);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, getInt(KAFKA_PRODUCER_REQUEST_TIMEOUT_MS));
         props.put(BATCH_SIZE_CONFIG, getInt(KAFKA_PRODUCER_BATCH_SIZE));
         props.put(SEND_BUFFER_CONFIG, getInt(KAFKA_PRODUCER_TCP_SEND_BUFFER));

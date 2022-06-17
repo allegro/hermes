@@ -27,7 +27,6 @@ public abstract class AbstractFrontendShutdownTest extends IntegrationTest {
         frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
         frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontendStarter.overrideProperty(Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false);
         frontendStarter.start();
 
         hermesServer = frontendStarter.instance().getBean(HermesServer.class);
