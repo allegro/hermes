@@ -84,9 +84,6 @@ public enum Configs {
     FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
     FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE("frontend.force.topic.max.message.size", false),
 
-    FRONTEND_KEEP_ALIVE_HEADER_ENABLED("frontend.keep.alive.header.enabled", false),
-    FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS("frontend.keep.alive.header.timeout.seconds", 1),
-
     FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
     FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
     FRONTEND_SSL_CLIENT_AUTH_MODE("frontend.ssl.client.auth.mode", "not_requested"),
@@ -101,17 +98,6 @@ public enum Configs {
     FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
     FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
     FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
-
-    FRONTEND_AUTHENTICATION_ENABLED("frontend.authentication.enabled", false),
-    FRONTEND_AUTHENTICATION_MODE("frontend.authentication.mode", "constraint_driven"),
-
-    FRONTEND_HEADER_PROPAGATION_ENABLED("frontend.header.propagation.enabled", false),
-    FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER("frontend.header.propagation.allow.filter", ""),
-
-    FRONTEND_READINESS_CHECK_ENABLED("frontend.readiness.check.enabled", false),
-    FRONTEND_READINESS_CHECK_INTERVAL_SECONDS("frontend.readiness.check.interval.seconds", 1),
-
-    CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 20_000),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),

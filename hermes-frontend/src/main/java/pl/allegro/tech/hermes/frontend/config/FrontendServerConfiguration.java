@@ -24,7 +24,10 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import java.util.Optional;
 
 @Configuration
-@EnableConfigurationProperties(TopicLoadingProperties.class)
+@EnableConfigurationProperties({
+        TopicLoadingProperties.class,
+        ReadinessCheckProperties.class
+})
 public class FrontendServerConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -42,10 +45,10 @@ public class FrontendServerConfiguration {
     }
 
     @Bean
-    public DefaultReadinessChecker readinessChecker(ConfigFactory config,
+    public DefaultReadinessChecker readinessChecker(ReadinessCheckProperties readinessCheckProperties,
                                                     TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                                     ReadinessRepository readinessRepository) {
-        return new DefaultReadinessChecker(config, topicMetadataLoadingRunner, readinessRepository);
+        return new DefaultReadinessChecker(topicMetadataLoadingRunner, readinessRepository, readinessCheckProperties.isEnabled(), readinessCheckProperties.getIntervalSeconds());
     }
 
     @Bean

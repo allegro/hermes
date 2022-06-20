@@ -12,8 +12,8 @@ import javax.ws.rs.core.Response;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_KEEP_ALIVE_HEADER_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS;
 
 public class AttachingKeepAliveHeaderTest extends IntegrationTest {
 

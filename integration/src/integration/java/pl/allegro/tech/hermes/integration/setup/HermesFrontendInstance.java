@@ -9,6 +9,8 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.OK;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
 
 public class HermesFrontendInstance {
     private final String frontendUrl;
@@ -58,7 +60,7 @@ public class HermesFrontendInstance {
             frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
             frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
             frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
-            frontend.overrideProperty(Configs.FRONTEND_READINESS_CHECK_ENABLED, true);
+            frontend.overrideProperty(FRONTEND_READINESS_CHECK_ENABLED, true);
             frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         }
 
@@ -68,7 +70,7 @@ public class HermesFrontendInstance {
         }
 
         public Starter readinessCheckIntervalInSeconds(int seconds) {
-            frontend.overrideProperty(Configs.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, seconds);
+            frontend.overrideProperty(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, seconds);
             return this;
         }
 
