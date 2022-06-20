@@ -12,12 +12,8 @@ public class MessagePreviewFactory {
     private final int maxMessagePreviewLength;
     private final MessageToJsonConverter converter;
 
-    public MessagePreviewFactory(ConfigFactory configFactory) {
-        this(configFactory.getIntProperty(Configs.FRONTEND_MESSAGE_PREVIEW_MAX_SIZE_KB) * 1024);
-    }
-
-    MessagePreviewFactory(int maxMessagePreviewSize) {
-        this.maxMessagePreviewLength = maxMessagePreviewSize;
+    public MessagePreviewFactory(int maxMessagePreviewSizeKb) {
+        this.maxMessagePreviewLength = maxMessagePreviewSizeKb * 1024;
         converter = new MessageToJsonConverter();
     }
 

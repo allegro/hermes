@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type;
@@ -18,9 +17,6 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE;
 import static pl.allegro.tech.hermes.frontend.server.CompletableFuturesHelper.allComplete;
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.FAILURE;
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.MISSING;
@@ -41,16 +37,6 @@ public class TopicSchemaLoadingStartupHook {
     private final boolean isTopicSchemaLoadingStartupHookEnabled;
 
     public TopicSchemaLoadingStartupHook(TopicsCache topicsCache,
-                                         SchemaRepository schemaRepository,
-                                         ConfigFactory config) {
-
-        this(topicsCache, schemaRepository,
-                config.getIntProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT),
-                config.getIntProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE),
-                config.getBooleanProperty(FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED));
-    }
-
-    TopicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                   SchemaRepository schemaRepository,
                                   int retryCount,
                                   int threadPoolSize,

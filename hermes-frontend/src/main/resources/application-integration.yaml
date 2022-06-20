@@ -1,0 +1,8 @@
+frontend:
+  startup:
+    topic:
+      loading:
+        metadata:
+          enabled: true
+        schema:
+          enabled: true

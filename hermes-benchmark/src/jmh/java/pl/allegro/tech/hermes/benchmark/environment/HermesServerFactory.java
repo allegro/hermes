@@ -35,7 +35,6 @@ import java.util.Collections;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
@@ -51,7 +50,6 @@ class HermesServerFactory {
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
         ConfigFactory configFactory = new MutableConfigFactory()
-                .overrideProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED, false)
                 .overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
         Trackers trackers = new Trackers(Collections.emptyList());
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
@@ -65,6 +63,7 @@ class HermesServerFactory {
                 new NoOpMessagePreviewPersister(),
                 throughputLimiter,
                 null,
+                false,
                 null
         );
     }
@@ -90,7 +89,8 @@ class HermesServerFactory {
                 brokerMessageProducer,
                 null,
                 throughputLimiter,
-                null
+                null,
+                false
         ).provide();
     }
 }

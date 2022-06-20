@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import io.undertow.server.HttpHandler;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -22,9 +23,8 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED;
-
 @Configuration
+@EnableConfigurationProperties(TopicLoadingProperties.class)
 public class FrontendServerConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -35,9 +35,10 @@ public class FrontendServerConfiguration {
                                      DefaultMessagePreviewPersister defaultMessagePreviewPersister,
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
-                                     SslContextFactoryProvider sslContextFactoryProvider) {
+                                     SslContextFactoryProvider sslContextFactoryProvider,
+                                     TopicLoadingProperties topicLoadingProperties) {
         return new HermesServer(configFactory, hermesMetrics, publishingHandler, defaultReadinessChecker,
-                defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider);
+                defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, topicLoadingProperties.getMetadataRefreshJob().isEnabled(), sslContextFactoryProvider);
     }
 
     @Bean
@@ -55,26 +56,32 @@ public class FrontendServerConfiguration {
 
     @Bean
     public TopicMetadataLoadingJob topicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                                           ConfigFactory config) {
-        return new TopicMetadataLoadingJob(topicMetadataLoadingRunner, config);
+                                                           TopicLoadingProperties topicLoadingProperties) {
+        return new TopicMetadataLoadingJob(topicMetadataLoadingRunner, topicLoadingProperties.getMetadataRefreshJob().getIntervalSeconds());
     }
 
     @Bean
     public TopicMetadataLoadingRunner topicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
                                                                  TopicsCache topicsCache,
-                                                                 ConfigFactory config) {
-        return new TopicMetadataLoadingRunner(brokerMessageProducer, topicsCache, config);
+                                                                 TopicLoadingProperties topicLoadingProperties) {
+        return new TopicMetadataLoadingRunner(brokerMessageProducer, topicsCache,
+                topicLoadingProperties.getMetadata().getRetryCount(),
+                topicLoadingProperties.getMetadata().getRetryInterval(),
+                topicLoadingProperties.getMetadata().getThreadPoolSize());
     }
 
     @Bean(initMethod = "run")
-    public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, ConfigFactory configFactory) {
-        return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner, configFactory.getBooleanProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED));
+    public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, TopicLoadingProperties topicLoadingProperties) {
+        return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner, topicLoadingProperties.getMetadata().isEnabled());
     }
 
     @Bean(initMethod = "run")
     public TopicSchemaLoadingStartupHook topicSchemaLoadingStartupHook(TopicsCache topicsCache,
                                                                        SchemaRepository schemaRepository,
-                                                                       ConfigFactory config) {
-        return new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository, config);
+                                                                       TopicLoadingProperties topicLoadingProperties) {
+        return new TopicSchemaLoadingStartupHook(topicsCache, schemaRepository,
+                topicLoadingProperties.getSchema().getRetryCount(),
+                topicLoadingProperties.getSchema().getThreadPoolSize(),
+                topicLoadingProperties.getSchema().isEnabled());
     }
 }

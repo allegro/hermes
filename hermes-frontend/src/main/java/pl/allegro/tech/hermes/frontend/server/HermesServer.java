@@ -39,7 +39,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALI
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_AUTH_MODE;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
 
 public class HermesServer {
@@ -58,6 +57,7 @@ public class HermesServer {
     private final String host;
     private final ThroughputLimiter throughputLimiter;
     private final TopicMetadataLoadingJob topicMetadataLoadingJob;
+    private final boolean topicMetadataLoadingJobEnabled;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
     public HermesServer(
@@ -68,6 +68,7 @@ public class HermesServer {
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
             TopicMetadataLoadingJob topicMetadataLoadingJob,
+            boolean topicMetadataLoadingJobEnabled,
             SslContextFactoryProvider sslContextFactoryProvider) {
 
         this.configFactory = configFactory;
@@ -77,6 +78,7 @@ public class HermesServer {
         this.readinessChecker = readinessChecker;
         this.messagePreviewPersister = messagePreviewPersister;
         this.topicMetadataLoadingJob = topicMetadataLoadingJob;
+        this.topicMetadataLoadingJobEnabled = topicMetadataLoadingJobEnabled;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
@@ -90,7 +92,7 @@ public class HermesServer {
         messagePreviewPersister.start();
         throughputLimiter.start();
 
-        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
+        if (topicMetadataLoadingJobEnabled) {
             topicMetadataLoadingJob.start();
         }
         healthCheckService.startup();
@@ -118,7 +120,7 @@ public class HermesServer {
         messagePreviewPersister.shutdown();
         throughputLimiter.stop();
 
-        if (configFactory.getBooleanProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED)) {
+        if (topicMetadataLoadingJobEnabled) {
             topicMetadataLoadingJob.stop();
         }
         readinessChecker.stop();
