@@ -6,7 +6,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
@@ -33,11 +32,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES;
-
 public class BackupMessagesLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupMessagesLoader.class);
@@ -58,15 +52,15 @@ public class BackupMessagesLoader {
                                 BrokerListeners brokerListeners,
                                 TopicsCache topicsCache,
                                 Trackers trackers,
-                                ConfigFactory config) {
+                                BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
         this.trackers = trackers;
-        this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
-        this.resendSleep = config.getIntProperty(MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS);
-        this.readTopicInfoSleep = TimeUnit.SECONDS.toMillis(config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO));
-        this.maxResendRetries = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES);
+        this.messageMaxAgeHours = backupMessagesLoaderParameters.getMaxAgeHours();
+        this.resendSleep = backupMessagesLoaderParameters.getLoadingPauseBetweenResend();
+        this.readTopicInfoSleep = TimeUnit.SECONDS.toMillis(backupMessagesLoaderParameters.getLoadingWaitForBrokerTopicInfo());
+        this.maxResendRetries = backupMessagesLoaderParameters.getMaxResendRetries();
     }
 
     public void loadMessages(List<BackupMessage> messages) {
@@ -103,7 +97,7 @@ public class BackupMessagesLoader {
                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)
         ) {
             List<BackupMessage> messages = (List<BackupMessage>) objectInputStream.readObject();
-            logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file.toString());
+            logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file);
             loadMessages(messages);
 
         } catch (IOException | ClassNotFoundException e) {

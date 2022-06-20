@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration.auth;
 
-import com.google.common.io.Files;
 import io.undertow.util.StatusCodes;
 import org.assertj.core.description.Description;
 import org.assertj.core.description.TextDescription;
@@ -54,7 +53,6 @@ public class TopicAuthorisationTest extends IntegrationTest {
         frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
         frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
-        frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         frontendStarter.start();
         publisher = new HermesPublisher(FRONTEND_URL);

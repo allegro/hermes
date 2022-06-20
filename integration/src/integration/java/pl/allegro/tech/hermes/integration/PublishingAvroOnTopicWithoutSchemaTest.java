@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.google.common.io.Files;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -45,7 +44,6 @@ public class PublishingAvroOnTopicWithoutSchemaTest extends IntegrationTest {
         frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
         frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
 
         frontendStarter.start();
         publisher = new HermesPublisher(FRONTEND_URL);
