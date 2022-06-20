@@ -6,52 +6,78 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainParamete
 @ConfigurationProperties(prefix = "frontend")
 public class HandlersChainProperties {
 
-    private boolean keepAliveHeaderEnabled = false;
+    private AuthenticationProperties authentication = new AuthenticationProperties();
 
-    private int keepAliveHeaderTimeoutSeconds = 1;
+    private KeepAliveHeaderProperties keepAliveHeader = new KeepAliveHeaderProperties();
 
-    private boolean authenticationEnabled = false;
-
-    private String authenticationMode = "constraint_driven";
-
-    public boolean isKeepAliveHeaderEnabled() {
-        return keepAliveHeaderEnabled;
+    public AuthenticationProperties getAuthentication() {
+        return authentication;
     }
 
-    public void setKeepAliveHeaderEnabled(boolean keepAliveHeaderEnabled) {
-        this.keepAliveHeaderEnabled = keepAliveHeaderEnabled;
+    public void setAuthentication(AuthenticationProperties authentication) {
+        this.authentication = authentication;
     }
 
-    public int getKeepAliveHeaderTimeoutSeconds() {
-        return keepAliveHeaderTimeoutSeconds;
+    public KeepAliveHeaderProperties getKeepAliveHeader() {
+        return keepAliveHeader;
     }
 
-    public void setKeepAliveHeaderTimeoutSeconds(int keepAliveHeaderTimeoutSeconds) {
-        this.keepAliveHeaderTimeoutSeconds = keepAliveHeaderTimeoutSeconds;
+    public void setKeepAliveHeader(KeepAliveHeaderProperties keepAliveHeader) {
+        this.keepAliveHeader = keepAliveHeader;
     }
 
-    public boolean isAuthenticationEnabled() {
-        return authenticationEnabled;
+    public static class AuthenticationProperties {
+
+        private boolean enabled = false;
+
+        private String mode = "constraint_driven";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getMode() {
+            return mode;
+        }
+
+        public void setMode(String mode) {
+            this.mode = mode;
+        }
     }
 
-    public void setAuthenticationEnabled(boolean authenticationEnabled) {
-        this.authenticationEnabled = authenticationEnabled;
-    }
+    public static class KeepAliveHeaderProperties {
 
-    public String getAuthenticationMode() {
-        return authenticationMode;
-    }
+        private boolean enabled = false;
 
-    public void setAuthenticationMode(String authenticationMode) {
-        this.authenticationMode = authenticationMode;
+        private int timeoutSeconds = 1;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getTimeoutSeconds() {
+            return timeoutSeconds;
+        }
+
+        public void setTimeoutSeconds(int timeoutSeconds) {
+            this.timeoutSeconds = timeoutSeconds;
+        }
     }
 
     public HandlersChainParameters toHandlersChainParameters() {
         return new HandlersChainParameters(
-                this.keepAliveHeaderEnabled,
-                this.keepAliveHeaderTimeoutSeconds,
-                this.authenticationEnabled,
-                this.authenticationMode
+                this.keepAliveHeader.enabled,
+                this.keepAliveHeader.timeoutSeconds,
+                this.authentication.enabled,
+                this.authentication.mode
         );
     }
 }
