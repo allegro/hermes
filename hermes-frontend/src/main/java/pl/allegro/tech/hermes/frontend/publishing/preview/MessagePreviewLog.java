@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.frontend.publishing.preview;
 import com.google.common.util.concurrent.AtomicLongMap;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.TopicsMessagesPreview;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -23,11 +21,7 @@ public class MessagePreviewLog {
 
     private final ConcurrentLinkedDeque<MessagePreviewSnapshot> messages = new ConcurrentLinkedDeque<>();
 
-    public MessagePreviewLog(MessagePreviewFactory messagePreviewFactory, ConfigFactory configFactory) {
-        this(messagePreviewFactory, configFactory.getIntProperty(Configs.FRONTEND_MESSAGE_PREVIEW_SIZE));
-    }
-
-    MessagePreviewLog(MessagePreviewFactory messagePreviewFactory, int previewSizePerTopic) {
+    public MessagePreviewLog(MessagePreviewFactory messagePreviewFactory, int previewSizePerTopic) {
         this.messagePreviewFactory = messagePreviewFactory;
         this.previewSizePerTopic = previewSizePerTopic;
     }

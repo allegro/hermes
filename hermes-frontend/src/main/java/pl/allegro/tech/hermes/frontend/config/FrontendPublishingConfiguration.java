@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -33,20 +34,24 @@ import java.time.Clock;
 import java.util.Optional;
 
 @Configuration
+@EnableConfigurationProperties({
+        ThroughputProperties.class,
+        MessagePreviewProperties.class
+})
 public class FrontendPublishingConfiguration {
 
     @Bean
     public HttpHandler httpHandler(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                    MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig) {
+                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig, MessagePreviewProperties messagePreviewProperties) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, configFactory, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig).provide();
+                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled()).provide();
     }
 
     @Bean
-    public ThroughputLimiter throughputLimiter(ConfigFactory configs, HermesMetrics hermesMetrics) {
-        return new ThroughputLimiterFactory(configs, hermesMetrics).provide();
+    public ThroughputLimiter throughputLimiter(ThroughputProperties throughputProperties, HermesMetrics hermesMetrics) {
+        return new ThroughputLimiterFactory(throughputProperties.toThroughputParameters(), hermesMetrics).provide();
     }
 
     @Bean
@@ -82,20 +87,20 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public MessagePreviewFactory messagePreviewFactory(ConfigFactory configFactory) {
-        return new MessagePreviewFactory(configFactory);
+    public MessagePreviewFactory messagePreviewFactory(MessagePreviewProperties messagePreviewProperties) {
+        return new MessagePreviewFactory(messagePreviewProperties.getMaxSizeKb());
     }
 
     @Bean
     public MessagePreviewLog messagePreviewLog(MessagePreviewFactory messagePreviewFactory,
-                                               ConfigFactory configFactory) {
-        return new MessagePreviewLog(messagePreviewFactory, configFactory);
+                                               MessagePreviewProperties messagePreviewProperties) {
+        return new MessagePreviewLog(messagePreviewFactory, messagePreviewProperties.getSize());
     }
 
     @Bean
     public DefaultMessagePreviewPersister messagePreviewPersister(MessagePreviewLog messagePreviewLog,
                                                                   MessagePreviewRepository repository,
-                                                                  ConfigFactory configFactory) {
-        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, configFactory);
+                                                                  MessagePreviewProperties messagePreviewProperties) {
+        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, messagePreviewProperties.getLogPersistPeriodSeconds(), messagePreviewProperties.isEnabled());
     }
 }

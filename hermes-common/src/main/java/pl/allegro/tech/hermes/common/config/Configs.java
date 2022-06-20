@@ -83,13 +83,6 @@ public enum Configs {
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
     FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
     FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE("frontend.force.topic.max.message.size", false),
-    FRONTEND_THROUGHPUT_TYPE("frontend.throughput.type", "unlimited"),
-    FRONTEND_THROUGHPUT_FIXED_MAX("frontend.throughput.fixed.max", Long.MAX_VALUE),
-    FRONTEND_THROUGHPUT_DYNAMIC_MAX("frontend.throughput.dynamic.max", Long.MAX_VALUE),
-    FRONTEND_THROUGHPUT_DYNAMIC_THRESHOLD("frontend.throughput.dynamic.threshold", Long.MAX_VALUE),
-    FRONTEND_THROUGHPUT_DYNAMIC_DESIRED("frontend.throughput.dynamic.desired", Long.MAX_VALUE),
-    FRONTEND_THROUGHPUT_DYNAMIC_IDLE("frontend.throughput.dynamic.idle", 0.5),
-    FRONTEND_THROUGHPUT_DYNAMIC_CHECK_INTERVAL("frontend.throughput.dynamic.interval.seconds", 30),
 
     FRONTEND_KEEP_ALIVE_HEADER_ENABLED("frontend.keep.alive.header.enabled", false),
     FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS("frontend.keep.alive.header.timeout.seconds", 1),
@@ -115,25 +108,8 @@ public enum Configs {
     FRONTEND_HEADER_PROPAGATION_ENABLED("frontend.header.propagation.enabled", false),
     FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER("frontend.header.propagation.allow.filter", ""),
 
-    FRONTEND_MESSAGE_PREVIEW_ENABLED("frontend.message.preview.enabled", false),
-    FRONTEND_MESSAGE_PREVIEW_MAX_SIZE_KB("frontend.message.preview.max.size.kb", 10),
-    FRONTEND_MESSAGE_PREVIEW_SIZE("frontend.message.preview.size", 3),
-    FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD("frontend.message.preview.log.persist.period.seconds", 30),
-
     FRONTEND_READINESS_CHECK_ENABLED("frontend.readiness.check.enabled", false),
     FRONTEND_READINESS_CHECK_INTERVAL_SECONDS("frontend.readiness.check.interval.seconds", 1),
-
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED("frontend.startup.topic.metadata.loading.enabled", false),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_INTERVAL("frontend.startup.topic.metadata.loading.retry.interval", 1_000L),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_COUNT("frontend.startup.topic.metadata.loading.retry.count", 5),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.metadata.loading.thread.pool.size", 16),
-
-    FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED("frontend.topic.metadata.refresh.job.enabled", true),
-    FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL_SECONDS("frontend.topic.metadata.refresh.job.interval.seconds", 60),
-
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED("frontend.startup.topic.schema.loading.enabled", false),
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT("frontend.startup.topic.schema.loading.retry.count", 3),
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.schema.loading.thread.pool.size", 16),
 
     MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE("frontend.messages.local.buffered.storage.size.bytes", 256 * 1024 * 1024L),
     MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED("frontend.messages.local.storage.v2.migration.enabled", true),
