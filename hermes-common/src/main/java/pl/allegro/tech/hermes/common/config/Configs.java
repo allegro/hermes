@@ -111,18 +111,6 @@ public enum Configs {
     FRONTEND_READINESS_CHECK_ENABLED("frontend.readiness.check.enabled", false),
     FRONTEND_READINESS_CHECK_INTERVAL_SECONDS("frontend.readiness.check.interval.seconds", 1),
 
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_ENABLED("frontend.startup.topic.metadata.loading.enabled", false),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_INTERVAL("frontend.startup.topic.metadata.loading.retry.interval", 1_000L),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_COUNT("frontend.startup.topic.metadata.loading.retry.count", 5),
-    FRONTEND_STARTUP_TOPIC_METADATA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.metadata.loading.thread.pool.size", 16),
-
-    FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED("frontend.topic.metadata.refresh.job.enabled", true),
-    FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL_SECONDS("frontend.topic.metadata.refresh.job.interval.seconds", 60),
-
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_ENABLED("frontend.startup.topic.schema.loading.enabled", false),
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_RETRY_COUNT("frontend.startup.topic.schema.loading.retry.count", 3),
-    FRONTEND_STARTUP_TOPIC_SCHEMA_LOADING_THREAD_POOL_SIZE("frontend.startup.topic.schema.loading.thread.pool.size", 16),
-
     CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 20_000),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
