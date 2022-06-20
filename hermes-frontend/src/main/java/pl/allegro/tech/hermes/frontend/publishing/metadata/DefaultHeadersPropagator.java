@@ -1,28 +1,24 @@
 package pl.allegro.tech.hermes.frontend.publishing.metadata;
 
 import com.google.common.collect.ImmutableMap;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HEADER_PROPAGATION_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER;
 
 public class DefaultHeadersPropagator implements HeadersPropagator {
 
     private final boolean propagate;
     private final Set<String> supportedHeaders;
 
-    public DefaultHeadersPropagator(ConfigFactory config) {
-        if (config.getBooleanProperty(FRONTEND_HEADER_PROPAGATION_ENABLED)) {
+    public DefaultHeadersPropagator(boolean enabled, String allowFilter) {
+        if (enabled) {
             propagate = true;
-            supportedHeaders = Arrays.stream(config.getStringProperty(FRONTEND_HEADER_PROPAGATION_ALLOW_FILTER).split(","))
+            supportedHeaders = Arrays.stream(allowFilter.split(","))
                     .map(String::trim)
                     .filter(v -> v.length() > 0)
                     .collect(toSet());

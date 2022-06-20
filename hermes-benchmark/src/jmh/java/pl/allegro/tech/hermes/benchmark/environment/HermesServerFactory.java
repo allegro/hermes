@@ -8,6 +8,8 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
+import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
@@ -69,6 +71,9 @@ class HermesServerFactory {
     }
 
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter, TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer, RawSchemaClient rawSchemaClient, ConfigFactory configFactory, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
+        HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
+        HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
+
         return new HandlersChainFactory(
                 topicsCache,
                 new MessageErrorProcessor(new ObjectMapper(), trackers),
@@ -81,7 +86,7 @@ class HermesServerFactory {
                                 new DirectSchemaVersionsRepository(rawSchemaClient),
                                 new DirectCompiledSchemaRepository<>(rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler())
                         ),
-                        new DefaultHeadersPropagator(configFactory),
+                        new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter()),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
                         Clock.systemDefaultZone(),
                         configFactory
@@ -90,7 +95,8 @@ class HermesServerFactory {
                 null,
                 throughputLimiter,
                 null,
-                false
+                false,
+                handlersChainProperties.toHandlersChainParameters()
         ).provide();
     }
 }
