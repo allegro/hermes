@@ -42,7 +42,7 @@ public class HandlersChainFactory {
     public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                 MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
                                 BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authenticationConfiguration) {
+                                ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authenticationConfiguration, boolean messagePreviewEnabled) {
         this.topicsCache = topicsCache;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
@@ -50,7 +50,7 @@ public class HandlersChainFactory {
         this.messageFactory = messageFactory;
         this.brokerMessageProducer = brokerMessageProducer;
         this.previewLog = messagePreviewLog;
-        this.previewEnabled = configFactory.getBooleanProperty(Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED);
+        this.previewEnabled = messagePreviewEnabled;
         this.throughputLimiter = throughputLimiter;
         this.authenticationConfiguration = authenticationConfiguration;
     }

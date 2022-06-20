@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.frontend.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
@@ -15,7 +13,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_THREAD_POOL_SIZE;
 import static pl.allegro.tech.hermes.frontend.server.CompletableFuturesHelper.allComplete;
 import static pl.allegro.tech.hermes.frontend.server.MetadataLoadingResult.Type.FAILURE;
 import static pl.allegro.tech.hermes.frontend.server.MetadataLoadingResult.Type.SUCCESS;
@@ -35,16 +32,6 @@ public class TopicMetadataLoadingRunner {
     private final int threadPoolSize;
 
     public TopicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
-                                      TopicsCache topicsCache,
-                                      ConfigFactory config) {
-        this(brokerMessageProducer,
-                topicsCache,
-                config.getIntProperty(Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_COUNT),
-                config.getLongProperty(Configs.FRONTEND_STARTUP_TOPIC_METADATA_LOADING_RETRY_INTERVAL),
-                config.getIntProperty(FRONTEND_STARTUP_TOPIC_METADATA_LOADING_THREAD_POOL_SIZE));
-    }
-
-    TopicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
                                TopicsCache topicsCache,
                                int retryCount,
                                long retryInterval,

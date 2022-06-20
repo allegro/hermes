@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.frontend.server;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,12 +20,7 @@ public class TopicMetadataLoadingJob implements Runnable {
 
     private ScheduledFuture<?> job;
 
-    public TopicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                   ConfigFactory config) {
-        this(topicMetadataLoadingRunner, config.getIntProperty(Configs.FRONTEND_TOPIC_METADATA_REFRESH_JOB_INTERVAL_SECONDS));
-    }
-
-    TopicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner, int intervalSeconds) {
+    public TopicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner, int intervalSeconds) {
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
         this.intervalSeconds = intervalSeconds;
 
@@ -54,6 +47,5 @@ public class TopicMetadataLoadingJob implements Runnable {
         executorService.shutdown();
         executorService.awaitTermination(1, TimeUnit.MINUTES);
     }
-
 
 }
