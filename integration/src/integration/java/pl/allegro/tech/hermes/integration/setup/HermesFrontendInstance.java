@@ -58,7 +58,6 @@ public class HermesFrontendInstance {
             frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
             frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
             frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
-            frontend.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_ENABLED, false);
             frontend.overrideProperty(Configs.FRONTEND_READINESS_CHECK_ENABLED, true);
             frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         }

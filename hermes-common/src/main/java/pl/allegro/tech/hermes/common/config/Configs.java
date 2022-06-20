@@ -111,18 +111,6 @@ public enum Configs {
     FRONTEND_READINESS_CHECK_ENABLED("frontend.readiness.check.enabled", false),
     FRONTEND_READINESS_CHECK_INTERVAL_SECONDS("frontend.readiness.check.interval.seconds", 1),
 
-    MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE("frontend.messages.local.buffered.storage.size.bytes", 256 * 1024 * 1024L),
-    MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED("frontend.messages.local.storage.v2.migration.enabled", true),
-    MESSAGES_LOCAL_STORAGE_ENABLED("frontend.messages.local.storage.enabled", false),
-    MESSAGES_LOCAL_STORAGE_DIRECTORY("frontend.messages.local.storage.directory", Files.createTempDir().getAbsolutePath()),
-    MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY("frontend.messages.local.storage.temporary.directory", Files.createTempDir().getAbsolutePath()),
-    MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE("frontend.messages.local.storage.average.message.size.in.bytes", 600),
-    MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS("frontend.messages.local.storage.max.age.hours", 72),
-    MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES("frontend.messages.local.storage.max.resend.retries", 5),
-    MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS("frontend.messages.loading.pause.between.resend", 30),
-    MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO("frontend.messages.loading.wait.for.broker.topic.info", 5),
-    MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED("frontend.messages.local.storage.size.reporting.enabled", true),
-
     CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL("consumer.supervisor.background.interval", 20_000),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),

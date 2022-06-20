@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
@@ -14,6 +15,7 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherF
 import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
 
 @Configuration
+@EnableConfigurationProperties(LocalMessageStorageProperties.class)
 public class FrontendProducerConfiguration {
 
     @Bean
@@ -30,8 +32,9 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean(destroyMethod = "close")
-    public Producers kafkaMessageProducer(ConfigFactory configFactory) {
-        return new KafkaMessageProducerFactory(configFactory).provide();
+    public Producers kafkaMessageProducer(ConfigFactory configFactory,
+                                          LocalMessageStorageProperties localMessageStorageProperties) {
+        return new KafkaMessageProducerFactory(configFactory, localMessageStorageProperties.getBufferedSizeBytes()).provide();
     }
 
     @Bean(destroyMethod = "close")
