@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "frontend.readiness.check")
-public class ReadinessCheckProperties {
+class ReadinessCheckProperties {
 
     private boolean enabled = false;
 

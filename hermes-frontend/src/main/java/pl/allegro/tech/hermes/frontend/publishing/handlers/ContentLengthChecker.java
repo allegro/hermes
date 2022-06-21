@@ -18,8 +18,8 @@ final class ContentLengthChecker {
 
     private final boolean forceMaxMessageSizePerTopic;
 
-    ContentLengthChecker(ConfigFactory configs) {
-        this.forceMaxMessageSizePerTopic = configs.getBooleanProperty(Configs.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE);
+    ContentLengthChecker(boolean forceMaxMessageSizePerTopic) {
+        this.forceMaxMessageSizePerTopic = forceMaxMessageSizePerTopic;
     }
 
     void check(HttpServerExchange exchange, int contentLength, AttachmentContent attachment)

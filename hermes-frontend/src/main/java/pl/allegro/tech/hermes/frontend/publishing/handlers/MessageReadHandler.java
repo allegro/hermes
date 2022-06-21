@@ -33,14 +33,19 @@ class MessageReadHandler implements HttpHandler {
     private final int longAsyncTimeout;
     private final ThroughputLimiter throughputLimiter;
 
-    MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler, ConfigFactory configFactory,
-                       MessageErrorProcessor messageErrorProcessor,  ThroughputLimiter throughputLimiter) {
+    MessageReadHandler(HttpHandler next,
+                       HttpHandler timeoutHandler,
+                       boolean forceMaxMessageSizePerTopic,
+                       int defaultAsyncTimeout,
+                       int longAsyncTimeout,
+                       MessageErrorProcessor messageErrorProcessor,
+                       ThroughputLimiter throughputLimiter) {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
         this.messageErrorProcessor = messageErrorProcessor;
-        this.contentLengthChecker = new ContentLengthChecker(configFactory);
-        this.defaultAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_IDLE_TIMEOUT);
-        this.longAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_LONG_IDLE_TIMEOUT);
+        this.contentLengthChecker = new ContentLengthChecker(forceMaxMessageSizePerTopic);
+        this.defaultAsyncTimeout = defaultAsyncTimeout;
+        this.longAsyncTimeout = longAsyncTimeout;
         this.throughputLimiter = throughputLimiter;
     }
 

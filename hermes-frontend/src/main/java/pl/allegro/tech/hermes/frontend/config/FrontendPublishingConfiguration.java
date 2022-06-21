@@ -38,18 +38,18 @@ import java.util.Optional;
         ThroughputProperties.class,
         MessagePreviewProperties.class,
         HeaderPropagationProperties.class,
-        HandlersChainProperties.class
+        FrontendBaseProperties.class
 })
 public class FrontendPublishingConfiguration {
 
     @Bean
     public HttpHandler httpHandler(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
-                                   MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
+                                   MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                    ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig, MessagePreviewProperties messagePreviewProperties,
-                                   HandlersChainProperties handlersChainProperties) {
-        return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, configFactory, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(), handlersChainProperties.toHandlersChainParameters()).provide();
+                                   FrontendBaseProperties frontendBaseProperties) {
+        return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,
+                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(), frontendBaseProperties.toHandlersChainParameters()).provide();
     }
 
     @Bean

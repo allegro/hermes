@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "frontend.message.preview")
-public class MessagePreviewProperties {
+class MessagePreviewProperties {
 
     private boolean enabled = false;
 

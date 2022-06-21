@@ -28,7 +28,8 @@ import java.util.Optional;
 @EnableConfigurationProperties({
         TopicLoadingProperties.class,
         ReadinessCheckProperties.class,
-        FrontendSslProperties.class
+        FrontendSslProperties.class,
+        FrontendBaseProperties.class
 })
 public class FrontendServerConfiguration {
 
@@ -40,9 +41,10 @@ public class FrontendServerConfiguration {
                                      DefaultMessagePreviewPersister defaultMessagePreviewPersister,
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
-                                     SslContextFactoryProvider sslContextFactoryProvider) {
-        // todo add necessary properties
-        HermesServerParameters serverParameters = ConfigPropertiesFactory.createHermesServerParameters(frontendSslProperties);
+                                     SslContextFactoryProvider sslContextFactoryProvider,
+                                     FrontendBaseProperties frontendBaseProperties,
+                                     TopicLoadingProperties topicLoadingProperties) {
+        HermesServerParameters serverParameters = ConfigPropertiesFactory.createHermesServerParameters(frontendSslProperties, frontendBaseProperties, topicLoadingProperties);
 
         return new HermesServer(serverParameters, hermesMetrics, publishingHandler, defaultReadinessChecker,
                 defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, sslContextFactoryProvider);

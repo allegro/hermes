@@ -26,24 +26,23 @@ public class HandlersChainFactory {
     private final TopicsCache topicsCache;
     private final MessageErrorProcessor messageErrorProcessor;
     private final MessageEndProcessor messageEndProcessor;
-    private final ConfigFactory configFactory;
     private final MessageFactory messageFactory;
     private final BrokerMessageProducer brokerMessageProducer;
     private final MessagePreviewLog previewLog;
     private final boolean previewEnabled;
+
     private final ThroughputLimiter throughputLimiter;
     private final Optional<AuthenticationConfiguration> authenticationConfiguration;
     private final HandlersChainParameters handlersChainParameters;
 
     public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
-                                MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
+                                MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                 BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                 ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authenticationConfiguration,
                                 boolean messagePreviewEnabled, HandlersChainParameters handlersChainParameters) {
         this.topicsCache = topicsCache;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
-        this.configFactory = configFactory;
         this.messageFactory = messageFactory;
         this.brokerMessageProducer = brokerMessageProducer;
         this.previewLog = messagePreviewLog;
@@ -58,8 +57,8 @@ public class HandlersChainFactory {
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
         HttpHandler timeoutHandler = new TimeoutHandler(messageEndProcessor, messageErrorProcessor);
         HttpHandler handlerAfterRead = previewEnabled ? new PreviewHandler(messageCreateHandler, previewLog) : messageCreateHandler;
-        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, configFactory,
-                                                                messageErrorProcessor, throughputLimiter);
+        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, handlersChainParameters.isForceMaxMessageSizePerTopic(),
+                handlersChainParameters.getDefaultAsyncTimeout(), handlersChainParameters.getLongAsyncTimeout(), messageErrorProcessor, throughputLimiter);
         TopicHandler topicHandler = new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
         boolean keepAliveHeaderEnabled = handlersChainParameters.isKeepAliveHeaderEnabled();
         HttpHandler rootPublishingHandler = keepAliveHeaderEnabled ? withKeepAliveHeaderHandler(topicHandler) : topicHandler;

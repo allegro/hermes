@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import pl.allegro.tech.hermes.frontend.server.ContextFactoryParameters;
 import pl.allegro.tech.hermes.frontend.server.HermesServerParameters;
 
-public class ConfigPropertiesFactory {
+class ConfigPropertiesFactory {
 
     static ContextFactoryParameters createContextFactoryParameters(FrontendSslProperties frontendSslProperties) {
         return new ContextFactoryParameters(
@@ -19,30 +19,29 @@ public class ConfigPropertiesFactory {
         );
     }
 
-    static HermesServerParameters createHermesServerParameters(FrontendSslProperties frontendSslProperties) {
-        // todo add necessary properties classes and finish this constructor
+    static HermesServerParameters createHermesServerParameters(FrontendSslProperties frontendSslProperties, FrontendBaseProperties frontendBaseProperties, TopicLoadingProperties topicLoadingProperties) {
         return new HermesServerParameters(
-                null, // FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED
-                null, //FRONTEND_GRACEFUL_SHUTDOWN_ENABLED
-                null, // FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS
-                null, // FRONTEND_REQUEST_PARSE_TIMEOUT
-                null, // FRONTEND_MAX_HEADERS
-                null, // FRONTEND_MAX_COOKIES
-                null, // FRONTEND_MAX_PARAMETERS
-                null, // FRONTEND_ALWAYS_SET_KEEP_ALIVE
-                null, // FRONTEND_SET_KEEP_ALIVE
-                null, // FRONTEND_BACKLOG_SIZE
-                null, // FRONTEND_READ_TIMEOUT
-                null, // FRONTEND_IO_THREADS_COUNT
-                null, // FRONTEND_WORKER_THREADS_COUNT
-                null, // FRONTEND_BUFFER_SIZE
+                topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
+                frontendBaseProperties.isGracefulShutdownEnabled(),
+                frontendBaseProperties.getGracefulShutdownInitialWaitMs(),
+                frontendBaseProperties.getRequestParseTimeout(),
+                frontendBaseProperties.getMaxHeaders(),
+                frontendBaseProperties.getMaxCookies(),
+                frontendBaseProperties.getMaxParameters(),
+                frontendBaseProperties.isAlwaysKeepAlive(),
+                frontendBaseProperties.isKeepAlive(),
+                frontendBaseProperties.getBacklogSize(),
+                frontendBaseProperties.getReadTimeout(),
+                frontendBaseProperties.getIoThreadsCount(),
+                frontendBaseProperties.getWorkerThreadCount(),
+                frontendBaseProperties.getBufferSize(),
                 frontendSslProperties.isEnabled(),
                 frontendSslProperties.getClientAuthMode(),
-                null, // FRONTEND_HTTP2_ENABLED
-                null, // FRONTEND_REQUEST_DUMPER
-                null, // FRONTEND_PORT
+                frontendBaseProperties.isHttp2Enabled(),
+                frontendBaseProperties.isRequestDumper(),
+                frontendBaseProperties.getPort(),
                 frontendSslProperties.getProt(),
-                null // FRONTEND_HOST
+                frontendBaseProperties.getHost()
         );
     }
 }

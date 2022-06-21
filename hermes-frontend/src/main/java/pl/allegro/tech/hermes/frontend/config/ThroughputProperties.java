@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputParameters;
 
 @ConfigurationProperties(prefix = "frontend.throughput")
-public class ThroughputProperties {
+class ThroughputProperties {
 
     private String type = "unlimited";
 
