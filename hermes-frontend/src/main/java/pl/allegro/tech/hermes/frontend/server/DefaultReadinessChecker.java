@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.server;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 
 import java.util.List;
@@ -11,9 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READINESS_CHECK_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
 
 public class DefaultReadinessChecker implements ReadinessChecker {
     private static final Logger logger = LoggerFactory.getLogger(DefaultReadinessChecker.class);
@@ -26,11 +22,12 @@ public class DefaultReadinessChecker implements ReadinessChecker {
 
     private volatile boolean ready = false;
 
-    public DefaultReadinessChecker(ConfigFactory config,
-                                   TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                   ReadinessRepository readinessRepository) {
-        this.enabled = config.getBooleanProperty(FRONTEND_READINESS_CHECK_ENABLED);
-        this.intervalSeconds = config.getIntProperty(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS);
+    public DefaultReadinessChecker(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
+                                   ReadinessRepository readinessRepository,
+                                   boolean enabled,
+                                   int intervalSeconds) {
+        this.enabled = enabled;
+        this.intervalSeconds = intervalSeconds;
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
         this.readinessRepository = readinessRepository;
         ThreadFactory threadFactory = new ThreadFactoryBuilder()

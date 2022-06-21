@@ -36,7 +36,9 @@ import java.util.Optional;
 @Configuration
 @EnableConfigurationProperties({
         ThroughputProperties.class,
-        MessagePreviewProperties.class
+        MessagePreviewProperties.class,
+        HeaderPropagationProperties.class,
+        HandlersChainProperties.class
 })
 public class FrontendPublishingConfiguration {
 
@@ -44,9 +46,10 @@ public class FrontendPublishingConfiguration {
     public HttpHandler httpHandler(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                    MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig, MessagePreviewProperties messagePreviewProperties) {
+                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig, MessagePreviewProperties messagePreviewProperties,
+                                   HandlersChainProperties handlersChainProperties) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, configFactory, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled()).provide();
+                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(), handlersChainProperties.toHandlersChainParameters()).provide();
     }
 
     @Bean
@@ -82,8 +85,8 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public HeadersPropagator defaultHeadersPropagator(ConfigFactory config) {
-        return new DefaultHeadersPropagator(config);
+    public HeadersPropagator defaultHeadersPropagator(HeaderPropagationProperties headerPropagationProperties) {
+        return new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter());
     }
 
     @Bean

@@ -4,7 +4,6 @@ import io.undertow.server.HttpHandler;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
@@ -13,8 +12,8 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.ContextFactoryParameters;
-import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.DefaultReadinessChecker;
+import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.HermesServerParameters;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
@@ -26,7 +25,11 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import java.util.Optional;
 
 @Configuration
-@EnableConfigurationProperties({FrontendSslProperties.class, TopicLoadingProperties.class})
+@EnableConfigurationProperties({
+        TopicLoadingProperties.class,
+        ReadinessCheckProperties.class,
+        FrontendSslProperties.class
+})
 public class FrontendServerConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -46,10 +49,10 @@ public class FrontendServerConfiguration {
     }
 
     @Bean
-    public DefaultReadinessChecker readinessChecker(ConfigFactory config,
+    public DefaultReadinessChecker readinessChecker(ReadinessCheckProperties readinessCheckProperties,
                                                     TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                                     ReadinessRepository readinessRepository) {
-        return new DefaultReadinessChecker(config, topicMetadataLoadingRunner, readinessRepository);
+        return new DefaultReadinessChecker(topicMetadataLoadingRunner, readinessRepository, readinessCheckProperties.isEnabled(), readinessCheckProperties.getIntervalSeconds());
     }
 
     @Bean

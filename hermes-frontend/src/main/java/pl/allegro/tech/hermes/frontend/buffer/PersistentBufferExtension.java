@@ -1,13 +1,8 @@
-package pl.allegro.tech.hermes.frontend.config;
+package pl.allegro.tech.hermes.frontend.buffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
-import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
-import pl.allegro.tech.hermes.frontend.buffer.BrokerListener;
-import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 
@@ -16,19 +11,12 @@ import java.time.Clock;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED;
 
 public class PersistentBufferExtension {
 
     private static final Logger logger = LoggerFactory.getLogger(PersistentBufferExtension.class);
 
-    private final ConfigFactory config;
+    private final PersistentBufferExtensionParameters persistentBufferExtensionParameters;
 
     private final Clock clock;
 
@@ -40,12 +28,12 @@ public class PersistentBufferExtension {
     private int entries;
     private int avgMessageSize;
 
-    public PersistentBufferExtension(ConfigFactory configFactory,
+    public PersistentBufferExtension(PersistentBufferExtensionParameters persistentBufferExtensionParameters,
                                      Clock clock,
                                      BrokerListeners listeners,
                                      BackupMessagesLoader backupMessagesLoader,
                                      HermesMetrics hermesMetrics) {
-        this.config = configFactory;
+        this.persistentBufferExtensionParameters = persistentBufferExtensionParameters;
         this.clock = clock;
         this.listeners = listeners;
         this.backupMessagesLoader = backupMessagesLoader;
@@ -54,14 +42,15 @@ public class PersistentBufferExtension {
 
     public void extend() {
         BackupFilesManager backupFilesManager = new BackupFilesManager(
-                config.getStringProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY),
+                persistentBufferExtensionParameters.getDirectory(),
                 clock);
 
-        long backupStorageSizeInBytes = config.getLongProperty(MESSAGES_LOCAL_BUFFERED_STORAGE_SIZE);
-        entries = (int) (backupStorageSizeInBytes / config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE));
-        avgMessageSize = config.getIntProperty(MESSAGES_LOCAL_STORAGE_AVERAGE_MESSAGE_SIZE);
+        long backupStorageSizeInBytes = persistentBufferExtensionParameters.getBufferedSizeBytes();
+        avgMessageSize = persistentBufferExtensionParameters.getAverageMessageSize();
 
-        if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_V2_MIGRATION_ENABLED)) {
+        entries = (int) (backupStorageSizeInBytes / avgMessageSize);
+
+        if (persistentBufferExtensionParameters.isV2MigrationEnabled()) {
             loadTemporaryBackupV2Files(backupFilesManager);
         }
 
@@ -71,13 +60,13 @@ public class PersistentBufferExtension {
             rollBackupFiles(backupFilesManager, rolledBackupFiles);
         }
 
-        if (config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_ENABLED)) {
+        if (persistentBufferExtensionParameters.isEnabled()) {
             enableLocalStorage(backupFilesManager);
         }
     }
 
     private void loadTemporaryBackupV2Files(BackupFilesManager backupFilesManager) {
-        String temporaryDir = config.getStringProperty(MESSAGES_LOCAL_STORAGE_TEMPORARY_DIRECTORY);
+        String temporaryDir = persistentBufferExtensionParameters.getTemporaryDirectory();
         List<File> temporaryBackupV2Files = backupFilesManager.getTemporaryBackupV2Files(temporaryDir);
         temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
         backupMessagesLoader.clearTopicsAvailabilityCache();
@@ -92,7 +81,7 @@ public class PersistentBufferExtension {
     }
 
     private void enableLocalStorage(BackupFilesManager backupFilesManager) {
-        MessageRepository repository = config.getBooleanProperty(MESSAGES_LOCAL_STORAGE_SIZE_REPORTING_ENABLED)
+        MessageRepository repository = persistentBufferExtensionParameters.isSizeReportingEnabled()
                 ? new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize, hermesMetrics)
                 : new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize);
 
