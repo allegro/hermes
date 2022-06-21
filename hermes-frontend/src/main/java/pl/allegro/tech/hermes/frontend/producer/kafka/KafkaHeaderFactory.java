@@ -4,8 +4,6 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 public class KafkaHeaderFactory {
 
@@ -14,11 +12,11 @@ public class KafkaHeaderFactory {
     private final String schemaVersionHeaderName;
     private final String schemaIdHeaderName;
 
-    public KafkaHeaderFactory(ConfigFactory configFactory) {
-        this.messageIdHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_MESSAGE_ID);
-        this.timestampHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_TIMESTAMP);
-        this.schemaVersionHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_VERSION);
-        this.schemaIdHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_ID);
+    public KafkaHeaderFactory(String messageIdHeaderName, String timestampHeaderName, String schemaVersionHeaderName, String schemaIdHeaderName) {
+        this.messageIdHeaderName = messageIdHeaderName;
+        this.timestampHeaderName = timestampHeaderName;
+        this.schemaVersionHeaderName = schemaVersionHeaderName;
+        this.schemaIdHeaderName = schemaIdHeaderName;
     }
 
     Header messageId(String messageId) {

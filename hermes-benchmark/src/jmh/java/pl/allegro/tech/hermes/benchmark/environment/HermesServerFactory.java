@@ -8,8 +8,11 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.ConfigPropertiesFactory;
 import pl.allegro.tech.hermes.frontend.config.FrontendBaseProperties;
+import pl.allegro.tech.hermes.frontend.config.FrontendSslProperties;
 import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
+import pl.allegro.tech.hermes.frontend.config.TopicLoadingProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
@@ -37,7 +40,6 @@ import java.util.Collections;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
@@ -52,21 +54,25 @@ class HermesServerFactory {
         TopicsCache topicsCache = new InMemoryTopicsCache(hermesMetrics, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
-        ConfigFactory configFactory = new MutableConfigFactory()
-                .overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
+        ConfigFactory configFactory = new MutableConfigFactory();
         Trackers trackers = new Trackers(Collections.emptyList());
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
         HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer, rawSchemaClient, configFactory, trackers, avroMessageContentWrapper);
+        FrontendSslProperties frontendSslProperties = new FrontendSslProperties();
+        FrontendBaseProperties frontendBaseProperties = new FrontendBaseProperties();
+        frontendBaseProperties.setGracefulShutdownEnabled(false);
+        TopicLoadingProperties topicLoadingProperties = new TopicLoadingProperties();
+
+        HermesServerParameters serverParameters = ConfigPropertiesFactory.createHermesServerParameters(frontendSslProperties, frontendBaseProperties, topicLoadingProperties);
 
         return new HermesServer(
-                new HermesServerParameters(), // todo
+                serverParameters,
                 hermesMetrics,
                 httpHandler,
                 new DisabledReadinessChecker(false),
                 new NoOpMessagePreviewPersister(),
                 throughputLimiter,
                 null,
-                false,
                 null
         );
     }

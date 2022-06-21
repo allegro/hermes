@@ -20,7 +20,7 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_U
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 
 public class KafkaTopicMetadataFetcherFactory {
-    private final ConfigFactory configFactory;
+    private final ConfigFactory configFactory; // todo verify
 
     public KafkaTopicMetadataFetcherFactory(ConfigFactory configFactory) {
         this.configFactory = configFactory;

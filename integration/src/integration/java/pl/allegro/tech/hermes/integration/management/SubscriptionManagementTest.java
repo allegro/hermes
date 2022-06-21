@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;

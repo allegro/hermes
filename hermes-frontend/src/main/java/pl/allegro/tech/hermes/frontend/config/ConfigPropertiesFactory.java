@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import pl.allegro.tech.hermes.frontend.server.ContextFactoryParameters;
 import pl.allegro.tech.hermes.frontend.server.HermesServerParameters;
 
-class ConfigPropertiesFactory {
+public class ConfigPropertiesFactory {
 
     static ContextFactoryParameters createContextFactoryParameters(FrontendSslProperties frontendSslProperties) {
         return new ContextFactoryParameters(
@@ -19,7 +19,7 @@ class ConfigPropertiesFactory {
         );
     }
 
-    static HermesServerParameters createHermesServerParameters(FrontendSslProperties frontendSslProperties, FrontendBaseProperties frontendBaseProperties, TopicLoadingProperties topicLoadingProperties) {
+    public static HermesServerParameters createHermesServerParameters(FrontendSslProperties frontendSslProperties, FrontendBaseProperties frontendBaseProperties, TopicLoadingProperties topicLoadingProperties) {
         return new HermesServerParameters(
                 topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
                 frontendBaseProperties.isGracefulShutdownEnabled(),

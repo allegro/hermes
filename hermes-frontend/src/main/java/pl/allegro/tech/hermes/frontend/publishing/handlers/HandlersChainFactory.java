@@ -7,7 +7,6 @@ import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.server.HttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;

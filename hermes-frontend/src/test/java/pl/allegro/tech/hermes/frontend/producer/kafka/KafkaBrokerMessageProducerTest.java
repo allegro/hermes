@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -46,7 +47,13 @@ public class KafkaBrokerMessageProducerTest {
 
     private KafkaBrokerMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
-    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(configFactory);
+    private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
+    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(
+            kafkaHeaderNameProperties.getMessageId(),
+            kafkaHeaderNameProperties.getTimestamp(),
+            kafkaHeaderNameProperties.getSchemaVersion(),
+            kafkaHeaderNameProperties.getSchemaId()
+    );
 
     @Mock
     private HermesMetrics hermesMetrics;

@@ -15,7 +15,10 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherF
 import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
 
 @Configuration
-@EnableConfigurationProperties(LocalMessageStorageProperties.class)
+@EnableConfigurationProperties({
+        LocalMessageStorageProperties.class,
+        KafkaHeaderNameProperties.class
+})
 public class FrontendProducerConfiguration {
 
     @Bean
@@ -27,8 +30,13 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean
-    public KafkaHeaderFactory kafkaHeaderFactory(ConfigFactory configFactory) {
-        return new KafkaHeaderFactory(configFactory);
+    public KafkaHeaderFactory kafkaHeaderFactory(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
+        return new KafkaHeaderFactory(
+                kafkaHeaderNameProperties.getMessageId(),
+                kafkaHeaderNameProperties.getTimestamp(),
+                kafkaHeaderNameProperties.getSchemaVersion(),
+                kafkaHeaderNameProperties.getSchemaId()
+        );
     }
 
     @Bean(destroyMethod = "close")

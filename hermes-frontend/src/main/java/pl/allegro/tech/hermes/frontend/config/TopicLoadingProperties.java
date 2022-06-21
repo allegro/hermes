@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "frontend.startup.topic.loading")
-class TopicLoadingProperties {
+public class TopicLoadingProperties {
 
     private MetadataLoadingProperties metadata = new MetadataLoadingProperties();
 

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration.env;
 import com.netflix.config.DynamicPropertyFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 
 public interface EnvironmentAware {
 
@@ -24,7 +25,7 @@ public interface EnvironmentAware {
 
     String GOOGLE_PUBSUB_SUBSCRIPTION_ID = "test-subscription";
 
-    int FRONTEND_PORT = CONFIG_FACTORY.getIntProperty(Configs.FRONTEND_PORT);
+    int FRONTEND_PORT = 8080;
 
     String FRONTEND_URL = "http://localhost:" + FRONTEND_PORT + "/";
 

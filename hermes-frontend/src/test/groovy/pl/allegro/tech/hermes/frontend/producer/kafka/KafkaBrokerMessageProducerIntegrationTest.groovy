@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
@@ -97,10 +98,17 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     def setup() {
         producers = new Producers(leaderConfirms, everyoneConfirms, configFactory)
+        def kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
+        def kafkaHeaderFactory = new KafkaHeaderFactory(
+                kafkaHeaderNameProperties.getMessageId(),
+                kafkaHeaderNameProperties.getTimestamp(),
+                kafkaHeaderNameProperties.getSchemaVersion(),
+                kafkaHeaderNameProperties.getSchemaId())
+
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, configFactory),
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
-                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(configFactory), configFactory))
+                new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, configFactory))
     }
 
     def "should publish messages on only one partition for the same partition-key"() {

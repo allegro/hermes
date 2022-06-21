@@ -6,8 +6,6 @@ import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.io.IOException;
 

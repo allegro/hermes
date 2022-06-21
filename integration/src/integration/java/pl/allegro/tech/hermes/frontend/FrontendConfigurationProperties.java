@@ -15,4 +15,7 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_KEEP_ALIVE_HEADER_ENABLED = "frontend.keepAliveHeader.enabled";
     public static String FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS = "frontend.keepAliveHeader.timeoutSeconds";
     public static String FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE = "frontend.force.topic.max.message.size";
+    public static String FRONTEND_HTTP2_ENABLED = "frontend.http2.enabled";
+    public static String FRONTEND_GRACEFUL_SHUTDOWN_ENABLED = "frontend.graceful.shutdown.enabled";
+    public static String FRONTEND_PORT = "frontend.port";
 }
