@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.config;
 
-import com.google.common.io.Files;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 
 import java.util.Arrays;
@@ -23,6 +22,7 @@ public enum Configs {
     ZOOKEEPER_ROOT("zookeeper.root", "/hermes"),
     ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE("zookeeper.cache.processing.thread.pool.size", 5),
 
+    // removed already in master branch
     HOSTNAME("hostname", new InetAddressInstanceIdResolver().resolve()),
 
     KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary-dc"),
@@ -104,6 +104,7 @@ public enum Configs {
     OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR(
             "oauth.providers.token.request.rate.limiter.rate.reduction.factor", 2.0),
 
+    GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
     GRAPHITE_HOST("graphite.host", "localhost"),
     GRAPHITE_PORT("graphite.port", 2003),
     GRAPHITE_HTTP_PORT("graphite.http.port", 8082),
@@ -114,12 +115,10 @@ public enum Configs {
     METRICS_CONSOLE_REPORTER("metrics.console.reporter", false),
     METRICS_COUNTER_EXPIRE_AFTER_ACCESS("metrics.counter.expire.after.access", 72),
     METRICS_RESERVOIR_TYPE("metrics.reservoir.type", "exponentially_decaying"),
-
     METRICS_DISABLED_ATTRIBUTES("metrics.disabled.attributes", "M15_RATE, M5_RATE, MEAN, MEAN_RATE, MIN, STDDEV"),
 
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),
     METADATA_CONTENT_ROOT("metadata.content.root", "metadata"),
-    GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
 
     SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES("schema.cache.refresh.after.write.minutes", 10),
     SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES("schema.cache.expire.after.write.minutes", 60 * 24),
@@ -138,6 +137,7 @@ public enum Configs {
     SCHEMA_ID_SERIALIZATION_ENABLED("schema.id.serialization.enabled", false),
     SCHEMA_VERSION_TRUNCATION_ENABLED("schema.version.truncation.enabled", false),
 
+    //consumer
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);
 
     private final String name;
