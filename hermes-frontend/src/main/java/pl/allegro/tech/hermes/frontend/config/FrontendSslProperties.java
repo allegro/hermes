@@ -8,8 +8,8 @@ public class FrontendSslProperties {
     private int prot = 8443;
     private String clientAuthMode = "not_requested";
     private String protocol = "TLS";
-    private SslProperties keystore;
-    private SslProperties truststore;
+    private SslProperties keystore = new SslProperties();
+    private SslProperties truststore = new SslProperties();
 
     public boolean isEnabled() {
         return enabled;
