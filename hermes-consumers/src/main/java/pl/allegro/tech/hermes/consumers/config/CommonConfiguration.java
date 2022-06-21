@@ -102,7 +102,7 @@ public class CommonConfiguration {
 
     @Bean(destroyMethod = "close")
     public CuratorFramework hermesCurator(ConfigFactory configFactory, CuratorClientFactory curatorClientFactory) {
-        return new HermesCuratorClientFactory(configFactory, curatorClientFactory).provide();
+        return new HermesCuratorClientFactory(configFactory, curatorClientFactory).provide(); // todo change required
     }
 
     @Bean
