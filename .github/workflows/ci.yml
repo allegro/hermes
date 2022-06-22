@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master, consumer-spring-config, hermes-frontend-spring-config ]
+    branches: [ master, consumer-spring-config, hermes-frontend-spring-config, hermes-common-spring-config ]
 
 jobs:
   build:
