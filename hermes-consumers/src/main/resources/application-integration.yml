@@ -64,6 +64,15 @@ consumer:
   workload:
     rebalanceInterval: 1
     consumerPerSubscription: 1
+  zookeeper:
+    connectionString: "localhost:14192"
+    connectionTimeout: 10000
+    sessionTimeout: 10000
+    authorization:
+      enabled: false
+      user: admin
+      password: admin
+
 
 
 kafka:

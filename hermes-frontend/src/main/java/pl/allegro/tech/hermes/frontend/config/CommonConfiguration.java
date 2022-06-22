@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
@@ -71,6 +72,7 @@ import java.time.Clock;
 import java.util.List;
 
 @Configuration
+@EnableConfigurationProperties(ZookeeperProperties.class)
 public class CommonConfiguration {
 
     @Bean
@@ -104,14 +106,14 @@ public class CommonConfiguration {
     }
 
     @Bean(destroyMethod = "close")
-    public CuratorFramework hermesCurator(ConfigFactory configFactory,
+    public CuratorFramework hermesCurator(ZookeeperProperties zookeeperProperties,
                                           CuratorClientFactory curatorClientFactory) {
-        return new HermesCuratorClientFactory(configFactory, curatorClientFactory).provide();
+        return new HermesCuratorClientFactory(zookeeperProperties.toZookeeperParameters(), curatorClientFactory).provide();
     }
 
     @Bean
-    public CuratorClientFactory curatorClientFactory(ConfigFactory configFactory) {
-        return new CuratorClientFactory(configFactory);
+    public CuratorClientFactory curatorClientFactory(ZookeeperProperties zookeeperProperties) {
+        return new CuratorClientFactory(zookeeperProperties.toZookeeperParameters());
     }
 
     @Bean
@@ -127,8 +129,8 @@ public class CommonConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(CuratorFramework curator,
-                                                                               ConfigFactory config) {
-        return new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();
+                                                                               ZookeeperProperties zookeeperProperties) {
+        return new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties.toZookeeperParameters()).provide();
     }
 
     @Bean
@@ -249,8 +251,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ZookeeperPaths zookeeperPaths(ConfigFactory configFactory) {
-        return new ZookeeperPaths(configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT));
+    public ZookeeperPaths zookeeperPaths(ZookeeperProperties zookeeperProperties) {
+        return new ZookeeperPaths(zookeeperProperties.getRoot());
     }
 
     @Bean
@@ -284,17 +286,18 @@ public class CommonConfiguration {
     public CounterStorage zookeeperCounterStorage(SharedCounter sharedCounter,
                                                   SubscriptionRepository subscriptionRepository,
                                                   PathsCompiler pathsCompiler,
-                                                  ConfigFactory configFactory) {
-        return new ZookeeperCounterStorage(sharedCounter, subscriptionRepository, pathsCompiler, configFactory);
+                                                  ZookeeperProperties zookeeperProperties) {
+        return new ZookeeperCounterStorage(sharedCounter, subscriptionRepository, pathsCompiler, zookeeperProperties.getRoot());
     }
 
     @Bean
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
-                                       ConfigFactory config) {
+                                       ConfigFactory config,
+                                       ZookeeperProperties zookeeperProperties) {
         return new SharedCounter(zookeeper,
                 config.getIntProperty(Configs.METRICS_COUNTER_EXPIRE_AFTER_ACCESS),
-                config.getIntProperty(Configs.ZOOKEEPER_BASE_SLEEP_TIME),
-                config.getIntProperty(Configs.ZOOKEEPER_MAX_RETRIES)
+                zookeeperProperties.getBaseSleepTime(),
+                zookeeperProperties.getMaxRetries()
         );    }
 
     @Bean

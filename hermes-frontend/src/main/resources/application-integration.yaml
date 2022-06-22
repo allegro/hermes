@@ -6,3 +6,11 @@ frontend:
           enabled: true
         schema:
           enabled: true
+  zookeeper:
+    connectionString: "localhost:14192"
+    connectionTimeout: 10000
+    sessionTimeout: 10000
+    authorization:
+      enabled: false
+      user: admin
+      password: admin

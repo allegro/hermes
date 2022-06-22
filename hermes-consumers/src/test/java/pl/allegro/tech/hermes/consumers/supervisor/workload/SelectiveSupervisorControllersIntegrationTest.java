@@ -1,13 +1,10 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.consumers.config.WorkloadProperties;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
@@ -129,15 +126,14 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
 
         String consumerId = "consumer";
 
-        ConfigFactory config = runtime.consumerConfig();
 
         ConsumersSupervisor supervisor = runtime.consumersSupervisor(consumerFactory);
-        SelectiveSupervisorController node = runtime.spawnConsumer(consumerId, config, supervisor);
+        SelectiveSupervisorController node = runtime.spawnConsumer(consumerId, supervisor);
 
         runtime.awaitUntilAssignmentExists(runtime.createSubscription(), node);
 
         // when
-        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, config, 1);
+        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, 1);
         monitor.start();
 
         // then

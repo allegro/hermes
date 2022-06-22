@@ -6,8 +6,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -26,20 +24,14 @@ public class ZookeeperCounterStorageTest {
     private SharedCounter sharedCounter;
 
     @Mock
-    private ConfigFactory configFactory;
-
-    @Mock
     private SubscriptionRepository subscriptionRepository;
 
     private ZookeeperCounterStorage storage;
 
-    private PathsCompiler pathCompiler;
-
     @Before
     public void initialize() {
-        when(configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT)).thenReturn("/hermes");
-        pathCompiler = new PathsCompiler("my-host-example.net");
-        storage = new ZookeeperCounterStorage(sharedCounter, subscriptionRepository, pathCompiler, configFactory);
+        PathsCompiler pathCompiler = new PathsCompiler("my-host-example.net");
+        storage = new ZookeeperCounterStorage(sharedCounter, subscriptionRepository, pathCompiler, "/hermes");
     }
 
     @Test

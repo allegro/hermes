@@ -16,4 +16,5 @@ public class ConsumerConfigurationProperties {
     public static String GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS = "google.pubsub.sender.transportChannelProviderAddress";
     public static String CONSUMER_HEALTH_CHECK_PORT = "consumer.healthCheckPort";
     public static String CONSUMER_USE_TOPIC_MESSAGE_SIZE = "consumer.useTopicMessageSize";
+    public static String ZOOKEEPER_CONNECTION_STRING = "consumer.zookeeper.connectionString";
 }
