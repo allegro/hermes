@@ -11,6 +11,8 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED;
 
 public class HermesFrontendInstance {
     private final String frontendUrl;
@@ -58,8 +60,8 @@ public class HermesFrontendInstance {
 
         public Starter() {
             frontend.overrideProperty(Configs.FRONTEND_HTTP2_ENABLED, false);
-            frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
-            frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
+            frontend.overrideProperty(METRICS_GRAPHITE_REPORTER_ENABLED, false);
+            frontend.overrideProperty(METRICS_ZOOKEEPER_REPORTER_ENABLED, false);
             frontend.overrideProperty(FRONTEND_READINESS_CHECK_ENABLED, true);
             frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         }

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.config;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
@@ -70,6 +71,10 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 @Configuration
+@EnableConfigurationProperties({
+        MetricsProperties.class,
+        GraphiteProperties.class
+})
 public class CommonConfiguration {
 
     @Bean
@@ -217,11 +222,12 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MetricRegistry metricRegistry(ConfigFactory configFactory,
+    public MetricRegistry metricRegistry(MetricsProperties metricsProperties,
+                                         GraphiteProperties graphiteProperties,
                                          CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
                                          @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(configFactory, counterStorage, instanceIdResolver, moduleName)
+        return new MetricRegistryFactory(metricsProperties.toMetricRegistryParameters(), graphiteProperties.toGraphiteParameters(), counterStorage, instanceIdResolver, moduleName)
                 .provide();
     }
 
@@ -246,9 +252,10 @@ public class CommonConfiguration {
 
     @Bean
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
-                                       ConfigFactory config) {
+                                       ConfigFactory config,
+                                       MetricsProperties metricsProperties) {
         return new SharedCounter(zookeeper,
-                config.getIntProperty(Configs.METRICS_COUNTER_EXPIRE_AFTER_ACCESS),
+                metricsProperties.getCounterExpireAfterAccess(),
                 config.getIntProperty(Configs.ZOOKEEPER_BASE_SLEEP_TIME),
                 config.getIntProperty(Configs.ZOOKEEPER_MAX_RETRIES)
         );    }

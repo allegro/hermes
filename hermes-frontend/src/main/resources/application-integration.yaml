@@ -6,3 +6,8 @@ frontend:
           enabled: true
         schema:
           enabled: true
+  metrics:
+    graphiteReporterEnabled: true
+    reportPeriod: 1
+  graphite:
+    port: 18023

@@ -104,19 +104,6 @@ public enum Configs {
     OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR(
             "oauth.providers.token.request.rate.limiter.rate.reduction.factor", 2.0),
 
-    GRAPHITE_PREFIX("graphite.prefix", "stats.tech.hermes"),
-    GRAPHITE_HOST("graphite.host", "localhost"),
-    GRAPHITE_PORT("graphite.port", 2003),
-    GRAPHITE_HTTP_PORT("graphite.http.port", 8082),
-    REPORT_PERIOD("report.period", 20),
-
-    METRICS_ZOOKEEPER_REPORTER("metrics.zookeeper.reporter", true),
-    METRICS_GRAPHITE_REPORTER("metrics.graphite.reporter", false),
-    METRICS_CONSOLE_REPORTER("metrics.console.reporter", false),
-    METRICS_COUNTER_EXPIRE_AFTER_ACCESS("metrics.counter.expire.after.access", 72),
-    METRICS_RESERVOIR_TYPE("metrics.reservoir.type", "exponentially_decaying"),
-    METRICS_DISABLED_ATTRIBUTES("metrics.disabled.attributes", "M15_RATE, M5_RATE, MEAN, MEAN_RATE, MIN, STDDEV"),
-
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),
     METADATA_CONTENT_ROOT("metadata.content.root", "metadata"),
 
