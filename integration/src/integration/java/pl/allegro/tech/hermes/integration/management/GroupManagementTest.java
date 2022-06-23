@@ -5,6 +5,7 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.management.TestSecurityProvider;
 
 import javax.ws.rs.core.Response;
 import java.util.stream.Stream;
@@ -111,6 +112,23 @@ public class GroupManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.OK);
         assertThat(management.group().list()).doesNotContain("removeGroup");
+    }
+
+    @Test
+    public void shouldAllowNonAdminUserToRemoveGroup() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(false);
+        operations.createGroup("removeGroup");
+
+        // when
+        Response response = management.group().delete("removeGroup");
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+        assertThat(management.group().list()).doesNotContain("removeGroup");
+
+        // cleanup
+        TestSecurityProvider.reset();
     }
 
     @Test
