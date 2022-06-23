@@ -95,7 +95,7 @@ public class GroupsEndpoint {
     @DELETE
     @Path("/{groupName}")
     @ApiOperation(value = "Remove group", response = String.class, httpMethod = HttpMethod.DELETE)
-    @RolesAllowed(Roles.ADMIN)
+    @RolesAllowed(Roles.ANY)
     public Response delete(@PathParam("groupName") String groupName, @Context ContainerRequestContext requestContext) {
         groupService.removeGroup(groupName, new HermesSecurityAwareRequestUser(requestContext));
         return responseStatus(Response.Status.OK);
