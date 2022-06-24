@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.config.console;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -86,6 +87,8 @@ public class ConsoleProperties {
         private String title = "hermes console";
         private String footer = "";
         private String environmentName = "LOCAL";
+
+        @JsonProperty(value="isCriticalEnvironment")
         private boolean isCriticalEnvironment = false;
 
         public String getTitle() {
