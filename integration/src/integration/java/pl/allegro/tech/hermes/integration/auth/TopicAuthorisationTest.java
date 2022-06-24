@@ -8,6 +8,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
@@ -46,7 +47,7 @@ public class TopicAuthorisationTest extends IntegrationTest {
     public void setup() throws Exception {
         frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.addSpringProfiles("authNonRequired");
-        frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(FRONTEND_SSL_ENABLED, false);
         frontendStarter.overrideProperty(FRONTEND_AUTHENTICATION_MODE, "pro_active");
         frontendStarter.overrideProperty(FRONTEND_AUTHENTICATION_ENABLED, true);

@@ -61,28 +61,6 @@ public enum Configs {
     KAFKA_AUTHORIZATION_USERNAME("kafka.authorization.username", "username"),
     KAFKA_AUTHORIZATION_PASSWORD("kafka.authorization.password", "password"),
 
-    // frontend properties
-    FRONTEND_PORT("frontend.port", 8080),
-    FRONTEND_HOST("frontend.host", "0.0.0.0"),
-    FRONTEND_IDLE_TIMEOUT("frontend.idle.timeout", 65),
-    FRONTEND_LONG_IDLE_TIMEOUT("frontend.long.idle.timeout", 400),
-    FRONTEND_READ_TIMEOUT("frontend.read.timeout", 2000),
-    FRONTEND_REQUEST_PARSE_TIMEOUT("frontend.request.parse.timeout", 5000),
-    FRONTEND_MAX_HEADERS("frontend.max.headers", 20),
-    FRONTEND_MAX_PARAMETERS("frontend.max.parameters", 10),
-    FRONTEND_MAX_COOKIES("frontend.max.cookies", 10),
-    FRONTEND_BACKLOG_SIZE("frontend.backlog.size", 10000),
-    FRONTEND_IO_THREADS_COUNT("frontend.io.threads.count", Runtime.getRuntime().availableProcessors() * 2),
-    FRONTEND_WORKER_THREADS_COUNT("frontend.worker.threads.count", 200),
-    FRONTEND_ALWAYS_SET_KEEP_ALIVE("frontend.always.keep.alive", false),
-    FRONTEND_SET_KEEP_ALIVE("frontend.keep.alive", false),
-    FRONTEND_REQUEST_DUMPER("frontend.request.dumper", false),
-    FRONTEND_BUFFER_SIZE("frontend.buffer.size", 16384),
-    FRONTEND_GRACEFUL_SHUTDOWN_ENABLED("frontend.graceful.shutdown.enabled", true),
-    FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
-    FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
-    FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE("frontend.force.topic.max.message.size", false),
-
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),
     OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR(
