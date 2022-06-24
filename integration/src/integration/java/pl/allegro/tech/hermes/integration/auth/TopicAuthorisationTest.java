@@ -23,6 +23,7 @@ import java.util.Map;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_MODE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.integration.auth.SingleUserAwareIdentityManager.getHeadersWithAuthentication;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
@@ -46,7 +47,7 @@ public class TopicAuthorisationTest extends IntegrationTest {
         frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.addSpringProfiles("authNonRequired");
         frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
-        frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(FRONTEND_SSL_ENABLED, false);
         frontendStarter.overrideProperty(FRONTEND_AUTHENTICATION_MODE, "pro_active");
         frontendStarter.overrideProperty(FRONTEND_AUTHENTICATION_ENABLED, true);
         frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);

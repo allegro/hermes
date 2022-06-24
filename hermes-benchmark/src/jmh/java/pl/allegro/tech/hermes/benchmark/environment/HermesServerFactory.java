@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
 import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
+import pl.allegro.tech.hermes.frontend.config.SslProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
@@ -56,8 +57,10 @@ class HermesServerFactory {
         Trackers trackers = new Trackers(Collections.emptyList());
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
         HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer, rawSchemaClient, configFactory, trackers, avroMessageContentWrapper);
+        SslProperties sslProperties = new SslProperties();
 
         return new HermesServer(
+                sslProperties.toSslParameters(),
                 configFactory,
                 hermesMetrics,
                 httpHandler,

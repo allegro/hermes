@@ -24,9 +24,9 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHU
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_FIXED_MAX;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_TYPE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 

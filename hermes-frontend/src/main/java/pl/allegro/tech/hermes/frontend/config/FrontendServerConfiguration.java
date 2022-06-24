@@ -26,12 +26,14 @@ import java.util.Optional;
 @Configuration
 @EnableConfigurationProperties({
         TopicLoadingProperties.class,
-        ReadinessCheckProperties.class
+        ReadinessCheckProperties.class,
+        SslProperties.class
 })
 public class FrontendServerConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public HermesServer hermesServer(ConfigFactory configFactory,
+                                     SslProperties sslProperties,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
                                      DefaultReadinessChecker defaultReadinessChecker,
@@ -40,7 +42,7 @@ public class FrontendServerConfiguration {
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider,
                                      TopicLoadingProperties topicLoadingProperties) {
-        return new HermesServer(configFactory, hermesMetrics, publishingHandler, defaultReadinessChecker,
+        return new HermesServer(sslProperties.toSslParameters(), configFactory, hermesMetrics, publishingHandler, defaultReadinessChecker,
                 defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, topicLoadingProperties.getMetadataRefreshJob().isEnabled(), sslContextFactoryProvider);
     }
 
@@ -53,8 +55,8 @@ public class FrontendServerConfiguration {
 
     @Bean
     public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory,
-                                                               ConfigFactory configFactory) {
-        return new SslContextFactoryProvider(sslContextFactory.orElse(null), configFactory);
+                                                               SslProperties sslProperties) {
+        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslProperties.toSslParameters());
     }
 
     @Bean

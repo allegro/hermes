@@ -14,4 +14,8 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_AUTHENTICATION_ENABLED = "frontend.authentication.enabled";
     public static String FRONTEND_KEEP_ALIVE_HEADER_ENABLED = "frontend.keepAliveHeader.enabled";
     public static String FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS = "frontend.keepAliveHeader.timeoutSeconds";
+    public static String FRONTEND_SSL_ENABLED = "frontend.ssl.enabled";
+    public static String FRONTEND_SSL_PORT = "frontend.ssl.port";
+    public static String FRONTEND_SSL_KEYSTORE_SOURCE = "frontend.ssl.keystoreSource";
+    public static String FRONTEND_SSL_TRUSTSTORE_SOURCE = "frontend.ssl.truststoreSource";
 }

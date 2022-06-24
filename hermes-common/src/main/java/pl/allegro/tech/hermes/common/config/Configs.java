@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.config;
 
-import com.google.common.io.Files;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 
 import java.util.Arrays;
@@ -83,21 +82,6 @@ public enum Configs {
     FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
     FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
     FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE("frontend.force.topic.max.message.size", false),
-
-    FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
-    FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
-    FRONTEND_SSL_CLIENT_AUTH_MODE("frontend.ssl.client.auth.mode", "not_requested"),
-    FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
-
-    FRONTEND_SSL_KEYSTORE_SOURCE("frontend.ssl.keystore.source", "jre"),
-    FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
-    FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
-    FRONTEND_SSL_KEYSTORE_FORMAT("frontend.ssl.keystore.format", "JKS"),
-
-    FRONTEND_SSL_TRUSTSTORE_SOURCE("frontend.ssl.truststore.source", "jre"),
-    FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
-    FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
-    FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),

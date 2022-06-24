@@ -6,3 +6,6 @@ frontend:
           enabled: true
         schema:
           enabled: true
+  ssl:
+    enabled: true
+    port: 18443

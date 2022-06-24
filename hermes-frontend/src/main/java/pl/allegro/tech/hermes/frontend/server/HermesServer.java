@@ -36,9 +36,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READ_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_REQUEST_PARSE_TIMEOUT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SET_KEEP_ALIVE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_CLIENT_AUTH_MODE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_PORT;
 import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_WORKER_THREADS_COUNT;
 
 public class HermesServer {
@@ -48,12 +45,12 @@ public class HermesServer {
 
     private final HermesMetrics hermesMetrics;
     private final ConfigFactory configFactory;
+    private final SslParameters sslParameters;
     private final HttpHandler publishingHandler;
     private final HealthCheckService healthCheckService;
     private final ReadinessChecker readinessChecker;
     private final MessagePreviewPersister messagePreviewPersister;
     private final int port;
-    private final int sslPort;
     private final String host;
     private final ThroughputLimiter throughputLimiter;
     private final TopicMetadataLoadingJob topicMetadataLoadingJob;
@@ -61,6 +58,7 @@ public class HermesServer {
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
     public HermesServer(
+            SslParameters sslParameters,
             ConfigFactory configFactory,
             HermesMetrics hermesMetrics,
             HttpHandler publishingHandler,
@@ -71,6 +69,7 @@ public class HermesServer {
             boolean topicMetadataLoadingJobEnabled,
             SslContextFactoryProvider sslContextFactoryProvider) {
 
+        this.sslParameters = sslParameters;
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.publishingHandler = publishingHandler;
@@ -82,7 +81,6 @@ public class HermesServer {
         this.sslContextFactoryProvider = sslContextFactoryProvider;
 
         this.port = configFactory.getIntProperty(FRONTEND_PORT);
-        this.sslPort = configFactory.getIntProperty(FRONTEND_SSL_PORT);
         this.host = configFactory.getStringProperty(FRONTEND_HOST);
         this.throughputLimiter = throughputLimiter;
     }
@@ -143,10 +141,10 @@ public class HermesServer {
                 .setBufferSize(configFactory.getIntProperty(FRONTEND_BUFFER_SIZE))
                 .setHandler(gracefulShutdown);
 
-        if (configFactory.getBooleanProperty(FRONTEND_SSL_ENABLED)) {
-            builder.addHttpsListener(sslPort, host, sslContextFactoryProvider.getSslContextFactory().create().getSslContext())
+        if (sslParameters.isEnabled()) {
+            builder.addHttpsListener(sslParameters.getPort(), host, sslContextFactoryProvider.getSslContextFactory().create().getSslContext())
                     .setSocketOption(SSL_CLIENT_AUTH_MODE,
-                            SslClientAuthMode.valueOf(configFactory.getStringProperty(FRONTEND_SSL_CLIENT_AUTH_MODE).toUpperCase()))
+                            SslClientAuthMode.valueOf(sslParameters.getClientAuthMode().toUpperCase()))
                     .setServerOption(ENABLE_HTTP2, configFactory.getBooleanProperty(FRONTEND_HTTP2_ENABLED));
         }
         this.undertow = builder.build();
