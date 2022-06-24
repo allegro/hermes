@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_MODE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.integration.auth.SingleUserAwareIdentityManager.getHeadersWithAuthentication;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 

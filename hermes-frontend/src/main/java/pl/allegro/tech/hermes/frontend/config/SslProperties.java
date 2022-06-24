@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-class SslProperties {
+public class SslProperties {
 
     private String source = "jre";
     private String location = "classpath:server.keystore";

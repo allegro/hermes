@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.integration.env;
 import com.netflix.config.DynamicPropertyFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
-import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 
 public interface EnvironmentAware {
 

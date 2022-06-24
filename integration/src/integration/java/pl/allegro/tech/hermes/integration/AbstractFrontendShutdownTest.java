@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
 
 public abstract class AbstractFrontendShutdownTest extends IntegrationTest {

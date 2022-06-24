@@ -23,9 +23,9 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.FRONTEND_SSL_PORT;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_PORT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class HermesClientPublishingHttpsTest extends IntegrationTest {

@@ -18,4 +18,8 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_HTTP2_ENABLED = "frontend.http2Enabled";
     public static String FRONTEND_GRACEFUL_SHUTDOWN_ENABLED = "frontend.gracefulShutdownEnabled";
     public static String FRONTEND_PORT = "frontend.port";
+    public static String FRONTEND_SSL_ENABLED = "frontend.ssl.enabled";
+    public static String FRONTEND_SSL_PORT = "frontend.ssl.port";
+    public static String FRONTEND_SSL_KEYSTORE_SOURCE = "frontend.ssl.keystore.source";
+    public static String FRONTEND_SSL_TRUSTSTORE_SOURCE = "frontend.ssl.truststore.source";
 }
