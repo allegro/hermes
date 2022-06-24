@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.frontend.server.SslParameters;
 @ConfigurationProperties(prefix = "frontend.ssl")
 public class SslProperties {
 
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     private int port = 8443;
 
