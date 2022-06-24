@@ -5,8 +5,6 @@ import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -21,18 +19,6 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
     private final Counter deserializationWithErrorsUsingHeaderSchemaId;
     private final Counter deserializationUsingHeaderSchemaId;
     private final boolean schemaIdHeaderEnabled;
-
-    public AvroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
-                                                   AvroMessageContentWrapper avroMessageContentWrapper,
-                                                   DeserializationMetrics deserializationMetrics,
-                                                   ConfigFactory configFactory) {
-        this(
-            schemaRepository,
-            avroMessageContentWrapper,
-            deserializationMetrics,
-            configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED)
-        );
-    }
 
     public AvroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
                                                    AvroMessageContentWrapper avroMessageContentWrapper,

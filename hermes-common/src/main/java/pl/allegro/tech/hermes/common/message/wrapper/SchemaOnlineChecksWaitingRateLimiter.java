@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import com.google.common.util.concurrent.RateLimiter;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,10 +10,9 @@ public class SchemaOnlineChecksWaitingRateLimiter implements SchemaOnlineChecksR
 
     private final int onlineCheckAcquireWaitMs;
 
-    public SchemaOnlineChecksWaitingRateLimiter(ConfigFactory configFactory) {
-        double onlineCheckPermitsPerSeconds = configFactory.getDoubleProperty(Configs.SCHEMA_REPOSITORY_ONLINE_CHECK_PERMITS_PER_SECOND);
+    public SchemaOnlineChecksWaitingRateLimiter(double onlineCheckPermitsPerSeconds, int onlineCheckAcquireWaitMs) {
         this.rateLimiter = RateLimiter.create(onlineCheckPermitsPerSeconds);
-        this.onlineCheckAcquireWaitMs = configFactory.getIntProperty(Configs.SCHEMA_REPOSITORY_ONLINE_CHECK_ACQUIRE_WAIT_MS);
+        this.onlineCheckAcquireWaitMs = onlineCheckAcquireWaitMs;
     }
 
     @Override

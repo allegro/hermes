@@ -7,6 +7,8 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.env.ConsumersStarter;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
@@ -83,7 +85,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         consumers.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
         consumers.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
         consumers.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperTwo.getConnectionString());
-        consumers.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        consumers.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         consumers.overrideProperty(KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         consumers.overrideProperty(CONSUMER_HEALTH_CHECK_PORT, 7454);
         consumers.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
@@ -100,7 +102,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
         frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperTwo.getConnectionString());
-        frontend.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontend.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
         frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
