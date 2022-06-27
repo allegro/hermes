@@ -10,10 +10,10 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD = "frontend.message.preview.logPersistPeriodSeconds";
     public static String FRONTEND_READINESS_CHECK_ENABLED = "frontend.readiness.check.enabled";
     public static String FRONTEND_READINESS_CHECK_INTERVAL_SECONDS = "frontend.readiness.check.intervalSeconds";
-    public static String FRONTEND_AUTHENTICATION_MODE = "frontend.authentication.mode";
-    public static String FRONTEND_AUTHENTICATION_ENABLED = "frontend.authentication.enabled";
-    public static String FRONTEND_KEEP_ALIVE_HEADER_ENABLED = "frontend.keepAliveHeader.enabled";
-    public static String FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS = "frontend.keepAliveHeader.timeoutSeconds";
+    public static String FRONTEND_AUTHENTICATION_MODE = "frontend.handlers.authentication.mode";
+    public static String FRONTEND_AUTHENTICATION_ENABLED = "frontend.handlers.authentication.enabled";
+    public static String FRONTEND_KEEP_ALIVE_HEADER_ENABLED = "frontend.handlers.keepAliveHeader.enabled";
+    public static String FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS = "frontend.handlers.keepAliveHeader.timeoutSeconds";
     public static String METRICS_ZOOKEEPER_REPORTER_ENABLED = "frontend.metrics.zookeeperReporterEnabled";
     public static String METRICS_GRAPHITE_REPORTER_ENABLED = "frontend.metrics.graphiteReporterEnabled";
     public static String SCHEMA_CACHE_ENABLED = "frontend.schema.cache.enabled";
