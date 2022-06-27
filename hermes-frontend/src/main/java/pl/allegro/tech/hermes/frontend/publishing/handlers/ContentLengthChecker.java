@@ -6,8 +6,6 @@ import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.io.IOException;
 
@@ -18,8 +16,8 @@ final class ContentLengthChecker {
 
     private final boolean forceMaxMessageSizePerTopic;
 
-    ContentLengthChecker(ConfigFactory configs) {
-        this.forceMaxMessageSizePerTopic = configs.getBooleanProperty(Configs.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE);
+    ContentLengthChecker(boolean forceMaxMessageSizePerTopic) {
+        this.forceMaxMessageSizePerTopic = forceMaxMessageSizePerTopic;
     }
 
     void check(HttpServerExchange exchange, int contentLength, AttachmentContent attachment)

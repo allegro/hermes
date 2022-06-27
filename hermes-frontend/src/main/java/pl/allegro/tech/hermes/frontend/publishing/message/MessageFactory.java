@@ -7,8 +7,6 @@ import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.http.MessageMetadataHeaders;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroInvalidMetadataException;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -52,14 +50,14 @@ public class MessageFactory {
                           HeadersPropagator headersPropagator,
                           MessageContentWrapper messageContentWrapper,
                           Clock clock,
-                          ConfigFactory configFactory) {
+                          boolean schemaIdHeaderEnabled) {
         this.validators = validators;
         this.enforcer = enforcer;
         this.messageContentWrapper = messageContentWrapper;
         this.schemaRepository = schemaRepository;
         this.headersPropagator = headersPropagator;
         this.clock = clock;
-        this.schemaIdHeaderEnabled = configFactory.getBooleanProperty(Configs.SCHEMA_ID_HEADER_ENABLED);
+        this.schemaIdHeaderEnabled = schemaIdHeaderEnabled;
     }
 
     public Message create(HeaderMap headerMap, AttachmentContent attachment) {

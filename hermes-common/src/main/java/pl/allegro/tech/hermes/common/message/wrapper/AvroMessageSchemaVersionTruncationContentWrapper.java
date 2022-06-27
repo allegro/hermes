@@ -5,8 +5,6 @@ import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
@@ -25,22 +23,10 @@ public class AvroMessageSchemaVersionTruncationContentWrapper implements AvroMes
     public AvroMessageSchemaVersionTruncationContentWrapper(SchemaRepository schemaRepository,
                                                             AvroMessageContentWrapper avroMessageContentWrapper,
                                                             DeserializationMetrics deserializationMetrics,
-                                                            ConfigFactory configFactory) {
-        this(
-            schemaRepository,
-            avroMessageContentWrapper,
-            deserializationMetrics,
-            configFactory.getBooleanProperty(Configs.SCHEMA_VERSION_TRUNCATION_ENABLED)
-        );
-    }
-
-    public AvroMessageSchemaVersionTruncationContentWrapper(SchemaRepository schemaRepository,
-                                                            AvroMessageContentWrapper avroMessageContentWrapper,
-                                                            DeserializationMetrics deserializationMetrics,
-                                                            boolean magicByteTruncationEnabled) {
+                                                            boolean schemaVersionTruncationEnabled) {
         this.schemaRepository = schemaRepository;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
-        this.magicByteTruncationEnabled = magicByteTruncationEnabled;
+        this.magicByteTruncationEnabled = schemaVersionTruncationEnabled;
 
         this.deserializationErrorsWithSchemaVersionTruncation = deserializationMetrics.errorsForSchemaVersionTruncation();
         this.deserializationWithSchemaVersionTruncation = deserializationMetrics.usingSchemaVersionTruncation();

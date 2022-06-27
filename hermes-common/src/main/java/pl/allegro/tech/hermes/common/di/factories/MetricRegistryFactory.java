@@ -14,8 +14,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricRegistryWithExponentiallyDecayingReservoir;
 import pl.allegro.tech.hermes.common.metric.MetricRegistryWithHdrHistogramReservoir;
@@ -34,29 +32,31 @@ import java.util.concurrent.TimeUnit;
 
 public class MetricRegistryFactory {
 
-    private final ConfigFactory configFactory;
+    private final MetricRegistryParameters metricRegistryParameters;
+    private final GraphiteParameters graphiteParameters;
     private final CounterStorage counterStorage;
     private final InstanceIdResolver instanceIdResolver;
     private final String moduleName;
     private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
 
-    public MetricRegistryFactory(ConfigFactory configFactory,
+    public MetricRegistryFactory(MetricRegistryParameters metricRegistryParameters,
+                                 GraphiteParameters graphiteParameters,
                                  CounterStorage counterStorage,
                                  InstanceIdResolver instanceIdResolver,
                                  @Named("moduleName") String moduleName) {
-        this.configFactory = configFactory;
+        this.metricRegistryParameters = metricRegistryParameters;
+        this.graphiteParameters = graphiteParameters;
         this.counterStorage = counterStorage;
         this.instanceIdResolver = instanceIdResolver;
         this.moduleName = moduleName;
-
     }
 
     public MetricRegistry provide() {
         MetricRegistry registry = createMetricsRegistry();
 
-        if (configFactory.getBooleanProperty(Configs.METRICS_GRAPHITE_REPORTER)) {
+        if (metricRegistryParameters.isGraphiteReporterEnabled()) {
             String prefix = Joiner.on(".").join(
-                    configFactory.getStringProperty(Configs.GRAPHITE_PREFIX),
+                    graphiteParameters.getPrefix(),
                     moduleName,
                     instanceIdResolver.resolve().replaceAll("\\.", HermesMetrics.REPLACEMENT_CHAR));
 
@@ -65,20 +65,20 @@ public class MetricRegistryFactory {
                     .prefixedWith(prefix)
                     .disabledMetricAttributes(getDisabledAttributesFromConfig())
                     .build(new Graphite(new InetSocketAddress(
-                            configFactory.getStringProperty(Configs.GRAPHITE_HOST),
-                            configFactory.getIntProperty(Configs.GRAPHITE_PORT)
+                            graphiteParameters.getHost(),
+                            graphiteParameters.getPort()
                     )))
-                    .start(configFactory.getIntProperty(Configs.REPORT_PERIOD), TimeUnit.SECONDS);
+                    .start(metricRegistryParameters.getReportPeriod(), TimeUnit.SECONDS);
         }
-        if (configFactory.getBooleanProperty(Configs.METRICS_CONSOLE_REPORTER)) {
+        if (metricRegistryParameters.isConsoleReporterEnabled()) {
             ConsoleReporter.forRegistry(registry).build().start(
-                    configFactory.getIntProperty(Configs.REPORT_PERIOD), TimeUnit.SECONDS
+                    metricRegistryParameters.getReportPeriod(), TimeUnit.SECONDS
             );
         }
 
-        if (configFactory.getBooleanProperty(Configs.METRICS_ZOOKEEPER_REPORTER)) {
-            new ZookeeperCounterReporter(registry, counterStorage, configFactory).start(
-                    configFactory.getIntProperty(Configs.REPORT_PERIOD),
+        if (metricRegistryParameters.isZookeeperReporterEnabled()) {
+            new ZookeeperCounterReporter(registry, counterStorage, graphiteParameters.getPrefix()).start(
+                    metricRegistryParameters.getReportPeriod(),
                     TimeUnit.SECONDS
             );
         }
@@ -89,7 +89,7 @@ public class MetricRegistryFactory {
     }
 
     private MetricRegistry createMetricsRegistry() {
-        String metricsReservoirType = configFactory.getStringProperty(Configs.METRICS_RESERVOIR_TYPE).toUpperCase();
+        String metricsReservoirType = metricRegistryParameters.getReservoirType().toUpperCase();
         switch (MetricsReservoirType.valueOf(metricsReservoirType)) {
             case HDR:
                 return new MetricRegistryWithHdrHistogramReservoir();
@@ -117,7 +117,7 @@ public class MetricRegistryFactory {
 
     private Set<MetricAttribute> getDisabledAttributesFromConfig() {
         Set<MetricAttribute> disabledAttributes = Sets.newHashSet();
-        String disabledAttributesFromConfig = configFactory.getStringProperty(Configs.METRICS_DISABLED_ATTRIBUTES);
+        String disabledAttributesFromConfig = metricRegistryParameters.getDisabledAttributes();
         List<String> disabledAttributesList = Arrays.asList(disabledAttributesFromConfig.split("\\s*,\\s*"));
 
         disabledAttributesList.forEach(singleAttribute ->

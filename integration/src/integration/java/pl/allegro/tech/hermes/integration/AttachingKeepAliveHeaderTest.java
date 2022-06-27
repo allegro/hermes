@@ -70,7 +70,7 @@ public class AttachingKeepAliveHeaderTest extends IntegrationTest {
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
-        frontend.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontendConfigUpdater.accept(frontend);
         frontend.start();
         return frontend;

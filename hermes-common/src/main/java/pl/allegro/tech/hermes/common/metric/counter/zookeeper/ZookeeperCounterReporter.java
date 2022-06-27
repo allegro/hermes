@@ -10,8 +10,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
@@ -31,12 +29,12 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
 
     public ZookeeperCounterReporter(MetricRegistry registry,
                                     CounterStorage counterStorage,
-                                    ConfigFactory config
+                                    String graphitePrefix
     ) {
         super(
                 registry,
                 ZOOKEEPER_REPORTER_NAME,
-                new ZookeeperMetricsFilter(config.getStringProperty(Configs.GRAPHITE_PREFIX)),
+                new ZookeeperMetricsFilter(graphitePrefix),
                 RATE_UNIT,
                 DURATION_UNIT
         );
@@ -50,7 +48,7 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
                        SortedMap<String, Meter> meters,
                        SortedMap<String, Timer> timers) {
 
-        counters.forEach((name, counter) -> reportCounter(name, counter));
+        counters.forEach(this::reportCounter);
 
         meters
                 .entrySet()

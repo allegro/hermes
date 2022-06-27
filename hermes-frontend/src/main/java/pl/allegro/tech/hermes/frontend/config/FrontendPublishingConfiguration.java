@@ -38,17 +38,18 @@ import java.util.Optional;
         ThroughputProperties.class,
         MessagePreviewProperties.class,
         HeaderPropagationProperties.class,
-        HandlersChainProperties.class
+        HandlersChainProperties.class,
+        SchemaProperties.class
 })
 public class FrontendPublishingConfiguration {
 
     @Bean
     public HttpHandler httpHandler(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
-                                   MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
+                                   MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig, MessagePreviewProperties messagePreviewProperties,
-                                   HandlersChainProperties handlersChainProperties) {
-        return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, configFactory, messageFactory,
+                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig,
+                                   MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties) {
+        return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,
                 brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(), handlersChainProperties.toHandlersChainParameters()).provide();
     }
 
@@ -79,9 +80,9 @@ public class FrontendPublishingConfiguration {
                                          HeadersPropagator headersPropagator,
                                          CompositeMessageContentWrapper compositeMessageContentWrapper,
                                          Clock clock,
-                                         ConfigFactory configFactory) {
+                                         SchemaProperties schemaProperties) {
         return new MessageFactory(validators, enforcer, schemaRepository, headersPropagator, compositeMessageContentWrapper,
-                clock, configFactory);
+                clock, schemaProperties.isIdHeaderEnabled());
     }
 
     @Bean

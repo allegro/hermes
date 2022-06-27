@@ -15,20 +15,24 @@ public class RawSchemaClientFactory {
     private final HermesMetrics hermesMetrics;
     private final ObjectMapper objectMapper;
     private final SchemaRepositoryInstanceResolver resolver;
+    private final boolean subjectSuffixEnabled;
+    private final boolean subjectNamespaceEnabled;
 
     public RawSchemaClientFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics, ObjectMapper objectMapper,
-                                  SchemaRepositoryInstanceResolver resolver) {
+                                  SchemaRepositoryInstanceResolver resolver, boolean subjectSuffixEnabled, boolean subjectNamespaceEnabled) {
         this.configFactory = configFactory;
         this.hermesMetrics = hermesMetrics;
         this.objectMapper = objectMapper;
         this.resolver = resolver;
+        this.subjectSuffixEnabled = subjectSuffixEnabled;
+        this.subjectNamespaceEnabled = subjectNamespaceEnabled;
     }
 
     public RawSchemaClient provide() {
         SubjectNamingStrategy subjectNamingStrategy = SubjectNamingStrategy.qualifiedName
-                .withValueSuffixIf(configFactory.getBooleanProperty(Configs.SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED))
+                .withValueSuffixIf(subjectSuffixEnabled)
                 .withNamespacePrefixIf(
-                        configFactory.getBooleanProperty(Configs.SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED),
+                        subjectNamespaceEnabled,
                         new SubjectNamingStrategy.Namespace(
                                 configFactory.getStringProperty(Configs.KAFKA_NAMESPACE),
                                 configFactory.getStringProperty(Configs.KAFKA_NAMESPACE_SEPARATOR)

@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -56,10 +57,12 @@ public class KafkaBrokerMessageProducerTest {
 
     private CachedTopic cachedTopic;
 
+    private final SchemaProperties schemaProperties = new SchemaProperties();
+
     @Before
     public void before() {
         cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
-        MessageToKafkaProducerRecordConverter messageConverter = new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, configFactory);
+        MessageToKafkaProducerRecordConverter messageConverter = new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
         producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, messageConverter);
     }
 

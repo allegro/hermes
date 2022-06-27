@@ -6,6 +6,22 @@ frontend:
           enabled: true
         schema:
           enabled: true
+  schema:
+    cache:
+      refreshAfterWriteMinutes: 1
+  ssl:
+    enabled: true
+    port: 18443
+  server:
+    port: 18080
+    http2Enabled: true
+  handlers:
+    idleTimeout: 2000
+  metrics:
+    graphiteReporterEnabled: true
+    reportPeriod: 1
+  graphite:
+    port: 18023
   zookeeper:
     connectionString: "localhost:14192"
     connectionTimeout: 10000

@@ -7,7 +7,6 @@ import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.server.HttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
@@ -26,7 +25,6 @@ public class HandlersChainFactory {
     private final TopicsCache topicsCache;
     private final MessageErrorProcessor messageErrorProcessor;
     private final MessageEndProcessor messageEndProcessor;
-    private final ConfigFactory configFactory;
     private final MessageFactory messageFactory;
     private final BrokerMessageProducer brokerMessageProducer;
     private final MessagePreviewLog previewLog;
@@ -36,14 +34,13 @@ public class HandlersChainFactory {
     private final HandlersChainParameters handlersChainParameters;
 
     public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
-                                MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
+                                MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                 BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                 ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authenticationConfiguration,
                                 boolean messagePreviewEnabled, HandlersChainParameters handlersChainParameters) {
         this.topicsCache = topicsCache;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
-        this.configFactory = configFactory;
         this.messageFactory = messageFactory;
         this.brokerMessageProducer = brokerMessageProducer;
         this.previewLog = messagePreviewLog;
@@ -58,8 +55,8 @@ public class HandlersChainFactory {
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
         HttpHandler timeoutHandler = new TimeoutHandler(messageEndProcessor, messageErrorProcessor);
         HttpHandler handlerAfterRead = previewEnabled ? new PreviewHandler(messageCreateHandler, previewLog) : messageCreateHandler;
-        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, configFactory,
-                                                                messageErrorProcessor, throughputLimiter);
+        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, messageErrorProcessor, throughputLimiter,
+                handlersChainParameters.isForceTopicMaxMessageSize(), handlersChainParameters.getIdleTimeout(), handlersChainParameters.getLongIdleTimeout());
         TopicHandler topicHandler = new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
         boolean keepAliveHeaderEnabled = handlersChainParameters.isKeepAliveHeaderEnabled();
         HttpHandler rootPublishingHandler = keepAliveHeaderEnabled ? withKeepAliveHeaderHandler(topicHandler) : topicHandler;

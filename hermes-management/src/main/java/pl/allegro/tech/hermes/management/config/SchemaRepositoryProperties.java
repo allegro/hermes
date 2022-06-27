@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 @ConfigurationProperties(prefix = "schema.repository")
 public class SchemaRepositoryProperties {
 
-    private String serverUrl = Configs.SCHEMA_REPOSITORY_SERVER_URL.getDefaultValue();
+    private String serverUrl = "http://localhost:8888/";
 
     private boolean validationEnabled = false;
 
@@ -15,9 +14,9 @@ public class SchemaRepositoryProperties {
     private int socketTimeoutMillis = 3000;
     private String deleteSchemaPathSuffix = "versions";
 
-    private boolean subjectSuffixEnabled = Configs.SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED.getDefaultValue();
+    private boolean subjectSuffixEnabled = false;
 
-    private boolean subjectNamespaceEnabled = Configs.SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED.getDefaultValue();
+    private boolean subjectNamespaceEnabled = false;
 
     public String getServerUrl() {
         return serverUrl;

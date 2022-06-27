@@ -72,7 +72,12 @@ import java.time.Clock;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties(ZookeeperProperties.class)
+@EnableConfigurationProperties({
+        MetricsProperties.class,
+        GraphiteProperties.class,
+        SchemaProperties.class,
+        ZookeeperProperties.class
+})
 public class CommonConfiguration {
 
     @Bean
@@ -154,8 +159,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ObjectMapper objectMapper(ConfigFactory configFactory) {
-        return new ObjectMapperFactory(configFactory).provide();
+    public ObjectMapper objectMapper(SchemaProperties schemaProperties) {
+        return new ObjectMapperFactory(schemaProperties.isIdSerializationEnabled()).provide();
     }
 
     @Bean
@@ -186,9 +191,9 @@ public class CommonConfiguration {
     public AvroMessageSchemaVersionTruncationContentWrapper avroMessageSchemaVersionTruncationContentWrapper(SchemaRepository schemaRepository,
                                                                                                              AvroMessageContentWrapper avroMessageContentWrapper,
                                                                                                              DeserializationMetrics deserializationMetrics,
-                                                                                                             ConfigFactory configFactory) {
+                                                                                                             SchemaProperties schemaProperties) {
         return new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics, configFactory);
+                deserializationMetrics, schemaProperties.isVersionTruncationEnabled());
     }
 
     @Bean
@@ -206,17 +211,20 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(ConfigFactory configFactory) {
-        return new SchemaOnlineChecksWaitingRateLimiter(configFactory);
+    public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(SchemaProperties schemaProperties) {
+        return new SchemaOnlineChecksWaitingRateLimiter(
+                schemaProperties.getRepository().getOnlineCheckPermitsPerSecond(),
+                schemaProperties.getRepository().getOnlineCheckAcquireWaitMs()
+        );
     }
 
     @Bean
     public AvroMessageHeaderSchemaIdContentWrapper avroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
                                                                                            AvroMessageContentWrapper avroMessageContentWrapper,
                                                                                            DeserializationMetrics deserializationMetrics,
-                                                                                           ConfigFactory configFactory) {
+                                                                                           SchemaProperties schemaProperties) {
         return new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics, configFactory);
+                deserializationMetrics, schemaProperties.isIdHeaderEnabled());
     }
 
     @Bean
@@ -269,11 +277,12 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MetricRegistry metricRegistry(ConfigFactory configFactory,
+    public MetricRegistry metricRegistry(MetricsProperties metricsProperties,
+                                         GraphiteProperties graphiteProperties,
                                          CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
                                          @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(configFactory, counterStorage, instanceIdResolver, moduleName)
+        return new MetricRegistryFactory(metricsProperties.toMetricRegistryParameters(), graphiteProperties.toGraphiteParameters(), counterStorage, instanceIdResolver, moduleName)
                 .provide();
     }
 
@@ -293,9 +302,10 @@ public class CommonConfiguration {
     @Bean
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
                                        ConfigFactory config,
-                                       ZookeeperProperties zookeeperProperties) {
+                                       ZookeeperProperties zookeeperProperties,
+                                       MetricsProperties metricsProperties) {
         return new SharedCounter(zookeeper,
-                config.getIntProperty(Configs.METRICS_COUNTER_EXPIRE_AFTER_ACCESS),
+                metricsProperties.getCounterExpireAfterAccess(),
                 zookeeperProperties.getBaseSleepTime(),
                 zookeeperProperties.getMaxRetries()
         );    }

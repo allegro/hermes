@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.consumers.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
@@ -80,6 +81,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     @Shared
     AdminClient adminClient
 
+    SchemaProperties schemaProperties = new SchemaProperties()
 
     def setupSpec() {
         kafkaContainer.start()
@@ -100,7 +102,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, configFactory),
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
-                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(configFactory), configFactory))
+                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(configFactory), schemaProperties.isIdHeaderEnabled()))
     }
 
     def "should publish messages on only one partition for the same partition-key"() {
@@ -205,17 +207,17 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
 
-        KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props);
+        KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(props)
 
         Set<TopicPartition> topicPartitions = kafkaConsumer.partitionsFor(kafkaTopicName)
                 .collect { new TopicPartition(it.topic(), it.partition()) }
-        kafkaConsumer.assign(topicPartitions);
+        kafkaConsumer.assign(topicPartitions)
         Map<TopicPartition, OffsetAndMetadata> topicPartitionByOffset = topicPartitions.stream()
                 .collect({
-                    long offset = kafkaConsumer.position(it);
-                    return ImmutablePair.of(it, new OffsetAndMetadata(offset));
+                    long offset = kafkaConsumer.position(it)
+                    return ImmutablePair.of(it, new OffsetAndMetadata(offset))
                 }).collectEntries()
-        kafkaConsumer.commitSync(topicPartitionByOffset);
+        kafkaConsumer.commitSync(topicPartitionByOffset)
 
         return kafkaConsumer
     }
