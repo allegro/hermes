@@ -14,4 +14,6 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_AUTHENTICATION_ENABLED = "frontend.authentication.enabled";
     public static String FRONTEND_KEEP_ALIVE_HEADER_ENABLED = "frontend.keepAliveHeader.enabled";
     public static String FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS = "frontend.keepAliveHeader.timeoutSeconds";
+    public static String SCHEMA_CACHE_ENABLED = "frontend.schema.cache.enabled";
+    public static String SCHEMA_REPOSITORY_SERVER_URL = "frontend.schema.repository.serverUrl";
 }

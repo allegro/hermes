@@ -6,3 +6,6 @@ frontend:
           enabled: true
         schema:
           enabled: true
+  schema:
+    cache:
+      refreshAfterWriteMinutes: 1

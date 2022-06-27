@@ -64,6 +64,9 @@ consumer:
   workload:
     rebalanceInterval: 1
     consumerPerSubscription: 1
+  schema:
+    cache:
+      refreshAfterWriteMinutes: 1
 
 
 kafka:

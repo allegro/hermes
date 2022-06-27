@@ -15,7 +15,10 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherF
 import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
 
 @Configuration
-@EnableConfigurationProperties(LocalMessageStorageProperties.class)
+@EnableConfigurationProperties({
+        LocalMessageStorageProperties.class,
+        SchemaProperties.class
+})
 public class FrontendProducerConfiguration {
 
     @Bean
@@ -43,7 +46,7 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean
-    public MessageToKafkaProducerRecordConverter messageToKafkaProducerRecordConverter(KafkaHeaderFactory kafkaHeaderFactory, ConfigFactory configFactory) {
-        return new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, configFactory);
+    public MessageToKafkaProducerRecordConverter messageToKafkaProducerRecordConverter(KafkaHeaderFactory kafkaHeaderFactory, SchemaProperties schemaProperties) {
+        return new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
     }
 }

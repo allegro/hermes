@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
 import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
+import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
@@ -73,6 +74,7 @@ class HermesServerFactory {
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter, TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer, RawSchemaClient rawSchemaClient, ConfigFactory configFactory, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
         HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
+        SchemaProperties schemaProperties = new SchemaProperties();
 
         return new HandlersChainFactory(
                 topicsCache,
@@ -89,7 +91,7 @@ class HermesServerFactory {
                         new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter()),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
                         Clock.systemDefaultZone(),
-                        configFactory
+                        schemaProperties.isIdHeaderEnabled()
                 ),
                 brokerMessageProducer,
                 null,

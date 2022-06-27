@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.config;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
@@ -70,6 +71,7 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 @Configuration
+@EnableConfigurationProperties(SchemaProperties.class)
 public class CommonConfiguration {
 
     @Bean
@@ -142,8 +144,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ObjectMapper objectMapper(ConfigFactory configFactory) {
-        return new ObjectMapperFactory(configFactory).provide();
+    public ObjectMapper objectMapper(SchemaProperties schemaProperties) {
+        return new ObjectMapperFactory(schemaProperties.isIdSerializationEnabled()).provide();
     }
 
 
@@ -153,8 +155,8 @@ public class CommonConfiguration {
                                                                 Clock clock,
                                                                 SchemaRepository schemaRepository,
                                                                 DeserializationMetrics deserializationMetrics,
-                                                                ConfigFactory configFactory,
-                                                                SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter) {
+                                                                SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter,
+                                                                SchemaProperties schemaProperties) {
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(clock);
 
         return new CompositeMessageContentWrapper(
@@ -165,11 +167,11 @@ public class CommonConfiguration {
                 new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroMessageContentWrapper,
                         deserializationMetrics),
                 new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper,
-                        deserializationMetrics, configFactory),
+                        deserializationMetrics, schemaProperties.isIdHeaderEnabled()),
                 new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, schemaOnlineChecksRateLimiter,
                         avroMessageContentWrapper, deserializationMetrics),
                 new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper,
-                        deserializationMetrics, configFactory)
+                        deserializationMetrics, schemaProperties.isVersionTruncationEnabled())
         );
     }
 
@@ -179,8 +181,11 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(ConfigFactory configFactory) {
-        return new SchemaOnlineChecksWaitingRateLimiter(configFactory);
+    public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(SchemaProperties schemaProperties) {
+        return new SchemaOnlineChecksWaitingRateLimiter(
+                schemaProperties.getRepository().getOnlineCheckPermitsPerSecond(),
+                schemaProperties.getRepository().getOnlineCheckAcquireWaitMs()
+        );
     }
 
     @Bean
