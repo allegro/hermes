@@ -38,11 +38,11 @@ public class ZookeeperCounterStorage implements CounterStorage {
     public ZookeeperCounterStorage(SharedCounter sharedCounter,
                                    SubscriptionRepository subscriptionRepository,
                                    PathsCompiler pathsCompiler,
-                                   ConfigFactory configFactory) {
+                                   String zookeeperRoot) {
         this.sharedCounter = sharedCounter;
         this.subscriptionRepository = subscriptionRepository;
         this.pathsCompiler = pathsCompiler;
-        zookeeperRoot = configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT);
+        this.zookeeperRoot = zookeeperRoot;
 
     }
 

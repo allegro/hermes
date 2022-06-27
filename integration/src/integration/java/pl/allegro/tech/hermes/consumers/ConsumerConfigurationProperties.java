@@ -20,4 +20,5 @@ public class ConsumerConfigurationProperties {
     public static String METRICS_GRAPHITE_REPORTER_ENABLED = "consumer.metrics.graphiteReporterEnabled";
     public static String SCHEMA_CACHE_ENABLED = "consumer.schema.cache.enabled";
     public static String SCHEMA_REPOSITORY_SERVER_URL = "consumer.schema.repository.serverUrl";
+    public static String ZOOKEEPER_CONNECTION_STRING = "consumer.zookeeper.connectionString";
 }

@@ -100,7 +100,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             consumersStarter.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
             consumersStarter.overrideProperty(Configs.KAFKA_CLUSTER_NAME, PRIMARY_KAFKA_CLUSTER_NAME);
             consumersStarter.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-            consumersStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
+            consumersStarter.overrideProperty(ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
             consumersStarter.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             consumersStarter.overrideProperty(GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());
             consumersStarter.start();
@@ -108,7 +108,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             FrontendStarter frontendStarter = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT);
             frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
             frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-            frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
             frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             frontendStarter.start();
 

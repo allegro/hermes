@@ -1,27 +1,23 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
 import org.apache.curator.framework.CuratorFramework;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
-
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE;
 
 public class ModelAwareZookeeperNotifyingCacheFactory {
 
     private final CuratorFramework curator;
 
-    private final ConfigFactory config;
+    private final ZookeeperParameters zookeeperParameters;
 
-    public ModelAwareZookeeperNotifyingCacheFactory(CuratorFramework curator, ConfigFactory config) {
+    public ModelAwareZookeeperNotifyingCacheFactory(CuratorFramework curator, ZookeeperParameters zookeeperParameters) {
         this.curator = curator;
-        this.config = config;
+        this.zookeeperParameters = zookeeperParameters;
     }
 
     public ModelAwareZookeeperNotifyingCache provide() {
-        String rootPath = config.getStringProperty(Configs.ZOOKEEPER_ROOT);
+        String rootPath = zookeeperParameters.getRoot();
         ModelAwareZookeeperNotifyingCache cache = new ModelAwareZookeeperNotifyingCache(
-                curator, rootPath, config.getIntProperty(ZOOKEEPER_TASK_PROCESSING_THREAD_POOL_SIZE)
+                curator, rootPath, zookeeperParameters.getProcessingThreadPoolSize()
         );
         try {
             cache.start();

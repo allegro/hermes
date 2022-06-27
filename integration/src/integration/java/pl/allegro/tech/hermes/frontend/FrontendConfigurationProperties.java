@@ -26,4 +26,5 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_HTTP2_ENABLED = "frontend.server.http2Enabled";
     public static String FRONTEND_GRACEFUL_SHUTDOWN_ENABLED = "frontend.server.gracefulShutdownEnabled";
     public static String FRONTEND_PORT = "frontend.server.port";
+    public static String ZOOKEEPER_CONNECTION_STRING = "frontend.zookeeper.connectionString";
 }

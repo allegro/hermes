@@ -22,3 +22,11 @@ frontend:
     reportPeriod: 1
   graphite:
     port: 18023
+  zookeeper:
+    connectionString: "localhost:14192"
+    connectionTimeout: 10000
+    sessionTimeout: 10000
+    authorization:
+      enabled: false
+      user: admin
+      password: admin

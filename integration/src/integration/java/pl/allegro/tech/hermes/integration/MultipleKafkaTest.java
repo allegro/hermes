@@ -85,7 +85,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         ConsumersStarter consumers = new ConsumersStarter();
         consumers.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
         consumers.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
-        consumers.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperTwo.getConnectionString());
+        consumers.overrideProperty(ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
         consumers.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         consumers.overrideProperty(KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         consumers.overrideProperty(CONSUMER_HEALTH_CHECK_PORT, 7454);
@@ -102,7 +102,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         frontend.overrideProperty(FRONTEND_HTTP2_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
-        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperTwo.getConnectionString());
+        frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
         frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontend.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         frontend.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, false);

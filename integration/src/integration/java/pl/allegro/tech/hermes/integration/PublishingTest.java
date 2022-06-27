@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.consumers.config.ZookeeperProperties;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.integration.client.SlowClient;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
@@ -233,7 +233,7 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldPublishMessageUsingChunkedEncoding() throws UnsupportedEncodingException {
+    public void shouldPublishMessageUsingChunkedEncoding() {
         // given
         Topic topic = operations.buildTopic(randomTopic("chunked", "topic").build());
 
@@ -249,6 +249,7 @@ public class PublishingTest extends IntegrationTest {
     @Test
     public void shouldNotCreateTopicWhenPublishingToNonExistingTopic() throws Exception {
         // given
+        ZookeeperProperties zookeeperProperties = new ZookeeperProperties();
         TopicName nonExisting = TopicName.fromQualifiedName("nonExistingGroup.nonExistingTopic8326");
 
         // when
@@ -257,7 +258,7 @@ public class PublishingTest extends IntegrationTest {
         // then
         assertThat(responseForNonExisting.getStatus()).isEqualTo(404);
 
-        ZookeeperPaths paths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue().toString());
+        ZookeeperPaths paths = new ZookeeperPaths(zookeeperProperties.getRoot());
         assertThat(SharedServices.services().zookeeper().checkExists().forPath(paths.topicPath(nonExisting))).isNull();
     }
 
