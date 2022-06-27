@@ -40,7 +40,6 @@ public class BackupMessage implements Serializable {
         return partitionKey;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

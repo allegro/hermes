@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.publishing.message
 
-import com.google.common.collect.ImmutableMap
 import groovy.json.JsonOutput
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser

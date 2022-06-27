@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview
 
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwareSerDe
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser

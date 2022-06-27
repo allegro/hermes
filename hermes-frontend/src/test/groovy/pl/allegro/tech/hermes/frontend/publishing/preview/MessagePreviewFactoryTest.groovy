@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview
 
-import com.google.common.collect.ImmutableMap
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage

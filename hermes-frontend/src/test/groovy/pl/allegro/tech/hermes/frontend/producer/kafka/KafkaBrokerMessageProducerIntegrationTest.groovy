@@ -11,7 +11,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.TopicPartition
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap
 import org.testcontainers.spock.Testcontainers
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.DeliveryType

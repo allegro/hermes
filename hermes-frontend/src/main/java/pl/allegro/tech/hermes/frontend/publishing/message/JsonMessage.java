@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import pl.allegro.tech.hermes.api.ContentType;
 
-
 public class JsonMessage implements Message {
 
     private final String id;

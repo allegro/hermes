@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import com.google.common.collect.ImmutableMap;
 import com.netflix.config.DynamicPropertyFactory;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
