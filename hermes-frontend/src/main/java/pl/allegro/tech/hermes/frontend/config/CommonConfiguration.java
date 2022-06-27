@@ -72,7 +72,11 @@ import java.time.Clock;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties(SchemaProperties.class)
+@EnableConfigurationProperties({
+        MetricsProperties.class,
+        GraphiteProperties.class,
+        SchemaProperties.class
+})
 public class CommonConfiguration {
 
     @Bean
@@ -272,11 +276,12 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MetricRegistry metricRegistry(ConfigFactory configFactory,
+    public MetricRegistry metricRegistry(MetricsProperties metricsProperties,
+                                         GraphiteProperties graphiteProperties,
                                          CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
                                          @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(configFactory, counterStorage, instanceIdResolver, moduleName)
+        return new MetricRegistryFactory(metricsProperties.toMetricRegistryParameters(), graphiteProperties.toGraphiteParameters(), counterStorage, instanceIdResolver, moduleName)
                 .provide();
     }
 
@@ -295,9 +300,10 @@ public class CommonConfiguration {
 
     @Bean
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
-                                       ConfigFactory config) {
+                                       ConfigFactory config,
+                                       MetricsProperties metricsProperties) {
         return new SharedCounter(zookeeper,
-                config.getIntProperty(Configs.METRICS_COUNTER_EXPIRE_AFTER_ACCESS),
+                metricsProperties.getCounterExpireAfterAccess(),
                 config.getIntProperty(Configs.ZOOKEEPER_BASE_SLEEP_TIME),
                 config.getIntProperty(Configs.ZOOKEEPER_MAX_RETRIES)
         );    }

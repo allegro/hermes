@@ -64,6 +64,11 @@ consumer:
   workload:
     rebalanceInterval: 1
     consumerPerSubscription: 1
+  metrics:
+    graphiteReporterEnabled: true
+    reportPeriod: 1
+  graphite:
+    port: 18023
   schema:
     cache:
       refreshAfterWriteMinutes: 1

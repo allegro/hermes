@@ -89,8 +89,8 @@ public class MultipleKafkaTest extends IntegrationTest {
         consumers.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         consumers.overrideProperty(KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         consumers.overrideProperty(CONSUMER_HEALTH_CHECK_PORT, 7454);
-        consumers.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
-        consumers.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
+        consumers.overrideProperty(ConsumerConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, false);
+        consumers.overrideProperty(ConsumerConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED, false);
 
         consumers.start();
 
@@ -105,8 +105,8 @@ public class MultipleKafkaTest extends IntegrationTest {
         frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperTwo.getConnectionString());
         frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontend.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
-        frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
-        frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
+        frontend.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, false);
+        frontend.overrideProperty(FrontendConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED, false);
 
         frontend.start();
 

@@ -17,3 +17,8 @@ frontend:
     http2Enabled: true
   handlers:
     idleTimeout: 2000
+  metrics:
+    graphiteReporterEnabled: true
+    reportPeriod: 1
+  graphite:
+    port: 18023
