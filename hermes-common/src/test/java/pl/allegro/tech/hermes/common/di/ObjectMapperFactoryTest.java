@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.common.di;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.config.DynamicPropertyFactory;
 import org.junit.Before;
 import org.junit.Test;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,7 +14,7 @@ public class ObjectMapperFactoryTest {
 
     @Before
     public void init() {
-        ObjectMapperFactory factory = new ObjectMapperFactory(new ConfigFactory(DynamicPropertyFactory.getInstance()));
+        ObjectMapperFactory factory = new ObjectMapperFactory(false);
         mapper = factory.provide();
     }
 

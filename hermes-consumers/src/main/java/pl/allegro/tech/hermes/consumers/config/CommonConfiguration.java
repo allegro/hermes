@@ -73,7 +73,8 @@ import static java.util.Collections.emptyList;
 @Configuration
 @EnableConfigurationProperties({
         MetricsProperties.class,
-        GraphiteProperties.class
+        GraphiteProperties.class,
+        SchemaProperties.class
 })
 public class CommonConfiguration {
 
@@ -147,8 +148,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ObjectMapper objectMapper(ConfigFactory configFactory) {
-        return new ObjectMapperFactory(configFactory).provide();
+    public ObjectMapper objectMapper(SchemaProperties schemaProperties) {
+        return new ObjectMapperFactory(schemaProperties.isIdSerializationEnabled()).provide();
     }
 
 
@@ -158,8 +159,8 @@ public class CommonConfiguration {
                                                                 Clock clock,
                                                                 SchemaRepository schemaRepository,
                                                                 DeserializationMetrics deserializationMetrics,
-                                                                ConfigFactory configFactory,
-                                                                SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter) {
+                                                                SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter,
+                                                                SchemaProperties schemaProperties) {
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(clock);
 
         return new CompositeMessageContentWrapper(
@@ -170,11 +171,11 @@ public class CommonConfiguration {
                 new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroMessageContentWrapper,
                         deserializationMetrics),
                 new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper,
-                        deserializationMetrics, configFactory),
+                        deserializationMetrics, schemaProperties.isIdHeaderEnabled()),
                 new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, schemaOnlineChecksRateLimiter,
                         avroMessageContentWrapper, deserializationMetrics),
                 new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper,
-                        deserializationMetrics, configFactory)
+                        deserializationMetrics, schemaProperties.isVersionTruncationEnabled())
         );
     }
 
@@ -184,8 +185,11 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(ConfigFactory configFactory) {
-        return new SchemaOnlineChecksWaitingRateLimiter(configFactory);
+    public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(SchemaProperties schemaProperties) {
+        return new SchemaOnlineChecksWaitingRateLimiter(
+                schemaProperties.getRepository().getOnlineCheckPermitsPerSecond(),
+                schemaProperties.getRepository().getOnlineCheckAcquireWaitMs()
+        );
     }
 
     @Bean

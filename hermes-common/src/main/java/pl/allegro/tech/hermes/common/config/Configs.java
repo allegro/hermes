@@ -62,43 +62,6 @@ public enum Configs {
     KAFKA_AUTHORIZATION_USERNAME("kafka.authorization.username", "username"),
     KAFKA_AUTHORIZATION_PASSWORD("kafka.authorization.password", "password"),
 
-    // frontend properties
-    FRONTEND_PORT("frontend.port", 8080),
-    FRONTEND_HOST("frontend.host", "0.0.0.0"),
-    FRONTEND_IDLE_TIMEOUT("frontend.idle.timeout", 65),
-    FRONTEND_LONG_IDLE_TIMEOUT("frontend.long.idle.timeout", 400),
-    FRONTEND_READ_TIMEOUT("frontend.read.timeout", 2000),
-    FRONTEND_REQUEST_PARSE_TIMEOUT("frontend.request.parse.timeout", 5000),
-    FRONTEND_MAX_HEADERS("frontend.max.headers", 20),
-    FRONTEND_MAX_PARAMETERS("frontend.max.parameters", 10),
-    FRONTEND_MAX_COOKIES("frontend.max.cookies", 10),
-    FRONTEND_BACKLOG_SIZE("frontend.backlog.size", 10000),
-    FRONTEND_IO_THREADS_COUNT("frontend.io.threads.count", Runtime.getRuntime().availableProcessors() * 2),
-    FRONTEND_WORKER_THREADS_COUNT("frontend.worker.threads.count", 200),
-    FRONTEND_ALWAYS_SET_KEEP_ALIVE("frontend.always.keep.alive", false),
-    FRONTEND_SET_KEEP_ALIVE("frontend.keep.alive", false),
-    FRONTEND_REQUEST_DUMPER("frontend.request.dumper", false),
-    FRONTEND_BUFFER_SIZE("frontend.buffer.size", 16384),
-    FRONTEND_GRACEFUL_SHUTDOWN_ENABLED("frontend.graceful.shutdown.enabled", true),
-    FRONTEND_GRACEFUL_SHUTDOWN_INITIAL_WAIT_MS("frontend.graceful.shutdown.initial.wait.ms", 10000),
-    FRONTEND_HTTP2_ENABLED("frontend.http2.enabled", false),
-    FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE("frontend.force.topic.max.message.size", false),
-
-    FRONTEND_SSL_ENABLED("frontend.ssl.enabled", false),
-    FRONTEND_SSL_PORT("frontend.ssl.port", 8443),
-    FRONTEND_SSL_CLIENT_AUTH_MODE("frontend.ssl.client.auth.mode", "not_requested"),
-    FRONTEND_SSL_PROTOCOL("frontend.ssl.protocol", "TLS"),
-
-    FRONTEND_SSL_KEYSTORE_SOURCE("frontend.ssl.keystore.source", "jre"),
-    FRONTEND_SSL_KEYSTORE_LOCATION("frontend.ssl.keystore.location", "classpath:server.keystore"),
-    FRONTEND_SSL_KEYSTORE_PASSWORD("frontend.ssl.keystore.password", "password"),
-    FRONTEND_SSL_KEYSTORE_FORMAT("frontend.ssl.keystore.format", "JKS"),
-
-    FRONTEND_SSL_TRUSTSTORE_SOURCE("frontend.ssl.truststore.source", "jre"),
-    FRONTEND_SSL_TRUSTSTORE_LOCATION("frontend.ssl.truststore.location", "classpath:server.truststore"),
-    FRONTEND_SSL_TRUSTSTORE_PASSWORD("frontend.ssl.truststore.password", "password"),
-    FRONTEND_SSL_TRUSTSTORE_FORMAT("frontend.ssl.truststore.format", "JKS"),
-
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),
     OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR(
@@ -106,23 +69,6 @@ public enum Configs {
 
     MESSAGE_CONTENT_ROOT("message.content.root", "message"),
     METADATA_CONTENT_ROOT("metadata.content.root", "metadata"),
-
-    SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES("schema.cache.refresh.after.write.minutes", 10),
-    SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES("schema.cache.expire.after.write.minutes", 60 * 24),
-    SCHEMA_CACHE_COMPILED_EXPIRE_AFTER_ACCESS_MINUTES("schema.cache.compiled.expire.after.access.minutes", 60 * 48),
-    SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
-    SCHEMA_CACHE_ENABLED("schema.cache.enabled", true),
-    SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE("schema.cache.compiled.maximum.size", 2000),
-    SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:8888/"),
-    SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS("schema.repository.http.read.timeout.ms", 2000),
-    SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS("schema.repository.http.connect.timeout.ms", 2000),
-    SCHEMA_REPOSITORY_ONLINE_CHECK_PERMITS_PER_SECOND("schema.repository.online.check.permits.per.second", 100.0),
-    SCHEMA_REPOSITORY_ONLINE_CHECK_ACQUIRE_WAIT_MS("schema.repository.online.check.acquire.wait.ms", 500),
-    SCHEMA_REPOSITORY_SUBJECT_SUFFIX_ENABLED("schema.repository.subject.suffix.enabled", false),
-    SCHEMA_REPOSITORY_SUBJECT_NAMESPACE_ENABLED("schema.repository.subject.namespace.enabled", false),
-    SCHEMA_ID_HEADER_ENABLED ("schema.id.header.enabled", false),
-    SCHEMA_ID_SERIALIZATION_ENABLED("schema.id.serialization.enabled", false),
-    SCHEMA_VERSION_TRUNCATION_ENABLED("schema.version.truncation.enabled", false),
 
     //consumer
     UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS("undelivered.message.log.persist.period.ms", 5000);

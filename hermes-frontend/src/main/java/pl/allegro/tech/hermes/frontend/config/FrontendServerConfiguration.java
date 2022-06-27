@@ -4,7 +4,6 @@ import io.undertow.server.HttpHandler;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
@@ -26,12 +25,15 @@ import java.util.Optional;
 @Configuration
 @EnableConfigurationProperties({
         TopicLoadingProperties.class,
-        ReadinessCheckProperties.class
+        ReadinessCheckProperties.class,
+        SslProperties.class,
+        HermesServerProperties.class
 })
 public class FrontendServerConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    public HermesServer hermesServer(ConfigFactory configFactory,
+    public HermesServer hermesServer(HermesServerProperties hermesServerProperties,
+                                     SslProperties sslProperties,
                                      HermesMetrics hermesMetrics,
                                      HttpHandler publishingHandler,
                                      DefaultReadinessChecker defaultReadinessChecker,
@@ -40,7 +42,7 @@ public class FrontendServerConfiguration {
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider,
                                      TopicLoadingProperties topicLoadingProperties) {
-        return new HermesServer(configFactory, hermesMetrics, publishingHandler, defaultReadinessChecker,
+        return new HermesServer(sslProperties.toSslParameters(), hermesServerProperties.toHermesServerParameters(), hermesMetrics, publishingHandler, defaultReadinessChecker,
                 defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, topicLoadingProperties.getMetadataRefreshJob().isEnabled(), sslContextFactoryProvider);
     }
 
@@ -53,8 +55,8 @@ public class FrontendServerConfiguration {
 
     @Bean
     public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory,
-                                                               ConfigFactory configFactory) {
-        return new SslContextFactoryProvider(sslContextFactory.orElse(null), configFactory);
+                                                               SslProperties sslProperties) {
+        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslProperties.toSslParameters());
     }
 
     @Bean

@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_COMMIT_OFFSET_PERIOD;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_SSL_KEYSTORE_SOURCE;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_SSL_TRUSTSTORE_SOURCE;

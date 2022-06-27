@@ -6,6 +6,17 @@ frontend:
           enabled: true
         schema:
           enabled: true
+  schema:
+    cache:
+      refreshAfterWriteMinutes: 1
+  ssl:
+    enabled: true
+    port: 18443
+  server:
+    port: 18080
+    http2Enabled: true
+  handlers:
+    idleTimeout: 2000
   metrics:
     graphiteReporterEnabled: true
     reportPeriod: 1
