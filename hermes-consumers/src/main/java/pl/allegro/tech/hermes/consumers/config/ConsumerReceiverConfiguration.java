@@ -25,7 +25,8 @@ import java.time.Clock;
         ConsumerReceiverProperties.class,
         KafkaConsumerProperties.class,
         KafkaProperties.class,
-        CommonConsumerProperties.class
+        CommonConsumerProperties.class,
+        KafkaHeaderNameProperties.class
 })
 public class ConsumerReceiverConfiguration {
 
@@ -69,7 +70,7 @@ public class ConsumerReceiverConfiguration {
     }
 
     @Bean
-    public KafkaHeaderExtractor kafkaHeaderExtractor(ConfigFactory configFactory) {
-        return new KafkaHeaderExtractor(configFactory);
+    public KafkaHeaderExtractor kafkaHeaderExtractor(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
+        return new KafkaHeaderExtractor(kafkaHeaderNameProperties.getSchemaVersion(), kafkaHeaderNameProperties.getSchemaId());
     }
 }

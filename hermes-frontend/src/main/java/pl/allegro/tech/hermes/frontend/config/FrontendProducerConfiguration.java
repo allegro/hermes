@@ -17,7 +17,8 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerReco
 @Configuration
 @EnableConfigurationProperties({
         LocalMessageStorageProperties.class,
-        SchemaProperties.class
+        SchemaProperties.class,
+        KafkaHeaderNameProperties.class
 })
 public class FrontendProducerConfiguration {
 
@@ -30,8 +31,8 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean
-    public KafkaHeaderFactory kafkaHeaderFactory(ConfigFactory configFactory) {
-        return new KafkaHeaderFactory(configFactory);
+    public KafkaHeaderFactory kafkaHeaderFactory(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
+        return new KafkaHeaderFactory(kafkaHeaderNameProperties.toKafkaHeaderNameParameters());
     }
 
     @Bean(destroyMethod = "close")

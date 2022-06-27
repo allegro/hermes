@@ -15,22 +15,11 @@ public enum Configs {
     KAFKA_NAMESPACE("kafka.namespace", ""),
     KAFKA_NAMESPACE_SEPARATOR("kafka.namespace.separator", "_"),
 
-    KAFKA_HEADER_NAME_MESSAGE_ID("kafka.header.name.message.id", "id"),
-    KAFKA_HEADER_NAME_TIMESTAMP("kafka.header.name.timestamp", "ts"),
-    KAFKA_HEADER_NAME_SCHEMA_VERSION("kafka.header.name.schema.version", "sv"),
-    KAFKA_HEADER_NAME_SCHEMA_ID("kafka.header.name.schema.id", "sid"),
-
     KAFKA_PRODUCER_MAX_BLOCK_MS("kafka.producer.max.block.ms", 500),
     KAFKA_PRODUCER_METADATA_MAX_AGE("kafka.producer.metadata.max.age.ms", 5 * 60 * 1000),
     KAFKA_PRODUCER_COMPRESSION_CODEC("kafka.producer.compression.codec", "none"),
     KAFKA_PRODUCER_RETRIES("kafka.producer.retries", Integer.MAX_VALUE),
     KAFKA_PRODUCER_RETRY_BACKOFF_MS("kafka.producer.retry.backoff.ms", 256),
-    // In the current version of kafka-producer (0.10.1) request.timeout.ms parameter is also used as a timeout
-    // for dropping batches from internal accumulator. Therefore, it is better to increase this timeout to very high value,
-    // because when kafka is unreachable we don't want to drop messages but buffer them in accumulator until is full.
-    // This behavior will change in future version of kafka-producer.
-    // More information about this issue:
-    // http://mail-archives.apache.org/mod_mbox/kafka-users/201611.mbox/%3C81613078-5734-46FD-82E2-140280758BC6@gmail.com%3E
     KAFKA_PRODUCER_REQUEST_TIMEOUT_MS("kafka.producer.request.timeout.ms", 30 * 60 * 1000),
     KAFKA_PRODUCER_BATCH_SIZE("kafka.producer.batch.size", 16 * 1024),
     KAFKA_PRODUCER_TCP_SEND_BUFFER("kafka.producer.tcp.send.buffer", 128 * 1024),
