@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -109,7 +110,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
 
         //when
         assertThat(fetchMessageStatus(messageMetadata))
-                .contains(publishedMessageTrace(messageMetadata, timestamp, PublishedMessageTraceStatus.SUCCESS))
+                .contains(publishedMessageTrace(messageMetadata, extraRequestHeaders, timestamp, PublishedMessageTraceStatus.SUCCESS))
                 .contains(sentMessageTrace(messageMetadata, timestamp, SentMessageTraceStatus.SUCCESS));
     }
 
@@ -150,12 +151,11 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
                 .withPartition(messageMetadata.getPartition())
                 .withOffset(messageMetadata.getOffset())
                 .withCluster(CLUSTER_NAME)
-                .withExtraRequestHeaders(messageMetadata.getExtraRequestHeaders().entrySet().stream()
-                        .collect(extraRequestHeadersCollector()))
                 .build();
     }
 
-    private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus status) {
+    private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, Map<String, String> extraRequestHeaders,
+                                                        long timestamp, PublishedMessageTraceStatus status) {
         return new PublishedMessageTrace(messageMetadata.getMessageId(),
                 timestamp,
                 messageMetadata.getTopic(),
@@ -163,7 +163,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
                 null,
                 null,
                 CLUSTER_NAME,
-                messageMetadata.getExtraRequestHeaders().entrySet().stream()
+                extraRequestHeaders.entrySet().stream()
                     .collect(extraRequestHeadersCollector()));
     }
 }

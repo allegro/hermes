@@ -10,14 +10,11 @@ import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
-import java.util.Map;
 
 import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
-import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
@@ -50,14 +47,12 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
         updateMeters(subscription);
         updateMetrics(Counters.DISCARDED, message, subscription);
 
-        MessageMetadata messageMetadata = toMessageMetadata(message, subscription);
-
-        addToMessageLog(message, subscription, result, messageMetadata.getExtraRequestHeaders());
+        addToMessageLog(message, subscription, result);
 
         trackers.get(subscription).logDiscarded(toMessageMetadata(message, subscription), result.getRootCause());
     }
 
-    private void addToMessageLog(Message message, Subscription subscription, MessageSendingResult result, Map<String, String> extraRequestHeaders) {
+    private void addToMessageLog(Message message, Subscription subscription, MessageSendingResult result) {
         result.getLogInfo().forEach(logInfo -> undeliveredMessageLog.add(
                 undeliveredMessage()
                         .withSubscription(subscription.getName())
@@ -68,7 +63,6 @@ public class DefaultErrorHandler extends AbstractHandler implements ErrorHandler
                         .withPartition(message.getPartition())
                         .withOffset(message.getOffset())
                         .withCluster(cluster)
-                        .withExtraRequestHeaders(extraRequestHeaders.entrySet().stream().collect(extraRequestHeadersCollector()))
                         .build()
         ));
     }

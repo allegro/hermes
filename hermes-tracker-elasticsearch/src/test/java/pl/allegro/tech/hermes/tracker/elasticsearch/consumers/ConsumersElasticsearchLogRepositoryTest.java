@@ -58,15 +58,13 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
 
     @Override
     protected void awaitUntilMessageIsPersisted(String topic, String subscription, String id,
-                                                SentMessageTraceStatus status,
-                                                String... extraRequestHeadersKeywords) {
-        awaitUntilPersisted(getMessageFilter(topic, subscription, id, status, extraRequestHeadersKeywords));
+                                                SentMessageTraceStatus status) {
+        awaitUntilPersisted(getMessageFilter(topic, subscription, id, status));
     }
 
     @Override
     protected void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId,
-                                                     SentMessageTraceStatus status,
-                                                     String... extraRequestKeywords) {
+                                                     SentMessageTraceStatus status) {
         awaitUntilPersisted(getMessageBatchFilter(topic, subscription, messageId, batchId, status));
     }
 
@@ -81,24 +79,19 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     }
 
     private BoolQueryBuilder getMessageFilter(String topic, String subscription, String id,
-                                              SentMessageTraceStatus status,
-                                              String... extraRequestHeadersKeywords) {
+                                              SentMessageTraceStatus status) {
         BoolQueryBuilder queryBuilder = boolQuery()
                 .must(termQuery(TOPIC_NAME, topic))
                 .must(termQuery(SUBSCRIPTION, subscription))
                 .must(termQuery(MESSAGE_ID, id))
                 .must(termQuery(STATUS, status.toString()))
                 .must(termQuery(CLUSTER, CLUSTER_NAME));
-        for (String extraRequestHeaderKeyword : extraRequestHeadersKeywords) {
-            queryBuilder.must(termQuery(EXTRA_REQUEST_HEADERS, extraRequestHeaderKeyword));
-        }
         return queryBuilder;
     }
 
     private QueryBuilder getMessageBatchFilter(String topic, String subscription, String messageId, String batchId,
-                                               SentMessageTraceStatus status,
-                                               String... extraRequestHeadersKeywords) {
-        return getMessageFilter(topic, subscription, messageId, status, extraRequestHeadersKeywords)
+                                               SentMessageTraceStatus status) {
+        return getMessageFilter(topic, subscription, messageId, status)
                 .must(termQuery(BATCH_ID, batchId));
     }
 }

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.tracker.consumers;
 
-import com.google.common.collect.ImmutableMap;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.BeforeSuite;
@@ -10,8 +9,6 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.test.helper.retry.Retry;
 import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
-
-import java.util.Map;
 
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
@@ -43,13 +40,12 @@ public abstract class AbstractLogRepositoryTest {
         // given
         String id = "sentMessage";
         String topic = "group.sentMessage";
-        Map<String, String> extraRequestHeaders = ImmutableMap.of("header1", "value1", "header2", "value2");
 
         // when
-        logRepository.logSuccessful(TestMessageMetadata.of(id, topic, SUBSCRIPTION, extraRequestHeaders), "host", 1234L);
+        logRepository.logSuccessful(TestMessageMetadata.of(id, topic, SUBSCRIPTION), "host", 1234L);
 
         // then
-        awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, SUCCESS, "header1", "value1", "header2", "value2");
+        awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, SUCCESS);
     }
 
     @Test
@@ -57,13 +53,12 @@ public abstract class AbstractLogRepositoryTest {
         // given
         String id = "inflightMessage";
         String topic = "group.inflightMessage";
-        Map<String, String> extraRequestHeaders = ImmutableMap.of("header1", "value1", "header2", "value2");
 
         // when
-        logRepository.logInflight(TestMessageMetadata.of(id, topic, SUBSCRIPTION, extraRequestHeaders), 1234L);
+        logRepository.logInflight(TestMessageMetadata.of(id, topic, SUBSCRIPTION), 1234L);
 
         // then
-        awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, INFLIGHT, "header1", "value1", "header2", "value2");
+        awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, INFLIGHT);
     }
 
     @Test
@@ -71,13 +66,12 @@ public abstract class AbstractLogRepositoryTest {
         // given
         String id = "undeliveredMessage";
         String topic = "group.undeliveredMessage";
-        Map<String, String> extraRequestHeaders = ImmutableMap.of("header1", "value1", "header2", "value2");
 
         // when
-        logRepository.logDiscarded(TestMessageMetadata.of(id, topic, SUBSCRIPTION, extraRequestHeaders), 1234L, "reason");
+        logRepository.logDiscarded(TestMessageMetadata.of(id, topic, SUBSCRIPTION), 1234L, "reason");
 
         // then
-        awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, DISCARDED, "header1", "value1", "header2", "value2");
+        awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, DISCARDED);
     }
 
     @Test
@@ -86,16 +80,15 @@ public abstract class AbstractLogRepositoryTest {
         String messageId = "messageId";
         String batchId = "batchId";
         String topic = "group.sentBatchMessage";
-        Map<String, String> extraRequestHeaders = ImmutableMap.of("header1", "value1", "header2", "value2");
 
         // when
-        logRepository.logSuccessful(TestMessageMetadata.of(messageId, batchId, topic, SUBSCRIPTION, extraRequestHeaders), "host", 1234L);
+        logRepository.logSuccessful(TestMessageMetadata.of(messageId, batchId, topic, SUBSCRIPTION), "host", 1234L);
 
         // then
-        awaitUntilBatchMessageIsPersisted(topic, SUBSCRIPTION, messageId, batchId, SUCCESS, "header1", "value1", "header2", "value2");
+        awaitUntilBatchMessageIsPersisted(topic, SUBSCRIPTION, messageId, batchId, SUCCESS);
     }
 
-    protected abstract void awaitUntilMessageIsPersisted(String topic, String subscription, String id, SentMessageTraceStatus status, String... extraRequestHeadersKeywords) throws Exception;
+    protected abstract void awaitUntilMessageIsPersisted(String topic, String subscription, String id, SentMessageTraceStatus status) throws Exception;
 
-    protected abstract void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status, String... extraRequestHeadersKeywords) throws Exception;
+    protected abstract void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status) throws Exception;
 }

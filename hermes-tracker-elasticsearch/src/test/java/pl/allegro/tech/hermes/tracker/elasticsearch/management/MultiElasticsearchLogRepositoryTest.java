@@ -85,7 +85,7 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     public void shouldGetMessageStatus() {
         // given
         Map<String, String> extraRequestHeaders = ImmutableMap.of("x-header1", "value1", "x-header2", "value2");
-        MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch1.messageStatus", "subscription", extraRequestHeaders);
+        MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch1.messageStatus", "subscription");
         long timestamp = System.currentTimeMillis();
 
         // when
@@ -94,19 +94,8 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
 
         // then
         assertThat(fetchMessageStatus(messageMetadata))
-                .contains(publishedMessageTrace(messageMetadata, timestamp, PublishedMessageTraceStatus.SUCCESS))
+                .contains(publishedMessageTrace(messageMetadata, extraRequestHeaders, timestamp, PublishedMessageTraceStatus.SUCCESS))
                 .contains(sentMessageTrace(messageMetadata, timestamp, SentMessageTraceStatus.SUCCESS));
-    }
-
-    private List<SentMessageTrace> fetchLastUndelivered(String topic, String subscription) {
-        final List<SentMessageTrace> lastUndelivered = new ArrayList<>();
-
-        await().atMost(ONE_MINUTE).until(() -> {
-            lastUndelivered.clear();
-            lastUndelivered.addAll(logRepository.getLastUndeliveredMessages(topic, subscription, 1));
-            return lastUndelivered.size() == 1;
-        });
-        return lastUndelivered;
     }
 
     private List<MessageTrace> fetchMessageStatus(MessageMetadata messageMetadata) {
@@ -135,12 +124,11 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
                 .withPartition(messageMetadata.getPartition())
                 .withOffset(messageMetadata.getOffset())
                 .withCluster(CLUSTER_NAME)
-                .withExtraRequestHeaders(messageMetadata.getExtraRequestHeaders().entrySet().stream()
-                        .collect(extraRequestHeadersCollector()))
                 .build();
     }
 
-    private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, long timestamp, PublishedMessageTraceStatus status) {
+    private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, Map<String, String> extraRequestHeaders,
+                                                        long timestamp, PublishedMessageTraceStatus status) {
         return new PublishedMessageTrace(messageMetadata.getMessageId(),
                 timestamp,
                 messageMetadata.getTopic(),
@@ -148,7 +136,7 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
                 null,
                 null,
                 CLUSTER_NAME,
-                messageMetadata.getExtraRequestHeaders().entrySet().stream()
+                extraRequestHeaders.entrySet().stream()
                     .collect(extraRequestHeadersCollector()));
     }
 }
