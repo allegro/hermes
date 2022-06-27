@@ -91,7 +91,6 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
                 .withPartition(1)
                 .withOffset(1L)
                 .withCluster("cluster")
-                .withExtraRequestHeaders("")
                 .build();
     }
 }

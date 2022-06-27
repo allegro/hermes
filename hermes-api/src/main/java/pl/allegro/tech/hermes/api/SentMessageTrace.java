@@ -21,7 +21,6 @@ public class SentMessageTrace implements MessageTrace {
     private final String reason;
     private final String message;
     private final String cluster;
-    private final String extraRequestHeaders;
 
     @JsonCreator
     public SentMessageTrace(@JsonProperty("messageId") String messageId,
@@ -34,8 +33,7 @@ public class SentMessageTrace implements MessageTrace {
                             @JsonProperty("message") String message,
                             @JsonProperty("partition") Integer partition,
                             @JsonProperty("offset") Long offset,
-                            @JsonProperty("cluster") String cluster,
-                            @JsonProperty("extraRequestHeaders") String extraRequestHeaders) {
+                            @JsonProperty("cluster") String cluster) {
         this.messageId = messageId;
         this.batchId = batchId;
         this.timestamp = timestamp;
@@ -47,7 +45,6 @@ public class SentMessageTrace implements MessageTrace {
         this.reason = reason;
         this.message = message;
         this.cluster = cluster;
-        this.extraRequestHeaders = extraRequestHeaders;
     }
 
     public String getMessageId() {
@@ -100,10 +97,6 @@ public class SentMessageTrace implements MessageTrace {
         return cluster;
     }
 
-    public String getExtraRequestHeaders() {
-        return extraRequestHeaders;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(messageId);
@@ -138,7 +131,6 @@ public class SentMessageTrace implements MessageTrace {
         private String reason;
         private String message;
         private String cluster;
-        private String extraRequestHeaders;
 
         private Builder(String messageId, String batchId, SentMessageTraceStatus status) {
             this.messageId = messageId;
@@ -186,11 +178,6 @@ public class SentMessageTrace implements MessageTrace {
             return this;
         }
 
-        public Builder withExtraRequestHeaders(String extraRequestHeaders) {
-            this.extraRequestHeaders = extraRequestHeaders;
-            return this;
-        }
-
         public static Builder sentMessageTrace(String messageId, String batchId, SentMessageTraceStatus status) {
             return new Builder(messageId, batchId, status);
         }
@@ -201,7 +188,7 @@ public class SentMessageTrace implements MessageTrace {
 
         public SentMessageTrace build() {
             return new SentMessageTrace(messageId, batchId, timestamp, subscription, topicName, status,
-                reason, message, partition, offset, cluster, extraRequestHeaders);
+                reason, message, partition, offset, cluster);
         }
     }
 }

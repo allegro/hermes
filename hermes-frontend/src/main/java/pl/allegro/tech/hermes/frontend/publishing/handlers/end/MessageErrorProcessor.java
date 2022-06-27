@@ -20,7 +20,6 @@ import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.end.RemoteHostReader.readHostAndPort;
-import static pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersToMapTransformer.toHeadersMap;
 
 public class MessageErrorProcessor {
     private static final Logger logger = LoggerFactory.getLogger(MessageErrorProcessor.class);

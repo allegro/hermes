@@ -14,7 +14,6 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.end.RemoteHostReader.readHostAndPort;
-import static pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersToMapTransformer.toHeadersMap;
 
 public class MessageEndProcessor {
 
