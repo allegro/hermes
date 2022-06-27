@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import io.undertow.util.HeaderMap;
+import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
@@ -29,7 +30,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Optional.of;
-import static pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersToMapTransformer.toHeadersMap;
+import static java.util.Spliterators.spliteratorUnknownSize;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.StreamSupport.stream;
 
 public class MessageFactory {
 
@@ -163,5 +166,12 @@ public class MessageFactory {
 
     private String extractPartitionKey(HeaderMap headerMap) {
         return headerMap.getFirst(MessageMetadataHeaders.PARTITION_KEY.getName());
+    }
+
+    private static Map<String, String> toHeadersMap(HeaderMap headerMap) {
+        return stream(spliteratorUnknownSize(headerMap.iterator(), 0), false)
+                .collect(toMap(
+                        h -> h.getHeaderName().toString(),
+                        HeaderValues::getFirst));
     }
 }
