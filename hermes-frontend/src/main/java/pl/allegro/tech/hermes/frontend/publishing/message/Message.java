@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.publishing.message;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
-import java.util.Map;
 import java.util.Optional;
 
 public interface Message {
