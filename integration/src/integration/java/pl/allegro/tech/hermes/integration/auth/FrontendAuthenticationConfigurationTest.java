@@ -8,6 +8,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
@@ -22,6 +23,7 @@ import java.util.Properties;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.integration.auth.SingleUserAwareIdentityManager.getHeadersWithAuthentication;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
@@ -45,8 +47,8 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         loadCredentials();
         frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.addSpringProfiles("authRequired");
-        frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
-        frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_PORT, FRONTEND_PORT);
+        frontendStarter.overrideProperty(FRONTEND_SSL_ENABLED, false);
         frontendStarter.overrideProperty(FRONTEND_AUTHENTICATION_ENABLED, true);
         frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());

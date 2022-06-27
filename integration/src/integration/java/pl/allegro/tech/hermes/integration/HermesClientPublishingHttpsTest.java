@@ -22,9 +22,10 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_SOURCE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_PORT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class HermesClientPublishingHttpsTest extends IntegrationTest {
@@ -85,7 +86,7 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(port, true);
 
         frontend.overrideProperty(FRONTEND_HTTP2_ENABLED, true);
-        frontend.overrideProperty(Configs.FRONTEND_SSL_PORT, sslPort);
+        frontend.overrideProperty(FRONTEND_SSL_PORT, sslPort);
         frontend.overrideProperty(FRONTEND_SSL_KEYSTORE_SOURCE, "provided");
         frontend.overrideProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE, "provided");
         frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
