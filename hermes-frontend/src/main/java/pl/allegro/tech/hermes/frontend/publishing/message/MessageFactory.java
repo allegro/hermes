@@ -95,7 +95,7 @@ public class MessageFactory {
 
     private JsonMessage createJsonMessage(HeaderMap headerMap, String messageId, byte[] messageContent, long timestamp) {
         Map<String, String> extraRequestHeaders = headersPropagator.extract(toHeadersMap(headerMap));
-        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp, extractPartitionKey(headerMap), extraRequestHeaders);
+        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp, extractPartitionKey(headerMap));
         byte[] wrapped = messageContentWrapper
                 .wrapJson(message.getData(), message.getId(), message.getTimestamp(), extraRequestHeaders);
         return message.withDataReplaced(wrapped);
@@ -122,8 +122,7 @@ public class MessageFactory {
                 enforcer.enforceAvro(headerMap.getFirst(Headers.CONTENT_TYPE_STRING), messageContent, schema.getSchema(), topic),
                 timestamp,
                 schema,
-                extractPartitionKey(headerMap),
-                extraRequestHeaders);
+                extractPartitionKey(headerMap));
 
         validators.check(topic, message);
         byte[] wrapped = messageContentWrapper.wrapAvro(message.getData(), message.getId(), message.getTimestamp(),

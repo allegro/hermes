@@ -56,7 +56,7 @@ class HermesServerFactory {
                 .overrideProperty(FRONTEND_TOPIC_METADATA_REFRESH_JOB_ENABLED, false)
                 .overrideProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
         Trackers trackers = new Trackers(Collections.emptyList());
-        TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor(headers -> headers);
+        TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
         HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer,
                 rawSchemaClient, configFactory, trackers, avroMessageContentWrapper, trackingHeadersExtractor);

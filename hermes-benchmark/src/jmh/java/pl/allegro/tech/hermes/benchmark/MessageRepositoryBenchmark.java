@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.benchmark;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
@@ -64,8 +63,7 @@ public class MessageRepositoryBenchmark {
         private Message generateMessage() {
             byte[] messageContent = UUID.randomUUID().toString().getBytes();
             String id = MessageIdGenerator.generate();
-            return new JsonMessage(id, messageContent, System.currentTimeMillis(), "partition-key",
-                    ImmutableMap.of("header", "header-value"));
+            return new JsonMessage(id, messageContent, System.currentTimeMillis(), "partition-key");
         }
 
         private File prepareFile() {
@@ -108,8 +106,7 @@ public class MessageRepositoryBenchmark {
                     message.getData(),
                     message.getTimestamp(),
                     topic.getQualifiedName(),
-                    message.getPartitionKey(),
-                    message.getExtraRequestHeaders()
+                    message.getPartitionKey()
             );
             map.put(message.getId(), entryValue);
         }

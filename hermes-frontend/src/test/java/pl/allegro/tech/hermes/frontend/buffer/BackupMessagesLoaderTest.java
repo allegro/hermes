@@ -192,8 +192,7 @@ public class BackupMessagesLoaderTest {
                 MessageIdGenerator.generate(),
                 "{'a':'b'}".getBytes(),
                 now().minusHours(ageHours).toInstant(UTC).toEpochMilli(),
-                "partition-key",
-                ImmutableMap.of()
+                "partition-key"
         );
     }
 }

@@ -132,7 +132,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         byte[] content = wrapper.wrapJson("message".getBytes(defaultCharset()),
                 messageId, timestamp, Collections.emptyMap());
 
-        messageRepository.save(new JsonMessage(messageId, content, timestamp, null, Collections.emptyMap()), topic);
+        messageRepository.save(new JsonMessage(messageId, content, timestamp, null), topic);
         messageRepository.close();
 
         return backup;

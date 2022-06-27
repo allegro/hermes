@@ -58,8 +58,8 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public TrackingHeadersExtractor extraHeadersExtractor(HeadersPropagator headersPropagator) {
-        return new DefaultTrackingHeaderExtractor(headersPropagator);
+    public TrackingHeadersExtractor extraHeadersExtractor() {
+        return new DefaultTrackingHeaderExtractor();
     }
 
     @Bean

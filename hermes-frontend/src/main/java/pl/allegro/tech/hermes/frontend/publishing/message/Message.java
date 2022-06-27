@@ -22,6 +22,4 @@ public interface Message {
     default <T> T getSchema() {
         return this.<T>getCompiledSchema().get().getSchema();
     }
-
-    Map<String, String> getExtraRequestHeaders();
 }

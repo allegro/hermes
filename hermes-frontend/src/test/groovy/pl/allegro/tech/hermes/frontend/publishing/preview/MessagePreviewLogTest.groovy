@@ -21,8 +21,8 @@ class MessagePreviewLogTest extends Specification {
 
     def "should persist JSON messages for topics"() {
         given:
-        log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [1] as byte[], 0L, "partition-key", ImmutableMap.of()))
-        log.add(TopicBuilder.topic('group.topic-2').build(), new JsonMessage('id', [2] as byte[], 0L, null, ImmutableMap.of()))
+        log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [1] as byte[], 0L, "partition-key"))
+        log.add(TopicBuilder.topic('group.topic-2').build(), new JsonMessage('id', [2] as byte[], 0L, null))
 
         when:
         def messages = log.snapshotAndClean()
@@ -34,7 +34,7 @@ class MessagePreviewLogTest extends Specification {
     def "should persist Avro messages for topics"() {
         given:
         def avroUser = new AvroUser()
-        def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null, ImmutableMap.of())
+        def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null)
 
         log.add(TopicBuilder.topic('group.topic-1').build(), message)
 
@@ -52,7 +52,7 @@ class MessagePreviewLogTest extends Specification {
     def "should persist Avro messages for schema aware topics"() {
         given:
         def avroUser = new AvroUser()
-        def message = new AvroMessage('message-id', SchemaAwareSerDe.serialize(avroUser.compiledSchema.id, avroUser.asBytes()), 0L, avroUser.compiledSchema, null, ImmutableMap.of())
+        def message = new AvroMessage('message-id', SchemaAwareSerDe.serialize(avroUser.compiledSchema.id, avroUser.asBytes()), 0L, avroUser.compiledSchema, null)
 
         log.add(TopicBuilder.topic('group.topic-1').withSchemaIdAwareSerialization().build(), message)
 
@@ -69,9 +69,9 @@ class MessagePreviewLogTest extends Specification {
 
     def "should persist no more than two messages for topic"() {
         given:
-        log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [1] as byte[], 0L, null, ImmutableMap.of()))
-        log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [2] as byte[], 0L, null, ImmutableMap.of()))
-        log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [3] as byte[], 0L, null, ImmutableMap.of()))
+        log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [1] as byte[], 0L, null))
+        log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [2] as byte[], 0L, null))
+        log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [3] as byte[], 0L, null))
 
         when:
         def messages = log.snapshotAndClean()
@@ -89,7 +89,7 @@ class MessagePreviewLogTest extends Specification {
         threads.times {
             int executor = it
             executorService.submit({
-                1000.times { log.add(TopicBuilder.topic("group.topic").build(), new JsonMessage('id', [executor, it] as byte[], 0L, null, ImmutableMap.of())) }
+                1000.times { log.add(TopicBuilder.topic("group.topic").build(), new JsonMessage('id', [executor, it] as byte[], 0L, null)) }
                 latch.countDown()
             })
         }

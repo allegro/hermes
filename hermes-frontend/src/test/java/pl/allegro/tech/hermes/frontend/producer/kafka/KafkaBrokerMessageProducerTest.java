@@ -37,7 +37,7 @@ public class KafkaBrokerMessageProducerTest {
     private static final String MESSAGE_ID = "id";
     private static final Topic TOPIC = topic("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
-    private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, PARTITION_KEY, ImmutableMap.of());
+    private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, PARTITION_KEY);
 
     private final ByteArraySerializer serializer = new ByteArraySerializer();
     private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);

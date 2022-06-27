@@ -163,7 +163,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     private static AvroMessage generateAvroMessage(String partitionKey) {
         def avroUser = new AvroUser()
-        return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema, partitionKey, ImmutableMap.of())
+        return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema, partitionKey)
     }
 
     private static def createTestSubscription(Topic topic, String subscriptionName) {
