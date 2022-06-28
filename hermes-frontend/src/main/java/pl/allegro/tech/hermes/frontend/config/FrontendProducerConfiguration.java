@@ -18,7 +18,8 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerReco
 @EnableConfigurationProperties({
         LocalMessageStorageProperties.class,
         SchemaProperties.class,
-        KafkaHeaderNameProperties.class
+        KafkaHeaderNameProperties.class,
+        KafkaProducerProperties.class
 })
 public class FrontendProducerConfiguration {
 
@@ -37,13 +38,14 @@ public class FrontendProducerConfiguration {
 
     @Bean(destroyMethod = "close")
     public Producers kafkaMessageProducer(ConfigFactory configFactory,
+                                          KafkaProducerProperties kafkaProducerProperties,
                                           LocalMessageStorageProperties localMessageStorageProperties) {
-        return new KafkaMessageProducerFactory(configFactory, localMessageStorageProperties.getBufferedSizeBytes()).provide();
+        return new KafkaMessageProducerFactory(configFactory, kafkaProducerProperties.toKafkaProducerParameters(), localMessageStorageProperties.getBufferedSizeBytes()).provide();
     }
 
     @Bean(destroyMethod = "close")
-    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(ConfigFactory configFactory) {
-        return new KafkaTopicMetadataFetcherFactory(configFactory).provide();
+    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(ConfigFactory configFactory, KafkaProducerProperties kafkaProducerProperties) {
+        return new KafkaTopicMetadataFetcherFactory(configFactory, kafkaProducerProperties.getMetadataMaxAge()).provide();
     }
 
     @Bean

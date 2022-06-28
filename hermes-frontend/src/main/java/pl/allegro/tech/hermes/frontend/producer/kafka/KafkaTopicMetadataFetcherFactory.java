@@ -21,9 +21,11 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 
 public class KafkaTopicMetadataFetcherFactory {
     private final ConfigFactory configFactory;
+    private final int metadataMaxAge;
 
-    public KafkaTopicMetadataFetcherFactory(ConfigFactory configFactory) {
+    public KafkaTopicMetadataFetcherFactory(ConfigFactory configFactory, int metadataMaxAge) {
         this.configFactory = configFactory;
+        this.metadataMaxAge = metadataMaxAge;
     }
 
     public KafkaTopicMetadataFetcher provide() {
@@ -41,6 +43,6 @@ public class KafkaTopicMetadataFetcherFactory {
             );
         }
         AdminClient adminClient = AdminClient.create(props);
-        return new KafkaTopicMetadataFetcher(adminClient, configFactory);
+        return new KafkaTopicMetadataFetcher(adminClient, metadataMaxAge);
     }
 }

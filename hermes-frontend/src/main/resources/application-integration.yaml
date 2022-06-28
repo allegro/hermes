@@ -30,3 +30,7 @@ frontend:
       enabled: false
       user: admin
       password: admin
+  kafka:
+    producer:
+      retryBackoffMs: 100
+

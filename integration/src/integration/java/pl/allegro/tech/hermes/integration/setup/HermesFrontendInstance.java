@@ -69,7 +69,7 @@ public class HermesFrontendInstance {
         }
 
         public Starter metadataMaxAgeInSeconds(int seconds) {
-            frontend.overrideProperty(Configs.KAFKA_PRODUCER_METADATA_MAX_AGE, seconds * 1000);
+            frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_PRODUCER_METADATA_MAX_AGE, seconds * 1000);
             return this;
         }
 

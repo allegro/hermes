@@ -24,6 +24,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
+import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
@@ -53,9 +54,6 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaContainer kafkaContainer = new KafkaContainer()
 
     @Shared
-    ConfigFactory configFactory = Mock()
-
-    @Shared
     KafkaProducer<byte[], byte[]> leaderConfirms
 
     @Shared
@@ -82,6 +80,9 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     @Shared
     KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
 
+    @Shared
+    KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties()
+
     def setupSpec() {
         kafkaContainer.start()
         kafkaContainer.waitingFor(Wait.forHealthcheck())
@@ -97,9 +98,9 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     }
 
     def setup() {
-        producers = new Producers(leaderConfirms, everyoneConfirms, configFactory)
+        producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
-                new KafkaTopicMetadataFetcher(adminClient, configFactory),
+                new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties.toKafkaHeaderNameParameters()),
                         schemaProperties.isIdHeaderEnabled()

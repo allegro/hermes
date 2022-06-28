@@ -35,18 +35,6 @@ import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_P
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
 import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_BATCH_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_COMPRESSION_CODEC;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_LINGER_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_MAX_BLOCK_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_MAX_REQUEST_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METADATA_MAX_AGE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_REQUEST_TIMEOUT_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRIES;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_RETRY_BACKOFF_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_TCP_SEND_BUFFER;
 
 public class KafkaMessageProducerFactory {
 
@@ -54,31 +42,33 @@ public class KafkaMessageProducerFactory {
     private static final String ACK_LEADER = "1";
 
     private final ConfigFactory configFactory;
+    private final KafkaProducerParameters kafkaProducerParameters;
     private final long bufferedSizeBytes;
 
-    public KafkaMessageProducerFactory(ConfigFactory configFactory, long bufferedSizeBytes) {
-        this.configFactory = configFactory;
+    public KafkaMessageProducerFactory(ConfigFactory configFactory, KafkaProducerParameters kafkaProducerParameters, long bufferedSizeBytes) {
+        this.kafkaProducerParameters = kafkaProducerParameters;
         this.bufferedSizeBytes = bufferedSizeBytes;
+        this.configFactory = configFactory;
     }
 
     public Producers provide() {
         Map<String, Object> props = new HashMap<>();
         props.put(BOOTSTRAP_SERVERS_CONFIG, getString(KAFKA_BROKER_LIST));
-        props.put(MAX_BLOCK_MS_CONFIG, getInt(KAFKA_PRODUCER_MAX_BLOCK_MS));
-        props.put(COMPRESSION_TYPE_CONFIG, getString(KAFKA_PRODUCER_COMPRESSION_CODEC));
+        props.put(MAX_BLOCK_MS_CONFIG, kafkaProducerParameters.getMaxBlockMs());
+        props.put(COMPRESSION_TYPE_CONFIG, kafkaProducerParameters.getCompressionCodec());
         props.put(BUFFER_MEMORY_CONFIG, bufferedSizeBytes);
-        props.put(REQUEST_TIMEOUT_MS_CONFIG, getInt(KAFKA_PRODUCER_REQUEST_TIMEOUT_MS));
-        props.put(BATCH_SIZE_CONFIG, getInt(KAFKA_PRODUCER_BATCH_SIZE));
-        props.put(SEND_BUFFER_CONFIG, getInt(KAFKA_PRODUCER_TCP_SEND_BUFFER));
-        props.put(RETRIES_CONFIG, getInt(KAFKA_PRODUCER_RETRIES));
-        props.put(RETRY_BACKOFF_MS_CONFIG, getInt(KAFKA_PRODUCER_RETRY_BACKOFF_MS));
-        props.put(METADATA_MAX_AGE_CONFIG, getInt(KAFKA_PRODUCER_METADATA_MAX_AGE));
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaProducerParameters.getRequestTimeoutMs());
+        props.put(BATCH_SIZE_CONFIG, kafkaProducerParameters.getBatchSize());
+        props.put(SEND_BUFFER_CONFIG, kafkaProducerParameters.getTcpSendBuffer());
+        props.put(RETRIES_CONFIG, kafkaProducerParameters.getRetries());
+        props.put(RETRY_BACKOFF_MS_CONFIG, kafkaProducerParameters.getRetryBackoffMs());
+        props.put(METADATA_MAX_AGE_CONFIG, kafkaProducerParameters.getMetadataMaxAge());
         props.put(KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
         props.put(VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
-        props.put(MAX_REQUEST_SIZE_CONFIG, getInt(KAFKA_PRODUCER_MAX_REQUEST_SIZE));
-        props.put(LINGER_MS_CONFIG, getInt(KAFKA_PRODUCER_LINGER_MS));
-        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, getInt(KAFKA_PRODUCER_METRICS_SAMPLE_WINDOW_MS));
-        props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, getInt(KAFKA_PRODUCER_MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION));
+        props.put(MAX_REQUEST_SIZE_CONFIG, kafkaProducerParameters.getMaxRequestSize());
+        props.put(LINGER_MS_CONFIG, kafkaProducerParameters.getLingerMs());
+        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, kafkaProducerParameters.getMetricsSampleWindowMs());
+        props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
 
         if (getBoolean(KAFKA_AUTHORIZATION_ENABLED)) {
             props.put(SASL_MECHANISM, getString(KAFKA_AUTHORIZATION_MECHANISM));
@@ -92,7 +82,7 @@ public class KafkaMessageProducerFactory {
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));
         Producer<byte[], byte[]> everyoneConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_ALL));
-        return new Producers(leaderConfirms, everyoneConfirms, configFactory);
+        return new Producers(leaderConfirms, everyoneConfirms, kafkaProducerParameters.isReportNodeMetricsEnabled());
     }
 
     private ImmutableMap<String, Object> copyWithEntryAdded(Map<String, Object> common, String key, String value) {
@@ -105,9 +95,5 @@ public class KafkaMessageProducerFactory {
 
     private String getString(Configs key) {
         return configFactory.getStringProperty(key);
-    }
-
-    private Integer getInt(Configs key) {
-        return configFactory.getIntProperty(key);
     }
 }

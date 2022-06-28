@@ -10,25 +10,22 @@ import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.DescribeConfigsResult;
 import org.apache.kafka.common.config.ConfigResource;
 import org.jetbrains.annotations.NotNull;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.kafka.common.config.ConfigResource.Type.TOPIC;
 import static org.apache.kafka.common.config.TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_PRODUCER_METADATA_MAX_AGE;
 
 public class KafkaTopicMetadataFetcher {
     private final LoadingCache<String, Integer> minInSyncReplicasCache;
     private final AdminClient adminClient;
 
-    KafkaTopicMetadataFetcher(AdminClient adminClient, ConfigFactory configFactory) {
+    KafkaTopicMetadataFetcher(AdminClient adminClient, int metadataMaxAgeMs) {
         this.adminClient = adminClient;
-        int metadataMaxAgeInMs = configFactory.getIntProperty(KAFKA_PRODUCER_METADATA_MAX_AGE);
         this.minInSyncReplicasCache = CacheBuilder
                 .newBuilder()
-                .expireAfterWrite(metadataMaxAgeInMs, MILLISECONDS)
+                .expireAfterWrite(metadataMaxAgeMs, MILLISECONDS)
                 .build(new MinInSyncReplicasLoader());
     }
 
