@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
-import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -52,17 +51,14 @@ public class SubscriptionsEndpoint {
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
     private final MultiDCAwareService multiDCAwareService;
-    private final ManagementRights managementRights;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
-                                 MultiDCAwareService multiDCAwareService,
-                                 ManagementRights managementRights) {
+                                 MultiDCAwareService multiDCAwareService) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
         this.multiDCAwareService = multiDCAwareService;
-        this.managementRights = managementRights;
     }
 
     @GET
@@ -98,7 +94,6 @@ public class SubscriptionsEndpoint {
         subscriptionService.createSubscription(
                 subscription,
                 new HermesSecurityAwareRequestUser(requestContext),
-                managementRights.getSubscriptionCreatorRights(requestContext),
                 qualifiedTopicName
         );
         return responseStatus(Response.Status.CREATED);

@@ -45,18 +45,20 @@ public class SubscriptionPartition {
         SubscriptionPartition that = (SubscriptionPartition) o;
         return partition == that.partition &&
                 partitionAssignmentTerm == that.partitionAssignmentTerm &&
+                Objects.equals(kafkaTopicName, that.kafkaTopicName) &&
                 Objects.equals(subscriptionName, that.subscriptionName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(subscriptionName, partition, partitionAssignmentTerm);
+        return Objects.hash(kafkaTopicName, subscriptionName, partition, partitionAssignmentTerm);
     }
 
     @Override
     public String toString() {
         return "SubscriptionPartition{" +
-                "subscriptionName=" + subscriptionName +
+                "kafkaTopicName=" + kafkaTopicName +
+                ", subscriptionName=" + subscriptionName +
                 ", partition=" + partition +
                 ", partitionAssignmentTerm=" + partitionAssignmentTerm +
                 '}';

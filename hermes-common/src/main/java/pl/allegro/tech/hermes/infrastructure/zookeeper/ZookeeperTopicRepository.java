@@ -130,11 +130,6 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public boolean isSubscribingRestricted(TopicName topicName) {
-        return getTopicDetails(topicName).isSubscribingRestricted();
-    }
-
     private Optional<Topic> getTopicDetails(TopicName topicName, boolean quiet) {
         ensureTopicExists(topicName);
         return readWithStatFrom(
