@@ -104,7 +104,6 @@ public class MultipleKafkaTest extends IntegrationTest {
         frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
         frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
         frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
-        frontend.overrideProperty(Configs.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         frontend.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, false);
         frontend.overrideProperty(FrontendConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED, false);
 

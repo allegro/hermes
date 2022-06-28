@@ -9,6 +9,7 @@ public class ConsumerConfigurationProperties {
     public static String KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG = "kafka.consumer.auto.offset.reset";
     public static String KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG = "kafka.consumer.session.timeout.ms";
     public static String KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG = "kafka.consumer.heartbeat.interval.ms";
+    public static String KAFKA_CLUSTER_NAME = "kafka.clusterName";
     public static String CONSUMER_SSL_KEYSTORE_SOURCE = "consumer.ssl.keystoreSource";
     public static String CONSUMER_SSL_TRUSTSTORE_SOURCE = "consumer.ssl.truststoreSource";
     public static String CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL = "consumer.commit.offset.queuesInflightDrainFullEnabled";

@@ -63,7 +63,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaBrokerMessageProducer brokerMessageProducer
 
     @Shared
-    KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("")
+    KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("", "_")
 
     @Shared
     Producers producers

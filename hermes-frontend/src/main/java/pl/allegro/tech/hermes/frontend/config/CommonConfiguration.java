@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
@@ -17,7 +16,7 @@ import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapperFactory;
+import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
@@ -76,7 +75,8 @@ import java.util.List;
         MetricsProperties.class,
         GraphiteProperties.class,
         SchemaProperties.class,
-        ZookeeperProperties.class
+        ZookeeperProperties.class,
+        KafkaProperties.class
 })
 public class CommonConfiguration {
 
@@ -244,8 +244,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public KafkaNamesMapper prodKafkaNamesMapper(ConfigFactory configFactory) {
-        return new KafkaNamesMapperFactory(configFactory).provide();
+    public KafkaNamesMapper prodKafkaNamesMapper(KafkaProperties kafkaProperties) {
+        return new NamespaceKafkaNamesMapper(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator());
     }
 
     @Bean
@@ -301,7 +301,6 @@ public class CommonConfiguration {
 
     @Bean
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
-                                       ConfigFactory config,
                                        ZookeeperProperties zookeeperProperties,
                                        MetricsProperties metricsProperties) {
         return new SharedCounter(zookeeper,

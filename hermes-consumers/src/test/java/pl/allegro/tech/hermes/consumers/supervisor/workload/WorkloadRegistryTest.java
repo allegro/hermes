@@ -52,7 +52,9 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
     private static final ConsumerAssignmentRegistry registry =
             new ConsumerAssignmentRegistry(zookeeperClient, new WorkloadProperties().getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), clusterName, zookeeperPaths, subscriptionIds);
 
-    private static final String cluster = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+    private static final KafkaProperties kafkaProperties = new KafkaProperties();
+
+    private static final String cluster = kafkaProperties.getClusterName();
 
     private static final ConsumerAssignmentCache assignmentCacheOfConsumer1 =
             new ConsumerAssignmentCache(zookeeperClient, consumer1, cluster, zookeeperPaths, subscriptionIds);

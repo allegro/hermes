@@ -1,16 +1,10 @@
 package pl.allegro.tech.hermes.common.config;
 
-import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
-
 import java.util.Arrays;
 
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public enum Configs {
 
-    // removed already in master branch
-    HOSTNAME("hostname", new InetAddressInstanceIdResolver().resolve()),
-
-    KAFKA_CLUSTER_NAME("kafka.cluster.name", "primary-dc"),
     KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
     KAFKA_NAMESPACE("kafka.namespace", ""),
     KAFKA_NAMESPACE_SEPARATOR("kafka.namespace.separator", "_"),

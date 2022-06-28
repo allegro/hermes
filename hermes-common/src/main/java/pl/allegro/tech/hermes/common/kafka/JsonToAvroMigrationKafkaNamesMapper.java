@@ -7,10 +7,6 @@ import java.util.function.Function;
 
 public class JsonToAvroMigrationKafkaNamesMapper extends NamespaceKafkaNamesMapper {
 
-    public JsonToAvroMigrationKafkaNamesMapper(String namespace) {
-        super(namespace);
-    }
-
     public JsonToAvroMigrationKafkaNamesMapper(String namespace, String namespaceSeparator) {
         super(namespace, namespaceSeparator);
     }
