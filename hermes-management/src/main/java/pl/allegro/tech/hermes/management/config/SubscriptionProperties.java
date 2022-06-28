@@ -10,6 +10,8 @@ public class SubscriptionProperties {
 
     private List<String> additionalEndpointProtocols = new ArrayList<>();
 
+    private List<SubscriberProperties> subscribersWithAccessToAnyTopic = new ArrayList<>();
+
     private int intervalBetweenCheckinIfOffsetsMovedInMillis = 50;
 
     private int offsetsMovedTimeoutInSeconds = 30;
@@ -46,5 +48,43 @@ public class SubscriptionProperties {
 
     public void setCreateConsumerGroupManuallyEnabled(boolean createConsumerGroupManuallyEnabled) {
         this.createConsumerGroupManuallyEnabled = createConsumerGroupManuallyEnabled;
+    }
+
+    public List<SubscriberProperties> getSubscribersWithAccessToAnyTopic() {
+        return subscribersWithAccessToAnyTopic;
+    }
+
+    public void setSubscribersWithAccessToAnyTopic(List<SubscriberProperties> subscribersWithAccessToAnyTopic) {
+        this.subscribersWithAccessToAnyTopic = subscribersWithAccessToAnyTopic;
+    }
+
+    public static class SubscriberProperties {
+        private String ownerSource;
+        private String ownerId;
+        private List<String> protocols = new ArrayList<>();
+
+        public String getOwnerSource() {
+            return ownerSource;
+        }
+
+        public void setOwnerSource(String ownerSource) {
+            this.ownerSource = ownerSource;
+        }
+
+        public String getOwnerId() {
+            return ownerId;
+        }
+
+        public void setOwnerId(String ownerId) {
+            this.ownerId = ownerId;
+        }
+
+        public List<String> getProtocols() {
+            return protocols;
+        }
+
+        public void setProtocols(List<String> protocols) {
+            this.protocols = protocols;
+        }
     }
 }

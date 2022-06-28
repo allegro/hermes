@@ -73,8 +73,3 @@ LogRepository logRepository(Client client) {
     return new ElasticsearchLogRepository(client);
 }
 ```
-
-## MongoDB
-
-There is an option to use MongoDB as trace storage, but it is not recommended, at least with Mongo 2.x. We found that
-even under relatively low load there were problems with writing batches of trace data and retrieving information.

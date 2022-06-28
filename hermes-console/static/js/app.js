@@ -112,7 +112,7 @@ hermes.run(['$rootScope', 'CONSOLE_CONFIG', 'AUTH_CONFIG', "$sce", 'Mode', 'Visi
     function ($rootScope, config, authConfig, $sce, mode, visibility) {
         $rootScope.console = {
             title: config.title,
-            isDangerousEnvironment: config.isDangerousEnvironment,
+            isCriticalEnvironment: config.isCriticalEnvironment,
             environmentName: config.environmentName,
             footer: $sce.trustAsHtml(config.footer)
         };
