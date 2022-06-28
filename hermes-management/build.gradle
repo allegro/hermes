@@ -39,8 +39,6 @@ dependencies {
     testCompile group: 'org.spockframework', name: 'spock-spring', version: versions.spock
     testCompile group: 'org.codehaus.groovy', name: 'groovy-json', version: versions.groovy
 
-    testCompile group: 'com.github.fakemongo', name: 'fongo', version: versions.fongo
-
     testCompile group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
     testCompile group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
 }

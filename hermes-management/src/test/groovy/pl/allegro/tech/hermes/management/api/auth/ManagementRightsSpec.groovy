@@ -182,7 +182,7 @@ class ManagementRightsSpec extends Specification {
     }
 
     private ManagementRights createRights(boolean nonAdminCreationEnabled) {
-        new ManagementRights(null, createGroupProperties(nonAdminCreationEnabled))
+        new ManagementRights(createGroupProperties(nonAdminCreationEnabled))
     }
 
     GroupProperties createGroupProperties(boolean nonAdminCreationEnabled) {
