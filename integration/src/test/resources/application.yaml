@@ -90,3 +90,10 @@ audit:
 group:
   nonAdminCreationEnabled: true
   allowedGroupNameRegex: "[a-zA-Z0-9_.-]+"
+
+subscription:
+  subscribersWithAccessToAnyTopic:
+    - ownerSource: 'Plaintext'
+      ownerId: 'subscriberAllowedToAccessAnyTopic'
+      protocols:
+        - http
