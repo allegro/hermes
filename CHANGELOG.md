@@ -1,3 +1,9 @@
+## 1.41.1 (...)
+
+### Enhancements
+
+#### ([1446](https://github.com/allegro/hermes/pull/1446)) Add tracking of Hermes publishing headers
+
 ## 1.14.0 (13.06.2022)
 
 ### Enhancements
