@@ -1,8 +1,13 @@
-## 1.41.1 (...)
+## 1.14.1 (29.06.2022)
 
 ### Enhancements
 
 #### ([1446](https://github.com/allegro/hermes/pull/1446)) Add tracking of Hermes publishing headers
+#### ([1534](https://github.com/allegro/hermes/pull/1534)) Allow any logged-in user to remove empty groups
+
+### Bugfixes
+
+#### ([1535](https://github.com/allegro/hermes/pull/1535)) Fixed SubscriptionPartition equals/hashcode bug, and isCriticalEnvironment variable in management
 
 ## 1.14.0 (13.06.2022)
 
