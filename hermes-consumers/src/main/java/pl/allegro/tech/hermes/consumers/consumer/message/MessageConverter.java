@@ -17,4 +17,17 @@ public class MessageConverter {
                 message.getPublishingTimestamp(),
                 message.getReadingTimestamp());
     }
+
+    public static MessageMetadata toMessageMetadata(Message message, Subscription subscription, String batchId) {
+        return new MessageMetadata(message.getId(),
+                batchId,
+                message.getOffset(),
+                message.getPartition(),
+                message.getPartitionAssignmentTerm(),
+                subscription.getQualifiedTopicName(),
+                subscription.getName(),
+                message.getKafkaTopic().asString(),
+                message.getPublishingTimestamp(),
+                message.getReadingTimestamp());
+    }
 }

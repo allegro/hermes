@@ -16,5 +16,6 @@ public interface LogSchemaAware {
     String CLUSTER = "cluster";
     String SOURCE_HOSTNAME = "hostname";
     String REMOTE_HOSTNAME = "remote_hostname";
+    String EXTRA_REQUEST_HEADERS = "extra_request_headers";
 
 }

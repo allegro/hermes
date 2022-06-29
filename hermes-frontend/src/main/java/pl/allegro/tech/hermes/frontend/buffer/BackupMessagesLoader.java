@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
 import com.google.common.collect.Lists;
+import java.util.Collections;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -207,7 +208,7 @@ public class BackupMessagesLoader {
             public void onUnpublished(Message message, Topic topic, Exception exception) {
                 brokerTimers.close();
                 brokerListeners.onError(message, topic, exception);
-                trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "");
+                trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "", Collections.emptyMap());
                 toResend.get().add(ImmutablePair.of(message, cachedTopic));
             }
 
@@ -216,7 +217,7 @@ public class BackupMessagesLoader {
                 brokerTimers.close();
                 cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
-                trackers.get(topic).logPublished(message.getId(), topic.getName(), "");
+                trackers.get(topic).logPublished(message.getId(), topic.getName(), "", Collections.emptyMap());
             }
         });
     }

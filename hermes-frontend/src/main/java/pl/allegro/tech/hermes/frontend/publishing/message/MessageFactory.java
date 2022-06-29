@@ -97,9 +97,10 @@ public class MessageFactory {
     }
 
     private JsonMessage createJsonMessage(HeaderMap headerMap, String messageId, byte[] messageContent, long timestamp) {
+        Map<String, String> extraRequestHeaders = headersPropagator.extract(toHeadersMap(headerMap));
         JsonMessage message = new JsonMessage(messageId, messageContent, timestamp, extractPartitionKey(headerMap));
         byte[] wrapped = messageContentWrapper
-                .wrapJson(message.getData(), message.getId(), message.getTimestamp(), headersPropagator.extract(toHeadersMap(headerMap)));
+                .wrapJson(message.getData(), message.getId(), message.getTimestamp(), extraRequestHeaders);
         return message.withDataReplaced(wrapped);
     }
 
@@ -117,6 +118,7 @@ public class MessageFactory {
 
     private AvroMessage createAvroMessage(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent, long timestamp) {
         CompiledSchema<Schema> schema = getCompiledSchema(headerMap, topic);
+        Map<String, String> extraRequestHeaders = headersPropagator.extract(toHeadersMap(headerMap));
 
         AvroMessage message = new AvroMessage(
                 messageId,
@@ -127,7 +129,7 @@ public class MessageFactory {
 
         validators.check(topic, message);
         byte[] wrapped = messageContentWrapper.wrapAvro(message.getData(), message.getId(), message.getTimestamp(),
-                topic, schema, headersPropagator.extract(toHeadersMap(headerMap)));
+                topic, schema, extraRequestHeaders);
         return message.withDataReplaced(wrapped);
     }
 
@@ -166,7 +168,7 @@ public class MessageFactory {
         return headerMap.getFirst(MessageMetadataHeaders.PARTITION_KEY.getName());
     }
 
-    private Map<String, String> toHeadersMap(HeaderMap headerMap) {
+    private static Map<String, String> toHeadersMap(HeaderMap headerMap) {
         return stream(spliteratorUnknownSize(headerMap.iterator(), 0), false)
                 .collect(toMap(
                         h -> h.getHeaderName().toString(),
