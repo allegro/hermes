@@ -13,7 +13,6 @@ import org.apache.kafka.common.record.TimestampType
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset

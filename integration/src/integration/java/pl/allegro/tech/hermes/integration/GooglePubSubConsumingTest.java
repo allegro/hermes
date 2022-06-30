@@ -33,23 +33,23 @@ public class GooglePubSubConsumingTest extends IntegrationTest {
         googlePubSubEndpoint.stop();
     }
 
-//    @Test
-//    public void shouldDeliverMessageToGooglePubSub() throws IOException {
-//        // given
-//        Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "topic").build());
-//        operations.createSubscription(topic, "subscription", GOOGLE_PUBSUB_ENDPOINT_URL);
-//        wait.untilSubscriptionIsActivated(topic, "subscription");
-//        TestMessage message = TestMessage.simple();
-//
-//        // when
-//        Response response = publisher.publish(topic.getQualifiedName(), message.body());
-//
-//        // then
-//        assertThat(response).hasStatus(CREATED);
-//        assertThat(googlePubSubEndpoint.messageReceived(ProjectSubscriptionName.format(GOOGLE_PUBSUB_PROJECT_ID, GOOGLE_PUBSUB_SUBSCRIPTION_ID)))
-//                .hasAttribute("tn")
-//                .hasAttribute("id")
-//                .hasAttribute("ts")
-//                .hasBody(message.body());
-//    }
+    @Test
+    public void shouldDeliverMessageToGooglePubSub() throws IOException {
+        // given
+        Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "topic").build());
+        operations.createSubscription(topic, "subscription", GOOGLE_PUBSUB_ENDPOINT_URL);
+        wait.untilSubscriptionIsActivated(topic, "subscription");
+        TestMessage message = TestMessage.simple();
+
+        // when
+        Response response = publisher.publish(topic.getQualifiedName(), message.body());
+
+        // then
+        assertThat(response).hasStatus(CREATED);
+        assertThat(googlePubSubEndpoint.messageReceived(ProjectSubscriptionName.format(GOOGLE_PUBSUB_PROJECT_ID, GOOGLE_PUBSUB_SUBSCRIPTION_ID)))
+                .hasAttribute("tn")
+                .hasAttribute("id")
+                .hasAttribute("ts")
+                .hasBody(message.body());
+    }
 }

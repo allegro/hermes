@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.common.kafka;
 import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.util.function.Function;
 

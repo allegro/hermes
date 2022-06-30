@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.integration.setup;
 
 import com.google.common.collect.ImmutableMap;
-import com.netflix.config.DynamicPropertyFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
@@ -77,12 +75,6 @@ public class HermesManagementInstance {
             kafkaClusters.add(new ClusterInfo(dc, connectionString));
             return this;
         }
-
-        public Starter avroContentTypeMetadataRequired(boolean avroContentTypeMetadataRequired) {
-            this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
-            return this;
-        }
-
 
         public HermesManagementInstance start() {
             try {

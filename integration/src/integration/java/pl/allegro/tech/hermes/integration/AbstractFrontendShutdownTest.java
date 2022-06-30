@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.integration;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
