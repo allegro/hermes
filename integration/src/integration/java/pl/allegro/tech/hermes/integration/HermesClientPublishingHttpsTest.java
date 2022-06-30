@@ -91,7 +91,6 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
         frontend.overrideProperty(FRONTEND_SSL_PORT, sslPort);
         frontend.overrideProperty(FRONTEND_SSL_KEYSTORE_SOURCE, "provided");
         frontend.overrideProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE, "provided");
-        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
         frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());

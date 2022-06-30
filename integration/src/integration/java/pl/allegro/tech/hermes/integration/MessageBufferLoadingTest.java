@@ -64,7 +64,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         operations.buildTopic(topic);
 
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(frontendPort, false);
-        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
         frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
@@ -107,7 +106,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
 
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(Ports.nextAvailable(), false);
         frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
-        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
         frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());

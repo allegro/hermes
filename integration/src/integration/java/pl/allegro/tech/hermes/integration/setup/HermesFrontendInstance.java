@@ -65,7 +65,6 @@ public class HermesFrontendInstance {
             frontend.overrideProperty(METRICS_GRAPHITE_REPORTER_ENABLED, false);
             frontend.overrideProperty(METRICS_ZOOKEEPER_REPORTER_ENABLED, false);
             frontend.overrideProperty(FRONTEND_READINESS_CHECK_ENABLED, true);
-            frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         }
 
         public Starter metadataMaxAgeInSeconds(int seconds) {

@@ -100,7 +100,6 @@ public class MultipleKafkaTest extends IntegrationTest {
     private FrontendStarter setupFrontend() throws Exception {
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT, false);
         frontend.overrideProperty(FRONTEND_HTTP2_ENABLED, false);
-        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
         frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
         frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());

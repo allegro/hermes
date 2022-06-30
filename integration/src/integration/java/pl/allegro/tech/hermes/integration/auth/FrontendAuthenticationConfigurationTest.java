@@ -48,7 +48,6 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_PORT, FRONTEND_PORT);
         frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_SSL_ENABLED, false);
         frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED, true);
-        frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         frontendStarter.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
         frontendStarter.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
         frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());

@@ -5,8 +5,6 @@ import java.util.Arrays;
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public enum Configs {
 
-    KAFKA_AUTHORIZATION_ENABLED("kafka.authorization.enabled", false),
-
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),
     OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR(
