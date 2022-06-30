@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
@@ -76,7 +74,8 @@ import java.util.List;
         GraphiteProperties.class,
         SchemaProperties.class,
         ZookeeperProperties.class,
-        KafkaProperties.class
+        KafkaProperties.class,
+        ContentRootProperties.class
 })
 public class CommonConfiguration {
 
@@ -177,9 +176,9 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public JsonMessageContentWrapper jsonMessageContentWrapper(ConfigFactory config,
+    public JsonMessageContentWrapper jsonMessageContentWrapper(ContentRootProperties contentRootProperties,
                                                                ObjectMapper mapper) {
-        return new JsonMessageContentWrapper(config, mapper);
+        return new JsonMessageContentWrapper(contentRootProperties.getMessage(), contentRootProperties.getMetadata(), mapper);
     }
 
     @Bean
@@ -246,11 +245,6 @@ public class CommonConfiguration {
     @Bean
     public KafkaNamesMapper prodKafkaNamesMapper(KafkaProperties kafkaProperties) {
         return new NamespaceKafkaNamesMapper(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator());
-    }
-
-    @Bean
-    public ConfigFactory prodConfigFactory() {
-        return new ConfigFactoryCreator().provide();
     }
 
     @Bean

@@ -119,11 +119,11 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         frontend.stop();
     }
 
-    private File backupFileWithOneMessage(String tempDirPath, Topic topic) {
+    private void backupFileWithOneMessage(String tempDirPath, Topic topic) {
         File backup = new File(tempDirPath, "hermes-buffer-v3.dat");
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
-        JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper(CONFIG_FACTORY, new ObjectMapper());
+        JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper("message", "metadata", new ObjectMapper());
 
         CompositeMessageContentWrapper wrapper = new CompositeMessageContentWrapper(contentWrapper, null, null, null, null, null, null);
 
@@ -135,7 +135,6 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         messageRepository.save(new JsonMessage(messageId, content, timestamp, null), topic);
         messageRepository.close();
 
-        return backup;
     }
 
     private ChronicleMapMessageRepository createBackupRepository(String storageDirPath) {

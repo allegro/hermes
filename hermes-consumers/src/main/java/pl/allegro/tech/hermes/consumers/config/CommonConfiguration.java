@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
@@ -75,7 +73,8 @@ import static java.util.Collections.emptyList;
         GraphiteProperties.class,
         SchemaProperties.class,
         ZookeeperProperties.class,
-        KafkaProperties.class
+        KafkaProperties.class,
+        ContentRootProperties.class
 })
 public class CommonConfiguration {
 
@@ -155,17 +154,17 @@ public class CommonConfiguration {
 
 
     @Bean
-    public CompositeMessageContentWrapper messageContentWrapper(ConfigFactory config,
-                                                                ObjectMapper mapper,
+    public CompositeMessageContentWrapper messageContentWrapper(ObjectMapper mapper,
                                                                 Clock clock,
                                                                 SchemaRepository schemaRepository,
                                                                 DeserializationMetrics deserializationMetrics,
                                                                 SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter,
-                                                                SchemaProperties schemaProperties) {
+                                                                SchemaProperties schemaProperties,
+                                                                ContentRootProperties contentRootProperties) {
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(clock);
 
         return new CompositeMessageContentWrapper(
-                new JsonMessageContentWrapper(config, mapper),
+                new JsonMessageContentWrapper(contentRootProperties.getMessage(), contentRootProperties.getMetadata(), mapper),
                 avroMessageContentWrapper,
                 new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroMessageContentWrapper,
                         deserializationMetrics),
@@ -196,11 +195,6 @@ public class CommonConfiguration {
     @Bean
     public KafkaNamesMapper prodKafkaNamesMapper(KafkaProperties kafkaProperties) {
         return new NamespaceKafkaNamesMapper(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator());
-    }
-
-    @Bean
-    public ConfigFactory prodConfigFactory() {
-        return new ConfigFactoryCreator().provide();
     }
 
     @Bean

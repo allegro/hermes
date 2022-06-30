@@ -3,10 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.oauth;
 import com.google.common.base.Preconditions;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
-
-import static pl.allegro.tech.hermes.common.config.Configs.OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR;
 
 public class OAuthTokenRequestRateLimiterFactory {
 
@@ -15,9 +12,9 @@ public class OAuthTokenRequestRateLimiterFactory {
     private final double rateReductionFactor;
 
     public OAuthTokenRequestRateLimiterFactory(OAuthProviderRepository oAuthProviderRepository,
-                                               ConfigFactory configFactory) {
+                                               double rateReductionFactor) {
         this.oAuthProviderRepository = oAuthProviderRepository;
-        this.rateReductionFactor = configFactory.getDoubleProperty(OAUTH_PROVIDERS_TOKEN_REQUEST_RATE_LIMITER_RATE_REDUCTION_FACTOR);
+        this.rateReductionFactor = rateReductionFactor;
 
         Preconditions.checkArgument(rateReductionFactor >= 1,
                 "Token request rate limiter rate reduction factor must be greater or equal to 1");

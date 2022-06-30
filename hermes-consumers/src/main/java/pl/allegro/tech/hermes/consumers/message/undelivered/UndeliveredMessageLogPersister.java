@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.consumers.message.undelivered;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 
 import java.util.concurrent.Executors;
@@ -16,9 +14,9 @@ public class UndeliveredMessageLogPersister {
     private final UndeliveredMessageLog undeliveredMessageLog;
     private final ScheduledExecutorService scheduledExecutorService;
 
-    public UndeliveredMessageLogPersister(UndeliveredMessageLog undeliveredMessageLog, ConfigFactory configFactory) {
+    public UndeliveredMessageLogPersister(UndeliveredMessageLog undeliveredMessageLog, int undeliveredMessageLogPersistPeriodMs) {
         this.undeliveredMessageLog = undeliveredMessageLog;
-        this.periodMs = configFactory.getIntProperty(Configs.UNDELIVERED_MESSAGE_LOG_PERSIST_PERIOD_MS);
+        this.periodMs = undeliveredMessageLogPersistPeriodMs;
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat("undelivered-message-log-persister-%d").build());
     }

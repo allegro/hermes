@@ -20,8 +20,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 public class RemoteJmsEndpoint {
@@ -43,7 +41,7 @@ public class RemoteJmsEndpoint {
         JMSContext jmsContext = connectionFactory.createContext();
 
         Topic topic = jmsContext.createTopic(topicName);
-        jmsContext.createConsumer(topic).setMessageListener(message -> receivedMessages.add(message));
+        jmsContext.createConsumer(topic).setMessageListener(receivedMessages::add);
 
         return jmsContext;
     }

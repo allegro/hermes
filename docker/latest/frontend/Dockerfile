@@ -17,6 +17,6 @@ RUN unzip /app/hermes-frontend.zip && mv /hermes-frontend-* /hermes-frontend
 
 ADD docker/latest/frontend/frontend.properties /etc/hermes/frontend.properties
 ADD docker/latest/frontend/logback.xml /etc/hermes/logback.xml
-ENV HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///etc/hermes/frontend.properties -Dlogback.configurationFile=/etc/hermes/logback.xml"
+ENV HERMES_FRONTEND_OPTS="-Dlogback.configurationFile=/etc/hermes/logback.xml"
 
 CMD /hermes-frontend/bin/hermes-frontend

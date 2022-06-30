@@ -9,7 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
@@ -43,9 +42,6 @@ public class JmsMessageSenderTest {
 
     @Mock
     private BytesMessage messageMock;
-
-    @Mock
-    private ConfigFactory configFactoryMock;
 
     @Spy
     private JmsMetadataAppender metadataAppender;

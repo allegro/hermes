@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
@@ -74,10 +73,6 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
 
     public void overrideProperty(String config, Object value) {
         args.add("--" + config + "=" + value);
-    }
-
-    public void overrideProperty(Configs config, Object value) {
-        args.add("--" + config.getName() + "=" + value);
     }
 
     public void setSpringProfiles(String... profiles) {

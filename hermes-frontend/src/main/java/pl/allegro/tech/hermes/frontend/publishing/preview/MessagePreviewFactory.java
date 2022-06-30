@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview;
 
 import org.apache.commons.lang.ArrayUtils;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageToJsonConverter;

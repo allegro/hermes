@@ -1,11 +1,6 @@
 package pl.allegro.tech.hermes.integration.env;
 
-import com.netflix.config.DynamicPropertyFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-
 public interface EnvironmentAware {
-
-    ConfigFactory CONFIG_FACTORY = new ConfigFactory(DynamicPropertyFactory.getInstance());
 
     int HTTP_ENDPOINT_PORT = 18081;
 

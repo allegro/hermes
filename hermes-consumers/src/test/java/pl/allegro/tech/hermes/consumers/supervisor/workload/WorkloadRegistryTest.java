@@ -8,15 +8,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.util.Collections;
@@ -34,8 +31,6 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
     private static final String consumer1 = "consumer1";
     private static final String consumer2 = "consumer2";
     private static final String clusterName = new KafkaProperties().getClusterName();
-
-    private static final ConfigFactory configFactory = new MutableConfigFactory();
 
     private static final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
 

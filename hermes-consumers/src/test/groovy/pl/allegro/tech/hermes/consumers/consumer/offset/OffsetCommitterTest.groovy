@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset
 
 import com.codahale.metrics.MetricRegistry
-import com.netflix.config.DynamicPropertyFactory
 import pl.allegro.tech.hermes.api.SubscriptionName
-import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.metrics.PathsCompiler
