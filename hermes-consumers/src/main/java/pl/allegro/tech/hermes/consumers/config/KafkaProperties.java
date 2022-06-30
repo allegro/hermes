@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaParameters;
+import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 @ConfigurationProperties(prefix = "kafka")
 public class KafkaProperties {

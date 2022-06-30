@@ -129,8 +129,7 @@ public class HermesManagementInstance {
         }
 
         private HermesAPIOperations setupOperations(CuratorFramework zookeeper) {
-            ConfigFactory configFactory = new ConfigFactory(DynamicPropertyFactory.getInstance());
-            BrokerOperations brokerOperations = new BrokerOperations(ImmutableMap.of(), configFactory);
+            BrokerOperations brokerOperations = new BrokerOperations(ImmutableMap.of());
             String managementUrl = "http://localhost:" + port + "/";
             HermesEndpoints management = new HermesEndpoints(managementUrl, managementUrl);
             Waiter wait = new Waiter(management, zookeeper, brokerOperations, null, KAFKA_NAMESPACE);

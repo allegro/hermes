@@ -19,7 +19,8 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerReco
         LocalMessageStorageProperties.class,
         SchemaProperties.class,
         KafkaHeaderNameProperties.class,
-        KafkaProducerProperties.class
+        KafkaProducerProperties.class,
+        KafkaProperties.class
 })
 public class FrontendProducerConfiguration {
 
@@ -37,15 +38,15 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean(destroyMethod = "close")
-    public Producers kafkaMessageProducer(ConfigFactory configFactory,
+    public Producers kafkaMessageProducer(KafkaProperties kafkaProperties,
                                           KafkaProducerProperties kafkaProducerProperties,
                                           LocalMessageStorageProperties localMessageStorageProperties) {
-        return new KafkaMessageProducerFactory(configFactory, kafkaProducerProperties.toKafkaProducerParameters(), localMessageStorageProperties.getBufferedSizeBytes()).provide();
+        return new KafkaMessageProducerFactory(kafkaProperties.toKafkaAuthorizationParameters(), kafkaProducerProperties.toKafkaProducerParameters(), localMessageStorageProperties.getBufferedSizeBytes()).provide();
     }
 
     @Bean(destroyMethod = "close")
-    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(ConfigFactory configFactory, KafkaProducerProperties kafkaProducerProperties) {
-        return new KafkaTopicMetadataFetcherFactory(configFactory, kafkaProducerProperties.getMetadataMaxAge()).provide();
+    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(KafkaProducerProperties kafkaProducerProperties, KafkaProperties kafkaProperties) {
+        return new KafkaTopicMetadataFetcherFactory(kafkaProperties.toKafkaAuthorizationParameters(), kafkaProducerProperties.getMetadataMaxAge(), kafkaProperties.getAdminRequestTimeoutMs()).provide();
     }
 
     @Bean

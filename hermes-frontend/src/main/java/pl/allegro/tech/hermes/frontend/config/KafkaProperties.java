@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
+import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 @ConfigurationProperties(prefix = "frontend.kafka")
 public class KafkaProperties {
@@ -64,5 +65,16 @@ public class KafkaProperties {
 
     public void setAdminRequestTimeoutMs(int adminRequestTimeoutMs) {
         this.adminRequestTimeoutMs = adminRequestTimeoutMs;
+    }
+
+    protected KafkaParameters toKafkaAuthorizationParameters() {
+        return new KafkaParameters(
+                this.authorization.isEnabled(),
+                this.authorization.getMechanism(),
+                this.authorization.getProtocol(),
+                this.authorization.getUsername(),
+                this.authorization.getPassword(),
+                this.brokerList
+        );
     }
 }

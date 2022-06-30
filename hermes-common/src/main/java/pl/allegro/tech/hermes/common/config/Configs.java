@@ -5,17 +5,7 @@ import java.util.Arrays;
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public enum Configs {
 
-    KAFKA_BROKER_LIST("kafka.broker.list", "localhost:9092"),
-    KAFKA_NAMESPACE("kafka.namespace", ""),
-    KAFKA_NAMESPACE_SEPARATOR("kafka.namespace.separator", "_"),
-
-    KAFKA_ADMIN_REQUEST_TIMEOUT_MS("kafka.admin.request.timeout.ms", 5 * 60 * 1000),
-
     KAFKA_AUTHORIZATION_ENABLED("kafka.authorization.enabled", false),
-    KAFKA_AUTHORIZATION_MECHANISM("kafka.authorization.mechanism", "PLAIN"),
-    KAFKA_AUTHORIZATION_PROTOCOL("kafka.authorization.protocol", "SASL_PLAINTEXT"),
-    KAFKA_AUTHORIZATION_USERNAME("kafka.authorization.username", "username"),
-    KAFKA_AUTHORIZATION_PASSWORD("kafka.authorization.password", "password"),
 
     OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY("oauth.missing.subscription.handlers.creation.delay", 10_000L),
     OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE("oauth.subscription.tokens.cache.max.size", 1000L),

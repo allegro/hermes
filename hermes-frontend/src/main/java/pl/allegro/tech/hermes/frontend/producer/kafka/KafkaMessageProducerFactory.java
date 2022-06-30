@@ -5,6 +5,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,31 +30,25 @@ import static org.apache.kafka.clients.producer.ProducerConfig.SEND_BUFFER_CONFI
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_MECHANISM;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PASSWORD;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_PROTOCOL;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_AUTHORIZATION_USERNAME;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_BROKER_LIST;
 
 public class KafkaMessageProducerFactory {
 
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
-    private final ConfigFactory configFactory;
+    private final KafkaParameters kafkaParameters;
     private final KafkaProducerParameters kafkaProducerParameters;
     private final long bufferedSizeBytes;
 
-    public KafkaMessageProducerFactory(ConfigFactory configFactory, KafkaProducerParameters kafkaProducerParameters, long bufferedSizeBytes) {
+    public KafkaMessageProducerFactory(KafkaParameters kafkaParameters, KafkaProducerParameters kafkaProducerParameters, long bufferedSizeBytes) {
         this.kafkaProducerParameters = kafkaProducerParameters;
         this.bufferedSizeBytes = bufferedSizeBytes;
-        this.configFactory = configFactory;
+        this.kafkaParameters = kafkaParameters;
     }
 
     public Producers provide() {
         Map<String, Object> props = new HashMap<>();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, getString(KAFKA_BROKER_LIST));
+        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
         props.put(MAX_BLOCK_MS_CONFIG, kafkaProducerParameters.getMaxBlockMs());
         props.put(COMPRESSION_TYPE_CONFIG, kafkaProducerParameters.getCompressionCodec());
         props.put(BUFFER_MEMORY_CONFIG, bufferedSizeBytes);
@@ -70,13 +65,13 @@ public class KafkaMessageProducerFactory {
         props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, kafkaProducerParameters.getMetricsSampleWindowMs());
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
 
-        if (getBoolean(KAFKA_AUTHORIZATION_ENABLED)) {
-            props.put(SASL_MECHANISM, getString(KAFKA_AUTHORIZATION_MECHANISM));
-            props.put(SECURITY_PROTOCOL_CONFIG, getString(KAFKA_AUTHORIZATION_PROTOCOL));
+        if (kafkaParameters.isEnabled()) {
+            props.put(SASL_MECHANISM, kafkaParameters.getMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getProtocol());
             props.put(SASL_JAAS_CONFIG,
                     "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
-                            + "username=\"" + getString(KAFKA_AUTHORIZATION_USERNAME) + "\"\n"
-                            + "password=\"" + getString(KAFKA_AUTHORIZATION_PASSWORD) + "\";"
+                            + "username=\"" + kafkaParameters.getUsername() + "\"\n"
+                            + "password=\"" + kafkaParameters.getPassword() + "\";"
             );
         }
 
@@ -87,13 +82,5 @@ public class KafkaMessageProducerFactory {
 
     private ImmutableMap<String, Object> copyWithEntryAdded(Map<String, Object> common, String key, String value) {
         return ImmutableMap.<String, Object>builder().putAll(common).put(key, value).build();
-    }
-
-    private Boolean getBoolean(Configs key) {
-        return configFactory.getBooleanProperty(key);
-    }
-
-    private String getString(Configs key) {
-        return configFactory.getStringProperty(key);
     }
 }

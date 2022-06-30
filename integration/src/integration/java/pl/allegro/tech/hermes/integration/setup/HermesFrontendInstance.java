@@ -84,7 +84,7 @@ public class HermesFrontendInstance {
         }
 
         public Starter kafkaConnectionString(String connectionString) {
-            frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, connectionString);
+            frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, connectionString);
             return this;
         }
 

@@ -33,4 +33,9 @@ frontend:
   kafka:
     producer:
       retryBackoffMs: 100
+    namespace: "itTest"
+    authorization:
+      enabled: false
+      username: hermes
+      password: alice-secret
 

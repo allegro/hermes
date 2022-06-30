@@ -34,11 +34,11 @@ public class BrokerOperations {
     private final Map<String, AdminClient> adminClients;
     private final KafkaNamesMapper kafkaNamesMapper;
 
-    public BrokerOperations(Map<String, String> kafkaConnection, ConfigFactory configFactory) {
+    public BrokerOperations(Map<String, String> kafkaConnection) {
         adminClients = kafkaConnection.entrySet().stream()
                 .collect(toMap(Map.Entry::getKey, e -> brokerAdminClient(e.getValue())));
-        String namespace = configFactory.getStringProperty(Configs.KAFKA_NAMESPACE);
-        String namespaceSeparator = configFactory.getStringProperty(Configs.KAFKA_NAMESPACE_SEPARATOR);
+        String namespace = "";
+        String namespaceSeparator = "_";
         kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(namespace, namespaceSeparator);
     }
 

@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
+package pl.allegro.tech.hermes.common.kafka;
 
 public class KafkaParameters {
 
