@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS;
-import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 @Listeners({RetryListener.class})
 public class HermesIntegrationEnvironment implements EnvironmentAware {

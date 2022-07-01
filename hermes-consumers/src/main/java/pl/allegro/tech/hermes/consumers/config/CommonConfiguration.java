@@ -47,6 +47,10 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
+import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -72,11 +76,20 @@ import static java.util.Collections.emptyList;
         MetricsProperties.class,
         GraphiteProperties.class,
         SchemaProperties.class,
-        ZookeeperProperties.class,
-        KafkaProperties.class,
-        ContentRootProperties.class
+        ZookeeperClustersProperties.class,
+        ContentRootProperties.class,
+        DatacenterNameProperties.class
 })
 public class CommonConfiguration {
+
+    @Bean
+    public DatacenterNameProvider dcNameProvider(DatacenterNameProperties datacenterNameProperties) {
+        if (datacenterNameProperties.getSource() == DcNameSource.ENV) {
+            return new EnvironmentVariableDatacenterNameProvider(datacenterNameProperties.getEnv());
+        } else {
+            return new DefaultDatacenterNameProvider();
+        }
+    }
 
     @Bean
     public SubscriptionRepository subscriptionRepository(CuratorFramework zookeeper,
@@ -107,12 +120,14 @@ public class CommonConfiguration {
     }
 
     @Bean(destroyMethod = "close")
-    public CuratorFramework hermesCurator(ZookeeperProperties zookeeperProperties, CuratorClientFactory curatorClientFactory) {
+    public CuratorFramework hermesCurator(ZookeeperClustersProperties zookeeperClustersProperties, CuratorClientFactory curatorClientFactory, DatacenterNameProvider datacenterNameProvider) {
+        ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new HermesCuratorClientFactory(zookeeperProperties.toZookeeperParameters(), curatorClientFactory).provide();
     }
 
     @Bean
-    public CuratorClientFactory curatorClientFactory(ZookeeperProperties zookeeperProperties) {
+    public CuratorClientFactory curatorClientFactory(ZookeeperClustersProperties zookeeperClustersProperties, DatacenterNameProvider datacenterNameProvider) {
+        ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new CuratorClientFactory(zookeeperProperties.toZookeeperParameters());
     }
 
@@ -123,7 +138,10 @@ public class CommonConfiguration {
     }
 
     @Bean(destroyMethod = "stop")
-    public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(CuratorFramework curator, ZookeeperProperties zookeeperProperties) {
+    public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(CuratorFramework curator,
+                                                                               ZookeeperClustersProperties zookeeperClustersProperties,
+                                                                               DatacenterNameProvider datacenterNameProvider) {
+        ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties.toZookeeperParameters()).provide();
     }
 
@@ -193,8 +211,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public KafkaNamesMapper prodKafkaNamesMapper(KafkaProperties kafkaProperties) {
-        return new NamespaceKafkaNamesMapper(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator());
+    public KafkaNamesMapper prodKafkaNamesMapper(KafkaClustersProperties kafkaClustersProperties) {
+        return new NamespaceKafkaNamesMapper(kafkaClustersProperties.getNamespace(), kafkaClustersProperties.getNamespaceSeparator());
     }
 
     @Bean
@@ -203,7 +221,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ZookeeperPaths zookeeperPaths(ZookeeperProperties zookeeperProperties) {
+    public ZookeeperPaths zookeeperPaths(ZookeeperClustersProperties zookeeperClustersProperties, DatacenterNameProvider datacenterNameProvider) {
+        ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new ZookeeperPaths(zookeeperProperties.getRoot());
     }
 
@@ -245,14 +264,18 @@ public class CommonConfiguration {
     public CounterStorage zookeeperCounterStorage(SharedCounter sharedCounter,
                                                   SubscriptionRepository subscriptionRepository,
                                                   PathsCompiler pathsCompiler,
-                                                  ZookeeperProperties zookeeperProperties) {
+                                                  ZookeeperClustersProperties zookeeperClustersProperties,
+                                                  DatacenterNameProvider datacenterNameProvider) {
+        ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new ZookeeperCounterStorage(sharedCounter, subscriptionRepository, pathsCompiler, zookeeperProperties.getRoot());
     }
 
     @Bean
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
-                                       ZookeeperProperties zookeeperProperties,
-                                       MetricsProperties metricsProperties) {
+                                       ZookeeperClustersProperties zookeeperClustersProperties,
+                                       MetricsProperties metricsProperties,
+                                       DatacenterNameProvider datacenterNameProvider) {
+        ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new SharedCounter(zookeeper,
                 metricsProperties.getCounterExpireAfterAccess(),
                 zookeeperProperties.getBaseSleepTime(),

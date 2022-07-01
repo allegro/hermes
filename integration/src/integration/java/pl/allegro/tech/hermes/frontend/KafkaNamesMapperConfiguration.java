@@ -6,17 +6,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.frontend.config.KafkaProperties;
+//todo change to frontend module
+import pl.allegro.tech.hermes.consumers.config.KafkaClustersProperties;
 import pl.allegro.tech.hermes.integration.env.IntegrationTestKafkaNamesMapperFactory;
 
 @Configuration
-@EnableConfigurationProperties(KafkaProperties.class)
+@EnableConfigurationProperties(KafkaClustersProperties.class)
 public class KafkaNamesMapperConfiguration {
 
     @Bean
     @Primary
     @Profile("integration")
-    public KafkaNamesMapper testKafkaNamesMapper(KafkaProperties kafkaProperties) {
-        return new IntegrationTestKafkaNamesMapperFactory(kafkaProperties.getNamespace()).create();
+    public KafkaNamesMapper testKafkaNamesMapper(KafkaClustersProperties kafkaClustersProperties) {
+        return new IntegrationTestKafkaNamesMapperFactory(kafkaClustersProperties.getNamespace()).create();
     }
 }

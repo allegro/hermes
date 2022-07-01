@@ -31,7 +31,7 @@ import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHold
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
-import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.Comparator;
 import java.util.HashMap;

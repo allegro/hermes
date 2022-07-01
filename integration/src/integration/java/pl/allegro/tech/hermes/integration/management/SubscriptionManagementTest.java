@@ -57,7 +57,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     public static final TestMessage MESSAGE = TestMessage.of("hello", "world");
 
-    private Client httpClient = ClientBuilder.newClient();
+    private final Client httpClient = ClientBuilder.newClient();
 
     private RemoteServiceEndpoint remoteService;
     private HermesClient client;
