@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
-@ConfigurationProperties(prefix = "kafka")
+@ConfigurationProperties(prefix = "consumer.kafka")
 public class KafkaProperties {
 
     private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();

@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerParameters;
 
-@ConfigurationProperties(prefix = "kafka.consumer")
+@ConfigurationProperties(prefix = "consumer.kafka.consumer")
 public class KafkaConsumerProperties {
 
     private int sendBufferBytes = 256 * 1024;

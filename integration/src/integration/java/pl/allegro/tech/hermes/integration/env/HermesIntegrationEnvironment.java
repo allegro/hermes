@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 @Listeners({RetryListener.class})
@@ -96,9 +94,9 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             zookeeper = startZookeeperClient();
 
             ConsumersStarter consumersStarter = new ConsumersStarter();
-            consumersStarter.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
+            consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED, false);
             consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_CLUSTER_NAME, PRIMARY_KAFKA_CLUSTER_NAME);
-            consumersStarter.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+            consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
             consumersStarter.overrideProperty(ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
             consumersStarter.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             consumersStarter.overrideProperty(GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());

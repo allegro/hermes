@@ -81,12 +81,12 @@ consumer:
       user: admin
       password: admin
 
-kafka:
-  authorization:
-    enabled: false
-    mechanism: PLAIN
-    protocol: SASL_PLAINTEXT
-    username: hermes
-    password: alice-secret
-  namespace: "itTest"
+  kafka:
+    authorization:
+      enabled: false
+      mechanism: PLAIN
+      protocol: SASL_PLAINTEXT
+      username: hermes
+      password: alice-secret
+    namespace: "itTest"
 

@@ -22,9 +22,6 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_HEALTH_CHECK_PORT;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_BROKER_LIST;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_CLUSTER_NAME;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class MultipleKafkaTest extends IntegrationTest {
@@ -82,11 +79,11 @@ public class MultipleKafkaTest extends IntegrationTest {
 
     private ConsumersStarter setupConsumers() throws Exception {
         ConsumersStarter consumers = new ConsumersStarter();
-        consumers.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
-        consumers.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
+        consumers.overrideProperty(ConsumerConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED, false);
+        consumers.overrideProperty(ConsumerConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients());
         consumers.overrideProperty(ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
         consumers.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
-        consumers.overrideProperty(KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
+        consumers.overrideProperty(ConsumerConfigurationProperties.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         consumers.overrideProperty(CONSUMER_HEALTH_CHECK_PORT, 7454);
         consumers.overrideProperty(ConsumerConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, false);
         consumers.overrideProperty(ConsumerConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED, false);
