@@ -1,21 +1,17 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
-@ConfigurationProperties(prefix = "frontend.kafka")
 public class KafkaProperties {
 
     private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
 
+    private String datacenter = "dc";
+
     private String clusterName = "primary";
 
     private String brokerList = "localhost:9092";
-
-    private String namespace = "";
-
-    private String namespaceSeparator = "_";
 
     private int adminRequestTimeoutMs = 5 * 60 * 1000;
 
@@ -25,6 +21,14 @@ public class KafkaProperties {
 
     public void setAuthorization(KafkaAuthorizationProperties authorization) {
         this.authorization = authorization;
+    }
+
+    public String getDatacenter() {
+        return datacenter;
+    }
+
+    public void setDatacenter(String datacenter) {
+        this.datacenter = datacenter;
     }
 
     public String getClusterName() {
@@ -41,22 +45,6 @@ public class KafkaProperties {
 
     public void setBrokerList(String brokerList) {
         this.brokerList = brokerList;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
-    public String getNamespaceSeparator() {
-        return namespaceSeparator;
-    }
-
-    public void setNamespaceSeparator(String namespaceSeparator) {
-        this.namespaceSeparator = namespaceSeparator;
     }
 
     public int getAdminRequestTimeoutMs() {

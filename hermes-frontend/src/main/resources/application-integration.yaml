@@ -36,8 +36,10 @@ frontend:
     producer:
       retryBackoffMs: 100
     namespace: "itTest"
-    authorization:
-      enabled: false
-      username: hermes
-      password: alice-secret
+    clusters:
+      -
+        authorization:
+          enabled: false
+          username: hermes
+          password: alice-secret
 

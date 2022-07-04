@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -19,7 +20,7 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerReco
         SchemaProperties.class,
         KafkaHeaderNameProperties.class,
         KafkaProducerProperties.class,
-        KafkaProperties.class
+        KafkaClustersProperties.class
 })
 public class FrontendProducerConfiguration {
 
@@ -37,14 +38,19 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean(destroyMethod = "close")
-    public Producers kafkaMessageProducer(KafkaProperties kafkaProperties,
+    public Producers kafkaMessageProducer(KafkaClustersProperties kafkaClustersProperties,
                                           KafkaProducerProperties kafkaProducerProperties,
-                                          LocalMessageStorageProperties localMessageStorageProperties) {
+                                          LocalMessageStorageProperties localMessageStorageProperties,
+                                          DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new KafkaMessageProducerFactory(kafkaProperties.toKafkaAuthorizationParameters(), kafkaProducerProperties.toKafkaProducerParameters(), localMessageStorageProperties.getBufferedSizeBytes()).provide();
     }
 
     @Bean(destroyMethod = "close")
-    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(KafkaProducerProperties kafkaProducerProperties, KafkaProperties kafkaProperties) {
+    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(KafkaProducerProperties kafkaProducerProperties,
+                                                               KafkaClustersProperties kafkaClustersProperties,
+                                                               DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new KafkaTopicMetadataFetcherFactory(kafkaProperties.toKafkaAuthorizationParameters(), kafkaProducerProperties.getMetadataMaxAge(), kafkaProperties.getAdminRequestTimeoutMs()).provide();
     }
 

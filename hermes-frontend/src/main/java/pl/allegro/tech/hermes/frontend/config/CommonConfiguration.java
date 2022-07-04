@@ -78,7 +78,7 @@ import java.util.List;
         GraphiteProperties.class,
         SchemaProperties.class,
         ZookeeperClustersProperties.class,
-        KafkaProperties.class,
+        KafkaClustersProperties.class,
         ContentRootProperties.class,
         DatacenterNameProperties.class
 })
@@ -262,8 +262,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public KafkaNamesMapper prodKafkaNamesMapper(KafkaProperties kafkaProperties) {
-        return new NamespaceKafkaNamesMapper(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator());
+    public KafkaNamesMapper prodKafkaNamesMapper(KafkaClustersProperties kafkaClustersProperties) {
+        return new NamespaceKafkaNamesMapper(kafkaClustersProperties.getNamespace(), kafkaClustersProperties.getNamespaceSeparator());
     }
 
     @Bean

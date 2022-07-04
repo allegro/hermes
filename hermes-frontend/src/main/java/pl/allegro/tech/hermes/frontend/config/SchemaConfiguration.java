@@ -28,7 +28,7 @@ import java.net.URI;
 @Configuration
 @EnableConfigurationProperties({
         SchemaProperties.class,
-        KafkaProperties.class
+        KafkaClustersProperties.class
 })
 public class SchemaConfiguration {
 
@@ -48,12 +48,12 @@ public class SchemaConfiguration {
     }
 
     @Bean
-    public RawSchemaClient rawSchemaClient(KafkaProperties kafkaProperties,
+    public RawSchemaClient rawSchemaClient(KafkaClustersProperties kafkaClustersProperties,
                                            HermesMetrics hermesMetrics,
                                            ObjectMapper objectMapper,
                                            SchemaRepositoryInstanceResolver resolver,
                                            SchemaProperties schemaProperties) {
-        return new RawSchemaClientFactory(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator(), hermesMetrics, objectMapper, resolver,
+        return new RawSchemaClientFactory(kafkaClustersProperties.getNamespace(), kafkaClustersProperties.getNamespaceSeparator(), hermesMetrics, objectMapper, resolver,
                 schemaProperties.getRepository().isSubjectSuffixEnabled(), schemaProperties.getRepository().isSubjectNamespaceEnabled()).provide();
     }
 
