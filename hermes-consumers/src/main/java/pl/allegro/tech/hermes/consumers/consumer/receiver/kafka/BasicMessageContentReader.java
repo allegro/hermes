@@ -6,19 +6,22 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.SchemaExistenceEnsurer;
 
 class BasicMessageContentReader implements MessageContentReader {
 
     private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final Topic topic;
+    private final SchemaExistenceEnsurer schemaExistenceEnsurer;
 
     BasicMessageContentReader(CompositeMessageContentWrapper compositeMessageContentWrapper,
                               KafkaHeaderExtractor kafkaHeaderExtractor,
-                              Topic topic) {
+                              Topic topic, SchemaExistenceEnsurer schemaExistenceEnsurer) {
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.topic = topic;
+        this.schemaExistenceEnsurer = schemaExistenceEnsurer;
     }
 
     @Override
@@ -26,10 +29,17 @@ class BasicMessageContentReader implements MessageContentReader {
         if (contentType == ContentType.AVRO) {
             Integer schemaVersion = kafkaHeaderExtractor.extractSchemaVersion(message.headers());
             Integer schemaId = kafkaHeaderExtractor.extractSchemaId(message.headers());
+            if (schemaVersion != null) {
+                waitForSchemaToExist(topic, schemaVersion);
+            }
             return compositeMessageContentWrapper.unwrapAvro(message.value(), topic, schemaId, schemaVersion);
         } else if (contentType == ContentType.JSON) {
             return compositeMessageContentWrapper.unwrapJson(message.value());
         }
         throw new UnsupportedContentTypeException(topic);
+    }
+
+    private void waitForSchemaToExist(Topic topic, int schemaVersion) {
+        this.schemaExistenceEnsurer.ensureSchemaExists(topic, schemaVersion);
     }
 }

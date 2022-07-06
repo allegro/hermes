@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRec
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
@@ -51,8 +52,11 @@ public class ConsumerReceiverConfiguration {
 
     @Bean
     public MessageContentReaderFactory messageContentReaderFactory(CompositeMessageContentWrapper compositeMessageContentWrapper,
-                                                                   KafkaHeaderExtractor kafkaHeaderExtractor) {
-        return new BasicMessageContentReaderFactory(compositeMessageContentWrapper, kafkaHeaderExtractor);
+                                                                   KafkaHeaderExtractor kafkaHeaderExtractor,
+                                                                   SchemaRepository schemaRepository,
+                                                                   ConfigFactory config) {
+        return new BasicMessageContentReaderFactory(compositeMessageContentWrapper, kafkaHeaderExtractor,
+                schemaRepository, config);
     }
 
     @Bean

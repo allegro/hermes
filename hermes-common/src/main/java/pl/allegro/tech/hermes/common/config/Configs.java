@@ -306,7 +306,7 @@ public enum Configs {
     SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE("schema.cache.reload.thread.pool.size", 2),
     SCHEMA_CACHE_ENABLED("schema.cache.enabled", true),
     SCHEMA_CACHE_COMPILED_MAXIMUM_SIZE("schema.cache.compiled.maximum.size", 2000),
-    SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:8888/"),
+    SCHEMA_REPOSITORY_SERVER_URL("schema.repository.serverUrl", "http://localhost:8081/"),
     SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS("schema.repository.http.read.timeout.ms", 2000),
     SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS("schema.repository.http.connect.timeout.ms", 2000),
     SCHEMA_REPOSITORY_ONLINE_CHECK_PERMITS_PER_SECOND("schema.repository.online.check.permits.per.second", 100.0),
@@ -316,6 +316,7 @@ public enum Configs {
     SCHEMA_ID_HEADER_ENABLED ("schema.id.header.enabled", false),
     SCHEMA_ID_SERIALIZATION_ENABLED("schema.id.serialization.enabled", false),
     SCHEMA_VERSION_TRUNCATION_ENABLED("schema.version.truncation.enabled", false),
+    SCHEMA_EXISTENCE_VALIDATION_INTERVAL_MS("schema.version.existence.ensurer.interval.ms", 200),
 
     GOOGLE_PUBSUB_SENDER_CORE_POOL_SIZE("googlepubsub.sender.core.pool.size", 4),
     GOOGLE_PUBSUB_SENDER_TOTAL_TIMEOUT("googlepubsub.sender.total.timeout.ms", 600_000L),

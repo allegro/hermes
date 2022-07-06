@@ -14,14 +14,9 @@ import java.nio.ByteBuffer;
 import java.time.Clock;
 import java.util.List;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -48,16 +43,14 @@ public class MessageContentWrapperTest {
 
     private final SchemaOnlineChecksRateLimiter rateLimiter = mock(SchemaOnlineChecksRateLimiter.class);
 
-    private final AvroMessageAnySchemaVersionContentWrapper anySchemaWrapper =
-            new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, rateLimiter, avroWrapper, metrics);
     private final AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionWrapper =
             new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
     private final AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
             new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metrics);
 
-    private static CompiledSchema<Schema> schema1 = CompiledSchema.of(load("/schema/user.avsc"), ID_ONE, VERSION_ONE);
-    private static CompiledSchema<Schema> schema2 = CompiledSchema.of(load("/schema/user_v2.avsc"), ID_THREE, VERSION_TWO);
-    private static CompiledSchema<Schema> schema3 = CompiledSchema.of(load("/schema/user_v3.avsc"), ID_FIVE, VERSION_THREE);
+    private static final CompiledSchema<Schema> schema1 = CompiledSchema.of(load("/schema/user.avsc"), ID_ONE, VERSION_ONE);
+    private static final CompiledSchema<Schema> schema2 = CompiledSchema.of(load("/schema/user_v2.avsc"), ID_THREE, VERSION_TWO);
+    private static final CompiledSchema<Schema> schema3 = CompiledSchema.of(load("/schema/user_v3.avsc"), ID_FIVE, VERSION_THREE);
 
     private CompositeMessageContentWrapper createMessageContentWrapper(boolean schemaHeaderIdEnabled, boolean schemaVersionTruncationEnabled) {
 
@@ -68,7 +61,7 @@ public class MessageContentWrapperTest {
                 new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroWrapper, metrics, schemaVersionTruncationEnabled);
 
         return new CompositeMessageContentWrapper(jsonWrapper, avroWrapper, schemaAwareWrapper,
-            headerSchemaVersionWrapper, headerSchemaIdWrapper, anySchemaWrapper, schemaIdAndHeaderContentWrapper);
+            headerSchemaVersionWrapper, headerSchemaIdWrapper, schemaIdAndHeaderContentWrapper);
     }
 
     private final CompositeMessageContentWrapper compositeMessageContentWrapper = createMessageContentWrapper(false, true);
@@ -127,93 +120,6 @@ public class MessageContentWrapperTest {
     }
 
     @Test
-    public void shouldUnwrapMessageUsingAnySchemaWrapperForcingFallback() {
-        // (v1, v2) locally given, asking for v1, should try v2 first and fallback to v1
-
-        // given
-        String messageId = MESSAGE_ID;
-        int messageTimestamp = MESSAGE_TIMESTAMP;
-
-        SchemaVersion schemaVersion = createSchemaVersion(VERSION_ONE);
-        Topic topic = createTopic();
-        AvroUser user = createAvroUser(schemaVersion, topic);
-
-        byte[] wrapped =
-                compositeMessageContentWrapper.wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
-
-        // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
-
-        // then
-        assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
-    }
-
-    @Test
-    public void shouldUnwrapUsingAnySchemaForcingOfflineLatest() {
-        // (v1, v2) locally given, asking for v2, should try v2 first and succeed
-
-        // given
-        String messageId = MESSAGE_ID;
-        int messageTimestamp = MESSAGE_TIMESTAMP;
-
-        SchemaVersion schemaVersion = createSchemaVersion(VERSION_TWO);
-        Topic topic = createTopic();
-        AvroUser user = createAvroUser(schemaVersion, topic);
-
-        byte[] wrapped =
-                compositeMessageContentWrapper.wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
-
-        // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
-
-        // then
-        assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
-    }
-
-    @Test
-    public void shouldUnwrapMessageUsingAnySchemaForcingOnlineCheck() {
-        // (v1, v2) locally and (v1, v2, v3) remotely given, asking for v3, should try v1/v2 locally first, fail, fallback to remote (online), then succeed
-
-        // given
-        String messageId = MESSAGE_ID;
-        int messageTimestamp = MESSAGE_TIMESTAMP;
-
-        SchemaVersion schemaVersion = createSchemaVersion(VERSION_THREE);
-        Topic topic = createTopic();
-        AvroUser user = createAvroUser(schemaVersion, topic);
-
-        byte[] wrapped =
-                compositeMessageContentWrapper.wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
-
-        when(rateLimiter.tryAcquireOnlineCheckPermit()).thenReturn(true);
-
-        // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
-
-        // then
-        assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0);
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenMessageCouldNotBeUnwrappedByAnySchema() {
-        // given
-        Topic topic = createTopic();
-        byte[] doesNotMatchAnySchema = EMPTY_SCHEMA.getBytes();
-
-        when(rateLimiter.tryAcquireOnlineCheckPermit()).thenReturn(true);
-
-        // when
-        catchException(compositeMessageContentWrapper).unwrapAvro(doesNotMatchAnySchema, topic, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
-
-        // then
-        assertThat(caughtException() instanceof SchemaMissingException).isTrue();
-        assertMetrics(0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0);
-    }
-
-    @Test
     public void shouldUnwrapMessageUsingSchemaIdFromPayload() {
         // given
         String messageId = MESSAGE_ID;
@@ -231,82 +137,7 @@ public class MessageContentWrapperTest {
 
         // then
         assertResult(unwrappedMessageContent, schemaId, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
-    }
-
-    @Test
-    public void shouldFallbackToDeserializationWithAnySchemaWhenErrorOccursInSchemaIdAwarePayloadDeserialization() {
-        // given
-        String messageId = MESSAGE_ID;
-        int messageTimestamp = MESSAGE_TIMESTAMP;
-
-        SchemaId schemaId = createSchemaId(ID_FIVE);
-
-        // starts with magic byte, will be handled by schemaVersionAwareWrapper
-        Topic topicToWrap = createTopic();
-        AvroUser user = createAvroUser(schemaId, topicToWrap);
-
-        byte[] wrapped = compositeMessageContentWrapper
-                .wrapAvro(user.asBytes(), messageId, messageTimestamp, topicToWrap, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
-
-        Topic topicToUnwrap = createTopicWithSchemaIdAwarePayload(); // simulating exception by unwrapping with different topic
-
-        when(rateLimiter.tryAcquireOnlineCheckPermit()).thenReturn(true);
-
-        // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topicToUnwrap, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
-
-        // then
-        assertResult(unwrappedMessageContent, schemaId, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0);
-    }
-
-    @Test
-    public void shouldFallbackToAnySchemaDeserializationWhenSchemaIdIsMissingInPayload() {
-        // given
-        String messageId = MESSAGE_ID;
-        int messageTimestamp = MESSAGE_TIMESTAMP;
-
-        // does not start with magic byte, will not be handled by schemaVersionAwareWrapper
-        SchemaId schemaId = createSchemaId(VERSION_THREE);
-        Topic topicToWrap = createTopic();
-        AvroUser user = createAvroUser(schemaId, topicToWrap);
-
-        byte[] wrapped = compositeMessageContentWrapper
-                .wrapAvro(user.asBytes(), messageId, messageTimestamp, topicToWrap, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
-
-        Topic topicToUnwrap = createTopicWithSchemaIdAwarePayload(); // simulating exception by unwrapping with different topic
-
-        // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topicToUnwrap, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
-
-        // then
-        assertResult(unwrappedMessageContent, schemaId, user.asBytes(), messageId, messageTimestamp);
-
-        // missedSchemaVersionInPayload == no magic byte
-        assertMetrics(1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0);
-    }
-
-    @Test
-    public void shouldUseRateLimiterWhenTryingToOnlineCheckForSchemaVersions() {
-        // given
-        when(rateLimiter.tryAcquireOnlineCheckPermit()).thenReturn(true);
-
-        // when (no online check with local fallback)
-        unwrapWithAnyVersionWrapper(createSchemaVersion(VERSION_ONE));
-
-        // then
-        verify(rateLimiter, never()).tryAcquireOnlineCheckPermit();
-
-        // when (no online check with no local fallback)
-        unwrapWithAnyVersionWrapper(createSchemaVersion(VERSION_TWO));
-
-        // then
-        verify(rateLimiter, never()).tryAcquireOnlineCheckPermit();
-
-        // when (with online check after local fallbacks fail)
-        unwrapWithAnyVersionWrapper(createSchemaVersion(VERSION_THREE));
-        verify(rateLimiter, times(1)).tryAcquireOnlineCheckPermit();
+        assertMetrics(0, 0, 0, 0, 0, 1, 0, 0, 0);
     }
 
     @Test
@@ -327,7 +158,7 @@ public class MessageContentWrapperTest {
 
         // then
         assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
+        assertMetrics(0, 0, 0, 0, 0, 0, 1, 0, 0);
     }
 
     @Test
@@ -350,7 +181,7 @@ public class MessageContentWrapperTest {
 
         // then
         assertResult(unwrappedMessageContent, schemaId, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
+        assertMetrics(0, 0, 0, 0, 0, 0, 0, 1, 0);
     }
 
     @Test
@@ -373,7 +204,7 @@ public class MessageContentWrapperTest {
 
         // then
         assertResult(unwrappedMessageContent, schema.getVersion(), user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+        assertMetrics(0, 0, 0, 0, 0, 1, 0, 0, 0);
     }
 
     @Test
@@ -399,31 +230,7 @@ public class MessageContentWrapperTest {
         assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
 
         // missedSchemaVersionInPayload == no magic byte
-        assertMetrics(1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0);
-    }
-
-    @Test
-    public void shouldUnwrapWithHeaderSchemaVersionWithFallbackToAnySchemaVersion() {
-        // given
-        final int NON_EXISTING_SCHEMA_VERSION = -1;
-
-        String messageId = MESSAGE_ID;
-        int messageTimestamp = MESSAGE_TIMESTAMP;
-
-        SchemaVersion schemaVersion = createSchemaVersion(VERSION_TWO);
-        Topic topic = createTopic();
-        AvroUser user = createAvroUser(schemaVersion, topic);
-
-        byte[] wrapped =
-                compositeMessageContentWrapper
-                        .wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
-
-        // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, NON_EXISTING_SCHEMA_VERSION);
-
-        // then
-        assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0);
+        assertMetrics(1, 0, 0, 0, 0, 0, 1, 0, 0);
     }
 
     @Test
@@ -448,16 +255,7 @@ public class MessageContentWrapperTest {
 
         // then
         assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-        assertMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
-    }
-
-    private void unwrapWithAnyVersionWrapper(SchemaVersion schemaVersion) {
-        Topic topic = createTopic();
-        AvroUser user = createAvroUser(schemaVersion, topic);
-
-        byte[] wrapped =
-                compositeMessageContentWrapper.wrapAvro(user.asBytes(), MESSAGE_ID, MESSAGE_TIMESTAMP, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
-        compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
+        assertMetrics(0, 0, 0, 0, 0, 0, 0, 0, 1);
     }
 
     private void assertResult(UnwrappedMessageContent result,
@@ -486,25 +284,19 @@ public class MessageContentWrapperTest {
 
     private void assertMetrics(int missedSchemaIdInPayload,
                                int errorsForPayloadWithSchemaId,
-                               int errorsForAnySchemaVersion,
-                               int errorsForAnyOnlineSchemaVersion,
                                int errorsForHeaderSchemaVersion,
                                int errorsForHeaderSchemaId,
                                int errorsWithSchemaVersionTruncation,
                                int usingSchemaIdAware,
-                               int usingAnySchemaVersion,
                                int usingHeaderSchemaVersion,
                                int usingHeaderSchemaId,
                                int usingSchemaVersionTruncation) {
         assertThat(metrics.missedSchemaIdInPayload().getCount()).isEqualTo(missedSchemaIdInPayload);
         assertThat(metrics.errorsForSchemaIdAwarePayload().getCount()).isEqualTo(errorsForPayloadWithSchemaId);
-        assertThat(metrics.errorsForAnySchemaVersion().getCount()).isEqualTo(errorsForAnySchemaVersion);
-        assertThat(metrics.errorsForAnyOnlineSchemaVersion().getCount()).isEqualTo(errorsForAnyOnlineSchemaVersion);
         assertThat(metrics.errorsForHeaderSchemaVersion().getCount()).isEqualTo(errorsForHeaderSchemaVersion);
         assertThat(metrics.errorsForHeaderSchemaId().getCount()).isEqualTo(errorsForHeaderSchemaId);
         assertThat(metrics.errorsForSchemaVersionTruncation().getCount()).isEqualTo(errorsWithSchemaVersionTruncation);
         assertThat(metrics.usingSchemaIdAware().getCount()).isEqualTo(usingSchemaIdAware);
-        assertThat(metrics.usingAnySchemaVersion().getCount()).isEqualTo(usingAnySchemaVersion);
         assertThat(metrics.usingHeaderSchemaVersion().getCount()).isEqualTo(usingHeaderSchemaVersion);
         assertThat(metrics.usingHeaderSchemaId().getCount()).isEqualTo(usingHeaderSchemaId);
         assertThat(metrics.usingSchemaVersionTruncation().getCount()).isEqualTo(usingSchemaVersionTruncation);
