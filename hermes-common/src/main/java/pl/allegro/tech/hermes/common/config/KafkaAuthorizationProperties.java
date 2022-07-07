@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.config;
+package pl.allegro.tech.hermes.common.config;
 
 public class KafkaAuthorizationProperties {
 

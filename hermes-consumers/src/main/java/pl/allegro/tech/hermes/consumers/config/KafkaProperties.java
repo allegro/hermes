@@ -1,13 +1,16 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaParameters;
+import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
+import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
-@ConfigurationProperties(prefix = "kafka")
 public class KafkaProperties {
 
-    private KafkaAuthorizationProperties authorization;
-    private String clusterName = "primary-dc";
+    private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
+
+    private String datacenter = "dc";
+
+    private String clusterName = "primary";
+
     private String brokerList = "localhost:9092";
 
     public KafkaAuthorizationProperties getAuthorization() {
@@ -16,6 +19,14 @@ public class KafkaProperties {
 
     public void setAuthorization(KafkaAuthorizationProperties authorization) {
         this.authorization = authorization;
+    }
+
+    public String getDatacenter() {
+        return datacenter;
+    }
+
+    public void setDatacenter(String datacenter) {
+        this.datacenter = datacenter;
     }
 
     public String getClusterName() {
@@ -34,7 +45,7 @@ public class KafkaProperties {
         this.brokerList = brokerList;
     }
 
-    protected KafkaParameters toKafkaAuthorizationParameters() {
+    protected KafkaParameters toKafkaParameters() {
         return new KafkaParameters(
                 this.authorization.isEnabled(),
                 this.authorization.getMechanism(),

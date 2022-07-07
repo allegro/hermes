@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.common.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
@@ -11,16 +9,18 @@ import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
 public class RawSchemaClientFactory {
 
-    private final ConfigFactory configFactory;
+    private final String kafkaNamespace;
+    private final String kafkaNamespaceSeparator;
     private final HermesMetrics hermesMetrics;
     private final ObjectMapper objectMapper;
     private final SchemaRepositoryInstanceResolver resolver;
     private final boolean subjectSuffixEnabled;
     private final boolean subjectNamespaceEnabled;
 
-    public RawSchemaClientFactory(ConfigFactory configFactory, HermesMetrics hermesMetrics, ObjectMapper objectMapper,
+    public RawSchemaClientFactory(String kafkaNamespace, String kafkaNamespaceSeparator, HermesMetrics hermesMetrics, ObjectMapper objectMapper,
                                   SchemaRepositoryInstanceResolver resolver, boolean subjectSuffixEnabled, boolean subjectNamespaceEnabled) {
-        this.configFactory = configFactory;
+        this.kafkaNamespace = kafkaNamespace;
+        this.kafkaNamespaceSeparator = kafkaNamespaceSeparator;
         this.hermesMetrics = hermesMetrics;
         this.objectMapper = objectMapper;
         this.resolver = resolver;
@@ -34,8 +34,8 @@ public class RawSchemaClientFactory {
                 .withNamespacePrefixIf(
                         subjectNamespaceEnabled,
                         new SubjectNamingStrategy.Namespace(
-                                configFactory.getStringProperty(Configs.KAFKA_NAMESPACE),
-                                configFactory.getStringProperty(Configs.KAFKA_NAMESPACE_SEPARATOR)
+                                kafkaNamespace,
+                                kafkaNamespaceSeparator
                         )
                 );
         return createMetricsTrackingClient(

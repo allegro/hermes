@@ -5,8 +5,6 @@ import com.google.common.cache.LoadingCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.util.Optional;
 
@@ -19,10 +17,10 @@ public class OAuthSubscriptionAccessTokens implements OAuthAccessTokens {
     private final OAuthAccessTokensLoader tokenLoader;
 
     public OAuthSubscriptionAccessTokens(OAuthAccessTokensLoader tokenLoader,
-                                         ConfigFactory configFactory) {
+                                         long subscriptionTokensCacheMaxSize) {
         this.tokenLoader = tokenLoader;
         this.subscriptionTokens = CacheBuilder.newBuilder()
-                .maximumSize(configFactory.getLongProperty(Configs.OAUTH_SUBSCRIPTION_TOKENS_CACHE_MAX_SIZE))
+                .maximumSize(subscriptionTokensCacheMaxSize)
                 .build(tokenLoader);
     }
 

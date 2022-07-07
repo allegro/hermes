@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http
 import com.codahale.metrics.MetricRegistry
 import com.github.tomakehurst.wiremock.WireMockServer
 import org.eclipse.jetty.client.HttpClient
-import pl.allegro.tech.hermes.common.config.Configs
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
 import pl.allegro.tech.hermes.consumers.config.ConsumerConfiguration
@@ -11,7 +10,6 @@ import pl.allegro.tech.hermes.consumers.config.Http2ClientProperties
 import pl.allegro.tech.hermes.consumers.config.HttpClientProperties
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties
 import pl.allegro.tech.hermes.metrics.PathsCompiler
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification

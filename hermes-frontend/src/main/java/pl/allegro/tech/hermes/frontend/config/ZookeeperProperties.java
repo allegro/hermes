@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperParameters;
 
-@ConfigurationProperties(prefix = "frontend.zookeeper")
 public class ZookeeperProperties {
 
     private String connectionString = "localhost:2181";
+
+    private String datacenter = "dc";
 
     private int baseSleepTime = 1000;
 
@@ -30,6 +30,14 @@ public class ZookeeperProperties {
 
     public void setConnectionString(String connectionString) {
         this.connectionString = connectionString;
+    }
+
+    public String getDatacenter() {
+        return datacenter;
+    }
+
+    public void setDatacenter(String datacenter) {
+        this.datacenter = datacenter;
     }
 
     public int getBaseSleepTime() {

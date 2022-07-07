@@ -1,12 +1,6 @@
 package pl.allegro.tech.hermes.integration.env;
 
-import com.netflix.config.DynamicPropertyFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
-
 public interface EnvironmentAware {
-
-    ConfigFactory CONFIG_FACTORY = new ConfigFactory(DynamicPropertyFactory.getInstance());
 
     int HTTP_ENDPOINT_PORT = 18081;
 
@@ -42,9 +36,9 @@ public interface EnvironmentAware {
 
     int AUDIT_EVENT_PORT = 19998;
 
-    String PRIMARY_KAFKA_CLUSTER_NAME = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+    String PRIMARY_KAFKA_CLUSTER_NAME = "primary-dc";
 
     String SECONDARY_KAFKA_CLUSTER_NAME = "secondary";
 
-    String KAFKA_NAMESPACE = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_NAMESPACE);
+    String KAFKA_NAMESPACE = "";
 }

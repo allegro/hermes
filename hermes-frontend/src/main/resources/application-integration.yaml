@@ -23,10 +23,23 @@ frontend:
   graphite:
     port: 18023
   zookeeper:
-    connectionString: "localhost:14192"
-    connectionTimeout: 10000
-    sessionTimeout: 10000
-    authorization:
-      enabled: false
-      user: admin
-      password: admin
+    clusters:
+      -
+        connectionString: "localhost:14192"
+        connectionTimeout: 10000
+        sessionTimeout: 10000
+        authorization:
+          enabled: false
+          user: admin
+          password: admin
+  kafka:
+    producer:
+      retryBackoffMs: 100
+    namespace: "itTest"
+    clusters:
+      -
+        authorization:
+          enabled: false
+          username: hermes
+          password: alice-secret
+

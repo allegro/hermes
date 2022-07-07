@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties;
 import pl.allegro.tech.hermes.management.config.storage.StorageProperties;
-import pl.allegro.tech.hermes.management.infrastructure.dc.DatacenterNameProvider;
-import pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
 
 import java.util.Collections;
 import java.util.List;

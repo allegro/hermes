@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
@@ -13,11 +12,15 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 @Configuration
 @EnableConfigurationProperties({
         LocalMessageStorageProperties.class,
-        SchemaProperties.class
+        SchemaProperties.class,
+        KafkaHeaderNameProperties.class,
+        KafkaProducerProperties.class,
+        KafkaClustersProperties.class
 })
 public class FrontendProducerConfiguration {
 
@@ -30,19 +33,25 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean
-    public KafkaHeaderFactory kafkaHeaderFactory(ConfigFactory configFactory) {
-        return new KafkaHeaderFactory(configFactory);
+    public KafkaHeaderFactory kafkaHeaderFactory(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
+        return new KafkaHeaderFactory(kafkaHeaderNameProperties.toKafkaHeaderNameParameters());
     }
 
     @Bean(destroyMethod = "close")
-    public Producers kafkaMessageProducer(ConfigFactory configFactory,
-                                          LocalMessageStorageProperties localMessageStorageProperties) {
-        return new KafkaMessageProducerFactory(configFactory, localMessageStorageProperties.getBufferedSizeBytes()).provide();
+    public Producers kafkaMessageProducer(KafkaClustersProperties kafkaClustersProperties,
+                                          KafkaProducerProperties kafkaProducerProperties,
+                                          LocalMessageStorageProperties localMessageStorageProperties,
+                                          DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+        return new KafkaMessageProducerFactory(kafkaProperties.toKafkaAuthorizationParameters(), kafkaProducerProperties.toKafkaProducerParameters(), localMessageStorageProperties.getBufferedSizeBytes()).provide();
     }
 
     @Bean(destroyMethod = "close")
-    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(ConfigFactory configFactory) {
-        return new KafkaTopicMetadataFetcherFactory(configFactory).provide();
+    public KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher(KafkaProducerProperties kafkaProducerProperties,
+                                                               KafkaClustersProperties kafkaClustersProperties,
+                                                               DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+        return new KafkaTopicMetadataFetcherFactory(kafkaProperties.toKafkaAuthorizationParameters(), kafkaProducerProperties.getMetadataMaxAge(), kafkaProperties.getAdminRequestTimeoutMs()).provide();
     }
 
     @Bean

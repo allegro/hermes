@@ -17,13 +17,13 @@ import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionMode
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.common.config.ConfigFactory
-import pl.allegro.tech.hermes.common.config.Configs
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.config.SchemaProperties
+import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
+import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
@@ -53,14 +53,6 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaContainer kafkaContainer = new KafkaContainer()
 
     @Shared
-    ConfigFactory configFactory = Mock() {
-        getStringProperty(Configs.KAFKA_HEADER_NAME_MESSAGE_ID) >> "id"
-        getStringProperty(Configs.KAFKA_HEADER_NAME_TIMESTAMP) >> "ts"
-        getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_VERSION) >> "sv"
-        getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_ID) >> "sid"
-    }
-
-    @Shared
     KafkaProducer<byte[], byte[]> leaderConfirms
 
     @Shared
@@ -70,7 +62,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaBrokerMessageProducer brokerMessageProducer
 
     @Shared
-    KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("")
+    KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("", "_")
 
     @Shared
     Producers producers
@@ -81,7 +73,14 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     @Shared
     AdminClient adminClient
 
+    @Shared
     SchemaProperties schemaProperties = new SchemaProperties()
+
+    @Shared
+    KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
+
+    @Shared
+    KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties()
 
     def setupSpec() {
         kafkaContainer.start()
@@ -98,11 +97,14 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     }
 
     def setup() {
-        producers = new Producers(leaderConfirms, everyoneConfirms, configFactory)
+        producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
-                new KafkaTopicMetadataFetcher(adminClient, configFactory),
+                new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
-                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(configFactory), schemaProperties.isIdHeaderEnabled()))
+                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties.toKafkaHeaderNameParameters()),
+                        schemaProperties.isIdHeaderEnabled()
+                )
+        )
     }
 
     def "should publish messages on only one partition for the same partition-key"() {

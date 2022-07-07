@@ -13,11 +13,11 @@ import org.apache.kafka.common.record.TimestampType
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.common.di.factories.ConfigFactoryCreator
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset
 import pl.allegro.tech.hermes.common.message.wrapper.*
+import pl.allegro.tech.hermes.consumers.config.KafkaHeaderNameProperties
 import pl.allegro.tech.hermes.schema.*
 import spock.lang.Specification
 
@@ -87,7 +87,7 @@ class KafkaConsumerRecordToMessageConverterTest extends Specification {
         def schemaVersionRepository = new SchemaVersionsRepository() {
             @Override
             SchemaVersionsResult versions(Topic t, boolean online) {
-                SchemaVersionsResult.succeeded(Collections.singletonList(schemaVersion));
+                SchemaVersionsResult.succeeded(Collections.singletonList(schemaVersion))
             }
             @Override
             void close() {
@@ -112,7 +112,8 @@ class KafkaConsumerRecordToMessageConverterTest extends Specification {
                 new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper, metrics, schemaIdHeaderEnabled),
                 new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, { -> true }, avroMessageContentWrapper, metrics),
                 new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper, metrics, magicByteTruncationEnabled))
-        def headerExtractor = new KafkaHeaderExtractor(new ConfigFactoryCreator().provide())
+        def kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
+        def headerExtractor = new KafkaHeaderExtractor(kafkaHeaderNameProperties.getSchemaVersion(), kafkaHeaderNameProperties.getSchemaId())
         new BasicMessageContentReader(wrapper, headerExtractor, topic)
     }
 

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import com.netflix.config.DynamicPropertyFactory;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -11,10 +10,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties;
+import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
@@ -42,12 +42,13 @@ public class KafkaBrokerMessageProducerTest {
     private final ByteArraySerializer serializer = new ByteArraySerializer();
     private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
     private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
-    private final ConfigFactory configFactory = new ConfigFactory(DynamicPropertyFactory.getInstance());
-    private final Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, configFactory);
+    private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
+    private final KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties();
+    private final Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, kafkaProducerProperties.isReportNodeMetricsEnabled());
 
     private KafkaBrokerMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
-    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(configFactory);
+    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties.toKafkaHeaderNameParameters());
 
     @Mock
     private HermesMetrics hermesMetrics;

@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.consumers.consumer.rate;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.util.Collections;
 import java.util.Set;

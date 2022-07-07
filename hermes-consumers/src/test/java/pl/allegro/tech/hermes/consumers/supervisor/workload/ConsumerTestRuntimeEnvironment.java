@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.consumers.config.ZookeeperProperties;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
-import pl.allegro.tech.hermes.consumers.config.SupervisorConfiguration;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -158,19 +157,11 @@ class ConsumerTestRuntimeEnvironment {
         SubscriptionIds subscriptionIds = subscriptionConfiguration.subscriptionIds(notificationsBus, subscriptionsCache,
                 new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths), new CommonConsumerProperties());
 
-        SupervisorConfiguration supervisorConfiguration = new SupervisorConfiguration();
+        ConsumerAssignmentCache consumerAssignmentCache = new ConsumerAssignmentCache(curator, workloadProperties.getNodeId(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
 
-        ConsumerAssignmentCache consumerAssignmentCache = supervisorConfiguration.consumerAssignmentCache(
-                curator, workloadProperties, kafkaProperties, zookeeperPaths, subscriptionIds
-        );
+        ClusterAssignmentCache clusterAssignmentCache = new ClusterAssignmentCache(curator, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds, nodesRegistry);
 
-        ClusterAssignmentCache clusterAssignmentCache = supervisorConfiguration.clusterAssignmentCache(
-                curator, kafkaProperties, zookeeperPaths, subscriptionIds, nodesRegistry
-        );
-
-        ConsumerAssignmentRegistry consumerAssignmentRegistry = supervisorConfiguration.consumerAssignmentRegistry(
-                curator, workloadProperties, kafkaProperties, zookeeperPaths, subscriptionIds
-        );
+        ConsumerAssignmentRegistry consumerAssignmentRegistry = new ConsumerAssignmentRegistry(curator, workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
 
 
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(

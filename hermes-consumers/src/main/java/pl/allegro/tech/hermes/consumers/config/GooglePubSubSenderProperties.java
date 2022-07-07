@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "google.pubsub.sender")
+@ConfigurationProperties(prefix = "consumer.google.pubsub.sender")
 public class GooglePubSubSenderProperties {
 
     private int corePoolSize = 4;

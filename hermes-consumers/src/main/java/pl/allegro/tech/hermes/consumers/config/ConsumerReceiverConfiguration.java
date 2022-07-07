@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -16,6 +15,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRec
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
@@ -24,8 +24,9 @@ import java.time.Clock;
 @EnableConfigurationProperties({
         ConsumerReceiverProperties.class,
         KafkaConsumerProperties.class,
-        KafkaProperties.class,
-        CommonConsumerProperties.class
+        KafkaClustersProperties.class,
+        CommonConsumerProperties.class,
+        KafkaHeaderNameProperties.class
 })
 public class ConsumerReceiverConfiguration {
 
@@ -33,19 +34,23 @@ public class ConsumerReceiverConfiguration {
     public ReceiverFactory kafkaMessageReceiverFactory(CommonConsumerProperties commonConsumerProperties,
                                                        ConsumerReceiverProperties consumerReceiverProperties,
                                                        KafkaConsumerProperties kafkaConsumerProperties,
-                                                       KafkaProperties kafkaAuthorizationProperties,
+                                                       KafkaClustersProperties kafkaClustersProperties,
                                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                                        HermesMetrics hermesMetrics,
                                                        OffsetQueue offsetQueue,
                                                        KafkaNamesMapper kafkaNamesMapper,
                                                        FilterChainFactory filterChainFactory,
                                                        Trackers trackers,
-                                                       ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
+                                                       ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+                                                       DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+
+
         return new KafkaMessageReceiverFactory(
                 commonConsumerProperties.toCommonConsumerParameters(),
                 consumerReceiverProperties.toKafkaReceiverParams(),
                 kafkaConsumerProperties.toKafkaConsumerParameters(),
-                kafkaAuthorizationProperties.toKafkaAuthorizationParameters(),
+                kafkaProperties.toKafkaParameters(),
                 messageConverterFactory,
                 hermesMetrics,
                 offsetQueue,
@@ -69,7 +74,7 @@ public class ConsumerReceiverConfiguration {
     }
 
     @Bean
-    public KafkaHeaderExtractor kafkaHeaderExtractor(ConfigFactory configFactory) {
-        return new KafkaHeaderExtractor(configFactory);
+    public KafkaHeaderExtractor kafkaHeaderExtractor(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
+        return new KafkaHeaderExtractor(kafkaHeaderNameProperties.getSchemaVersion(), kafkaHeaderNameProperties.getSchemaId());
     }
 }

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration.setup;
 
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
@@ -65,11 +64,10 @@ public class HermesFrontendInstance {
             frontend.overrideProperty(METRICS_GRAPHITE_REPORTER_ENABLED, false);
             frontend.overrideProperty(METRICS_ZOOKEEPER_REPORTER_ENABLED, false);
             frontend.overrideProperty(FRONTEND_READINESS_CHECK_ENABLED, true);
-            frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         }
 
         public Starter metadataMaxAgeInSeconds(int seconds) {
-            frontend.overrideProperty(Configs.KAFKA_PRODUCER_METADATA_MAX_AGE, seconds * 1000);
+            frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_PRODUCER_METADATA_MAX_AGE, seconds * 1000);
             return this;
         }
 
@@ -84,7 +82,7 @@ public class HermesFrontendInstance {
         }
 
         public Starter kafkaConnectionString(String connectionString) {
-            frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, connectionString);
+            frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, connectionString);
             return this;
         }
 

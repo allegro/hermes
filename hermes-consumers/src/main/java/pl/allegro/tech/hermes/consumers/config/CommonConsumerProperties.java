@@ -29,6 +29,8 @@ public class CommonConsumerProperties {
 
     private String clientId = new InetAddressInstanceIdResolver().resolve();
 
+    private int undeliveredMessageLogPersistPeriodMs = 5000;
+
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
@@ -115,6 +117,14 @@ public class CommonConsumerProperties {
 
     public void setClientId(String clientId) {
         this.clientId = clientId;
+    }
+
+    public int getUndeliveredMessageLogPersistPeriodMs() {
+        return undeliveredMessageLogPersistPeriodMs;
+    }
+
+    public void setUndeliveredMessageLogPersistPeriodMs(int undeliveredMessageLogPersistPeriodMs) {
+        this.undeliveredMessageLogPersistPeriodMs = undeliveredMessageLogPersistPeriodMs;
     }
 
     public static final class BackgroundSupervisor {

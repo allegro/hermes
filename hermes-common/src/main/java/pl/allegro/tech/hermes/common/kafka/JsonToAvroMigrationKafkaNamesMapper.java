@@ -7,10 +7,6 @@ import java.util.function.Function;
 
 public class JsonToAvroMigrationKafkaNamesMapper extends NamespaceKafkaNamesMapper {
 
-    public JsonToAvroMigrationKafkaNamesMapper(String namespace) {
-        super(namespace);
-    }
-
     public JsonToAvroMigrationKafkaNamesMapper(String namespace, String namespaceSeparator) {
         super(namespace, namespaceSeparator);
     }
@@ -25,10 +21,10 @@ public class JsonToAvroMigrationKafkaNamesMapper extends NamespaceKafkaNamesMapp
         return new KafkaTopics(primary);
     }
 
-    private Function<Topic, KafkaTopic> mapToJsonKafkaTopic = it ->
+    private final Function<Topic, KafkaTopic> mapToJsonKafkaTopic = it ->
             new KafkaTopic(KafkaTopicName.valueOf(it.getQualifiedName()), ContentType.JSON);
 
-    private Function<KafkaTopic, KafkaTopic> appendContentTypeSuffix = kafkaTopic -> {
+    private final Function<KafkaTopic, KafkaTopic> appendContentTypeSuffix = kafkaTopic -> {
         switch (kafkaTopic.contentType()) {
             case JSON:
                 return kafkaTopic;
