@@ -16,6 +16,7 @@ public class EnvironmentVariableDatacenterNameProvider implements DatacenterName
     public String getDatacenterName() {
         String dcName = System.getenv(variableName);
         if(dcName == null) {
+            logger.info("Undefined environment variable: " + variableName);
             throw new DcNameProvisionException("Undefined environment variable: " + variableName);
         }
         logger.info("Providing DC name from environment variable: {}={}", variableName, dcName);
