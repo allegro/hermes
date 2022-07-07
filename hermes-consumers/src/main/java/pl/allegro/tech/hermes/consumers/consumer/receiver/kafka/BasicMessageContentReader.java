@@ -7,6 +7,8 @@ import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrap
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SchemaExistenceEnsurer;
+import pl.allegro.tech.hermes.schema.SchemaId;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 class BasicMessageContentReader implements MessageContentReader {
 
@@ -29,9 +31,7 @@ class BasicMessageContentReader implements MessageContentReader {
         if (contentType == ContentType.AVRO) {
             Integer schemaVersion = kafkaHeaderExtractor.extractSchemaVersion(message.headers());
             Integer schemaId = kafkaHeaderExtractor.extractSchemaId(message.headers());
-            if (schemaVersion != null) {
-                waitForSchemaToExist(topic, schemaVersion);
-            }
+            ensureExistence(schemaVersion, schemaId);
             return compositeMessageContentWrapper.unwrapAvro(message.value(), topic, schemaId, schemaVersion);
         } else if (contentType == ContentType.JSON) {
             return compositeMessageContentWrapper.unwrapJson(message.value());
@@ -39,7 +39,12 @@ class BasicMessageContentReader implements MessageContentReader {
         throw new UnsupportedContentTypeException(topic);
     }
 
-    private void waitForSchemaToExist(Topic topic, int schemaVersion) {
-        this.schemaExistenceEnsurer.ensureSchemaExists(topic, schemaVersion);
+    private void ensureExistence(Integer schemaVersion, Integer schemaId) {
+        if (schemaVersion != null) {
+            schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaVersion.valueOf(schemaVersion));
+        }
+        if (schemaId != null) {
+            schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(schemaId));
+        }
     }
 }

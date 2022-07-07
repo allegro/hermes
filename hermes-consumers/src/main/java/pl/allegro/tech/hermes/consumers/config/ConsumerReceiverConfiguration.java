@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
@@ -54,9 +55,10 @@ public class ConsumerReceiverConfiguration {
     public MessageContentReaderFactory messageContentReaderFactory(CompositeMessageContentWrapper compositeMessageContentWrapper,
                                                                    KafkaHeaderExtractor kafkaHeaderExtractor,
                                                                    SchemaRepository schemaRepository,
-                                                                   ConfigFactory config) {
+                                                                   ConfigFactory config,
+                                                                   SchemaOnlineChecksRateLimiter rateLimiter) {
         return new BasicMessageContentReaderFactory(compositeMessageContentWrapper, kafkaHeaderExtractor,
-                schemaRepository, config);
+                schemaRepository, config, rateLimiter);
     }
 
     @Bean

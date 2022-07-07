@@ -7,13 +7,17 @@ import java.util.List;
 
 public class SchemaRepository {
 
+    private static final boolean OFFLINE = false;
+
     private final SchemaVersionsRepository schemaVersionsRepository;
     private final CompiledSchemaRepository<Schema> compiledAvroSchemaRepository;
+    private final SchemaCacheRefresher<Schema> schemaCacheRefresher;
 
     public SchemaRepository(SchemaVersionsRepository schemaVersionsRepository,
                             CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
         this.schemaVersionsRepository = schemaVersionsRepository;
         this.compiledAvroSchemaRepository = compiledAvroSchemaRepository;
+        this.schemaCacheRefresher = new SchemaCacheRefresher<>(schemaVersionsRepository, compiledAvroSchemaRepository);
     }
 
     public CompiledSchema<Schema> getLatestAvroSchema(Topic topic) {
@@ -67,6 +71,11 @@ public class SchemaRepository {
     }
 
     public List<SchemaVersion> getVersions(Topic topic, boolean online) {
-        return schemaVersionsRepository.versions(topic, online).get();
+        if (online) {
+            schemaCacheRefresher.refreshSchemas(topic);
+        }
+        SchemaVersionsResult versionsResult = schemaVersionsRepository.versions(topic, OFFLINE);
+
+        return versionsResult.get();
     }
 }

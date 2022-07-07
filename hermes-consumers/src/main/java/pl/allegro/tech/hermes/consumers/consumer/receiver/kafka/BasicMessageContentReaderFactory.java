@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
@@ -14,14 +15,16 @@ public class BasicMessageContentReaderFactory implements MessageContentReaderFac
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final SchemaRepository schemaRepository;
     private final ConfigFactory configFactory;
+    private final SchemaOnlineChecksRateLimiter rateLimiter;
 
     public BasicMessageContentReaderFactory(CompositeMessageContentWrapper compositeMessageContentWrapper,
                                             KafkaHeaderExtractor kafkaHeaderExtractor, SchemaRepository schemaRepository,
-                                            ConfigFactory configFactory) {
+                                            ConfigFactory configFactory, SchemaOnlineChecksRateLimiter rateLimiter) {
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.schemaRepository = schemaRepository;
         this.configFactory = configFactory;
+        this.rateLimiter = rateLimiter;
     }
 
     @Override
@@ -29,8 +32,8 @@ public class BasicMessageContentReaderFactory implements MessageContentReaderFac
         SchemaExistenceEnsurer schemaExistenceEnsurer =
                 new SchemaExistenceEnsurer(
                         schemaRepository,
-                        Duration.ofMillis(configFactory.getIntProperty(Configs.SCHEMA_EXISTENCE_VALIDATION_INTERVAL_MS))
-                );
+                        Duration.ofMillis(configFactory.getIntProperty(Configs.SCHEMA_EXISTENCE_VALIDATION_INTERVAL_MS)),
+                        rateLimiter);
         return new BasicMessageContentReader(compositeMessageContentWrapper, kafkaHeaderExtractor, topic, schemaExistenceEnsurer);
     }
 }
