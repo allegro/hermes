@@ -5,15 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 
-public class SchemaCacheRefresher<T> {
-    private static final Logger logger = LoggerFactory.getLogger(SchemaCacheRefresher.class);
+public class SchemaOnlineRefresher<T> {
+    private static final Logger logger = LoggerFactory.getLogger(SchemaOnlineRefresher.class);
     private static final boolean REFRESH_ONLINE = true;
 
     private final SchemaVersionsRepository schemaVersionsRepository;
     private final CompiledSchemaRepository<T> compiledSchemaRepository;
 
-    public SchemaCacheRefresher(SchemaVersionsRepository schemaVersionsRepository,
-                                CompiledSchemaRepository<T> compiledSchemaRepository) {
+    public SchemaOnlineRefresher(SchemaVersionsRepository schemaVersionsRepository,
+                                 CompiledSchemaRepository<T> compiledSchemaRepository) {
         this.schemaVersionsRepository = schemaVersionsRepository;
         this.compiledSchemaRepository = compiledSchemaRepository;
     }

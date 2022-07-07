@@ -11,13 +11,13 @@ public class SchemaRepository {
 
     private final SchemaVersionsRepository schemaVersionsRepository;
     private final CompiledSchemaRepository<Schema> compiledAvroSchemaRepository;
-    private final SchemaCacheRefresher<Schema> schemaCacheRefresher;
+    private final SchemaOnlineRefresher<Schema> schemaRefresher;
 
     public SchemaRepository(SchemaVersionsRepository schemaVersionsRepository,
                             CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
         this.schemaVersionsRepository = schemaVersionsRepository;
         this.compiledAvroSchemaRepository = compiledAvroSchemaRepository;
-        this.schemaCacheRefresher = new SchemaCacheRefresher<>(schemaVersionsRepository, compiledAvroSchemaRepository);
+        this.schemaRefresher = new SchemaOnlineRefresher<>(schemaVersionsRepository, compiledAvroSchemaRepository);
     }
 
     public CompiledSchema<Schema> getLatestAvroSchema(Topic topic) {
@@ -72,7 +72,7 @@ public class SchemaRepository {
 
     public List<SchemaVersion> getVersions(Topic topic, boolean online) {
         if (online) {
-            schemaCacheRefresher.refreshSchemas(topic);
+            schemaRefresher.refreshSchemas(topic);
         }
         SchemaVersionsResult versionsResult = schemaVersionsRepository.versions(topic, OFFLINE);
 

@@ -5,19 +5,19 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
 import pl.allegro.tech.hermes.schema.CachedCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.CachedSchemaVersionsRepository;
-import pl.allegro.tech.hermes.schema.SchemaCacheRefresher;
+import pl.allegro.tech.hermes.schema.SchemaOnlineRefresher;
 
 
 class SchemaCacheRefresherCallback<T> implements TopicCallback {
 
     private final CachedSchemaVersionsRepository schemaVersionsRepository;
     private final CachedCompiledSchemaRepository<T> compiledSchemaRepository;
-    private final SchemaCacheRefresher<T> schemaCacheRefresher;
+    private final SchemaOnlineRefresher<T> schemaRefresher;
 
     public SchemaCacheRefresherCallback(CachedSchemaVersionsRepository schemaVersionsRepository, CachedCompiledSchemaRepository<T> compiledSchemaRepository) {
         this.schemaVersionsRepository = schemaVersionsRepository;
         this.compiledSchemaRepository = compiledSchemaRepository;
-        this.schemaCacheRefresher = new SchemaCacheRefresher<>(schemaVersionsRepository, compiledSchemaRepository);
+        this.schemaRefresher = new SchemaOnlineRefresher<>(schemaVersionsRepository, compiledSchemaRepository);
     }
 
     @Override
@@ -38,7 +38,7 @@ class SchemaCacheRefresherCallback<T> implements TopicCallback {
 
     private void refreshSchemas(Topic topic) {
         if (topic.getContentType() == ContentType.AVRO) {
-            schemaCacheRefresher.refreshSchemas(topic);
+            schemaRefresher.refreshSchemas(topic);
         }
     }
 }
