@@ -24,13 +24,9 @@ public class SchemaExistenceEnsurer {
     private final RetryPolicy<SchemaPullStatus> retryPolicy;
     private final SchemaOnlineChecksRateLimiter rateLimiter;
 
-    public SchemaExistenceEnsurer(SchemaRepository schemaRepository, Duration waitSchemaInterval,
-                                  SchemaOnlineChecksRateLimiter rateLimiter) {
+    public SchemaExistenceEnsurer(SchemaRepository schemaRepository, Duration waitSchemaInterval, SchemaOnlineChecksRateLimiter rateLimiter) {
         this.schemaRepository = schemaRepository;
-        this.retryPolicy = new RetryPolicy<SchemaPullStatus>()
-                .withDelay(waitSchemaInterval)
-                .withMaxRetries(Integer.MAX_VALUE)
-                .handleIf((schemaPullStatus, throwable) -> schemaPullStatus != SchemaPullStatus.PULLED);
+        this.retryPolicy = new RetryPolicy<SchemaPullStatus>().withDelay(waitSchemaInterval).withMaxRetries(Integer.MAX_VALUE).handleIf((schemaPullStatus, throwable) -> schemaPullStatus != SchemaPullStatus.PULLED);
         this.rateLimiter = rateLimiter;
     }
 
@@ -42,39 +38,38 @@ public class SchemaExistenceEnsurer {
         Failsafe.with(retryPolicy).get(() -> pullSchemaIfNeeded(topic, id));
     }
 
-    private SchemaPullStatus pullSchemaIfNeeded(Topic topic, SchemaVersion version) {
-        String msg = String.format("Could not find schema version [%s] provided in header for topic [%s]." +
-                " Pulling schema online...", version, topic);
-        return pullSchemaIfNeeded(topic, () -> schemaRepository.getAvroSchema(topic, version), msg);
-    }
-
     private SchemaPullStatus pullSchemaIfNeeded(Topic topic, SchemaId id) {
-        String msg = String.format("Could not find schema id [%s] provided in header for topic [%s]." +
-                " Pulling schema online...", id, topic);
-        return pullSchemaIfNeeded(topic, () -> schemaRepository.getAvroSchema(topic, id), msg);
-    }
-
-    private SchemaPullStatus pullSchemaIfNeeded(Topic topic, Supplier<CompiledSchema<Schema>> schemaProvider,
-                                                String errorMessage) {
         if (!rateLimiter.tryAcquireOnlineCheckPermit()) {
             return SchemaPullStatus.NOT_PULLED;
         }
         try {
-            schemaProvider.get();
+            schemaRepository.getAvroSchema(topic, id);
             return SchemaPullStatus.PULLED;
         } catch (SchemaException ex) {
-            logger.warn(errorMessage, ex);
-            pullOnline(topic);
+            logger.warn("Could not find schema id [{}] provided in header for topic [{}]." + " Pulling schema online...", id, topic, ex);
             return SchemaPullStatus.NOT_PULLED;
         }
     }
 
-    private void pullOnline(Topic topic) {
-        schemaRepository.getVersions(topic, REFRESH_ONLINE);
+    private SchemaPullStatus pullSchemaIfNeeded(Topic topic, SchemaVersion version) {
+        if (!rateLimiter.tryAcquireOnlineCheckPermit()) {
+            return SchemaPullStatus.NOT_PULLED;
+        }
+        try {
+            schemaRepository.getAvroSchema(topic, version);
+            return SchemaPullStatus.PULLED;
+        } catch (SchemaException ex) {
+            logger.warn("Could not find schema version [{}] provided in header for topic [{}]." + " Pulling schema online...", version, topic, ex);
+            pullVersionsOnline(topic);
+            return SchemaPullStatus.NOT_PULLED;
+        }
+    }
+
+    private void pullVersionsOnline(Topic topic) {
+        schemaRepository.refreshVersions(topic);
     }
 
     enum SchemaPullStatus {
-        PULLED,
-        NOT_PULLED
+        PULLED, NOT_PULLED
     }
 }

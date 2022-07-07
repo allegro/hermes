@@ -42,7 +42,7 @@ class SchemaExistenceEnsurerTest extends Specification {
                 { throw new SchemaVersionDoesNotExistException(topic, SchemaVersion.valueOf(1)) } >>
                 { throw new CouldNotLoadSchemaException(topic, SchemaVersion.valueOf(1), new RuntimeException()) } >>
                 compiledSchema
-        3 * schemaRepository.getVersions(topic, true)
+        3 * schemaRepository.refreshVersions(topic)
     }
 
     def "should retry pulling schema by id until it is successfully downloaded"() {
@@ -59,7 +59,6 @@ class SchemaExistenceEnsurerTest extends Specification {
                 { throw new SchemaNotFoundException(SchemaId.valueOf(1)) } >>
                 { throw new CouldNotLoadSchemaException(new RuntimeException()) } >>
                 compiledSchema
-        2 * schemaRepository.getVersions(topic, true)
     }
 
     def "should not pull online schema by version if it's already in cache"() {
@@ -73,7 +72,7 @@ class SchemaExistenceEnsurerTest extends Specification {
 
         then:
         1 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1)) >> compiledSchema
-        0 * schemaRepository.getVersions(topic, SchemaVersion.valueOf(1))
+        0 * schemaRepository.refreshVersions(topic)
     }
 
     def "should not pull online schema by id if it's already in cache"() {
@@ -87,7 +86,6 @@ class SchemaExistenceEnsurerTest extends Specification {
 
         then:
         1 * schemaRepository.getAvroSchema(topic, SchemaId.valueOf(1)) >> compiledSchema
-        0 * schemaRepository.getVersions(topic, SchemaId.valueOf(1))
     }
 
     def "should rate limit online schema pulls"() {
@@ -103,7 +101,6 @@ class SchemaExistenceEnsurerTest extends Specification {
         }
         then:
         0 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1))
-        0 * schemaRepository.getVersions(topic, true)
     }
 
     void ignoreException(Closure<Object> actionThrowingException) {

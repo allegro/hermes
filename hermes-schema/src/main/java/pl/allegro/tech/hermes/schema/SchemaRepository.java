@@ -3,21 +3,18 @@ package pl.allegro.tech.hermes.schema;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 
-import java.util.List;
 
 public class SchemaRepository {
 
-    private static final boolean OFFLINE = false;
+    private static final boolean ONLINE = true;
 
     private final SchemaVersionsRepository schemaVersionsRepository;
     private final CompiledSchemaRepository<Schema> compiledAvroSchemaRepository;
-    private final SchemaOnlineRefresher<Schema> schemaRefresher;
 
     public SchemaRepository(SchemaVersionsRepository schemaVersionsRepository,
                             CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
         this.schemaVersionsRepository = schemaVersionsRepository;
         this.compiledAvroSchemaRepository = compiledAvroSchemaRepository;
-        this.schemaRefresher = new SchemaOnlineRefresher<>(schemaVersionsRepository, compiledAvroSchemaRepository);
     }
 
     public CompiledSchema<Schema> getLatestAvroSchema(Topic topic) {
@@ -60,6 +57,10 @@ public class SchemaRepository {
         return getCompiledSchemaAtVersion(topic, version);
     }
 
+    public void refreshVersions(Topic topic) {
+        schemaVersionsRepository.versions(topic, ONLINE);
+    }
+
     private CompiledSchema<Schema> getCompiledSchemaAtVersion(Topic topic, SchemaVersion latestVersion) {
         try {
             return compiledAvroSchemaRepository.getSchema(topic, latestVersion);
@@ -68,14 +69,5 @@ public class SchemaRepository {
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException(topic, latestVersion, e);
         }
-    }
-
-    public List<SchemaVersion> getVersions(Topic topic, boolean online) {
-        if (online) {
-            schemaRefresher.refreshSchemas(topic);
-        }
-        SchemaVersionsResult versionsResult = schemaVersionsRepository.versions(topic, OFFLINE);
-
-        return versionsResult.get();
     }
 }
