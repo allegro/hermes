@@ -16,6 +16,7 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS = "frontend.handlers.keepAliveHeader.timeoutSeconds";
     public static String METRICS_ZOOKEEPER_REPORTER_ENABLED = "frontend.metrics.zookeeperReporterEnabled";
     public static String METRICS_GRAPHITE_REPORTER_ENABLED = "frontend.metrics.graphiteReporterEnabled";
+    public static String GRAPHITE_PORT = "frontend.graphite.port";
     public static String SCHEMA_CACHE_ENABLED = "frontend.schema.cache.enabled";
     public static String SCHEMA_REPOSITORY_SERVER_URL = "frontend.schema.repository.serverUrl";
     public static String FRONTEND_SSL_ENABLED = "frontend.ssl.enabled";
