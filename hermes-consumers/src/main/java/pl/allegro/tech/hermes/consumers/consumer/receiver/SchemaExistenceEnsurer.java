@@ -42,7 +42,7 @@ public class SchemaExistenceEnsurer {
             schemaRepository.getAvroSchema(topic, version);
             return SchemaPullStatus.PULLED;
         } catch (SchemaException ex) {
-            logger.warn("Could not find schema version [{}] provided in header for topic [{}]." + " Pulling schema online...", version, topic, ex);
+            logger.warn("Could not find schema version [{}] provided in header for topic [{}]. Pulling schema online...", version, topic, ex);
             pullVersionsOnline(topic);
             return SchemaPullStatus.NOT_PULLED;
         }
@@ -56,7 +56,7 @@ public class SchemaExistenceEnsurer {
             schemaRepository.getAvroSchema(topic, id);
             return SchemaPullStatus.PULLED;
         } catch (SchemaException ex) {
-            logger.warn("Could not find schema id [{}] provided in header for topic [{}]." + " Pulling schema online...", id, topic, ex);
+            logger.warn("Could not find schema id [{}] provided in header for topic [{}]. Pulling schema online...", id, topic, ex);
             return SchemaPullStatus.NOT_PULLED;
         }
     }
