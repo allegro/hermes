@@ -88,7 +88,7 @@ class SchemaExistenceEnsurerTest extends Specification {
         1 * schemaRepository.getAvroSchema(topic, SchemaId.valueOf(1)) >> compiledSchema
     }
 
-    def "should rate limit online schema pulls"() {
+    def "should rate limit online schema pulls by version"() {
         given:
         def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
         rateLimiter.tryAcquireOnlineCheckPermit() >> false
@@ -101,6 +101,21 @@ class SchemaExistenceEnsurerTest extends Specification {
         }
         then:
         0 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1))
+    }
+
+    def "should rate limit online schema pulls by id"() {
+        given:
+        def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
+        rateLimiter.tryAcquireOnlineCheckPermit() >> false
+
+        when:
+        ignoreException {
+            Executors.newSingleThreadExecutor()
+                    .submit({ schemaEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(1)) })
+                    .get(100, TimeUnit.MILLISECONDS)
+        }
+        then:
+        0 * schemaRepository.getAvroSchema(topic, SchemaId.valueOf(1))
     }
 
     void ignoreException(Closure<Object> actionThrowingException) {
