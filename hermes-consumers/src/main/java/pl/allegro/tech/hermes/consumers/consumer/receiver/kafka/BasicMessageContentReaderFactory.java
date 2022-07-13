@@ -14,7 +14,6 @@ public class BasicMessageContentReaderFactory implements MessageContentReaderFac
     private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final SchemaRepository schemaRepository;
-    private final ConfigFactory configFactory;
     private final SchemaOnlineChecksRateLimiter rateLimiter;
 
     public BasicMessageContentReaderFactory(CompositeMessageContentWrapper compositeMessageContentWrapper,
@@ -23,17 +22,12 @@ public class BasicMessageContentReaderFactory implements MessageContentReaderFac
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.schemaRepository = schemaRepository;
-        this.configFactory = configFactory;
         this.rateLimiter = rateLimiter;
     }
 
     @Override
     public MessageContentReader provide(Topic topic) {
-        SchemaExistenceEnsurer schemaExistenceEnsurer =
-                new SchemaExistenceEnsurer(
-                        schemaRepository,
-                        Duration.ofMillis(configFactory.getIntProperty(Configs.SCHEMA_EXISTENCE_VALIDATION_INTERVAL_MS)),
-                        rateLimiter);
+        SchemaExistenceEnsurer schemaExistenceEnsurer = new SchemaExistenceEnsurer(schemaRepository, rateLimiter);
         return new BasicMessageContentReader(compositeMessageContentWrapper, kafkaHeaderExtractor, topic, schemaExistenceEnsurer);
     }
 }

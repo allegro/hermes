@@ -9,8 +9,6 @@ import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import spock.lang.Specification
 
-import java.time.Duration
-
 
 class SchemaExistenceEnsurerTest extends Specification {
     SchemaRepository schemaRepository
@@ -20,7 +18,7 @@ class SchemaExistenceEnsurerTest extends Specification {
     def setup() {
         schemaRepository = Mock(SchemaRepository)
         rateLimiter = Mock(SchemaOnlineChecksRateLimiter)
-        schemaEnsurer = new SchemaExistenceEnsurer(schemaRepository, Duration.ofMillis(100), rateLimiter)
+        schemaEnsurer = new SchemaExistenceEnsurer(schemaRepository, rateLimiter)
     }
 
     def "should check if schema exists by version"() {

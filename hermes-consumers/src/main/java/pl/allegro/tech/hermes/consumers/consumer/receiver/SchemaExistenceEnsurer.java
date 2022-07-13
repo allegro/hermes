@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
-import java.time.Duration;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.schema.SchemaException;
@@ -15,7 +14,7 @@ public class SchemaExistenceEnsurer {
     private final SchemaRepository schemaRepository;
     private final SchemaOnlineChecksRateLimiter rateLimiter;
 
-    public SchemaExistenceEnsurer(SchemaRepository schemaRepository, Duration waitSchemaInterval,
+    public SchemaExistenceEnsurer(SchemaRepository schemaRepository,
                                   SchemaOnlineChecksRateLimiter rateLimiter) {
         this.schemaRepository = schemaRepository;
         this.rateLimiter = rateLimiter;
