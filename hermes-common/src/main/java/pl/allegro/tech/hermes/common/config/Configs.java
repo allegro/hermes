@@ -316,7 +316,6 @@ public enum Configs {
     SCHEMA_ID_HEADER_ENABLED ("schema.id.header.enabled", false),
     SCHEMA_ID_SERIALIZATION_ENABLED("schema.id.serialization.enabled", false),
     SCHEMA_VERSION_TRUNCATION_ENABLED("schema.version.truncation.enabled", false),
-    SCHEMA_EXISTENCE_VALIDATION_INTERVAL_MS("schema.version.existence.ensurer.interval.ms", 200),
 
     GOOGLE_PUBSUB_SENDER_CORE_POOL_SIZE("googlepubsub.sender.core.pool.size", 4),
     GOOGLE_PUBSUB_SENDER_TOTAL_TIMEOUT("googlepubsub.sender.total.timeout.ms", 600_000L),
