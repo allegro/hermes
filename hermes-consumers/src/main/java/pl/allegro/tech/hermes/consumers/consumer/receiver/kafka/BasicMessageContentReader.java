@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.RetryableReceiverError;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
@@ -40,11 +41,15 @@ class BasicMessageContentReader implements MessageContentReader {
     }
 
     private void ensureExistence(Integer schemaVersion, Integer schemaId) {
-        if (schemaVersion != null) {
-            schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaVersion.valueOf(schemaVersion));
-        }
-        if (schemaId != null) {
-            schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(schemaId));
+        try {
+            if (schemaVersion != null) {
+                schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaVersion.valueOf(schemaVersion));
+            }
+            if (schemaId != null) {
+                schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(schemaId));
+            }
+        } catch (SchemaExistenceEnsurer.SchemaNotLoaded ex) {
+            throw new RetryableReceiverError("Requested schema not present yet...", ex);
         }
     }
 }

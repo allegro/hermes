@@ -2,18 +2,14 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver
 
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter
 import pl.allegro.tech.hermes.schema.CompiledSchema
-import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException
 import pl.allegro.tech.hermes.schema.SchemaId
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException
 import pl.allegro.tech.hermes.schema.SchemaRepository
 import pl.allegro.tech.hermes.schema.SchemaVersion
-import pl.allegro.tech.hermes.schema.SchemaVersionDoesNotExistException
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import spock.lang.Specification
 
 import java.time.Duration
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 
 class SchemaExistenceEnsurerTest extends Specification {
@@ -27,7 +23,7 @@ class SchemaExistenceEnsurerTest extends Specification {
         schemaEnsurer = new SchemaExistenceEnsurer(schemaRepository, Duration.ofMillis(100), rateLimiter)
     }
 
-    def "should retry pulling schema by version until it is successfully downloaded"() {
+    def "should check if schema exists by version"() {
         given:
         def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
         def compiledSchema = CompiledSchema.<String> of("schema", 1, 1)
@@ -37,28 +33,23 @@ class SchemaExistenceEnsurerTest extends Specification {
         schemaEnsurer.ensureSchemaExists(topic, SchemaVersion.valueOf(1))
 
         then:
-        4 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1)) >>
-                { throw new SchemaNotFoundException(topic, SchemaVersion.valueOf(1)) } >>
-                { throw new SchemaVersionDoesNotExistException(topic, SchemaVersion.valueOf(1)) } >>
-                { throw new CouldNotLoadSchemaException(topic, SchemaVersion.valueOf(1), new RuntimeException()) } >>
-                compiledSchema
-        3 * schemaRepository.refreshVersions(topic)
+        1 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1)) >> compiledSchema
     }
 
-    def "should retry pulling schema by id until it is successfully downloaded"() {
+    def "should throw error and pull schema online by version if schema does not exist"() {
         given:
         def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
-        def compiledSchema = CompiledSchema.<String> of("schema", 1, 1)
         rateLimiter.tryAcquireOnlineCheckPermit() >> true
 
         when:
-        schemaEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(1))
+        schemaEnsurer.ensureSchemaExists(topic, SchemaVersion.valueOf(1))
 
         then:
-        3 * schemaRepository.getAvroSchema(topic, SchemaId.valueOf(1)) >>
-                { throw new SchemaNotFoundException(SchemaId.valueOf(1)) } >>
-                { throw new CouldNotLoadSchemaException(new RuntimeException()) } >>
-                compiledSchema
+        thrown(SchemaExistenceEnsurer.SchemaNotLoaded)
+        1 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1)) >> {
+            throw new SchemaNotFoundException(topic, SchemaVersion.valueOf(1))
+        }
+        1 * schemaRepository.refreshVersions(topic)
     }
 
     def "should not pull online schema by version if it's already in cache"() {
@@ -75,7 +66,7 @@ class SchemaExistenceEnsurerTest extends Specification {
         0 * schemaRepository.refreshVersions(topic)
     }
 
-    def "should not pull online schema by id if it's already in cache"() {
+    def "should check if schema exists by id"() {
         given:
         def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
         def compiledSchema = CompiledSchema.<String> of("schema", 1, 1)
@@ -88,18 +79,31 @@ class SchemaExistenceEnsurerTest extends Specification {
         1 * schemaRepository.getAvroSchema(topic, SchemaId.valueOf(1)) >> compiledSchema
     }
 
+    def "should throw error if schema does not exist by id"() {
+        given:
+        def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
+        rateLimiter.tryAcquireOnlineCheckPermit() >> true
+
+        when:
+        schemaEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(1))
+
+        then:
+        thrown(SchemaExistenceEnsurer.SchemaNotLoaded)
+        1 * schemaRepository.getAvroSchema(topic, SchemaId.valueOf(1)) >> {
+            throw new SchemaNotFoundException(topic, SchemaVersion.valueOf(1))
+        }
+    }
+
     def "should rate limit online schema pulls by version"() {
         given:
         def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
         rateLimiter.tryAcquireOnlineCheckPermit() >> false
 
         when:
-        ignoreException {
-            Executors.newSingleThreadExecutor()
-                    .submit({ schemaEnsurer.ensureSchemaExists(topic, SchemaVersion.valueOf(1)) })
-                    .get(100, TimeUnit.MILLISECONDS)
-        }
+        schemaEnsurer.ensureSchemaExists(topic, SchemaVersion.valueOf(1))
+
         then:
+        thrown(SchemaExistenceEnsurer.SchemaNotLoaded)
         0 * schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(1))
     }
 
@@ -109,19 +113,10 @@ class SchemaExistenceEnsurerTest extends Specification {
         rateLimiter.tryAcquireOnlineCheckPermit() >> false
 
         when:
-        ignoreException {
-            Executors.newSingleThreadExecutor()
-                    .submit({ schemaEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(1)) })
-                    .get(100, TimeUnit.MILLISECONDS)
-        }
-        then:
-        0 * schemaRepository.getAvroSchema(topic, SchemaId.valueOf(1))
-    }
+        schemaEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(1))
 
-    void ignoreException(Closure<Object> actionThrowingException) {
-        try {
-            actionThrowingException.call()
-        } catch (Exception ignored) {
-        }
+        then:
+        thrown(SchemaExistenceEnsurer.SchemaNotLoaded)
+        0 * schemaRepository.getAvroSchema(topic, SchemaId.valueOf(1))
     }
 }
