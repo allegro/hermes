@@ -16,8 +16,6 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
@@ -34,14 +32,12 @@ public class MessageContentWrapperTest {
     private static final int ID_ONE = 1;
     private static final int ID_THREE = 3;
     private static final int ID_FIVE = 5;
-    private static final String EMPTY_SCHEMA = "{}";
 
     private final MetricRegistry metricRegistry = new MetricRegistry();
     private final DeserializationMetrics metrics = new DeserializationMetrics(metricRegistry);
     private final JsonMessageContentWrapper jsonWrapper = new JsonMessageContentWrapper("message", "metadata", new ObjectMapper());
     private final AvroMessageContentWrapper avroWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
 
-    private final SchemaOnlineChecksRateLimiter rateLimiter = mock(SchemaOnlineChecksRateLimiter.class);
 
     private final AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionWrapper =
             new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroWrapper, metrics);
@@ -247,8 +243,6 @@ public class MessageContentWrapperTest {
                 compositeMessageContentWrapper
                         .wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
         byte[] wrapped = serializeWithSchemaVersionInPayload(schemaVersion, message);
-
-        when(rateLimiter.tryAcquireOnlineCheckPermit()).thenReturn(true);
 
         // when
         UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, VERSION_ONE);

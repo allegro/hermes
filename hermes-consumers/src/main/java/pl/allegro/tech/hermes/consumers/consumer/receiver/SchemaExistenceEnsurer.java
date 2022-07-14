@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
 import pl.allegro.tech.hermes.schema.SchemaException;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -12,12 +11,9 @@ import static java.lang.String.format;
 
 public class SchemaExistenceEnsurer {
     private final SchemaRepository schemaRepository;
-    private final SchemaOnlineChecksRateLimiter rateLimiter;
 
-    public SchemaExistenceEnsurer(SchemaRepository schemaRepository,
-                                  SchemaOnlineChecksRateLimiter rateLimiter) {
+    public SchemaExistenceEnsurer(SchemaRepository schemaRepository) {
         this.schemaRepository = schemaRepository;
-        this.rateLimiter = rateLimiter;
     }
 
     public void ensureSchemaExists(Topic topic, SchemaVersion version) {
@@ -29,9 +25,6 @@ public class SchemaExistenceEnsurer {
     }
 
     private void pullSchemaIfNeeded(Topic topic, SchemaVersion version) {
-        if (!rateLimiter.tryAcquireOnlineCheckPermit()) {
-            throw new SchemaNotLoaded("Too many requests to schema-registry...");
-        }
         try {
             schemaRepository.getAvroSchema(topic, version);
         } catch (SchemaException ex) {
@@ -42,9 +35,6 @@ public class SchemaExistenceEnsurer {
     }
 
     private void pullSchemaIfNeeded(Topic topic, SchemaId id) {
-        if (!rateLimiter.tryAcquireOnlineCheckPermit()) {
-            throw new SchemaNotLoaded("Too many requests to schema-registry...");
-        }
         try {
             schemaRepository.getAvroSchema(topic, id);
         } catch (SchemaException ex) {

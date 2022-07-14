@@ -28,8 +28,6 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTru
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksWaitingRateLimiter;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
@@ -190,11 +188,6 @@ public class CommonConfiguration {
     @Bean
     public DeserializationMetrics deserializationMetrics(MetricRegistry metricRegistry) {
         return new DeserializationMetrics(metricRegistry);
-    }
-
-    @Bean
-    public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(ConfigFactory configFactory) {
-        return new SchemaOnlineChecksWaitingRateLimiter(configFactory);
     }
 
     @Bean
