@@ -15,8 +15,8 @@ RUN mkdir /app
 COPY --from=builder /home/gradle/src/hermes-frontend/build/distributions/*.zip /app/hermes-frontend.zip
 RUN unzip /app/hermes-frontend.zip && mv /hermes-frontend-* /hermes-frontend
 
-ADD docker/latest/frontend/frontend.properties /etc/hermes/frontend.properties
+ADD docker/latest/frontend/frontend.yaml /etc/hermes/frontend.yaml
 ADD docker/latest/frontend/logback.xml /etc/hermes/logback.xml
-ENV HERMES_FRONTEND_OPTS="-Dlogback.configurationFile=/etc/hermes/logback.xml"
+ENV HERMES_FRONTEND_OPTS="-Dspring.config.location=file:///etc/hermes/frontend.yaml -Dlogback.configurationFile=/etc/hermes/logback.xml"
 
 CMD /hermes-frontend/bin/hermes-frontend
