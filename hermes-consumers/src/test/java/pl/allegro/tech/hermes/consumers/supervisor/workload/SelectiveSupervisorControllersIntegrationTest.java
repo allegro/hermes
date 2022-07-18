@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonit
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
+import java.time.Duration;
 import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -137,7 +138,7 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
         runtime.awaitUntilAssignmentExists(runtime.createSubscription(), node);
 
         // when
-        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, config, 1);
+        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, config, Duration.ofSeconds(1));
         monitor.start();
 
         // then

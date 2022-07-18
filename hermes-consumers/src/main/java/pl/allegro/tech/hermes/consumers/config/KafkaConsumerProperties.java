@@ -4,6 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "kafka.consumer")
 public class KafkaConsumerProperties {
 
@@ -13,33 +15,33 @@ public class KafkaConsumerProperties {
 
     private int fetchMinBytes = 1;
 
-    private int fetchMaxWaitMs = 500;
+    private Duration fetchMaxWait = Duration.ofMillis(500);
 
-    private int reconnectBackoffMs = 500;
+    private Duration reconnectBackoff = Duration.ofMillis(500);
 
-    private int retryBackoffMs = 500;
+    private Duration retryBackoff = Duration.ofMillis(500);
 
     private boolean checkCrcs = true;
 
-    private int metricsSampleWindowMs = 30_000;
+    private Duration metricsSampleWindow = Duration.ofSeconds(30);
 
     private int metricsNumSamples = 2;
 
-    private int requestTimeoutMs = 250_000;
+    private Duration requestTimeout = Duration.ofSeconds(250);
 
-    private int connectionsMaxIdleMs = 9 * 60 * 1000;
+    private Duration connectionsMaxIdle = Duration.ofMinutes(9);
 
     private int maxPollRecords = 1;
 
-    private int maxPollIntervalMs = Integer.MAX_VALUE;
+    private Duration maxPollInterval = Duration.ofMillis(Integer.MAX_VALUE);
 
     private String autoOffsetReset = "earliest";
 
-    private int sessionTimeoutMs = 200_000;
+    private Duration sessionTimeout = Duration.ofSeconds(200);
 
-    private int heartbeatIntervalMs = 3000;
+    private Duration heartbeatInterval = Duration.ofSeconds(3);
 
-    private int metadataMaxAgeMs = 5 * 60 * 1000;
+    private Duration metadataMaxAge = Duration.ofMinutes(5);
 
     private int maxPartitionFetchMin = Topic.MIN_MESSAGE_SIZE;
 
@@ -69,31 +71,31 @@ public class KafkaConsumerProperties {
         this.fetchMinBytes = fetchMinBytes;
     }
 
-    public int getFetchMaxWaitMs() {
-        return fetchMaxWaitMs;
+    public Duration getFetchMaxWait() {
+        return fetchMaxWait;
     }
 
-    public void setFetchMaxWaitMs(int fetchMaxWaitMs) {
-        this.fetchMaxWaitMs = fetchMaxWaitMs;
+    public void setFetchMaxWait(Duration fetchMaxWait) {
+        this.fetchMaxWait = fetchMaxWait;
     }
 
-    public int getReconnectBackoffMs() {
-        return reconnectBackoffMs;
+    public Duration getReconnectBackoff() {
+        return reconnectBackoff;
     }
 
-    public void setReconnectBackoffMs(int reconnectBackoffMs) {
-        this.reconnectBackoffMs = reconnectBackoffMs;
+    public void setReconnectBackoff(Duration reconnectBackoff) {
+        this.reconnectBackoff = reconnectBackoff;
     }
 
-    public int getRetryBackoffMs() {
-        return retryBackoffMs;
+    public Duration getRetryBackoff() {
+        return retryBackoff;
     }
 
-    public void setRetryBackoffMs(int retryBackoffMs) {
-        this.retryBackoffMs = retryBackoffMs;
+    public void setRetryBackoff(Duration retryBackoff) {
+        this.retryBackoff = retryBackoff;
     }
 
-    public boolean isCheckCrcsEnabled() {
+    public boolean isCheckCrcs() {
         return checkCrcs;
     }
 
@@ -101,12 +103,12 @@ public class KafkaConsumerProperties {
         this.checkCrcs = checkCrcs;
     }
 
-    public int getMetricsSampleWindowMs() {
-        return metricsSampleWindowMs;
+    public Duration getMetricsSampleWindow() {
+        return metricsSampleWindow;
     }
 
-    public void setMetricsSampleWindowMs(int metricsSampleWindowMs) {
-        this.metricsSampleWindowMs = metricsSampleWindowMs;
+    public void setMetricsSampleWindow(Duration metricsSampleWindow) {
+        this.metricsSampleWindow = metricsSampleWindow;
     }
 
     public int getMetricsNumSamples() {
@@ -117,20 +119,20 @@ public class KafkaConsumerProperties {
         this.metricsNumSamples = metricsNumSamples;
     }
 
-    public int getRequestTimeoutMs() {
-        return requestTimeoutMs;
+    public Duration getRequestTimeout() {
+        return requestTimeout;
     }
 
-    public void setRequestTimeoutMs(int requestTimeoutMs) {
-        this.requestTimeoutMs = requestTimeoutMs;
+    public void setRequestTimeout(Duration requestTimeout) {
+        this.requestTimeout = requestTimeout;
     }
 
-    public int getConnectionsMaxIdleMs() {
-        return connectionsMaxIdleMs;
+    public Duration getConnectionsMaxIdle() {
+        return connectionsMaxIdle;
     }
 
-    public void setConnectionsMaxIdleMs(int connectionsMaxIdleMs) {
-        this.connectionsMaxIdleMs = connectionsMaxIdleMs;
+    public void setConnectionsMaxIdle(Duration connectionsMaxIdle) {
+        this.connectionsMaxIdle = connectionsMaxIdle;
     }
 
     public int getMaxPollRecords() {
@@ -141,12 +143,12 @@ public class KafkaConsumerProperties {
         this.maxPollRecords = maxPollRecords;
     }
 
-    public int getMaxPollIntervalMs() {
-        return maxPollIntervalMs;
+    public Duration getMaxPollInterval() {
+        return maxPollInterval;
     }
 
-    public void setMaxPollIntervalMs(int maxPollIntervalMs) {
-        this.maxPollIntervalMs = maxPollIntervalMs;
+    public void setMaxPollInterval(Duration maxPollInterval) {
+        this.maxPollInterval = maxPollInterval;
     }
 
     public String getAutoOffsetReset() {
@@ -157,28 +159,28 @@ public class KafkaConsumerProperties {
         this.autoOffsetReset = autoOffsetReset;
     }
 
-    public int getSessionTimeoutMs() {
-        return sessionTimeoutMs;
+    public Duration getSessionTimeout() {
+        return sessionTimeout;
     }
 
-    public void setSessionTimeoutMs(int sessionTimeoutMs) {
-        this.sessionTimeoutMs = sessionTimeoutMs;
+    public void setSessionTimeout(Duration sessionTimeout) {
+        this.sessionTimeout = sessionTimeout;
     }
 
-    public int getHeartbeatIntervalMs() {
-        return heartbeatIntervalMs;
+    public Duration getHeartbeatInterval() {
+        return heartbeatInterval;
     }
 
-    public void setHeartbeatIntervalMs(int heartbeatIntervalMs) {
-        this.heartbeatIntervalMs = heartbeatIntervalMs;
+    public void setHeartbeatInterval(Duration heartbeatInterval) {
+        this.heartbeatInterval = heartbeatInterval;
     }
 
-    public int getMetadataMaxAgeMs() {
-        return metadataMaxAgeMs;
+    public Duration getMetadataMaxAge() {
+        return metadataMaxAge;
     }
 
-    public void setMetadataMaxAgeMs(int metadataMaxAgeMs) {
-        this.metadataMaxAgeMs = metadataMaxAgeMs;
+    public void setMetadataMaxAge(Duration metadataMaxAge) {
+        this.metadataMaxAge = metadataMaxAge;
     }
 
     public int getMaxPartitionFetchMin() {
@@ -202,20 +204,20 @@ public class KafkaConsumerProperties {
                 this.sendBufferBytes,
                 this.receiveBufferBytes,
                 this.fetchMinBytes,
-                this.fetchMaxWaitMs,
-                this.reconnectBackoffMs,
-                this.retryBackoffMs,
+                this.fetchMaxWait,
+                this.reconnectBackoff,
+                this.retryBackoff,
                 this.checkCrcs,
-                this.metricsSampleWindowMs,
+                this.metricsSampleWindow,
                 this.metricsNumSamples,
-                this.requestTimeoutMs,
-                this.connectionsMaxIdleMs,
+                this.requestTimeout,
+                this.connectionsMaxIdle,
                 this.maxPollRecords,
-                this.maxPollIntervalMs,
+                this.maxPollInterval,
                 this.autoOffsetReset,
-                this.sessionTimeoutMs,
-                this.heartbeatIntervalMs,
-                this.metadataMaxAgeMs,
+                this.sessionTimeout,
+                this.heartbeatInterval,
+                this.metadataMaxAge,
                 this.maxPartitionFetchMin,
                 this.maxPartitionFetchMax
         );

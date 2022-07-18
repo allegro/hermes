@@ -144,9 +144,9 @@ class ConsumerTestRuntimeEnvironment {
 
         WorkloadProperties workloadProperties = new WorkloadProperties();
         workloadProperties.setNodeId(consumerId);
-        workloadProperties.setRebalanceInterval(1);
+        workloadProperties.setRebalanceInterval(Duration.ofSeconds(1));
         workloadProperties.setConsumerPerSubscription(2);
-        workloadProperties.setMonitorScanInterval(1);
+        workloadProperties.setMonitorScanInterval(Duration.ofSeconds(1));
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
                 curator, consumerConfig
@@ -216,7 +216,7 @@ class ConsumerTestRuntimeEnvironment {
                                     ConsumersSupervisor consumersSupervisor,
                                     SupervisorController supervisorController,
                                     ConfigFactory config,
-                                    int monitorScanInterval) {
+                                    Duration monitorScanInterval) {
         CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
         ModelAwareZookeeperNotifyingCache modelAwareCache =
                 new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();

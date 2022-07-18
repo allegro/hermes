@@ -2,11 +2,11 @@ consumer:
   backgroundSupervisor:
     interval: 100ms
   receiver:
-    poolTimeout: 30
+    poolTimeout: 30ms
     readQueueCapacity: 1000
     waitBetweenUnsuccessfulPolls: true
-    initialIdleTime: 10
-    maxIdleTime: 1000
+    initialIdleTime: 10ms
+    maxIdleTime: 1000ms
   batch:
     poolableSize: 1024
     maxPoolSize: 67108864 # 64 x 1024 x 1024
@@ -18,11 +18,11 @@ consumer:
       queuesSize: 200_000
       queuesInflightDrainFullEnabled: false
   rate:
-    limiterSupervisorPeriod: 30
+    limiterSupervisorPeriod: 30s
     limiterReportingThreadPoolSize: 30
     limiterReportingThreadMonitoringEnabled: false
-    limiterHeartbeatModeDelay: 60
-    limiterSlowModeDelay: 60
+    limiterHeartbeatModeDelay: 60s
+    limiterSlowModeDelay: 60s
     convergenceFactor: 0.2
     failuresNoChangeToleranceRatio: 0.05
     failuresSpeedUpToleranceRatio: 0.01
@@ -62,7 +62,7 @@ consumer:
       idleTimeout: 0ms
       maxRequestsQueuedPerDestination: 100
   workload:
-    rebalanceInterval: 1
+    rebalanceInterval: 1s
     consumerPerSubscription: 1
 
 

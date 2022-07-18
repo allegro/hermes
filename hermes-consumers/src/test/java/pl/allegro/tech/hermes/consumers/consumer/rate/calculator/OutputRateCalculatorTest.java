@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.config.RateProperties;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.NegotiatedMaxRateProvider;
 
+import java.time.Duration;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -27,7 +29,7 @@ public class OutputRateCalculatorTest {
 
     @Before
     public void setup() {
-        RateCalculatorParameters rateCalculatorParameters = new RateCalculatorParameters(60, 1, 0.5, 0.05, 0.01);
+        RateCalculatorParameters rateCalculatorParameters = new RateCalculatorParameters(Duration.ofSeconds(60), Duration.ofSeconds(1), 0.5, 0.05, 0.01);
 
         subscription("group.topic", "subscription").withSubscriptionPolicy(
                 SubscriptionPolicy.Builder.subscriptionPolicy().withRate(200).build()

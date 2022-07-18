@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
+import java.time.Duration;
+
 public class RateCalculatorParameters {
 
-    private final int limiterHeartbeatModeDelay;
+    private final Duration limiterHeartbeatModeDelay;
 
-    private final int limiterSlowModeDelay;
+    private final Duration limiterSlowModeDelay;
 
     private final double convergenceFactor;
 
@@ -12,11 +14,11 @@ public class RateCalculatorParameters {
 
     private final double failuresSpeedUpToleranceRatio;
 
-    public int getLimiterHeartbeatModeDelay() {
+    public Duration getLimiterHeartbeatModeDelay() {
         return limiterHeartbeatModeDelay;
     }
 
-    public int getLimiterSlowModeDelay() {
+    public Duration getLimiterSlowModeDelay() {
         return limiterSlowModeDelay;
     }
 
@@ -32,8 +34,8 @@ public class RateCalculatorParameters {
         return failuresSpeedUpToleranceRatio;
     }
 
-    public RateCalculatorParameters(int limiterHeartbeatModeDelay,
-                                    int limiterSlowModeDelay,
+    public RateCalculatorParameters(Duration limiterHeartbeatModeDelay,
+                                    Duration limiterSlowModeDelay,
                                     double convergenceFactor,
                                     double failuresNoChangeToleranceRatio,
                                     double failuresSpeedUpToleranceRatio) {

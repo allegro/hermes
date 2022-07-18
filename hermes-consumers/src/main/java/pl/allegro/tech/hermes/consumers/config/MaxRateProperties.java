@@ -3,14 +3,16 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.maxrate")
 public class MaxRateProperties {
 
     private RegistryBinaryEncoderProperties registryBinaryEncoder = new RegistryBinaryEncoderProperties();
 
-    private int balanceIntervalSeconds = 30;
+    private Duration balanceInterval = Duration.ofSeconds(30);
 
-    private int updateIntervalSeconds = 15;
+    private Duration updateInterval = Duration.ofSeconds(15);
 
     private int historySize = 1;
 
@@ -30,20 +32,20 @@ public class MaxRateProperties {
         this.registryBinaryEncoder = registryBinaryEncoder;
     }
 
-    public int getBalanceIntervalSeconds() {
-        return balanceIntervalSeconds;
+    public Duration getBalanceInterval() {
+        return balanceInterval;
     }
 
-    public void setBalanceIntervalSeconds(int balanceIntervalSeconds) {
-        this.balanceIntervalSeconds = balanceIntervalSeconds;
+    public void setBalanceInterval(Duration balanceInterval) {
+        this.balanceInterval = balanceInterval;
     }
 
-    public int getUpdateIntervalSeconds() {
-        return updateIntervalSeconds;
+    public Duration getUpdateInterval() {
+        return updateInterval;
     }
 
-    public void setUpdateIntervalSeconds(int updateIntervalSeconds) {
-        this.updateIntervalSeconds = updateIntervalSeconds;
+    public void setUpdateInterval(Duration updateInterval) {
+        this.updateInterval = updateInterval;
     }
 
     public int getHistorySize() {
@@ -88,8 +90,8 @@ public class MaxRateProperties {
 
     protected MaxRateParameters toMaxRateParameters() {
         return new MaxRateParameters(
-                this.balanceIntervalSeconds,
-                this.updateIntervalSeconds,
+                this.balanceInterval,
+                this.updateInterval,
                 this.historySize,
                 this.busyTolerance,
                 this.minMaxRate,

@@ -3,18 +3,20 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.RateCalculatorParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.rate")
 public class RateProperties {
 
-    private int limiterSupervisorPeriod = 30;
+    private Duration limiterSupervisorPeriod = Duration.ofSeconds(30);
 
     private int limiterReportingThreadPoolSize = 30;
 
     private boolean limiterReportingThreadMonitoringEnabled = false;
 
-    private int limiterHeartbeatModeDelay = 60;
+    private Duration limiterHeartbeatModeDelay = Duration.ofSeconds(60);
 
-    private int limiterSlowModeDelay = 60;
+    private Duration limiterSlowModeDelay = Duration.ofSeconds(60);
 
     private double convergenceFactor = 0.2;
 
@@ -22,11 +24,11 @@ public class RateProperties {
 
     private double failuresSpeedUpToleranceRatio = 0.01;
 
-    public int getLimiterSupervisorPeriod() {
+    public Duration getLimiterSupervisorPeriod() {
         return limiterSupervisorPeriod;
     }
 
-    public void setLimiterSupervisorPeriod(int limiterSupervisorPeriod) {
+    public void setLimiterSupervisorPeriod(Duration limiterSupervisorPeriod) {
         this.limiterSupervisorPeriod = limiterSupervisorPeriod;
     }
 
@@ -46,19 +48,19 @@ public class RateProperties {
         this.limiterReportingThreadMonitoringEnabled = limiterReportingThreadMonitoringEnabled;
     }
 
-    public int getLimiterHeartbeatModeDelay() {
+    public Duration getLimiterHeartbeatModeDelay() {
         return limiterHeartbeatModeDelay;
     }
 
-    public void setLimiterHeartbeatModeDelay(int limiterHeartbeatModeDelay) {
+    public void setLimiterHeartbeatModeDelay(Duration limiterHeartbeatModeDelay) {
         this.limiterHeartbeatModeDelay = limiterHeartbeatModeDelay;
     }
 
-    public int getLimiterSlowModeDelay() {
+    public Duration getLimiterSlowModeDelay() {
         return limiterSlowModeDelay;
     }
 
-    public void setLimiterSlowModeDelay(int limiterSlowModeDelay) {
+    public void setLimiterSlowModeDelay(Duration limiterSlowModeDelay) {
         this.limiterSlowModeDelay = limiterSlowModeDelay;
     }
 

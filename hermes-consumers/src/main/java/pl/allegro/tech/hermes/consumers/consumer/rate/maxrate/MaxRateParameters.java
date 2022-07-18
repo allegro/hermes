@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
+import java.time.Duration;
+
 public class MaxRateParameters {
 
-    private final int balanceIntervalSeconds;
+    private final Duration balanceInterval;
 
-    private final int updateIntervalSeconds;
+    private final Duration updateInterval;
 
     private final int historySize;
 
@@ -16,12 +18,12 @@ public class MaxRateParameters {
 
     private final double minSignificantUpdatePercent;
 
-    public int getBalanceIntervalSeconds() {
-        return balanceIntervalSeconds;
+    public Duration getBalanceInterval() {
+        return balanceInterval;
     }
 
-    public int getUpdateIntervalSeconds() {
-        return updateIntervalSeconds;
+    public Duration getUpdateInterval() {
+        return updateInterval;
     }
 
     public int getHistorySize() {
@@ -44,9 +46,9 @@ public class MaxRateParameters {
         return minSignificantUpdatePercent;
     }
 
-    public MaxRateParameters(int balanceIntervalSeconds, int updateIntervalSeconds, int historySize, double busyTolerance, double minMaxRate, double minAllowedChangePercent, double minSignificantUpdatePercent) {
-        this.balanceIntervalSeconds = balanceIntervalSeconds;
-        this.updateIntervalSeconds = updateIntervalSeconds;
+    public MaxRateParameters(Duration balanceInterval, Duration updateInterval, int historySize, double busyTolerance, double minMaxRate, double minAllowedChangePercent, double minSignificantUpdatePercent) {
+        this.balanceInterval = balanceInterval;
+        this.updateInterval = updateInterval;
         this.historySize = historySize;
         this.busyTolerance = busyTolerance;
         this.minMaxRate = minMaxRate;
