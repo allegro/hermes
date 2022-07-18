@@ -34,7 +34,7 @@ class OffsetCommitterTest extends Specification {
 
     def setup() {
         state = new ConsumerPartitionAssignmentState()
-        def commitInterval = Duration.ofMillis(10)
+        def commitInterval = 10
         committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval,
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
     }

@@ -70,7 +70,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                 (offsets) -> offsets.subscriptionNames().forEach(subscription ->
                         backgroundProcess.accept(Signal.of(COMMIT, subscription, offsets.batchFor(subscription)))
                 ),
-                commitOffsetPeriod,
+                (int) commitOffsetPeriod.toSeconds(),
                 metrics
         );
         monitor.register(SUBSCRIPTIONS, backgroundProcess::runningSubscriptionsStatus);

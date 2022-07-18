@@ -119,8 +119,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private MessageReceiver createThrottlingMessageReceiver(MessageReceiver receiver, Subscription subscription) {
         IdleTimeCalculator idleTimeCalculator = new ExponentiallyGrowingIdleTimeCalculator(
-                consumerReceiverParameters.getInitialIdleTime(),
-                consumerReceiverParameters.getMaxIdleTime());
+                consumerReceiverParameters.getInitialIdleTime().toMillis(),
+                consumerReceiverParameters.getMaxIdleTime().toMillis());
 
         return new ThrottlingMessageReceiver(receiver, idleTimeCalculator, subscription, hermesMetrics);
     }

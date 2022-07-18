@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import java.time.Duration;
+
 public class HttpClientParameters {
 
     private final int threadPoolSize;
@@ -10,7 +12,7 @@ public class HttpClientParameters {
 
     private final int maxConnectionsPerDestination;
 
-    private final int idleTimeout;
+    private final Duration idleTimeout;
 
     private final int maxRequestsQueuedPerDestination;
 
@@ -30,7 +32,7 @@ public class HttpClientParameters {
         return maxConnectionsPerDestination;
     }
 
-    public int getIdleTimeout() {
+    public Duration getIdleTimeout() {
         return idleTimeout;
     }
 
@@ -42,7 +44,7 @@ public class HttpClientParameters {
                                 boolean threadPoolMonitoringEnabled,
                                 boolean followRedirectsEnabled,
                                 int maxConnectionsPerDestination,
-                                int idleTimeout,
+                                Duration idleTimeout,
                                 int maxRequestsQueuedPerDestination) {
         this.threadPoolSize = threadPoolSize;
         this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;

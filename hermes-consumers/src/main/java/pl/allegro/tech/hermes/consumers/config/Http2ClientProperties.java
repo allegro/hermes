@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.http2.client")
 public class Http2ClientProperties {
 
@@ -12,7 +14,7 @@ public class Http2ClientProperties {
 
     private boolean threadPoolMonitoringEnabled = false;
 
-    private int idleTimeout = 0;
+    private Duration idleTimeout = Duration.ofMillis(0);
 
     private int maxRequestsQueuedPerDestination = 100;
 
@@ -40,11 +42,11 @@ public class Http2ClientProperties {
         this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
     }
 
-    public int getIdleTimeout() {
+    public Duration getIdleTimeout() {
         return idleTimeout;
     }
 
-    public void setIdleTimeout(int idleTimeout) {
+    public void setIdleTimeout(Duration idleTimeout) {
         this.idleTimeout = idleTimeout;
     }
 

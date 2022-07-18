@@ -3,24 +3,26 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaReceiverParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.receiver")
 public class ConsumerReceiverProperties {
 
-    private int poolTimeout = 30;
+    private Duration poolTimeout = Duration.ofMillis(30);
 
     private int readQueueCapacity = 1000;
 
     private boolean waitBetweenUnsuccessfulPolls = true;
 
-    private int initialIdleTime = 10;
+    private Duration initialIdleTime = Duration.ofMillis(10);
 
-    private int maxIdleTime = 1000;
+    private Duration maxIdleTime = Duration.ofMillis(1000);
 
-    public int getPoolTimeout() {
+    public Duration getPoolTimeout() {
         return poolTimeout;
     }
 
-    public void setPoolTimeout(int poolTimeout) {
+    public void setPoolTimeout(Duration poolTimeout) {
         this.poolTimeout = poolTimeout;
     }
 
@@ -40,19 +42,19 @@ public class ConsumerReceiverProperties {
         this.waitBetweenUnsuccessfulPolls = waitBetweenUnsuccessfulPolls;
     }
 
-    public int getInitialIdleTime() {
+    public Duration getInitialIdleTime() {
         return initialIdleTime;
     }
 
-    public void setInitialIdleTime(int initialIdleTime) {
+    public void setInitialIdleTime(Duration initialIdleTime) {
         this.initialIdleTime = initialIdleTime;
     }
 
-    public int getMaxIdleTime() {
+    public Duration getMaxIdleTime() {
         return maxIdleTime;
     }
 
-    public void setMaxIdleTime(int maxIdleTime) {
+    public void setMaxIdleTime(Duration maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
     }
 

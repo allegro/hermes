@@ -1,12 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import java.time.Duration;
+
 public class Http2ClientParameters {
 
     private final int threadPoolSize;
 
     private final boolean threadPoolMonitoringEnabled;
 
-    private final int idleTimeout;
+    private final Duration idleTimeout;
 
     private final int maxRequestsQueuedPerDestination;
 
@@ -18,7 +20,7 @@ public class Http2ClientParameters {
         return threadPoolMonitoringEnabled;
     }
 
-    public int getIdleTimeout() {
+    public Duration getIdleTimeout() {
         return idleTimeout;
     }
 
@@ -26,7 +28,7 @@ public class Http2ClientParameters {
         return maxRequestsQueuedPerDestination;
     }
 
-    public Http2ClientParameters(int threadPoolSize, boolean threadPoolMonitoringEnabled, int idleTimeout, int maxRequestsQueuedPerDestination) {
+    public Http2ClientParameters(int threadPoolSize, boolean threadPoolMonitoringEnabled, Duration idleTimeout, int maxRequestsQueuedPerDestination) {
         this.threadPoolSize = threadPoolSize;
         this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
         this.idleTimeout = idleTimeout;

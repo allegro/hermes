@@ -35,7 +35,7 @@ public class SubscriptionConfiguration {
                 internalNotificationsBus,
                 subscriptionsCache,
                 subscriptionIdProvider,
-                commonConsumerProperties.getSubscriptionIdsCacheRemovedExpireAfterAccessSeconds(),
+                commonConsumerProperties.getSubscriptionIdsCacheRemovedExpireAfterAccess().toSeconds(),
                 Ticker.systemTicker()
         );
         cache.start();

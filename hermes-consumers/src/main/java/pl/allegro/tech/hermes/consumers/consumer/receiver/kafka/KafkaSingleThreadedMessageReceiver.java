@@ -47,7 +47,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final HermesMetrics metrics;
     private volatile Subscription subscription;
 
-    private final int pollTimeout;
+    private final Duration poolTimeout;
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
 
     public KafkaSingleThreadedMessageReceiver(KafkaConsumer<byte[], byte[]> consumer,
@@ -56,12 +56,12 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                                               KafkaNamesMapper kafkaNamesMapper,
                                               Topic topic,
                                               Subscription subscription,
-                                              int pollTimeout,
+                                              Duration poolTimeout,
                                               int readQueueCapacity,
                                               ConsumerPartitionAssignmentState partitionAssignmentState) {
         this.metrics = metrics;
         this.subscription = subscription;
-        this.pollTimeout = pollTimeout;
+        this.poolTimeout = poolTimeout;
         this.partitionAssignmentState = partitionAssignmentState;
         this.consumer = consumer;
         this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
@@ -84,7 +84,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     public Optional<Message> next() {
         try {
             if (readQueue.isEmpty()) {
-                ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(pollTimeout));
+                ConsumerRecords<byte[], byte[]> records = consumer.poll(poolTimeout);
                 try {
                     for (ConsumerRecord<byte[], byte[]> record : records) {
                         readQueue.add(convertToMessage(record));

@@ -11,8 +11,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.threeten.bp.Duration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
@@ -64,7 +62,7 @@ public class GooglePubSubConfiguration {
     public BatchingSettings batchingSettings(GooglePubSubSenderProperties googlePubSubSenderProperties) {
         long requestBytesThreshold = googlePubSubSenderProperties.getBatchingRequestBytesThreshold();
         long messageCountBatchSize = googlePubSubSenderProperties.getBatchingMessageCountBytesSize();
-        Duration publishDelayThreshold = Duration.ofMillis(googlePubSubSenderProperties.getBatchingPublishDelayThresholdMilliseconds());
+        Duration publishDelayThreshold = Duration.ofMillis(googlePubSubSenderProperties.getBatchingPublishDelayThreshold().toMillis());
 
         return BatchingSettings.newBuilder()
                 .setElementCountThreshold(messageCountBatchSize)
@@ -75,8 +73,7 @@ public class GooglePubSubConfiguration {
 
     @Bean
     public RetrySettings retrySettings(GooglePubSubSenderProperties googlePubSubSenderProperties) {
-        Duration totalTimeout = Duration.ofMillis(
-                googlePubSubSenderProperties.getTotalTimeoutsMilliseconds());
+        Duration totalTimeout = Duration.ofMillis(googlePubSubSenderProperties.getTotalTimeouts().toMillis());
 
         return RetrySettings.newBuilder()
                 .setInitialRpcTimeout(totalTimeout)
@@ -85,5 +82,4 @@ public class GooglePubSubConfiguration {
                 .setMaxAttempts(1)
                 .build();
     }
-
 }

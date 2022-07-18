@@ -49,7 +49,7 @@ consumer:
       enabled: true
       threadPoolSize: 10
       threadPoolMonitoringEnabled: false
-      idleTimeout: 0
+      idleTimeout: 0ms
       maxRequestsQueuedPerDestination: 100
   http:
     client:
@@ -59,7 +59,7 @@ consumer:
       threadPoolMonitoringEnabled: false
       followRedirectsEnabled: false
       maxConnectionsPerDestination: 100
-      idleTimeout: 0
+      idleTimeout: 0ms
       maxRequestsQueuedPerDestination: 100
   workload:
     rebalanceInterval: 1

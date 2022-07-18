@@ -19,7 +19,7 @@ public class CommonConsumerProperties {
 
     private boolean filteringEnabled = true;
 
-    private long subscriptionIdsCacheRemovedExpireAfterAccessSeconds = 60L;
+    private Duration subscriptionIdsCacheRemovedExpireAfterAccess = Duration.ofSeconds(60);
 
     private BackgroundSupervisor backgroundSupervisor = new BackgroundSupervisor();
 
@@ -71,12 +71,12 @@ public class CommonConsumerProperties {
         this.filteringEnabled = filteringEnabled;
     }
 
-    public long getSubscriptionIdsCacheRemovedExpireAfterAccessSeconds() {
-        return subscriptionIdsCacheRemovedExpireAfterAccessSeconds;
+    public Duration getSubscriptionIdsCacheRemovedExpireAfterAccess() {
+        return subscriptionIdsCacheRemovedExpireAfterAccess;
     }
 
-    public void setSubscriptionIdsCacheRemovedExpireAfterAccessSeconds(long subscriptionIdsCacheRemovedExpireAfterAccessSeconds) {
-        this.subscriptionIdsCacheRemovedExpireAfterAccessSeconds = subscriptionIdsCacheRemovedExpireAfterAccessSeconds;
+    public void setSubscriptionIdsCacheRemovedExpireAfterAccess(Duration subscriptionIdsCacheRemovedExpireAfterAccess) {
+        this.subscriptionIdsCacheRemovedExpireAfterAccess = subscriptionIdsCacheRemovedExpireAfterAccess;
     }
 
     public BackgroundSupervisor getBackgroundSupervisor() {

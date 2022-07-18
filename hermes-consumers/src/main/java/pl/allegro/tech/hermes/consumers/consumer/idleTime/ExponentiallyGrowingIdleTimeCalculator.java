@@ -6,40 +6,40 @@ import static java.lang.Math.min;
 public class ExponentiallyGrowingIdleTimeCalculator implements IdleTimeCalculator {
 
     private final long base;
-    private final long initialIdleTime;
-    private final long maxIdleTime;
-    private long currentIdleTime;
+    private final long initialIdleTimeMs;
+    private final long maxIdleTimeMs;
+    private long currentIdleTimeMs;
 
-    public ExponentiallyGrowingIdleTimeCalculator(long initialIdleTime, long maxIdleTime) {
-        this(2, initialIdleTime, maxIdleTime);
+    public ExponentiallyGrowingIdleTimeCalculator(long initialIdleTimeMs, long maxIdleTimeMs) {
+        this(2, initialIdleTimeMs, maxIdleTimeMs);
     }
 
-    public ExponentiallyGrowingIdleTimeCalculator(long base, long initialIdleTime, long maxIdleTime) {
+    public ExponentiallyGrowingIdleTimeCalculator(long base, long initialIdleTime, long maxIdleTimeMs) {
         checkArgument(base > 0, "base should be greater than zero");
-        checkArgument(initialIdleTime > 0, "initialIdleTime should be greater than zero");
-        checkArgument(maxIdleTime > 0, "maxIdleTime should be greater than zero");
-        checkArgument(initialIdleTime <= maxIdleTime, "maxIdleTime should be grater or equal initialIdleTime");
+        checkArgument(initialIdleTime > 0, "initialIdleTimeMs should be greater than zero");
+        checkArgument(maxIdleTimeMs > 0, "maxIdleTimeMs should be greater than zero");
+        checkArgument(initialIdleTime <= maxIdleTimeMs, "maxIdleTimeMs should be grater or equal initialIdleTimeMs");
 
         this.base = base;
-        this.initialIdleTime = initialIdleTime;
-        this.maxIdleTime = maxIdleTime;
-        this.currentIdleTime = initialIdleTime;
+        this.initialIdleTimeMs = initialIdleTime;
+        this.maxIdleTimeMs = maxIdleTimeMs;
+        this.currentIdleTimeMs = initialIdleTime;
     }
 
     @Override
     public long increaseIdleTime() {
-        long previousIdleTime = this.currentIdleTime;
-        this.currentIdleTime = min(this.currentIdleTime * base, maxIdleTime);
+        long previousIdleTime = this.currentIdleTimeMs;
+        this.currentIdleTimeMs = min(this.currentIdleTimeMs * base, maxIdleTimeMs);
         return previousIdleTime;
     }
 
     @Override
     public long getIdleTime() {
-        return currentIdleTime;
+        return currentIdleTimeMs;
     }
 
     @Override
     public void reset() {
-        this.currentIdleTime = initialIdleTime;
+        this.currentIdleTimeMs = initialIdleTimeMs;
     }
 }

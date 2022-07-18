@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.http.client")
 public class HttpClientProperties {
 
@@ -18,7 +20,7 @@ public class HttpClientProperties {
 
     private int maxConnectionsPerDestination = 100;
 
-    private int idleTimeout = 0;
+    private Duration idleTimeout = Duration.ofMillis(0);
 
     private int maxRequestsQueuedPerDestination = 100;
 
@@ -70,11 +72,11 @@ public class HttpClientProperties {
         this.maxConnectionsPerDestination = maxConnectionsPerDestination;
     }
 
-    public int getIdleTimeout() {
+    public Duration getIdleTimeout() {
         return idleTimeout;
     }
 
-    public void setIdleTimeout(int idleTimeout) {
+    public void setIdleTimeout(Duration idleTimeout) {
         this.idleTimeout = idleTimeout;
     }
 
