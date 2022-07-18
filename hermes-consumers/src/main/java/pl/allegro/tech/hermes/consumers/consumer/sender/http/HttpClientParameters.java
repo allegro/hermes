@@ -1,54 +1,18 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-public class HttpClientParameters {
+import java.time.Duration;
 
-    private final int threadPoolSize;
+public interface HttpClientParameters {
 
-    private final boolean threadPoolMonitoringEnabled;
+    int getThreadPoolSize();
 
-    private final boolean followRedirectsEnabled;
+    boolean isThreadPoolMonitoringEnabled();
 
-    private final int maxConnectionsPerDestination;
+    boolean isFollowRedirectsEnabled();
 
-    private final int idleTimeout;
+    int getMaxConnectionsPerDestination();
 
-    private final int maxRequestsQueuedPerDestination;
+    Duration getIdleTimeout();
 
-    public int getThreadPoolSize() {
-        return threadPoolSize;
-    }
-
-    public boolean isThreadPoolMonitoringEnabled() {
-        return threadPoolMonitoringEnabled;
-    }
-
-    public boolean isFollowRedirectsEnabled() {
-        return followRedirectsEnabled;
-    }
-
-    public int getMaxConnectionsPerDestination() {
-        return maxConnectionsPerDestination;
-    }
-
-    public int getIdleTimeout() {
-        return idleTimeout;
-    }
-
-    public int getMaxRequestsQueuedPerDestination() {
-        return maxRequestsQueuedPerDestination;
-    }
-
-    public HttpClientParameters(int threadPoolSize,
-                                boolean threadPoolMonitoringEnabled,
-                                boolean followRedirectsEnabled,
-                                int maxConnectionsPerDestination,
-                                int idleTimeout,
-                                int maxRequestsQueuedPerDestination) {
-        this.threadPoolSize = threadPoolSize;
-        this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
-        this.followRedirectsEnabled = followRedirectsEnabled;
-        this.maxConnectionsPerDestination = maxConnectionsPerDestination;
-        this.idleTimeout = idleTimeout;
-        this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
-    }
+    int getMaxRequestsQueuedPerDestination();
 }

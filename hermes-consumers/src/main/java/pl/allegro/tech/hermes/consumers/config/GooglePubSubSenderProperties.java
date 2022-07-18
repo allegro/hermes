@@ -2,18 +2,20 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "google.pubsub.sender")
+import java.time.Duration;
+
+@ConfigurationProperties(prefix = "consumer.google.pubsub.sender")
 public class GooglePubSubSenderProperties {
 
     private int corePoolSize = 4;
 
-    private long totalTimeoutsMilliseconds = 600_000L;
+    private Duration totalTimeouts = Duration.ofMillis(600_000);
 
     private long batchingRequestBytesThreshold = 1024L;
 
     private long batchingMessageCountBytesSize = 1L;
 
-    private long batchingPublishDelayThresholdMilliseconds = 1L;
+    private Duration batchingPublishDelayThreshold = Duration.ofMillis(1);
 
     private String transportChannelProviderAddress = "integration";
 
@@ -25,12 +27,12 @@ public class GooglePubSubSenderProperties {
         this.corePoolSize = corePoolSize;
     }
 
-    public long getTotalTimeoutsMilliseconds() {
-        return totalTimeoutsMilliseconds;
+    public Duration getTotalTimeouts() {
+        return totalTimeouts;
     }
 
-    public void setTotalTimeoutsMilliseconds(long totalTimeoutsMilliseconds) {
-        this.totalTimeoutsMilliseconds = totalTimeoutsMilliseconds;
+    public void setTotalTimeouts(Duration totalTimeouts) {
+        this.totalTimeouts = totalTimeouts;
     }
 
     public long getBatchingRequestBytesThreshold() {
@@ -49,12 +51,12 @@ public class GooglePubSubSenderProperties {
         this.batchingMessageCountBytesSize = batchingMessageCountBytesSize;
     }
 
-    public long getBatchingPublishDelayThresholdMilliseconds() {
-        return batchingPublishDelayThresholdMilliseconds;
+    public Duration getBatchingPublishDelayThreshold() {
+        return batchingPublishDelayThreshold;
     }
 
-    public void setBatchingPublishDelayThresholdMilliseconds(long batchingPublishDelayThresholdMilliseconds) {
-        this.batchingPublishDelayThresholdMilliseconds = batchingPublishDelayThresholdMilliseconds;
+    public void setBatchingPublishDelayThreshold(Duration batchingPublishDelayThreshold) {
+        this.batchingPublishDelayThreshold = batchingPublishDelayThreshold;
     }
 
     public String getTransportChannelProviderAddress() {

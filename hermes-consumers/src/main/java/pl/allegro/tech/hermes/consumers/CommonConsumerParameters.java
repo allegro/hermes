@@ -1,85 +1,28 @@
 package pl.allegro.tech.hermes.consumers;
 
-public class CommonConsumerParameters {
+import java.time.Duration;
 
-    private final int threadPoolSize;
-    private final int inflightSize;
-    private final boolean filteringRateLimiterEnabled;
-    private final boolean filteringEnabled;
-    private final int backgroundSupervisorInterval;
-    private final int backgroundSupervisorUnhealthyAfter;
-    private final int backgroundSupervisorKillAfter;
-    private final int signalProcessingIntervalMilliseconds;
-    private final int signalProcessingQueueSize;
-    private final boolean useTopicMessageSizeEnabled;
-    private final String clientId;
+public interface CommonConsumerParameters {
 
-    public int getThreadPoolSize() {
-        return threadPoolSize;
-    }
+    int getThreadPoolSize();
 
-    public int getInflightSize() {
-        return inflightSize;
-    }
+    int getInflightSize();
 
-    public boolean isFilteringRateLimiterEnabled() {
-        return filteringRateLimiterEnabled;
-    }
+    boolean isFilteringRateLimiterEnabled();
 
-    public boolean isFilteringEnabled() {
-        return filteringEnabled;
-    }
+    boolean isFilteringEnabled();
 
-    public int getBackgroundSupervisorInterval() {
-        return backgroundSupervisorInterval;
-    }
+    Duration getBackgroundSupervisorInterval();
 
-    public int getBackgroundSupervisorUnhealthyAfter() {
-        return backgroundSupervisorUnhealthyAfter;
-    }
+    Duration getBackgroundSupervisorUnhealthyAfter();
 
-    public int getBackgroundSupervisorKillAfter() {
-        return backgroundSupervisorKillAfter;
-    }
+    Duration getBackgroundSupervisorKillAfter();
 
-    public int getSignalProcessingIntervalMilliseconds() {
-        return signalProcessingIntervalMilliseconds;
-    }
+    Duration getSignalProcessingInterval();
 
-    public int getSignalProcessingQueueSize() {
-        return signalProcessingQueueSize;
-    }
+    int getSignalProcessingQueueSize();
 
-    public boolean isUseTopicMessageSizeEnabled() {
-        return useTopicMessageSizeEnabled;
-    }
+    boolean isUseTopicMessageSizeEnabled();
 
-    public String getClientId() {
-        return clientId;
-    }
-
-    public CommonConsumerParameters(
-            int threadPoolSize,
-            int inflightSize,
-            boolean filteringRateLimiterEnabled,
-            boolean filteringEnabled,
-            int backgroundSupervisorInterval,
-            int backgroundSupervisorUnhealthyAfter,
-            int backgroundSupervisorKillAfter,
-            int signalProcessingIntervalMilliseconds,
-            int signalProcessingQueueSize,
-            boolean useTopicMessageSizeEnabled,
-            String clientId) {
-        this.threadPoolSize = threadPoolSize;
-        this.inflightSize = inflightSize;
-        this.filteringRateLimiterEnabled = filteringRateLimiterEnabled;
-        this.filteringEnabled = filteringEnabled;
-        this.backgroundSupervisorInterval = backgroundSupervisorInterval;
-        this.backgroundSupervisorUnhealthyAfter = backgroundSupervisorUnhealthyAfter;
-        this.backgroundSupervisorKillAfter = backgroundSupervisorKillAfter;
-        this.signalProcessingIntervalMilliseconds = signalProcessingIntervalMilliseconds;
-        this.signalProcessingQueueSize = signalProcessingQueueSize;
-        this.useTopicMessageSizeEnabled = useTopicMessageSizeEnabled;
-        this.clientId = clientId;
-    }
+    String getClientId();
 }

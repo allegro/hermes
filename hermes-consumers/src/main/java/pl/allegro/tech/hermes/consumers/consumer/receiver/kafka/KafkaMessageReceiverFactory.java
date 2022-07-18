@@ -92,7 +92,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
         MessageReceiver receiver = createKafkaSingleThreadedMessageReceiver(topic, subscription);
 
-        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPollsEnabled()) {
+        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPolls()) {
             receiver = createThrottlingMessageReceiver(receiver, subscription);
         }
 
@@ -119,8 +119,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private MessageReceiver createThrottlingMessageReceiver(MessageReceiver receiver, Subscription subscription) {
         IdleTimeCalculator idleTimeCalculator = new ExponentiallyGrowingIdleTimeCalculator(
-                consumerReceiverParameters.getInitialIdleTime(),
-                consumerReceiverParameters.getMaxIdleTime());
+                consumerReceiverParameters.getInitialIdleTime().toMillis(),
+                consumerReceiverParameters.getMaxIdleTime().toMillis());
 
         return new ThrottlingMessageReceiver(receiver, idleTimeCalculator, subscription, hermesMetrics);
     }
@@ -166,23 +166,23 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private void addKafkaConsumerParameters(Properties props, Topic topic) {
         props.put(AUTO_OFFSET_RESET_CONFIG, kafkaConsumerParameters.getAutoOffsetReset());
-        props.put(SESSION_TIMEOUT_MS_CONFIG, kafkaConsumerParameters.getSessionTimeoutMs());
-        props.put(HEARTBEAT_INTERVAL_MS_CONFIG, kafkaConsumerParameters.getHeartbeatIntervalMs());
-        props.put(METADATA_MAX_AGE_CONFIG, kafkaConsumerParameters.getMetadataMaxAgeMs());
+        props.put(SESSION_TIMEOUT_MS_CONFIG, (int) kafkaConsumerParameters.getSessionTimeout().toMillis());
+        props.put(HEARTBEAT_INTERVAL_MS_CONFIG, (int) kafkaConsumerParameters.getHeartbeatInterval().toMillis());
+        props.put(METADATA_MAX_AGE_CONFIG, (int) kafkaConsumerParameters.getMetadataMaxAge().toMillis());
         props.put(MAX_PARTITION_FETCH_BYTES_CONFIG, getMaxPartitionFetch(topic));
         props.put(SEND_BUFFER_CONFIG, kafkaConsumerParameters.getSendBufferBytes());
         props.put(RECEIVE_BUFFER_CONFIG, kafkaConsumerParameters.getReceiveBufferBytes());
         props.put(FETCH_MIN_BYTES_CONFIG, kafkaConsumerParameters.getFetchMinBytes());
-        props.put(FETCH_MAX_WAIT_MS_CONFIG, kafkaConsumerParameters.getFetchMaxWaitMs());
-        props.put(RECONNECT_BACKOFF_MS_CONFIG, kafkaConsumerParameters.getReconnectBackoffMs());
-        props.put(RETRY_BACKOFF_MS_CONFIG, kafkaConsumerParameters.getRetryBackoffMs());
-        props.put(CHECK_CRCS_CONFIG, kafkaConsumerParameters.isCheckCrcsEnabled());
-        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, kafkaConsumerParameters.getMetricsSampleWindowMs());
+        props.put(FETCH_MAX_WAIT_MS_CONFIG, (int) kafkaConsumerParameters.getFetchMaxWait().toMillis());
+        props.put(RECONNECT_BACKOFF_MS_CONFIG, (int) kafkaConsumerParameters.getReconnectBackoff().toMillis());
+        props.put(RETRY_BACKOFF_MS_CONFIG, (int) kafkaConsumerParameters.getRetryBackoff().toMillis());
+        props.put(CHECK_CRCS_CONFIG, kafkaConsumerParameters.isCheckCrcs());
+        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaConsumerParameters.getMetricsSampleWindow().toMillis());
         props.put(METRICS_NUM_SAMPLES_CONFIG, kafkaConsumerParameters.getMetricsNumSamples());
-        props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaConsumerParameters.getRequestTimeoutMs());
-        props.put(CONNECTIONS_MAX_IDLE_MS_CONFIG, kafkaConsumerParameters.getConnectionsMaxIdleMs());
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, (int) kafkaConsumerParameters.getRequestTimeout().toMillis());
+        props.put(CONNECTIONS_MAX_IDLE_MS_CONFIG, (int) kafkaConsumerParameters.getConnectionsMaxIdle().toMillis());
         props.put(MAX_POLL_RECORDS_CONFIG, kafkaConsumerParameters.getMaxPollRecords());
-        props.put(MAX_POLL_INTERVAL_MS_CONFIG, kafkaConsumerParameters.getMaxPollIntervalMs());
+        props.put(MAX_POLL_INTERVAL_MS_CONFIG, (int) kafkaConsumerParameters.getMaxPollInterval().toMillis());
     }
 
     private int getMaxPartitionFetch(Topic topic) {

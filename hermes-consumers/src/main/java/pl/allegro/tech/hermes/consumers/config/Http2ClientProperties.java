@@ -3,8 +3,10 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.http2.client")
-public class Http2ClientProperties {
+public class Http2ClientProperties implements Http2ClientParameters {
 
     private boolean enabled = true;
 
@@ -12,7 +14,7 @@ public class Http2ClientProperties {
 
     private boolean threadPoolMonitoringEnabled = false;
 
-    private int idleTimeout = 0;
+    private Duration idleTimeout = Duration.ofMillis(0);
 
     private int maxRequestsQueuedPerDestination = 100;
 
@@ -24,6 +26,7 @@ public class Http2ClientProperties {
         this.enabled = enabled;
     }
 
+    @Override
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
@@ -32,6 +35,7 @@ public class Http2ClientProperties {
         this.threadPoolSize = threadPoolSize;
     }
 
+    @Override
     public boolean isThreadPoolMonitoringEnabled() {
         return threadPoolMonitoringEnabled;
     }
@@ -40,28 +44,21 @@ public class Http2ClientProperties {
         this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
     }
 
-    public int getIdleTimeout() {
+    @Override
+    public Duration getIdleTimeout() {
         return idleTimeout;
     }
 
-    public void setIdleTimeout(int idleTimeout) {
+    public void setIdleTimeout(Duration idleTimeout) {
         this.idleTimeout = idleTimeout;
     }
 
+    @Override
     public int getMaxRequestsQueuedPerDestination() {
         return maxRequestsQueuedPerDestination;
     }
 
     public void setMaxRequestsQueuedPerDestination(int maxRequestsQueuedPerDestination) {
         this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
-    }
-
-    public Http2ClientParameters toHttp2ClientParameters() {
-        return new Http2ClientParameters(
-                this.threadPoolSize,
-                this.threadPoolMonitoringEnabled,
-                this.idleTimeout,
-                this.maxRequestsQueuedPerDestination
-        );
     }
 }

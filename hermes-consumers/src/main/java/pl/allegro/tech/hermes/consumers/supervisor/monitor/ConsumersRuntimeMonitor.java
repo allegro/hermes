@@ -5,13 +5,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
 
+import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,7 +25,7 @@ public class ConsumersRuntimeMonitor implements Runnable {
             new ThreadFactoryBuilder().setNameFormat("consumer-monitor-%d").build()
     );
 
-    private final int scanIntervalSeconds;
+    private final Duration scanInterval;
 
     private final ConsumersSupervisor consumerSupervisor;
 
@@ -42,11 +41,11 @@ public class ConsumersRuntimeMonitor implements Runnable {
                                    SupervisorController workloadSupervisor,
                                    HermesMetrics hermesMetrics,
                                    SubscriptionsCache subscriptionsCache,
-                                   int scanIntervalSeconds) {
+                                   Duration scanInterval) {
         this.consumerSupervisor = consumerSupervisor;
         this.workloadSupervisor = workloadSupervisor;
         this.subscriptionsCache = subscriptionsCache;
-        this.scanIntervalSeconds = scanIntervalSeconds;
+        this.scanInterval = scanInterval;
 
         hermesMetrics.registerGauge("consumers-workload.monitor.running", () -> monitorMetrics.running);
         hermesMetrics.registerGauge("consumers-workload.monitor.assigned", () -> monitorMetrics.assigned);
@@ -72,7 +71,7 @@ public class ConsumersRuntimeMonitor implements Runnable {
     }
 
     public void start() {
-        this.monitoringTask = executor.scheduleWithFixedDelay(this, scanIntervalSeconds, scanIntervalSeconds, TimeUnit.SECONDS);
+        this.monitoringTask = executor.scheduleWithFixedDelay(this, scanInterval.toSeconds(), scanInterval.toSeconds(), TimeUnit.SECONDS);
     }
 
     public void shutdown() throws InterruptedException {

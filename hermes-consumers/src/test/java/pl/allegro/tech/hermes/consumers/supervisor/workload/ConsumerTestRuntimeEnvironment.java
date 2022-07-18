@@ -50,6 +50,7 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -143,9 +144,9 @@ class ConsumerTestRuntimeEnvironment {
 
         WorkloadProperties workloadProperties = new WorkloadProperties();
         workloadProperties.setNodeId(consumerId);
-        workloadProperties.setRebalanceInterval(1);
-        workloadProperties.setConsumerPerSubscription(2);
-        workloadProperties.setMonitorScanInterval(1);
+        workloadProperties.setRebalanceInterval(Duration.ofSeconds(1));
+        workloadProperties.setConsumersPerSubscription(2);
+        workloadProperties.setMonitorScanInterval(Duration.ofSeconds(1));
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
                 curator, consumerConfig
@@ -181,7 +182,7 @@ class ConsumerTestRuntimeEnvironment {
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
                 consumersSupervisor, notificationsBus, subscriptionsCache, consumerAssignmentCache, consumerAssignmentRegistry,
                 clusterAssignmentCache, nodesRegistry,
-                mock(ZookeeperAdminCache.class), executorService, workloadProperties.toSelectiveSupervisorParameters(), kafkaProperties.getClusterName(), metricsSupplier.get(),
+                mock(ZookeeperAdminCache.class), executorService, workloadProperties, kafkaProperties.getClusterName(), metricsSupplier.get(),
                 workloadConstraintsRepository
         );
 
@@ -196,8 +197,8 @@ class ConsumerTestRuntimeEnvironment {
     ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory) {
         HermesMetrics metrics = metricsSupplier.get();
         CommonConsumerProperties commonConsumerProperties = new CommonConsumerProperties();
-        commonConsumerProperties.getBackgroundSupervisor().setInterval(1000);
-        return new NonblockingConsumersSupervisor(commonConsumerProperties.toCommonConsumerParameters(),
+        commonConsumerProperties.getBackgroundSupervisor().setInterval(Duration.ofMillis(1000));
+        return new NonblockingConsumersSupervisor(commonConsumerProperties,
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 consumerFactory,
                 mock(OffsetQueue.class),
@@ -208,14 +209,14 @@ class ConsumerTestRuntimeEnvironment {
                 metrics,
                 mock(ConsumerMonitor.class),
                 Clock.systemDefaultZone(),
-                60);
+                Duration.ofSeconds(60));
     }
 
     ConsumersRuntimeMonitor monitor(String consumerId,
                                     ConsumersSupervisor consumersSupervisor,
                                     SupervisorController supervisorController,
                                     ConfigFactory config,
-                                    int monitorScanInterval) {
+                                    Duration monitorScanInterval) {
         CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
         ModelAwareZookeeperNotifyingCache modelAwareCache =
                 new ModelAwareZookeeperNotifyingCacheFactory(curator, config).provide();

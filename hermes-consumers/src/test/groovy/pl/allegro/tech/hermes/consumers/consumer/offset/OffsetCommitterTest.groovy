@@ -10,6 +10,8 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.time.Duration
+
 class OffsetCommitterTest extends Specification {
 
     @Shared

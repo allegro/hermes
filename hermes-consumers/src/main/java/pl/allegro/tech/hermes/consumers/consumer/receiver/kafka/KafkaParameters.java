@@ -1,45 +1,16 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
-public class KafkaParameters {
+public interface KafkaParameters {
 
-    private final boolean enabled;
-    private final String mechanism;
-    private final String protocol;
-    private final String username;
-    private final String password;
+    boolean isEnabled();
 
-    private final String brokerList;
+    String getMechanism();
 
-    public KafkaParameters(boolean enabled, String mechanism, String protocol, String username, String password, String brokerList) {
-        this.enabled = enabled;
-        this.mechanism = mechanism;
-        this.protocol = protocol;
-        this.username = username;
-        this.password = password;
-        this.brokerList = brokerList;
-    }
+    String getProtocol();
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+    String getUsername();
 
-    public String getMechanism() {
-        return mechanism;
-    }
+    String getPassword();
 
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getBrokerList() {
-        return brokerList;
-    }
+    String getBrokerList();
 }

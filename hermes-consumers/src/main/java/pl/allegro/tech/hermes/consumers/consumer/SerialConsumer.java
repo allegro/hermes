@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.UninitializedMessageReceiver;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +41,7 @@ public class SerialConsumer implements Consumer {
     private final AdjustableSemaphore inflightSemaphore;
 
     private final int defaultInflight;
-    private final int signalProcessingInterval;
+    private final Duration signalProcessingInterval;
 
     private Topic topic;
     private Subscription subscription;
@@ -60,7 +61,7 @@ public class SerialConsumer implements Consumer {
                           ConsumerAuthorizationHandler consumerAuthorizationHandler) {
 
         this.defaultInflight = commonConsumerParameters.getInflightSize();
-        this.signalProcessingInterval = commonConsumerParameters.getSignalProcessingIntervalMilliseconds();
+        this.signalProcessingInterval = commonConsumerParameters.getSignalProcessingInterval();
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
@@ -88,7 +89,7 @@ public class SerialConsumer implements Consumer {
         try {
             do {
                 signalsInterrupt.run();
-            } while (!inflightSemaphore.tryAcquire(signalProcessingInterval, TimeUnit.MILLISECONDS));
+            } while (!inflightSemaphore.tryAcquire(signalProcessingInterval.toMillis(), TimeUnit.MILLISECONDS));
 
             Optional<Message> maybeMessage = messageReceiver.next();
 

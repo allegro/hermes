@@ -4,8 +4,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer")
-public class CommonConsumerProperties {
+public class CommonConsumerProperties implements CommonConsumerParameters {
 
     private int threadPoolSize = 500;
 
@@ -17,11 +19,11 @@ public class CommonConsumerProperties {
 
     private boolean filteringEnabled = true;
 
-    private long subscriptionIdsCacheRemovedExpireAfterAccessSeconds = 60L;
+    private Duration subscriptionIdsCacheRemovedExpireAfterAccess = Duration.ofSeconds(60);
 
     private BackgroundSupervisor backgroundSupervisor = new BackgroundSupervisor();
 
-    private int signalProcessingIntervalMilliseconds = 5_000;
+    private Duration signalProcessingInterval = Duration.ofMillis(5_000);
 
     private int signalProcessingQueueSize = 5_000;
 
@@ -29,6 +31,7 @@ public class CommonConsumerProperties {
 
     private String clientId = new InetAddressInstanceIdResolver().resolve();
 
+    @Override
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
@@ -37,6 +40,7 @@ public class CommonConsumerProperties {
         this.threadPoolSize = threadPoolSize;
     }
 
+    @Override
     public int getInflightSize() {
         return inflightSize;
     }
@@ -45,6 +49,7 @@ public class CommonConsumerProperties {
         this.inflightSize = inflightSize;
     }
 
+    @Override
     public boolean isFilteringRateLimiterEnabled() {
         return filteringRateLimiterEnabled;
     }
@@ -61,20 +66,36 @@ public class CommonConsumerProperties {
         this.healthCheckPort = healthCheckPort;
     }
 
+    @Override
     public boolean isFilteringEnabled() {
         return filteringEnabled;
+    }
+
+    @Override
+    public Duration getBackgroundSupervisorInterval() {
+        return backgroundSupervisor.interval;
+    }
+
+    @Override
+    public Duration getBackgroundSupervisorUnhealthyAfter() {
+        return backgroundSupervisor.unhealthyAfter;
+    }
+
+    @Override
+    public Duration getBackgroundSupervisorKillAfter() {
+        return backgroundSupervisor.killAfter;
     }
 
     public void setFilteringEnabled(boolean filteringEnabled) {
         this.filteringEnabled = filteringEnabled;
     }
 
-    public long getSubscriptionIdsCacheRemovedExpireAfterAccessSeconds() {
-        return subscriptionIdsCacheRemovedExpireAfterAccessSeconds;
+    public Duration getSubscriptionIdsCacheRemovedExpireAfterAccess() {
+        return subscriptionIdsCacheRemovedExpireAfterAccess;
     }
 
-    public void setSubscriptionIdsCacheRemovedExpireAfterAccessSeconds(long subscriptionIdsCacheRemovedExpireAfterAccessSeconds) {
-        this.subscriptionIdsCacheRemovedExpireAfterAccessSeconds = subscriptionIdsCacheRemovedExpireAfterAccessSeconds;
+    public void setSubscriptionIdsCacheRemovedExpireAfterAccess(Duration subscriptionIdsCacheRemovedExpireAfterAccess) {
+        this.subscriptionIdsCacheRemovedExpireAfterAccess = subscriptionIdsCacheRemovedExpireAfterAccess;
     }
 
     public BackgroundSupervisor getBackgroundSupervisor() {
@@ -85,14 +106,16 @@ public class CommonConsumerProperties {
         this.backgroundSupervisor = backgroundSupervisor;
     }
 
-    public int getSignalProcessingIntervalMilliseconds() {
-        return signalProcessingIntervalMilliseconds;
+    @Override
+    public Duration getSignalProcessingInterval() {
+        return signalProcessingInterval;
     }
 
-    public void setSignalProcessingIntervalMilliseconds(int signalProcessingIntervalMilliseconds) {
-        this.signalProcessingIntervalMilliseconds = signalProcessingIntervalMilliseconds;
+    public void setSignalProcessingInterval(Duration signalProcessingInterval) {
+        this.signalProcessingInterval = signalProcessingInterval;
     }
 
+    @Override
     public int getSignalProcessingQueueSize() {
         return signalProcessingQueueSize;
     }
@@ -101,6 +124,7 @@ public class CommonConsumerProperties {
         this.signalProcessingQueueSize = signalProcessingQueueSize;
     }
 
+    @Override
     public boolean isUseTopicMessageSizeEnabled() {
         return useTopicMessageSizeEnabled;
     }
@@ -109,6 +133,7 @@ public class CommonConsumerProperties {
         this.useTopicMessageSizeEnabled = useTopicMessageSizeEnabled;
     }
 
+    @Override
     public String getClientId() {
         return clientId;
     }
@@ -119,50 +144,34 @@ public class CommonConsumerProperties {
 
     public static final class BackgroundSupervisor {
 
-        private int interval = 20_000;
+        private Duration interval = Duration.ofMillis(20_000);
 
-        private int unhealthyAfter = 600_000;
+        private Duration unhealthyAfter = Duration.ofMillis(600_000);
 
-        private int killAfter = 300_000;
+        private Duration killAfter = Duration.ofMillis(300_000);
 
-        public int getInterval() {
+        public Duration getInterval() {
             return interval;
         }
 
-        public void setInterval(int interval) {
+        public void setInterval(Duration interval) {
             this.interval = interval;
         }
 
-        public int getUnhealthyAfter() {
+        public Duration getUnhealthyAfter() {
             return unhealthyAfter;
         }
 
-        public void setUnhealthyAfter(int unhealthyAfter) {
+        public void setUnhealthyAfter(Duration unhealthyAfter) {
             this.unhealthyAfter = unhealthyAfter;
         }
 
-        public int getKillAfter() {
+        public Duration getKillAfter() {
             return killAfter;
         }
 
-        public void setKillAfter(int killAfter) {
+        public void setKillAfter(Duration killAfter) {
             this.killAfter = killAfter;
         }
-    }
-
-    public CommonConsumerParameters toCommonConsumerParameters() {
-        return new CommonConsumerParameters(
-                this.threadPoolSize,
-                this.inflightSize,
-                this.filteringRateLimiterEnabled,
-                this.filteringEnabled,
-                this.backgroundSupervisor.interval,
-                this.backgroundSupervisor.unhealthyAfter,
-                this.backgroundSupervisor.killAfter,
-                this.signalProcessingIntervalMilliseconds,
-                this.signalProcessingQueueSize,
-                this.useTopicMessageSizeEnabled,
-                this.clientId
-        );
     }
 }

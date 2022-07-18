@@ -3,18 +3,20 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.RateCalculatorParameters;
 
-@ConfigurationProperties(prefix = "consumer.rate")
-public class RateProperties {
+import java.time.Duration;
 
-    private int limiterSupervisorPeriod = 30;
+@ConfigurationProperties(prefix = "consumer.rate")
+public class RateProperties implements RateCalculatorParameters {
+
+    private Duration limiterSupervisorPeriod = Duration.ofSeconds(30);
 
     private int limiterReportingThreadPoolSize = 30;
 
     private boolean limiterReportingThreadMonitoringEnabled = false;
 
-    private int limiterHeartbeatModeDelay = 60;
+    private Duration limiterHeartbeatModeDelay = Duration.ofSeconds(60);
 
-    private int limiterSlowModeDelay = 60;
+    private Duration limiterSlowModeDelay = Duration.ofSeconds(60);
 
     private double convergenceFactor = 0.2;
 
@@ -22,11 +24,11 @@ public class RateProperties {
 
     private double failuresSpeedUpToleranceRatio = 0.01;
 
-    public int getLimiterSupervisorPeriod() {
+    public Duration getLimiterSupervisorPeriod() {
         return limiterSupervisorPeriod;
     }
 
-    public void setLimiterSupervisorPeriod(int limiterSupervisorPeriod) {
+    public void setLimiterSupervisorPeriod(Duration limiterSupervisorPeriod) {
         this.limiterSupervisorPeriod = limiterSupervisorPeriod;
     }
 
@@ -46,22 +48,25 @@ public class RateProperties {
         this.limiterReportingThreadMonitoringEnabled = limiterReportingThreadMonitoringEnabled;
     }
 
-    public int getLimiterHeartbeatModeDelay() {
+    @Override
+    public Duration getLimiterHeartbeatModeDelay() {
         return limiterHeartbeatModeDelay;
     }
 
-    public void setLimiterHeartbeatModeDelay(int limiterHeartbeatModeDelay) {
+    public void setLimiterHeartbeatModeDelay(Duration limiterHeartbeatModeDelay) {
         this.limiterHeartbeatModeDelay = limiterHeartbeatModeDelay;
     }
 
-    public int getLimiterSlowModeDelay() {
+    @Override
+    public Duration getLimiterSlowModeDelay() {
         return limiterSlowModeDelay;
     }
 
-    public void setLimiterSlowModeDelay(int limiterSlowModeDelay) {
+    public void setLimiterSlowModeDelay(Duration limiterSlowModeDelay) {
         this.limiterSlowModeDelay = limiterSlowModeDelay;
     }
 
+    @Override
     public double getConvergenceFactor() {
         return convergenceFactor;
     }
@@ -70,6 +75,7 @@ public class RateProperties {
         this.convergenceFactor = convergenceFactor;
     }
 
+    @Override
     public double getFailuresNoChangeToleranceRatio() {
         return failuresNoChangeToleranceRatio;
     }
@@ -78,21 +84,12 @@ public class RateProperties {
         this.failuresNoChangeToleranceRatio = failuresNoChangeToleranceRatio;
     }
 
+    @Override
     public double getFailuresSpeedUpToleranceRatio() {
         return failuresSpeedUpToleranceRatio;
     }
 
     public void setFailuresSpeedUpToleranceRatio(double failuresSpeedUpToleranceRatio) {
         this.failuresSpeedUpToleranceRatio = failuresSpeedUpToleranceRatio;
-    }
-
-    protected RateCalculatorParameters toRateCalculatorParameters() {
-        return new RateCalculatorParameters(
-                this.limiterHeartbeatModeDelay,
-                this.limiterSlowModeDelay,
-                this.convergenceFactor,
-                this.failuresNoChangeToleranceRatio,
-                this.failuresSpeedUpToleranceRatio
-        );
     }
 }

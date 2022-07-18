@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder
 import spock.lang.Specification
 
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.util.concurrent.ExecutorService
@@ -14,7 +15,7 @@ import java.util.concurrent.Future
 
 class ConsumerProcessTest extends Specification {
 
-    private static final long UNHEALTHY_AFTER_MS = 2048
+    private static final Duration UNHEALTHY_AFTER_MS = Duration.ofMillis(2048)
 
     private ExecutorService executor = Executors.newSingleThreadExecutor()
 
@@ -76,7 +77,7 @@ class ConsumerProcessTest extends Specification {
 
     def "should process be unhealthy when last seen period is greater than unhealthy period"() {
         given:
-        long unhealthyAfter = -1
+        Duration unhealthyAfter = Duration.ofMillis(-1)
         ConsumerProcess process = new ConsumerProcess(
                 Signal.of(Signal.SignalType.START, subscription.qualifiedName, subscription),
                 consumer,
@@ -92,7 +93,7 @@ class ConsumerProcessTest extends Specification {
 
         then:
         !process.isHealthy()
-        process.lastSeen() > unhealthyAfter
+        process.lastSeen() > unhealthyAfter.toMillis()
     }
 
     def "should stop, retransmit and start consumer on retransmission"() {

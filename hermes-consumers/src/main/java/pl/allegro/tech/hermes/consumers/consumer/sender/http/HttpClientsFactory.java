@@ -38,7 +38,7 @@ public class HttpClientsFactory {
         client.setMaxRequestsQueuedPerDestination(httpClientParameters.getMaxRequestsQueuedPerDestination());
         client.setExecutor(executor);
         client.setCookieStore(new HttpCookieStore.Empty());
-        client.setIdleTimeout(httpClientParameters.getIdleTimeout());
+        client.setIdleTimeout(httpClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(httpClientParameters.isFollowRedirectsEnabled());
         return client;
     }
@@ -58,7 +58,7 @@ public class HttpClientsFactory {
                 .orElseThrow(() -> new IllegalStateException("Cannot create http/2 client due to lack of ssl context factory"));
         client.setMaxRequestsQueuedPerDestination(http2ClientParameters.getMaxRequestsQueuedPerDestination());
         client.setCookieStore(new HttpCookieStore.Empty());
-        client.setIdleTimeout(http2ClientParameters.getIdleTimeout());
+        client.setIdleTimeout(http2ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(httpClientParameters.isFollowRedirectsEnabled());
         return client;
     }

@@ -3,8 +3,10 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.http.client")
-public class HttpClientProperties {
+public class HttpClientProperties implements HttpClientParameters {
 
     private boolean connectionPoolMonitoringEnabled = false;
 
@@ -18,7 +20,7 @@ public class HttpClientProperties {
 
     private int maxConnectionsPerDestination = 100;
 
-    private int idleTimeout = 0;
+    private Duration idleTimeout = Duration.ofMillis(0);
 
     private int maxRequestsQueuedPerDestination = 100;
 
@@ -38,6 +40,7 @@ public class HttpClientProperties {
         this.requestQueueMonitoringEnabled = requestQueueMonitoringEnabled;
     }
 
+    @Override
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
@@ -46,6 +49,7 @@ public class HttpClientProperties {
         this.threadPoolSize = threadPoolSize;
     }
 
+    @Override
     public boolean isThreadPoolMonitoringEnabled() {
         return threadPoolMonitoringEnabled;
     }
@@ -54,6 +58,7 @@ public class HttpClientProperties {
         this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
     }
 
+    @Override
     public boolean isFollowRedirectsEnabled() {
         return followRedirectsEnabled;
     }
@@ -62,6 +67,7 @@ public class HttpClientProperties {
         this.followRedirectsEnabled = followRedirectsEnabled;
     }
 
+    @Override
     public int getMaxConnectionsPerDestination() {
         return maxConnectionsPerDestination;
     }
@@ -70,30 +76,21 @@ public class HttpClientProperties {
         this.maxConnectionsPerDestination = maxConnectionsPerDestination;
     }
 
-    public int getIdleTimeout() {
+    @Override
+    public Duration getIdleTimeout() {
         return idleTimeout;
     }
 
-    public void setIdleTimeout(int idleTimeout) {
+    public void setIdleTimeout(Duration idleTimeout) {
         this.idleTimeout = idleTimeout;
     }
 
+    @Override
     public int getMaxRequestsQueuedPerDestination() {
         return maxRequestsQueuedPerDestination;
     }
 
     public void setMaxRequestsQueuedPerDestination(int maxRequestsQueuedPerDestination) {
         this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
-    }
-
-    public HttpClientParameters toHttpClientParameters() {
-        return new HttpClientParameters(
-                this.threadPoolSize,
-                this.threadPoolMonitoringEnabled,
-                this.followRedirectsEnabled,
-                this.maxConnectionsPerDestination,
-                this.idleTimeout,
-                this.maxRequestsQueuedPerDestination
-        );
     }
 }

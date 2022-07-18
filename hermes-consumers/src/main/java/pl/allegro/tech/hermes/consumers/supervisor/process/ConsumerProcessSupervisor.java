@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.consumers.queue.WaitFreeDrainMpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -45,14 +46,14 @@ public class ConsumerProcessSupervisor implements Runnable {
                                      HermesMetrics metrics,
                                      ConsumerProcessSupplier processFactory,
                                      int signalQueueSize,
-                                     int backgroundSupervisorKillAfter) {
+                                     Duration backgroundSupervisorKillAfter) {
         this.executor = executor;
         this.clock = clock;
         this.metrics = metrics;
         this.taskQueue = new MonitoredMpscQueue<>(new WaitFreeDrainMpscQueue<>(signalQueueSize), metrics, "signalQueue");
         this.signalsFilter = new SignalsFilter(taskQueue, clock);
         this.runningConsumerProcesses = new RunningConsumerProcesses(clock);
-        this.processKiller = new ConsumerProcessKiller(backgroundSupervisorKillAfter, clock);
+        this.processKiller = new ConsumerProcessKiller(backgroundSupervisorKillAfter.toMillis(), clock);
         this.processFactory = processFactory;
 
         metrics.registerRunningConsumerProcessesCountGauge(runningConsumerProcesses::count);

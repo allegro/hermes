@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaParameters;
 
 @ConfigurationProperties(prefix = "kafka")
-public class KafkaProperties {
+public class KafkaProperties implements KafkaParameters {
 
     private KafkaAuthorizationProperties authorization;
     private String clusterName = "primary-dc";
@@ -26,22 +26,37 @@ public class KafkaProperties {
         this.clusterName = clusterName;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return authorization.isEnabled();
+    }
+
+    @Override
+    public String getMechanism() {
+        return authorization.getMechanism();
+    }
+
+    @Override
+    public String getProtocol() {
+        return authorization.getProtocol();
+    }
+
+    @Override
+    public String getUsername() {
+        return authorization.getUsername();
+    }
+
+    @Override
+    public String getPassword() {
+        return authorization.getPassword();
+    }
+
+    @Override
     public String getBrokerList() {
         return brokerList;
     }
 
     public void setBrokerList(String brokerList) {
         this.brokerList = brokerList;
-    }
-
-    protected KafkaParameters toKafkaAuthorizationParameters() {
-        return new KafkaParameters(
-                this.authorization.isEnabled(),
-                this.authorization.getMechanism(),
-                this.authorization.getProtocol(),
-                this.authorization.getUsername(),
-                this.authorization.getPassword(),
-                this.brokerList
-        );
     }
 }
