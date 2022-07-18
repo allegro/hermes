@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.process.Signal;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,7 +38,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     private final ConsumerProcessSupervisor backgroundProcess;
     private final UndeliveredMessageLogPersister undeliveredMessageLogPersister;
-    private final int backgroundSupervisorInterval;
+    private final Duration backgroundSupervisorInterval;
     private final OffsetCommitter offsetCommitter;
     private final SubscriptionRepository subscriptionRepository;
 
@@ -54,7 +55,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                                           HermesMetrics metrics,
                                           ConsumerMonitor monitor,
                                           Clock clock,
-                                          int commitOffsetPeriod) {
+                                          Duration commitOffsetPeriod) {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.backgroundSupervisorInterval = commonConsumerParameters.getBackgroundSupervisorInterval();
@@ -129,8 +130,8 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     public void start() {
         scheduledExecutor.scheduleAtFixedRate(
                 backgroundProcess,
-                backgroundSupervisorInterval,
-                backgroundSupervisorInterval,
+                backgroundSupervisorInterval.toMillis(),
+                backgroundSupervisorInterval.toMillis(),
                 TimeUnit.MILLISECONDS);
         offsetCommitter.start();
         undeliveredMessageLogPersister.start();

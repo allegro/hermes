@@ -10,6 +10,8 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.time.Duration
+
 class OffsetCommitterTest extends Specification {
 
     @Shared
@@ -32,7 +34,7 @@ class OffsetCommitterTest extends Specification {
 
     def setup() {
         state = new ConsumerPartitionAssignmentState()
-        def commitInterval = 10
+        def commitInterval = Duration.ofMillis(10)
         committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval,
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
     }

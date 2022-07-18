@@ -50,6 +50,7 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -196,7 +197,7 @@ class ConsumerTestRuntimeEnvironment {
     ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory) {
         HermesMetrics metrics = metricsSupplier.get();
         CommonConsumerProperties commonConsumerProperties = new CommonConsumerProperties();
-        commonConsumerProperties.getBackgroundSupervisor().setInterval(1000);
+        commonConsumerProperties.getBackgroundSupervisor().setInterval(Duration.ofMillis(1000));
         return new NonblockingConsumersSupervisor(commonConsumerProperties.toCommonConsumerParameters(),
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 consumerFactory,
@@ -208,7 +209,7 @@ class ConsumerTestRuntimeEnvironment {
                 metrics,
                 mock(ConsumerMonitor.class),
                 Clock.systemDefaultZone(),
-                60);
+                Duration.ofSeconds(60));
     }
 
     ConsumersRuntimeMonitor monitor(String consumerId,

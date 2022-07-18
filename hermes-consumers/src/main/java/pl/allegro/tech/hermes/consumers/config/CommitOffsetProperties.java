@@ -2,20 +2,22 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.commit.offset")
 public class CommitOffsetProperties {
 
-    private int period = 60;
+    private Duration period = Duration.ofSeconds(60);
 
     private int queuesSize = 200_000;
 
     private boolean queuesInflightDrainFullEnabled = false;
 
-    public int getPeriod() {
+    public Duration getPeriod() {
         return period;
     }
 
-    public void setPeriod(int period) {
+    public void setPeriod(Duration period) {
         this.period = period;
     }
 

@@ -1,15 +1,17 @@
 package pl.allegro.tech.hermes.consumers;
 
+import java.time.Duration;
+
 public class CommonConsumerParameters {
 
     private final int threadPoolSize;
     private final int inflightSize;
     private final boolean filteringRateLimiterEnabled;
     private final boolean filteringEnabled;
-    private final int backgroundSupervisorInterval;
-    private final int backgroundSupervisorUnhealthyAfter;
-    private final int backgroundSupervisorKillAfter;
-    private final int signalProcessingIntervalMilliseconds;
+    private final Duration backgroundSupervisorInterval;
+    private final Duration backgroundSupervisorUnhealthyAfter;
+    private final Duration backgroundSupervisorKillAfter;
+    private final Duration signalProcessingInterval;
     private final int signalProcessingQueueSize;
     private final boolean useTopicMessageSizeEnabled;
     private final String clientId;
@@ -30,20 +32,20 @@ public class CommonConsumerParameters {
         return filteringEnabled;
     }
 
-    public int getBackgroundSupervisorInterval() {
+    public Duration getBackgroundSupervisorInterval() {
         return backgroundSupervisorInterval;
     }
 
-    public int getBackgroundSupervisorUnhealthyAfter() {
+    public Duration getBackgroundSupervisorUnhealthyAfter() {
         return backgroundSupervisorUnhealthyAfter;
     }
 
-    public int getBackgroundSupervisorKillAfter() {
+    public Duration getBackgroundSupervisorKillAfter() {
         return backgroundSupervisorKillAfter;
     }
 
-    public int getSignalProcessingIntervalMilliseconds() {
-        return signalProcessingIntervalMilliseconds;
+    public Duration getSignalProcessingInterval() {
+        return signalProcessingInterval;
     }
 
     public int getSignalProcessingQueueSize() {
@@ -63,10 +65,10 @@ public class CommonConsumerParameters {
             int inflightSize,
             boolean filteringRateLimiterEnabled,
             boolean filteringEnabled,
-            int backgroundSupervisorInterval,
-            int backgroundSupervisorUnhealthyAfter,
-            int backgroundSupervisorKillAfter,
-            int signalProcessingIntervalMilliseconds,
+            Duration backgroundSupervisorInterval,
+            Duration backgroundSupervisorUnhealthyAfter,
+            Duration backgroundSupervisorKillAfter,
+            Duration signalProcessingInterval,
             int signalProcessingQueueSize,
             boolean useTopicMessageSizeEnabled,
             String clientId) {
@@ -77,7 +79,7 @@ public class CommonConsumerParameters {
         this.backgroundSupervisorInterval = backgroundSupervisorInterval;
         this.backgroundSupervisorUnhealthyAfter = backgroundSupervisorUnhealthyAfter;
         this.backgroundSupervisorKillAfter = backgroundSupervisorKillAfter;
-        this.signalProcessingIntervalMilliseconds = signalProcessingIntervalMilliseconds;
+        this.signalProcessingInterval = signalProcessingInterval;
         this.signalProcessingQueueSize = signalProcessingQueueSize;
         this.useTopicMessageSizeEnabled = useTopicMessageSizeEnabled;
         this.clientId = clientId;
