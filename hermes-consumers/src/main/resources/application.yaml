@@ -1,6 +1,6 @@
 consumer:
   receiver:
-    poolTimeout: 30
+    poolTimeout: 30ms
     readQueueCapacity: 1000
     waitBetweenUnsuccessfulPolls: true
     initialIdleTime: 10
