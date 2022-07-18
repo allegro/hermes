@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerPar
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "kafka.consumer")
-public class KafkaConsumerProperties {
+public class KafkaConsumerProperties implements KafkaConsumerParameters {
 
     private int sendBufferBytes = 256 * 1024;
 
@@ -47,6 +47,7 @@ public class KafkaConsumerProperties {
 
     private int maxPartitionFetchMax = Topic.MAX_MESSAGE_SIZE;
 
+    @Override
     public int getSendBufferBytes() {
         return sendBufferBytes;
     }
@@ -55,6 +56,7 @@ public class KafkaConsumerProperties {
         this.sendBufferBytes = sendBufferBytes;
     }
 
+    @Override
     public int getReceiveBufferBytes() {
         return receiveBufferBytes;
     }
@@ -63,6 +65,7 @@ public class KafkaConsumerProperties {
         this.receiveBufferBytes = receiveBufferBytes;
     }
 
+    @Override
     public int getFetchMinBytes() {
         return fetchMinBytes;
     }
@@ -71,6 +74,7 @@ public class KafkaConsumerProperties {
         this.fetchMinBytes = fetchMinBytes;
     }
 
+    @Override
     public Duration getFetchMaxWait() {
         return fetchMaxWait;
     }
@@ -79,6 +83,7 @@ public class KafkaConsumerProperties {
         this.fetchMaxWait = fetchMaxWait;
     }
 
+    @Override
     public Duration getReconnectBackoff() {
         return reconnectBackoff;
     }
@@ -87,6 +92,7 @@ public class KafkaConsumerProperties {
         this.reconnectBackoff = reconnectBackoff;
     }
 
+    @Override
     public Duration getRetryBackoff() {
         return retryBackoff;
     }
@@ -95,6 +101,7 @@ public class KafkaConsumerProperties {
         this.retryBackoff = retryBackoff;
     }
 
+    @Override
     public boolean isCheckCrcs() {
         return checkCrcs;
     }
@@ -103,6 +110,7 @@ public class KafkaConsumerProperties {
         this.checkCrcs = checkCrcs;
     }
 
+    @Override
     public Duration getMetricsSampleWindow() {
         return metricsSampleWindow;
     }
@@ -111,6 +119,7 @@ public class KafkaConsumerProperties {
         this.metricsSampleWindow = metricsSampleWindow;
     }
 
+    @Override
     public int getMetricsNumSamples() {
         return metricsNumSamples;
     }
@@ -119,6 +128,7 @@ public class KafkaConsumerProperties {
         this.metricsNumSamples = metricsNumSamples;
     }
 
+    @Override
     public Duration getRequestTimeout() {
         return requestTimeout;
     }
@@ -127,6 +137,7 @@ public class KafkaConsumerProperties {
         this.requestTimeout = requestTimeout;
     }
 
+    @Override
     public Duration getConnectionsMaxIdle() {
         return connectionsMaxIdle;
     }
@@ -135,6 +146,7 @@ public class KafkaConsumerProperties {
         this.connectionsMaxIdle = connectionsMaxIdle;
     }
 
+    @Override
     public int getMaxPollRecords() {
         return maxPollRecords;
     }
@@ -143,6 +155,7 @@ public class KafkaConsumerProperties {
         this.maxPollRecords = maxPollRecords;
     }
 
+    @Override
     public Duration getMaxPollInterval() {
         return maxPollInterval;
     }
@@ -151,6 +164,7 @@ public class KafkaConsumerProperties {
         this.maxPollInterval = maxPollInterval;
     }
 
+    @Override
     public String getAutoOffsetReset() {
         return autoOffsetReset;
     }
@@ -159,6 +173,7 @@ public class KafkaConsumerProperties {
         this.autoOffsetReset = autoOffsetReset;
     }
 
+    @Override
     public Duration getSessionTimeout() {
         return sessionTimeout;
     }
@@ -167,6 +182,7 @@ public class KafkaConsumerProperties {
         this.sessionTimeout = sessionTimeout;
     }
 
+    @Override
     public Duration getHeartbeatInterval() {
         return heartbeatInterval;
     }
@@ -175,6 +191,7 @@ public class KafkaConsumerProperties {
         this.heartbeatInterval = heartbeatInterval;
     }
 
+    @Override
     public Duration getMetadataMaxAge() {
         return metadataMaxAge;
     }
@@ -183,6 +200,7 @@ public class KafkaConsumerProperties {
         this.metadataMaxAge = metadataMaxAge;
     }
 
+    @Override
     public int getMaxPartitionFetchMin() {
         return maxPartitionFetchMin;
     }
@@ -191,35 +209,12 @@ public class KafkaConsumerProperties {
         this.maxPartitionFetchMin = maxPartitionFetchMin;
     }
 
+    @Override
     public int getMaxPartitionFetchMax() {
         return maxPartitionFetchMax;
     }
 
     public void setMaxPartitionFetchMax(int maxPartitionFetchMax) {
         this.maxPartitionFetchMax = maxPartitionFetchMax;
-    }
-
-    protected KafkaConsumerParameters toKafkaConsumerParameters() {
-        return new KafkaConsumerParameters(
-                this.sendBufferBytes,
-                this.receiveBufferBytes,
-                this.fetchMinBytes,
-                this.fetchMaxWait,
-                this.reconnectBackoff,
-                this.retryBackoff,
-                this.checkCrcs,
-                this.metricsSampleWindow,
-                this.metricsNumSamples,
-                this.requestTimeout,
-                this.connectionsMaxIdle,
-                this.maxPollRecords,
-                this.maxPollInterval,
-                this.autoOffsetReset,
-                this.sessionTimeout,
-                this.heartbeatInterval,
-                this.metadataMaxAge,
-                this.maxPartitionFetchMin,
-                this.maxPartitionFetchMax
-        );
     }
 }

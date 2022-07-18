@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "consumer")
-public class CommonConsumerProperties {
+public class CommonConsumerProperties implements CommonConsumerParameters {
 
     private int threadPoolSize = 500;
 
@@ -31,6 +31,7 @@ public class CommonConsumerProperties {
 
     private String clientId = new InetAddressInstanceIdResolver().resolve();
 
+    @Override
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
@@ -39,6 +40,7 @@ public class CommonConsumerProperties {
         this.threadPoolSize = threadPoolSize;
     }
 
+    @Override
     public int getInflightSize() {
         return inflightSize;
     }
@@ -47,6 +49,7 @@ public class CommonConsumerProperties {
         this.inflightSize = inflightSize;
     }
 
+    @Override
     public boolean isFilteringRateLimiterEnabled() {
         return filteringRateLimiterEnabled;
     }
@@ -63,8 +66,24 @@ public class CommonConsumerProperties {
         this.healthCheckPort = healthCheckPort;
     }
 
+    @Override
     public boolean isFilteringEnabled() {
         return filteringEnabled;
+    }
+
+    @Override
+    public Duration getBackgroundSupervisorInterval() {
+        return backgroundSupervisor.interval;
+    }
+
+    @Override
+    public Duration getBackgroundSupervisorUnhealthyAfter() {
+        return backgroundSupervisor.unhealthyAfter;
+    }
+
+    @Override
+    public Duration getBackgroundSupervisorKillAfter() {
+        return backgroundSupervisor.killAfter;
     }
 
     public void setFilteringEnabled(boolean filteringEnabled) {
@@ -87,6 +106,7 @@ public class CommonConsumerProperties {
         this.backgroundSupervisor = backgroundSupervisor;
     }
 
+    @Override
     public Duration getSignalProcessingInterval() {
         return signalProcessingInterval;
     }
@@ -95,6 +115,7 @@ public class CommonConsumerProperties {
         this.signalProcessingInterval = signalProcessingInterval;
     }
 
+    @Override
     public int getSignalProcessingQueueSize() {
         return signalProcessingQueueSize;
     }
@@ -103,6 +124,7 @@ public class CommonConsumerProperties {
         this.signalProcessingQueueSize = signalProcessingQueueSize;
     }
 
+    @Override
     public boolean isUseTopicMessageSizeEnabled() {
         return useTopicMessageSizeEnabled;
     }
@@ -111,6 +133,7 @@ public class CommonConsumerProperties {
         this.useTopicMessageSizeEnabled = useTopicMessageSizeEnabled;
     }
 
+    @Override
     public String getClientId() {
         return clientId;
     }
@@ -150,21 +173,5 @@ public class CommonConsumerProperties {
         public void setKillAfter(Duration killAfter) {
             this.killAfter = killAfter;
         }
-    }
-
-    public CommonConsumerParameters toCommonConsumerParameters() {
-        return new CommonConsumerParameters(
-                this.threadPoolSize,
-                this.inflightSize,
-                this.filteringRateLimiterEnabled,
-                this.filteringEnabled,
-                this.backgroundSupervisor.interval,
-                this.backgroundSupervisor.unhealthyAfter,
-                this.backgroundSupervisor.killAfter,
-                this.signalProcessingInterval,
-                this.signalProcessingQueueSize,
-                this.useTopicMessageSizeEnabled,
-                this.clientId
-        );
     }
 }

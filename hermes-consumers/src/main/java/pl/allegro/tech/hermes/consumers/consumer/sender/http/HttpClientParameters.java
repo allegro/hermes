@@ -2,55 +2,17 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import java.time.Duration;
 
-public class HttpClientParameters {
+public interface HttpClientParameters {
 
-    private final int threadPoolSize;
+    int getThreadPoolSize();
 
-    private final boolean threadPoolMonitoringEnabled;
+    boolean isThreadPoolMonitoringEnabled();
 
-    private final boolean followRedirectsEnabled;
+    boolean isFollowRedirectsEnabled();
 
-    private final int maxConnectionsPerDestination;
+    int getMaxConnectionsPerDestination();
 
-    private final Duration idleTimeout;
+    Duration getIdleTimeout();
 
-    private final int maxRequestsQueuedPerDestination;
-
-    public int getThreadPoolSize() {
-        return threadPoolSize;
-    }
-
-    public boolean isThreadPoolMonitoringEnabled() {
-        return threadPoolMonitoringEnabled;
-    }
-
-    public boolean isFollowRedirectsEnabled() {
-        return followRedirectsEnabled;
-    }
-
-    public int getMaxConnectionsPerDestination() {
-        return maxConnectionsPerDestination;
-    }
-
-    public Duration getIdleTimeout() {
-        return idleTimeout;
-    }
-
-    public int getMaxRequestsQueuedPerDestination() {
-        return maxRequestsQueuedPerDestination;
-    }
-
-    public HttpClientParameters(int threadPoolSize,
-                                boolean threadPoolMonitoringEnabled,
-                                boolean followRedirectsEnabled,
-                                int maxConnectionsPerDestination,
-                                Duration idleTimeout,
-                                int maxRequestsQueuedPerDestination) {
-        this.threadPoolSize = threadPoolSize;
-        this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
-        this.followRedirectsEnabled = followRedirectsEnabled;
-        this.maxConnectionsPerDestination = maxConnectionsPerDestination;
-        this.idleTimeout = idleTimeout;
-        this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
-    }
+    int getMaxRequestsQueuedPerDestination();
 }

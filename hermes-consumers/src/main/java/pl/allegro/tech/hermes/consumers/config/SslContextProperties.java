@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextParameters;
 
 @ConfigurationProperties(prefix = "consumer.ssl")
-public class SslContextProperties {
+public class SslContextProperties implements SslContextParameters {
 
     private boolean enabled = true;
 
@@ -26,6 +26,7 @@ public class SslContextProperties {
 
     private String truststoreFormat = "JKS";
 
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -34,6 +35,7 @@ public class SslContextProperties {
         this.enabled = enabled;
     }
 
+    @Override
     public String getProtocol() {
         return protocol;
     }
@@ -42,6 +44,7 @@ public class SslContextProperties {
         this.protocol = protocol;
     }
 
+    @Override
     public String getKeystoreSource() {
         return keystoreSource;
     }
@@ -50,6 +53,7 @@ public class SslContextProperties {
         this.keystoreSource = keystoreSource;
     }
 
+    @Override
     public String getKeystoreLocation() {
         return keystoreLocation;
     }
@@ -58,6 +62,7 @@ public class SslContextProperties {
         this.keystoreLocation = keystoreLocation;
     }
 
+    @Override
     public String getKeystorePassword() {
         return keystorePassword;
     }
@@ -66,6 +71,7 @@ public class SslContextProperties {
         this.keystorePassword = keystorePassword;
     }
 
+    @Override
     public String getKeystoreFormat() {
         return keystoreFormat;
     }
@@ -74,6 +80,7 @@ public class SslContextProperties {
         this.keystoreFormat = keystoreFormat;
     }
 
+    @Override
     public String getTruststoreSource() {
         return truststoreSource;
     }
@@ -82,6 +89,7 @@ public class SslContextProperties {
         this.truststoreSource = truststoreSource;
     }
 
+    @Override
     public String getTruststoreLocation() {
         return truststoreLocation;
     }
@@ -90,6 +98,7 @@ public class SslContextProperties {
         this.truststoreLocation = truststoreLocation;
     }
 
+    @Override
     public String getTruststorePassword() {
         return truststorePassword;
     }
@@ -98,26 +107,12 @@ public class SslContextProperties {
         this.truststorePassword = truststorePassword;
     }
 
+    @Override
     public String getTruststoreFormat() {
         return truststoreFormat;
     }
 
     public void setTruststoreFormat(String truststoreFormat) {
         this.truststoreFormat = truststoreFormat;
-    }
-
-    public SslContextParameters toSslContextParams() {
-        return new SslContextParameters(
-                this.enabled,
-                this.protocol,
-                this.keystoreSource,
-                this.keystoreLocation,
-                this.keystorePassword,
-                this.keystoreFormat,
-                this.truststoreSource,
-                this.truststoreLocation,
-                this.truststorePassword,
-                this.truststoreFormat
-        );
     }
 }

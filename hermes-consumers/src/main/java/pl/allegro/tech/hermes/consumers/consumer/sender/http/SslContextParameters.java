@@ -1,67 +1,24 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-public class SslContextParameters {
-    private final boolean enabled;
-    private final String protocol;
-    private final String keystoreSource;
-    private final String keystoreLocation;
-    private final String keystorePassword;
-    private final String keystoreFormat;
-    private final String truststoreSource;
-    private final String truststoreLocation;
-    private final String truststorePassword;
-    private final String truststoreFormat ;
+public interface SslContextParameters {
 
-    public SslContextParameters(boolean enabled, String protocol, String keystoreSource, String keystoreLocation, String keystorePassword, String keystoreFormat, String truststoreSource, String truststoreLocation, String truststorePassword, String truststoreFormat) {
-        this.enabled = enabled;
-        this.protocol = protocol;
-        this.keystoreSource = keystoreSource;
-        this.keystoreLocation = keystoreLocation;
-        this.keystorePassword = keystorePassword;
-        this.keystoreFormat = keystoreFormat;
-        this.truststoreSource = truststoreSource;
-        this.truststoreLocation = truststoreLocation;
-        this.truststorePassword = truststorePassword;
-        this.truststoreFormat = truststoreFormat;
-    }
+    boolean isEnabled();
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+    String getProtocol();
 
-    public String getProtocol() {
-        return protocol;
-    }
+    String getKeystoreSource();
 
-    public String getKeystoreSource() {
-        return keystoreSource;
-    }
+    String getKeystoreLocation();
 
-    public String getKeystoreLocation() {
-        return keystoreLocation;
-    }
+    String getKeystorePassword();
 
-    public String getKeystorePassword() {
-        return keystorePassword;
-    }
+    String getKeystoreFormat();
 
-    public String getKeystoreFormat() {
-        return keystoreFormat;
-    }
+    String getTruststoreSource();
 
-    public String getTruststoreSource() {
-        return truststoreSource;
-    }
+    String getTruststoreLocation();
 
-    public String getTruststoreLocation() {
-        return truststoreLocation;
-    }
+    String getTruststorePassword();
 
-    public String getTruststorePassword() {
-        return truststorePassword;
-    }
-
-    public String getTruststoreFormat() {
-        return truststoreFormat;
-    }
+    String getTruststoreFormat();
 }

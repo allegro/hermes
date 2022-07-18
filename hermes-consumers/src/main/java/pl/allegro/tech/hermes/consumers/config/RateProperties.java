@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.RateCalculatorP
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "consumer.rate")
-public class RateProperties {
+public class RateProperties implements RateCalculatorParameters {
 
     private Duration limiterSupervisorPeriod = Duration.ofSeconds(30);
 
@@ -48,6 +48,7 @@ public class RateProperties {
         this.limiterReportingThreadMonitoringEnabled = limiterReportingThreadMonitoringEnabled;
     }
 
+    @Override
     public Duration getLimiterHeartbeatModeDelay() {
         return limiterHeartbeatModeDelay;
     }
@@ -56,6 +57,7 @@ public class RateProperties {
         this.limiterHeartbeatModeDelay = limiterHeartbeatModeDelay;
     }
 
+    @Override
     public Duration getLimiterSlowModeDelay() {
         return limiterSlowModeDelay;
     }
@@ -64,6 +66,7 @@ public class RateProperties {
         this.limiterSlowModeDelay = limiterSlowModeDelay;
     }
 
+    @Override
     public double getConvergenceFactor() {
         return convergenceFactor;
     }
@@ -72,6 +75,7 @@ public class RateProperties {
         this.convergenceFactor = convergenceFactor;
     }
 
+    @Override
     public double getFailuresNoChangeToleranceRatio() {
         return failuresNoChangeToleranceRatio;
     }
@@ -80,21 +84,12 @@ public class RateProperties {
         this.failuresNoChangeToleranceRatio = failuresNoChangeToleranceRatio;
     }
 
+    @Override
     public double getFailuresSpeedUpToleranceRatio() {
         return failuresSpeedUpToleranceRatio;
     }
 
     public void setFailuresSpeedUpToleranceRatio(double failuresSpeedUpToleranceRatio) {
         this.failuresSpeedUpToleranceRatio = failuresSpeedUpToleranceRatio;
-    }
-
-    protected RateCalculatorParameters toRateCalculatorParameters() {
-        return new RateCalculatorParameters(
-                this.limiterHeartbeatModeDelay,
-                this.limiterSlowModeDelay,
-                this.convergenceFactor,
-                this.failuresNoChangeToleranceRatio,
-                this.failuresSpeedUpToleranceRatio
-        );
     }
 }

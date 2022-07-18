@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientParamete
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "consumer.http2.client")
-public class Http2ClientProperties {
+public class Http2ClientProperties implements Http2ClientParameters {
 
     private boolean enabled = true;
 
@@ -26,6 +26,7 @@ public class Http2ClientProperties {
         this.enabled = enabled;
     }
 
+    @Override
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
@@ -34,6 +35,7 @@ public class Http2ClientProperties {
         this.threadPoolSize = threadPoolSize;
     }
 
+    @Override
     public boolean isThreadPoolMonitoringEnabled() {
         return threadPoolMonitoringEnabled;
     }
@@ -42,6 +44,7 @@ public class Http2ClientProperties {
         this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
     }
 
+    @Override
     public Duration getIdleTimeout() {
         return idleTimeout;
     }
@@ -50,20 +53,12 @@ public class Http2ClientProperties {
         this.idleTimeout = idleTimeout;
     }
 
+    @Override
     public int getMaxRequestsQueuedPerDestination() {
         return maxRequestsQueuedPerDestination;
     }
 
     public void setMaxRequestsQueuedPerDestination(int maxRequestsQueuedPerDestination) {
         this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
-    }
-
-    public Http2ClientParameters toHttp2ClientParameters() {
-        return new Http2ClientParameters(
-                this.threadPoolSize,
-                this.threadPoolMonitoringEnabled,
-                this.idleTimeout,
-                this.maxRequestsQueuedPerDestination
-        );
     }
 }

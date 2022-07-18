@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaReceiverPar
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "consumer.receiver")
-public class ConsumerReceiverProperties {
+public class ConsumerReceiverProperties implements KafkaReceiverParameters {
 
     private Duration poolTimeout = Duration.ofMillis(30);
 
@@ -18,6 +18,7 @@ public class ConsumerReceiverProperties {
 
     private Duration maxIdleTime = Duration.ofMillis(1000);
 
+    @Override
     public Duration getPoolTimeout() {
         return poolTimeout;
     }
@@ -26,6 +27,7 @@ public class ConsumerReceiverProperties {
         this.poolTimeout = poolTimeout;
     }
 
+    @Override
     public int getReadQueueCapacity() {
         return readQueueCapacity;
     }
@@ -34,6 +36,7 @@ public class ConsumerReceiverProperties {
         this.readQueueCapacity = readQueueCapacity;
     }
 
+    @Override
     public boolean isWaitBetweenUnsuccessfulPolls() {
         return waitBetweenUnsuccessfulPolls;
     }
@@ -42,6 +45,7 @@ public class ConsumerReceiverProperties {
         this.waitBetweenUnsuccessfulPolls = waitBetweenUnsuccessfulPolls;
     }
 
+    @Override
     public Duration getInitialIdleTime() {
         return initialIdleTime;
     }
@@ -50,21 +54,12 @@ public class ConsumerReceiverProperties {
         this.initialIdleTime = initialIdleTime;
     }
 
+    @Override
     public Duration getMaxIdleTime() {
         return maxIdleTime;
     }
 
     public void setMaxIdleTime(Duration maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
-    }
-
-    protected KafkaReceiverParameters toKafkaReceiverParams() {
-        return new KafkaReceiverParameters(
-                this.poolTimeout,
-                this.readQueueCapacity,
-                this.waitBetweenUnsuccessfulPolls,
-                this.initialIdleTime,
-                this.maxIdleTime
-        );
     }
 }

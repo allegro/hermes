@@ -4,10 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.config.RateProperties;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.NegotiatedMaxRateProvider;
 
@@ -29,7 +26,9 @@ public class OutputRateCalculatorTest {
 
     @Before
     public void setup() {
-        RateCalculatorParameters rateCalculatorParameters = new RateCalculatorParameters(Duration.ofSeconds(60), Duration.ofSeconds(1), 0.5, 0.05, 0.01);
+        RateProperties rateProperties = new RateProperties();
+        rateProperties.setLimiterSlowModeDelay(Duration.ofSeconds(1));
+        rateProperties.setConvergenceFactor(0.5);
 
         subscription("group.topic", "subscription").withSubscriptionPolicy(
                 SubscriptionPolicy.Builder.subscriptionPolicy().withRate(200).build()
@@ -38,7 +37,7 @@ public class OutputRateCalculatorTest {
         NegotiatedMaxRateProvider maxRateProvider = mock(NegotiatedMaxRateProvider.class);
         when(maxRateProvider.get()).thenReturn(100D);
 
-        calculator = new OutputRateCalculator(rateCalculatorParameters, maxRateProvider);
+        calculator = new OutputRateCalculator(rateProperties, maxRateProvider);
     }
 
     @Test

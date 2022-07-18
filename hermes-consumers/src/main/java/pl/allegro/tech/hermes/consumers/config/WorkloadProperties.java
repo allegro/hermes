@@ -10,13 +10,13 @@ import static java.lang.Math.abs;
 import static java.util.UUID.randomUUID;
 
 @ConfigurationProperties(prefix = "consumer.workload")
-public class WorkloadProperties {
+public class WorkloadProperties implements SelectiveSupervisorParameters {
 
     private int registryBinaryEncoderAssignmentsBufferSizeBytes = 100_000;
 
     private Duration rebalanceInterval = Duration.ofSeconds(30);
 
-    private int consumerPerSubscription = 2;
+    private int consumersPerSubscription = 2;
 
     private int maxSubscriptionsPerConsumer = 200;
 
@@ -38,6 +38,7 @@ public class WorkloadProperties {
         this.registryBinaryEncoderAssignmentsBufferSizeBytes = registryBinaryEncoderAssignmentsBufferSizeBytes;
     }
 
+    @Override
     public Duration getRebalanceInterval() {
         return rebalanceInterval;
     }
@@ -46,14 +47,16 @@ public class WorkloadProperties {
         this.rebalanceInterval = rebalanceInterval;
     }
 
-    public int getConsumerPerSubscription() {
-        return consumerPerSubscription;
+    @Override
+    public int getConsumersPerSubscription() {
+        return consumersPerSubscription;
     }
 
-    public void setConsumerPerSubscription(int consumerPerSubscription) {
-        this.consumerPerSubscription = consumerPerSubscription;
+    public void setConsumersPerSubscription(int consumersPerSubscription) {
+        this.consumersPerSubscription = consumersPerSubscription;
     }
 
+    @Override
     public int getMaxSubscriptionsPerConsumer() {
         return maxSubscriptionsPerConsumer;
     }
@@ -70,6 +73,7 @@ public class WorkloadProperties {
         this.assignmentProcessingThreadPoolSize = assignmentProcessingThreadPoolSize;
     }
 
+    @Override
     public String getNodeId() {
         return nodeId;
     }
@@ -86,6 +90,7 @@ public class WorkloadProperties {
         this.monitorScanInterval = monitorScanInterval;
     }
 
+    @Override
     public boolean isAutoRebalance() {
         return autoRebalance;
     }
@@ -100,15 +105,5 @@ public class WorkloadProperties {
 
     public void setDeadAfter(Duration deadAfter) {
         this.deadAfter = deadAfter;
-    }
-
-    public SelectiveSupervisorParameters toSelectiveSupervisorParameters() {
-        return new SelectiveSupervisorParameters(
-                this.rebalanceInterval,
-                this.consumerPerSubscription,
-                this.maxSubscriptionsPerConsumer,
-                this.nodeId,
-                this.autoRebalance
-        );
     }
 }

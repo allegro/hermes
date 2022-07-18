@@ -134,7 +134,7 @@ public class ConsumerSenderConfiguration {
                                                  Http2ClientProperties http2ClientProperties,
                                                  InstrumentedExecutorServiceFactory executorFactory,
                                                  SslContextFactoryProvider sslContextFactoryProvider) {
-        return new HttpClientsFactory(httpClientProperties.toHttpClientParameters(), http2ClientProperties.toHttp2ClientParameters(), executorFactory, sslContextFactoryProvider);
+        return new HttpClientsFactory(httpClientProperties, http2ClientProperties, executorFactory, sslContextFactoryProvider);
     }
 
     @Bean(initMethod = "start")
@@ -147,7 +147,7 @@ public class ConsumerSenderConfiguration {
 
     @Bean
     public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory, SslContextProperties sslContextProperties) {
-        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslContextProperties.toSslContextParams());
+        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslContextProperties);
     }
 
     @Bean

@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientParameter
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "consumer.http.client")
-public class HttpClientProperties {
+public class HttpClientProperties implements HttpClientParameters {
 
     private boolean connectionPoolMonitoringEnabled = false;
 
@@ -40,6 +40,7 @@ public class HttpClientProperties {
         this.requestQueueMonitoringEnabled = requestQueueMonitoringEnabled;
     }
 
+    @Override
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
@@ -48,6 +49,7 @@ public class HttpClientProperties {
         this.threadPoolSize = threadPoolSize;
     }
 
+    @Override
     public boolean isThreadPoolMonitoringEnabled() {
         return threadPoolMonitoringEnabled;
     }
@@ -56,6 +58,7 @@ public class HttpClientProperties {
         this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
     }
 
+    @Override
     public boolean isFollowRedirectsEnabled() {
         return followRedirectsEnabled;
     }
@@ -64,6 +67,7 @@ public class HttpClientProperties {
         this.followRedirectsEnabled = followRedirectsEnabled;
     }
 
+    @Override
     public int getMaxConnectionsPerDestination() {
         return maxConnectionsPerDestination;
     }
@@ -72,6 +76,7 @@ public class HttpClientProperties {
         this.maxConnectionsPerDestination = maxConnectionsPerDestination;
     }
 
+    @Override
     public Duration getIdleTimeout() {
         return idleTimeout;
     }
@@ -80,22 +85,12 @@ public class HttpClientProperties {
         this.idleTimeout = idleTimeout;
     }
 
+    @Override
     public int getMaxRequestsQueuedPerDestination() {
         return maxRequestsQueuedPerDestination;
     }
 
     public void setMaxRequestsQueuedPerDestination(int maxRequestsQueuedPerDestination) {
         this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
-    }
-
-    public HttpClientParameters toHttpClientParameters() {
-        return new HttpClientParameters(
-                this.threadPoolSize,
-                this.threadPoolMonitoringEnabled,
-                this.followRedirectsEnabled,
-                this.maxConnectionsPerDestination,
-                this.idleTimeout,
-                this.maxRequestsQueuedPerDestination
-        );
     }
 }

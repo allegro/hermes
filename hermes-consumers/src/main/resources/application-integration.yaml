@@ -63,7 +63,7 @@ consumer:
       maxRequestsQueuedPerDestination: 100
   workload:
     rebalanceInterval: 1s
-    consumerPerSubscription: 1
+    consumersPerSubscription: 1
 
 
 kafka:

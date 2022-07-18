@@ -92,7 +92,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
         MessageReceiver receiver = createKafkaSingleThreadedMessageReceiver(topic, subscription);
 
-        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPollsEnabled()) {
+        if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPolls()) {
             receiver = createThrottlingMessageReceiver(receiver, subscription);
         }
 

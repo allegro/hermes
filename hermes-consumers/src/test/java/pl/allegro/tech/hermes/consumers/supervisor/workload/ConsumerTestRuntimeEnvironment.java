@@ -145,7 +145,7 @@ class ConsumerTestRuntimeEnvironment {
         WorkloadProperties workloadProperties = new WorkloadProperties();
         workloadProperties.setNodeId(consumerId);
         workloadProperties.setRebalanceInterval(Duration.ofSeconds(1));
-        workloadProperties.setConsumerPerSubscription(2);
+        workloadProperties.setConsumersPerSubscription(2);
         workloadProperties.setMonitorScanInterval(Duration.ofSeconds(1));
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
@@ -182,7 +182,7 @@ class ConsumerTestRuntimeEnvironment {
         SelectiveSupervisorController supervisor = new SelectiveSupervisorController(
                 consumersSupervisor, notificationsBus, subscriptionsCache, consumerAssignmentCache, consumerAssignmentRegistry,
                 clusterAssignmentCache, nodesRegistry,
-                mock(ZookeeperAdminCache.class), executorService, workloadProperties.toSelectiveSupervisorParameters(), kafkaProperties.getClusterName(), metricsSupplier.get(),
+                mock(ZookeeperAdminCache.class), executorService, workloadProperties, kafkaProperties.getClusterName(), metricsSupplier.get(),
                 workloadConstraintsRepository
         );
 
@@ -198,7 +198,7 @@ class ConsumerTestRuntimeEnvironment {
         HermesMetrics metrics = metricsSupplier.get();
         CommonConsumerProperties commonConsumerProperties = new CommonConsumerProperties();
         commonConsumerProperties.getBackgroundSupervisor().setInterval(Duration.ofMillis(1000));
-        return new NonblockingConsumersSupervisor(commonConsumerProperties.toCommonConsumerParameters(),
+        return new NonblockingConsumersSupervisor(commonConsumerProperties,
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 consumerFactory,
                 mock(OffsetQueue.class),

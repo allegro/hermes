@@ -2,47 +2,15 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
 import java.time.Duration;
 
-public class RateCalculatorParameters {
+public interface RateCalculatorParameters {
 
-    private final Duration limiterHeartbeatModeDelay;
+    Duration getLimiterHeartbeatModeDelay();
 
-    private final Duration limiterSlowModeDelay;
+    Duration getLimiterSlowModeDelay();
 
-    private final double convergenceFactor;
+    double getConvergenceFactor();
 
-    private final double failuresNoChangeToleranceRatio;
+    double getFailuresNoChangeToleranceRatio();
 
-    private final double failuresSpeedUpToleranceRatio;
-
-    public Duration getLimiterHeartbeatModeDelay() {
-        return limiterHeartbeatModeDelay;
-    }
-
-    public Duration getLimiterSlowModeDelay() {
-        return limiterSlowModeDelay;
-    }
-
-    public double getConvergenceFactor() {
-        return convergenceFactor;
-    }
-
-    public double getFailuresNoChangeToleranceRatio() {
-        return failuresNoChangeToleranceRatio;
-    }
-
-    public double getFailuresSpeedUpToleranceRatio() {
-        return failuresSpeedUpToleranceRatio;
-    }
-
-    public RateCalculatorParameters(Duration limiterHeartbeatModeDelay,
-                                    Duration limiterSlowModeDelay,
-                                    double convergenceFactor,
-                                    double failuresNoChangeToleranceRatio,
-                                    double failuresSpeedUpToleranceRatio) {
-        this.limiterHeartbeatModeDelay = limiterHeartbeatModeDelay;
-        this.limiterSlowModeDelay = limiterSlowModeDelay;
-        this.convergenceFactor = convergenceFactor;
-        this.failuresNoChangeToleranceRatio = failuresNoChangeToleranceRatio;
-        this.failuresSpeedUpToleranceRatio = failuresSpeedUpToleranceRatio;
-    }
+    double getFailuresSpeedUpToleranceRatio();
 }

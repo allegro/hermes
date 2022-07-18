@@ -2,43 +2,15 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload.selective;
 
 import java.time.Duration;
 
-public class SelectiveSupervisorParameters {
+public interface SelectiveSupervisorParameters {
 
-    private final Duration rebalanceInterval;
+    Duration getRebalanceInterval();
 
-    private final int consumersPerSubscription;
+    int getConsumersPerSubscription();
 
-    private final int maxSubscriptionsPerConsumer;
+    int getMaxSubscriptionsPerConsumer();
 
-    private final String nodeId;
+    String getNodeId();
 
-    private final boolean autoRebalance;
-
-    public Duration getRebalanceInterval() {
-        return rebalanceInterval;
-    }
-
-    public int getConsumersPerSubscription() {
-        return consumersPerSubscription;
-    }
-
-    public int getMaxSubscriptionsPerConsumer() {
-        return maxSubscriptionsPerConsumer;
-    }
-
-    public String getNodeId() {
-        return nodeId;
-    }
-
-    public boolean isAutoRebalance() {
-        return autoRebalance;
-    }
-
-    public SelectiveSupervisorParameters(Duration rebalanceInterval, int consumersPerSubscription, int maxSubscriptionsPerConsumer, String nodeId, boolean autoRebalance) {
-        this.rebalanceInterval = rebalanceInterval;
-        this.consumersPerSubscription = consumersPerSubscription;
-        this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
-        this.nodeId = nodeId;
-        this.autoRebalance = autoRebalance;
-    }
+    boolean isAutoRebalance();
 }

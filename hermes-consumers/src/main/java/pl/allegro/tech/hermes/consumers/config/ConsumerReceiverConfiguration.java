@@ -42,10 +42,10 @@ public class ConsumerReceiverConfiguration {
                                                        Trackers trackers,
                                                        ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         return new KafkaMessageReceiverFactory(
-                commonConsumerProperties.toCommonConsumerParameters(),
-                consumerReceiverProperties.toKafkaReceiverParams(),
-                kafkaConsumerProperties.toKafkaConsumerParameters(),
-                kafkaAuthorizationProperties.toKafkaAuthorizationParameters(),
+                commonConsumerProperties,
+                consumerReceiverProperties,
+                kafkaConsumerProperties,
+                kafkaAuthorizationProperties,
                 messageConverterFactory,
                 hermesMetrics,
                 offsetQueue,

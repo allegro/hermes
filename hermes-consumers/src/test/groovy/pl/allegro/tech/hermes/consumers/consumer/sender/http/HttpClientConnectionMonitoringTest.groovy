@@ -36,11 +36,11 @@ class HttpClientConnectionMonitoringTest extends Specification {
     }
 
     def setup() {
-        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties().toSslContextParams())
+        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties())
         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration()
         client = consumerConfiguration.http1Client(new HttpClientsFactory(
-                new HttpClientProperties().toHttpClientParameters(),
-                new Http2ClientProperties().toHttp2ClientParameters(),
+                new HttpClientProperties(),
+                new Http2ClientProperties(),
                 new InstrumentedExecutorServiceFactory(hermesMetrics),
                 sslContextFactoryProvider))
         client.start()

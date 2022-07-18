@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateParameters;
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "consumer.maxrate")
-public class MaxRateProperties {
+public class MaxRateProperties implements MaxRateParameters {
 
     private RegistryBinaryEncoderProperties registryBinaryEncoder = new RegistryBinaryEncoderProperties();
 
@@ -32,6 +32,7 @@ public class MaxRateProperties {
         this.registryBinaryEncoder = registryBinaryEncoder;
     }
 
+    @Override
     public Duration getBalanceInterval() {
         return balanceInterval;
     }
@@ -40,6 +41,7 @@ public class MaxRateProperties {
         this.balanceInterval = balanceInterval;
     }
 
+    @Override
     public Duration getUpdateInterval() {
         return updateInterval;
     }
@@ -48,6 +50,7 @@ public class MaxRateProperties {
         this.updateInterval = updateInterval;
     }
 
+    @Override
     public int getHistorySize() {
         return historySize;
     }
@@ -56,6 +59,7 @@ public class MaxRateProperties {
         this.historySize = historySize;
     }
 
+    @Override
     public double getBusyTolerance() {
         return busyTolerance;
     }
@@ -64,6 +68,7 @@ public class MaxRateProperties {
         this.busyTolerance = busyTolerance;
     }
 
+    @Override
     public double getMinMaxRate() {
         return minMaxRate;
     }
@@ -72,6 +77,7 @@ public class MaxRateProperties {
         this.minMaxRate = minMaxRate;
     }
 
+    @Override
     public double getMinAllowedChangePercent() {
         return minAllowedChangePercent;
     }
@@ -80,23 +86,12 @@ public class MaxRateProperties {
         this.minAllowedChangePercent = minAllowedChangePercent;
     }
 
+    @Override
     public double getMinSignificantUpdatePercent() {
         return minSignificantUpdatePercent;
     }
 
     public void setMinSignificantUpdatePercent(double minSignificantUpdatePercent) {
         this.minSignificantUpdatePercent = minSignificantUpdatePercent;
-    }
-
-    protected MaxRateParameters toMaxRateParameters() {
-        return new MaxRateParameters(
-                this.balanceInterval,
-                this.updateInterval,
-                this.historySize,
-                this.busyTolerance,
-                this.minMaxRate,
-                this.minAllowedChangePercent,
-                this.minSignificantUpdatePercent
-        );
     }
 }
