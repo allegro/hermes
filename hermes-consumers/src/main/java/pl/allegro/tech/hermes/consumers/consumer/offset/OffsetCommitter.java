@@ -68,7 +68,7 @@ public class OffsetCommitter implements Runnable {
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder().setNameFormat("offset-committer-%d").build());
 
-    private final int offsetCommitPeriodSeconds;
+    private final Duration offsetCommitPeriodSeconds;
 
     private final OffsetQueue offsetQueue;
 
@@ -84,7 +84,7 @@ public class OffsetCommitter implements Runnable {
             OffsetQueue offsetQueue,
             ConsumerPartitionAssignmentState partitionAssignmentState,
             MessageCommitter messageCommitter,
-            int offsetCommitPeriodSeconds,
+            Duration offsetCommitPeriodSeconds,
             HermesMetrics metrics
     ) {
         this.offsetQueue = offsetQueue;
@@ -188,8 +188,8 @@ public class OffsetCommitter implements Runnable {
 
     public void start() {
         scheduledExecutor.scheduleWithFixedDelay(this,
-                offsetCommitPeriodSeconds,
-                offsetCommitPeriodSeconds,
+                offsetCommitPeriodSeconds.toSeconds(),
+                offsetCommitPeriodSeconds.toSeconds(),
                 TimeUnit.SECONDS
         );
     }
