@@ -20,13 +20,6 @@ import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.C
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_SSL_KEYSTORE_SOURCE;
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_SSL_TRUSTSTORE_SOURCE;
-import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
-import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG;
-import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG;
-import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG;
-import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG;
-import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG;
-import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG;
 
 public class ConsumersStarter implements Starter<ConfigurableApplicationContext> {
 
@@ -44,18 +37,11 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Consumers");
         overrideProperty(SCHEMA_CACHE_ENABLED, true);
-        overrideProperty(KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG, "earliest");
-        overrideProperty(KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG, 25);
-        overrideProperty(KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG, 25);
-        overrideProperty(KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG, 1);
-        overrideProperty(KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG, 11000);
-        overrideProperty(KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG, 10000);
-        overrideProperty(KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG, 50);
         overrideProperty(CONSUMER_USE_TOPIC_MESSAGE_SIZE, true);
         overrideProperty(CONSUMER_SSL_KEYSTORE_SOURCE, "provided");
         overrideProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE, "provided");
         overrideProperty(CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL, true);
-        overrideProperty(CONSUMER_COMMIT_OFFSET_PERIOD, 1);
+        overrideProperty(CONSUMER_COMMIT_OFFSET_PERIOD, "1s");
         setSpringProfiles("integration");
 
         applicationContext = application.run(args.toArray(new String[0]));
