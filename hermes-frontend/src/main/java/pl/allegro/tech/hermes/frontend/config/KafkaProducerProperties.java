@@ -3,20 +3,22 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducerParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "frontend.kafka.producer")
 public class KafkaProducerProperties implements KafkaProducerParameters {
 
-    private int maxBlockMs = 500;
+    private Duration maxBlock = Duration.ofMillis(500);
 
-    private int metadataMaxAge = 5 * 60 * 1000;
+    private Duration metadataMaxAge = Duration.ofMinutes(5);
 
     private String compressionCodec = "none";
 
     private int retries = Integer.MAX_VALUE;
 
-    private int retryBackoffMs = 256;
+    private Duration retryBackoff = Duration.ofMillis(256);
 
-    private int requestTimeoutMs = 30 * 60 * 1000;
+    private Duration requestTimeout = Duration.ofMinutes(30);
 
     private int batchSize = 16 * 1024;
 
@@ -24,29 +26,29 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
 
     private int maxRequestSize = 1024 * 1024;
 
-    private int lingerMs = 0;
+    private Duration linger = Duration.ofMillis(0);
 
-    private int metricsSampleWindowMs = 30_000;
+    private Duration metricsSampleWindow = Duration.ofSeconds(30);
 
     private int maxInflightRequestsPerConnection = 5;
 
     private boolean reportNodeMetricsEnabled = false;
 
     @Override
-    public int getMaxBlockMs() {
-        return maxBlockMs;
+    public Duration getMaxBlock() {
+        return maxBlock;
     }
 
-    public void setMaxBlockMs(int maxBlockMs) {
-        this.maxBlockMs = maxBlockMs;
+    public void setMaxBlock(Duration maxBlock) {
+        this.maxBlock = maxBlock;
     }
 
     @Override
-    public int getMetadataMaxAge() {
+    public Duration getMetadataMaxAge() {
         return metadataMaxAge;
     }
 
-    public void setMetadataMaxAge(int metadataMaxAge) {
+    public void setMetadataMaxAge(Duration metadataMaxAge) {
         this.metadataMaxAge = metadataMaxAge;
     }
 
@@ -69,21 +71,21 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
     }
 
     @Override
-    public int getRetryBackoffMs() {
-        return retryBackoffMs;
+    public Duration getRetryBackoff() {
+        return retryBackoff;
     }
 
-    public void setRetryBackoffMs(int retryBackoffMs) {
-        this.retryBackoffMs = retryBackoffMs;
+    public void setRetryBackoff(Duration retryBackoff) {
+        this.retryBackoff = retryBackoff;
     }
 
     @Override
-    public int getRequestTimeoutMs() {
-        return requestTimeoutMs;
+    public Duration getRequestTimeout() {
+        return requestTimeout;
     }
 
-    public void setRequestTimeoutMs(int requestTimeoutMs) {
-        this.requestTimeoutMs = requestTimeoutMs;
+    public void setRequestTimeout(Duration requestTimeout) {
+        this.requestTimeout = requestTimeout;
     }
 
     @Override
@@ -114,21 +116,21 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
     }
 
     @Override
-    public int getLingerMs() {
-        return lingerMs;
+    public Duration getLinger() {
+        return linger;
     }
 
-    public void setLingerMs(int lingerMs) {
-        this.lingerMs = lingerMs;
+    public void setLinger(Duration linger) {
+        this.linger = linger;
     }
 
     @Override
-    public int getMetricsSampleWindowMs() {
-        return metricsSampleWindowMs;
+    public Duration getMetricsSampleWindow() {
+        return metricsSampleWindow;
     }
 
-    public void setMetricsSampleWindowMs(int metricsSampleWindowMs) {
-        this.metricsSampleWindowMs = metricsSampleWindowMs;
+    public void setMetricsSampleWindow(Duration metricsSampleWindow) {
+        this.metricsSampleWindow = metricsSampleWindow;
     }
 
     @Override

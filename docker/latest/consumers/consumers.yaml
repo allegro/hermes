@@ -16,6 +16,6 @@ consumer:
     consumerPerSubscription: 1
   schema:
     cache:
-      refreshAfterWriteMinutes: 1
+      refreshAfterWrite: 1m
     repository:
       serverUrl: "http://schema-registry:8081"

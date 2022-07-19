@@ -2,13 +2,15 @@ package pl.allegro.tech.hermes.common.config;
 
 import pl.allegro.tech.hermes.common.schema.SchemaVersionRepositoryParameters;
 
+import java.time.Duration;
+
 public class SchemaCacheProperties implements SchemaVersionRepositoryParameters {
 
-    private int refreshAfterWriteMinutes = 10;
+    private Duration refreshAfterWrite = Duration.ofMinutes(10);
 
-    private int expireAfterWriteMinutes = 60 * 24;
+    private Duration expireAfterWrite = Duration.ofHours(24);
 
-    private int compiledExpireAfterAccessMinutes = 60 * 40;
+    private Duration compiledExpireAfterAccess = Duration.ofHours(40);
 
     private int reloadThreadPoolSize = 2;
 
@@ -22,29 +24,29 @@ public class SchemaCacheProperties implements SchemaVersionRepositoryParameters 
     }
 
     @Override
-    public int getRefreshAfterWriteMinutes() {
-        return refreshAfterWriteMinutes;
+    public Duration getRefreshAfterWrite() {
+        return refreshAfterWrite;
     }
 
-    public void setRefreshAfterWriteMinutes(int refreshAfterWriteMinutes) {
-        this.refreshAfterWriteMinutes = refreshAfterWriteMinutes;
+    public void setRefreshAfterWrite(Duration refreshAfterWrite) {
+        this.refreshAfterWrite = refreshAfterWrite;
     }
 
     @Override
-    public int getExpireAfterWriteMinutes() {
-        return expireAfterWriteMinutes;
+    public Duration getExpireAfterWrite() {
+        return expireAfterWrite;
     }
 
-    public void setExpireAfterWriteMinutes(int expireAfterWriteMinutes) {
-        this.expireAfterWriteMinutes = expireAfterWriteMinutes;
+    public void setExpireAfterWrite(Duration expireAfterWrite) {
+        this.expireAfterWrite = expireAfterWrite;
     }
 
-    public int getCompiledExpireAfterAccessMinutes() {
-        return compiledExpireAfterAccessMinutes;
+    public Duration getCompiledExpireAfterAccess() {
+        return compiledExpireAfterAccess;
     }
 
-    public void setCompiledExpireAfterAccessMinutes(int compiledExpireAfterAccessMinutes) {
-        this.compiledExpireAfterAccessMinutes = compiledExpireAfterAccessMinutes;
+    public void setCompiledExpireAfterAccess(Duration compiledExpireAfterAccess) {
+        this.compiledExpireAfterAccess = compiledExpireAfterAccess;
     }
 
     @Override

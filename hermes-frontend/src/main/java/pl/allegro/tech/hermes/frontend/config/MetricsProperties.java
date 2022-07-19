@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "frontend.metrics")
 public class MetricsProperties implements MetricRegistryParameters {
 
@@ -12,13 +14,13 @@ public class MetricsProperties implements MetricRegistryParameters {
 
     private boolean consoleReporterEnabled = false;
 
-    private int counterExpireAfterAccess = 72;
+    private Duration counterExpireAfterAccess = Duration.ofHours(72);
 
     private String reservoirType = "exponentially_decaying";
 
     private String disabledAttributes = "M15_RATE, M5_RATE, MEAN, MEAN_RATE, MIN, STDDEV";
 
-    private int reportPeriod = 20;
+    private Duration reportPeriod = Duration.ofSeconds(20);
 
     @Override
     public boolean isZookeeperReporterEnabled() {
@@ -47,11 +49,11 @@ public class MetricsProperties implements MetricRegistryParameters {
         this.consoleReporterEnabled = consoleReporterEnabled;
     }
 
-    public int getCounterExpireAfterAccess() {
+    public Duration getCounterExpireAfterAccess() {
         return counterExpireAfterAccess;
     }
 
-    public void setCounterExpireAfterAccess(int counterExpireAfterAccess) {
+    public void setCounterExpireAfterAccess(Duration counterExpireAfterAccess) {
         this.counterExpireAfterAccess = counterExpireAfterAccess;
     }
 
@@ -74,11 +76,11 @@ public class MetricsProperties implements MetricRegistryParameters {
     }
 
     @Override
-    public int getReportPeriod() {
+    public Duration getReportPeriod() {
         return reportPeriod;
     }
 
-    public void setReportPeriod(int reportPeriod) {
+    public void setReportPeriod(Duration reportPeriod) {
         this.reportPeriod = reportPeriod;
     }
 }

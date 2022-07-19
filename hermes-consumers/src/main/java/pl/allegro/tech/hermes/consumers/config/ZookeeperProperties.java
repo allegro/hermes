@@ -2,21 +2,23 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperParameters;
 
+import java.time.Duration;
+
 public class ZookeeperProperties implements ZookeeperParameters {
 
     private String connectionString = "localhost:2181";
 
     private String datacenter = "dc";
 
-    private int baseSleepTime = 1000;
+    private Duration baseSleepTime = Duration.ofSeconds(1000);
 
-    private int maxSleepTimeSeconds = 30;
+    private Duration maxSleepTime = Duration.ofSeconds(30);
 
     private int maxRetries = 29;
 
-    private int connectionTimeout = 10_000;
+    private Duration connectionTimeout = Duration.ofSeconds(10);
 
-    private int sessionTimeout = 10_000;
+    private Duration sessionTimeout = Duration.ofSeconds(10);
 
     private String root = "/hermes";
 
@@ -42,21 +44,21 @@ public class ZookeeperProperties implements ZookeeperParameters {
     }
 
     @Override
-    public int getBaseSleepTime() {
+    public Duration getBaseSleepTime() {
         return baseSleepTime;
     }
 
-    public void setBaseSleepTime(int baseSleepTime) {
+    public void setBaseSleepTime(Duration baseSleepTime) {
         this.baseSleepTime = baseSleepTime;
     }
 
     @Override
-    public int getMaxSleepTimeSeconds() {
-        return maxSleepTimeSeconds;
+    public Duration getMaxSleepTime() {
+        return maxSleepTime;
     }
 
-    public void setMaxSleepTimeSeconds(int maxSleepTimeSeconds) {
-        this.maxSleepTimeSeconds = maxSleepTimeSeconds;
+    public void setMaxSleepTime(Duration maxSleepTime) {
+        this.maxSleepTime = maxSleepTime;
     }
 
     @Override
@@ -69,20 +71,20 @@ public class ZookeeperProperties implements ZookeeperParameters {
     }
 
     @Override
-    public int getConnectionTimeout() {
+    public Duration getConnectionTimeout() {
         return connectionTimeout;
     }
 
-    public void setConnectionTimeout(int connectionTimeout) {
+    public void setConnectionTimeout(Duration connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
     }
 
     @Override
-    public int getSessionTimeout() {
+    public Duration getSessionTimeout() {
         return sessionTimeout;
     }
 
-    public void setSessionTimeout(int sessionTimeout) {
+    public void setSessionTimeout(Duration sessionTimeout) {
         this.sessionTimeout = sessionTimeout;
     }
 

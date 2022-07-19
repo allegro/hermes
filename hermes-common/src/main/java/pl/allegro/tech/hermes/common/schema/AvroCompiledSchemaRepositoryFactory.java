@@ -7,20 +7,22 @@ import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
 
+import java.time.Duration;
+
 public class AvroCompiledSchemaRepositoryFactory {
 
     private final RawSchemaClient rawSchemaClient;
     private final int maximumSize;
-    private final int expireAfterAccessMinutes;
+    private final Duration expireAfterAccess;
     private final boolean cacheEnabled;
 
     public AvroCompiledSchemaRepositoryFactory(RawSchemaClient rawSchemaClient,
                                                int maximumSize,
-                                               int expireAfterAccessMinutes,
+                                               Duration expireAfterAccess,
                                                boolean cacheEnabled) {
         this.rawSchemaClient = rawSchemaClient;
         this.maximumSize = maximumSize;
-        this.expireAfterAccessMinutes = expireAfterAccessMinutes;
+        this.expireAfterAccess = expireAfterAccess;
         this.cacheEnabled = cacheEnabled;
     }
 
@@ -31,7 +33,7 @@ public class AvroCompiledSchemaRepositoryFactory {
         if (cacheEnabled) {
             return new CachedCompiledSchemaRepository<>(repository,
                     maximumSize,
-                    expireAfterAccessMinutes);
+                    expireAfterAccess);
         } else {
             return repository;
         }

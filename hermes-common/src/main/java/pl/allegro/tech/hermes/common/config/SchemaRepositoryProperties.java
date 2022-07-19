@@ -1,16 +1,18 @@
 package pl.allegro.tech.hermes.common.config;
 
+import java.time.Duration;
+
 public class SchemaRepositoryProperties {
 
     private String serverUrl = "http://localhost:8888/";
 
-    private int httpReadTimeoutMs = 2000;
+    private Duration httpReadTimeout = Duration.ofSeconds(2);
 
-    private int httpConnectTimeoutMs = 2000;
+    private Duration httpConnectTimeout = Duration.ofSeconds(2000);
 
     private double onlineCheckPermitsPerSecond = 100.0;
 
-    private int onlineCheckAcquireWaitMs = 500;
+    private Duration onlineCheckAcquireWait = Duration.ofMillis(500);
 
     private boolean subjectSuffixEnabled = false;
 
@@ -24,20 +26,20 @@ public class SchemaRepositoryProperties {
         this.serverUrl = serverUrl;
     }
 
-    public int getHttpReadTimeoutMs() {
-        return httpReadTimeoutMs;
+    public Duration getHttpReadTimeout() {
+        return httpReadTimeout;
     }
 
-    public void setHttpReadTimeoutMs(int httpReadTimeoutMs) {
-        this.httpReadTimeoutMs = httpReadTimeoutMs;
+    public void setHttpReadTimeout(Duration httpReadTimeout) {
+        this.httpReadTimeout = httpReadTimeout;
     }
 
-    public int getHttpConnectTimeoutMs() {
-        return httpConnectTimeoutMs;
+    public Duration getHttpConnectTimeout() {
+        return httpConnectTimeout;
     }
 
-    public void setHttpConnectTimeoutMs(int httpConnectTimeoutMs) {
-        this.httpConnectTimeoutMs = httpConnectTimeoutMs;
+    public void setHttpConnectTimeout(Duration httpConnectTimeout) {
+        this.httpConnectTimeout = httpConnectTimeout;
     }
 
     public double getOnlineCheckPermitsPerSecond() {
@@ -48,12 +50,12 @@ public class SchemaRepositoryProperties {
         this.onlineCheckPermitsPerSecond = onlineCheckPermitsPerSecond;
     }
 
-    public int getOnlineCheckAcquireWaitMs() {
-        return onlineCheckAcquireWaitMs;
+    public Duration getOnlineCheckAcquireWait() {
+        return onlineCheckAcquireWait;
     }
 
-    public void setOnlineCheckAcquireWaitMs(int onlineCheckAcquireWaitMs) {
-        this.onlineCheckAcquireWaitMs = onlineCheckAcquireWaitMs;
+    public void setOnlineCheckAcquireWait(Duration onlineCheckAcquireWait) {
+        this.onlineCheckAcquireWait = onlineCheckAcquireWait;
     }
 
     public boolean isSubjectSuffixEnabled() {

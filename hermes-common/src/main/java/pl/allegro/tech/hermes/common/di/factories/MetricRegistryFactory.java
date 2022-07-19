@@ -68,17 +68,17 @@ public class MetricRegistryFactory {
                             graphiteParameters.getHost(),
                             graphiteParameters.getPort()
                     )))
-                    .start(metricRegistryParameters.getReportPeriod(), TimeUnit.SECONDS);
+                    .start(metricRegistryParameters.getReportPeriod().toSeconds(), TimeUnit.SECONDS);
         }
         if (metricRegistryParameters.isConsoleReporterEnabled()) {
             ConsoleReporter.forRegistry(registry).build().start(
-                    metricRegistryParameters.getReportPeriod(), TimeUnit.SECONDS
+                    metricRegistryParameters.getReportPeriod().toSeconds(), TimeUnit.SECONDS
             );
         }
 
         if (metricRegistryParameters.isZookeeperReporterEnabled()) {
             new ZookeeperCounterReporter(registry, counterStorage, graphiteParameters.getPrefix()).start(
-                    metricRegistryParameters.getReportPeriod(),
+                    metricRegistryParameters.getReportPeriod().toSeconds(),
                     TimeUnit.SECONDS
             );
         }

@@ -47,20 +47,20 @@ public class KafkaMessageProducerFactory {
     public Producers provide() {
         Map<String, Object> props = new HashMap<>();
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
-        props.put(MAX_BLOCK_MS_CONFIG, kafkaProducerParameters.getMaxBlockMs());
+        props.put(MAX_BLOCK_MS_CONFIG, (int) kafkaProducerParameters.getMaxBlock().toMillis());
         props.put(COMPRESSION_TYPE_CONFIG, kafkaProducerParameters.getCompressionCodec());
         props.put(BUFFER_MEMORY_CONFIG, bufferedSizeBytes);
-        props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaProducerParameters.getRequestTimeoutMs());
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, (int) kafkaProducerParameters.getRequestTimeout().toMillis());
         props.put(BATCH_SIZE_CONFIG, kafkaProducerParameters.getBatchSize());
         props.put(SEND_BUFFER_CONFIG, kafkaProducerParameters.getTcpSendBuffer());
         props.put(RETRIES_CONFIG, kafkaProducerParameters.getRetries());
-        props.put(RETRY_BACKOFF_MS_CONFIG, kafkaProducerParameters.getRetryBackoffMs());
-        props.put(METADATA_MAX_AGE_CONFIG, kafkaProducerParameters.getMetadataMaxAge());
+        props.put(RETRY_BACKOFF_MS_CONFIG, (int) kafkaProducerParameters.getRetryBackoff().toMillis());
+        props.put(METADATA_MAX_AGE_CONFIG, (int) kafkaProducerParameters.getMetadataMaxAge().toMillis());
         props.put(KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
         props.put(VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
         props.put(MAX_REQUEST_SIZE_CONFIG, kafkaProducerParameters.getMaxRequestSize());
-        props.put(LINGER_MS_CONFIG, kafkaProducerParameters.getLingerMs());
-        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, kafkaProducerParameters.getMetricsSampleWindowMs());
+        props.put(LINGER_MS_CONFIG, (int) kafkaProducerParameters.getLinger().toMillis());
+        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaProducerParameters.getMetricsSampleWindow().toMillis());
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
 
         if (kafkaParameters.isEnabled()) {

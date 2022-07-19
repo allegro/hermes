@@ -51,7 +51,7 @@ public class FrontendProducerConfiguration {
                                                                KafkaClustersProperties kafkaClustersProperties,
                                                                DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new KafkaTopicMetadataFetcherFactory(kafkaProperties, kafkaProducerProperties.getMetadataMaxAge(), kafkaProperties.getAdminRequestTimeoutMs()).provide();
+        return new KafkaTopicMetadataFetcherFactory(kafkaProperties, kafkaProducerProperties.getMetadataMaxAge(), (int) kafkaProperties.getAdminRequestTimeout().toMillis()).provide();
     }
 
     @Bean

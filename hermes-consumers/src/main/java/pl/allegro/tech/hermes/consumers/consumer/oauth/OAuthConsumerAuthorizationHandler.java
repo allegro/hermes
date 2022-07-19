@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,10 +28,10 @@ public class OAuthConsumerAuthorizationHandler implements ConsumerAuthorizationH
     private final RateLimiter missingHandlersCreationRateLimiter;
 
     public OAuthConsumerAuthorizationHandler(OAuthSubscriptionHandlerFactory handlerFactory,
-                                             long missingSubscriptionHandlersCreationDelay,
+                                             Duration missingSubscriptionHandlersCreationDelay,
                                              OAuthProvidersNotifyingCache oAuthProvidersCache) {
         this.handlerFactory = handlerFactory;
-        this.missingHandlersCreationRateLimiter = RateLimiter.create(1000.0 / missingSubscriptionHandlersCreationDelay);
+        this.missingHandlersCreationRateLimiter = RateLimiter.create(missingSubscriptionHandlersCreationDelay.toSeconds());
         oAuthProvidersCache.setListener(this);
     }
 

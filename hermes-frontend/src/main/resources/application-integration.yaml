@@ -19,22 +19,22 @@ frontend:
     idleTimeout: 2000ms
   metrics:
     graphiteReporterEnabled: true
-    reportPeriod: 1
+    reportPeriod: 1s
   graphite:
     port: 18023
   zookeeper:
     clusters:
       -
         connectionString: "localhost:14192"
-        connectionTimeout: 10000
-        sessionTimeout: 10000
+        connectionTimeout: 10s
+        sessionTimeout: 10s
         authorization:
           enabled: false
           user: admin
           password: admin
   kafka:
     producer:
-      retryBackoffMs: 100
+      retryBackoff: 100ms
     namespace: "itTest"
     clusters:
       -

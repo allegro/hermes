@@ -43,7 +43,7 @@ public class SchemaConfiguration {
                                                                          SchemaProperties schemaProperties) {
         return new AvroCompiledSchemaRepositoryFactory(
                 rawSchemaClient, schemaProperties.getCache().getCompiledMaximumSize(),
-                schemaProperties.getCache().getCompiledExpireAfterAccessMinutes(), schemaProperties.getCache().isEnabled()
+                schemaProperties.getCache().getCompiledExpireAfterAccess(), schemaProperties.getCache().isEnabled()
         ).provide();
     }
 
@@ -66,8 +66,8 @@ public class SchemaConfiguration {
     @Bean
     public Client schemaRepositoryClient(ObjectMapper mapper, SchemaProperties schemaProperties) {
         ClientConfig config = new ClientConfig()
-                .property(ClientProperties.READ_TIMEOUT, schemaProperties.getRepository().getHttpReadTimeoutMs())
-                .property(ClientProperties.CONNECT_TIMEOUT, schemaProperties.getRepository().getHttpConnectTimeoutMs())
+                .property(ClientProperties.READ_TIMEOUT, (int) schemaProperties.getRepository().getHttpReadTimeout().toMillis())
+                .property(ClientProperties.CONNECT_TIMEOUT, (int) schemaProperties.getRepository().getHttpConnectTimeout().toMillis())
                 .register(new JacksonJsonProvider(mapper));
 
         return ClientBuilder.newClient(config);

@@ -66,18 +66,18 @@ consumer:
     consumerPerSubscription: 1
   metrics:
     graphiteReporterEnabled: true
-    reportPeriod: 1
+    reportPeriod: 1s
   graphite:
     port: 18023
   schema:
     cache:
-      refreshAfterWriteMinutes: 1
+      refreshAfterWrite: 1m
   zookeeper:
     clusters:
       -
         connectionString: "localhost:14192"
-        connectionTimeout: 10000
-        sessionTimeout: 10000
+        connectionTimeout: 10s
+        sessionTimeout: 10s
         authorization:
           enabled: false
           user: admin

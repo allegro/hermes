@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
+import java.time.Duration;
+
 public interface MetricRegistryParameters {
 
     boolean isZookeeperReporterEnabled();
@@ -12,5 +14,5 @@ public interface MetricRegistryParameters {
 
     String getDisabledAttributes();
 
-    int getReportPeriod();
+    Duration getReportPeriod();
 }

@@ -44,9 +44,6 @@ public class CuratorClientFactory {
     }
 
     public CuratorFramework provide(String connectString, Optional<ZookeeperAuthorization> zookeeperAuthorization) {
-        int baseSleepTime = zookeeperParameters.getBaseSleepTime();
-        int maxRetries = zookeeperParameters.getMaxRetries();
-        int maxSleepTime = Ints.saturatedCast(ofSeconds(zookeeperParameters.getMaxSleepTimeSeconds()).toMillis());
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("hermes-curator-%d")
                 .setUncaughtExceptionHandler((t, e) ->
@@ -54,9 +51,15 @@ public class CuratorClientFactory {
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .threadFactory(threadFactory)
                 .connectString(connectString)
-                .sessionTimeoutMs(zookeeperParameters.getSessionTimeout())
-                .connectionTimeoutMs(zookeeperParameters.getConnectionTimeout())
-                .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries, maxSleepTime));
+                .sessionTimeoutMs((int) zookeeperParameters.getSessionTimeout().toMillis())
+                .connectionTimeoutMs((int) zookeeperParameters.getConnectionTimeout().toMillis())
+                .retryPolicy(
+                        new ExponentialBackoffRetry(
+                                (int) zookeeperParameters.getBaseSleepTime().toMillis(),
+                                zookeeperParameters.getMaxRetries(),
+                                (int) zookeeperParameters.getMaxSleepTime().toMillis()
+                        )
+                );
 
         zookeeperAuthorization.ifPresent(it -> builder.authorization(it.scheme, it.getAuth()));
 

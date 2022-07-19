@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import org.apache.kafka.clients.admin.AdminClient;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
+import java.time.Duration;
 import java.util.Properties;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
@@ -16,11 +17,11 @@ public class KafkaTopicMetadataFetcherFactory {
 
     private final KafkaParameters kafkaParameters;
 
-    private final int metadataMaxAge;
+    private final Duration metadataMaxAge;
 
     private final int requestTimeoutMs;
 
-    public KafkaTopicMetadataFetcherFactory(KafkaParameters kafkaParameters, int metadataMaxAge, int requestTimeoutMs) {
+    public KafkaTopicMetadataFetcherFactory(KafkaParameters kafkaParameters, Duration metadataMaxAge, int requestTimeoutMs) {
         this.kafkaParameters = kafkaParameters;
         this.metadataMaxAge = metadataMaxAge;
         this.requestTimeoutMs = requestTimeoutMs;

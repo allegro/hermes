@@ -1,18 +1,20 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
+import java.time.Duration;
+
 public interface ZookeeperParameters {
 
     String getConnectionString();
 
-    int getBaseSleepTime();
+    Duration getBaseSleepTime();
 
-    int getMaxSleepTimeSeconds();
+    Duration getMaxSleepTime();
 
     int getMaxRetries();
 
-    int getConnectionTimeout();
+    Duration getConnectionTimeout();
 
-    int getSessionTimeout();
+    Duration getSessionTimeout();
 
     String getRoot();
 

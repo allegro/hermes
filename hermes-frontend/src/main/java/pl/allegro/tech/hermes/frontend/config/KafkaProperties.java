@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.frontend.config;
 import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
+import java.time.Duration;
+
 public class KafkaProperties implements KafkaParameters {
 
     private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
@@ -13,7 +15,7 @@ public class KafkaProperties implements KafkaParameters {
 
     private String brokerList = "localhost:9092";
 
-    private int adminRequestTimeoutMs = 5 * 60 * 1000;
+    private Duration adminRequestTimeout = Duration.ofMinutes(5);
 
     public KafkaAuthorizationProperties getAuthorization() {
         return authorization;
@@ -72,11 +74,11 @@ public class KafkaProperties implements KafkaParameters {
         this.brokerList = brokerList;
     }
 
-    public int getAdminRequestTimeoutMs() {
-        return adminRequestTimeoutMs;
+    public Duration getAdminRequestTimeout() {
+        return adminRequestTimeout;
     }
 
-    public void setAdminRequestTimeoutMs(int adminRequestTimeoutMs) {
-        this.adminRequestTimeoutMs = adminRequestTimeoutMs;
+    public void setAdminRequestTimeout(Duration adminRequestTimeout) {
+        this.adminRequestTimeout = adminRequestTimeout;
     }
 }

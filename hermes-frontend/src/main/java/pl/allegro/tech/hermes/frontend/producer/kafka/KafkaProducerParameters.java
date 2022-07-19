@@ -1,18 +1,20 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import java.time.Duration;
+
 public interface KafkaProducerParameters {
 
-    int getMaxBlockMs();
+    Duration getMaxBlock();
 
-    int getMetadataMaxAge();
+    Duration getMetadataMaxAge();
 
     String getCompressionCodec();
 
     int getRetries();
 
-    int getRetryBackoffMs();
+    Duration getRetryBackoff();
 
-    int getRequestTimeoutMs();
+    Duration getRequestTimeout();
 
     int getBatchSize();
 
@@ -20,9 +22,9 @@ public interface KafkaProducerParameters {
 
     int getMaxRequestSize();
 
-    int getLingerMs();
+    Duration getLinger();
 
-    int getMetricsSampleWindowMs();
+    Duration getMetricsSampleWindow();
 
     int getMaxInflightRequestsPerConnection();
 

@@ -206,7 +206,7 @@ public class CommonConfiguration {
     public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(SchemaProperties schemaProperties) {
         return new SchemaOnlineChecksWaitingRateLimiter(
                 schemaProperties.getRepository().getOnlineCheckPermitsPerSecond(),
-                schemaProperties.getRepository().getOnlineCheckAcquireWaitMs()
+                schemaProperties.getRepository().getOnlineCheckAcquireWait()
         );
     }
 

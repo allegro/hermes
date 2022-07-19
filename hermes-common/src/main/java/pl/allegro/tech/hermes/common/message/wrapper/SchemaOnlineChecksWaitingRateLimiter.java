@@ -2,21 +2,22 @@ package pl.allegro.tech.hermes.common.message.wrapper;
 
 import com.google.common.util.concurrent.RateLimiter;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public class SchemaOnlineChecksWaitingRateLimiter implements SchemaOnlineChecksRateLimiter {
 
     private final RateLimiter rateLimiter;
 
-    private final int onlineCheckAcquireWaitMs;
+    private final Duration onlineCheckAcquireWait;
 
-    public SchemaOnlineChecksWaitingRateLimiter(double onlineCheckPermitsPerSeconds, int onlineCheckAcquireWaitMs) {
+    public SchemaOnlineChecksWaitingRateLimiter(double onlineCheckPermitsPerSeconds, Duration onlineCheckAcquireWait) {
         this.rateLimiter = RateLimiter.create(onlineCheckPermitsPerSeconds);
-        this.onlineCheckAcquireWaitMs = onlineCheckAcquireWaitMs;
+        this.onlineCheckAcquireWait = onlineCheckAcquireWait;
     }
 
     @Override
     public boolean tryAcquireOnlineCheckPermit() {
-        return rateLimiter.tryAcquire(onlineCheckAcquireWaitMs, TimeUnit.MILLISECONDS);
+        return rateLimiter.tryAcquire(onlineCheckAcquireWait.toMillis(), TimeUnit.MILLISECONDS);
     }
 }

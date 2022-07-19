@@ -34,8 +34,8 @@ public class SchemaVersionsRepositoryFactory {
             CachedSchemaVersionsRepository cachedSchemaVersionsRepository = new CachedSchemaVersionsRepository(
                     rawSchemaClient,
                     getVersionsReloader(),
-                    schemaVersionsRepositoryParameters.getRefreshAfterWriteMinutes(),
-                    schemaVersionsRepositoryParameters.getExpireAfterWriteMinutes());
+                    schemaVersionsRepositoryParameters.getRefreshAfterWrite(),
+                    schemaVersionsRepositoryParameters.getExpireAfterWrite());
 
             notificationsBus.registerTopicCallback(
                     new SchemaCacheRefresherCallback(

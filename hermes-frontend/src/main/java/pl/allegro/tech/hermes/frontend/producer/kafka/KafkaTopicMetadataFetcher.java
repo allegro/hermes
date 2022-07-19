@@ -11,6 +11,7 @@ import org.apache.kafka.clients.admin.DescribeConfigsResult;
 import org.apache.kafka.common.config.ConfigResource;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -21,11 +22,11 @@ public class KafkaTopicMetadataFetcher {
     private final LoadingCache<String, Integer> minInSyncReplicasCache;
     private final AdminClient adminClient;
 
-    KafkaTopicMetadataFetcher(AdminClient adminClient, int metadataMaxAgeMs) {
+    KafkaTopicMetadataFetcher(AdminClient adminClient, Duration metadataMaxAge) {
         this.adminClient = adminClient;
         this.minInSyncReplicasCache = CacheBuilder
                 .newBuilder()
-                .expireAfterWrite(metadataMaxAgeMs, MILLISECONDS)
+                .expireAfterWrite(metadataMaxAge.toMillis(), MILLISECONDS)
                 .build(new MinInSyncReplicasLoader());
     }
 
