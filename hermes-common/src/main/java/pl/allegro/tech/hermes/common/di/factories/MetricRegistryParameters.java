@@ -1,54 +1,16 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
-public class MetricRegistryParameters {
+public interface MetricRegistryParameters {
 
-    private final boolean zookeeperReporterEnabled;
+    boolean isZookeeperReporterEnabled();
 
-    private final boolean graphiteReporterEnabled;
+    boolean isGraphiteReporterEnabled();
 
-    private final boolean consoleReporterEnabled;
+    boolean isConsoleReporterEnabled();
 
-    private final String reservoirType;
+    String getReservoirType();
 
-    private final String disabledAttributes;
+    String getDisabledAttributes();
 
-    private final int reportPeriod;
-
-    public boolean isZookeeperReporterEnabled() {
-        return zookeeperReporterEnabled;
-    }
-
-    public boolean isGraphiteReporterEnabled() {
-        return graphiteReporterEnabled;
-    }
-
-    public boolean isConsoleReporterEnabled() {
-        return consoleReporterEnabled;
-    }
-
-    public String getReservoirType() {
-        return reservoirType;
-    }
-
-    public String getDisabledAttributes() {
-        return disabledAttributes;
-    }
-
-    public int getReportPeriod() {
-        return reportPeriod;
-    }
-
-    public MetricRegistryParameters(boolean zookeeperReporterEnabled,
-                                    boolean graphiteReporterEnabled,
-                                    boolean consoleReporterEnabled,
-                                    String reservoirType,
-                                    String disabledAttributes,
-                                    int reportPeriod) {
-        this.zookeeperReporterEnabled = zookeeperReporterEnabled;
-        this.graphiteReporterEnabled = graphiteReporterEnabled;
-        this.consoleReporterEnabled = consoleReporterEnabled;
-        this.reservoirType = reservoirType;
-        this.disabledAttributes = disabledAttributes;
-        this.reportPeriod = reportPeriod;
-    }
+    int getReportPeriod();
 }

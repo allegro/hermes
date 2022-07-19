@@ -42,13 +42,13 @@ public class BroadcastDeliveryTest extends IntegrationTest {
         operations.createBroadcastSubscription(topic, "broadcastSubscription", endpointUrl);
 
         TestMessage message = TestMessage.random();
-        remoteServices.stream().forEach(remoteService -> remoteService.expectMessages(message.body()));
+        remoteServices.forEach(remoteService -> remoteService.expectMessages(message.body()));
 
         // when
         publisher.publish(topic.getQualifiedName(), message.body());
 
         // then
-        remoteServices.stream().forEach(service -> service.waitUntilReceived());
+        remoteServices.forEach(RemoteServiceEndpoint::waitUntilReceived);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class BroadcastDeliveryTest extends IntegrationTest {
         publisher.publish(topic.getQualifiedName(), message.body());
 
         // then
-        remoteServices.stream().skip(1).forEach(service -> service.waitUntilReceived());
+        remoteServices.stream().skip(1).forEach(RemoteServiceEndpoint::waitUntilReceived);
         firstRemoteService.waitUntilReceived(60, 2);
     }
 
@@ -79,13 +79,13 @@ public class BroadcastDeliveryTest extends IntegrationTest {
 
         TestMessage message = TestMessage.random();
         firstRemoteService.setReturnedStatusCode(400);
-        remoteServices.stream().forEach(remoteService -> remoteService.expectMessages(message.body()));
+        remoteServices.forEach(remoteService -> remoteService.expectMessages(message.body()));
 
         // when
         publisher.publish(topic.getQualifiedName(), message.body());
 
         // then
-        remoteServices.stream().forEach(service -> service.waitUntilReceived(5));
+        remoteServices.forEach(service -> service.waitUntilReceived(5));
     }
 
     private RemoteServiceEndpoint createRemoteServiceEndpoint() {

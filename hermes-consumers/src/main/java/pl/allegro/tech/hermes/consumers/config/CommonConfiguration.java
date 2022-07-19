@@ -122,13 +122,13 @@ public class CommonConfiguration {
     @Bean(destroyMethod = "close")
     public CuratorFramework hermesCurator(ZookeeperClustersProperties zookeeperClustersProperties, CuratorClientFactory curatorClientFactory, DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-        return new HermesCuratorClientFactory(zookeeperProperties.toZookeeperParameters(), curatorClientFactory).provide();
+        return new HermesCuratorClientFactory(zookeeperProperties, curatorClientFactory).provide();
     }
 
     @Bean
     public CuratorClientFactory curatorClientFactory(ZookeeperClustersProperties zookeeperClustersProperties, DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-        return new CuratorClientFactory(zookeeperProperties.toZookeeperParameters());
+        return new CuratorClientFactory(zookeeperProperties);
     }
 
     @Bean
@@ -142,7 +142,7 @@ public class CommonConfiguration {
                                                                                ZookeeperClustersProperties zookeeperClustersProperties,
                                                                                DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-        return new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties.toZookeeperParameters()).provide();
+        return new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties).provide();
     }
 
     @Bean
@@ -245,7 +245,7 @@ public class CommonConfiguration {
                                          CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
                                          @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(metricsProperties.toMetricRegistryParameters(), graphiteProperties.toGraphiteParameters(), counterStorage, instanceIdResolver, moduleName)
+        return new MetricRegistryFactory(metricsProperties, graphiteProperties, counterStorage, instanceIdResolver, moduleName)
                 .provide();
     }
 

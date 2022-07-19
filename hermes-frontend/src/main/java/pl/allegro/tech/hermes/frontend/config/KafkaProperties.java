@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
-public class KafkaProperties {
+public class KafkaProperties implements KafkaParameters {
 
     private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
 
@@ -39,6 +39,31 @@ public class KafkaProperties {
         this.clusterName = clusterName;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return authorization.isEnabled();
+    }
+
+    @Override
+    public String getMechanism() {
+        return authorization.getMechanism();
+    }
+
+    @Override
+    public String getProtocol() {
+        return authorization.getProtocol();
+    }
+
+    @Override
+    public String getUsername() {
+        return authorization.getUsername();
+    }
+
+    @Override
+    public String getPassword() {
+        return authorization.getPassword();
+    }
+
     public String getBrokerList() {
         return brokerList;
     }
@@ -53,16 +78,5 @@ public class KafkaProperties {
 
     public void setAdminRequestTimeoutMs(int adminRequestTimeoutMs) {
         this.adminRequestTimeoutMs = adminRequestTimeoutMs;
-    }
-
-    protected KafkaParameters toKafkaAuthorizationParameters() {
-        return new KafkaParameters(
-                this.authorization.isEnabled(),
-                this.authorization.getMechanism(),
-                this.authorization.getProtocol(),
-                this.authorization.getUsername(),
-                this.authorization.getPassword(),
-                this.brokerList
-        );
     }
 }

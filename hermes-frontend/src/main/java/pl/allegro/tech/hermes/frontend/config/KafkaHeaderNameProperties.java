@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderNameParameters;
 
 @ConfigurationProperties(prefix = "frontend.kafka.header.name")
-public class KafkaHeaderNameProperties {
+public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters{
 
     private String messageId = "id";
 
@@ -14,6 +14,7 @@ public class KafkaHeaderNameProperties {
 
     private String schemaId = "sid";
 
+    @Override
     public String getMessageId() {
         return messageId;
     }
@@ -22,6 +23,7 @@ public class KafkaHeaderNameProperties {
         this.messageId = messageId;
     }
 
+    @Override
     public String getTimestamp() {
         return timestamp;
     }
@@ -30,6 +32,7 @@ public class KafkaHeaderNameProperties {
         this.timestamp = timestamp;
     }
 
+    @Override
     public String getSchemaVersion() {
         return schemaVersion;
     }
@@ -38,20 +41,12 @@ public class KafkaHeaderNameProperties {
         this.schemaVersion = schemaVersion;
     }
 
+    @Override
     public String getSchemaId() {
         return schemaId;
     }
 
     public void setSchemaId(String schemaId) {
         this.schemaId = schemaId;
-    }
-
-    public KafkaHeaderNameParameters toKafkaHeaderNameParameters() {
-        return new KafkaHeaderNameParameters(
-                this.messageId,
-                this.timestamp,
-                this.schemaVersion,
-                this.schemaId
-        );
     }
 }

@@ -101,7 +101,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
-                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties.toKafkaHeaderNameParameters()),
+                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties),
                         schemaProperties.isIdHeaderEnabled()
                 )
         )

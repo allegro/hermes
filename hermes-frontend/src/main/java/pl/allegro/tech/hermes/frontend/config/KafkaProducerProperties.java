@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducerParameters;
 
 @ConfigurationProperties(prefix = "frontend.kafka.producer")
-public class KafkaProducerProperties {
+public class KafkaProducerProperties implements KafkaProducerParameters {
 
     private int maxBlockMs = 500;
 
@@ -32,6 +32,7 @@ public class KafkaProducerProperties {
 
     private boolean reportNodeMetricsEnabled = false;
 
+    @Override
     public int getMaxBlockMs() {
         return maxBlockMs;
     }
@@ -40,6 +41,7 @@ public class KafkaProducerProperties {
         this.maxBlockMs = maxBlockMs;
     }
 
+    @Override
     public int getMetadataMaxAge() {
         return metadataMaxAge;
     }
@@ -48,6 +50,7 @@ public class KafkaProducerProperties {
         this.metadataMaxAge = metadataMaxAge;
     }
 
+    @Override
     public String getCompressionCodec() {
         return compressionCodec;
     }
@@ -56,6 +59,7 @@ public class KafkaProducerProperties {
         this.compressionCodec = compressionCodec;
     }
 
+    @Override
     public int getRetries() {
         return retries;
     }
@@ -64,6 +68,7 @@ public class KafkaProducerProperties {
         this.retries = retries;
     }
 
+    @Override
     public int getRetryBackoffMs() {
         return retryBackoffMs;
     }
@@ -72,6 +77,7 @@ public class KafkaProducerProperties {
         this.retryBackoffMs = retryBackoffMs;
     }
 
+    @Override
     public int getRequestTimeoutMs() {
         return requestTimeoutMs;
     }
@@ -80,6 +86,7 @@ public class KafkaProducerProperties {
         this.requestTimeoutMs = requestTimeoutMs;
     }
 
+    @Override
     public int getBatchSize() {
         return batchSize;
     }
@@ -88,6 +95,7 @@ public class KafkaProducerProperties {
         this.batchSize = batchSize;
     }
 
+    @Override
     public int getTcpSendBuffer() {
         return tcpSendBuffer;
     }
@@ -96,6 +104,7 @@ public class KafkaProducerProperties {
         this.tcpSendBuffer = tcpSendBuffer;
     }
 
+    @Override
     public int getMaxRequestSize() {
         return maxRequestSize;
     }
@@ -104,6 +113,7 @@ public class KafkaProducerProperties {
         this.maxRequestSize = maxRequestSize;
     }
 
+    @Override
     public int getLingerMs() {
         return lingerMs;
     }
@@ -112,6 +122,7 @@ public class KafkaProducerProperties {
         this.lingerMs = lingerMs;
     }
 
+    @Override
     public int getMetricsSampleWindowMs() {
         return metricsSampleWindowMs;
     }
@@ -120,6 +131,7 @@ public class KafkaProducerProperties {
         this.metricsSampleWindowMs = metricsSampleWindowMs;
     }
 
+    @Override
     public int getMaxInflightRequestsPerConnection() {
         return maxInflightRequestsPerConnection;
     }
@@ -128,29 +140,12 @@ public class KafkaProducerProperties {
         this.maxInflightRequestsPerConnection = maxInflightRequestsPerConnection;
     }
 
+    @Override
     public boolean isReportNodeMetricsEnabled() {
         return reportNodeMetricsEnabled;
     }
 
     public void setReportNodeMetricsEnabled(boolean reportNodeMetricsEnabled) {
         this.reportNodeMetricsEnabled = reportNodeMetricsEnabled;
-    }
-
-    protected KafkaProducerParameters toKafkaProducerParameters() {
-        return new KafkaProducerParameters(
-                this.maxBlockMs,
-                this.metadataMaxAge,
-                this.compressionCodec,
-                this.retries,
-                this.retryBackoffMs,
-                this.requestTimeoutMs,
-                this.batchSize,
-                this.tcpSendBuffer,
-                this.maxRequestSize,
-                this.lingerMs,
-                this.metricsSampleWindowMs,
-                this.maxInflightRequestsPerConnection,
-                this.reportNodeMetricsEnabled
-        );
     }
 }

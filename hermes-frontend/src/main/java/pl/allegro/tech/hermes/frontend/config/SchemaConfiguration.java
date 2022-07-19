@@ -78,7 +78,7 @@ public class SchemaConfiguration {
                                                                     SchemaProperties schemaProperties,
                                                                     InternalNotificationsBus notificationsBus,
                                                                     CompiledSchemaRepository<?> compiledSchemaRepository) {
-        return new SchemaVersionsRepositoryFactory(rawSchemaClient, schemaProperties.getCache().toSchemaVersionRepositoryParameters(), notificationsBus, compiledSchemaRepository)
+        return new SchemaVersionsRepositoryFactory(rawSchemaClient, schemaProperties.getCache(), notificationsBus, compiledSchemaRepository)
                 .provide();
     }
 }

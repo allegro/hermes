@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryParameters;
 
 @ConfigurationProperties(prefix = "consumer.metrics")
-public class MetricsProperties {
+public class MetricsProperties implements MetricRegistryParameters {
 
     private boolean zookeeperReporterEnabled = true;
 
@@ -20,6 +20,7 @@ public class MetricsProperties {
 
     private int reportPeriod = 20;
 
+    @Override
     public boolean isZookeeperReporterEnabled() {
         return zookeeperReporterEnabled;
     }
@@ -28,6 +29,7 @@ public class MetricsProperties {
         this.zookeeperReporterEnabled = zookeeperReporterEnabled;
     }
 
+    @Override
     public boolean isGraphiteReporterEnabled() {
         return graphiteReporterEnabled;
     }
@@ -36,6 +38,7 @@ public class MetricsProperties {
         this.graphiteReporterEnabled = graphiteReporterEnabled;
     }
 
+    @Override
     public boolean isConsoleReporterEnabled() {
         return consoleReporterEnabled;
     }
@@ -52,6 +55,7 @@ public class MetricsProperties {
         this.counterExpireAfterAccess = counterExpireAfterAccess;
     }
 
+    @Override
     public String getReservoirType() {
         return reservoirType;
     }
@@ -60,6 +64,7 @@ public class MetricsProperties {
         this.reservoirType = reservoirType;
     }
 
+    @Override
     public String getDisabledAttributes() {
         return disabledAttributes;
     }
@@ -68,22 +73,12 @@ public class MetricsProperties {
         this.disabledAttributes = disabledAttributes;
     }
 
+    @Override
     public int getReportPeriod() {
         return reportPeriod;
     }
 
     public void setReportPeriod(int reportPeriod) {
         this.reportPeriod = reportPeriod;
-    }
-
-    protected MetricRegistryParameters toMetricRegistryParameters() {
-        return new MetricRegistryParameters(
-                this.zookeeperReporterEnabled,
-                this.graphiteReporterEnabled,
-                this.consoleReporterEnabled,
-                this.reservoirType,
-                this.disabledAttributes,
-                this.reportPeriod
-        );
     }
 }

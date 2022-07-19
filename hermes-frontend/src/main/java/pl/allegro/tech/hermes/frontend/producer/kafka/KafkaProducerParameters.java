@@ -1,110 +1,30 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-public class KafkaProducerParameters {
+public interface KafkaProducerParameters {
 
-    private final int maxBlockMs;
+    int getMaxBlockMs();
 
-    private final int metadataMaxAge;
+    int getMetadataMaxAge();
 
-    private final String compressionCodec;
+    String getCompressionCodec();
 
-    private final int retries;
+    int getRetries();
 
-    private final int retryBackoffMs;
+    int getRetryBackoffMs();
 
-    private final int requestTimeoutMs;
+    int getRequestTimeoutMs();
 
-    private final int batchSize;
+    int getBatchSize();
 
-    private final int tcpSendBuffer;
+    int getTcpSendBuffer();
 
-    private final int maxRequestSize;
+    int getMaxRequestSize();
 
-    private final int lingerMs;
+    int getLingerMs();
 
-    private final int metricsSampleWindowMs;
+    int getMetricsSampleWindowMs();
 
-    private final int maxInflightRequestsPerConnection;
+    int getMaxInflightRequestsPerConnection();
 
-    private final boolean reportNodeMetricsEnabled;
-
-    public int getMaxBlockMs() {
-        return maxBlockMs;
-    }
-
-    public int getMetadataMaxAge() {
-        return metadataMaxAge;
-    }
-
-    public String getCompressionCodec() {
-        return compressionCodec;
-    }
-
-    public int getRetries() {
-        return retries;
-    }
-
-    public int getRetryBackoffMs() {
-        return retryBackoffMs;
-    }
-
-    public int getRequestTimeoutMs() {
-        return requestTimeoutMs;
-    }
-
-    public int getBatchSize() {
-        return batchSize;
-    }
-
-    public int getTcpSendBuffer() {
-        return tcpSendBuffer;
-    }
-
-    public int getMaxRequestSize() {
-        return maxRequestSize;
-    }
-
-    public int getLingerMs() {
-        return lingerMs;
-    }
-
-    public int getMetricsSampleWindowMs() {
-        return metricsSampleWindowMs;
-    }
-
-    public int getMaxInflightRequestsPerConnection() {
-        return maxInflightRequestsPerConnection;
-    }
-
-    public boolean isReportNodeMetricsEnabled() {
-        return reportNodeMetricsEnabled;
-    }
-
-    public KafkaProducerParameters(int maxBlockMs,
-                                   int metadataMaxAge,
-                                   String compressionCodec,
-                                   int retries,
-                                   int retryBackoffMs,
-                                   int requestTimeoutMs,
-                                   int batchSize,
-                                   int tcpSendBuffer,
-                                   int maxRequestSize,
-                                   int lingerMs,
-                                   int metricsSampleWindowMs,
-                                   int maxInflightRequestsPerConnection,
-                                   boolean reportNodeMetricsEnabled) {
-        this.maxBlockMs = maxBlockMs;
-        this.metadataMaxAge = metadataMaxAge;
-        this.compressionCodec = compressionCodec;
-        this.retries = retries;
-        this.retryBackoffMs = retryBackoffMs;
-        this.requestTimeoutMs = requestTimeoutMs;
-        this.batchSize = batchSize;
-        this.tcpSendBuffer = tcpSendBuffer;
-        this.maxRequestSize = maxRequestSize;
-        this.lingerMs = lingerMs;
-        this.metricsSampleWindowMs = metricsSampleWindowMs;
-        this.maxInflightRequestsPerConnection = maxInflightRequestsPerConnection;
-        this.reportNodeMetricsEnabled = reportNodeMetricsEnabled;
-    }
+    boolean isReportNodeMetricsEnabled();
 }

@@ -134,7 +134,7 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
         runtime.awaitUntilAssignmentExists(runtime.createSubscription(), node);
 
         // when
-        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, config, Duration.ofSeconds(1));
+        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, Duration.ofSeconds(1));
         monitor.start();
 
         // then

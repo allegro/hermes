@@ -34,7 +34,7 @@ public class FrontendProducerConfiguration {
 
     @Bean
     public KafkaHeaderFactory kafkaHeaderFactory(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
-        return new KafkaHeaderFactory(kafkaHeaderNameProperties.toKafkaHeaderNameParameters());
+        return new KafkaHeaderFactory(kafkaHeaderNameProperties);
     }
 
     @Bean(destroyMethod = "close")
@@ -43,7 +43,7 @@ public class FrontendProducerConfiguration {
                                           LocalMessageStorageProperties localMessageStorageProperties,
                                           DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new KafkaMessageProducerFactory(kafkaProperties.toKafkaAuthorizationParameters(), kafkaProducerProperties.toKafkaProducerParameters(), localMessageStorageProperties.getBufferedSizeBytes()).provide();
+        return new KafkaMessageProducerFactory(kafkaProperties, kafkaProducerProperties, localMessageStorageProperties.getBufferedSizeBytes()).provide();
     }
 
     @Bean(destroyMethod = "close")
@@ -51,7 +51,7 @@ public class FrontendProducerConfiguration {
                                                                KafkaClustersProperties kafkaClustersProperties,
                                                                DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new KafkaTopicMetadataFetcherFactory(kafkaProperties.toKafkaAuthorizationParameters(), kafkaProducerProperties.getMetadataMaxAge(), kafkaProperties.getAdminRequestTimeoutMs()).provide();
+        return new KafkaTopicMetadataFetcherFactory(kafkaProperties, kafkaProducerProperties.getMetadataMaxAge(), kafkaProperties.getAdminRequestTimeoutMs()).provide();
     }
 
     @Bean

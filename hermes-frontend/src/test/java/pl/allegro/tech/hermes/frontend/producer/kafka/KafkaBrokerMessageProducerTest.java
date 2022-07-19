@@ -48,7 +48,7 @@ public class KafkaBrokerMessageProducerTest {
 
     private KafkaBrokerMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
-    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties.toKafkaHeaderNameParameters());
+    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties);
 
     @Mock
     private HermesMetrics hermesMetrics;

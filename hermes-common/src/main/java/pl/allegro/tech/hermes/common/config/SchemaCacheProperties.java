@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.common.config;
 
 import pl.allegro.tech.hermes.common.schema.SchemaVersionRepositoryParameters;
 
-public class SchemaCacheProperties {
+public class SchemaCacheProperties implements SchemaVersionRepositoryParameters {
 
     private int refreshAfterWriteMinutes = 10;
 
@@ -16,6 +16,12 @@ public class SchemaCacheProperties {
 
     private int compiledMaximumSize = 2000;
 
+    @Override
+    public boolean isCacheEnabled() {
+        return enabled;
+    }
+
+    @Override
     public int getRefreshAfterWriteMinutes() {
         return refreshAfterWriteMinutes;
     }
@@ -24,6 +30,7 @@ public class SchemaCacheProperties {
         this.refreshAfterWriteMinutes = refreshAfterWriteMinutes;
     }
 
+    @Override
     public int getExpireAfterWriteMinutes() {
         return expireAfterWriteMinutes;
     }
@@ -40,6 +47,7 @@ public class SchemaCacheProperties {
         this.compiledExpireAfterAccessMinutes = compiledExpireAfterAccessMinutes;
     }
 
+    @Override
     public int getReloadThreadPoolSize() {
         return reloadThreadPoolSize;
     }
@@ -62,14 +70,5 @@ public class SchemaCacheProperties {
 
     public void setCompiledMaximumSize(int compiledMaximumSize) {
         this.compiledMaximumSize = compiledMaximumSize;
-    }
-
-    public SchemaVersionRepositoryParameters toSchemaVersionRepositoryParameters() {
-        return new SchemaVersionRepositoryParameters(
-                this.enabled,
-                this.refreshAfterWriteMinutes,
-                this.expireAfterWriteMinutes,
-                this.reloadThreadPoolSize
-        );
     }
 }

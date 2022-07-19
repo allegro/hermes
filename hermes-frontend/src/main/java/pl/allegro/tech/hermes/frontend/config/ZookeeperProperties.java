@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperParameters;
 
-public class ZookeeperProperties {
+public class ZookeeperProperties implements ZookeeperParameters {
 
     private String connectionString = "localhost:2181";
 
@@ -24,6 +24,7 @@ public class ZookeeperProperties {
 
     private ZookeeperAuthorizationProperties authorization = new ZookeeperAuthorizationProperties();
 
+    @Override
     public String getConnectionString() {
         return connectionString;
     }
@@ -40,6 +41,7 @@ public class ZookeeperProperties {
         this.datacenter = datacenter;
     }
 
+    @Override
     public int getBaseSleepTime() {
         return baseSleepTime;
     }
@@ -48,6 +50,7 @@ public class ZookeeperProperties {
         this.baseSleepTime = baseSleepTime;
     }
 
+    @Override
     public int getMaxSleepTimeSeconds() {
         return maxSleepTimeSeconds;
     }
@@ -56,6 +59,7 @@ public class ZookeeperProperties {
         this.maxSleepTimeSeconds = maxSleepTimeSeconds;
     }
 
+    @Override
     public int getMaxRetries() {
         return maxRetries;
     }
@@ -64,6 +68,7 @@ public class ZookeeperProperties {
         this.maxRetries = maxRetries;
     }
 
+    @Override
     public int getConnectionTimeout() {
         return connectionTimeout;
     }
@@ -72,6 +77,7 @@ public class ZookeeperProperties {
         this.connectionTimeout = connectionTimeout;
     }
 
+    @Override
     public int getSessionTimeout() {
         return sessionTimeout;
     }
@@ -80,6 +86,7 @@ public class ZookeeperProperties {
         this.sessionTimeout = sessionTimeout;
     }
 
+    @Override
     public String getRoot() {
         return root;
     }
@@ -88,8 +95,29 @@ public class ZookeeperProperties {
         this.root = root;
     }
 
+    @Override
     public int getProcessingThreadPoolSize() {
         return processingThreadPoolSize;
+    }
+
+    @Override
+    public boolean isAuthorizationEnabled() {
+        return authorization.enabled;
+    }
+
+    @Override
+    public String getScheme() {
+        return authorization.scheme;
+    }
+
+    @Override
+    public String getUser() {
+        return authorization.user;
+    }
+
+    @Override
+    public String getPassword() {
+        return authorization.password;
     }
 
     public void setProcessingThreadPoolSize(int processingThreadPoolSize) {
@@ -145,23 +173,6 @@ public class ZookeeperProperties {
         public void setPassword(String password) {
             this.password = password;
         }
-    }
-
-    protected ZookeeperParameters toZookeeperParameters() {
-        return new ZookeeperParameters(
-                this.connectionString,
-                this.baseSleepTime,
-                this.maxSleepTimeSeconds,
-                this.maxRetries,
-                this.connectionTimeout,
-                this.sessionTimeout,
-                this.root,
-                this.processingThreadPoolSize,
-                this.authorization.enabled,
-                this.authorization.scheme,
-                this.authorization.user,
-                this.authorization.password
-        );
     }
 }
 

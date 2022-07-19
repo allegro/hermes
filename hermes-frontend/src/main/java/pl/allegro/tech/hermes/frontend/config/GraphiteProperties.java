@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.di.factories.GraphiteParameters;
 
 @ConfigurationProperties(prefix = "frontend.graphite")
-public class GraphiteProperties {
+public class GraphiteProperties implements GraphiteParameters {
 
     private String prefix = "stats.tech.hermes";
 
@@ -12,6 +12,7 @@ public class GraphiteProperties {
 
     private int port = 2003;
 
+    @Override
     public String getPrefix() {
         return prefix;
     }
@@ -20,6 +21,7 @@ public class GraphiteProperties {
         this.prefix = prefix;
     }
 
+    @Override
     public String getHost() {
         return host;
     }
@@ -28,19 +30,12 @@ public class GraphiteProperties {
         this.host = host;
     }
 
+    @Override
     public int getPort() {
         return port;
     }
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    protected GraphiteParameters toGraphiteParameters() {
-        return new GraphiteParameters(
-                this.prefix,
-                this.host,
-                this.port
-        );
     }
 }

@@ -1,102 +1,28 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
-public class ZookeeperParameters {
+public interface ZookeeperParameters {
 
-    private final String connectionString;
+    String getConnectionString();
 
-    private final int baseSleepTime;
+    int getBaseSleepTime();
 
-    private final int maxSleepTimeSeconds;
+    int getMaxSleepTimeSeconds();
 
-    private final int maxRetries;
+    int getMaxRetries();
 
-    private final int connectionTimeout;
+    int getConnectionTimeout();
 
-    private final int sessionTimeout;
+    int getSessionTimeout();
 
-    private final String root;
+    String getRoot();
 
-    private final int processingThreadPoolSize;
+    int getProcessingThreadPoolSize();
 
-    private final boolean authorizationEnabled;
+    boolean isAuthorizationEnabled();
 
-    private final String scheme;
+    String getScheme();
 
-    private final String user;
+    String getUser();
 
-    private final String password;
-
-    public String getConnectionString() {
-        return connectionString;
-    }
-
-    public int getBaseSleepTime() {
-        return baseSleepTime;
-    }
-
-    public int getMaxSleepTimeSeconds() {
-        return maxSleepTimeSeconds;
-    }
-
-    public int getMaxRetries() {
-        return maxRetries;
-    }
-
-    public int getConnectionTimeout() {
-        return connectionTimeout;
-    }
-
-    public int getSessionTimeout() {
-        return sessionTimeout;
-    }
-
-    public String getRoot() {
-        return root;
-    }
-
-    public int getProcessingThreadPoolSize() {
-        return processingThreadPoolSize;
-    }
-
-    public boolean isAuthorizationEnabled() {
-        return authorizationEnabled;
-    }
-
-    public String getScheme() {
-        return scheme;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public ZookeeperParameters(String connectionString,
-                               int baseSleepTime,
-                               int maxSleepTimeSeconds,
-                               int maxRetries,
-                               int connectionTimeout,
-                               int sessionTimeout,
-                               String root,
-                               int processingThreadPoolSize,
-                               boolean authorizationEnabled,
-                               String scheme,
-                               String user,
-                               String password) {
-        this.connectionString = connectionString;
-        this.baseSleepTime = baseSleepTime;
-        this.maxSleepTimeSeconds = maxSleepTimeSeconds;
-        this.maxRetries = maxRetries;
-        this.connectionTimeout = connectionTimeout;
-        this.sessionTimeout = sessionTimeout;
-        this.root = root;
-        this.processingThreadPoolSize = processingThreadPoolSize;
-        this.authorizationEnabled = authorizationEnabled;
-        this.scheme = scheme;
-        this.user = user;
-        this.password = password;
-    }
+    String getPassword();
 }
