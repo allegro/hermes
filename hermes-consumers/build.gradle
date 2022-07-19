@@ -31,7 +31,6 @@ dependencies {
     }
 
     compile(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
-    compile group: 'net.jodah', name: 'failsafe', version: versions.failsafe
 
     testCompile project(':hermes-test-helper')
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
