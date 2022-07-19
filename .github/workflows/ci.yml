@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master, consumer-spring-config ]
+    branches: [ master ]
 
 jobs:
   build:
