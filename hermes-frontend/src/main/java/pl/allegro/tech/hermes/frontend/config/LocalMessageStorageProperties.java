@@ -5,8 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoaderParameters;
 import pl.allegro.tech.hermes.frontend.buffer.PersistentBufferExtensionParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "frontend.messages.local.storage")
-public class LocalMessageStorageProperties {
+public class LocalMessageStorageProperties implements BackupMessagesLoaderParameters, PersistentBufferExtensionParameters {
 
     private long bufferedSizeBytes = 256 * 1024 * 1024L;
 
@@ -20,16 +22,17 @@ public class LocalMessageStorageProperties {
 
     private int averageMessageSize = 600;
 
-    private int maxAgeHours = 72;
+    private Duration maxAge = Duration.ofHours(72);
 
     private int maxResendRetries = 5;
 
-    private int loadingPauseBetweenResend = 30;
+    private Duration loadingPauseBetweenResend = Duration.ofMillis(30);
 
-    private int loadingWaitForBrokerTopicInfo = 5;
+    private Duration loadingWaitForBrokerTopicInfo = Duration.ofSeconds(5);
 
     private boolean sizeReportingEnabled = true;
 
+    @Override
     public long getBufferedSizeBytes() {
         return bufferedSizeBytes;
     }
@@ -38,6 +41,7 @@ public class LocalMessageStorageProperties {
         this.bufferedSizeBytes = bufferedSizeBytes;
     }
 
+    @Override
     public boolean isV2MigrationEnabled() {
         return v2MigrationEnabled;
     }
@@ -46,6 +50,7 @@ public class LocalMessageStorageProperties {
         this.v2MigrationEnabled = v2MigrationEnabled;
     }
 
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -54,6 +59,7 @@ public class LocalMessageStorageProperties {
         this.enabled = enabled;
     }
 
+    @Override
     public String getDirectory() {
         return directory;
     }
@@ -62,6 +68,7 @@ public class LocalMessageStorageProperties {
         this.directory = directory;
     }
 
+    @Override
     public String getTemporaryDirectory() {
         return temporaryDirectory;
     }
@@ -70,6 +77,7 @@ public class LocalMessageStorageProperties {
         this.temporaryDirectory = temporaryDirectory;
     }
 
+    @Override
     public int getAverageMessageSize() {
         return averageMessageSize;
     }
@@ -78,14 +86,16 @@ public class LocalMessageStorageProperties {
         this.averageMessageSize = averageMessageSize;
     }
 
-    public int getMaxAgeHours() {
-        return maxAgeHours;
+    @Override
+    public Duration getMaxAge() {
+        return maxAge;
     }
 
-    public void setMaxAgeHours(int maxAgeHours) {
-        this.maxAgeHours = maxAgeHours;
+    public void setMaxAge(Duration maxAge) {
+        this.maxAge = maxAge;
     }
 
+    @Override
     public int getMaxResendRetries() {
         return maxResendRetries;
     }
@@ -94,48 +104,30 @@ public class LocalMessageStorageProperties {
         this.maxResendRetries = maxResendRetries;
     }
 
-    public int getLoadingPauseBetweenResend() {
+    @Override
+    public Duration getLoadingPauseBetweenResend() {
         return loadingPauseBetweenResend;
     }
 
-    public void setLoadingPauseBetweenResend(int loadingPauseBetweenResend) {
+    public void setLoadingPauseBetweenResend(Duration loadingPauseBetweenResend) {
         this.loadingPauseBetweenResend = loadingPauseBetweenResend;
     }
 
-    public int getLoadingWaitForBrokerTopicInfo() {
+    @Override
+    public Duration getLoadingWaitForBrokerTopicInfo() {
         return loadingWaitForBrokerTopicInfo;
     }
 
-    public void setLoadingWaitForBrokerTopicInfo(int loadingWaitForBrokerTopicInfo) {
+    public void setLoadingWaitForBrokerTopicInfo(Duration loadingWaitForBrokerTopicInfo) {
         this.loadingWaitForBrokerTopicInfo = loadingWaitForBrokerTopicInfo;
     }
 
+    @Override
     public boolean isSizeReportingEnabled() {
         return sizeReportingEnabled;
     }
 
     public void setSizeReportingEnabled(boolean sizeReportingEnabled) {
         this.sizeReportingEnabled = sizeReportingEnabled;
-    }
-
-    protected PersistentBufferExtensionParameters toPersistentBufferExtensionParameters() {
-        return new PersistentBufferExtensionParameters(
-                this.bufferedSizeBytes,
-                this.v2MigrationEnabled,
-                this.enabled,
-                this.directory,
-                this.temporaryDirectory,
-                this.averageMessageSize,
-                this.sizeReportingEnabled
-        );
-    }
-
-    public BackupMessagesLoaderParameters toBackupMessagesLoaderParameters() {
-        return new BackupMessagesLoaderParameters(
-                this.maxAgeHours,
-                this.maxResendRetries,
-                this.loadingPauseBetweenResend,
-                this.loadingWaitForBrokerTopicInfo
-        );
     }
 }

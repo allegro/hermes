@@ -1,102 +1,28 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-public class SslParameters {
+public interface SslParameters {
 
-    private final boolean enabled;
+    boolean isEnabled();
 
-    private final int port;
+    int getPort();
 
-    private final String clientAuthMode;
+    String getClientAuthMode();
 
-    private final String protocol;
+    String getProtocol();
 
-    private final String keystoreSource;
+    String getKeystoreSource();
 
-    private final String keystoreLocation;
+    String getKeystoreLocation();
 
-    private final String keystorePassword;
+    String getKeystorePassword();
 
-    private final String keystoreFormat;
+    String getKeystoreFormat();
 
-    private final String truststoreSource;
+    String getTruststoreSource();
 
-    private final String truststoreLocation;
+    String getTruststoreLocation();
 
-    private final String truststorePassword;
+    String getTruststorePassword();
 
-    private final String truststoreFormat ;
-
-    public SslParameters(boolean enabled,
-                         int port,
-                         String clientAuthMode,
-                         String protocol,
-                         String keystoreSource,
-                         String keystoreLocation,
-                         String keystorePassword,
-                         String keystoreFormat,
-                         String truststoreSource,
-                         String truststoreLocation,
-                         String truststorePassword,
-                         String truststoreFormat) {
-        this.enabled = enabled;
-        this.port = port;
-        this.clientAuthMode = clientAuthMode;
-        this.protocol = protocol;
-        this.keystoreSource = keystoreSource;
-        this.keystoreLocation = keystoreLocation;
-        this.keystorePassword = keystorePassword;
-        this.keystoreFormat = keystoreFormat;
-        this.truststoreSource = truststoreSource;
-        this.truststoreLocation = truststoreLocation;
-        this.truststorePassword = truststorePassword;
-        this.truststoreFormat = truststoreFormat;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public String getClientAuthMode() {
-        return clientAuthMode;
-    }
-
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public String getKeystoreSource() {
-        return keystoreSource;
-    }
-
-    public String getKeystoreLocation() {
-        return keystoreLocation;
-    }
-
-    public String getKeystorePassword() {
-        return keystorePassword;
-    }
-
-    public String getKeystoreFormat() {
-        return keystoreFormat;
-    }
-
-    public String getTruststoreSource() {
-        return truststoreSource;
-    }
-
-    public String getTruststoreLocation() {
-        return truststoreLocation;
-    }
-
-    public String getTruststorePassword() {
-        return truststorePassword;
-    }
-
-    public String getTruststoreFormat() {
-        return truststoreFormat;
-    }
+    String getTruststoreFormat();
 }

@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -16,13 +17,13 @@ public class TopicMetadataLoadingJob implements Runnable {
 
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;
     private final ScheduledExecutorService executorService;
-    private final int intervalSeconds;
+    private final Duration interval;
 
     private ScheduledFuture<?> job;
 
-    public TopicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner, int intervalSeconds) {
+    public TopicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner, Duration interval) {
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
-        this.intervalSeconds = intervalSeconds;
+        this.interval = interval;
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("TopicMetadataLoadingJob-%d").build();
@@ -39,7 +40,7 @@ public class TopicMetadataLoadingJob implements Runnable {
     }
 
     public void start() {
-        job = executorService.scheduleAtFixedRate(this, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+        job = executorService.scheduleAtFixedRate(this, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
     }
 
     public void stop() throws InterruptedException {

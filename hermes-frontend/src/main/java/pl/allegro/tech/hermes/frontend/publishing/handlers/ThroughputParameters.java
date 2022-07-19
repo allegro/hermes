@@ -1,62 +1,20 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
-public class ThroughputParameters {
+import java.time.Duration;
 
-    private final String type;
+public interface ThroughputParameters {
 
-    private final long fixedMax;
+    String getType();
 
-    private final long dynamicMax;
+    long getFixedMax();
 
-    private final long dynamicThreshold;
+    long getDynamicMax();
 
-    private final long dynamicDesired;
+    long getDynamicThreshold();
 
-    private final double dynamicIdle;
+    long getDynamicDesired();
 
-    private final int dynamicCheckInterval;
+    double getDynamicIdle();
 
-    public String getType() {
-        return type;
-    }
-
-    public long getFixedMax() {
-        return fixedMax;
-    }
-
-    public long getDynamicMax() {
-        return dynamicMax;
-    }
-
-    public long getDynamicThreshold() {
-        return dynamicThreshold;
-    }
-
-    public long getDynamicDesired() {
-        return dynamicDesired;
-    }
-
-    public double getDynamicIdle() {
-        return dynamicIdle;
-    }
-
-    public int getDynamicCheckInterval() {
-        return dynamicCheckInterval;
-    }
-
-    public ThroughputParameters(String type,
-                                long fixedMax,
-                                long dynamicMax,
-                                long dynamicThreshold,
-                                long dynamicDesired,
-                                double dynamicIdle,
-                                int dynamicCheckInterval) {
-        this.type = type;
-        this.fixedMax = fixedMax;
-        this.dynamicMax = dynamicMax;
-        this.dynamicThreshold = dynamicThreshold;
-        this.dynamicDesired = dynamicDesired;
-        this.dynamicIdle = dynamicIdle;
-        this.dynamicCheckInterval = dynamicCheckInterval;
-    }
+    Duration getDynamicCheckInterval();
 }

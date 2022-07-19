@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProce
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 import java.io.ByteArrayOutputStream;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -27,13 +28,13 @@ class MessageReadHandler implements HttpHandler {
     private final HttpHandler timeoutHandler;
     private final MessageErrorProcessor messageErrorProcessor;
     private final ContentLengthChecker contentLengthChecker;
-    private final int defaultAsyncTimeout;
-    private final int longAsyncTimeout;
+    private final Duration defaultAsyncTimeout;
+    private final Duration longAsyncTimeout;
     private final ThroughputLimiter throughputLimiter;
 
     MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler,
                        MessageErrorProcessor messageErrorProcessor,  ThroughputLimiter throughputLimiter,
-                       boolean forceMaxMessageSizePerTopic, int idleTime, int longIdleTime) {
+                       boolean forceMaxMessageSizePerTopic, Duration idleTime, Duration longIdleTime) {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
         this.messageErrorProcessor = messageErrorProcessor;
@@ -47,13 +48,13 @@ class MessageReadHandler implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
 
-        int timeout = attachment.getTopic().isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout;
+        Duration timeout = attachment.getTopic().isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout;
 
         attachment.setTimeoutHolder(new TimeoutHolder(
-                timeout,
+                (int) timeout.toMillis(),
                 exchange.getIoThread().executeAfter(
                         () -> runTimeoutHandler(exchange, attachment),
-                        timeout,
+                        timeout.toMillis(),
                         MILLISECONDS)));
 
         ThroughputLimiter.QuotaInsight quotaInsight = throughputLimiter.checkQuota(

@@ -66,8 +66,7 @@ public class HandlersChainFactory {
     }
 
     private HttpHandler withKeepAliveHeaderHandler(HttpHandler next) {
-        int keepAliveTimeout = handlersChainParameters.getKeepAliveHeaderTimeoutSeconds();
-        return new KeepAliveHeaderHandler(next, keepAliveTimeout);
+        return new KeepAliveHeaderHandler(next, (int) handlersChainParameters.getKeepAliveHeaderTimeout().toSeconds());
     }
 
     private HttpHandler withAuthenticationHandlersChain(HttpHandler next) {

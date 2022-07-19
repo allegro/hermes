@@ -1,38 +1,14 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
-public class BackupMessagesLoaderParameters {
+import java.time.Duration;
 
-    private final int maxAgeHours;
+public interface BackupMessagesLoaderParameters {
 
-    private final int maxResendRetries;
+    Duration getMaxAge();
 
-    private final int loadingPauseBetweenResend;
+    int getMaxResendRetries();
 
-    private final int loadingWaitForBrokerTopicInfo;
+    Duration getLoadingPauseBetweenResend();
 
-    public int getMaxAgeHours() {
-        return maxAgeHours;
-    }
-
-    public int getMaxResendRetries() {
-        return maxResendRetries;
-    }
-
-    public int getLoadingPauseBetweenResend() {
-        return loadingPauseBetweenResend;
-    }
-
-    public int getLoadingWaitForBrokerTopicInfo() {
-        return loadingWaitForBrokerTopicInfo;
-    }
-
-    public BackupMessagesLoaderParameters(int maxAgeHours,
-                                          int maxResendRetries,
-                                          int loadingPauseBetweenResend,
-                                          int loadingWaitForBrokerTopicInfo) {
-        this.maxAgeHours = maxAgeHours;
-        this.maxResendRetries = maxResendRetries;
-        this.loadingPauseBetweenResend = loadingPauseBetweenResend;
-        this.loadingWaitForBrokerTopicInfo = loadingWaitForBrokerTopicInfo;
-    }
+    Duration getLoadingWaitForBrokerTopicInfo();
 }

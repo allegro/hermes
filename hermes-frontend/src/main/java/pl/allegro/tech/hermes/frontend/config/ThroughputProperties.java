@@ -3,8 +3,10 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "frontend.throughput")
-public class ThroughputProperties {
+public class ThroughputProperties implements ThroughputParameters {
 
     private String type = "unlimited";
 
@@ -18,8 +20,9 @@ public class ThroughputProperties {
 
     private double dynamicIdle = 0.5;
 
-    private int dynamicCheckInterval = 30;
+    private Duration dynamicCheckInterval = Duration.ofSeconds(30);
 
+    @Override
     public String getType() {
         return type;
     }
@@ -28,6 +31,7 @@ public class ThroughputProperties {
         this.type = type;
     }
 
+    @Override
     public long getFixedMax() {
         return fixedMax;
     }
@@ -36,6 +40,7 @@ public class ThroughputProperties {
         this.fixedMax = fixedMax;
     }
 
+    @Override
     public long getDynamicMax() {
         return dynamicMax;
     }
@@ -44,6 +49,7 @@ public class ThroughputProperties {
         this.dynamicMax = dynamicMax;
     }
 
+    @Override
     public long getDynamicThreshold() {
         return dynamicThreshold;
     }
@@ -52,6 +58,7 @@ public class ThroughputProperties {
         this.dynamicThreshold = dynamicThreshold;
     }
 
+    @Override
     public long getDynamicDesired() {
         return dynamicDesired;
     }
@@ -60,6 +67,7 @@ public class ThroughputProperties {
         this.dynamicDesired = dynamicDesired;
     }
 
+    @Override
     public double getDynamicIdle() {
         return dynamicIdle;
     }
@@ -68,23 +76,12 @@ public class ThroughputProperties {
         this.dynamicIdle = dynamicIdle;
     }
 
-    public int getDynamicCheckInterval() {
+    @Override
+    public Duration getDynamicCheckInterval() {
         return dynamicCheckInterval;
     }
 
-    public void setDynamicCheckInterval(int dynamicCheckInterval) {
+    public void setDynamicCheckInterval(Duration dynamicCheckInterval) {
         this.dynamicCheckInterval = dynamicCheckInterval;
-    }
-
-    protected ThroughputParameters toThroughputParameters() {
-        return new ThroughputParameters(
-                this.type,
-                this.fixedMax,
-                this.dynamicMax,
-                this.dynamicThreshold,
-                this.dynamicDesired,
-                this.dynamicIdle,
-                this.dynamicCheckInterval
-        );
     }
 }

@@ -3,33 +3,58 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "frontend.handlers")
-public class HandlersChainProperties {
+public class HandlersChainProperties implements HandlersChainParameters {
 
-    private int idleTimeout = 65;
+    private Duration idleTimeout = Duration.ofMillis(65);
 
-    private int longIdleTimeout = 400;
+    private Duration longIdleTimeout = Duration.ofMillis(400);
 
     private boolean forceTopicMaxMessageSize = false;
 
-    public int getIdleTimeout() {
+    @Override
+    public Duration getIdleTimeout() {
         return idleTimeout;
     }
 
-    public void setIdleTimeout(int idleTimeout) {
+    public void setIdleTimeout(Duration idleTimeout) {
         this.idleTimeout = idleTimeout;
     }
 
-    public int getLongIdleTimeout() {
+    @Override
+    public Duration getLongIdleTimeout() {
         return longIdleTimeout;
     }
 
-    public void setLongIdleTimeout(int longIdleTimeout) {
+    public void setLongIdleTimeout(Duration longIdleTimeout) {
         this.longIdleTimeout = longIdleTimeout;
     }
 
+    @Override
     public boolean isForceTopicMaxMessageSize() {
         return forceTopicMaxMessageSize;
+    }
+
+    @Override
+    public boolean isKeepAliveHeaderEnabled() {
+        return keepAliveHeader.enabled;
+    }
+
+    @Override
+    public Duration getKeepAliveHeaderTimeout() {
+        return keepAliveHeader.timeout;
+    }
+
+    @Override
+    public boolean isAuthenticationEnabled() {
+        return authentication.enabled;
+    }
+
+    @Override
+    public String getAuthenticationMode() {
+        return authentication.mode;
     }
 
     public void setForceTopicMaxMessageSize(boolean forceTopicMaxMessageSize) {
@@ -83,7 +108,7 @@ public class HandlersChainProperties {
 
         private boolean enabled = false;
 
-        private int timeoutSeconds = 1;
+        private Duration timeout = Duration.ofSeconds(1);
 
         public boolean isEnabled() {
             return enabled;
@@ -93,24 +118,12 @@ public class HandlersChainProperties {
             this.enabled = enabled;
         }
 
-        public int getTimeoutSeconds() {
-            return timeoutSeconds;
+        public Duration getTimeout() {
+            return timeout;
         }
 
-        public void setTimeoutSeconds(int timeoutSeconds) {
-            this.timeoutSeconds = timeoutSeconds;
+        public void setTimeout(Duration timeout) {
+            this.timeout = timeout;
         }
-    }
-
-    public HandlersChainParameters toHandlersChainParameters() {
-        return new HandlersChainParameters(
-                this.idleTimeout,
-                this.longIdleTimeout,
-                this.forceTopicMaxMessageSize,
-                this.keepAliveHeader.enabled,
-                this.keepAliveHeader.timeoutSeconds,
-                this.authentication.enabled,
-                this.authentication.mode
-        );
     }
 }

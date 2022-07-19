@@ -85,7 +85,7 @@ public class HermesServer {
     public void prepareForGracefulShutdown() throws InterruptedException {
         healthCheckService.shutdown();
 
-        Thread.sleep(hermesServerParameters.getGracefulShutdownInitialWaitMs());
+        Thread.sleep(hermesServerParameters.getGracefulShutdownInitialWait().toMillis());
 
         gracefulShutdown.handleShutdown();
     }
@@ -105,14 +105,14 @@ public class HermesServer {
         gracefulShutdown = new HermesShutdownHandler(handlers(), hermesMetrics);
         Undertow.Builder builder = Undertow.builder()
                 .addHttpListener(hermesServerParameters.getPort(), hermesServerParameters.getHost())
-                .setServerOption(REQUEST_PARSE_TIMEOUT, hermesServerParameters.getRequestParseTimeout())
+                .setServerOption(REQUEST_PARSE_TIMEOUT, (int) hermesServerParameters.getRequestParseTimeout().toMillis())
                 .setServerOption(MAX_HEADERS, hermesServerParameters.getMaxHeaders())
                 .setServerOption(MAX_PARAMETERS, hermesServerParameters.getMaxParameters())
                 .setServerOption(MAX_COOKIES, hermesServerParameters.getMaxCookies())
                 .setServerOption(ALWAYS_SET_KEEP_ALIVE, hermesServerParameters.isAlwaysKeepAlive())
                 .setServerOption(KEEP_ALIVE, hermesServerParameters.isKeepAlive())
                 .setSocketOption(BACKLOG, hermesServerParameters.getBacklogSize())
-                .setSocketOption(READ_TIMEOUT, hermesServerParameters.getReadTimeout())
+                .setSocketOption(READ_TIMEOUT, (int) hermesServerParameters.getReadTimeout().toMillis())
                 .setIoThreads(hermesServerParameters.getIoThreadsCount())
                 .setWorkerThreads(hermesServerParameters.getWorkerThreadCount())
                 .setBufferSize(hermesServerParameters.getBufferSize())

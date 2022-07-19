@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.server.SslParameters;
 
 @ConfigurationProperties(prefix = "frontend.ssl")
-public class SslProperties {
+public class SslProperties implements SslParameters {
 
     private boolean enabled = false;
 
@@ -30,6 +30,7 @@ public class SslProperties {
 
     private String truststoreFormat = "JKS";
 
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -38,6 +39,7 @@ public class SslProperties {
         this.enabled = enabled;
     }
 
+    @Override
     public int getPort() {
         return port;
     }
@@ -46,6 +48,7 @@ public class SslProperties {
         this.port = port;
     }
 
+    @Override
     public String getClientAuthMode() {
         return clientAuthMode;
     }
@@ -54,6 +57,7 @@ public class SslProperties {
         this.clientAuthMode = clientAuthMode;
     }
 
+    @Override
     public String getProtocol() {
         return protocol;
     }
@@ -62,6 +66,7 @@ public class SslProperties {
         this.protocol = protocol;
     }
 
+    @Override
     public String getKeystoreSource() {
         return keystoreSource;
     }
@@ -70,6 +75,7 @@ public class SslProperties {
         this.keystoreSource = keystoreSource;
     }
 
+    @Override
     public String getKeystoreLocation() {
         return keystoreLocation;
     }
@@ -78,6 +84,7 @@ public class SslProperties {
         this.keystoreLocation = keystoreLocation;
     }
 
+    @Override
     public String getKeystorePassword() {
         return keystorePassword;
     }
@@ -86,6 +93,7 @@ public class SslProperties {
         this.keystorePassword = keystorePassword;
     }
 
+    @Override
     public String getKeystoreFormat() {
         return keystoreFormat;
     }
@@ -94,6 +102,7 @@ public class SslProperties {
         this.keystoreFormat = keystoreFormat;
     }
 
+    @Override
     public String getTruststoreSource() {
         return truststoreSource;
     }
@@ -102,6 +111,7 @@ public class SslProperties {
         this.truststoreSource = truststoreSource;
     }
 
+    @Override
     public String getTruststoreLocation() {
         return truststoreLocation;
     }
@@ -110,6 +120,7 @@ public class SslProperties {
         this.truststoreLocation = truststoreLocation;
     }
 
+    @Override
     public String getTruststorePassword() {
         return truststorePassword;
     }
@@ -118,29 +129,13 @@ public class SslProperties {
         this.truststorePassword = truststorePassword;
     }
 
+    @Override
     public String getTruststoreFormat() {
         return truststoreFormat;
     }
 
     public void setTruststoreFormat(String truststoreFormat) {
         this.truststoreFormat = truststoreFormat;
-    }
-
-    public SslParameters toSslParameters() {
-        return new SslParameters(
-                this.enabled,
-                this.port,
-                this.clientAuthMode,
-                this.protocol,
-                this.keystoreSource,
-                this.keystoreLocation,
-                this.keystorePassword,
-                this.keystoreFormat,
-                this.truststoreSource,
-                this.truststoreLocation,
-                this.truststorePassword,
-                this.truststoreFormat
-        );
     }
 }
 
