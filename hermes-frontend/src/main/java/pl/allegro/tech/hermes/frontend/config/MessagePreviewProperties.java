@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "frontend.message.preview")
 public class MessagePreviewProperties {
 
@@ -11,7 +13,7 @@ public class MessagePreviewProperties {
 
     private int size = 3;
 
-    private int logPersistPeriodSeconds = 30;
+    private Duration logPersistPeriod = Duration.ofSeconds(30);
 
     public boolean isEnabled() {
         return enabled;
@@ -37,11 +39,11 @@ public class MessagePreviewProperties {
         this.size = size;
     }
 
-    public int getLogPersistPeriodSeconds() {
-        return logPersistPeriodSeconds;
+    public Duration getLogPersistPeriod() {
+        return logPersistPeriod;
     }
 
-    public void setLogPersistPeriodSeconds(int logPersistPeriodSeconds) {
-        this.logPersistPeriodSeconds = logPersistPeriodSeconds;
+    public void setLogPersistPeriod(Duration logPersistPeriod) {
+        this.logPersistPeriod = logPersistPeriod;
     }
 }

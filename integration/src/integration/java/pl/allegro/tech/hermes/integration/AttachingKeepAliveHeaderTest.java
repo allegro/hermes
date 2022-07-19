@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_KEEP_ALIVE_HEADER_ENABLED;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT;
 
 public class AttachingKeepAliveHeaderTest extends IntegrationTest {
 
@@ -32,7 +32,7 @@ public class AttachingKeepAliveHeaderTest extends IntegrationTest {
         //given
         FrontendStarter hermesFrontend = startFrontendWithConfig(frontend -> {
             frontend.overrideProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED, true);
-            frontend.overrideProperty(FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS, 2);
+            frontend.overrideProperty(FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT, "2s");
         });
 
         try {

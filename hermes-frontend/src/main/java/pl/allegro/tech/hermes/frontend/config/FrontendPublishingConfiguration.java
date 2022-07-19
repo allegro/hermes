@@ -49,12 +49,12 @@ public class FrontendPublishingConfiguration {
                                    ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig,
                                    MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(), handlersChainProperties.toHandlersChainParameters()).provide();
+                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(), handlersChainProperties).provide();
     }
 
     @Bean
     public ThroughputLimiter throughputLimiter(ThroughputProperties throughputProperties, HermesMetrics hermesMetrics) {
-        return new ThroughputLimiterFactory(throughputProperties.toThroughputParameters(), hermesMetrics).provide();
+        return new ThroughputLimiterFactory(throughputProperties, hermesMetrics).provide();
     }
 
     @Bean
@@ -104,6 +104,6 @@ public class FrontendPublishingConfiguration {
     public DefaultMessagePreviewPersister messagePreviewPersister(MessagePreviewLog messagePreviewLog,
                                                                   MessagePreviewRepository repository,
                                                                   MessagePreviewProperties messagePreviewProperties) {
-        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, messagePreviewProperties.getLogPersistPeriodSeconds(), messagePreviewProperties.isEnabled());
+        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, messagePreviewProperties.getLogPersistPeriod(), messagePreviewProperties.isEnabled());
     }
 }

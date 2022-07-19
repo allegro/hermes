@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,14 +28,14 @@ public class TopicMetadataLoadingRunner {
 
     private final int retryCount;
 
-    private final long retryInterval;
+    private final Duration retryInterval;
 
     private final int threadPoolSize;
 
     public TopicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
                                TopicsCache topicsCache,
                                int retryCount,
-                               long retryInterval,
+                               Duration retryInterval,
                                int threadPoolSize) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.topicsCache = topicsCache;

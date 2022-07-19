@@ -31,7 +31,7 @@ class TopicMetadataLoader implements AutoCloseable {
 
     TopicMetadataLoader(BrokerMessageProducer brokerMessageProducer,
                                int retryCount,
-                               long retryInterval,
+                               Duration retryInterval,
                                int threadPoolSize) {
 
         this.brokerMessageProducer = brokerMessageProducer;
@@ -39,7 +39,7 @@ class TopicMetadataLoader implements AutoCloseable {
         this.scheduler = Executors.newScheduledThreadPool(threadPoolSize, threadFactory);
         this.retryPolicy = new RetryPolicy<MetadataLoadingResult>()
                 .withMaxRetries(retryCount)
-                .withDelay(Duration.of(retryInterval, ChronoUnit.MILLIS))
+                .withDelay(retryInterval)
                 .handleIf((resp, cause) -> resp.isFailure());
     }
 

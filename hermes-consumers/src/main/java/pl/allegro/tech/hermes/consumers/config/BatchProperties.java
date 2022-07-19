@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.batch")
 public class BatchProperties {
 
@@ -9,9 +11,9 @@ public class BatchProperties {
 
     private int maxPoolSize = 64 * 1024 * 1024;
 
-    private int connectionTimeout = 500;
+    private Duration connectionTimeout = Duration.ofMillis(500);
 
-    private int connectionRequestTimeout = 500;
+    private Duration connectionRequestTimeout = Duration.ofMillis(500);
 
     public int getPoolableSize() {
         return poolableSize;
@@ -29,19 +31,19 @@ public class BatchProperties {
         this.maxPoolSize = maxPoolSize;
     }
 
-    public int getConnectionTimeout() {
+    public Duration getConnectionTimeout() {
         return connectionTimeout;
     }
 
-    public void setConnectionTimeout(int connectionTimeout) {
+    public void setConnectionTimeout(Duration connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
     }
 
-    public int getConnectionRequestTimeout() {
+    public Duration getConnectionRequestTimeout() {
         return connectionRequestTimeout;
     }
 
-    public void setConnectionRequestTimeout(int connectionRequestTimeout) {
+    public void setConnectionRequestTimeout(Duration connectionRequestTimeout) {
         this.connectionRequestTimeout = connectionRequestTimeout;
     }
 }

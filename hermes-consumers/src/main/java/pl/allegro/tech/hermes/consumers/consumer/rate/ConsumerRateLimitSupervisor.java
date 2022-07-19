@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,10 +18,10 @@ public class ConsumerRateLimitSupervisor implements Runnable {
 
     private final Set<ConsumerRateLimiter> consumerRateLimiters = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public ConsumerRateLimitSupervisor(int rateLimiterSupervisorPeriod) {
+    public ConsumerRateLimitSupervisor(Duration rateLimiterSupervisorPeriod) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("rate-limit-supervisor-%d").build();
         Executors.newSingleThreadScheduledExecutor(threadFactory)
-                .scheduleAtFixedRate(this, rateLimiterSupervisorPeriod, rateLimiterSupervisorPeriod, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(this, rateLimiterSupervisorPeriod.toSeconds(), rateLimiterSupervisorPeriod.toSeconds(), TimeUnit.SECONDS);
     }
 
     @Override

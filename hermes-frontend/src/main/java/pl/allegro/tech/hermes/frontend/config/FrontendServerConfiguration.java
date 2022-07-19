@@ -42,7 +42,7 @@ public class FrontendServerConfiguration {
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider,
                                      TopicLoadingProperties topicLoadingProperties) {
-        return new HermesServer(sslProperties.toSslParameters(), hermesServerProperties.toHermesServerParameters(), hermesMetrics, publishingHandler, defaultReadinessChecker,
+        return new HermesServer(sslProperties, hermesServerProperties, hermesMetrics, publishingHandler, defaultReadinessChecker,
                 defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, topicLoadingProperties.getMetadataRefreshJob().isEnabled(), sslContextFactoryProvider);
     }
 
@@ -50,19 +50,19 @@ public class FrontendServerConfiguration {
     public DefaultReadinessChecker readinessChecker(ReadinessCheckProperties readinessCheckProperties,
                                                     TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                                     ReadinessRepository readinessRepository) {
-        return new DefaultReadinessChecker(topicMetadataLoadingRunner, readinessRepository, readinessCheckProperties.isEnabled(), readinessCheckProperties.getIntervalSeconds());
+        return new DefaultReadinessChecker(topicMetadataLoadingRunner, readinessRepository, readinessCheckProperties.isEnabled(), readinessCheckProperties.getInterval());
     }
 
     @Bean
     public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory,
                                                                SslProperties sslProperties) {
-        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslProperties.toSslParameters());
+        return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslProperties);
     }
 
     @Bean
     public TopicMetadataLoadingJob topicMetadataLoadingJob(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                                            TopicLoadingProperties topicLoadingProperties) {
-        return new TopicMetadataLoadingJob(topicMetadataLoadingRunner, topicLoadingProperties.getMetadataRefreshJob().getIntervalSeconds());
+        return new TopicMetadataLoadingJob(topicMetadataLoadingRunner, topicLoadingProperties.getMetadataRefreshJob().getInterval());
     }
 
     @Bean

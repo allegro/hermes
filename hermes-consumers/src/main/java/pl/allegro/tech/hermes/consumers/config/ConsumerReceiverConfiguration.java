@@ -47,10 +47,10 @@ public class ConsumerReceiverConfiguration {
 
 
         return new KafkaMessageReceiverFactory(
-                commonConsumerProperties.toCommonConsumerParameters(),
-                consumerReceiverProperties.toKafkaReceiverParams(),
-                kafkaConsumerProperties.toKafkaConsumerParameters(),
-                kafkaProperties.toKafkaParameters(),
+                commonConsumerProperties,
+                consumerReceiverProperties,
+                kafkaConsumerProperties,
+                kafkaProperties,
                 messageConverterFactory,
                 hermesMetrics,
                 offsetQueue,

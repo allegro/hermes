@@ -3,14 +3,16 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "consumer.maxrate")
-public class MaxRateProperties {
+public class MaxRateProperties implements MaxRateParameters {
 
     private RegistryBinaryEncoderProperties registryBinaryEncoder = new RegistryBinaryEncoderProperties();
 
-    private int balanceIntervalSeconds = 30;
+    private Duration balanceInterval = Duration.ofSeconds(30);
 
-    private int updateIntervalSeconds = 15;
+    private Duration updateInterval = Duration.ofSeconds(15);
 
     private int historySize = 1;
 
@@ -30,22 +32,25 @@ public class MaxRateProperties {
         this.registryBinaryEncoder = registryBinaryEncoder;
     }
 
-    public int getBalanceIntervalSeconds() {
-        return balanceIntervalSeconds;
+    @Override
+    public Duration getBalanceInterval() {
+        return balanceInterval;
     }
 
-    public void setBalanceIntervalSeconds(int balanceIntervalSeconds) {
-        this.balanceIntervalSeconds = balanceIntervalSeconds;
+    public void setBalanceInterval(Duration balanceInterval) {
+        this.balanceInterval = balanceInterval;
     }
 
-    public int getUpdateIntervalSeconds() {
-        return updateIntervalSeconds;
+    @Override
+    public Duration getUpdateInterval() {
+        return updateInterval;
     }
 
-    public void setUpdateIntervalSeconds(int updateIntervalSeconds) {
-        this.updateIntervalSeconds = updateIntervalSeconds;
+    public void setUpdateInterval(Duration updateInterval) {
+        this.updateInterval = updateInterval;
     }
 
+    @Override
     public int getHistorySize() {
         return historySize;
     }
@@ -54,6 +59,7 @@ public class MaxRateProperties {
         this.historySize = historySize;
     }
 
+    @Override
     public double getBusyTolerance() {
         return busyTolerance;
     }
@@ -62,6 +68,7 @@ public class MaxRateProperties {
         this.busyTolerance = busyTolerance;
     }
 
+    @Override
     public double getMinMaxRate() {
         return minMaxRate;
     }
@@ -70,6 +77,7 @@ public class MaxRateProperties {
         this.minMaxRate = minMaxRate;
     }
 
+    @Override
     public double getMinAllowedChangePercent() {
         return minAllowedChangePercent;
     }
@@ -78,23 +86,12 @@ public class MaxRateProperties {
         this.minAllowedChangePercent = minAllowedChangePercent;
     }
 
+    @Override
     public double getMinSignificantUpdatePercent() {
         return minSignificantUpdatePercent;
     }
 
     public void setMinSignificantUpdatePercent(double minSignificantUpdatePercent) {
         this.minSignificantUpdatePercent = minSignificantUpdatePercent;
-    }
-
-    protected MaxRateParameters toMaxRateParameters() {
-        return new MaxRateParameters(
-                this.balanceIntervalSeconds,
-                this.updateIntervalSeconds,
-                this.historySize,
-                this.busyTolerance,
-                this.minMaxRate,
-                this.minAllowedChangePercent,
-                this.minSignificantUpdatePercent
-        );
     }
 }

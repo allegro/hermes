@@ -1,148 +1,44 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
-public class KafkaConsumerParameters {
+import java.time.Duration;
 
-    private final int sendBufferBytes;
+public interface KafkaConsumerParameters {
 
-    private final int receiveBufferBytes;
+    int getSendBufferBytes();
 
-    private final int fetchMinBytes;
+    int getReceiveBufferBytes();
 
-    private final int fetchMaxWaitMs;
+    int getFetchMinBytes();
 
-    private final int reconnectBackoffMs;
+    Duration getFetchMaxWait();
 
-    private final int retryBackoffMs;
+    Duration getReconnectBackoff();
 
-    private final boolean checkCrcs;
+    Duration getRetryBackoff();
 
-    private final int metricsSampleWindowMs;
+    boolean isCheckCrcs();
 
-    private final int metricsNumSamples;
+    Duration getMetricsSampleWindow();
 
-    private final int requestTimeoutMs;
+    int getMetricsNumSamples();
 
-    private final int connectionsMaxIdleMs;
+    Duration getRequestTimeout();
 
-    private final int maxPollRecords;
+    Duration getConnectionsMaxIdle();
 
-    private final int maxPollIntervalMs;
+    int getMaxPollRecords();
 
-    private final String autoOffsetReset;
+    Duration getMaxPollInterval();
 
-    private final int sessionTimeoutMs;
+    String getAutoOffsetReset();
 
-    private final int heartbeatIntervalMs;
+    Duration getSessionTimeout();
 
-    private final int metadataMaxAgeMs;
+    Duration getHeartbeatInterval();
 
-    private final int maxPartitionFetchMin;
+    Duration getMetadataMaxAge();
 
-    private final int maxPartitionFetchMax;
+    int getMaxPartitionFetchMin();
 
-    public int getSendBufferBytes() {
-        return sendBufferBytes;
-    }
-
-    public int getReceiveBufferBytes() {
-        return receiveBufferBytes;
-    }
-
-    public int getFetchMinBytes() {
-        return fetchMinBytes;
-    }
-
-    public int getFetchMaxWaitMs() {
-        return fetchMaxWaitMs;
-    }
-
-    public int getReconnectBackoffMs() {
-        return reconnectBackoffMs;
-    }
-
-    public int getRetryBackoffMs() {
-        return retryBackoffMs;
-    }
-
-    public boolean isCheckCrcsEnabled() {
-        return checkCrcs;
-    }
-
-    public int getMetricsSampleWindowMs() {
-        return metricsSampleWindowMs;
-    }
-
-    public int getMetricsNumSamples() {
-        return metricsNumSamples;
-    }
-
-    public int getRequestTimeoutMs() {
-        return requestTimeoutMs;
-    }
-
-    public int getConnectionsMaxIdleMs() {
-        return connectionsMaxIdleMs;
-    }
-
-    public int getMaxPollRecords() {
-        return maxPollRecords;
-    }
-
-    public int getMaxPollIntervalMs() {
-        return maxPollIntervalMs;
-    }
-
-    public String getAutoOffsetReset() {
-        return autoOffsetReset;
-    }
-
-    public int getSessionTimeoutMs() {
-        return sessionTimeoutMs;
-    }
-
-    public int getHeartbeatIntervalMs() {
-        return heartbeatIntervalMs;
-    }
-
-    public int getMetadataMaxAgeMs() {
-        return metadataMaxAgeMs;
-    }
-
-    public int getMaxPartitionFetchMin() {
-        return maxPartitionFetchMin;
-    }
-
-    public int getMaxPartitionFetchMax() {
-        return maxPartitionFetchMax;
-    }
-
-    public KafkaConsumerParameters(int sendBufferBytes, int receiveBufferBytes,
-                                   int fetchMinBytes, int fetchMaxWaitMs,
-                                   int reconnectBackoffMs, int retryBackoffMs,
-                                   boolean checkCrcs, int metricsSampleWindowMs,
-                                   int metricsNumSamples, int requestTimeoutMs,
-                                   int connectionsMaxIdleMs, int maxPollRecords,
-                                   int maxPollIntervalMs, String autoOffsetReset,
-                                   int sessionTimeoutMs, int heartbeatIntervalMs,
-                                   int metadataMaxAgeMs, int maxPartitionFetchMin, int maxPartitionFetchMax) {
-        this.sendBufferBytes = sendBufferBytes;
-        this.receiveBufferBytes = receiveBufferBytes;
-        this.fetchMinBytes = fetchMinBytes;
-        this.fetchMaxWaitMs = fetchMaxWaitMs;
-        this.reconnectBackoffMs = reconnectBackoffMs;
-        this.retryBackoffMs = retryBackoffMs;
-        this.checkCrcs = checkCrcs;
-        this.metricsSampleWindowMs = metricsSampleWindowMs;
-        this.metricsNumSamples = metricsNumSamples;
-        this.requestTimeoutMs = requestTimeoutMs;
-        this.connectionsMaxIdleMs = connectionsMaxIdleMs;
-        this.maxPollRecords = maxPollRecords;
-        this.maxPollIntervalMs = maxPollIntervalMs;
-        this.autoOffsetReset = autoOffsetReset;
-        this.sessionTimeoutMs = sessionTimeoutMs;
-        this.heartbeatIntervalMs = heartbeatIntervalMs;
-        this.metadataMaxAgeMs = metadataMaxAgeMs;
-        this.maxPartitionFetchMin = maxPartitionFetchMin;
-        this.maxPartitionFetchMax = maxPartitionFetchMax;
-    }
+    int getMaxPartitionFetchMax();
 }

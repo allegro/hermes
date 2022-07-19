@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,8 +33,8 @@ public class RegistryConfiguration {
                 .setNameFormat("ConsumerRegistryExecutor-%d").build();
 
         String consumerNodeId = workloadProperties.getNodeId();
-        int deadAfterSeconds = workloadProperties.getDeadAfterSeconds();
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+        long deadAfterSeconds = workloadProperties.getDeadAfter().toSeconds();
         ConsumerNodesRegistryPaths registryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, kafkaProperties.getClusterName());
 
         return new ConsumerNodesRegistry(curatorFramework, newSingleThreadExecutor(threadFactory),

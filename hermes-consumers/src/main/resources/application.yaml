@@ -1,7 +1,0 @@
-consumer:
-  receiver:
-    poolTimeout: 30
-    readQueueCapacity: 1000
-    waitBetweenUnsuccessfulPolls: true
-    initialIdleTime: 10
-    maxIdleTime: 1000

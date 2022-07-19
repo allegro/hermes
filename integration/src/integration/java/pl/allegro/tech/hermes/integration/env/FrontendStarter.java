@@ -70,7 +70,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         args.add(getArgument(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L));
         args.add(getArgument(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false));
         args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_ENABLED, true));
-        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, 1));
+        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, "1s"));
         return args;
     }
 

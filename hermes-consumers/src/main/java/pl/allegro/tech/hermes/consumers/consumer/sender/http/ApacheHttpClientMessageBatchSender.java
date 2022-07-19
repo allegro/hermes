@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
@@ -28,15 +29,15 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NA
 
 public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
-    private final int connectionTimeout;
-    private final int connectionRequestTimeout;
+    private final Duration connectionTimeout;
+    private final Duration connectionRequestTimeout;
     private final EndpointAddressResolver resolver;
     private final SendingResultHandlers resultHandlers;
     private final BatchHttpHeadersProvider headersProvider;
 
-    private CloseableHttpClient client = HttpClients.createMinimal();
+    private final CloseableHttpClient client = HttpClients.createMinimal();
 
-    public ApacheHttpClientMessageBatchSender(int connectionTimeout, int connectionRequestTimeout, EndpointAddressResolver resolver, SendingResultHandlers resultHandlers, BatchHttpHeadersProvider headersProvider) {
+    public ApacheHttpClientMessageBatchSender(Duration connectionTimeout, Duration connectionRequestTimeout, EndpointAddressResolver resolver, SendingResultHandlers resultHandlers, BatchHttpHeadersProvider headersProvider) {
         this.connectionTimeout = connectionTimeout;
         this.connectionRequestTimeout = connectionRequestTimeout;
         this.resolver = resolver;
@@ -61,8 +62,8 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
         ByteBufferEntity entity = new ByteBufferEntity(batch.getContent(), contentType);
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(connectionTimeout)
-                .setConnectionRequestTimeout(connectionRequestTimeout)
+                .setConnectTimeout((int) connectionTimeout.toMillis())
+                .setConnectionRequestTimeout((int) connectionRequestTimeout.toMillis())
                 .setSocketTimeout(requestTimeout)
                 .build();
 

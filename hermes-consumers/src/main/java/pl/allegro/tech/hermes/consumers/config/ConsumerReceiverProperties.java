@@ -3,27 +3,31 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaReceiverParameters;
 
-@ConfigurationProperties(prefix = "consumer.receiver")
-public class ConsumerReceiverProperties {
+import java.time.Duration;
 
-    private int poolTimeout = 30;
+@ConfigurationProperties(prefix = "consumer.receiver")
+public class ConsumerReceiverProperties implements KafkaReceiverParameters {
+
+    private Duration poolTimeout = Duration.ofMillis(30);
 
     private int readQueueCapacity = 1000;
 
     private boolean waitBetweenUnsuccessfulPolls = true;
 
-    private int initialIdleTime = 10;
+    private Duration initialIdleTime = Duration.ofMillis(10);
 
-    private int maxIdleTime = 1000;
+    private Duration maxIdleTime = Duration.ofMillis(1000);
 
-    public int getPoolTimeout() {
+    @Override
+    public Duration getPoolTimeout() {
         return poolTimeout;
     }
 
-    public void setPoolTimeout(int poolTimeout) {
+    public void setPoolTimeout(Duration poolTimeout) {
         this.poolTimeout = poolTimeout;
     }
 
+    @Override
     public int getReadQueueCapacity() {
         return readQueueCapacity;
     }
@@ -32,6 +36,7 @@ public class ConsumerReceiverProperties {
         this.readQueueCapacity = readQueueCapacity;
     }
 
+    @Override
     public boolean isWaitBetweenUnsuccessfulPolls() {
         return waitBetweenUnsuccessfulPolls;
     }
@@ -40,29 +45,21 @@ public class ConsumerReceiverProperties {
         this.waitBetweenUnsuccessfulPolls = waitBetweenUnsuccessfulPolls;
     }
 
-    public int getInitialIdleTime() {
+    @Override
+    public Duration getInitialIdleTime() {
         return initialIdleTime;
     }
 
-    public void setInitialIdleTime(int initialIdleTime) {
+    public void setInitialIdleTime(Duration initialIdleTime) {
         this.initialIdleTime = initialIdleTime;
     }
 
-    public int getMaxIdleTime() {
+    @Override
+    public Duration getMaxIdleTime() {
         return maxIdleTime;
     }
 
-    public void setMaxIdleTime(int maxIdleTime) {
+    public void setMaxIdleTime(Duration maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
-    }
-
-    protected KafkaReceiverParameters toKafkaReceiverParams() {
-        return new KafkaReceiverParameters(
-                this.poolTimeout,
-                this.readQueueCapacity,
-                this.waitBetweenUnsuccessfulPolls,
-                this.initialIdleTime,
-                this.maxIdleTime
-        );
     }
 }

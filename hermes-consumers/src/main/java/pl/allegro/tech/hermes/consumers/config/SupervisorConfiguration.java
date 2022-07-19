@@ -90,7 +90,7 @@ public class SupervisorConfiguration {
                 consumerNodesRegistry,
                 adminCache,
                 assignmentExecutor,
-                workloadProperties.toSelectiveSupervisorParameters(),
+                workloadProperties,
                 kafkaProperties.getClusterName(),
                 metrics,
                 workloadConstraintsRepository
@@ -125,7 +125,7 @@ public class SupervisorConfiguration {
         return new ConsumerFactory(
                 messageReceiverFactory,
                 hermesMetrics,
-                commonConsumerProperties.toCommonConsumerParameters(),
+                commonConsumerProperties,
                 consumerRateLimitSupervisor,
                 outputRateCalculatorFactory,
                 trackers,
@@ -160,7 +160,7 @@ public class SupervisorConfiguration {
                                                               ConsumerMonitor monitor,
                                                               Clock clock,
                                                               CommitOffsetProperties commitOffsetProperties) {
-        return new NonblockingConsumersSupervisor(commonConsumerProperties.toCommonConsumerParameters(), executor, consumerFactory, offsetQueue,
+        return new NonblockingConsumersSupervisor(commonConsumerProperties, executor, consumerFactory, offsetQueue,
                 consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
                 subscriptionRepository, metrics, monitor, clock, commitOffsetProperties.getPeriod());
     }

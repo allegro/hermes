@@ -55,7 +55,7 @@ public class FrontendConfiguration {
                                                      TopicsCache topicsCache,
                                                      Trackers trackers,
                                                      LocalMessageStorageProperties localMessageStorageProperties) {
-        return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, trackers, localMessageStorageProperties.toBackupMessagesLoaderParameters());
+        return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, trackers, localMessageStorageProperties);
     }
 
     @Bean(initMethod = "extend")
@@ -64,7 +64,7 @@ public class FrontendConfiguration {
                                                                BrokerListeners listeners,
                                                                BackupMessagesLoader backupMessagesLoader,
                                                                HermesMetrics hermesMetrics) {
-        return new PersistentBufferExtension(localMessageStorageProperties.toPersistentBufferExtensionParameters(), clock, listeners, backupMessagesLoader,
+        return new PersistentBufferExtension(localMessageStorageProperties, clock, listeners, backupMessagesLoader,
                 hermesMetrics);
     }
 

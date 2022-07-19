@@ -59,8 +59,8 @@ class HermesServerFactory {
         hermesServerProperties.setGracefulShutdownEnabled(false);
 
         return new HermesServer(
-                sslProperties.toSslParameters(),
-                hermesServerProperties.toHermesServerParameters(),
+                sslProperties,
+                hermesServerProperties,
                 hermesMetrics,
                 httpHandler,
                 new DisabledReadinessChecker(false),
@@ -98,7 +98,7 @@ class HermesServerFactory {
                 throughputLimiter,
                 null,
                 false,
-                handlersChainProperties.toHandlersChainParameters()
+                handlersChainProperties
         ).provide();
     }
 }

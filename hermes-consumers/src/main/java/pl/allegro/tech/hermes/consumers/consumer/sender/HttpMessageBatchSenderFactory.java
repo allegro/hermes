@@ -6,15 +6,17 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandle
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.DefaultBatchHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 
+import java.time.Duration;
+
 import static com.google.common.base.Preconditions.checkState;
 
 public class HttpMessageBatchSenderFactory implements MessageBatchSenderFactory {
 
     private final SendingResultHandlers resultHandlers;
-    private final int connectionTimeout;
-    private final int connectionRequestTimeout;
+    private final Duration connectionTimeout;
+    private final Duration connectionRequestTimeout;
 
-    public HttpMessageBatchSenderFactory(SendingResultHandlers resultHandlers, int connectionTimeout, int connectionRequestTimeout) {
+    public HttpMessageBatchSenderFactory(SendingResultHandlers resultHandlers, Duration connectionTimeout, Duration connectionRequestTimeout) {
         this.resultHandlers = resultHandlers;
         this.connectionTimeout = connectionTimeout;
         this.connectionRequestTimeout = connectionRequestTimeout;

@@ -62,7 +62,7 @@ public class GooglePubSubConfiguration {
     public BatchingSettings batchingSettings(GooglePubSubSenderProperties googlePubSubSenderProperties) {
         long requestBytesThreshold = googlePubSubSenderProperties.getBatchingRequestBytesThreshold();
         long messageCountBatchSize = googlePubSubSenderProperties.getBatchingMessageCountBytesSize();
-        Duration publishDelayThreshold = Duration.ofMillis(googlePubSubSenderProperties.getBatchingPublishDelayThresholdMilliseconds());
+        Duration publishDelayThreshold = Duration.ofMillis(googlePubSubSenderProperties.getBatchingPublishDelayThreshold().toMillis());
 
         return BatchingSettings.newBuilder()
                 .setElementCountThreshold(messageCountBatchSize)
@@ -73,8 +73,7 @@ public class GooglePubSubConfiguration {
 
     @Bean
     public RetrySettings retrySettings(GooglePubSubSenderProperties googlePubSubSenderProperties) {
-        Duration totalTimeout = Duration.ofMillis(
-                googlePubSubSenderProperties.getTotalTimeoutsMilliseconds());
+        Duration totalTimeout = Duration.ofMillis(googlePubSubSenderProperties.getTotalTimeouts().toMillis());
 
         return RetrySettings.newBuilder()
                 .setInitialRpcTimeout(totalTimeout)
@@ -83,5 +82,4 @@ public class GooglePubSubConfiguration {
                 .setMaxAttempts(1)
                 .build();
     }
-
 }

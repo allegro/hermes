@@ -103,7 +103,7 @@ public class ConsumerConfiguration {
                                                HermesMetrics metrics,
                                                Clock clock) {
         return new MaxRateSupervisor(
-                maxRateProperties.toMaxRateParameters(),
+                maxRateProperties,
                 clusterAssignmentCache,
                 maxRateRegistry,
                 consumerNodesRegistry,
@@ -130,7 +130,7 @@ public class ConsumerConfiguration {
                                                          MaxRateSupervisor maxRateSupervisor,
                                                          HermesMetrics metrics,
                                                          WorkloadProperties workloadProperties) {
-        return new MaxRateProviderFactory(maxRateProperties.toMaxRateParameters(), workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor, metrics);
+        return new MaxRateProviderFactory(maxRateProperties, workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor, metrics);
     }
 
     @Bean
@@ -141,7 +141,7 @@ public class ConsumerConfiguration {
     @Bean
     public OutputRateCalculatorFactory outputRateCalculatorFactory(RateProperties rateProperties,
                                                                    MaxRateProviderFactory maxRateProviderFactory) {
-        return new OutputRateCalculatorFactory(rateProperties.toRateCalculatorParameters(), maxRateProviderFactory);
+        return new OutputRateCalculatorFactory(rateProperties, maxRateProviderFactory);
     }
 
     @Bean

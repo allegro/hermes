@@ -1,62 +1,20 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
-public class HandlersChainParameters {
+import java.time.Duration;
 
-    private final int idleTimeout;
+public interface HandlersChainParameters {
 
-    private final int longIdleTimeout;
+    Duration getIdleTimeout();
 
-    private final boolean forceTopicMaxMessageSize;
+    Duration getLongIdleTimeout();
 
-    private final boolean keepAliveHeaderEnabled;
+    boolean isForceTopicMaxMessageSize();
 
-    private final int keepAliveHeaderTimeoutSeconds;
+    boolean isKeepAliveHeaderEnabled();
 
-    private final boolean authenticationEnabled;
+    Duration getKeepAliveHeaderTimeout();
 
-    private final String authenticationMode;
+    boolean isAuthenticationEnabled();
 
-    public int getIdleTimeout() {
-        return idleTimeout;
-    }
-
-    public int getLongIdleTimeout() {
-        return longIdleTimeout;
-    }
-
-    public boolean isForceTopicMaxMessageSize() {
-        return forceTopicMaxMessageSize;
-    }
-
-    public boolean isKeepAliveHeaderEnabled() {
-        return keepAliveHeaderEnabled;
-    }
-
-    public int getKeepAliveHeaderTimeoutSeconds() {
-        return keepAliveHeaderTimeoutSeconds;
-    }
-
-    public boolean isAuthenticationEnabled() {
-        return authenticationEnabled;
-    }
-
-    public String getAuthenticationMode() {
-        return authenticationMode;
-    }
-
-    public HandlersChainParameters(int idleTimeout,
-                                   int longIdleTimeout,
-                                   boolean forceTopicMaxMessageSize,
-                                   boolean keepAliveHeaderEnabled,
-                                   int keepAliveHeaderTimeoutSeconds,
-                                   boolean authenticationEnabled,
-                                   String authenticationMode) {
-        this.idleTimeout = idleTimeout;
-        this.longIdleTimeout = longIdleTimeout;
-        this.forceTopicMaxMessageSize = forceTopicMaxMessageSize;
-        this.keepAliveHeaderEnabled = keepAliveHeaderEnabled;
-        this.keepAliveHeaderTimeoutSeconds = keepAliveHeaderTimeoutSeconds;
-        this.authenticationEnabled = authenticationEnabled;
-        this.authenticationMode = authenticationMode;
-    }
+    String getAuthenticationMode();
 }

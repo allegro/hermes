@@ -16,6 +16,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.util.function.Consumer
@@ -52,8 +53,8 @@ class ConsumerProcessSupervisorTest extends Specification {
     Clock clock
     long currentTime = 1
 
-    long unhealthyAfter = 3000
-    int killAfter = 100
+    Duration unhealthyAfter = Duration.ofMillis(3000)
+    Duration killAfter = Duration.ofMillis(100)
 
     def setup() {
         clock = new CurrentTimeClock()
@@ -103,7 +104,7 @@ class ConsumerProcessSupervisorTest extends Specification {
 
         when:
         consumer.whenUnhealthy {
-            currentTime += unhealthyAfter
+            currentTime += unhealthyAfter.toMillis()
             runAndWait(supervisor)
         }
 
@@ -122,7 +123,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         when:
         consumer.whenBlockedOnTeardown {
             runAndWait(supervisor.accept(signals.stop))
-            currentTime += 2 * killAfter
+            currentTime += 2 * killAfter.toMillis()
             runAndWait(supervisor)
         }
 

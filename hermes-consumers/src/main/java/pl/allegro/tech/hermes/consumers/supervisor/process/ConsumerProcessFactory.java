@@ -5,17 +5,18 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 
 import java.time.Clock;
+import java.time.Duration;
 
 public class ConsumerProcessFactory implements ConsumerProcessSupplier {
 
     private final Retransmitter retransmitter;
-    private final long unhealthyAfter;
+    private final Duration unhealthyAfter;
     private final Clock clock;
     private final ConsumerFactory consumerFactory;
 
     public ConsumerProcessFactory(Retransmitter retransmitter,
                                   ConsumerFactory consumerFactory,
-                                  int unhealthyAfter,
+                                  Duration unhealthyAfter,
                                   Clock clock) {
         this.retransmitter = retransmitter;
         this.consumerFactory = consumerFactory;

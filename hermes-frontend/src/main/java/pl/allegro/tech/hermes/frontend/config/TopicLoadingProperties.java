@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "frontend.startup.topic.loading")
 public class TopicLoadingProperties {
 
@@ -15,7 +17,7 @@ public class TopicLoadingProperties {
 
         private boolean enabled = false;
 
-        private long retryInterval = 1_000L;
+        private Duration retryInterval = Duration.ofSeconds(1);
 
         private int retryCount = 5;
 
@@ -29,11 +31,11 @@ public class TopicLoadingProperties {
             this.enabled = enabled;
         }
 
-        public long getRetryInterval() {
+        public Duration getRetryInterval() {
             return retryInterval;
         }
 
-        public void setRetryInterval(long retryInterval) {
+        public void setRetryInterval(Duration retryInterval) {
             this.retryInterval = retryInterval;
         }
 
@@ -91,7 +93,7 @@ public class TopicLoadingProperties {
 
         private boolean enabled = false;
 
-        private int intervalSeconds = 60;
+        private Duration interval = Duration.ofSeconds(60);
 
         public boolean isEnabled() {
             return enabled;
@@ -101,12 +103,12 @@ public class TopicLoadingProperties {
             this.enabled = enabled;
         }
 
-        public int getIntervalSeconds() {
-            return intervalSeconds;
+        public Duration getInterval() {
+            return interval;
         }
 
-        public void setIntervalSeconds(int intervalSeconds) {
-            this.intervalSeconds = intervalSeconds;
+        public void setInterval(Duration interval) {
+            this.interval = interval;
         }
     }
 

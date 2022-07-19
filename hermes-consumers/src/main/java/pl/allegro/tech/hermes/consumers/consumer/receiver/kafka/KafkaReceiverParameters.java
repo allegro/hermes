@@ -1,37 +1,16 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
-public class KafkaReceiverParameters {
-    private final int poolTimeout;
-    private final int readQueueCapacity;
-    private final boolean waitBetweenUnsuccessfulPolls;
-    private final int initialIdleTime;
-    private final int maxIdleTime;
+import java.time.Duration;
 
-    public KafkaReceiverParameters(int poolTimeout, int readQueueCapacity, boolean waitBetweenUnsuccessfulPolls, int initialIdleTime, int maxIdleTime) {
-        this.poolTimeout = poolTimeout;
-        this.readQueueCapacity = readQueueCapacity;
-        this.waitBetweenUnsuccessfulPolls = waitBetweenUnsuccessfulPolls;
-        this.initialIdleTime = initialIdleTime;
-        this.maxIdleTime = maxIdleTime;
-    }
+public interface KafkaReceiverParameters {
 
-    public int getPoolTimeout() {
-        return poolTimeout;
-    }
+    Duration getPoolTimeout();
 
-    public int getReadQueueCapacity() {
-        return readQueueCapacity;
-    }
+    int getReadQueueCapacity();
 
-    public boolean isWaitBetweenUnsuccessfulPollsEnabled() {
-        return waitBetweenUnsuccessfulPolls;
-    }
+    boolean isWaitBetweenUnsuccessfulPolls();
 
-    public int getInitialIdleTime() {
-        return initialIdleTime;
-    }
+    Duration getInitialIdleTime();
 
-    public int getMaxIdleTime() {
-        return maxIdleTime;
-    }
+    Duration getMaxIdleTime();
 }

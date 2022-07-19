@@ -25,16 +25,16 @@ public class OutputRateCalculator {
         modeCalculators.put(Mode.NORMAL,
                 new NormalModeOutputRateCalculator(
                         rateCalculatorParameters.getConvergenceFactor(),
-                        1.0 / rateCalculatorParameters.getLimiterSlowModeDelay(),
+                        1.0 / rateCalculatorParameters.getLimiterSlowModeDelay().toSeconds(),
                         rateCalculatorParameters.getFailuresSpeedUpToleranceRatio(),
                         rateCalculatorParameters.getFailuresNoChangeToleranceRatio())
         );
         modeCalculators.put(Mode.SLOW,
                 new SlowModeOutputRateCalculator(
-                        1.0 / rateCalculatorParameters.getLimiterHeartbeatModeDelay())
+                        1.0 / rateCalculatorParameters.getLimiterHeartbeatModeDelay().toSeconds())
         );
         modeCalculators.put(Mode.HEARTBEAT, new HeartbeatModeOutputRateCalculator(
-                1.0 / rateCalculatorParameters.getLimiterSlowModeDelay())
+                1.0 / rateCalculatorParameters.getLimiterSlowModeDelay().toSeconds())
         );
     }
 

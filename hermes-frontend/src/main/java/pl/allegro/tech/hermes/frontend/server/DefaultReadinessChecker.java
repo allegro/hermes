@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,7 +16,7 @@ public class DefaultReadinessChecker implements ReadinessChecker {
     private static final Logger logger = LoggerFactory.getLogger(DefaultReadinessChecker.class);
 
     private final boolean enabled;
-    private final int intervalSeconds;
+    private final Duration interval;
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;
     private final ReadinessRepository readinessRepository;
     private final ScheduledExecutorService scheduler;
@@ -25,9 +26,9 @@ public class DefaultReadinessChecker implements ReadinessChecker {
     public DefaultReadinessChecker(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                    ReadinessRepository readinessRepository,
                                    boolean enabled,
-                                   int intervalSeconds) {
+                                   Duration interval) {
         this.enabled = enabled;
-        this.intervalSeconds = intervalSeconds;
+        this.interval = interval;
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
         this.readinessRepository = readinessRepository;
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
@@ -48,7 +49,7 @@ public class DefaultReadinessChecker implements ReadinessChecker {
         if (enabled) {
             ReadinessCheckerJob job = new ReadinessCheckerJob();
             job.run();
-            scheduler.scheduleAtFixedRate(job, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(job, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
         }
     }
 

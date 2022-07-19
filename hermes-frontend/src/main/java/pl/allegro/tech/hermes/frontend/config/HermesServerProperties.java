@@ -3,16 +3,18 @@ package pl.allegro.tech.hermes.frontend.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.server.HermesServerParameters;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "frontend.server")
-public class HermesServerProperties {
+public class HermesServerProperties implements HermesServerParameters {
 
     private int port = 8080;
 
     private String host = "0.0.0.0";
 
-    private int readTimeout = 2000;
+    private Duration readTimeout = Duration.ofMillis(2000);
 
-    private int requestParseTimeout = 5000;
+    private Duration requestParseTimeout = Duration.ofMillis(5000);
 
     private int maxHeaders = 20;
 
@@ -36,10 +38,11 @@ public class HermesServerProperties {
 
     private boolean gracefulShutdownEnabled = true;
 
-    private int gracefulShutdownInitialWaitMs = 10000;
+    private Duration gracefulShutdownInitialWait = Duration.ofSeconds(10);
 
     private boolean http2Enabled = false;
 
+    @Override
     public int getPort() {
         return port;
     }
@@ -48,6 +51,7 @@ public class HermesServerProperties {
         this.port = port;
     }
 
+    @Override
     public String getHost() {
         return host;
     }
@@ -56,22 +60,25 @@ public class HermesServerProperties {
         this.host = host;
     }
 
-    public int getReadTimeout() {
+    @Override
+    public Duration getReadTimeout() {
         return readTimeout;
     }
 
-    public void setReadTimeout(int readTimeout) {
+    public void setReadTimeout(Duration readTimeout) {
         this.readTimeout = readTimeout;
     }
 
-    public int getRequestParseTimeout() {
+    @Override
+    public Duration getRequestParseTimeout() {
         return requestParseTimeout;
     }
 
-    public void setRequestParseTimeout(int requestParseTimeout) {
+    public void setRequestParseTimeout(Duration requestParseTimeout) {
         this.requestParseTimeout = requestParseTimeout;
     }
 
+    @Override
     public int getMaxHeaders() {
         return maxHeaders;
     }
@@ -80,6 +87,7 @@ public class HermesServerProperties {
         this.maxHeaders = maxHeaders;
     }
 
+    @Override
     public int getMaxParameters() {
         return maxParameters;
     }
@@ -88,6 +96,7 @@ public class HermesServerProperties {
         this.maxParameters = maxParameters;
     }
 
+    @Override
     public int getMaxCookies() {
         return maxCookies;
     }
@@ -96,6 +105,7 @@ public class HermesServerProperties {
         this.maxCookies = maxCookies;
     }
 
+    @Override
     public int getBacklogSize() {
         return backlogSize;
     }
@@ -104,6 +114,7 @@ public class HermesServerProperties {
         this.backlogSize = backlogSize;
     }
 
+    @Override
     public int getIoThreadsCount() {
         return ioThreadsCount;
     }
@@ -112,6 +123,7 @@ public class HermesServerProperties {
         this.ioThreadsCount = ioThreadsCount;
     }
 
+    @Override
     public int getWorkerThreadCount() {
         return workerThreadCount;
     }
@@ -120,6 +132,7 @@ public class HermesServerProperties {
         this.workerThreadCount = workerThreadCount;
     }
 
+    @Override
     public boolean isAlwaysKeepAlive() {
         return alwaysKeepAlive;
     }
@@ -128,6 +141,7 @@ public class HermesServerProperties {
         this.alwaysKeepAlive = alwaysKeepAlive;
     }
 
+    @Override
     public boolean isKeepAlive() {
         return keepAlive;
     }
@@ -136,6 +150,7 @@ public class HermesServerProperties {
         this.keepAlive = keepAlive;
     }
 
+    @Override
     public boolean isRequestDumperEnabled() {
         return requestDumperEnabled;
     }
@@ -144,6 +159,7 @@ public class HermesServerProperties {
         this.requestDumperEnabled = requestDumperEnabled;
     }
 
+    @Override
     public int getBufferSize() {
         return bufferSize;
     }
@@ -152,6 +168,7 @@ public class HermesServerProperties {
         this.bufferSize = bufferSize;
     }
 
+    @Override
     public boolean isGracefulShutdownEnabled() {
         return gracefulShutdownEnabled;
     }
@@ -160,41 +177,21 @@ public class HermesServerProperties {
         this.gracefulShutdownEnabled = gracefulShutdownEnabled;
     }
 
-    public int getGracefulShutdownInitialWaitMs() {
-        return gracefulShutdownInitialWaitMs;
+    @Override
+    public Duration getGracefulShutdownInitialWait() {
+        return gracefulShutdownInitialWait;
     }
 
-    public void setGracefulShutdownInitialWaitMs(int gracefulShutdownInitialWaitMs) {
-        this.gracefulShutdownInitialWaitMs = gracefulShutdownInitialWaitMs;
+    public void setGracefulShutdownInitialWait(Duration gracefulShutdownInitialWait) {
+        this.gracefulShutdownInitialWait = gracefulShutdownInitialWait;
     }
 
+    @Override
     public boolean isHttp2Enabled() {
         return http2Enabled;
     }
 
     public void setHttp2Enabled(boolean http2Enabled) {
         this.http2Enabled = http2Enabled;
-    }
-
-    public HermesServerParameters toHermesServerParameters() {
-        return new HermesServerParameters(
-                this.port,
-                this.host,
-                this.readTimeout,
-                this.requestParseTimeout,
-                this.maxHeaders,
-                this.maxParameters,
-                this.maxCookies,
-                this.backlogSize,
-                this.ioThreadsCount,
-                this.workerThreadCount,
-                this.alwaysKeepAlive,
-                this.keepAlive,
-                this.requestDumperEnabled,
-                this.bufferSize,
-                this.gracefulShutdownEnabled,
-                this.gracefulShutdownInitialWaitMs,
-                this.http2Enabled
-        );
     }
 }

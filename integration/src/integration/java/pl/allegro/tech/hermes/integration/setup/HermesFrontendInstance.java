@@ -72,7 +72,7 @@ public class HermesFrontendInstance {
         }
 
         public Starter readinessCheckIntervalInSeconds(int seconds) {
-            frontend.overrideProperty(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, seconds);
+            frontend.overrideProperty(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, seconds + "s");
             return this;
         }
 

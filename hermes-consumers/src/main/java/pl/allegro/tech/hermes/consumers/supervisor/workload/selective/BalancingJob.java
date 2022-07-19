@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConst
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,7 +37,7 @@ public class BalancingJob implements Runnable {
     private final WorkloadConstraintsRepository workloadConstraintsRepository;
     private final ScheduledExecutorService executorService;
 
-    private final int intervalSeconds;
+    private final Duration interval;
 
     private ScheduledFuture<?> job;
 
@@ -63,7 +64,7 @@ public class BalancingJob implements Runnable {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("BalancingExecutor-%d").build();
         this.executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        this.intervalSeconds = selectiveSupervisorParameters.getRebalanceInterval();
+        this.interval = selectiveSupervisorParameters.getRebalanceInterval();
 
         metrics.registerGauge(
                 gaugeName(kafkaCluster, "selective.all-assignments"),
@@ -136,7 +137,7 @@ public class BalancingJob implements Runnable {
     }
 
     public void start() {
-        job = executorService.scheduleAtFixedRate(this, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+        job = executorService.scheduleAtFixedRate(this, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
     }
 
     public void stop() throws InterruptedException {
