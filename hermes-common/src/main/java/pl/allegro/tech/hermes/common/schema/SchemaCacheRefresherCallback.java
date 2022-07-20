@@ -13,17 +13,17 @@ import pl.allegro.tech.hermes.schema.SchemaVersionsResult;
 
 import java.util.List;
 
-class SchemaCacheRefresherCallback implements TopicCallback {
+class SchemaCacheRefresherCallback<T> implements TopicCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(SchemaVersionsRepositoryFactory.class);
 
     public static final boolean REFRESH_ONLINE = true;
 
     private final CachedSchemaVersionsRepository schemaVersionsRepository;
-    private final CachedCompiledSchemaRepository compiledSchemaRepository;
+    private final CachedCompiledSchemaRepository<T> compiledSchemaRepository;
 
     public SchemaCacheRefresherCallback(CachedSchemaVersionsRepository schemaVersionsRepository,
-                                        CachedCompiledSchemaRepository compiledSchemaRepository) {
+                                        CachedCompiledSchemaRepository<T> compiledSchemaRepository) {
         this.schemaVersionsRepository = schemaVersionsRepository;
         this.compiledSchemaRepository = compiledSchemaRepository;
     }
