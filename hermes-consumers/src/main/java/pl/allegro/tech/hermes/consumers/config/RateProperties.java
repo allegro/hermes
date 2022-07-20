@@ -14,9 +14,9 @@ public class RateProperties implements RateCalculatorParameters {
 
     private boolean limiterReportingThreadMonitoringEnabled = false;
 
-    private Duration limiterHeartbeatModeDelay = Duration.ofSeconds(60);
+    private Duration limiterHeartbeatModeDelay = Duration.ofMinutes(1);
 
-    private Duration limiterSlowModeDelay = Duration.ofSeconds(60);
+    private Duration limiterSlowModeDelay = Duration.ofSeconds(1);
 
     private double convergenceFactor = 0.2;
 

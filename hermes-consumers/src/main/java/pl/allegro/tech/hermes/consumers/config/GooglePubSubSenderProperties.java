@@ -9,7 +9,7 @@ public class GooglePubSubSenderProperties {
 
     private int corePoolSize = 4;
 
-    private Duration totalTimeouts = Duration.ofMillis(600_000);
+    private Duration totalTimeout = Duration.ofMillis(600_000);
 
     private long batchingRequestBytesThreshold = 1024L;
 
@@ -27,12 +27,12 @@ public class GooglePubSubSenderProperties {
         this.corePoolSize = corePoolSize;
     }
 
-    public Duration getTotalTimeouts() {
-        return totalTimeouts;
+    public Duration getTotalTimeout() {
+        return totalTimeout;
     }
 
-    public void setTotalTimeouts(Duration totalTimeouts) {
-        this.totalTimeouts = totalTimeouts;
+    public void setTotalTimeout(Duration totalTimeout) {
+        this.totalTimeout = totalTimeout;
     }
 
     public long getBatchingRequestBytesThreshold() {

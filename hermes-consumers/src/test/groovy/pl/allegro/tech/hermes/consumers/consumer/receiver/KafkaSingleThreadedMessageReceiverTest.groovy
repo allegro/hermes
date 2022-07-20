@@ -33,7 +33,7 @@ class KafkaSingleThreadedMessageReceiverTest extends Specification {
         converterFactory.create(*_) >> messageConverter
         receiver = new KafkaSingleThreadedMessageReceiver(
                 consumer, converterFactory, Mock(HermesMetrics),
-                kafkaNamesMapper, topic, subscription, 10, 10,
+                kafkaNamesMapper, topic, subscription, Duration.ofMillis(10), 10,
                 Mock(ConsumerPartitionAssignmentState)
         )
     }
