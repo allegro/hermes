@@ -17,7 +17,6 @@ out
 # sphinx
 /site
 _build
-.vagrant
 
 # hermes-console
 

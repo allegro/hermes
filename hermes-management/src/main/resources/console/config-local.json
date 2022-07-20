@@ -1,6 +1,6 @@
 {
   "console": {
-    "title": "hermes vagrant console"
+    "title": "hermes console"
   },
   "dashboard": {
     "metrics": "http://localhost:8082",

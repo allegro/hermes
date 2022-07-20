@@ -3,9 +3,10 @@ package pl.allegro.tech.hermes.schema;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 
-import java.util.List;
 
 public class SchemaRepository {
+
+    private static final boolean ONLINE = true;
 
     private final SchemaVersionsRepository schemaVersionsRepository;
     private final CompiledSchemaRepository<Schema> compiledAvroSchemaRepository;
@@ -56,6 +57,10 @@ public class SchemaRepository {
         return getCompiledSchemaAtVersion(topic, version);
     }
 
+    public void refreshVersions(Topic topic) {
+        schemaVersionsRepository.versions(topic, ONLINE);
+    }
+
     private CompiledSchema<Schema> getCompiledSchemaAtVersion(Topic topic, SchemaVersion latestVersion) {
         try {
             return compiledAvroSchemaRepository.getSchema(topic, latestVersion);
@@ -64,9 +69,5 @@ public class SchemaRepository {
         } catch (Exception e) {
             throw new CouldNotLoadSchemaException(topic, latestVersion, e);
         }
-    }
-
-    public List<SchemaVersion> getVersions(Topic topic, boolean online) {
-        return schemaVersionsRepository.versions(topic, online).get();
     }
 }

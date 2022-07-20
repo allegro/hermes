@@ -40,7 +40,7 @@ public class SchemaVersionsRepositoryFactory {
                     configFactory.getIntProperty(Configs.SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES));
 
             notificationsBus.registerTopicCallback(
-                    new SchemaCacheRefresherCallback(
+                    new SchemaCacheRefresherCallback<>(
                             cachedSchemaVersionsRepository,
                             (CachedCompiledSchemaRepository<?>) compiledSchemaRepository));
 

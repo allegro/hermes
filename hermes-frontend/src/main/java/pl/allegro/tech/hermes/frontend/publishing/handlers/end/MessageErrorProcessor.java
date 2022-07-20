@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.util.Map;
 import java.nio.charset.StandardCharsets;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
@@ -26,26 +26,32 @@ public class MessageErrorProcessor {
     private final ObjectMapper objectMapper;
     private final Trackers trackers;
     private final HttpString messageIdHeader = new HttpString(MESSAGE_ID.getName());
+    private final TrackingHeadersExtractor trackingHeadersExtractor;
 
-    public MessageErrorProcessor(ObjectMapper objectMapper, Trackers trackers) {
+    public MessageErrorProcessor(ObjectMapper objectMapper, Trackers trackers,
+                                 TrackingHeadersExtractor trackingHeadersExtractor) {
         this.objectMapper = objectMapper;
         this.trackers = trackers;
+        this.trackingHeadersExtractor = trackingHeadersExtractor;
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error.getMessage(), topic, messageId, readHostAndPort(exchange));
+        log(error.getMessage(), topic, messageId, readHostAndPort(exchange),
+                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, ErrorDescription error, Exception exception) {
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), exception);
+        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), exception,
+                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
     }
 
     public void sendAndLog(HttpServerExchange exchange, Topic topic, String messageId, Exception e) {
         ErrorDescription error = error("Error while handling request.", INTERNAL_ERROR);
         sendQuietly(exchange, error, messageId, topic.getQualifiedName());
-        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), e);
+        log(error.getMessage(), topic, messageId, readHostAndPort(exchange), e,
+                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
     }
 
     public void sendAndLog(HttpServerExchange exchange, String errorMessage, Exception e) {
@@ -77,7 +83,8 @@ public class MessageErrorProcessor {
 
     public void log(HttpServerExchange exchange, String errorMessage, Exception exception) {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
-        log(errorMessage, attachment.getTopic(), attachment.getMessageId(), readHostAndPort(exchange), exception);
+        log(errorMessage, attachment.getTopic(), attachment.getMessageId(), readHostAndPort(exchange), exception,
+                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
     }
 
     private void send(HttpServerExchange exchange, ErrorDescription error, String messageId) throws IOException {
@@ -88,7 +95,8 @@ public class MessageErrorProcessor {
                 ResponseReadyIoCallback.INSTANCE);
     }
 
-    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort) {
+    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort,
+                     Map<String, String> extraRequestHeaders) {
         logger.error(errorMessage +
                 "; publishing on topic: " +
                 topic.getQualifiedName() +
@@ -96,10 +104,11 @@ public class MessageErrorProcessor {
                 messageId +
                 "; remote host: " +
                 hostAndPort);
-        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort);
+        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
     }
 
-    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort, Exception exception) {
+    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort,
+                     Exception exception, Map<String, String> extraRequestHeaders) {
         logger.error(errorMessage +
                         "; publishing on topic: " +
                         topic.getQualifiedName() +
@@ -108,6 +117,6 @@ public class MessageErrorProcessor {
                         "; remote host: " +
                         hostAndPort,
                 exception);
-        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort);
+        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
     }
 }

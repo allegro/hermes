@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import com.google.common.collect.ImmutableList;
+import java.util.concurrent.BlockingQueue;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -31,9 +32,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.RetryableReceiverError;
 
 public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaSingleThreadedMessageReceiver.class);
@@ -41,7 +42,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final KafkaConsumer<byte[], byte[]> consumer;
     private final KafkaConsumerRecordToMessageConverter messageConverter;
 
-    private final BlockingQueue<Message> readQueue;
+    private final BlockingQueue<ConsumerRecord<byte[], byte[]>> readQueue;
     private final KafkaConsumerOffsetMover offsetMover;
 
     private final HermesMetrics metrics;
@@ -83,22 +84,9 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     @Override
     public Optional<Message> next() {
         try {
-            if (readQueue.isEmpty()) {
-                ConsumerRecords<byte[], byte[]> records = consumer.poll(poolTimeout);
-                try {
-                    for (ConsumerRecord<byte[], byte[]> record : records) {
-                        readQueue.add(convertToMessage(record));
-                    }
-                } catch (Exception ex) {
-                    logger.error("Failed to read message for subscription {}, readQueueSize {}, records {}",
-                            subscription.getQualifiedName(),
-                            readQueue.size(),
-                            records.count(),
-                            ex);
-                }
-            }
-            return Optional.ofNullable(readQueue.poll());
-        } catch (InterruptException ex ) {
+            supplyReadQueue();
+            return getMessageFromReadQueue();
+        } catch (InterruptException ex) {
             // Despite that Thread.currentThread().interrupt() is called in InterruptException's constructor
             // Thread.currentThread().isInterrupted() somehow returns false so we reset it.
             logger.info("Kafka consumer thread interrupted", ex);
@@ -114,6 +102,38 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                     ex);
             return Optional.empty();
         }
+    }
+
+    private void supplyReadQueue() {
+        if (readQueue.isEmpty()) {
+            ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(pollTimeout));
+            try {
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    readQueue.add(record);
+                }
+            } catch (Exception ex) {
+                logger.error("Failed to read message for subscription {}, readQueueSize {}, records {}",
+                        subscription.getQualifiedName(),
+                        readQueue.size(),
+                        records.count(),
+                        ex);
+            }
+        }
+    }
+
+    private Optional<Message> getMessageFromReadQueue() {
+        if (!readQueue.isEmpty()) {
+            ConsumerRecord<byte[], byte[]> record = readQueue.element();
+            try {
+                Message message = convertToMessage(record);
+                readQueue.poll();
+                return Optional.of(message);
+            } catch (RetryableReceiverError ex) {
+                logger.warn("Cannot convert record to message... Operation will be delayed", ex);
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
     }
 
     private Message convertToMessage(ConsumerRecord<byte[], byte[]> record) {

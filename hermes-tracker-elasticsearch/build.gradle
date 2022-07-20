@@ -1,4 +1,5 @@
 dependencies {
+    compile project(':hermes-common')
     compile project(':hermes-tracker')
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile group: 'org.elasticsearch.client', name: 'transport', version: '6.8.12'

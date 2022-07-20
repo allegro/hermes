@@ -25,13 +25,12 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
                                           AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
                                           AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
                                           AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
-                                          AvroMessageAnySchemaVersionContentWrapper anySchemaVersionContentWrapper,
                                           AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
 
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
         this.avroMessageContentUnwrappers =
-                asList(schemaIdAwareContentWrapper, schemaVersionTruncationContentWrapper, headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper, anySchemaVersionContentWrapper);
+                asList(schemaIdAwareContentWrapper, schemaVersionTruncationContentWrapper, headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper);
     }
 
     public UnwrappedMessageContent unwrapJson(byte[] data) {
