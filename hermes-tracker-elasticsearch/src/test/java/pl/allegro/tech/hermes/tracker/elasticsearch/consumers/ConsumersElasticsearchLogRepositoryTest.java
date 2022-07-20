@@ -62,6 +62,7 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
         awaitUntilPersisted(getMessageFilter(topic, subscription, id, status));
     }
 
+    @Override
     protected void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId,
                                                      SentMessageTraceStatus status) {
         awaitUntilPersisted(getMessageBatchFilter(topic, subscription, messageId, batchId, status));
@@ -79,16 +80,18 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
 
     private BoolQueryBuilder getMessageFilter(String topic, String subscription, String id,
                                               SentMessageTraceStatus status) {
-        return boolQuery()
+        BoolQueryBuilder queryBuilder = boolQuery()
                 .must(termQuery(TOPIC_NAME, topic))
                 .must(termQuery(SUBSCRIPTION, subscription))
                 .must(termQuery(MESSAGE_ID, id))
                 .must(termQuery(STATUS, status.toString()))
                 .must(termQuery(CLUSTER, CLUSTER_NAME));
+        return queryBuilder;
     }
 
     private QueryBuilder getMessageBatchFilter(String topic, String subscription, String messageId, String batchId,
                                                SentMessageTraceStatus status) {
-        return getMessageFilter(topic, subscription, messageId, status).must(termQuery(BATCH_ID, batchId));
+        return getMessageFilter(topic, subscription, messageId, status)
+                .must(termQuery(BATCH_ID, batchId));
     }
 }

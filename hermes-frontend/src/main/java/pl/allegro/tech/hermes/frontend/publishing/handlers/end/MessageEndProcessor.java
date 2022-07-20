@@ -22,21 +22,25 @@ public class MessageEndProcessor {
 
     private final Trackers trackers;
     private final BrokerListeners brokerListeners;
+    private final TrackingHeadersExtractor trackingHeadersExtractor;
 
-    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners) {
+    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersExtractor trackingHeadersExtractor) {
         this.trackers = trackers;
         this.brokerListeners = brokerListeners;
+        this.trackingHeadersExtractor = trackingHeadersExtractor;
     }
 
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
-        trackers.get(attachment.getTopic()).logPublished(
-                attachment.getMessageId(), attachment.getTopic().getName(), readHostAndPort(exchange));
+        trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(),
+                attachment.getTopic().getName(), readHostAndPort(exchange),
+                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
         sendResponse(exchange, attachment, StatusCodes.CREATED);
         attachment.getCachedTopic().incrementPublished();
     }
 
     public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
-        trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(), readHostAndPort(exchange));
+        trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(),
+                readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
         cachedTopic.incrementPublished();
     }
@@ -49,7 +53,8 @@ public class MessageEndProcessor {
     public void bufferedButDelayed(HttpServerExchange exchange, AttachmentContent attachment) {
         Topic topic = attachment.getTopic();
         brokerListeners.onTimeout(attachment.getMessage(), topic);
-        trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName(), readHostAndPort(exchange));
+        trackers.get(topic).logInflight(attachment.getMessageId(), topic.getName(),
+                readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
         handleRaceConditionBetweenAckAndTimeout(attachment, topic);
         sendResponse(exchange, attachment, StatusCodes.ACCEPTED);
     }
@@ -65,26 +70,13 @@ public class MessageEndProcessor {
             exchange.setStatusCode(statusCode);
             exchange.getResponseHeaders().add(messageIdHeader, attachment.getMessageId());
         } else {
-            logger.warn("The response has already been started. Status code set on exchange: {}; Expected status code: {};" +
-                            "Topic: {}; Message id: {}; Remote host {}",
-                    exchange.getStatusCode(),
-                    statusCode,
-                    attachment.getCachedTopic().getQualifiedName(),
-                    attachment.getMessageId(),
-                    readHostAndPort(exchange));
+            logger.warn("The response has already been started. Status code set on exchange: {}; Expected status code: {};" + "Topic: {}; Message id: {}; Remote host {}", exchange.getStatusCode(), statusCode, attachment.getCachedTopic().getQualifiedName(), attachment.getMessageId(), readHostAndPort(exchange));
         }
         attachment.markResponseAsReady();
         try {
             exchange.endExchange();
         } catch (RuntimeException exception) {
-            logger.error("Exception while ending exchange. Status code set on exchange: {}; Expected status code: {};" +
-                            "Topic: {}; Message id: {}; Remote host {}",
-                    exchange.getStatusCode(),
-                    statusCode,
-                    attachment.getCachedTopic().getQualifiedName(),
-                    attachment.getMessageId(),
-                    readHostAndPort(exchange),
-                    exception);
+            logger.error("Exception while ending exchange. Status code set on exchange: {}; Expected status code: {};" + "Topic: {}; Message id: {}; Remote host {}", exchange.getStatusCode(), statusCode, attachment.getCachedTopic().getQualifiedName(), attachment.getMessageId(), readHostAndPort(exchange), exception);
         }
     }
 }

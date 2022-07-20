@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
 
 public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
 
@@ -81,7 +82,15 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
     }
 
     private SentMessageTrace createUndeliveredMessage(String subscription, String message) {
-        return SentMessageTrace.createUndeliveredMessage(TOPIC, subscription, message, new IllegalArgumentException(),
-                1L, 1, 1L, "cluster");
+        return undeliveredMessage()
+                .withTopicName(TOPIC.qualifiedName())
+                .withSubscription(subscription)
+                .withMessage(message)
+                .withReason(new IllegalArgumentException().getMessage())
+                .withTimestamp(1L)
+                .withPartition(1)
+                .withOffset(1L)
+                .withCluster("cluster")
+                .build();
     }
 }

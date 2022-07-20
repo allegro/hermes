@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.tracker.frontend;
 
+import com.google.common.collect.ImmutableMap;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.BeforeSuite;
@@ -9,6 +10,8 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 import pl.allegro.tech.hermes.test.helper.retry.Retry;
+
+import java.util.Map;
 
 import static java.lang.System.currentTimeMillis;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
@@ -40,12 +43,13 @@ public abstract class AbstractLogRepositoryTest {
         String id = "publishedMessage";
         String topic = "group.sentMessage";
         String hostname = "172.16.254.1";
+        Map<String, String> extraRequestHeaders = ImmutableMap.of("header1", "value1", "header2", "value2");
 
         // when
-        logRepository.logPublished(id, currentTimeMillis(), topic, hostname);
+        logRepository.logPublished(id, currentTimeMillis(), topic, hostname, extraRequestHeaders);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, SUCCESS, hostname);
+        awaitUntilMessageIsPersisted(topic, id, hostname, SUCCESS, "header1", "value1", "header2", "value2");
     }
 
     @Test
@@ -54,12 +58,13 @@ public abstract class AbstractLogRepositoryTest {
         String id = "errorMessage";
         String topic = "group.sentMessage";
         String hostname = "172.16.254.1";
+        Map<String, String> extraRequestHeaders = ImmutableMap.of("header1", "value1", "header2", "value2");
 
         // when
-        logRepository.logError(id, currentTimeMillis(), topic, "reason", hostname);
+        logRepository.logError(id, currentTimeMillis(), topic, "reason", hostname, extraRequestHeaders);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, ERROR, "reason", hostname);
+        awaitUntilMessageIsPersisted(topic, id, "reason", hostname, ERROR, "header1", "value1", "header2", "value2");
     }
 
     @Test
@@ -68,17 +73,18 @@ public abstract class AbstractLogRepositoryTest {
         String id = "inflightMessage";
         String topic = "group.sentMessage";
         String hostname = "172.16.254.1";
+        Map<String, String> extraRequestHeaders = ImmutableMap.of("header1", "value1", "header2", "value2");
 
         // when
-        logRepository.logInflight(id, currentTimeMillis(), topic, hostname);
+        logRepository.logInflight(id, currentTimeMillis(), topic, hostname, extraRequestHeaders);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, INFLIGHT, hostname);
+        awaitUntilMessageIsPersisted(topic, id, hostname, INFLIGHT, "header1", "value1", "header2", "value2");
     }
 
-    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status, String remoteHostname) throws Exception;
+    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, String remoteHostname, PublishedMessageTraceStatus status, String... extraRequestHeadersKeywords) throws Exception;
 
-    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, PublishedMessageTraceStatus status, String reason, String remoteHostname)
+    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, String reason, String remoteHostname, PublishedMessageTraceStatus status, String... extraRequestHeadersKeywords)
             throws Exception;
 
 }
