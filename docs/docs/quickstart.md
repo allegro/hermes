@@ -4,42 +4,8 @@ This 10-minute guide will show you how to run an entire Hermes environment, crea
 publish some messages.
 
 ## Setting up the environment
-There are two ways of setting up the environment: using vagrant or docker.
 
-### Vagrant
-
-#### Prerequisites
-
-In order to go through this tutorial you need to have:
-
-* [Vagrant 1.7.3+](https://www.vagrantup.com/)
-* [VirtualBox](https://www.virtualbox.org/) (4.0.x, 4.1.x, 4.2.x, 4.3.x, 5.0.x)
-* curl
-* some running receiver service (in this guide we'll use [webhook.site](http://webhook.site))
-
-#### Setup
-
-As described in [architecture](overview/architecture.md) section, Hermes consists of multiple modules and requires Kafka
-and Zookeeper to run. To make this easy, we prepared a Vagrant file.
-
-```bash
-git clone https://github.com/allegro/hermes.git
-cd hermes
-vagrant up
-```
-
-If you want to run specific version of Hermes, simply checkout a tag:
-
-```bash
-git checkout hermes-{version}
-```
-
-#### Checking the setup
-
-If the system is running, you should see Hermes Console when visiting Vagrant public IP in the browser. Just head to
-[http://10.10.10.10/](http://10.10.10.10/).
-
-### Docker
+Currently, there is only one way of setting up the environment - using docker.
 
 #### Prerequisites
 
@@ -103,15 +69,14 @@ Now you're ready to create a **topic** for publishing messages.
 In Hermes messages are published on topics which are aggregated into **groups**.
 So, you'll need to create a group first, let's name it `com.example.events`.
 
-* head to Hermes Console: [Vagrant](http://10.10.10.10/#/groups) / [Docker](http://localhost:8090/#/groups)
+* head to Hermes Console: [link](http://localhost:8090/#/groups)
 * click the blue plus button
 * enter group name: `com.example.events`
 * all the other information is required, but just enter whatever for now
 
 At this point, you should see your group on the group list. Now let's add new `clicks` topic to our group:
 
-* click the group header (direct link to com.example.events group: [Vagrant](http://10.10.10.10/#/groups/com.example.events) /
- [Docker](http://localhost:8090/#/groups/com.example.events) )
+* click the group header (direct link to com.example.events group: [link](http://localhost:8090/#/groups/com.example.events))
 * click the blue plus button
 * enter topic name: `clicks`
 * enter some description
@@ -124,8 +89,7 @@ where to send messages published on a topic. You can have many subscriptions on 
 
 So let's create a `clicks-receiver` subscription:
 
-* click the topic header (direct link to com.example.events.clicks group: 
-[Vagrant](http://10.10.10.10/#/groups/com.example.events/topics/com.example.events.clicks) / [Docker](http://localhost:8090/#/groups/com.example.events/topics/com.example.events.clicks))
+* click the topic header (direct link to com.example.events.clicks group: [link](http://localhost:8090/#/groups/com.example.events/topics/com.example.events.clicks))
 * click the blue plus button
 * enter subscription name: `clicks-receiver`
 * set the endpoint to which messages will be sent, in this example we can use `http://webhook.site/aa715639-e85d-43b4-9a29-ec46824021fe`
@@ -148,28 +112,6 @@ just hit retry)
 Congratulations! The message should be delivered to your service or visible via e.g. [http://webhook.site/#!/aa715639-e85d-43b4-9a29-ec46824021fe/71377cf3-9076-4c06-b3ef-ec779170ce05/1](http://webhook.site/#!/aa715639-e85d-43b4-9a29-ec46824021fe/71377cf3-9076-4c06-b3ef-ec779170ce05/1).
 
 ## Stopping the system
-
-### Vagrant
-
-To stop the virtual machine run:
-
-```bash
-vagrant halt
-```
-
-Run it again with:
-
-```bash
-vagrant up
-```
-
-Destroy the VM with:
-
-```bash
-vagrant destroy
-```
-
-### Docker
 
 To stop the system run this command in the directory where the docker-compose file is located:
 
