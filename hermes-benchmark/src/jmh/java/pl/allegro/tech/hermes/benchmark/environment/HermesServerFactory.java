@@ -56,7 +56,6 @@ class HermesServerFactory {
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
         ConfigFactory configFactory = new MutableConfigFactory();
         Trackers trackers = new Trackers(Collections.emptyList());
-        TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
         HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer, rawSchemaClient, configFactory, trackers, avroMessageContentWrapper);
         SslProperties sslProperties = new SslProperties();
@@ -80,11 +79,12 @@ class HermesServerFactory {
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter, TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer, RawSchemaClient rawSchemaClient, ConfigFactory configFactory, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
         HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
+        TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
 
         return new HandlersChainFactory(
                 topicsCache,
-                new MessageErrorProcessor(new ObjectMapper(), trackers),
-                new MessageEndProcessor(trackers, new BrokerListeners()),
+                new MessageErrorProcessor(new ObjectMapper(), trackers, trackingHeadersExtractor),
+                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor),
                 new MessageFactory(
                         new MessageValidators(Collections.emptyList()),
                         new MessageContentTypeEnforcer(),
