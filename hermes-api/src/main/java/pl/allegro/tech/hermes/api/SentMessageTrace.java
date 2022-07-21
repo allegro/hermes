@@ -47,46 +47,6 @@ public class SentMessageTrace implements MessageTrace {
         this.cluster = cluster;
     }
 
-    public static SentMessageTrace createUndeliveredMessage(Subscription subscription, String message,
-            Throwable cause, Long loggingTime, Integer partition, Long offset, String cluster) {
-        return createUndeliveredMessage(subscription.getQualifiedTopicName(), subscription.getName(), message,
-                cause.getMessage(), loggingTime, partition, offset, cluster);
-    }
-
-    public static SentMessageTrace createUndeliveredMessage(String qualifiedTopicName, String subscription, String message,
-            String cause, Long loggingTime, Integer partition, Long offset, String cluster) {
-        return new SentMessageTrace(
-                null,
-                null,
-                loggingTime,
-                subscription,
-                qualifiedTopicName,
-                SentMessageTraceStatus.DISCARDED,
-                cause,
-                message,
-                partition,
-                offset,
-                cluster
-        );
-    }
-
-    public static SentMessageTrace createUndeliveredMessage(TopicName topicName, String subscription, String message,
-                                                                 Throwable cause, Long loggingTime, Integer partition, Long offset, String cluster) {
-        return new SentMessageTrace(
-                null,
-                null,
-                loggingTime,
-                subscription,
-                topicName.qualifiedName(),
-                SentMessageTraceStatus.DISCARDED,
-                cause.getMessage(),
-                message,
-                partition,
-                offset,
-                cluster
-        );
-    }
-
     public String getMessageId() {
         return messageId;
     }
@@ -155,5 +115,80 @@ public class SentMessageTrace implements MessageTrace {
                 && Objects.equals(this.subscription, other.subscription)
                 && Objects.equals(this.timestamp, other.timestamp)
                 && Objects.equals(this.status, other.status);
+    }
+
+    public static class Builder {
+
+        private final String messageId;
+        private final String batchId;
+        private final SentMessageTraceStatus status;
+
+        private String subscription;
+        private long timestamp;
+        private Integer partition;
+        private Long offset;
+        private String topicName;
+        private String reason;
+        private String message;
+        private String cluster;
+
+        private Builder(String messageId, String batchId, SentMessageTraceStatus status) {
+            this.messageId = messageId;
+            this.batchId = batchId;
+            this.status = status;
+        }
+
+        public Builder withSubscription(String subscription) {
+            this.subscription = subscription;
+            return this;
+        }
+
+        public Builder withTimestamp(long timestamp) {
+            this.timestamp = timestamp;
+            return this;
+        }
+
+        public Builder withPartition(Integer partition) {
+            this.partition = partition;
+            return this;
+        }
+
+        public Builder withOffset(Long offset) {
+            this.offset = offset;
+            return this;
+        }
+
+        public Builder withTopicName(String topicName) {
+            this.topicName = topicName;
+            return this;
+        }
+
+        public Builder withReason(String reason) {
+            this.reason = reason;
+            return this;
+        }
+
+        public Builder withMessage(String message) {
+            this.message = message;
+            return this;
+        }
+
+        public Builder withCluster(String cluster) {
+            this.cluster = cluster;
+            return this;
+        }
+
+        public static Builder sentMessageTrace(String messageId, String batchId, SentMessageTraceStatus status) {
+            return new Builder(messageId, batchId, status);
+        }
+
+        public static Builder undeliveredMessage() {
+            return new Builder(null, null, SentMessageTraceStatus.DISCARDED);
+        }
+
+        public SentMessageTrace build() {
+            return new SentMessageTrace(messageId, batchId, timestamp, subscription, topicName, status,
+                reason, message, partition, offset, cluster);
+        }
     }
 }

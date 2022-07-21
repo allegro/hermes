@@ -38,7 +38,7 @@ public class SchemaVersionsRepositoryFactory {
                     schemaVersionsRepositoryParameters.getExpireAfterWrite());
 
             notificationsBus.registerTopicCallback(
-                    new SchemaCacheRefresherCallback(
+                    new SchemaCacheRefresherCallback<>(
                             cachedSchemaVersionsRepository,
                             (CachedCompiledSchemaRepository<?>) compiledSchemaRepository));
 

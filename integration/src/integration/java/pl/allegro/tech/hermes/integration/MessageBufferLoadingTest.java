@@ -125,7 +125,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         MessageRepository messageRepository = new ChronicleMapMessageRepository(backup, ENTRIES, AVERAGE_MESSAGE_SIZE);
         JsonMessageContentWrapper contentWrapper = new JsonMessageContentWrapper("message", "metadata", new ObjectMapper());
 
-        CompositeMessageContentWrapper wrapper = new CompositeMessageContentWrapper(contentWrapper, null, null, null, null, null, null);
+        CompositeMessageContentWrapper wrapper = new CompositeMessageContentWrapper(contentWrapper, null, null, null, null, null);
 
         String messageId = MessageIdGenerator.generate();
         long timestamp = now().toEpochMilli();

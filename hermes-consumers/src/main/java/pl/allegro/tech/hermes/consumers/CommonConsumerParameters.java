@@ -1,28 +1,15 @@
 package pl.allegro.tech.hermes.consumers;
 
-import java.time.Duration;
+import pl.allegro.tech.hermes.consumers.consumer.SerialConsumerParameters;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorParameters;
 
 public interface CommonConsumerParameters {
 
-    int getThreadPoolSize();
+    SupervisorParameters getBackgroundSupervisor();
 
-    int getInflightSize();
-
-    boolean isFilteringRateLimiterEnabled();
-
-    boolean isFilteringEnabled();
-
-    Duration getBackgroundSupervisorInterval();
-
-    Duration getBackgroundSupervisorUnhealthyAfter();
-
-    Duration getBackgroundSupervisorKillAfter();
-
-    Duration getSignalProcessingInterval();
+    SerialConsumerParameters getSerialConsumer();
 
     int getSignalProcessingQueueSize();
 
     boolean isUseTopicMessageSizeEnabled();
-
-    String getClientId();
 }

@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageAnySchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
@@ -27,8 +26,6 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTru
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksRateLimiter;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaOnlineChecksWaitingRateLimiter;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
@@ -200,14 +197,6 @@ public class CommonConfiguration {
     @Bean
     public DeserializationMetrics deserializationMetrics(MetricRegistry metricRegistry) {
         return new DeserializationMetrics(metricRegistry);
-    }
-
-    @Bean
-    public SchemaOnlineChecksRateLimiter schemaOnlineChecksWaitingRateLimiter(SchemaProperties schemaProperties) {
-        return new SchemaOnlineChecksWaitingRateLimiter(
-                schemaProperties.getRepository().getOnlineCheckPermitsPerSecond(),
-                schemaProperties.getRepository().getOnlineCheckAcquireWait()
-        );
     }
 
     @Bean

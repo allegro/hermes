@@ -14,6 +14,8 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiterFactory;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.DefaultTrackingHeaderExtractor;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersExtractor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.AvroEnforcer;
@@ -58,13 +60,20 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public MessageEndProcessor messageEndProcessor(Trackers trackers, BrokerListeners brokerListeners) {
-        return new MessageEndProcessor(trackers, brokerListeners);
+    public MessageEndProcessor messageEndProcessor(Trackers trackers, BrokerListeners brokerListeners,
+                                                   TrackingHeadersExtractor trackingHeadersExtractor) {
+        return new MessageEndProcessor(trackers, brokerListeners, trackingHeadersExtractor);
     }
 
     @Bean
-    public MessageErrorProcessor messageErrorProcessor(ObjectMapper objectMapper, Trackers trackers) {
-        return new MessageErrorProcessor(objectMapper, trackers);
+    public TrackingHeadersExtractor extraHeadersExtractor() {
+        return new DefaultTrackingHeaderExtractor();
+    }
+
+    @Bean
+    public MessageErrorProcessor messageErrorProcessor(ObjectMapper objectMapper, Trackers trackers,
+                                                       TrackingHeadersExtractor trackingHeadersExtractor) {
+        return new MessageErrorProcessor(objectMapper, trackers, trackingHeadersExtractor);
     }
 
     @Bean

@@ -15,7 +15,8 @@ public class MessageMetadata {
 
     public MessageMetadata(String messageId, long offset, int partition, long partitionAssignmentTerm, String topic, String subscription,
                            String kafkaTopic, long publishingTimestamp, long readingTimestamp) {
-        this(messageId, "", offset, partition, partitionAssignmentTerm, topic, subscription, kafkaTopic, publishingTimestamp, readingTimestamp);
+        this(messageId, "", offset, partition, partitionAssignmentTerm, topic, subscription, kafkaTopic, publishingTimestamp,
+            readingTimestamp);
     }
 
     public MessageMetadata(String messageId, String batchId, long offset, int partition, long partitionAssignmentTerm, String topic, String subscription,

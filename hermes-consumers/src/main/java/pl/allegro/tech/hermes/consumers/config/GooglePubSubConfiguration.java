@@ -73,7 +73,7 @@ public class GooglePubSubConfiguration {
 
     @Bean
     public RetrySettings retrySettings(GooglePubSubSenderProperties googlePubSubSenderProperties) {
-        Duration totalTimeout = Duration.ofMillis(googlePubSubSenderProperties.getTotalTimeouts().toMillis());
+        Duration totalTimeout = Duration.ofMillis(googlePubSubSenderProperties.getTotalTimeout().toMillis());
 
         return RetrySettings.newBuilder()
                 .setInitialRpcTimeout(totalTimeout)
