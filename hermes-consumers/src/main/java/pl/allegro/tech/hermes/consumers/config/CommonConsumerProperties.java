@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
+import pl.allegro.tech.hermes.consumers.consumer.SerialConsumerParameters;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorParameters;
 
 import java.time.Duration;
 
@@ -11,51 +12,24 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
 
     private int threadPoolSize = 500;
 
-    private int inflightSize = 100;
-
-    private boolean filteringRateLimiterEnabled = true;
-
     private int healthCheckPort = 8000;
-
-    private boolean filteringEnabled = true;
 
     private Duration subscriptionIdsCacheRemovedExpireAfterAccess = Duration.ofSeconds(60);
 
-    private BackgroundSupervisor backgroundSupervisor = new BackgroundSupervisor();
+    private SupervisorParameters backgroundSupervisor = new BackgroundSupervisor();
 
-    private Duration signalProcessingInterval = Duration.ofMillis(5_000);
+    private SerialConsumerParameters serialConsumer = new SerialConsumer();
 
     private int signalProcessingQueueSize = 5_000;
 
     private boolean useTopicMessageSizeEnabled = false;
 
-    private String clientId = new InetAddressInstanceIdResolver().resolve();
-
-    @Override
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
 
     public void setThreadPoolSize(int threadPoolSize) {
         this.threadPoolSize = threadPoolSize;
-    }
-
-    @Override
-    public int getInflightSize() {
-        return inflightSize;
-    }
-
-    public void setInflightSize(int inflightSize) {
-        this.inflightSize = inflightSize;
-    }
-
-    @Override
-    public boolean isFilteringRateLimiterEnabled() {
-        return filteringRateLimiterEnabled;
-    }
-
-    public void setFilteringRateLimiterEnabled(boolean filteringRateLimiterEnabled) {
-        this.filteringRateLimiterEnabled = filteringRateLimiterEnabled;
     }
 
     public int getHealthCheckPort() {
@@ -66,30 +40,6 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
         this.healthCheckPort = healthCheckPort;
     }
 
-    @Override
-    public boolean isFilteringEnabled() {
-        return filteringEnabled;
-    }
-
-    @Override
-    public Duration getBackgroundSupervisorInterval() {
-        return backgroundSupervisor.interval;
-    }
-
-    @Override
-    public Duration getBackgroundSupervisorUnhealthyAfter() {
-        return backgroundSupervisor.unhealthyAfter;
-    }
-
-    @Override
-    public Duration getBackgroundSupervisorKillAfter() {
-        return backgroundSupervisor.killAfter;
-    }
-
-    public void setFilteringEnabled(boolean filteringEnabled) {
-        this.filteringEnabled = filteringEnabled;
-    }
-
     public Duration getSubscriptionIdsCacheRemovedExpireAfterAccess() {
         return subscriptionIdsCacheRemovedExpireAfterAccess;
     }
@@ -98,21 +48,22 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
         this.subscriptionIdsCacheRemovedExpireAfterAccess = subscriptionIdsCacheRemovedExpireAfterAccess;
     }
 
-    public BackgroundSupervisor getBackgroundSupervisor() {
+    @Override
+    public SupervisorParameters getBackgroundSupervisor() {
         return backgroundSupervisor;
     }
 
-    public void setBackgroundSupervisor(BackgroundSupervisor backgroundSupervisor) {
+    public void setBackgroundSupervisor(SupervisorParameters backgroundSupervisor) {
         this.backgroundSupervisor = backgroundSupervisor;
     }
 
     @Override
-    public Duration getSignalProcessingInterval() {
-        return signalProcessingInterval;
+    public SerialConsumerParameters getSerialConsumer() {
+        return serialConsumer;
     }
 
-    public void setSignalProcessingInterval(Duration signalProcessingInterval) {
-        this.signalProcessingInterval = signalProcessingInterval;
+    public void setSerialConsumer(SerialConsumerParameters serialConsumer) {
+        this.serialConsumer = serialConsumer;
     }
 
     @Override
@@ -133,16 +84,32 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
         this.useTopicMessageSizeEnabled = useTopicMessageSizeEnabled;
     }
 
-    @Override
-    public String getClientId() {
-        return clientId;
+    public static final class SerialConsumer implements SerialConsumerParameters {
+
+        private Duration signalProcessingInterval = Duration.ofMillis(5_000);
+
+        private int inflightSize = 100;
+
+        @Override
+        public Duration getSignalProcessingInterval() {
+            return signalProcessingInterval;
+        }
+
+        public void setSignalProcessingInterval(Duration signalProcessingInterval) {
+            this.signalProcessingInterval = signalProcessingInterval;
+        }
+
+        @Override
+        public int getInflightSize() {
+            return inflightSize;
+        }
+
+        public void setInflightSize(int inflightSize) {
+            this.inflightSize = inflightSize;
+        }
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public static final class BackgroundSupervisor {
+    public static final class BackgroundSupervisor implements SupervisorParameters {
 
         private Duration interval = Duration.ofMillis(20_000);
 
@@ -150,6 +117,7 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
 
         private Duration killAfter = Duration.ofMillis(300_000);
 
+        @Override
         public Duration getInterval() {
             return interval;
         }
@@ -158,6 +126,7 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
             this.interval = interval;
         }
 
+        @Override
         public Duration getUnhealthyAfter() {
             return unhealthyAfter;
         }
@@ -166,6 +135,7 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
             this.unhealthyAfter = unhealthyAfter;
         }
 
+        @Override
         public Duration getKillAfter() {
             return killAfter;
         }

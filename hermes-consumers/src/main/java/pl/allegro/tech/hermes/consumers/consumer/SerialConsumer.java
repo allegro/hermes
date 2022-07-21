@@ -60,8 +60,8 @@ public class SerialConsumer implements Consumer {
                           OffsetQueue offsetQueue,
                           ConsumerAuthorizationHandler consumerAuthorizationHandler) {
 
-        this.defaultInflight = commonConsumerParameters.getInflightSize();
-        this.signalProcessingInterval = commonConsumerParameters.getSignalProcessingInterval();
+        this.defaultInflight = commonConsumerParameters.getSerialConsumer().getInflightSize();
+        this.signalProcessingInterval = commonConsumerParameters.getSerialConsumer().getSignalProcessingInterval();
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;

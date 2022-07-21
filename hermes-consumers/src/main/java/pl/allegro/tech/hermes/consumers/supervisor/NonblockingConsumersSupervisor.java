@@ -58,11 +58,11 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                                           Duration commitOffsetPeriod) {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
-        this.backgroundSupervisorInterval = commonConsumerParameters.getBackgroundSupervisorInterval();
+        this.backgroundSupervisorInterval = commonConsumerParameters.getBackgroundSupervisor().getInterval();
         this.backgroundProcess = new ConsumerProcessSupervisor(executor, clock, metrics,
-                new ConsumerProcessFactory(retransmitter, consumerFactory, commonConsumerParameters.getBackgroundSupervisorUnhealthyAfter(), clock),
+                new ConsumerProcessFactory(retransmitter, consumerFactory, commonConsumerParameters.getBackgroundSupervisor().getUnhealthyAfter(), clock),
                 commonConsumerParameters.getSignalProcessingQueueSize(),
-                commonConsumerParameters.getBackgroundSupervisorKillAfter());
+                commonConsumerParameters.getBackgroundSupervisor().getKillAfter());
         this.scheduledExecutor = createExecutorForSupervision();
         this.offsetCommitter = new OffsetCommitter(
                 offsetQueue,

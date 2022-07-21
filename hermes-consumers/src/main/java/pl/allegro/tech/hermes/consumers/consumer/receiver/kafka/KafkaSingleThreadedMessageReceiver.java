@@ -106,7 +106,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     private void supplyReadQueue() {
         if (readQueue.isEmpty()) {
-            ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(pollTimeout));
+            ConsumerRecords<byte[], byte[]> records = consumer.poll(poolTimeout);
             try {
                 for (ConsumerRecord<byte[], byte[]> record : records) {
                     readQueue.add(record);

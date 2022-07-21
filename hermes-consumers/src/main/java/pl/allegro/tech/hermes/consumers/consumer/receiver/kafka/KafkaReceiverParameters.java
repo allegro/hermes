@@ -13,4 +13,10 @@ public interface KafkaReceiverParameters {
     Duration getInitialIdleTime();
 
     Duration getMaxIdleTime();
+
+    String getClientId();
+
+    boolean isFilteringRateLimiterEnabled();
+
+    boolean isFilteringEnabled();
 }

@@ -96,7 +96,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
             receiver = createThrottlingMessageReceiver(receiver, subscription);
         }
 
-        if (commonConsumerParameters.isFilteringEnabled()) {
+        if (consumerReceiverParameters.isFilteringEnabled()) {
             receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription);
         }
 
@@ -128,7 +128,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private MessageReceiver createFilteringMessageReceiver(MessageReceiver receiver,
                                                            ConsumerRateLimiter consumerRateLimiter,
                                                            Subscription subscription) {
-        boolean filteringRateLimitEnabled = commonConsumerParameters.isFilteringRateLimiterEnabled();
+        boolean filteringRateLimitEnabled = consumerReceiverParameters.isFilteringRateLimiterEnabled();
         FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
                 offsetQueue,
                 filteringRateLimitEnabled ? consumerRateLimiter : null,
@@ -141,7 +141,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
         Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaAuthorizationParameters.getBrokerList());
-        props.put(CLIENT_ID_CONFIG, commonConsumerParameters.getClientId() + "_" + groupId.asString());
+        props.put(CLIENT_ID_CONFIG, consumerReceiverParameters.getClientId() + "_" + groupId.asString());
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, "false");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");

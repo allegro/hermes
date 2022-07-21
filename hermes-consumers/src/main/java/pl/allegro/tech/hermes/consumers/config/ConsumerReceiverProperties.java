@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaReceiverParameters;
 
 import java.time.Duration;
@@ -17,6 +18,12 @@ public class ConsumerReceiverProperties implements KafkaReceiverParameters {
     private Duration initialIdleTime = Duration.ofMillis(10);
 
     private Duration maxIdleTime = Duration.ofMillis(1000);
+
+    private String clientId = new InetAddressInstanceIdResolver().resolve();
+
+    private boolean filteringRateLimiterEnabled = true;
+
+    private boolean filteringEnabled = true;
 
     @Override
     public Duration getPoolTimeout() {
@@ -61,5 +68,32 @@ public class ConsumerReceiverProperties implements KafkaReceiverParameters {
 
     public void setMaxIdleTime(Duration maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
+    }
+
+    @Override
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    @Override
+    public boolean isFilteringRateLimiterEnabled() {
+        return filteringRateLimiterEnabled;
+    }
+
+    public void setFilteringRateLimiterEnabled(boolean filteringRateLimiterEnabled) {
+        this.filteringRateLimiterEnabled = filteringRateLimiterEnabled;
+    }
+
+    @Override
+    public boolean isFilteringEnabled() {
+        return filteringEnabled;
+    }
+
+    public void setFilteringEnabled(boolean filteringEnabled) {
+        this.filteringEnabled = filteringEnabled;
     }
 }
