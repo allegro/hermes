@@ -24,7 +24,7 @@ class KafkaSingleThreadedMessageReceiverTest extends Specification {
     KafkaConsumer<byte[], byte[]> consumer = Mock(KafkaConsumer)
     KafkaConsumerRecordToMessageConverterFactory converterFactory = Mock(KafkaConsumerRecordToMessageConverterFactory)
     KafkaConsumerRecordToMessageConverter messageConverter = Mock(KafkaConsumerRecordToMessageConverter)
-    KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("namespace")
+    KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("namespace", "_ ")
 
     def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
     def subscription = SubscriptionBuilder.subscription(topic, "someSub").build()

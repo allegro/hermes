@@ -13,6 +13,6 @@ public class MessageConfiguration {
     @Bean
     public UndeliveredMessageLogPersister undeliveredMessageLogPersister(UndeliveredMessageLog undeliveredMessageLog,
                                                                          CommonConsumerProperties commonConsumerProperties) {
-        return new UndeliveredMessageLogPersister(undeliveredMessageLog, commonConsumerProperties.getUndeliveredMessageLogPersistPeriodMs());
+        return new UndeliveredMessageLogPersister(undeliveredMessageLog, commonConsumerProperties.getUndeliveredMessageLogPersistPeriod());
     }
 }

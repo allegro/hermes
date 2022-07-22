@@ -24,9 +24,8 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
 
     private boolean useTopicMessageSizeEnabled = false;
 
-    private int undeliveredMessageLogPersistPeriodMs = 5000;
+    private Duration undeliveredMessageLogPersistPeriod = Duration.ofSeconds(5);
 
-    @Override
     public int getThreadPoolSize() {
         return threadPoolSize;
     }
@@ -87,6 +86,14 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
         this.useTopicMessageSizeEnabled = useTopicMessageSizeEnabled;
     }
 
+    public Duration getUndeliveredMessageLogPersistPeriod() {
+        return undeliveredMessageLogPersistPeriod;
+    }
+
+    public void setUndeliveredMessageLogPersistPeriod(Duration undeliveredMessageLogPersistPeriod) {
+        this.undeliveredMessageLogPersistPeriod = undeliveredMessageLogPersistPeriod;
+    }
+
     public static final class SerialConsumer implements SerialConsumerParameters {
 
         private Duration signalProcessingInterval = Duration.ofMillis(5_000);
@@ -110,14 +117,6 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
         public void setInflightSize(int inflightSize) {
             this.inflightSize = inflightSize;
         }
-    }
-
-    public int getUndeliveredMessageLogPersistPeriodMs() {
-        return undeliveredMessageLogPersistPeriodMs;
-    }
-
-    public void setUndeliveredMessageLogPersistPeriodMs(int undeliveredMessageLogPersistPeriodMs) {
-        this.undeliveredMessageLogPersistPeriodMs = undeliveredMessageLogPersistPeriodMs;
     }
 
     public static final class BackgroundSupervisor implements SupervisorParameters {

@@ -173,7 +173,6 @@ public class CommonConfiguration {
                                                                 Clock clock,
                                                                 SchemaRepository schemaRepository,
                                                                 DeserializationMetrics deserializationMetrics,
-                                                                SchemaOnlineChecksRateLimiter schemaOnlineChecksRateLimiter,
                                                                 SchemaProperties schemaProperties,
                                                                 ContentRootProperties contentRootProperties) {
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(clock);
@@ -187,8 +186,6 @@ public class CommonConfiguration {
                         deserializationMetrics),
                 new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper,
                         deserializationMetrics, schemaProperties.isIdHeaderEnabled()),
-                new AvroMessageAnySchemaVersionContentWrapper(schemaRepository, schemaOnlineChecksRateLimiter,
-                        avroMessageContentWrapper, deserializationMetrics),
                 new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper,
                         deserializationMetrics, schemaProperties.isVersionTruncationEnabled())
         );
