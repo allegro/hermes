@@ -11,8 +11,6 @@ public class KafkaProperties implements KafkaParameters {
 
     private String datacenter = "dc";
 
-    private String clusterName = "primary";
-
     private String brokerList = "localhost:9092";
 
     private Duration adminRequestTimeout = Duration.ofMinutes(5);
@@ -31,14 +29,6 @@ public class KafkaProperties implements KafkaParameters {
 
     public void setDatacenter(String datacenter) {
         this.datacenter = datacenter;
-    }
-
-    public String getClusterName() {
-        return clusterName;
-    }
-
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
     }
 
     @Override
