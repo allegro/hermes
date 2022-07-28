@@ -4,13 +4,13 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.config.HermesServerProperties;
 import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
 import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
+import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.config.SslProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
@@ -31,7 +31,6 @@ import pl.allegro.tech.hermes.schema.DirectSchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.io.IOException;
@@ -54,10 +53,9 @@ class HermesServerFactory {
         TopicsCache topicsCache = new InMemoryTopicsCache(hermesMetrics, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
-        ConfigFactory configFactory = new MutableConfigFactory();
         Trackers trackers = new Trackers(Collections.emptyList());
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
-        HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer, rawSchemaClient, configFactory, trackers, avroMessageContentWrapper);
+        HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer, rawSchemaClient, trackers, avroMessageContentWrapper);
         SslProperties sslProperties = new SslProperties();
         HermesServerProperties hermesServerProperties = new HermesServerProperties();
         hermesServerProperties.setGracefulShutdownEnabled(false);
@@ -76,10 +74,11 @@ class HermesServerFactory {
         );
     }
 
-    private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter, TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer, RawSchemaClient rawSchemaClient, ConfigFactory configFactory, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
+    private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter, TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer, RawSchemaClient rawSchemaClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
         HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
+        SchemaProperties schemaProperties = new SchemaProperties();
 
         return new HandlersChainFactory(
                 topicsCache,
@@ -95,7 +94,7 @@ class HermesServerFactory {
                         new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter()),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
                         Clock.systemDefaultZone(),
-                        configFactory
+                        schemaProperties.isIdHeaderEnabled()
                 ),
                 brokerMessageProducer,
                 null,

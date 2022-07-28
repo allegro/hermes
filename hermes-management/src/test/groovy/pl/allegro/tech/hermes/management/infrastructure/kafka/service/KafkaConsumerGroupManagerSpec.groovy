@@ -50,7 +50,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
     KafkaProducer<byte[], byte[]> producer
 
     @Shared
-    KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("")
+    KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("", "_")
 
     ConsumerGroupManager consumerGroupManager
 
@@ -156,7 +156,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
             producer.send(new ProducerRecord<byte[], byte[]>(kafkaTopicName, partition, "key-$partition-$i".bytes,
                     "val-$partition-$i".bytes), { RecordMetadata metadata, Exception exception ->
                 if (exception == null) {
-                    countDownLatch.countDown();
+                    countDownLatch.countDown()
                 } else {
                     throw new RuntimeException("Exception during message publishing", exception)
                 }
@@ -165,13 +165,13 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         countDownLatch.await()
     }
 
-    private def createTestSubscription(Topic topic, String subscriptionName) {
+    private static def createTestSubscription(Topic topic, String subscriptionName) {
         Subscription.create(topic.getQualifiedName(), subscriptionName, null, Subscription.State.PENDING, "test", [:], false, null, null,
                 null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false
         )
     }
 
-    private def createAvroTopic(String topicName) {
+    private static def createAvroTopic(String topicName) {
         TopicBuilder.topic(topicName)
                 .migratedFromJsonType()
                 .withContentType(ContentType.AVRO)

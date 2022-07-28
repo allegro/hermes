@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.integration.setup;
 
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
@@ -12,6 +12,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED;
 
 public class HermesFrontendInstance {
     private final String frontendUrl;
@@ -59,14 +61,13 @@ public class HermesFrontendInstance {
 
         public Starter() {
             frontend.overrideProperty(FRONTEND_HTTP2_ENABLED, false);
-            frontend.overrideProperty(Configs.METRICS_GRAPHITE_REPORTER, false);
-            frontend.overrideProperty(Configs.METRICS_ZOOKEEPER_REPORTER, false);
+            frontend.overrideProperty(METRICS_GRAPHITE_REPORTER_ENABLED, false);
+            frontend.overrideProperty(METRICS_ZOOKEEPER_REPORTER_ENABLED, false);
             frontend.overrideProperty(FRONTEND_READINESS_CHECK_ENABLED, true);
-            frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
         }
 
         public Starter metadataMaxAgeInSeconds(int seconds) {
-            frontend.overrideProperty(Configs.KAFKA_PRODUCER_METADATA_MAX_AGE, seconds * 1000);
+            frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_PRODUCER_METADATA_MAX_AGE, seconds + "s");
             return this;
         }
 
@@ -76,12 +77,12 @@ public class HermesFrontendInstance {
         }
 
         public Starter zookeeperConnectionString(String connectionString) {
-            frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, connectionString);
+            frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, connectionString);
             return this;
         }
 
         public Starter kafkaConnectionString(String connectionString) {
-            frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, connectionString);
+            frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, connectionString);
             return this;
         }
 

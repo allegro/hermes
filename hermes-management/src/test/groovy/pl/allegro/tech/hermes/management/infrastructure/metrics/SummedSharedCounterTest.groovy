@@ -4,10 +4,12 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
 import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
 
+import java.time.Duration
+
 class SummedSharedCounterTest extends MultiZookeeperIntegrationTest {
 
-    static final EXPIRE_AFTER = 72 * 3600
-    static final DISTRIBUTED_LEADER_BACKOFF = 1000
+    static final EXPIRE_AFTER = Duration.ofHours(72)
+    static final DISTRIBUTED_LEADER_BACKOFF = Duration.ofSeconds(1)
     static final DISTRIBUTED_LEADER_RETRIES = 3
     static final COUNTER_PATH = '/hermes/shared/counter'
 
@@ -29,7 +31,7 @@ class SummedSharedCounterTest extends MultiZookeeperIntegrationTest {
         sharedCounterDc2 = new SharedCounter(zkClientDc2, EXPIRE_AFTER, DISTRIBUTED_LEADER_BACKOFF, DISTRIBUTED_LEADER_RETRIES)
 
         def zkClients = manager.clients.collect { client -> client.curatorFramework }
-        summedSharedCounter = new SummedSharedCounter(zkClients, EXPIRE_AFTER, DISTRIBUTED_LEADER_BACKOFF, DISTRIBUTED_LEADER_RETRIES)
+        summedSharedCounter = new SummedSharedCounter(zkClients, (int)  EXPIRE_AFTER.toHours(), (int) DISTRIBUTED_LEADER_BACKOFF.toMillis(), DISTRIBUTED_LEADER_RETRIES)
     }
 
     def cleanup() {

@@ -2,12 +2,14 @@ package pl.allegro.tech.hermes.schema
 
 import spock.lang.Specification
 
+import java.time.Duration
+
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class CachedCompiledSchemaRepositoryTest extends Specification {
 
     def delegate = Stub(CompiledSchemaRepository)
-    def repository = new CachedCompiledSchemaRepository(delegate, 100, 100)
+    def repository = new CachedCompiledSchemaRepository(delegate, 100, Duration.ofHours(100))
 
     def topic = topic("group", "topic").build()
 

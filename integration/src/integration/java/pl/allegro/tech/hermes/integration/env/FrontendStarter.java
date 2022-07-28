@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
@@ -27,7 +26,7 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FR
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_FIXED_MAX;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_TYPE;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class FrontendStarter implements Starter<ConfigurableApplicationContext> {
@@ -95,10 +94,6 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         return applicationContext;
     }
 
-    public void overrideProperty(Configs config, Object value) {
-        args.add(getArgument(config, value));
-    }
-
     public void overrideProperty(String config, Object value) {
         args.add("--" + config + "=" + value);
     }
@@ -119,10 +114,6 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
                 .build();
 
         await().atMost(adjust(TEN_SECONDS)).until(() -> client.newCall(request).execute().code() == OK.getStatusCode());
-    }
-
-    private static String getArgument(Configs config, Object value) {
-        return "--" + config.getName() + "=" + value;
     }
 
     private static String getArgument(String config, Object value) {

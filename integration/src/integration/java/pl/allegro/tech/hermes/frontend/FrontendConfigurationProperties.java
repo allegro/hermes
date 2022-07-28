@@ -14,6 +14,11 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_AUTHENTICATION_ENABLED = "frontend.handlers.authentication.enabled";
     public static String FRONTEND_KEEP_ALIVE_HEADER_ENABLED = "frontend.handlers.keepAliveHeader.enabled";
     public static String FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT = "frontend.handlers.keepAliveHeader.timeout";
+    public static String METRICS_ZOOKEEPER_REPORTER_ENABLED = "frontend.metrics.zookeeperReporterEnabled";
+    public static String METRICS_GRAPHITE_REPORTER_ENABLED = "frontend.metrics.graphiteReporterEnabled";
+    public static String GRAPHITE_PORT = "frontend.graphite.port";
+    public static String SCHEMA_CACHE_ENABLED = "frontend.schema.cache.enabled";
+    public static String SCHEMA_REPOSITORY_SERVER_URL = "frontend.schema.repository.serverUrl";
     public static String FRONTEND_SSL_ENABLED = "frontend.ssl.enabled";
     public static String FRONTEND_SSL_PORT = "frontend.ssl.port";
     public static String FRONTEND_SSL_KEYSTORE_SOURCE = "frontend.ssl.keystoreSource";
@@ -22,4 +27,7 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_HTTP2_ENABLED = "frontend.server.http2Enabled";
     public static String FRONTEND_GRACEFUL_SHUTDOWN_ENABLED = "frontend.server.gracefulShutdownEnabled";
     public static String FRONTEND_PORT = "frontend.server.port";
+    public static String ZOOKEEPER_CONNECTION_STRING = "frontend.zookeeper.clusters.[0].connectionString";
+    public static String KAFKA_PRODUCER_METADATA_MAX_AGE = "frontend.kafka.producer.metadataMaxAge";
+    public static String KAFKA_BROKER_LIST = "frontend.kafka.clusters.[0].brokerList";
 }

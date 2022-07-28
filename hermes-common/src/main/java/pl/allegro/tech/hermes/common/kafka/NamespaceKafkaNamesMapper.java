@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.common.kafka;
 import com.google.common.base.Joiner;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 import java.util.function.Function;
 
@@ -13,10 +12,6 @@ public class NamespaceKafkaNamesMapper implements KafkaNamesMapper {
 
     private final String namespace;
     private final String namespaceSeparator;
-
-    public NamespaceKafkaNamesMapper(String namespace) {
-        this(namespace, Configs.KAFKA_NAMESPACE_SEPARATOR.getDefaultValue());
-    }
 
     public NamespaceKafkaNamesMapper(String namespace, String namespaceSeparator) {
         this.namespace = namespace;

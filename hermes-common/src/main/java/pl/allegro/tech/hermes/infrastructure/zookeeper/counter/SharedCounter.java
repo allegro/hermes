@@ -8,19 +8,20 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public class SharedCounter {
 
     private final LoadingCache<String, DistributedAtomicLong> distributedAtomicLongs;
 
-    public SharedCounter(CuratorFramework curatorClient, int expireAfter,
-                         int distributedLoaderBackoff, int distributedLoaderRetries) {
+    public SharedCounter(CuratorFramework curatorClient, Duration expireAfter,
+                         Duration distributedLoaderBackoff, int distributedLoaderRetries) {
         distributedAtomicLongs = CacheBuilder.newBuilder()
-                .expireAfterAccess(expireAfter, TimeUnit.HOURS)
+                .expireAfterAccess(expireAfter.toHours(), TimeUnit.HOURS)
                 .build(new DistributedAtomicLongLoader(
                                 curatorClient,
-                                new ExponentialBackoffRetry(distributedLoaderBackoff, distributedLoaderRetries))
+                                new ExponentialBackoffRetry((int) distributedLoaderBackoff.toMillis(), distributedLoaderRetries))
                 );
     }
 

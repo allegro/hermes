@@ -3,17 +3,15 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 import com.google.common.primitives.Ints;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 public class KafkaHeaderExtractor {
 
     private final String schemaVersionHeaderName;
     private final String schemaIdHeaderName;
 
-    public KafkaHeaderExtractor(ConfigFactory configFactory) {
-        this.schemaVersionHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_VERSION);
-        this.schemaIdHeaderName = configFactory.getStringProperty(Configs.KAFKA_HEADER_NAME_SCHEMA_ID);
+    public KafkaHeaderExtractor(String schemaVersionHeaderName, String schemaIdHeaderName) {
+        this.schemaVersionHeaderName = schemaVersionHeaderName;
+        this.schemaIdHeaderName = schemaIdHeaderName;
     }
 
     public Integer extractSchemaVersion(Headers headers) {

@@ -7,15 +7,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 public class ObjectMapperFactory {
 
-    private final ConfigFactory configFactory;
+    private final boolean schemaIdSerializationEnabled;
 
-    public ObjectMapperFactory(ConfigFactory configFactory) {
-        this.configFactory = configFactory;
+    public ObjectMapperFactory(boolean schemaIdSerializationEnabled) {
+        this.schemaIdSerializationEnabled = schemaIdSerializationEnabled;
     }
 
     public ObjectMapper provide() {
@@ -26,7 +24,7 @@ public class ObjectMapperFactory {
         objectMapper.registerModule(new JavaTimeModule());
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-                .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, configFactory.getBooleanProperty(Configs.SCHEMA_ID_SERIALIZATION_ENABLED));
+                .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, schemaIdSerializationEnabled);
         objectMapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 
         return objectMapper;

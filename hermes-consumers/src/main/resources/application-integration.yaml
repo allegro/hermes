@@ -63,13 +63,31 @@ consumer:
       maxRequestsQueuedPerDestination: 100
   workload:
     rebalanceInterval: 1s
-    consumersPerSubscription: 1
-
-
-kafka:
-  authorization:
-    enabled: false
-    mechanism: PLAIN
-    protocol: SASL_PLAINTEXT
-    username: username
-    password: password
+    consumerPerSubscription: 1
+  metrics:
+    graphiteReporterEnabled: true
+    reportPeriod: 1s
+  graphite:
+    port: 18023
+  schema:
+    cache:
+      refreshAfterWrite: 1m
+  zookeeper:
+    clusters:
+      -
+        connectionString: "localhost:14192"
+        connectionTimeout: 10s
+        sessionTimeout: 10s
+        authorization:
+          enabled: false
+          user: admin
+          password: admin
+  kafka:
+    namespace: "itTest"
+    clusters:
+      - authorization:
+          enabled: false
+          mechanism: PLAIN
+          protocol: SASL_PLAINTEXT
+          username: hermes
+          password: alice-secret

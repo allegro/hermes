@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerPar
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "kafka.consumer")
+@ConfigurationProperties(prefix = "consumer.kafka.consumer")
 public class KafkaConsumerProperties implements KafkaConsumerParameters {
 
     private int sendBufferBytes = 256 * 1024;

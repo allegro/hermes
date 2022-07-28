@@ -1,18 +1,17 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import pl.allegro.tech.hermes.common.config.Configs;
 
 @ConfigurationProperties(prefix = "message")
 public class MessageProperties {
 
-    private String contentRoot = Configs.MESSAGE_CONTENT_ROOT.getDefaultValue();
+    private String contentRoot = "message";
 
-    private String metadataContentRoot = Configs.METADATA_CONTENT_ROOT.getDefaultValue();
+    private String metadataContentRoot = "metadata";
 
-    private boolean schemaIdHeaderEnabled = Configs.SCHEMA_ID_HEADER_ENABLED.getDefaultValue();
+    private boolean schemaIdHeaderEnabled = false;
 
-    private boolean schemaVersionTruncationEnabled = Configs.SCHEMA_VERSION_TRUNCATION_ENABLED.getDefaultValue();
+    private boolean schemaVersionTruncationEnabled = false;
 
     public String getContentRoot() {
         return contentRoot;

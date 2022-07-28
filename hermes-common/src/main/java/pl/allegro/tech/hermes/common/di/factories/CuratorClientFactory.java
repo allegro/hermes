@@ -7,18 +7,12 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.util.Optional;
 import java.util.concurrent.ThreadFactory;
 
 import static java.time.Duration.ofSeconds;
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_BASE_SLEEP_TIME;
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_CONNECTION_TIMEOUT;
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_MAX_RETRIES;
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_MAX_SLEEP_TIME_IN_SECONDS;
-import static pl.allegro.tech.hermes.common.config.Configs.ZOOKEEPER_SESSION_TIMEOUT;
 
 public class CuratorClientFactory {
 
@@ -39,10 +33,10 @@ public class CuratorClientFactory {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CuratorClientFactory.class);
-    private final ConfigFactory configFactory;
+    private final ZookeeperParameters zookeeperParameters;
 
-    public CuratorClientFactory(ConfigFactory configFactory) {
-        this.configFactory = configFactory;
+    public CuratorClientFactory(ZookeeperParameters zookeeperParameters) {
+        this.zookeeperParameters = zookeeperParameters;
     }
 
     public CuratorFramework provide(String connectString) {
@@ -50,9 +44,6 @@ public class CuratorClientFactory {
     }
 
     public CuratorFramework provide(String connectString, Optional<ZookeeperAuthorization> zookeeperAuthorization) {
-        int baseSleepTime = configFactory.getIntProperty(ZOOKEEPER_BASE_SLEEP_TIME);
-        int maxRetries = configFactory.getIntProperty(ZOOKEEPER_MAX_RETRIES);
-        int maxSleepTime = Ints.saturatedCast(ofSeconds(configFactory.getIntProperty(ZOOKEEPER_MAX_SLEEP_TIME_IN_SECONDS)).toMillis());
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("hermes-curator-%d")
                 .setUncaughtExceptionHandler((t, e) ->
@@ -60,9 +51,15 @@ public class CuratorClientFactory {
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                 .threadFactory(threadFactory)
                 .connectString(connectString)
-                .sessionTimeoutMs(configFactory.getIntProperty(ZOOKEEPER_SESSION_TIMEOUT))
-                .connectionTimeoutMs(configFactory.getIntProperty(ZOOKEEPER_CONNECTION_TIMEOUT))
-                .retryPolicy(new ExponentialBackoffRetry(baseSleepTime, maxRetries, maxSleepTime));
+                .sessionTimeoutMs((int) zookeeperParameters.getSessionTimeout().toMillis())
+                .connectionTimeoutMs((int) zookeeperParameters.getConnectionTimeout().toMillis())
+                .retryPolicy(
+                        new ExponentialBackoffRetry(
+                                (int) zookeeperParameters.getBaseSleepTime().toMillis(),
+                                zookeeperParameters.getMaxRetries(),
+                                (int) zookeeperParameters.getMaxSleepTime().toMillis()
+                        )
+                );
 
         zookeeperAuthorization.ifPresent(it -> builder.authorization(it.scheme, it.getAuth()));
 

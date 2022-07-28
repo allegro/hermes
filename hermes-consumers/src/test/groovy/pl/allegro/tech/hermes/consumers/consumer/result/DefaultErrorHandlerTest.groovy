@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
-import com.netflix.config.DynamicPropertyFactory
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.TrackingMode
-import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message

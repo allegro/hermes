@@ -5,7 +5,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 
@@ -18,8 +17,8 @@ import java.util.Set;
 public class JmsHornetQMessageSenderProvider extends AbstractJmsMessageSenderProvider {
     private static final Set<String> SUPPORTED_PROTOCOLS = ImmutableSet.of("jms");
 
-    public JmsHornetQMessageSenderProvider(ConfigFactory configFactory, MetadataAppender<Message> metadataAppender) {
-        super(configFactory, metadataAppender);
+    public JmsHornetQMessageSenderProvider(MetadataAppender<Message> metadataAppender) {
+        super(metadataAppender);
     }
 
     @Override
