@@ -5,8 +5,6 @@ import org.eclipse.jetty.client.HttpClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
@@ -37,6 +35,7 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -50,7 +49,7 @@ import java.util.List;
         SenderAsyncTimeoutProperties.class,
         RateProperties.class,
         BatchProperties.class,
-        KafkaProperties.class,
+        KafkaClustersProperties.class,
         WorkloadProperties.class,
         MaxRateProperties.class
 })
@@ -73,13 +72,15 @@ public class ConsumerConfiguration {
 
     @Bean
     public MaxRateRegistry maxRateRegistry(MaxRateProperties maxRateProperties,
-                                           KafkaProperties kafkaProperties,
+                                           KafkaClustersProperties kafkaClustersProperties,
                                            WorkloadProperties workloadProperties,
                                            CuratorFramework curator,
                                            ZookeeperPaths zookeeperPaths,
                                            SubscriptionIds subscriptionIds,
                                            ConsumerAssignmentCache assignmentCache,
-                                           ClusterAssignmentCache clusterAssignmentCache) {
+                                           ClusterAssignmentCache clusterAssignmentCache,
+                                           DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new MaxRateRegistry(
                 maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
                 maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
@@ -167,7 +168,7 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaProperties kafkaProperties,
+    public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaClustersProperties kafkaClustersProperties,
                                                                      HermesMetrics hermesMetrics,
                                                                      MessageSenderFactory messageSenderFactory,
                                                                      Trackers trackers,
@@ -176,7 +177,9 @@ public class ConsumerConfiguration {
                                                                      InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
                                                                      ConsumerAuthorizationHandler consumerAuthorizationHandler,
                                                                      SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
-                                                                     RateProperties rateProperties) {
+                                                                     RateProperties rateProperties,
+                                                                     DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new ConsumerMessageSenderFactory(
                 kafkaProperties.getClusterName(),
                 hermesMetrics,

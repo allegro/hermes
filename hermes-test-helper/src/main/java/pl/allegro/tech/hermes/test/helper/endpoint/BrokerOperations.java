@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.test.helper.endpoint;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
@@ -34,11 +32,11 @@ public class BrokerOperations {
     private final Map<String, AdminClient> adminClients;
     private final KafkaNamesMapper kafkaNamesMapper;
 
-    public BrokerOperations(Map<String, String> kafkaConnection, ConfigFactory configFactory) {
+    public BrokerOperations(Map<String, String> kafkaConnection) {
         adminClients = kafkaConnection.entrySet().stream()
                 .collect(toMap(Map.Entry::getKey, e -> brokerAdminClient(e.getValue())));
-        String namespace = configFactory.getStringProperty(Configs.KAFKA_NAMESPACE);
-        String namespaceSeparator = configFactory.getStringProperty(Configs.KAFKA_NAMESPACE_SEPARATOR);
+        String namespace = "";
+        String namespaceSeparator = "_";
         kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(namespace, namespaceSeparator);
     }
 

@@ -5,8 +5,6 @@ dependencies {
     compile project(':hermes-metrics')
     compile project(':hermes-schema')
 
-    compile group: 'com.netflix.archaius', name: 'archaius-core', version: '0.6.0'
-
     compile (group: 'org.apache.curator', name: 'curator-client', version: versions.curator) {
         exclude module: 'slf4j-log4j12'
         exclude module: 'log4j'

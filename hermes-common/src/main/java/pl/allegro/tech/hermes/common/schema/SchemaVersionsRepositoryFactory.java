@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.common.schema;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.schema.CachedCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.CachedSchemaVersionsRepository;
@@ -17,27 +15,27 @@ import java.util.concurrent.Executors;
 public class SchemaVersionsRepositoryFactory {
 
     private final RawSchemaClient rawSchemaClient;
-    private final ConfigFactory configFactory;
+    private final SchemaVersionRepositoryParameters schemaVersionsRepositoryParameters;
     private final InternalNotificationsBus notificationsBus;
     private final CompiledSchemaRepository<?> compiledSchemaRepository;
 
     public SchemaVersionsRepositoryFactory(RawSchemaClient rawSchemaClient,
-                                           ConfigFactory configFactory,
+                                           SchemaVersionRepositoryParameters schemaVersionsRepositoryParameters,
                                            InternalNotificationsBus notificationsBus,
                                            CompiledSchemaRepository<?> compiledSchemaRepository) {
         this.rawSchemaClient = rawSchemaClient;
-        this.configFactory = configFactory;
+        this.schemaVersionsRepositoryParameters = schemaVersionsRepositoryParameters;
         this.notificationsBus = notificationsBus;
         this.compiledSchemaRepository = compiledSchemaRepository;
     }
 
     public SchemaVersionsRepository provide() {
-        if (configFactory.getBooleanProperty(Configs.SCHEMA_CACHE_ENABLED)) {
+        if (schemaVersionsRepositoryParameters.isCacheEnabled()) {
             CachedSchemaVersionsRepository cachedSchemaVersionsRepository = new CachedSchemaVersionsRepository(
                     rawSchemaClient,
                     getVersionsReloader(),
-                    configFactory.getIntProperty(Configs.SCHEMA_CACHE_REFRESH_AFTER_WRITE_MINUTES),
-                    configFactory.getIntProperty(Configs.SCHEMA_CACHE_EXPIRE_AFTER_WRITE_MINUTES));
+                    schemaVersionsRepositoryParameters.getRefreshAfterWrite(),
+                    schemaVersionsRepositoryParameters.getExpireAfterWrite());
 
             notificationsBus.registerTopicCallback(
                     new SchemaCacheRefresherCallback<>(
@@ -51,7 +49,7 @@ public class SchemaVersionsRepositoryFactory {
 
     private ExecutorService getVersionsReloader() {
         return Executors.newFixedThreadPool(
-                configFactory.getIntProperty(Configs.SCHEMA_CACHE_RELOAD_THREAD_POOL_SIZE),
+                schemaVersionsRepositoryParameters.getReloadThreadPoolSize(),
                 new ThreadFactoryBuilder().setNameFormat("schema-source-reloader-%d").build());
     }
 }

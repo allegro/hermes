@@ -6,13 +6,12 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 import java.io.ByteArrayOutputStream;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -29,32 +28,33 @@ class MessageReadHandler implements HttpHandler {
     private final HttpHandler timeoutHandler;
     private final MessageErrorProcessor messageErrorProcessor;
     private final ContentLengthChecker contentLengthChecker;
-    private final int defaultAsyncTimeout;
-    private final int longAsyncTimeout;
+    private final Duration defaultAsyncTimeout;
+    private final Duration longAsyncTimeout;
     private final ThroughputLimiter throughputLimiter;
 
-    MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler, ConfigFactory configFactory,
-                       MessageErrorProcessor messageErrorProcessor,  ThroughputLimiter throughputLimiter) {
+    MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler,
+                       MessageErrorProcessor messageErrorProcessor,  ThroughputLimiter throughputLimiter,
+                       boolean forceMaxMessageSizePerTopic, Duration idleTime, Duration longIdleTime) {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
         this.messageErrorProcessor = messageErrorProcessor;
-        this.contentLengthChecker = new ContentLengthChecker(configFactory);
-        this.defaultAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_IDLE_TIMEOUT);
-        this.longAsyncTimeout = configFactory.getIntProperty(Configs.FRONTEND_LONG_IDLE_TIMEOUT);
+        this.contentLengthChecker = new ContentLengthChecker(forceMaxMessageSizePerTopic);
+        this.defaultAsyncTimeout = idleTime;
+        this.longAsyncTimeout = longIdleTime;
         this.throughputLimiter = throughputLimiter;
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
+    public void handleRequest(HttpServerExchange exchange) {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
 
-        int timeout = attachment.getTopic().isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout;
+        Duration timeout = attachment.getTopic().isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout;
 
         attachment.setTimeoutHolder(new TimeoutHolder(
-                timeout,
+                (int) timeout.toMillis(),
                 exchange.getIoThread().executeAfter(
                         () -> runTimeoutHandler(exchange, attachment),
-                        timeout,
+                        timeout.toMillis(),
                         MILLISECONDS)));
 
         ThroughputLimiter.QuotaInsight quotaInsight = throughputLimiter.checkQuota(

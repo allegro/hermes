@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistryPaths;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import java.time.Clock;
@@ -16,21 +17,23 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 @Configuration
 @EnableConfigurationProperties({
-        KafkaProperties.class,
+        KafkaClustersProperties.class,
         WorkloadProperties.class
 })
 public class RegistryConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerNodesRegistry consumerNodesRegistry(CuratorFramework curatorFramework,
-                                                       KafkaProperties kafkaProperties,
+                                                       KafkaClustersProperties kafkaClustersProperties,
                                                        WorkloadProperties workloadProperties,
                                                        ZookeeperPaths zookeeperPaths,
-                                                       Clock clock) {
+                                                       Clock clock,
+                                                       DatacenterNameProvider datacenterNameProvider) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("ConsumerRegistryExecutor-%d").build();
 
         String consumerNodeId = workloadProperties.getNodeId();
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         long deadAfterSeconds = workloadProperties.getDeadAfter().toSeconds();
         ConsumerNodesRegistryPaths registryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, kafkaProperties.getClusterName());
 

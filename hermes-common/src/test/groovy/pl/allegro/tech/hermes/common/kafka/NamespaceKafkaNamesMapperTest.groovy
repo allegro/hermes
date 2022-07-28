@@ -9,7 +9,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class NamespaceKafkaNamesMapperTest extends Specification {
 
-    def mapper = new NamespaceKafkaNamesMapper("namespace")
+    def mapper = new NamespaceKafkaNamesMapper("namespace", "_")
 
     def "should create consumer group id from subscription"() {
         given:

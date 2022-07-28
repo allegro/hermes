@@ -4,7 +4,6 @@ import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.client.HttpDestination
 import org.eclipse.jetty.client.HttpExchange
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import spock.lang.Specification
 
 import java.util.concurrent.LinkedBlockingQueue

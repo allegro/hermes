@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,8 +14,6 @@ import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.primitives.Bytes.indexOf;
 import static java.lang.String.format;
 import static java.util.Arrays.copyOfRange;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGE_CONTENT_ROOT;
-import static pl.allegro.tech.hermes.common.config.Configs.METADATA_CONTENT_ROOT;
 
 public class JsonMessageContentWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonMessageContentWrapper.class);
@@ -29,10 +26,6 @@ public class JsonMessageContentWrapper {
     private final ObjectMapper mapper;
     private final byte[] contentRootField;
     private final byte[] metadataRootField;
-
-    public JsonMessageContentWrapper(ConfigFactory config, ObjectMapper mapper) {
-        this(config.getStringProperty(MESSAGE_CONTENT_ROOT), config.getStringProperty(METADATA_CONTENT_ROOT), mapper);
-    }
 
     public JsonMessageContentWrapper(String contentRootName, String metadataRootName, ObjectMapper mapper) {
         this.contentRootField = formatNodeKey(contentRootName);

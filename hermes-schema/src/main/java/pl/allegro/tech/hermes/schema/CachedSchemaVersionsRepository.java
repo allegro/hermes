@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -23,19 +24,19 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
     private final LoadingCache<Topic, List<SchemaVersion>> versionsCache;
 
     public CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
-                                          int refreshAfterWriteMinutes, int expireAfterWriteMinutes) {
-        this(rawSchemaClient, versionsReloader, refreshAfterWriteMinutes, expireAfterWriteMinutes, Ticker.systemTicker());
+                                          Duration refreshAfterWrite, Duration expireAfterWrite) {
+        this(rawSchemaClient, versionsReloader, refreshAfterWrite, expireAfterWrite, Ticker.systemTicker());
     }
 
     CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
-                                   int refreshAfterWriteMinutes, int expireAfterWriteMinutes, Ticker ticker) {
+                                   Duration refreshAfterWrite, Duration expireAfterWrite, Ticker ticker) {
         this.rawSchemaClient = rawSchemaClient;
         this.versionsReloader = versionsReloader;
         this.versionsCache = CacheBuilder
                 .newBuilder()
                 .ticker(ticker)
-                .refreshAfterWrite(refreshAfterWriteMinutes, TimeUnit.MINUTES)
-                .expireAfterWrite(expireAfterWriteMinutes, TimeUnit.MINUTES)
+                .refreshAfterWrite(refreshAfterWrite.toMinutes(), TimeUnit.MINUTES)
+                .expireAfterWrite(expireAfterWrite.toMinutes(), TimeUnit.MINUTES)
                 .build(new SchemaVersionsLoader(rawSchemaClient, versionsReloader));
     }
 
@@ -85,7 +86,7 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
         }
 
         @Override
-        public ListenableFuture<List<SchemaVersion>> reload(Topic topic, List<SchemaVersion> oldVersions) throws Exception {
+        public ListenableFuture<List<SchemaVersion>> reload(Topic topic, List<SchemaVersion> oldVersions) {
             ListenableFutureTask<List<SchemaVersion>> task = ListenableFutureTask.create(() -> {
                 logger.debug("Reloading schema versions for topic {}", topic.getQualifiedName());
                 try {

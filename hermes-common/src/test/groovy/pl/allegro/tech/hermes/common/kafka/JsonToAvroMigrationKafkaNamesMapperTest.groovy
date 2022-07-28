@@ -9,10 +9,12 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
 
+    def namespaceSeparator = "_"
+
     @Unroll
     def "should map topic '#topicName' to kafka topic '#kafkaTopicName' for namespace '#namespace'"() {
         given:
-        def mapper = new JsonToAvroMigrationKafkaNamesMapper(namespace)
+        def mapper = new JsonToAvroMigrationKafkaNamesMapper(namespace, namespaceSeparator)
 
         expect:
         mapper.toKafkaTopics(topic(topicName).build()).primary.name() == KafkaTopicName.valueOf(kafkaTopicName)
@@ -26,7 +28,7 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
     @Unroll
     def "should map subscription name '#subscriptionName' to consumer group '#consumerGroupId' for namespace '#namespace'"() {
         given:
-        def mapper = new JsonToAvroMigrationKafkaNamesMapper(namespace)
+        def mapper = new JsonToAvroMigrationKafkaNamesMapper(namespace, namespaceSeparator)
 
         expect:
         mapper.toConsumerGroupId(subscriptionName) == ConsumerGroupId.valueOf(consumerGroupId)
@@ -39,7 +41,7 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
 
     def "should append '_avro' suffix for topics of type AVRO"() {
         given:
-        def mapper = new JsonToAvroMigrationKafkaNamesMapper("")
+        def mapper = new JsonToAvroMigrationKafkaNamesMapper("", namespaceSeparator)
         def avroTopic = topic("group", "topic").withContentType(ContentType.AVRO).build()
 
         expect:
@@ -48,7 +50,7 @@ class JsonToAvroMigrationKafkaNamesMapperTest extends Specification {
 
     def "should map to topics with secondary json topic for topics migrated from json to avro"() {
         given:
-        def mapper = new JsonToAvroMigrationKafkaNamesMapper("")
+        def mapper = new JsonToAvroMigrationKafkaNamesMapper("", namespaceSeparator)
         def migratedTopic = topic("group", "topic").withContentType(ContentType.AVRO).migratedFromJsonType().build()
 
         when:

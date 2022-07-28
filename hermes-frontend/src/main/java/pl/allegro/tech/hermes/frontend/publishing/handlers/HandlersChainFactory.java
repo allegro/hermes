@@ -7,8 +7,6 @@ import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.server.HttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
@@ -20,10 +18,6 @@ import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationPredicateAwareC
 
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_AUTHENTICATION_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS;
-
 public class HandlersChainFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(HandlersChainFactory.class);
@@ -31,28 +25,29 @@ public class HandlersChainFactory {
     private final TopicsCache topicsCache;
     private final MessageErrorProcessor messageErrorProcessor;
     private final MessageEndProcessor messageEndProcessor;
-    private final ConfigFactory configFactory;
     private final MessageFactory messageFactory;
     private final BrokerMessageProducer brokerMessageProducer;
     private final MessagePreviewLog previewLog;
     private final boolean previewEnabled;
     private final ThroughputLimiter throughputLimiter;
     private final Optional<AuthenticationConfiguration> authenticationConfiguration;
+    private final HandlersChainParameters handlersChainParameters;
 
     public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
-                                MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
+                                MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                 BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authenticationConfiguration) {
+                                ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authenticationConfiguration,
+                                boolean messagePreviewEnabled, HandlersChainParameters handlersChainParameters) {
         this.topicsCache = topicsCache;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
-        this.configFactory = configFactory;
         this.messageFactory = messageFactory;
         this.brokerMessageProducer = brokerMessageProducer;
         this.previewLog = messagePreviewLog;
-        this.previewEnabled = configFactory.getBooleanProperty(Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED);
+        this.previewEnabled = messagePreviewEnabled;
         this.throughputLimiter = throughputLimiter;
         this.authenticationConfiguration = authenticationConfiguration;
+        this.handlersChainParameters = handlersChainParameters;
     }
 
     public HttpHandler provide() {
@@ -60,19 +55,18 @@ public class HandlersChainFactory {
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
         HttpHandler timeoutHandler = new TimeoutHandler(messageEndProcessor, messageErrorProcessor);
         HttpHandler handlerAfterRead = previewEnabled ? new PreviewHandler(messageCreateHandler, previewLog) : messageCreateHandler;
-        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, configFactory,
-                                                                messageErrorProcessor, throughputLimiter);
+        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, messageErrorProcessor, throughputLimiter,
+                handlersChainParameters.isForceTopicMaxMessageSize(), handlersChainParameters.getIdleTimeout(), handlersChainParameters.getLongIdleTimeout());
         TopicHandler topicHandler = new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
-        boolean keepAliveHeaderEnabled = configFactory.getBooleanProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED);
+        boolean keepAliveHeaderEnabled = handlersChainParameters.isKeepAliveHeaderEnabled();
         HttpHandler rootPublishingHandler = keepAliveHeaderEnabled ? withKeepAliveHeaderHandler(topicHandler) : topicHandler;
 
-        boolean authenticationEnabled = configFactory.getBooleanProperty(FRONTEND_AUTHENTICATION_ENABLED);
+        boolean authenticationEnabled = handlersChainParameters.isAuthenticationEnabled();
         return authenticationEnabled ? withAuthenticationHandlersChain(rootPublishingHandler) : rootPublishingHandler;
     }
 
     private HttpHandler withKeepAliveHeaderHandler(HttpHandler next) {
-        int keepAliveTimeout = configFactory.getIntProperty(FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT_SECONDS);
-        return new KeepAliveHeaderHandler(next, keepAliveTimeout);
+        return new KeepAliveHeaderHandler(next, (int) handlersChainParameters.getKeepAliveHeaderTimeout().toSeconds());
     }
 
     private HttpHandler withAuthenticationHandlersChain(HttpHandler next) {
@@ -94,7 +88,8 @@ public class HandlersChainFactory {
         HttpHandler mechanismsHandler = new AuthenticationMechanismsHandler(constraintHandler,
                 authConfig.getAuthMechanisms());
         AuthenticationMode authenticationMode = AuthenticationMode.valueOf(
-                configFactory.getStringProperty(Configs.FRONTEND_AUTHENTICATION_MODE).toUpperCase());
+                handlersChainParameters.getAuthenticationMode().toUpperCase()
+        );
 
         return new SecurityInitialHandler(authenticationMode, authConfig.getIdentityManager(), mechanismsHandler);
     }

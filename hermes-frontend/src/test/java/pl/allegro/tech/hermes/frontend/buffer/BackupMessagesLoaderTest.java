@@ -8,11 +8,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.LocalMessageStorageProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
@@ -25,6 +24,7 @@ import pl.allegro.tech.hermes.tracker.frontend.NoOperationPublishingTracker;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,8 +52,6 @@ public class BackupMessagesLoaderTest {
 
     private final Trackers trackers = mock(Trackers.class);
 
-    private final ConfigFactory configFactory = mock(ConfigFactory.class);
-
     private final CachedTopic cachedTopic = mock(CachedTopic.class);
 
     private File tempDir;
@@ -78,8 +76,9 @@ public class BackupMessagesLoaderTest {
     @Test
     public void shouldNotSendOldMessages() {
         //given
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(2);
+        LocalMessageStorageProperties localMessageStorageProperties = new LocalMessageStorageProperties();
+        localMessageStorageProperties.setMaxAge(Duration.ofHours(8));
+        localMessageStorageProperties.setMaxResendRetries(2);
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
@@ -87,7 +86,7 @@ public class BackupMessagesLoaderTest {
                 AVERAGE_MESSAGE_SIZE
         );
 
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, localMessageStorageProperties);
 
         messageRepository.save(messageOfAge(1), topic);
         messageRepository.save(messageOfAge(10), topic);
@@ -104,8 +103,9 @@ public class BackupMessagesLoaderTest {
     public void shouldSendAndResendMessages() {
         //given
         int noOfSentCalls = 2;
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(noOfSentCalls - 1);
+        LocalMessageStorageProperties localMessageStorageProperties = new LocalMessageStorageProperties();
+        localMessageStorageProperties.setMaxAge(Duration.ofHours(8));
+        localMessageStorageProperties.setMaxResendRetries(noOfSentCalls - 1);
         when(trackers.get(eq(topic))).thenReturn(new NoOperationPublishingTracker());
 
         doAnswer(invocation -> {
@@ -120,7 +120,7 @@ public class BackupMessagesLoaderTest {
                 ENTRIES,
                 AVERAGE_MESSAGE_SIZE
         );
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, localMessageStorageProperties);
 
         messageRepository.save(messageOfAge(1), topic);
 
@@ -135,11 +135,12 @@ public class BackupMessagesLoaderTest {
     @Test
     public void shouldSendOnlyWhenBrokerTopicIsAvailable() {
         // given
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(10);
+        LocalMessageStorageProperties localMessageStorageProperties = new LocalMessageStorageProperties();
+        localMessageStorageProperties.setMaxAge(Duration.ofHours(8));
 
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(false).thenReturn(false).thenReturn(true);
 
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, localMessageStorageProperties);
         MessageRepository messageRepository = new ChronicleMapMessageRepository(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
                 ENTRIES,
@@ -158,8 +159,9 @@ public class BackupMessagesLoaderTest {
     @Test
     public void shouldSendMessageWithAllArgumentsFromBackupMessage() {
         //given
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS)).thenReturn(8);
-        when(configFactory.getIntProperty(Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES)).thenReturn(2);
+        LocalMessageStorageProperties localMessageStorageProperties = new LocalMessageStorageProperties();
+        localMessageStorageProperties.setMaxAge(Duration.ofHours(8));
+        localMessageStorageProperties.setMaxResendRetries(2);
 
         MessageRepository messageRepository = new ChronicleMapMessageRepository(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
@@ -167,7 +169,7 @@ public class BackupMessagesLoaderTest {
                 AVERAGE_MESSAGE_SIZE
         );
 
-        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, configFactory);
+        BackupMessagesLoader backupMessagesLoader = new BackupMessagesLoader(producer, listeners, topicsCache, trackers, localMessageStorageProperties);
 
         messageRepository.save(messageOfAge(1), topic);
 

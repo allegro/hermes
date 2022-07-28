@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
@@ -38,11 +36,11 @@ public class ZookeeperCounterStorage implements CounterStorage {
     public ZookeeperCounterStorage(SharedCounter sharedCounter,
                                    SubscriptionRepository subscriptionRepository,
                                    PathsCompiler pathsCompiler,
-                                   ConfigFactory configFactory) {
+                                   String zookeeperRoot) {
         this.sharedCounter = sharedCounter;
         this.subscriptionRepository = subscriptionRepository;
         this.pathsCompiler = pathsCompiler;
-        zookeeperRoot = configFactory.getStringProperty(Configs.ZOOKEEPER_ROOT);
+        this.zookeeperRoot = zookeeperRoot;
 
     }
 

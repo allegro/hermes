@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.frontend.publishing.handlers.DynamicThroughputLimiter
 import spock.lang.Specification
 
+import java.time.Duration
 import java.util.concurrent.ScheduledExecutorService
 
 class DynamicThroughputLimiterTest extends Specification {
@@ -20,7 +21,7 @@ class DynamicThroughputLimiterTest extends Specification {
     def topicName = new TopicName("group", "name")
     def executor = Mock(ScheduledExecutorService)
 
-    def limiter = new DynamicThroughputLimiter(max, threshold, desired, idleThreshold, 1, globalMeter, executor)
+    def limiter = new DynamicThroughputLimiter(max, threshold, desired, idleThreshold, Duration.ofSeconds(1), globalMeter, executor)
 
 
     def "should grant quota if global rate is below max"() {

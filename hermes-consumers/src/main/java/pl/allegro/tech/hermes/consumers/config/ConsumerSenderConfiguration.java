@@ -16,7 +16,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
@@ -156,9 +155,8 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultJmsMessageSenderProvider")
-    public ProtocolMessageSenderProvider jmsHornetQMessageSenderProvider(ConfigFactory configFactory,
-                                                                         MetadataAppender<Message> metadataAppender) {
-        return new JmsHornetQMessageSenderProvider(configFactory, metadataAppender);
+    public ProtocolMessageSenderProvider jmsHornetQMessageSenderProvider(MetadataAppender<Message> metadataAppender) {
+        return new JmsHornetQMessageSenderProvider(metadataAppender);
     }
 
     @Bean

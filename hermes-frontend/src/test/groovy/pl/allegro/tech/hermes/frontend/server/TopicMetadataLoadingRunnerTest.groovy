@@ -7,6 +7,8 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.time.Duration
+
 import static pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper.cachedTopic
 
 class TopicMetadataLoadingRunnerTest extends Specification {
@@ -32,7 +34,7 @@ class TopicMetadataLoadingRunnerTest extends Specification {
     def "should load topic metadata"() {
         given:
         BrokerMessageProducer producer = Mock()
-        def hook = new TopicMetadataLoadingRunner(producer, topicsCache, 2, 10L, 2)
+        def hook = new TopicMetadataLoadingRunner(producer, topicsCache, 2, Duration.ofSeconds(10), 2)
 
         when:
         hook.refreshMetadata()
@@ -46,7 +48,7 @@ class TopicMetadataLoadingRunnerTest extends Specification {
     def "should retry loading topic metadata"() {
         given:
         BrokerMessageProducer producer = Mock()
-        def hook = new TopicMetadataLoadingRunner(producer, topicsCache, 2, 10L, 4)
+        def hook = new TopicMetadataLoadingRunner(producer, topicsCache, 2, Duration.ofSeconds(10), 4)
 
         when:
         hook.refreshMetadata()
@@ -64,7 +66,7 @@ class TopicMetadataLoadingRunnerTest extends Specification {
     def "should leave retry loop when reached max retries and failed to load metadata"() {
         given:
         BrokerMessageProducer producer = Mock()
-        def hook = new TopicMetadataLoadingRunner(producer, topicsCache, 2, 10L, 4)
+        def hook = new TopicMetadataLoadingRunner(producer, topicsCache, 2, Duration.ofSeconds(10), 4)
 
         when:
         hook.refreshMetadata()
@@ -81,7 +83,7 @@ class TopicMetadataLoadingRunnerTest extends Specification {
         TopicsCache emptyCache = Mock() {
             getTopics() >> []
         }
-        def hook = new TopicMetadataLoadingRunner(producer, emptyCache, 2, 10L, 4)
+        def hook = new TopicMetadataLoadingRunner(producer, emptyCache, 2, Duration.ofSeconds(10), 4)
 
         when:
         hook.refreshMetadata()

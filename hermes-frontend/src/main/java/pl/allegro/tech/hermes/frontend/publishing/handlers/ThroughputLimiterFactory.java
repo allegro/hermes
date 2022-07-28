@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 
@@ -15,29 +13,31 @@ import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 
 public class ThroughputLimiterFactory {
-    private final ConfigFactory configs;
+
+    private final ThroughputParameters throughputParameters;
+
     private final HermesMetrics hermesMetrics;
 
     private enum ThroughputLimiterType { UNLIMITED, FIXED, DYNAMIC }
 
-    public ThroughputLimiterFactory(ConfigFactory configs, HermesMetrics hermesMetrics) {
-        this.configs = configs;
+    public ThroughputLimiterFactory(ThroughputParameters throughputParameters, HermesMetrics hermesMetrics) {
+        this.throughputParameters = throughputParameters;
         this.hermesMetrics = hermesMetrics;
     }
 
     public ThroughputLimiter provide() {
-        switch (ThroughputLimiterType.valueOf(configs.getStringProperty(Configs.FRONTEND_THROUGHPUT_TYPE).toUpperCase())) {
+        switch (ThroughputLimiterType.valueOf(throughputParameters.getType().toUpperCase())) {
             case UNLIMITED:
                 return (a, b) -> quotaConfirmed();
             case FIXED:
-                return new FixedThroughputLimiter(configs.getLongProperty(Configs.FRONTEND_THROUGHPUT_FIXED_MAX));
+                return new FixedThroughputLimiter(throughputParameters.getFixedMax());
             case DYNAMIC:
                 return new DynamicThroughputLimiter(
-                        configs.getLongProperty(Configs.FRONTEND_THROUGHPUT_DYNAMIC_MAX),
-                        configs.getLongProperty(Configs.FRONTEND_THROUGHPUT_DYNAMIC_THRESHOLD),
-                        configs.getLongProperty(Configs.FRONTEND_THROUGHPUT_DYNAMIC_DESIRED),
-                        configs.getDoubleProperty(Configs.FRONTEND_THROUGHPUT_DYNAMIC_IDLE),
-                        configs.getIntProperty(Configs.FRONTEND_THROUGHPUT_DYNAMIC_CHECK_INTERVAL),
+                        throughputParameters.getDynamicMax(),
+                        throughputParameters.getDynamicThreshold(),
+                        throughputParameters.getDynamicDesired(),
+                        throughputParameters.getDynamicIdle(),
+                        throughputParameters.getDynamicCheckInterval(),
                         hermesMetrics.meter(Meters.THROUGHPUT_BYTES),
                         getExecutor()
                         );

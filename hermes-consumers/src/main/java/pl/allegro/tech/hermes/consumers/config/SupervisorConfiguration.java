@@ -40,6 +40,7 @@ import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -53,7 +54,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Configuration
 @EnableConfigurationProperties({
         CommitOffsetProperties.class,
-        KafkaProperties.class,
+        KafkaClustersProperties.class,
         WorkloadProperties.class,
         CommonConsumerProperties.class
 })
@@ -71,12 +72,14 @@ public class SupervisorConfiguration {
                                                      ZookeeperAdminCache adminCache,
                                                      HermesMetrics metrics,
                                                      WorkloadProperties workloadProperties,
-                                                     KafkaProperties kafkaProperties,
-                                                     WorkloadConstraintsRepository workloadConstraintsRepository) {
+                                                     KafkaClustersProperties kafkaClustersProperties,
+                                                     WorkloadConstraintsRepository workloadConstraintsRepository,
+                                                     DatacenterNameProvider datacenterNameProvider) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("AssignmentExecutor-%d")
                 .setUncaughtExceptionHandler((t, e) -> logger.error("AssignmentExecutor failed {}", t.getName(), e)).build();
         ExecutorService assignmentExecutor = newFixedThreadPool(workloadProperties.getAssignmentProcessingThreadPoolSize(), threadFactory);
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new SelectiveSupervisorController(
                 supervisor,
                 notificationsBus,
@@ -96,7 +99,10 @@ public class SupervisorConfiguration {
 
     @Bean
     public Retransmitter retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
-                                       KafkaProperties kafkaProperties) {
+                                       KafkaClustersProperties kafkaClustersProperties,
+                                       DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+
         return new Retransmitter(subscriptionOffsetChangeIndicator, kafkaProperties.getClusterName());
     }
 
@@ -177,28 +183,33 @@ public class SupervisorConfiguration {
     @Bean
     public ConsumerAssignmentRegistry consumerAssignmentRegistry(CuratorFramework curator,
                                                                  WorkloadProperties workloadProperties,
-                                                                 KafkaProperties kafkaProperties,
+                                                                 KafkaClustersProperties kafkaClustersProperties,
                                                                  ZookeeperPaths zookeeperPaths,
-                                                                 SubscriptionIds subscriptionIds) {
+                                                                 SubscriptionIds subscriptionIds,
+                                                                 DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new ConsumerAssignmentRegistry(curator, workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
     }
 
     @Bean
     public ClusterAssignmentCache clusterAssignmentCache(CuratorFramework curator,
-                                                         KafkaProperties kafkaProperties,
+                                                         KafkaClustersProperties kafkaClustersProperties,
                                                          ZookeeperPaths zookeeperPaths,
                                                          SubscriptionIds subscriptionIds,
-                                                         ConsumerNodesRegistry consumerNodesRegistry) {
+                                                         ConsumerNodesRegistry consumerNodesRegistry,
+                                                         DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new ClusterAssignmentCache(curator, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds, consumerNodesRegistry);
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerAssignmentCache consumerAssignmentCache(CuratorFramework curator,
                                                            WorkloadProperties workloadProperties,
-                                                           KafkaProperties kafkaProperties,
+                                                           KafkaClustersProperties kafkaClustersProperties,
                                                            ZookeeperPaths zookeeperPaths,
-                                                           SubscriptionIds subscriptionIds) {
-        String consumerId = workloadProperties.getNodeId();
-        return new ConsumerAssignmentCache(curator, consumerId, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
+                                                           SubscriptionIds subscriptionIds,
+                                                           DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+        return new ConsumerAssignmentCache(curator, workloadProperties.getNodeId(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
     }
 }

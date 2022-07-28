@@ -6,8 +6,6 @@ import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.Node;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
@@ -29,10 +27,10 @@ public class Producers {
 
     public Producers(Producer<byte[], byte[]> leaderConfirms,
                      Producer<byte[], byte[]> everyoneConfirms,
-                     ConfigFactory configFactory) {
+                     boolean reportNodeMetrics) {
         this.leaderConfirms = leaderConfirms;
         this.everyoneConfirms = everyoneConfirms;
-        this.reportNodeMetrics = configFactory.getBooleanProperty(Configs.KAFKA_PRODUCER_REPORT_NODE_METRICS);
+        this.reportNodeMetrics = reportNodeMetrics;
     }
 
     public Producer<byte[], byte[]> get(Topic topic) {

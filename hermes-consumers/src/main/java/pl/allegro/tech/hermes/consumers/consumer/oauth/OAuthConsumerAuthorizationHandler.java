@@ -6,12 +6,11 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,11 +28,10 @@ public class OAuthConsumerAuthorizationHandler implements ConsumerAuthorizationH
     private final RateLimiter missingHandlersCreationRateLimiter;
 
     public OAuthConsumerAuthorizationHandler(OAuthSubscriptionHandlerFactory handlerFactory,
-                                             ConfigFactory configFactory,
+                                             Duration missingSubscriptionHandlersCreationDelay,
                                              OAuthProvidersNotifyingCache oAuthProvidersCache) {
         this.handlerFactory = handlerFactory;
-        long rateLimiterDelayMs = configFactory.getLongProperty(Configs.OAUTH_MISSING_SUBSCRIPTION_HANDLERS_CREATION_DELAY);
-        this.missingHandlersCreationRateLimiter = RateLimiter.create(1000.0 / rateLimiterDelayMs);
+        this.missingHandlersCreationRateLimiter = RateLimiter.create(missingSubscriptionHandlersCreationDelay.toSeconds());
         oAuthProvidersCache.setListener(this);
     }
 
@@ -67,7 +65,7 @@ public class OAuthConsumerAuthorizationHandler implements ConsumerAuthorizationH
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
-        subscriptions.stream().forEach(this::updateSubscription);
+        subscriptions.forEach(this::updateSubscription);
     }
 
     @Override

@@ -12,8 +12,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
@@ -47,7 +45,7 @@ public class ZookeeperCounterReporterTest {
     public static final long COUNT = 100L;
     public static final String GRAPHITE_PREFIX = "tech.hermes";
 
-    private static PathsCompiler pathsCompiler = new PathsCompiler("localhost.domain");
+    private static final PathsCompiler pathsCompiler = new PathsCompiler("localhost.domain");
 
     public static final String METRIC_NAME_FOR_PUBLISHED = pathsCompiler.compile(PUBLISHED, pathContext()
             .withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME_UNDERSCORE).build());
@@ -77,18 +75,14 @@ public class ZookeeperCounterReporterTest {
     private Meter meter;
 
     @Mock
-    private ConfigFactory configFactory;
-
-    @Mock
     private InstanceIdResolver instanceIdResolver;
 
     private ZookeeperCounterReporter zookeeperCounterReporter;
 
     @Before
     public void before() {
-        when(configFactory.getStringProperty(Configs.GRAPHITE_PREFIX)).thenReturn(GRAPHITE_PREFIX);
         when(instanceIdResolver.resolve()).thenReturn("localhost.domain");
-        zookeeperCounterReporter = new ZookeeperCounterReporter(metricRegistry, counterStorage, configFactory);
+        zookeeperCounterReporter = new ZookeeperCounterReporter(metricRegistry, counterStorage, GRAPHITE_PREFIX);
     }
 
     @Test

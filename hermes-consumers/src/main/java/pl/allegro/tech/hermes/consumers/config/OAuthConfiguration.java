@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.eclipse.jetty.client.HttpClient;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
@@ -27,20 +27,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-
 @Configuration
+@EnableConfigurationProperties(OAuthProperties.class)
 public class OAuthConfiguration {
 
     @Bean
     public OAuthTokenRequestRateLimiterFactory oAuthTokenRequestRateLimiterFactory(OAuthProviderRepository oAuthProviderRepository,
-                                                                                   ConfigFactory configFactory) {
-        return new OAuthTokenRequestRateLimiterFactory(oAuthProviderRepository, configFactory);
+                                                                                   OAuthProperties oAuthProperties) {
+        return new OAuthTokenRequestRateLimiterFactory(oAuthProviderRepository, oAuthProperties.getProvidersTokenRequestRateLimiterRateReductionFactor());
     }
 
     @Bean
     public OAuthAccessTokens oAuthSubscriptionAccessTokens(OAuthAccessTokensLoader tokenLoader,
-                                                           ConfigFactory configFactory) {
-        return new OAuthSubscriptionAccessTokens(tokenLoader, configFactory);
+                                                           OAuthProperties oAuthProperties) {
+        return new OAuthSubscriptionAccessTokens(tokenLoader, oAuthProperties.getSubscriptionTokensCacheMaxSize());
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -82,8 +82,8 @@ public class OAuthConfiguration {
 
     @Bean
     public ConsumerAuthorizationHandler oAuthConsumerAuthorizationHandler(OAuthSubscriptionHandlerFactory handlerFactory,
-                                                                          ConfigFactory configFactory,
+                                                                          OAuthProperties oAuthProperties,
                                                                           OAuthProvidersNotifyingCache oAuthProvidersCache) {
-        return new OAuthConsumerAuthorizationHandler(handlerFactory, configFactory, oAuthProvidersCache);
+        return new OAuthConsumerAuthorizationHandler(handlerFactory, oAuthProperties.getMissingSubscriptionHandlersCreationDelay(), oAuthProvidersCache);
     }
 }

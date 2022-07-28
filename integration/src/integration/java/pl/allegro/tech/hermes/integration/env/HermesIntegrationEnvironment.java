@@ -12,7 +12,8 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.setup.HermesManagementInstance;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.GooglePubSubContainer;
@@ -30,9 +31,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED;
-import static pl.allegro.tech.hermes.integration.ConfigurationProperties.KAFKA_BROKER_LIST;
-import static pl.allegro.tech.hermes.management.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 @Listeners({RetryListener.class})
 public class HermesIntegrationEnvironment implements EnvironmentAware {
@@ -95,19 +94,20 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             zookeeper = startZookeeperClient();
 
             ConsumersStarter consumersStarter = new ConsumersStarter();
-            consumersStarter.overrideProperty(KAFKA_AUTHORIZATION_ENABLED, false);
-            consumersStarter.overrideProperty(Configs.KAFKA_CLUSTER_NAME, PRIMARY_KAFKA_CLUSTER_NAME);
-            consumersStarter.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-            consumersStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
-            consumersStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+            consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED, false);
+            consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_CLUSTER_NAME, PRIMARY_KAFKA_CLUSTER_NAME);
+            consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+            consumersStarter.overrideProperty(ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+            consumersStarter.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             consumersStarter.overrideProperty(GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());
             consumersStarter.start();
 
             FrontendStarter frontendStarter = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT);
-            frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
-            frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-            frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
-            frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, true);
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.GRAPHITE_PORT, 18023);
             frontendStarter.start();
 
             for (ITestNGMethod method : context.getAllTestMethods()) {

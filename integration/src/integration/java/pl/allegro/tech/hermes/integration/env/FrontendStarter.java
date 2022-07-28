@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
@@ -19,15 +18,15 @@ import java.util.stream.Collectors;
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static javax.ws.rs.core.Response.Status.OK;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MESSAGE_PREVIEW_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_PORT;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_FIXED_MAX;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_THROUGHPUT_TYPE;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_PORT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_FIXED_MAX;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_TYPE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class FrontendStarter implements Starter<ConfigurableApplicationContext> {
@@ -71,7 +70,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         args.add(getArgument(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L));
         args.add(getArgument(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false));
         args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_ENABLED, true));
-        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, 1));
+        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, "1s"));
         return args;
     }
 
@@ -93,10 +92,6 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     @Override
     public ConfigurableApplicationContext instance() {
         return applicationContext;
-    }
-
-    public void overrideProperty(Configs config, Object value) {
-        args.add(getArgument(config, value));
     }
 
     public void overrideProperty(String config, Object value) {
@@ -121,7 +116,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
         await().atMost(adjust(TEN_SECONDS)).until(() -> client.newCall(request).execute().code() == OK.getStatusCode());
     }
 
-    private static String getArgument(Configs config, Object value) {
-        return "--" + config.getName() + "=" + value;
+    private static String getArgument(String config, Object value) {
+        return "--" + config + "=" + value;
     }
 }

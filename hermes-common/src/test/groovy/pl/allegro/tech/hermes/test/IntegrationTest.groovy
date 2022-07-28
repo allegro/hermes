@@ -38,7 +38,7 @@ abstract class IntegrationTest extends Specification {
 
     protected ZookeeperSubscriptionRepository subscriptionRepository = new ZookeeperSubscriptionRepository(zookeeper(), mapper, paths, topicRepository)
 
-    protected KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("")
+    protected KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("", "_")
 
     protected PathsCompiler pathsCompiler = new PathsCompiler("")
 

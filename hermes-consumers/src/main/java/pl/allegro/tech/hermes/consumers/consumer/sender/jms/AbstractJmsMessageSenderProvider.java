@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
@@ -19,12 +18,10 @@ import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSenderProvider {
 
-    protected final ConfigFactory configFactory;
     protected final LoadingCache<URI, ConnectionFactory> connectionFactoryCache;
     protected final MetadataAppender<Message> metadataAppender;
 
-    public AbstractJmsMessageSenderProvider(ConfigFactory configFactory, MetadataAppender<Message> metadataAppender) {
-        this.configFactory = configFactory;
+    public AbstractJmsMessageSenderProvider(MetadataAppender<Message> metadataAppender) {
         this.connectionFactoryCache = CacheBuilder.newBuilder().build(new ConnectionFactoryLoader());
         this.metadataAppender = metadataAppender;
     }

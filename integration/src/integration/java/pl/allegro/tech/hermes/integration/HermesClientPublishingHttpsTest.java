@@ -7,12 +7,12 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
@@ -22,10 +22,10 @@ import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_HTTP2_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_SSL_TRUSTSTORE_SOURCE;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_PORT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class HermesClientPublishingHttpsTest extends IntegrationTest {
@@ -86,14 +86,12 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(port, true);
 
         frontend.overrideProperty(FRONTEND_HTTP2_ENABLED, true);
-        frontend.overrideProperty(Configs.FRONTEND_SSL_PORT, sslPort);
+        frontend.overrideProperty(FRONTEND_SSL_PORT, sslPort);
         frontend.overrideProperty(FRONTEND_SSL_KEYSTORE_SOURCE, "provided");
         frontend.overrideProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE, "provided");
-        frontend.overrideProperty(MESSAGES_LOCAL_STORAGE_ENABLED, false);
-        frontend.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
-        frontend.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-        frontend.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
-        frontend.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+        frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
 
         frontend.start();
 
