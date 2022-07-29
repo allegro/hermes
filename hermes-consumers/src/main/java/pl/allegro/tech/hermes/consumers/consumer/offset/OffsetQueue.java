@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import org.jctools.queues.MessagePassingQueue;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.queue.FullDrainMpscQueue;
 import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
@@ -15,13 +13,10 @@ public class OffsetQueue {
 
     private final MpscQueue<SubscriptionPartitionOffset> commitOffsetsQueue;
 
-    public OffsetQueue(HermesMetrics metrics, ConfigFactory configFactory) {
-        int queueSize = configFactory.getIntProperty(Configs.CONSUMER_COMMIT_OFFSET_QUEUES_SIZE);
-
-        boolean fullDrainInflightsQueue = configFactory.getBooleanProperty(Configs.CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL);
-        this.inflightOffsetsQueue = new MonitoredMpscQueue<>(fullDrainInflightsQueue ?
-                new FullDrainMpscQueue<>(queueSize) : new WaitFreeDrainMpscQueue<>(queueSize), metrics, "inflightOffsets");
-        this.commitOffsetsQueue = new MonitoredMpscQueue<>(new WaitFreeDrainMpscQueue<>(queueSize), metrics, "committedOffsets");
+    public OffsetQueue(HermesMetrics metrics, int commitOffsetQueuesSize, boolean fullDrainInflightQueues) {
+        this.inflightOffsetsQueue = new MonitoredMpscQueue<>(fullDrainInflightQueues ?
+                new FullDrainMpscQueue<>(commitOffsetQueuesSize) : new WaitFreeDrainMpscQueue<>(commitOffsetQueuesSize), metrics, "inflightOffsets");
+        this.commitOffsetsQueue = new MonitoredMpscQueue<>(new WaitFreeDrainMpscQueue<>(commitOffsetQueuesSize), metrics, "committedOffsets");
     }
 
     public void offerInflightOffset(SubscriptionPartitionOffset offset) {

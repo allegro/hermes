@@ -4,11 +4,8 @@ import com.google.protobuf.ByteString
 import com.google.pubsub.v1.PubsubMessage
 import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.Header
-import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
-import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll

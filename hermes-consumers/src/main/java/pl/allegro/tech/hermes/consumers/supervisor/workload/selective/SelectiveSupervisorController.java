@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -22,13 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_AUTO_REBALANCE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_NODE_ID;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_REBALANCE_INTERVAL;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CLUSTER_NAME;
-
 public class SelectiveSupervisorController implements SupervisorController {
 
     private static final Logger logger = LoggerFactory.getLogger(SelectiveSupervisorController.class);
@@ -40,7 +32,7 @@ public class SelectiveSupervisorController implements SupervisorController {
     private final ConsumerNodesRegistry consumersRegistry;
     private final BalancingJob balancingJob;
     private final ZookeeperAdminCache adminCache;
-    private final ConfigFactory configFactory;
+    private final SelectiveSupervisorParameters selectiveSupervisorParameters;
 
     private final ExecutorService assignmentExecutor;
 
@@ -53,7 +45,8 @@ public class SelectiveSupervisorController implements SupervisorController {
                                          ConsumerNodesRegistry consumersRegistry,
                                          ZookeeperAdminCache adminCache,
                                          ExecutorService assignmentExecutor,
-                                         ConfigFactory configFactory,
+                                         SelectiveSupervisorParameters selectiveSupervisorParameters,
+                                         String kafkaClusterName,
                                          HermesMetrics metrics,
                                          WorkloadConstraintsRepository workloadConstraintsRepository) {
 
@@ -64,17 +57,16 @@ public class SelectiveSupervisorController implements SupervisorController {
         this.consumersRegistry = consumersRegistry;
         this.adminCache = adminCache;
         this.assignmentExecutor = assignmentExecutor;
-        this.configFactory = configFactory;
+        this.selectiveSupervisorParameters = selectiveSupervisorParameters;
         this.balancingJob = new BalancingJob(
                 consumersRegistry,
-                configFactory,
+                selectiveSupervisorParameters,
                 subscriptionsCache,
                 clusterAssignmentCache,
                 consumerAssignmentRegistry,
                 new SelectiveWorkBalancer(),
                 metrics,
-                configFactory.getIntProperty(CONSUMER_WORKLOAD_REBALANCE_INTERVAL),
-                configFactory.getStringProperty(KAFKA_CLUSTER_NAME),
+                kafkaClusterName,
                 workloadConstraintsRepository);
     }
 
@@ -128,19 +120,13 @@ public class SelectiveSupervisorController implements SupervisorController {
         assignmentCache.registerAssignmentCallback(this);
 
         supervisor.start();
-        if (configFactory.getBooleanProperty(CONSUMER_WORKLOAD_AUTO_REBALANCE)) {
+        if (selectiveSupervisorParameters.isAutoRebalance()) {
             balancingJob.start();
         } else {
             logger.info("Automatic workload rebalancing is disabled.");
         }
 
-        logger.info("Consumer boot complete in {} ms. Workload config: [{}]",
-                System.currentTimeMillis() - startTime,
-                configFactory.print(
-                        CONSUMER_WORKLOAD_NODE_ID,
-                        CONSUMER_WORKLOAD_REBALANCE_INTERVAL,
-                        CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION,
-                        CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER));
+        logger.info("Consumer boot complete in {} ms.", System.currentTimeMillis() - startTime);
     }
 
     @Override

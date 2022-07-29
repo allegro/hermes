@@ -1,14 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset
 
 import com.codahale.metrics.MetricRegistry
-import com.netflix.config.DynamicPropertyFactory
 import pl.allegro.tech.hermes.api.SubscriptionName
-import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Shared
 import spock.lang.Specification
+
+import java.time.Duration
 
 class OffsetCommitterTest extends Specification {
 
@@ -20,7 +20,8 @@ class OffsetCommitterTest extends Specification {
 
     private OffsetQueue queue = new OffsetQueue(
             new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
-            new ConfigFactory(DynamicPropertyFactory.getInstance())
+            200_000,
+            false
     )
 
     private MockMessageCommitter messageCommitter = new MockMessageCommitter()

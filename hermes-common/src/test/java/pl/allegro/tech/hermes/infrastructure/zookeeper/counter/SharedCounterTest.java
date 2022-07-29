@@ -4,6 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
+import java.time.Duration;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SharedCounterTest extends ZookeeperBaseTest {
@@ -12,7 +14,7 @@ public class SharedCounterTest extends ZookeeperBaseTest {
 
     @Before
     public void initialize() {
-        this.counter = new SharedCounter(zookeeperClient, 72 * 3600, 1000, 3);
+        this.counter = new SharedCounter(zookeeperClient, Duration.ofHours(72), Duration.ofSeconds(1), 3);
     }
 
     @Test
@@ -28,7 +30,7 @@ public class SharedCounterTest extends ZookeeperBaseTest {
     @Test
     public void shouldIncrementCounterAtomicallyWhenIncrementedConcurrently() {
         // given
-        SharedCounter otherCounter = new SharedCounter(zookeeperClient, 72 * 3600, 1000, 3);
+        SharedCounter otherCounter = new SharedCounter(zookeeperClient, Duration.ofHours(72), Duration.ofSeconds(1), 3);
 
         // when
         counter.increment("/sharedIncrement", 10);

@@ -1,0 +1,93 @@
+consumer:
+  backgroundSupervisor:
+    interval: 100ms
+  receiver:
+    poolTimeout: 30ms
+    readQueueCapacity: 1000
+    waitBetweenUnsuccessfulPolls: true
+    initialIdleTime: 10ms
+    maxIdleTime: 1000ms
+  batch:
+    poolableSize: 1024
+    maxPoolSize: 67108864 # 64 x 1024 x 1024
+    connectionTimeout: 500ms
+    connectionRequestTimeout: 500ms
+  commit:
+    offset:
+      period: 60s
+      queuesSize: 200_000
+      queuesInflightDrainFullEnabled: false
+  rate:
+    limiterSupervisorPeriod: 30s
+    limiterReportingThreadPoolSize: 30
+    limiterReportingThreadMonitoringEnabled: false
+    limiterHeartbeatModeDelay: 60s
+    limiterSlowModeDelay: 60s
+    convergenceFactor: 0.2
+    failuresNoChangeToleranceRatio: 0.05
+    failuresSpeedUpToleranceRatio: 0.01
+  sender:
+    async:
+      timeout:
+        http2:
+          milliseconds: 5_000
+          threadPoolSize: 32
+          threadPoolMonitoringEnabled: false
+  ssl:
+    enabled: true
+    protocol: TLS
+    keystoreSource: jre
+    keystoreLocation: classpath:client.keystore
+    keystorePassword: password
+    keystoreFormat: JKS
+    truststoreSource: jre
+    truststoreLocation: classpath:client.truststore
+    truststorePassword: password
+    truststoreFormat: JKS
+  http2:
+    client:
+      enabled: true
+      threadPoolSize: 10
+      threadPoolMonitoringEnabled: false
+      idleTimeout: 0ms
+      maxRequestsQueuedPerDestination: 100
+  http:
+    client:
+      connectionPoolMonitoringEnabled: false
+      requestQueueMonitoringEnabled: true
+      threadPoolSize: 30
+      threadPoolMonitoringEnabled: false
+      followRedirectsEnabled: false
+      maxConnectionsPerDestination: 100
+      idleTimeout: 0ms
+      maxRequestsQueuedPerDestination: 100
+  workload:
+    rebalanceInterval: 1s
+    consumerPerSubscription: 1
+  metrics:
+    graphiteReporterEnabled: true
+    reportPeriod: 1s
+  graphite:
+    port: 18023
+  schema:
+    cache:
+      refreshAfterWrite: 1m
+  zookeeper:
+    clusters:
+      -
+        connectionString: "localhost:14192"
+        connectionTimeout: 10s
+        sessionTimeout: 10s
+        authorization:
+          enabled: false
+          user: admin
+          password: admin
+  kafka:
+    namespace: "itTest"
+    clusters:
+      - authorization:
+          enabled: false
+          mechanism: PLAIN
+          protocol: SASL_PLAINTEXT
+          username: hermes
+          password: alice-secret

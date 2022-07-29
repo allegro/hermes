@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -19,13 +18,12 @@ import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
-import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -49,7 +47,6 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
-import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -60,7 +57,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     public static final TestMessage MESSAGE = TestMessage.of("hello", "world");
 
-    private Client httpClient = ClientBuilder.newClient();
+    private final Client httpClient = ClientBuilder.newClient();
 
     private RemoteServiceEndpoint remoteService;
     private HermesClient client;
@@ -191,7 +188,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldUpdateSubscriptionEndpoint() throws Throwable {
+    public void shouldUpdateSubscriptionEndpoint() {
         //given
         Topic topic = operations.buildTopic(randomTopic("updateSubscriptionEndpointAddressGroup", "topic").build());
         operations.createSubscription(topic, "subscription", remoteService.getUrl().toString() + "v1/");
@@ -268,10 +265,11 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     @Unreliable
     @Test(enabled = false)
-    public void shouldGetEventStatus() throws InterruptedException {
+    public void shouldGetEventStatus() {
         // given
         Topic topic = operations.buildTopic(randomTopic("eventStatus", "topic").withContentType(ContentType.JSON)
                 .withTrackingEnabled(true).build());
+        String clusterName = new KafkaProperties().getClusterName();
 
         Subscription subscription = subscription(topic.getQualifiedName(), "subscription", remoteService.getUrl())
                 .withTrackingMode(TrackingMode.TRACK_ALL)
@@ -291,7 +289,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(traces.get(0)).containsEntry("status", "SUCCESS").containsKey("cluster");
         assertThat(traces.get(1)).containsEntry("status", "INFLIGHT").containsKey("cluster");
         assertThat(traces.get(2)).containsEntry("status", "SUCCESS").containsKey("cluster");
-        traces.forEach(trace -> assertThat(trace).containsEntry("cluster", Configs.KAFKA_CLUSTER_NAME.getDefaultValue()));
+        traces.forEach(trace -> assertThat(trace).containsEntry("cluster", clusterName));
     }
 
     @Test
@@ -422,7 +420,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnConsumerGroupDescription() throws InterruptedException {
+    public void shouldReturnConsumerGroupDescription() {
         // given
         String subscriptionName = "subscription";
         Topic topic = operations.buildTopic(randomTopic("topicGroup", "test").build());
@@ -675,7 +673,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
         Response response = management.subscription().getMessageTrace(topic, subscription, messageId);
-        return response.readEntity(new GenericType<List<Map<String, String>>>() {
+        return response.readEntity(new GenericType<>() {
         });
     }
 

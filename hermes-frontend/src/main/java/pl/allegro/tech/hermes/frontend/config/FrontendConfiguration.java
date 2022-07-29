@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
+import pl.allegro.tech.hermes.frontend.buffer.PersistentBufferExtension;
 import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
@@ -28,6 +29,7 @@ import java.time.Clock;
 import java.util.List;
 
 @Configuration
+@EnableConfigurationProperties(LocalMessageStorageProperties.class)
 public class FrontendConfiguration {
 
     @Bean
@@ -52,17 +54,17 @@ public class FrontendConfiguration {
                                                      BrokerListeners brokerListeners,
                                                      TopicsCache topicsCache,
                                                      Trackers trackers,
-                                                     ConfigFactory config) {
-        return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, trackers, config);
+                                                     LocalMessageStorageProperties localMessageStorageProperties) {
+        return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, trackers, localMessageStorageProperties);
     }
 
     @Bean(initMethod = "extend")
-    public PersistentBufferExtension persistentBufferExtension(ConfigFactory configFactory,
+    public PersistentBufferExtension persistentBufferExtension(LocalMessageStorageProperties localMessageStorageProperties,
                                                                Clock clock,
                                                                BrokerListeners listeners,
                                                                BackupMessagesLoader backupMessagesLoader,
                                                                HermesMetrics hermesMetrics) {
-        return new PersistentBufferExtension(configFactory, clock, listeners, backupMessagesLoader,
+        return new PersistentBufferExtension(localMessageStorageProperties, clock, listeners, backupMessagesLoader,
                 hermesMetrics);
     }
 

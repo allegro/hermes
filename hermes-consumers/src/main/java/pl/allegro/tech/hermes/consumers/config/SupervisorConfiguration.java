@@ -3,11 +3,10 @@ package pl.allegro.tech.hermes.consumers.config;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -41,6 +40,7 @@ import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -50,9 +50,14 @@ import java.util.concurrent.ThreadFactory;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE;
 
 @Configuration
+@EnableConfigurationProperties({
+        CommitOffsetProperties.class,
+        KafkaClustersProperties.class,
+        WorkloadProperties.class,
+        CommonConsumerProperties.class
+})
 public class SupervisorConfiguration {
     private static final Logger logger = getLogger(SupervisorConfiguration.class);
 
@@ -66,12 +71,15 @@ public class SupervisorConfiguration {
                                                      ConsumersSupervisor supervisor,
                                                      ZookeeperAdminCache adminCache,
                                                      HermesMetrics metrics,
-                                                     ConfigFactory configs,
-                                                     WorkloadConstraintsRepository workloadConstraintsRepository) {
+                                                     WorkloadProperties workloadProperties,
+                                                     KafkaClustersProperties kafkaClustersProperties,
+                                                     WorkloadConstraintsRepository workloadConstraintsRepository,
+                                                     DatacenterNameProvider datacenterNameProvider) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("AssignmentExecutor-%d")
                 .setUncaughtExceptionHandler((t, e) -> logger.error("AssignmentExecutor failed {}", t.getName(), e)).build();
-        ExecutorService assignmentExecutor = newFixedThreadPool(configs.getIntProperty(CONSUMER_WORKLOAD_ASSIGNMENT_PROCESSING_THREAD_POOL_SIZE), threadFactory);
+        ExecutorService assignmentExecutor = newFixedThreadPool(workloadProperties.getAssignmentProcessingThreadPoolSize(), threadFactory);
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new SelectiveSupervisorController(
                 supervisor,
                 notificationsBus,
@@ -82,7 +90,8 @@ public class SupervisorConfiguration {
                 consumerNodesRegistry,
                 adminCache,
                 assignmentExecutor,
-                configs,
+                workloadProperties,
+                kafkaProperties.getClusterName(),
                 metrics,
                 workloadConstraintsRepository
         );
@@ -90,14 +99,17 @@ public class SupervisorConfiguration {
 
     @Bean
     public Retransmitter retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
-                                       ConfigFactory configs) {
-        return new Retransmitter(subscriptionOffsetChangeIndicator, configs);
+                                       KafkaClustersProperties kafkaClustersProperties,
+                                       DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+
+        return new Retransmitter(subscriptionOffsetChangeIndicator, kafkaProperties.getClusterName());
     }
 
     @Bean
     public ConsumerFactory consumerFactory(ReceiverFactory messageReceiverFactory,
                                            HermesMetrics hermesMetrics,
-                                           ConfigFactory configFactory,
+                                           CommonConsumerProperties commonConsumerProperties,
                                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                                            OutputRateCalculatorFactory outputRateCalculatorFactory,
                                            Trackers trackers,
@@ -113,7 +125,7 @@ public class SupervisorConfiguration {
         return new ConsumerFactory(
                 messageReceiverFactory,
                 hermesMetrics,
-                configFactory,
+                commonConsumerProperties,
                 consumerRateLimitSupervisor,
                 outputRateCalculatorFactory,
                 trackers,
@@ -130,13 +142,13 @@ public class SupervisorConfiguration {
     }
 
     @Bean
-    public ConsumersExecutorService consumersExecutorService(ConfigFactory configFactory,
+    public ConsumersExecutorService consumersExecutorService(CommonConsumerProperties commonConsumerProperties,
                                                              HermesMetrics hermesMetrics) {
-        return new ConsumersExecutorService(configFactory, hermesMetrics);
+        return new ConsumersExecutorService(commonConsumerProperties.getThreadPoolSize(), hermesMetrics);
     }
 
     @Bean
-    public ConsumersSupervisor nonblockingConsumersSupervisor(ConfigFactory configFactory,
+    public ConsumersSupervisor nonblockingConsumersSupervisor(CommonConsumerProperties commonConsumerProperties,
                                                               ConsumersExecutorService executor,
                                                               ConsumerFactory consumerFactory,
                                                               OffsetQueue offsetQueue,
@@ -146,10 +158,11 @@ public class SupervisorConfiguration {
                                                               SubscriptionRepository subscriptionRepository,
                                                               HermesMetrics metrics,
                                                               ConsumerMonitor monitor,
-                                                              Clock clock) {
-        return new NonblockingConsumersSupervisor(configFactory, executor, consumerFactory, offsetQueue,
+                                                              Clock clock,
+                                                              CommitOffsetProperties commitOffsetProperties) {
+        return new NonblockingConsumersSupervisor(commonConsumerProperties, executor, consumerFactory, offsetQueue,
                 consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
-                subscriptionRepository, metrics, monitor, clock);
+                subscriptionRepository, metrics, monitor, clock, commitOffsetProperties.getPeriod());
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
@@ -157,41 +170,46 @@ public class SupervisorConfiguration {
                                                            SupervisorController workloadSupervisor,
                                                            HermesMetrics hermesMetrics,
                                                            SubscriptionsCache subscriptionsCache,
-                                                           ConfigFactory configFactory) {
+                                                           WorkloadProperties workloadProperties) {
         return new ConsumersRuntimeMonitor(
                 consumerSupervisor,
                 workloadSupervisor,
                 hermesMetrics,
                 subscriptionsCache,
-                configFactory
+                workloadProperties.getMonitorScanInterval()
         );
     }
 
     @Bean
     public ConsumerAssignmentRegistry consumerAssignmentRegistry(CuratorFramework curator,
-                                                                 ConfigFactory configFactory,
+                                                                 WorkloadProperties workloadProperties,
+                                                                 KafkaClustersProperties kafkaClustersProperties,
                                                                  ZookeeperPaths zookeeperPaths,
-                                                                 SubscriptionIds subscriptionIds) {
-        return new ConsumerAssignmentRegistry(curator, configFactory, zookeeperPaths, subscriptionIds);
+                                                                 SubscriptionIds subscriptionIds,
+                                                                 DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+        return new ConsumerAssignmentRegistry(curator, workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
     }
 
     @Bean
     public ClusterAssignmentCache clusterAssignmentCache(CuratorFramework curator,
-                                                         ConfigFactory configFactory,
+                                                         KafkaClustersProperties kafkaClustersProperties,
                                                          ZookeeperPaths zookeeperPaths,
                                                          SubscriptionIds subscriptionIds,
-                                                         ConsumerNodesRegistry consumerNodesRegistry) {
-        String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-        return new ClusterAssignmentCache(curator, clusterName, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
+                                                         ConsumerNodesRegistry consumerNodesRegistry,
+                                                         DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+        return new ClusterAssignmentCache(curator, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds, consumerNodesRegistry);
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerAssignmentCache consumerAssignmentCache(CuratorFramework curator,
-                                                           ConfigFactory configFactory,
+                                                           WorkloadProperties workloadProperties,
+                                                           KafkaClustersProperties kafkaClustersProperties,
                                                            ZookeeperPaths zookeeperPaths,
-                                                           SubscriptionIds subscriptionIds) {
-        String consumerId = configFactory.getStringProperty(Configs.CONSUMER_WORKLOAD_NODE_ID);
-        String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
-        return new ConsumerAssignmentCache(curator, consumerId, clusterName, zookeeperPaths, subscriptionIds);
+                                                           SubscriptionIds subscriptionIds,
+                                                           DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+        return new ConsumerAssignmentCache(curator, workloadProperties.getNodeId(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
     }
 }

@@ -4,8 +4,6 @@ import com.google.common.collect.Sets;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
@@ -21,14 +19,13 @@ public class ConsumerAssignmentRegistry {
     private final WorkloadRegistryPaths paths;
 
     public ConsumerAssignmentRegistry(CuratorFramework curator,
-                                      ConfigFactory configFactory,
+                                      int assignmentsEncoderBufferSize,
+                                      String clusterName,
                                       ZookeeperPaths zookeeperPaths,
                                       SubscriptionIds subscriptionIds) {
         this.zookeeper = new ZookeeperOperations(curator);
-        int assignmentsEncoderBufferSize = configFactory.getIntProperty(Configs.CONSUMER_WORKLOAD_REGISTRY_BINARY_ENCODER_ASSIGNMENTS_BUFFER_SIZE_BYTES);
         this.consumerAssignmentsEncoder = new ConsumerWorkloadEncoder(subscriptionIds, assignmentsEncoderBufferSize);
 
-        final String clusterName = configFactory.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
         this.paths = new WorkloadRegistryPaths(zookeeperPaths, clusterName);
     }
 

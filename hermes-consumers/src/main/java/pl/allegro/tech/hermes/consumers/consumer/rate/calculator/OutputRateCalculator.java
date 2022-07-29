@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProvider;
 
@@ -21,22 +19,22 @@ public class OutputRateCalculator {
 
     private final MaxRateProvider maxRateProvider;
 
-    public OutputRateCalculator(ConfigFactory configFactory, MaxRateProvider maxRateProvider) {
+    public OutputRateCalculator(RateCalculatorParameters rateCalculatorParameters, MaxRateProvider maxRateProvider) {
         this.maxRateProvider = maxRateProvider;
 
         modeCalculators.put(Mode.NORMAL,
                 new NormalModeOutputRateCalculator(
-                        configFactory.getDoubleProperty(Configs.CONSUMER_RATE_CONVERGENCE_FACTOR),
-                        1.0 / configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY),
-                        configFactory.getDoubleProperty(Configs.CONSUMER_RATE_FAILURES_SPEEDUP_TOLERANCE_RATIO),
-                        configFactory.getDoubleProperty(Configs.CONSUMER_RATE_FAILURES_NOCHANGE_TOLERANCE_RATIO))
+                        rateCalculatorParameters.getConvergenceFactor(),
+                        1.0 / rateCalculatorParameters.getLimiterSlowModeDelay().toSeconds(),
+                        rateCalculatorParameters.getFailuresSpeedUpToleranceRatio(),
+                        rateCalculatorParameters.getFailuresNoChangeToleranceRatio())
         );
         modeCalculators.put(Mode.SLOW,
                 new SlowModeOutputRateCalculator(
-                        1.0 / configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_HEARTBEAT_MODE_DELAY))
+                        1.0 / rateCalculatorParameters.getLimiterHeartbeatModeDelay().toSeconds())
         );
         modeCalculators.put(Mode.HEARTBEAT, new HeartbeatModeOutputRateCalculator(
-                1.0 / configFactory.getIntProperty(Configs.CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY))
+                1.0 / rateCalculatorParameters.getLimiterSlowModeDelay().toSeconds())
         );
     }
 

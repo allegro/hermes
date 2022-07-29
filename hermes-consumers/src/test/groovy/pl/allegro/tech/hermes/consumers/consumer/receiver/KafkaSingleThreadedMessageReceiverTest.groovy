@@ -24,7 +24,7 @@ class KafkaSingleThreadedMessageReceiverTest extends Specification {
     KafkaConsumer<byte[], byte[]> consumer = Mock(KafkaConsumer)
     KafkaConsumerRecordToMessageConverterFactory converterFactory = Mock(KafkaConsumerRecordToMessageConverterFactory)
     KafkaConsumerRecordToMessageConverter messageConverter = Mock(KafkaConsumerRecordToMessageConverter)
-    KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("namespace")
+    KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("namespace", "_ ")
 
     def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
     def subscription = SubscriptionBuilder.subscription(topic, "someSub").build()
@@ -33,7 +33,7 @@ class KafkaSingleThreadedMessageReceiverTest extends Specification {
         converterFactory.create(*_) >> messageConverter
         receiver = new KafkaSingleThreadedMessageReceiver(
                 consumer, converterFactory, Mock(HermesMetrics),
-                kafkaNamesMapper, topic, subscription, 10, 10,
+                kafkaNamesMapper, topic, subscription, Duration.ofMillis(10), 10,
                 Mock(ConsumerPartitionAssignmentState)
         )
     }

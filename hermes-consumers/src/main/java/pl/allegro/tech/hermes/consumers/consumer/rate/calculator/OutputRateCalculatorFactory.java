@@ -1,25 +1,24 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProvider;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
 
 public class OutputRateCalculatorFactory {
 
-    private final ConfigFactory configFactory;
+    private final RateCalculatorParameters rateCalculatorParameters;
     private final MaxRateProviderFactory maxRateProviderFactory;
 
-    public OutputRateCalculatorFactory(ConfigFactory configFactory,
+    public OutputRateCalculatorFactory(RateCalculatorParameters rateCalculatorParameters,
                                        MaxRateProviderFactory maxRateProviderFactory) {
-        this.configFactory = configFactory;
+        this.rateCalculatorParameters = rateCalculatorParameters;
         this.maxRateProviderFactory = maxRateProviderFactory;
     }
 
     public OutputRateCalculator createCalculator(Subscription subscription, SendCounters sendCounters) {
         MaxRateProvider maxRateProvider =
                 maxRateProviderFactory.create(subscription, sendCounters);
-        return new OutputRateCalculator(configFactory, maxRateProvider);
+        return new OutputRateCalculator(rateCalculatorParameters, maxRateProvider);
     }
 }

@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.context.ConfigurableApplicationContext;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 
@@ -14,17 +13,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_CACHE_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SSL_TRUSTSTORE_SOURCE;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_USE_TOPIC_MESSAGE_SIZE;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_COMMIT_OFFSET_PERIOD;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_SSL_KEYSTORE_SOURCE;
+import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.CONSUMER_SSL_TRUSTSTORE_SOURCE;
 
 public class ConsumersStarter implements Starter<ConfigurableApplicationContext> {
 
@@ -42,16 +36,11 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
     public void start() throws Exception {
         LOGGER.info("Starting Hermes Consumers");
         overrideProperty(SCHEMA_CACHE_ENABLED, true);
-        overrideProperty(KAFKA_CONSUMER_AUTO_OFFSET_RESET_CONFIG, "earliest");
-        overrideProperty(KAFKA_CONSUMER_RECONNECT_BACKOFF_MS_CONFIG, 25);
-        overrideProperty(KAFKA_CONSUMER_RETRY_BACKOFF_MS_CONFIG, 25);
-        overrideProperty(KAFKA_CONSUMER_MAX_POLL_RECORDS_CONFIG, 1);
-        overrideProperty(KAFKA_CONSUMER_REQUEST_TIMEOUT_MS_CONFIG, 11000);
-        overrideProperty(KAFKA_CONSUMER_SESSION_TIMEOUT_MS_CONFIG, 10000);
-        overrideProperty(KAFKA_CONSUMER_HEARTBEAT_INTERVAL_MS_CONFIG, 50);
         overrideProperty(CONSUMER_USE_TOPIC_MESSAGE_SIZE, true);
         overrideProperty(CONSUMER_SSL_KEYSTORE_SOURCE, "provided");
         overrideProperty(CONSUMER_SSL_TRUSTSTORE_SOURCE, "provided");
+        overrideProperty(CONSUMER_COMMIT_OFFSET_QUEUES_INFLIGHT_DRAIN_FULL, true);
+        overrideProperty(CONSUMER_COMMIT_OFFSET_PERIOD, "1s");
         setSpringProfiles("integration");
 
         applicationContext = application.run(args.toArray(new String[0]));
@@ -68,8 +57,8 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
         instance().close();
     }
 
-    public void overrideProperty(Configs config, Object value) {
-        args.add("--" + config.getName() + "=" + value);
+    public void overrideProperty(String config, Object value) {
+        args.add("--" + config + "=" + value);
     }
 
     public void setSpringProfiles(String... profiles) {

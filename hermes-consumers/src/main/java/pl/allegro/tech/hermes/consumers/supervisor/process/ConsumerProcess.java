@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,20 +30,20 @@ public class ConsumerProcess implements Runnable {
 
     private final java.util.function.Consumer<SubscriptionName> onConsumerStopped;
 
-    private final long unhealthyAfter;
+    private final Duration unhealthyAfter;
 
     private volatile boolean running = true;
 
     private volatile long healthcheckRefreshTime;
 
-    private Map<Signal.SignalType, Long> signalTimesheet = new ConcurrentHashMap<>();
+    private final Map<Signal.SignalType, Long> signalTimesheet = new ConcurrentHashMap<>();
 
     public ConsumerProcess(
             Signal startSignal,
             Consumer consumer,
             Retransmitter retransmitter,
             Clock clock,
-            long unhealthyAfter,
+            Duration unhealthyAfter,
             java.util.function.Consumer<SubscriptionName> onConsumerStopped) {
         this.consumer = consumer;
         this.retransmitter = retransmitter;
@@ -85,7 +86,7 @@ public class ConsumerProcess implements Runnable {
     }
 
     public boolean isHealthy() {
-        return unhealthyAfter > lastSeen();
+        return unhealthyAfter.toMillis() > lastSeen();
     }
 
     public long lastSeen() {

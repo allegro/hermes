@@ -1,16 +1,12 @@
 package pl.allegro.tech.hermes.integration.env;
 
-import com.netflix.config.DynamicPropertyFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
-
 public interface EnvironmentAware {
-
-    ConfigFactory CONFIG_FACTORY = new ConfigFactory(DynamicPropertyFactory.getInstance());
 
     int HTTP_ENDPOINT_PORT = 18081;
 
     int MANAGEMENT_PORT = 18082;
+
+    int CONSUMER_PORT = 8000;
 
     String HTTP_ENDPOINT_URL = "http://localhost:" + HTTP_ENDPOINT_PORT + "/";
 
@@ -22,7 +18,7 @@ public interface EnvironmentAware {
 
     String GOOGLE_PUBSUB_SUBSCRIPTION_ID = "test-subscription";
 
-    int FRONTEND_PORT = CONFIG_FACTORY.getIntProperty(Configs.FRONTEND_PORT);
+    int FRONTEND_PORT = 18080;
 
     String FRONTEND_URL = "http://localhost:" + FRONTEND_PORT + "/";
 
@@ -30,7 +26,7 @@ public interface EnvironmentAware {
 
     String MANAGEMENT_ENDPOINT_URL = "http://localhost:" + MANAGEMENT_PORT + "/";
 
-    String CONSUMER_ENDPOINT_URL = "http://localhost:" + CONFIG_FACTORY.getIntProperty(Configs.CONSUMER_HEALTH_CHECK_PORT) + "/";
+    String CONSUMER_ENDPOINT_URL = "http://localhost:" + CONSUMER_PORT + "/";
 
     int GRAPHITE_HTTP_SERVER_PORT = 18089;
 
@@ -40,9 +36,9 @@ public interface EnvironmentAware {
 
     int AUDIT_EVENT_PORT = 19998;
 
-    String PRIMARY_KAFKA_CLUSTER_NAME = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_CLUSTER_NAME);
+    String PRIMARY_KAFKA_CLUSTER_NAME = "primary-dc";
 
     String SECONDARY_KAFKA_CLUSTER_NAME = "secondary";
 
-    String KAFKA_NAMESPACE = CONFIG_FACTORY.getStringProperty(Configs.KAFKA_NAMESPACE);
+    String KAFKA_NAMESPACE = "";
 }

@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
@@ -35,20 +35,28 @@ import java.time.Clock;
 import java.util.Optional;
 
 @Configuration
+@EnableConfigurationProperties({
+        ThroughputProperties.class,
+        MessagePreviewProperties.class,
+        HeaderPropagationProperties.class,
+        HandlersChainProperties.class,
+        SchemaProperties.class
+})
 public class FrontendPublishingConfiguration {
 
     @Bean
     public HttpHandler httpHandler(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
-                                   MessageEndProcessor messageEndProcessor, ConfigFactory configFactory, MessageFactory messageFactory,
+                                   MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig) {
-        return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, configFactory, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig).provide();
+                                   ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig,
+                                   MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties) {
+        return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,
+                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(), handlersChainProperties).provide();
     }
 
     @Bean
-    public ThroughputLimiter throughputLimiter(ConfigFactory configs, HermesMetrics hermesMetrics) {
-        return new ThroughputLimiterFactory(configs, hermesMetrics).provide();
+    public ThroughputLimiter throughputLimiter(ThroughputProperties throughputProperties, HermesMetrics hermesMetrics) {
+        return new ThroughputLimiterFactory(throughputProperties, hermesMetrics).provide();
     }
 
     @Bean
@@ -80,31 +88,31 @@ public class FrontendPublishingConfiguration {
                                          HeadersPropagator headersPropagator,
                                          CompositeMessageContentWrapper compositeMessageContentWrapper,
                                          Clock clock,
-                                         ConfigFactory configFactory) {
+                                         SchemaProperties schemaProperties) {
         return new MessageFactory(validators, enforcer, schemaRepository, headersPropagator, compositeMessageContentWrapper,
-                clock, configFactory);
+                clock, schemaProperties.isIdHeaderEnabled());
     }
 
     @Bean
-    public HeadersPropagator defaultHeadersPropagator(ConfigFactory config) {
-        return new DefaultHeadersPropagator(config);
+    public HeadersPropagator defaultHeadersPropagator(HeaderPropagationProperties headerPropagationProperties) {
+        return new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter());
     }
 
     @Bean
-    public MessagePreviewFactory messagePreviewFactory(ConfigFactory configFactory) {
-        return new MessagePreviewFactory(configFactory);
+    public MessagePreviewFactory messagePreviewFactory(MessagePreviewProperties messagePreviewProperties) {
+        return new MessagePreviewFactory(messagePreviewProperties.getMaxSizeKb());
     }
 
     @Bean
     public MessagePreviewLog messagePreviewLog(MessagePreviewFactory messagePreviewFactory,
-                                               ConfigFactory configFactory) {
-        return new MessagePreviewLog(messagePreviewFactory, configFactory);
+                                               MessagePreviewProperties messagePreviewProperties) {
+        return new MessagePreviewLog(messagePreviewFactory, messagePreviewProperties.getSize());
     }
 
     @Bean
     public DefaultMessagePreviewPersister messagePreviewPersister(MessagePreviewLog messagePreviewLog,
                                                                   MessagePreviewRepository repository,
-                                                                  ConfigFactory configFactory) {
-        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, configFactory);
+                                                                  MessagePreviewProperties messagePreviewProperties) {
+        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, messagePreviewProperties.getLogPersistPeriod(), messagePreviewProperties.isEnabled());
     }
 }

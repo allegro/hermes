@@ -21,18 +21,18 @@ class MessagePreviewFactoryTest extends Specification {
             preview.truncated == shouldTruncate
         where:
             messageSize | maxContentSize || shouldTruncate
-            50          | 100            || false
-            99          | 100            || false
-            100         | 100            || false
-            101         | 100            || true
-            150         | 100            || true
+            50 * 1024   | 100            || false
+            99 * 1024   | 100            || false
+            100 * 1024  | 100            || false
+            101 * 1024  | 100            || true
+            150 * 1024  | 100            || true
     }
 
     def "should truncate message preview if it is too large after decoding to JSON"() {
         given:
             def avroUser = new AvroUser()
             def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null)
-            factory = new MessagePreviewFactory(avroUser.asJson().length() - 1)
+            factory = new MessagePreviewFactory((avroUser.asJson().length() - 1) / 1024 as int)
         when:
             MessagePreview preview = factory.create(message, false)
         then:

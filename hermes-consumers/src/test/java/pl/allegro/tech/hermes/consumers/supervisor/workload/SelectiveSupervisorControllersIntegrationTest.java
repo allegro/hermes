@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
@@ -13,6 +12,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonit
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
+import java.time.Duration;
 import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -27,7 +27,7 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 
 public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBaseTest {
 
-    private static ConsumerTestRuntimeEnvironment runtime = new ConsumerTestRuntimeEnvironment(ZookeeperBaseTest::newClient);
+    private static final ConsumerTestRuntimeEnvironment runtime = new ConsumerTestRuntimeEnvironment(ZookeeperBaseTest::newClient);
 
     @Before
     public void setup() throws Exception {
@@ -125,14 +125,16 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
                 .thenReturn(
                         mock(SerialConsumer.class));
 
-        ConfigFactory config = runtime.consumerConfig("consumer");
-        ConsumersSupervisor supervisor = runtime.consumersSupervisor(consumerFactory, config);
-        SelectiveSupervisorController node = runtime.spawnConsumer("consumer", config, supervisor);
+        String consumerId = "consumer";
+
+
+        ConsumersSupervisor supervisor = runtime.consumersSupervisor(consumerFactory);
+        SelectiveSupervisorController node = runtime.spawnConsumer(consumerId, supervisor);
 
         runtime.awaitUntilAssignmentExists(runtime.createSubscription(), node);
 
         // when
-        ConsumersRuntimeMonitor monitor = runtime.monitor("consumer", supervisor, node, config);
+        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, Duration.ofSeconds(1));
         monitor.start();
 
         // then
@@ -142,7 +144,6 @@ public class SelectiveSupervisorControllersIntegrationTest extends ZookeeperBase
         shutdown(supervisor);
         shutdown(node);
         shutdown(monitor);
-
     }
 
     private void shutdown(SelectiveSupervisorController controller) throws InterruptedException {

@@ -2,30 +2,28 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS;
-
 class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
 
-    private final int intervalSeconds;
+    private final Duration interval;
     private final ScheduledExecutorService executorService;
     private final MaxRateCalculator maxRateCalculator;
     private final ConsumerNodesRegistry consumerNodesRegistry;
 
-    private ScheduledFuture job;
+    private ScheduledFuture<?> job;
 
-    MaxRateCalculatorJob(ConfigFactory configFactory,
+    MaxRateCalculatorJob(Duration internal,
                          ClusterAssignmentCache clusterAssignmentCache,
                          ConsumerNodesRegistry consumerNodesRegistry,
                          MaxRateBalancer balancer,
@@ -34,7 +32,7 @@ class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
                          HermesMetrics metrics,
                          Clock clock) {
         this.consumerNodesRegistry = consumerNodesRegistry;
-        this.intervalSeconds = configFactory.getIntProperty(CONSUMER_MAXRATE_BALANCE_INTERVAL_SECONDS);
+        this.interval = internal;
         this.executorService = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat("max-rate-calculator-%d").build());
         this.maxRateCalculator = new MaxRateCalculator(
@@ -72,7 +70,7 @@ class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
 
     @Override
     public void isLeader() {
-        job = executorService.scheduleAtFixedRate(this, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+        job = executorService.scheduleAtFixedRate(this, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
     }
 
     @Override

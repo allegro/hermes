@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
-import com.netflix.config.DynamicPropertyFactory
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.TrackingMode
-import pl.allegro.tech.hermes.common.config.ConfigFactory
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
@@ -23,7 +21,8 @@ class DefaultErrorHandlerTest extends Specification {
 
     private OffsetQueue offsetQueue = new OffsetQueue(
             new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
-            new ConfigFactory(DynamicPropertyFactory.getInstance())
+            200_000,
+            false
     )
 
     private UndeliveredMessageLog undeliveredLog = Mock(UndeliveredMessageLog)

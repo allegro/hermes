@@ -7,16 +7,16 @@ import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.common.config.Configs
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.time.Clock
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.util.function.Consumer
@@ -53,27 +53,26 @@ class ConsumerProcessSupervisorTest extends Specification {
     Clock clock
     long currentTime = 1
 
-    long unhealthyAfter = 3000
-    int killAfter = 100
+    Duration unhealthyAfter = Duration.ofMillis(3000)
+    Duration killAfter = Duration.ofMillis(100)
 
     def setup() {
         clock = new CurrentTimeClock()
         consumer = new ConsumerStub(subscription1)
-        MutableConfigFactory configFactory = new MutableConfigFactory()
         ConsumerProcessSupplier processFactory = {
             Subscription subscription, Signal startSignal, Consumer<SubscriptionName> onConsumerStopped ->
                 return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
         }
 
-        configFactory.overrideProperty(Configs.CONSUMER_BACKGROUND_SUPERVISOR_KILL_AFTER, killAfter)
         metrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))
 
         supervisor = new ConsumerProcessSupervisor(
-                new ConsumersExecutorService(configFactory, metrics),
+                new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 clock,
                 metrics,
-                configFactory,
-                processFactory)
+                processFactory,
+                new CommonConsumerProperties().getSignalProcessingQueueSize(),
+                killAfter)
     }
 
     def cleanup() {
@@ -105,7 +104,7 @@ class ConsumerProcessSupervisorTest extends Specification {
 
         when:
         consumer.whenUnhealthy {
-            currentTime += unhealthyAfter
+            currentTime += unhealthyAfter.toMillis()
             runAndWait(supervisor)
         }
 
@@ -124,7 +123,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         when:
         consumer.whenBlockedOnTeardown {
             runAndWait(supervisor.accept(signals.stop))
-            currentTime += 2 * killAfter
+            currentTime += 2 * killAfter.toMillis()
             runAndWait(supervisor)
         }
 

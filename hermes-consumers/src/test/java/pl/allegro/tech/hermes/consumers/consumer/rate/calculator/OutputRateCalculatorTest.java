@@ -4,11 +4,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.consumers.config.RateProperties;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.NegotiatedMaxRateProvider;
+
+import java.time.Duration;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -21,25 +21,23 @@ public class OutputRateCalculatorTest {
 
     private static final double MAX_RATE = 100;
 
-    private Subscription subscription;
 
     private OutputRateCalculator calculator;
 
     @Before
     public void setup() {
-        ConfigFactory config = mock(ConfigFactory.class);
-        when(config.getDoubleProperty(Configs.CONSUMER_RATE_CONVERGENCE_FACTOR)).thenReturn(0.5);
-        when(config.getIntProperty(Configs.CONSUMER_RATE_LIMITER_SLOW_MODE_DELAY)).thenReturn(1);
-        when(config.getIntProperty(Configs.CONSUMER_RATE_LIMITER_HEARTBEAT_MODE_DELAY)).thenReturn(60);
+        RateProperties rateProperties = new RateProperties();
+        rateProperties.setLimiterSlowModeDelay(Duration.ofSeconds(1));
+        rateProperties.setConvergenceFactor(0.5);
 
-        subscription = subscription("group.topic", "subscription").withSubscriptionPolicy(
+        subscription("group.topic", "subscription").withSubscriptionPolicy(
                 SubscriptionPolicy.Builder.subscriptionPolicy().withRate(200).build()
         ).build();
 
         NegotiatedMaxRateProvider maxRateProvider = mock(NegotiatedMaxRateProvider.class);
         when(maxRateProvider.get()).thenReturn(100D);
 
-        calculator = new OutputRateCalculator(config, maxRateProvider);
+        calculator = new OutputRateCalculator(rateProperties, maxRateProvider);
     }
 
     @Test

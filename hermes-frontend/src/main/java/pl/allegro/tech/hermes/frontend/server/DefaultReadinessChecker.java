@@ -3,34 +3,32 @@ package pl.allegro.tech.hermes.frontend.server;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READINESS_CHECK_ENABLED;
-import static pl.allegro.tech.hermes.common.config.Configs.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
-
 public class DefaultReadinessChecker implements ReadinessChecker {
     private static final Logger logger = LoggerFactory.getLogger(DefaultReadinessChecker.class);
 
     private final boolean enabled;
-    private final int intervalSeconds;
+    private final Duration interval;
     private final TopicMetadataLoadingRunner topicMetadataLoadingRunner;
     private final ReadinessRepository readinessRepository;
     private final ScheduledExecutorService scheduler;
 
     private volatile boolean ready = false;
 
-    public DefaultReadinessChecker(ConfigFactory config,
-                                   TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                   ReadinessRepository readinessRepository) {
-        this.enabled = config.getBooleanProperty(FRONTEND_READINESS_CHECK_ENABLED);
-        this.intervalSeconds = config.getIntProperty(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS);
+    public DefaultReadinessChecker(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
+                                   ReadinessRepository readinessRepository,
+                                   boolean enabled,
+                                   Duration interval) {
+        this.enabled = enabled;
+        this.interval = interval;
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
         this.readinessRepository = readinessRepository;
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
@@ -51,7 +49,7 @@ public class DefaultReadinessChecker implements ReadinessChecker {
         if (enabled) {
             ReadinessCheckerJob job = new ReadinessCheckerJob();
             job.run();
-            scheduler.scheduleAtFixedRate(job, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(job, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
         }
     }
 

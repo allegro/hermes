@@ -9,9 +9,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
+import pl.allegro.tech.hermes.consumers.config.Http2ClientProperties;
+import pl.allegro.tech.hermes.consumers.config.HttpClientProperties;
+import pl.allegro.tech.hermes.consumers.config.SslContextProperties;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
@@ -23,7 +25,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointA
 import pl.allegro.tech.hermes.consumers.config.ConsumerConfiguration;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
-import pl.allegro.tech.hermes.test.helper.config.MutableConfigFactory;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
@@ -61,12 +62,12 @@ public class JettyMessageSenderTest {
         wireMockServer = new WireMockServer(ENDPOINT_PORT);
         wireMockServer.start();
 
-        ConfigFactory configFactory = new MutableConfigFactory();
-        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, configFactory);
+        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties());
         ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration();
         client = consumerConfiguration.http1Client(
                 new HttpClientsFactory(
-                        configFactory,
+                        new HttpClientProperties(),
+                        new Http2ClientProperties(),
                         new InstrumentedExecutorServiceFactory(new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
                         sslContextFactoryProvider)
         );

@@ -4,7 +4,6 @@ import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -16,21 +15,19 @@ import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConst
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER;
-
 public class BalancingJob implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(BalancingJob.class);
 
     private final ConsumerNodesRegistry consumersRegistry;
-    private final ConfigFactory configFactory;
+    private final SelectiveSupervisorParameters selectiveSupervisorParameters;
     private final SubscriptionsCache subscriptionsCache;
     private final ClusterAssignmentCache clusterAssignmentCache;
     private final ConsumerAssignmentRegistry consumerAssignmentRegistry;
@@ -40,24 +37,23 @@ public class BalancingJob implements Runnable {
     private final WorkloadConstraintsRepository workloadConstraintsRepository;
     private final ScheduledExecutorService executorService;
 
-    private final int intervalSeconds;
+    private final Duration interval;
 
-    private ScheduledFuture job;
+    private ScheduledFuture<?> job;
 
     private final BalancingJobMetrics balancingMetrics = new BalancingJobMetrics();
 
     BalancingJob(ConsumerNodesRegistry consumersRegistry,
-                 ConfigFactory configFactory,
+                 SelectiveSupervisorParameters selectiveSupervisorParameters,
                  SubscriptionsCache subscriptionsCache,
                  ClusterAssignmentCache clusterAssignmentCache,
                  ConsumerAssignmentRegistry consumerAssignmentRegistry,
                  SelectiveWorkBalancer workBalancer,
                  HermesMetrics metrics,
-                 int intervalSeconds,
                  String kafkaCluster,
                  WorkloadConstraintsRepository workloadConstraintsRepository) {
         this.consumersRegistry = consumersRegistry;
-        this.configFactory = configFactory;
+        this.selectiveSupervisorParameters = selectiveSupervisorParameters;
         this.subscriptionsCache = subscriptionsCache;
         this.clusterAssignmentCache = clusterAssignmentCache;
         this.consumerAssignmentRegistry = consumerAssignmentRegistry;
@@ -68,7 +64,7 @@ public class BalancingJob implements Runnable {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("BalancingExecutor-%d").build();
         this.executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        this.intervalSeconds = intervalSeconds;
+        this.interval = selectiveSupervisorParameters.getRebalanceInterval();
 
         metrics.registerGauge(
                 gaugeName(kafkaCluster, "selective.all-assignments"),
@@ -108,8 +104,8 @@ public class BalancingJob implements Runnable {
                     WorkloadConstraints workloadConstraints = new WorkloadConstraints(
                             constraints.getSubscriptionConstraints(),
                             constraints.getTopicConstraints(),
-                            configFactory.getIntProperty(CONSUMER_WORKLOAD_CONSUMERS_PER_SUBSCRIPTION),
-                            configFactory.getIntProperty(CONSUMER_WORKLOAD_MAX_SUBSCRIPTIONS_PER_CONSUMER),
+                            selectiveSupervisorParameters.getConsumersPerSubscription(),
+                            selectiveSupervisorParameters.getMaxSubscriptionsPerConsumer(),
                             consumersRegistry.listConsumerNodes().size());
 
                     WorkBalancingResult work = workBalancer.balance(
@@ -123,7 +119,7 @@ public class BalancingJob implements Runnable {
                         WorkDistributionChanges changes =
                                 consumerAssignmentRegistry.updateAssignments(initialState, work.getAssignmentsView());
 
-                        logger.info("Finished workload balance {}, {}", work.toString(), changes.toString());
+                        logger.info("Finished workload balance {}, {}", work, changes.toString());
 
                         clusterAssignmentCache.refresh(); // refresh cache with just stored data
 
@@ -141,7 +137,7 @@ public class BalancingJob implements Runnable {
     }
 
     public void start() {
-        job = executorService.scheduleAtFixedRate(this, intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+        job = executorService.scheduleAtFixedRate(this, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
     }
 
     public void stop() throws InterruptedException {

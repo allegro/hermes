@@ -1,15 +1,13 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,34 +19,33 @@ import java.util.concurrent.TimeUnit;
 public class MaxRateSupervisor implements Runnable {
 
     private final Set<NegotiatedMaxRateProvider> providers = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private final ConfigFactory configFactory;
+    private final Duration selfUpdateInterval;
     private final ScheduledExecutorService selfUpdateExecutor;
     private final MaxRateCalculatorJob calculatorJob;
     private final MaxRateRegistry maxRateRegistry;
     private ScheduledFuture<?> updateJob;
 
-    public MaxRateSupervisor(ConfigFactory configFactory,
+    public MaxRateSupervisor(MaxRateParameters maxRateParameters,
                              ClusterAssignmentCache clusterAssignmentCache,
                              MaxRateRegistry maxRateRegistry,
                              ConsumerNodesRegistry consumerNodesRegistry,
                              SubscriptionsCache subscriptionsCache,
-                             ZookeeperPaths zookeeperPaths,
                              HermesMetrics metrics,
                              Clock clock) {
-        this.configFactory = configFactory;
         this.maxRateRegistry = maxRateRegistry;
+        this.selfUpdateInterval = maxRateParameters.getUpdateInterval();
 
         this.selfUpdateExecutor = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat("max-rate-provider-%d").build()
         );
 
         MaxRateBalancer balancer = new MaxRateBalancer(
-                configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_BUSY_TOLERANCE),
-                configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_MAX_RATE),
-                configFactory.getDoubleProperty(Configs.CONSUMER_MAXRATE_MIN_ALLOWED_CHANGE_PERCENT));
+                maxRateParameters.getBusyTolerance(),
+                maxRateParameters.getMinMaxRate(),
+                maxRateParameters.getMinAllowedChangePercent());
 
         this.calculatorJob = new MaxRateCalculatorJob(
-                configFactory,
+                maxRateParameters.getBalanceInterval(),
                 clusterAssignmentCache,
                 consumerNodesRegistry,
                 balancer,
@@ -76,9 +73,8 @@ public class MaxRateSupervisor implements Runnable {
     }
 
     private ScheduledFuture<?> startSelfUpdate() {
-        int selfUpdateInterval = configFactory.getIntProperty(Configs.CONSUMER_MAXRATE_UPDATE_INTERVAL_SECONDS);
         return selfUpdateExecutor.scheduleAtFixedRate(
-                this, 0, selfUpdateInterval, TimeUnit.SECONDS);
+                this, 0, selfUpdateInterval.toSeconds(), TimeUnit.SECONDS);
     }
 
     @Override

@@ -4,10 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
@@ -18,12 +17,11 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.UninitializedMessageReceiver;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_INFLIGHT_SIZE;
-import static pl.allegro.tech.hermes.common.config.Configs.CONSUMER_SIGNAL_PROCESSING_INTERVAL;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
@@ -37,13 +35,13 @@ public class SerialConsumer implements Consumer {
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
     private final ConsumerMessageSender sender;
-    private final ConfigFactory configFactory;
+    private final boolean useTopicMessageSizeEnabled;
     private final OffsetQueue offsetQueue;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final AdjustableSemaphore inflightSemaphore;
 
     private final int defaultInflight;
-    private final int signalProcessingInterval;
+    private final Duration signalProcessingInterval;
 
     private Topic topic;
     private Subscription subscription;
@@ -58,18 +56,18 @@ public class SerialConsumer implements Consumer {
                           Trackers trackers,
                           MessageConverterResolver messageConverterResolver,
                           Topic topic,
-                          ConfigFactory configFactory,
+                          CommonConsumerParameters commonConsumerParameters,
                           OffsetQueue offsetQueue,
                           ConsumerAuthorizationHandler consumerAuthorizationHandler) {
 
-        this.defaultInflight = configFactory.getIntProperty(CONSUMER_INFLIGHT_SIZE);
-        this.signalProcessingInterval = configFactory.getIntProperty(CONSUMER_SIGNAL_PROCESSING_INTERVAL);
+        this.defaultInflight = commonConsumerParameters.getSerialConsumer().getInflightSize();
+        this.signalProcessingInterval = commonConsumerParameters.getSerialConsumer().getSignalProcessingInterval();
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
-        this.configFactory = configFactory;
+        this.useTopicMessageSizeEnabled = commonConsumerParameters.isUseTopicMessageSizeEnabled();
         this.offsetQueue = offsetQueue;
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
         this.trackers = trackers;
@@ -91,7 +89,7 @@ public class SerialConsumer implements Consumer {
         try {
             do {
                 signalsInterrupt.run();
-            } while (!inflightSemaphore.tryAcquire(signalProcessingInterval, TimeUnit.MILLISECONDS));
+            } while (!inflightSemaphore.tryAcquire(signalProcessingInterval.toMillis(), TimeUnit.MILLISECONDS));
 
             Optional<Message> maybeMessage = messageReceiver.next();
 
@@ -174,7 +172,7 @@ public class SerialConsumer implements Consumer {
 
     private boolean messageSizeChanged(Topic newTopic) {
         return this.topic.getMaxMessageSize() != newTopic.getMaxMessageSize()
-                && configFactory.getBooleanProperty(Configs.CONSUMER_USE_TOPIC_MESSAGE_SIZE);
+                && useTopicMessageSizeEnabled;
     }
 
     @Override

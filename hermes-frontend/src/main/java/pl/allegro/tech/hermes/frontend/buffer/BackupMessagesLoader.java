@@ -7,7 +7,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
@@ -23,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -34,11 +34,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS;
-import static pl.allegro.tech.hermes.common.config.Configs.MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES;
-
 public class BackupMessagesLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupMessagesLoader.class);
@@ -47,10 +42,10 @@ public class BackupMessagesLoader {
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
     private final Trackers trackers;
-    private final int messageMaxAgeHours;
+    private final Duration messageMaxAgeHours;
     private final int maxResendRetries;
-    private final long resendSleep;
-    private final long readTopicInfoSleep;
+    private final Duration resendSleep;
+    private final Duration readTopicInfoSleep;
 
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
@@ -59,15 +54,15 @@ public class BackupMessagesLoader {
                                 BrokerListeners brokerListeners,
                                 TopicsCache topicsCache,
                                 Trackers trackers,
-                                ConfigFactory config) {
+                                BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
         this.trackers = trackers;
-        this.messageMaxAgeHours = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_AGE_HOURS);
-        this.resendSleep = config.getIntProperty(MESSAGES_LOADING_PAUSE_BETWEEN_RESENDS);
-        this.readTopicInfoSleep = TimeUnit.SECONDS.toMillis(config.getIntProperty(MESSAGES_LOADING_WAIT_FOR_BROKER_TOPIC_INFO));
-        this.maxResendRetries = config.getIntProperty(MESSAGES_LOCAL_STORAGE_MAX_RESEND_RETRIES);
+        this.messageMaxAgeHours = backupMessagesLoaderParameters.getMaxAge();
+        this.resendSleep = backupMessagesLoaderParameters.getLoadingPauseBetweenResend();
+        this.readTopicInfoSleep = backupMessagesLoaderParameters.getLoadingWaitForBrokerTopicInfo();
+        this.maxResendRetries = backupMessagesLoaderParameters.getMaxResendRetries();
     }
 
     public void loadMessages(List<BackupMessage> messages) {
@@ -88,7 +83,7 @@ public class BackupMessagesLoader {
                 resendMessages(retryMessages, retry);
             }
             try {
-                Thread.sleep(resendSleep);
+                Thread.sleep(resendSleep.toMillis());
             } catch (InterruptedException e) {
                 logger.warn("Sleep interrupted", e);
             }
@@ -104,7 +99,7 @@ public class BackupMessagesLoader {
                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)
         ) {
             List<BackupMessage> messages = (List<BackupMessage>) objectInputStream.readObject();
-            logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file.toString());
+            logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file);
             loadMessages(messages);
 
         } catch (IOException | ClassNotFoundException e) {
@@ -175,7 +170,7 @@ public class BackupMessagesLoader {
             try {
                 tries++;
                 logger.info("Broker topic {} is not available, checked {} times.", cachedTopic.getTopic().getQualifiedName(), tries);
-                Thread.sleep(readTopicInfoSleep);
+                Thread.sleep(readTopicInfoSleep.toMillis());
             } catch (InterruptedException e) {
                 logger.warn("Waiting for broker topic availability interrupted. Topic: {}", cachedTopic.getTopic().getQualifiedName());
             }
@@ -198,7 +193,7 @@ public class BackupMessagesLoader {
 
     private boolean isNotStale(Message message) {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(message.getTimestamp()), ZoneId.systemDefault())
-                .isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours));
+                .isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours.toHours()));
     }
 
     private void sendMessage(Message message, CachedTopic cachedTopic) {

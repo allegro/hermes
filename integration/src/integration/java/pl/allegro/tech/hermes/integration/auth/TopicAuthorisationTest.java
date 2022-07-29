@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration.auth;
 
-import com.google.common.io.Files;
 import io.undertow.util.StatusCodes;
 import org.assertj.core.description.Description;
 import org.assertj.core.description.TextDescription;
@@ -8,7 +7,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
@@ -22,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_MODE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.integration.auth.SingleUserAwareIdentityManager.getHeadersWithAuthentication;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
@@ -44,15 +46,13 @@ public class TopicAuthorisationTest extends IntegrationTest {
     public void setup() throws Exception {
         frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.addSpringProfiles("authNonRequired");
-        frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
-        frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_MODE, "pro_active");
-        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true);
-        frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-        frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
-        frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
-        frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_PORT, FRONTEND_PORT);
+        frontendStarter.overrideProperty(FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(FRONTEND_AUTHENTICATION_MODE, "pro_active");
+        frontendStarter.overrideProperty(FRONTEND_AUTHENTICATION_ENABLED, true);
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
 
         frontendStarter.start();
         publisher = new HermesPublisher(FRONTEND_URL);

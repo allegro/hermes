@@ -5,29 +5,31 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.apache.avro.Schema;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.schema.AvroCompiledSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaRepositoryFactory;
-import pl.allegro.tech.hermes.common.schema.SchemaRepositoryInstanceResolverFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
+import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS;
-import static pl.allegro.tech.hermes.common.config.Configs.SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS;
+import java.net.URI;
 
 @Configuration
+@EnableConfigurationProperties({
+        SchemaProperties.class,
+        KafkaClustersProperties.class
+})
 public class SchemaConfiguration {
 
     @Bean
@@ -38,29 +40,34 @@ public class SchemaConfiguration {
 
     @Bean
     public CompiledSchemaRepository<Schema> avroCompiledSchemaRepository(RawSchemaClient rawSchemaClient,
-                                                                         ConfigFactory configFactory) {
-        return new AvroCompiledSchemaRepositoryFactory(rawSchemaClient, configFactory).provide();
+                                                                         SchemaProperties schemaProperties) {
+        return new AvroCompiledSchemaRepositoryFactory(
+                rawSchemaClient, schemaProperties.getCache().getCompiledMaximumSize(),
+                schemaProperties.getCache().getCompiledExpireAfterAccess(), schemaProperties.getCache().isEnabled()
+        ).provide();
     }
 
     @Bean
-    public RawSchemaClient rawSchemaClient(ConfigFactory configFactory,
-                                           HermesMetrics hermesMetrics,
+    public RawSchemaClient rawSchemaClient(HermesMetrics hermesMetrics,
                                            ObjectMapper objectMapper,
-                                           SchemaRepositoryInstanceResolver resolver) {
-        return new RawSchemaClientFactory(configFactory, hermesMetrics, objectMapper, resolver).provide();
+                                           SchemaRepositoryInstanceResolver resolver,
+                                           SchemaProperties schemaProperties,
+                                           KafkaClustersProperties kafkaProperties) {
+        return new RawSchemaClientFactory(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator(), hermesMetrics, objectMapper, resolver,
+                schemaProperties.getRepository().isSubjectSuffixEnabled(), schemaProperties.getRepository().isSubjectNamespaceEnabled()).provide();
     }
 
     @Bean
-    public SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver(ConfigFactory configFactory,
-                                                                             Client client) {
-        return new SchemaRepositoryInstanceResolverFactory(configFactory, client).provide();
+    public SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver(SchemaProperties schemaProperties, Client client) {
+        URI schemaRepositoryServerUri = URI.create(schemaProperties.getRepository().getServerUrl());
+        return new DefaultSchemaRepositoryInstanceResolver(client, schemaRepositoryServerUri);
     }
 
     @Bean
-    public Client schemaRepositoryClient(ObjectMapper mapper, ConfigFactory configFactory) {
+    public Client schemaRepositoryClient(ObjectMapper mapper, SchemaProperties schemaProperties) {
         ClientConfig config = new ClientConfig()
-                .property(ClientProperties.READ_TIMEOUT, configFactory.getIntProperty(SCHEMA_REPOSITORY_HTTP_READ_TIMEOUT_MS))
-                .property(ClientProperties.CONNECT_TIMEOUT, configFactory.getIntProperty(SCHEMA_REPOSITORY_HTTP_CONNECT_TIMEOUT_MS))
+                .property(ClientProperties.READ_TIMEOUT, (int) schemaProperties.getRepository().getHttpReadTimeout().toMillis())
+                .property(ClientProperties.CONNECT_TIMEOUT, (int) schemaProperties.getRepository().getHttpConnectTimeout().toMillis())
                 .register(new JacksonJsonProvider(mapper));
 
         return ClientBuilder.newClient(config);
@@ -68,10 +75,10 @@ public class SchemaConfiguration {
 
     @Bean
     public SchemaVersionsRepository schemaVersionsRepositoryFactory(RawSchemaClient rawSchemaClient,
-                                                                    ConfigFactory configFactory,
+                                                                    SchemaProperties schemaProperties,
                                                                     InternalNotificationsBus notificationsBus,
-                                                                    CompiledSchemaRepository compiledSchemaRepository) {
-        return new SchemaVersionsRepositoryFactory(rawSchemaClient, configFactory, notificationsBus, compiledSchemaRepository)
+                                                                    CompiledSchemaRepository<?> compiledSchemaRepository) {
+        return new SchemaVersionsRepositoryFactory(rawSchemaClient, schemaProperties.getCache(), notificationsBus, compiledSchemaRepository)
                 .provide();
     }
 }

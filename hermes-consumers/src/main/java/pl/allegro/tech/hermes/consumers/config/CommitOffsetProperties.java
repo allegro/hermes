@@ -1,0 +1,39 @@
+package pl.allegro.tech.hermes.consumers.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.time.Duration;
+
+@ConfigurationProperties(prefix = "consumer.commit.offset")
+public class CommitOffsetProperties {
+
+    private Duration period = Duration.ofSeconds(60);
+
+    private int queuesSize = 200_000;
+
+    private boolean queuesInflightDrainFullEnabled = false;
+
+    public Duration getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(Duration period) {
+        this.period = period;
+    }
+
+    public int getQueuesSize() {
+        return queuesSize;
+    }
+
+    public void setQueuesSize(int queuesSize) {
+        this.queuesSize = queuesSize;
+    }
+
+    public boolean isQueuesInflightDrainFullEnabled() {
+        return queuesInflightDrainFullEnabled;
+    }
+
+    public void setQueuesInflightDrainFullEnabled(boolean queuesInflightDrainFullEnabled) {
+        this.queuesInflightDrainFullEnabled = queuesInflightDrainFullEnabled;
+    }
+}

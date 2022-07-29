@@ -10,9 +10,9 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.consumers.config.ZookeeperProperties;
 import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
@@ -41,11 +41,11 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
 
     private final String clusterName;
 
-    private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths(Configs.ZOOKEEPER_ROOT.getDefaultValue());
+    private final ZookeeperPaths zookeeperPaths;
 
     private final KafkaNamesMapper kafkaNamesMapper;
 
-    private Clock clock = Clock.systemDefaultZone();
+    private final Clock clock = Clock.systemDefaultZone();
 
     public Waiter(HermesEndpoints endpoints, CuratorFramework zookeeper, BrokerOperations brokerOperations,
                   String clusterName, String kafkaNamespace) {
@@ -55,6 +55,8 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         this.brokerOperations = brokerOperations;
         this.clusterName = clusterName;
         this.kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(kafkaNamespace, "_");
+        ZookeeperProperties zookeeperProperties = new ZookeeperProperties();
+        this.zookeeperPaths = new ZookeeperPaths(zookeeperProperties.getRoot());
     }
 
     public void untilHermesZookeeperNodeCreation(final String path) {
@@ -85,19 +87,15 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         untilSubscriptionHasState(topic, subscription, Subscription.State.SUSPENDED);
 
         waitAtMost(adjust(Duration.TEN_SECONDS)).until(() ->
-                !endpoints.consumer().listSubscriptions().stream()
-                        .filter(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription))
-                        .findAny()
-                        .isPresent());
+                endpoints.consumer().listSubscriptions().stream()
+                        .noneMatch(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription)));
     }
 
     private void until(Duration duration, Topic topic, String subscription, Predicate<RunningSubscriptionStatus> predicate) {
         waitAtMost(adjust(duration)).until(() ->
                 endpoints.consumer().listSubscriptions().stream()
                         .filter(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription))
-                        .filter(predicate)
-                        .findAny()
-                        .isPresent());
+                        .anyMatch(predicate));
     }
 
     public void untilTopicIsUpdatedAfter(final long currentTime, Topic topic, String subscription) {

@@ -2,10 +2,9 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.eclipse.jetty.client.HttpClient;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.config.ConfigFactory;
-import pl.allegro.tech.hermes.common.config.Configs;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
@@ -36,6 +35,7 @@ import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -44,6 +44,15 @@ import java.time.Clock;
 import java.util.List;
 
 @Configuration
+@EnableConfigurationProperties({
+        CommitOffsetProperties.class,
+        SenderAsyncTimeoutProperties.class,
+        RateProperties.class,
+        BatchProperties.class,
+        KafkaClustersProperties.class,
+        WorkloadProperties.class,
+        MaxRateProperties.class
+})
 public class ConsumerConfiguration {
 
     @Bean
@@ -62,14 +71,21 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public MaxRateRegistry maxRateRegistry(ConfigFactory configFactory,
+    public MaxRateRegistry maxRateRegistry(MaxRateProperties maxRateProperties,
+                                           KafkaClustersProperties kafkaClustersProperties,
+                                           WorkloadProperties workloadProperties,
                                            CuratorFramework curator,
                                            ZookeeperPaths zookeeperPaths,
                                            SubscriptionIds subscriptionIds,
                                            ConsumerAssignmentCache assignmentCache,
-                                           ClusterAssignmentCache clusterAssignmentCache) {
+                                           ClusterAssignmentCache clusterAssignmentCache,
+                                           DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new MaxRateRegistry(
-                configFactory,
+                maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
+                maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
+                workloadProperties.getNodeId(),
+                kafkaProperties.getClusterName(),
                 clusterAssignmentCache,
                 assignmentCache,
                 curator,
@@ -79,21 +95,19 @@ public class ConsumerConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    public MaxRateSupervisor maxRateSupervisor(ConfigFactory configFactory,
+    public MaxRateSupervisor maxRateSupervisor(MaxRateProperties maxRateProperties,
                                                ClusterAssignmentCache clusterAssignmentCache,
                                                MaxRateRegistry maxRateRegistry,
                                                ConsumerNodesRegistry consumerNodesRegistry,
                                                SubscriptionsCache subscriptionsCache,
-                                               ZookeeperPaths zookeeperPaths,
                                                HermesMetrics metrics,
                                                Clock clock) {
         return new MaxRateSupervisor(
-                configFactory,
+                maxRateProperties,
                 clusterAssignmentCache,
                 maxRateRegistry,
                 consumerNodesRegistry,
                 subscriptionsCache,
-                zookeeperPaths,
                 metrics,
                 clock
         );
@@ -101,21 +115,22 @@ public class ConsumerConfiguration {
 
     @Bean
     public OffsetQueue offsetQueue(HermesMetrics metrics,
-                                   ConfigFactory configFactory) {
-        return new OffsetQueue(metrics, configFactory);
+                                   CommitOffsetProperties commitOffsetProperties) {
+        return new OffsetQueue(metrics, commitOffsetProperties.getQueuesSize(), commitOffsetProperties.isQueuesInflightDrainFullEnabled());
     }
 
     @Bean
-    public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(ConfigFactory configFactory) {
-        return new ConsumerRateLimitSupervisor(configFactory);
+    public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(RateProperties rateProperties) {
+        return new ConsumerRateLimitSupervisor(rateProperties.getLimiterSupervisorPeriod());
     }
 
     @Bean
-    public MaxRateProviderFactory maxRateProviderFactory(ConfigFactory configFactory,
+    public MaxRateProviderFactory maxRateProviderFactory(MaxRateProperties maxRateProperties,
                                                          MaxRateRegistry maxRateRegistry,
                                                          MaxRateSupervisor maxRateSupervisor,
-                                                         HermesMetrics metrics) {
-        return new MaxRateProviderFactory(configFactory, maxRateRegistry, maxRateSupervisor, metrics);
+                                                         HermesMetrics metrics,
+                                                         WorkloadProperties workloadProperties) {
+        return new MaxRateProviderFactory(maxRateProperties, workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor, metrics);
     }
 
     @Bean
@@ -124,18 +139,16 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public OutputRateCalculatorFactory outputRateCalculatorFactory(ConfigFactory configFactory,
+    public OutputRateCalculatorFactory outputRateCalculatorFactory(RateProperties rateProperties,
                                                                    MaxRateProviderFactory maxRateProviderFactory) {
-        return new OutputRateCalculatorFactory(configFactory, maxRateProviderFactory);
+        return new OutputRateCalculatorFactory(rateProperties, maxRateProviderFactory);
     }
 
     @Bean
     public MessageBatchFactory messageBatchFactory(HermesMetrics hermesMetrics,
                                                    Clock clock,
-                                                   ConfigFactory configFactory) {
-        int poolableSize = configFactory.getIntProperty(Configs.CONSUMER_BATCH_POOLABLE_SIZE);
-        int maxPoolSize = configFactory.getIntProperty(Configs.CONSUMER_BATCH_MAX_POOL_SIZE);
-        return new ByteBufferMessageBatchFactory(poolableSize, maxPoolSize, clock, hermesMetrics);
+                                                   BatchProperties batchProperties) {
+        return new ByteBufferMessageBatchFactory(batchProperties.getPoolableSize(), batchProperties.getMaxPoolSize(), clock, hermesMetrics);
     }
 
     @Bean
@@ -155,16 +168,20 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public ConsumerMessageSenderFactory consumerMessageSenderFactory(ConfigFactory configFactory,
+    public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaClustersProperties kafkaClustersProperties,
                                                                      HermesMetrics hermesMetrics,
                                                                      MessageSenderFactory messageSenderFactory,
                                                                      Trackers trackers,
                                                                      FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
                                                                      UndeliveredMessageLog undeliveredMessageLog, Clock clock,
                                                                      InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
-                                                                     ConsumerAuthorizationHandler consumerAuthorizationHandler) {
+                                                                     ConsumerAuthorizationHandler consumerAuthorizationHandler,
+                                                                     SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
+                                                                     RateProperties rateProperties,
+                                                                     DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new ConsumerMessageSenderFactory(
-                configFactory,
+                kafkaProperties.getClusterName(),
                 hermesMetrics,
                 messageSenderFactory,
                 trackers,
@@ -172,7 +189,10 @@ public class ConsumerConfiguration {
                 undeliveredMessageLog,
                 clock,
                 instrumentedExecutorServiceFactory,
-                consumerAuthorizationHandler
+                consumerAuthorizationHandler,
+                senderAsyncTimeoutProperties.getMilliseconds(),
+                rateProperties.getLimiterReportingThreadPoolSize(),
+                rateProperties.isLimiterReportingThreadMonitoringEnabled()
         );
     }
 

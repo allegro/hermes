@@ -1,0 +1,45 @@
+frontend:
+  startup:
+    topic:
+      loading:
+        metadata:
+          enabled: true
+        schema:
+          enabled: true
+  schema:
+    cache:
+      refreshAfterWriteMinutes: 1
+  ssl:
+    enabled: true
+    port: 18443
+  server:
+    port: 18080
+    http2Enabled: true
+  handlers:
+    idleTimeout: 2000ms
+  metrics:
+    graphiteReporterEnabled: true
+    reportPeriod: 1s
+  graphite:
+    port: 18023
+  zookeeper:
+    clusters:
+      -
+        connectionString: "localhost:14192"
+        connectionTimeout: 10s
+        sessionTimeout: 10s
+        authorization:
+          enabled: false
+          user: admin
+          password: admin
+  kafka:
+    producer:
+      retryBackoff: 100ms
+    namespace: "itTest"
+    clusters:
+      -
+        authorization:
+          enabled: false
+          username: hermes
+          password: alice-secret
+

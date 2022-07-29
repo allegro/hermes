@@ -32,7 +32,7 @@ public class ConsumingHttp2Test extends IntegrationTest {
 
     private final static String MESSAGE_BODY = TestMessage.of("hello", "h2").body();
 
-    private AtomicInteger incomingCounter = new AtomicInteger(0);
+    private final AtomicInteger incomingCounter = new AtomicInteger(0);
 
     @Test
     public void shouldDeliverMessageUsingHttp2() {

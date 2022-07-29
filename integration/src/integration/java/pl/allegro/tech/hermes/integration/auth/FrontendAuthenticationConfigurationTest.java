@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integration.auth;
 
-import com.google.common.io.Files;
 import io.undertow.util.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +7,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.common.config.Configs;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
@@ -45,14 +44,12 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         loadCredentials();
         frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.addSpringProfiles("authRequired");
-        frontendStarter.overrideProperty(Configs.FRONTEND_PORT, FRONTEND_PORT);
-        frontendStarter.overrideProperty(Configs.FRONTEND_SSL_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.FRONTEND_AUTHENTICATION_ENABLED, true);
-        frontendStarter.overrideProperty(Configs.KAFKA_AUTHORIZATION_ENABLED, false);
-        frontendStarter.overrideProperty(Configs.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-        frontendStarter.overrideProperty(Configs.ZOOKEEPER_CONNECT_STRING, hermesZookeeperOne.getConnectionString());
-        frontendStarter.overrideProperty(Configs.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
-        frontendStarter.overrideProperty(Configs.MESSAGES_LOCAL_STORAGE_DIRECTORY, Files.createTempDir().getAbsolutePath());
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_PORT, FRONTEND_PORT);
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED, true);
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
 
         frontendStarter.start();
 
@@ -71,7 +68,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldAuthenticateUsingBasicAuth() throws Throwable {
+    public void shouldAuthenticateUsingBasicAuth() {
         //given
         Map<String, String> headers = getHeadersWithAuthentication(USERNAME, PASSWORD);
 
@@ -84,7 +81,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldNotAuthenticateUserWithInvalidCredentials() throws Throwable {
+    public void shouldNotAuthenticateUserWithInvalidCredentials() {
         //given
         Map<String, String> headers = getHeadersWithAuthentication(USERNAME, "someInvalidPassword");
 
@@ -96,7 +93,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldNotAuthenticateUserWithoutCredentials() throws Throwable {
+    public void shouldNotAuthenticateUserWithoutCredentials() {
         //when
         Response response = publisher.publish("someGroup.topicWithAuthorization", MESSAGE);
 
