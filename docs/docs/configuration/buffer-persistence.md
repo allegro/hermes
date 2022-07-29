@@ -23,7 +23,7 @@ This might be useful when reviving Frontend nodes that have been down for a long
 Option                                          | Description                                            | Default value
 ----------------------------------------------- | ------------------------------------------------------ | --------------
 frontend.messages.local.storage.enabled         | enable persistent buffer                               | false
-frontend.messages.local.storage.max.age.hours   | ignore messages in buffer that are older than N hours  | 72
+frontend.messages.local.storage.maxAge          | ignore messages in buffer that are older than N hours  | 72h
 frontend.messages.local.storage.directory       | location of memory mapped files                        | /tmp/<tmp dir>
 
 ### Buffer files

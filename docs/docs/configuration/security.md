@@ -77,5 +77,5 @@ eventUrl                  | URL to which events will be sent       | null
 
 
 
-Auditor uses `java.security.Principal` obtained from `javax.ws.rs.core.SecurityContext` to get user name. 
+Auditor uses `java.security.Principal` obtained from `javax.ws.rs.core.SecurityContext` to get username. 
 `SecurityContext` is provided by component implementing `pl.allegro.tech.hermes.management.api.auth.SecurityContextProvider` as in `MyCustomSecurityContextProvider` example above.

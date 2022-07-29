@@ -14,6 +14,10 @@ public class HandlersChainProperties implements HandlersChainParameters {
 
     private boolean forceTopicMaxMessageSize = false;
 
+    private AuthenticationProperties authentication = new AuthenticationProperties();
+
+    private KeepAliveHeaderProperties keepAliveHeader = new KeepAliveHeaderProperties();
+
     @Override
     public Duration getIdleTimeout() {
         return idleTimeout;
@@ -60,10 +64,6 @@ public class HandlersChainProperties implements HandlersChainParameters {
     public void setForceTopicMaxMessageSize(boolean forceTopicMaxMessageSize) {
         this.forceTopicMaxMessageSize = forceTopicMaxMessageSize;
     }
-
-    private AuthenticationProperties authentication = new AuthenticationProperties();
-
-    private KeepAliveHeaderProperties keepAliveHeader = new KeepAliveHeaderProperties();
 
     public AuthenticationProperties getAuthentication() {
         return authentication;

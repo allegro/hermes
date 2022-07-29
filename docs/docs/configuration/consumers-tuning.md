@@ -4,17 +4,16 @@
 
 Option                                               | Description                                                 | Default value
 ---------------------------------------------------- | ----------------------------------------------------------- | -------------
-consumer.http.client.request.timeout                 | how much time we wait for client response before timing out | 1000ms
-consumer.http.client.thread.pool.size                | size of thread pool for sender threads (global)             | 30
-consumer.http.client.max.connections.per.destination | max connections per remote host                             | 100
+consumer.http.client.threadPoolSize                  | size of thread pool for sender threads (global)             | 30
+consumer.http.client.maxConnectionsPerDestination    | max connections per remote host                             | 100
 
 ## Consumers core
 
 Option                        | Description                                                              | Default value
 ----------------------------- | ------------------------------------------------------------------------ | -------------
-consumer.commit.offset.period | interval between committing offsets to Kafka                             | 20s
-consumer.thread.pool.size     | thread pool for threads involved in consuming, 1 thread per subscription | 500
-consumer.inflight.size        | how many messages can be kept in send queue, per subscription            | 100
+consumer.commit.offset.period | interval between committing offsets to Kafka                             | 60s
+consumer.threadPoolSize       | thread pool for threads involved in consuming, 1 thread per subscription | 500
+consumer.serialConsumer.inflightSize         | how many messages can be kept in send queue, per subscription            | 100
 
 ## Workload constraints management
 
@@ -29,10 +28,10 @@ These numbers can be configured:
 
 Option                                              | Description                               | Default value
 --------------------------------------------------- | ----------------------------------------- | ---------------------
-consumer.workload.consumers.per.subscription        | Number of consumers to which the subscription will be assigned. If this value is greater than the number of available consumers, Hermes will assign the subscription to all available consumers. | 2
-consumer.workload.max.subscriptions.per.consumer    | The maximum number of subscriptions assigned to a single consumer. If all consumers have the maximum number of subscriptions assigned, a new subscription will not be activated until a new consumer is added or another subscription is unassigned. | 200
+consumer.workload.consumersPerSubscription          | Number of consumers to which the subscription will be assigned. If this value is greater than the number of available consumers, Hermes will assign the subscription to all available consumers. | 2
+consumer.workload.maxSubscriptionsPerConsumer       | The maximum number of subscriptions assigned to a single consumer. If all consumers have the maximum number of subscriptions assigned, a new subscription will not be activated until a new consumer is added or another subscription is unassigned. | 200
 
-Additionally Hermes allows to configure the property `consumer.workload.consumers.per.subscription` for specific 
+Additionally, Hermes allows to configure the property `consumer.workload.consumersPerSubscription` for specific 
 topics or subscriptions in the runtime via REST API. 
 
 It is useful when in a system exist topics with huge traffic and other rarely used. On the other hand there could exist 

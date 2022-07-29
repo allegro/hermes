@@ -27,12 +27,12 @@ Each of parameters written in capital letters can be configured:
 
 Parameter name     | Option                                          | Default value
 ------------------ | ----------------------------------------------- | -------------
-LIMITER_PERIOD     | consumer.rate.limiter.supervisor.period         | 30
-SPEEDUP_TOLERANCE  | consumer.rate.failures.speedup.tolerance.ratio  | 0.01
-TOLERANCE          | consumer.rate.failures.nochange.tolerance.ratio | 0.05
-CONVERGENCE_FACTOR | consumer.rate.convergence.factor                | 0.2
-SLOW_DELAY         | consumer.rate.limiter.slow.mode.delay           | 1
-HEARTBEAT_DELAY    | consumer.rate.limiter.heartbeat.mode.delay      | 60
+LIMITER_PERIOD     | consumer.rate.limiterSupervisorPeriod           | 30s
+SPEEDUP_TOLERANCE  | consumer.rate.failuresSpeedUpToleranceRatio     | 0.01
+TOLERANCE          | consumer.rate.failuresNoChangeToleranceRatio    | 0.05
+CONVERGENCE_FACTOR | consumer.rate.convergenceFactor                 | 0.2
+SLOW_DELAY         | consumer.rate.limiterSlowModeDelay              | 60s
+HEARTBEAT_DELAY    | consumer.rate.limiterHeartbeatModeDelay         | 60s
 
 
 ## Maximum rate negotiation
@@ -69,11 +69,10 @@ and might be used in future versions of the algorithm
 
 Parameter name                 | Option                                          | Default value
 ------------------------------ | ------------------------------------------------| --------------
-ALGORITHM                      | consumer.maxrate.strategy                       | strict
-BALANCE_INTERVAL               | consumer.maxrate.balance.interval.seconds       | 30
-UPDATE_INTERVAL                | consumer.maxrate.update.interval.seconds        | 15
-RATE_HISTORY_SIZE              | consumer.maxrate.history.size                   | 1
-BUSY_TOLERANCE                 | consumer.maxrate.busy.tolerance                 | 0.1
-MIN_MAX_RATE                   | consumer.maxrate.min.value                      | 1.0
-MIN_CHANGE_PERCENT             | consumer.maxrate.min.allowed.change.percent     | 1.0
-MIN_SIGNIFICANT_CHANGE_PERCENT | consumer.maxrate.min.significant.update.percent | 9.0
+BALANCE_INTERVAL               | consumer.maxrate.balanceInterval                | 30s
+UPDATE_INTERVAL                | consumer.maxrate.updateInterval                 | 15s
+RATE_HISTORY_SIZE              | consumer.maxrate.historySize                    | 1
+BUSY_TOLERANCE                 | consumer.maxrate.busyTolerance                  | 0.1
+MIN_MAX_RATE                   | consumer.maxrate.minMaxRate                     | 1.0
+MIN_CHANGE_PERCENT             | consumer.maxrate.minAllowedChangePercent        | 1.0
+MIN_SIGNIFICANT_CHANGE_PERCENT | consumer.maxrate.minSignificantUpdatePercent    | 9.0

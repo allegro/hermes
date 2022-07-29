@@ -8,10 +8,10 @@ internal security model which is described here: [Undertow Security](http://unde
 
 Authentication has to be enabled using following configuration:
 
-Option                          | Description                                         | Options                       | Default value
-------------------------------- | --------------------------------------------------- | ----------------------------- | -------------
-frontend.authentication.enabled | enable authentication handler                       | true, false                   | false
-frontend.authentication.mode    | in which circumstances perform authentication       | constraint_driven, pro_active | constraint_driven
+Option                                   | Description                                         | Options                       | Default value
+---------------------------------------- | --------------------------------------------------- | ----------------------------- | -------------
+frontend.handlers.authentication.enabled | enable authentication handler                       | true, false                   | false
+frontend.handlers.authentication.mode    | in which circumstances perform authentication       | constraint_driven, pro_active | constraint_driven
 
 More about authentication mode can be read here: [AuthenticationMode](http://undertow.io/javadoc/1.3.x/io/undertow/security/api/AuthenticationMode.html)
 

@@ -1,22 +1,49 @@
 # Kafka and Zookeeper
 
+## Preferring local clusters in Frontend and Consumers
+
+To ensure the lowest possible response times, it is recommended to connect to local zookeeper and kafka clusters.
+In the configuration, you can specify the properties of multiple clusters. For example:
+
+```yaml
+consumer:
+  datacenter:
+    name:
+      source: "ENV"
+      env: "DC"
+  zookeeper:
+    clusters:
+      - datacenter: "dc-1"
+        connectionString: "zk-1:2181"
+      - datacenter: "dc-2"
+        connectionString: "zk-2:2181"
+  kafka:
+    clusters:
+      - datacenter: "dc-1"
+        brokerList: "kafka-1:9092"
+      - datacenter: "dc-2"
+        brokerList: "kafka-2:9092"
+```
+
+If you don't specify the `{modulePrefix}.datacenter.name.source` property hermes will look for a cluster in properties with the `datacenter: "dc"` property.
+Hermes also supports retrieving information about the name of the datacenter based on an environment variable. All you have to do is specify
+`{modulePrefix}.datacenter.name.source` to `ENV` just like above, and the name of variable `{modulePrefix}.datacenter.name.env` in which the datacenter name is stored.
+
 ## Zookeeper
 
 Hermes uses Zookeeper as metadata store. It does not have to be the same Zookeeper as the one used by Kafka.
 
-Option in Frontend/Consumers     | Option in Management           | Description                                                                | Default value
--------------------------------- | ------------------------------ | -------------------------------------------------------------------------- | --------------
-zookeeper.connect.string         | storage.connectionString       | Zookeeper connection string                                                | localhost:2181
-zookeeper.connection.timeout     | storage.connectTimeout         | connection timeout in seconds                                              | 10 000
-zookeeper.max.retries            | storage.retryTimes             | retry count when connection fails                                          | 2
-zookeeper.base.sleep.time        | storage.retrySleep             | time to wait between subsequent retries in seconds                         | 1 000
-zookeeper.root                   | storage.pathPrefix             | prefix for Hermes data (if not specified in connection string)             | /hermes
-zookeeper.cache.thread.pool.size | n/a                            | size of thread pool used by objects cache (like topics, subscriptions etc) | 5
-zookeeper.authorization.enabled  | n/a                            | enable Zookeeper authorization                                             | false
-zookeeper.authorization.scheme   | storage.authorization.scheme   | authorization scheme                                                       | digest
-zookeeper.authorization.user     | storage.authorization.user     | username                                                                   | user
-zookeeper.authorization.password | storage.authorization.password | password                                                                   | password
-zookeeper.max.inflight.requests  | n/a                            | maximum number of unacknowledged requests before blocking                  | 10
+Option in Frontend/Consumers                                 | Option in Management           | Description                                                                | Default value
+------------------------------------------------------------ | ------------------------------ | -------------------------------------------------------------------------- | --------------
+{modulePrefix}.zookeeper.clusters.[n].connectionString       | storage.connectionString       | Zookeeper connection string                                                | localhost:2181
+{modulePrefix}.zookeeper.clusters.[n].connectionTimeout      | storage.connectTimeout         | connection timeout in seconds                                              | 10s
+{modulePrefix}.zookeeper.clusters.[n].maxRetries             | storage.retryTimes             | retry count when connection fails                                          | 2
+{modulePrefix}.zookeeper.clusters.[n].baseSleepTime          | storage.retrySleep             | time to wait between subsequent retries in seconds                         | 1s
+{modulePrefix}.zookeeper.clusters.[n].root                   | storage.pathPrefix             | prefix for Hermes data (if not specified in connection string)             | /hermes
+{modulePrefix}.zookeeper.clusters.[n].authorization.enabled  | n/a                            | enable Zookeeper authorization                                             | false
+{modulePrefix}.zookeeper.clusters.[n].authorization.scheme   | storage.authorization.scheme   | authorization scheme                                                       | digest
+{modulePrefix}.zookeeper.clusters.[n].authorization.user     | storage.authorization.user     | username                                                                   | user
+{modulePrefix}.zookeeper.clusters.[n].authorization.password | storage.authorization.password | password                                                                   | password
 
 ## Kafka
 
