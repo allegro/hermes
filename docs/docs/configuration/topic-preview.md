@@ -6,4 +6,4 @@ Option                                              | Description               
 --------------------------------------------------- | -------------------------------------------------- | -------------
 frontend.message.preview.enabled                    | enable message preview                             | false
 frontend.message.preview.size                       | maximum number of messages per topic               | 3
-frontend.message.preview.log.persist.period.seconds | how often to refresh previewed messages in seconds | 30
+frontend.message.preview.logPersistPeriod           | how often to refresh previewed messages            | 30s

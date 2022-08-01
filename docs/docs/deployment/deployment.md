@@ -25,7 +25,7 @@ performance and easy maintenance, each Hermes module should also be deployed on 
 
 ## Requirements
 
-All Hermes Java modules require **Java 8** to work. Hermes Console has no external dependencies.
+All Hermes Java modules require **Java 11** to work. Hermes Console has no external dependencies.
 
 ## Passing environment variables
 
@@ -42,35 +42,6 @@ export HERMES_FRONTEND_OPTS="-Dfrontend.port=8090"
 export JAVA_OPTS="-Xmx2g"
 ```
 
-## Frontend and Consumers
-
-### External configuration
-
-Hermes Frontend and Consumers modules use [Netflix Archaius](https://github.com/Netflix/archaius/) to manage configuration.
-
-To read external configuration from any URL (local file or remote HTTP source), specify its location in system property:
-
-```bash
-export HERMES_FRONTEND_OPTS="-Darchaius.configurationSource.additionalUrls=file:///opt/hermes/conf/frontend.properties"
-export HERMES_CONSUMERS_OPTS="-Darchaius.configurationSource.additionalUrls=file:///opt/hermes/conf/consumers.properties"
-```
-
-Configuration is stored in Java properties format.
-
-### Overwriting configuration using ENV
-
-It is possible to overwrite any configuration variable using environment variable:
-
-```bash
-export HERMES_FRONTEND_OPTS="-D<configuration-option>=<value>"
-```
-
-for example:
-
-```bash
-export HERMES_FRONTEND_OPTS="-Dfrontend.port=8090 -Dfrontend.idle.timeout=30"
-```
-
 ### Java options
 
 It is advised to run Hermes Frontend and Consumers with G1 garbage collector and at least 1GB heap:
@@ -79,16 +50,24 @@ It is advised to run Hermes Frontend and Consumers with G1 garbage collector and
 -XX:+UseG1GC -Xms1g
 ```
 
-## Management
+## Configuration
 
 ### External configuration
 
-Management being Spring Boot application, shares the same options to provide additional configuration. The most basic way
+Management, Frontend and Consumers being Spring Boot application using [Spring Boot Externalized Configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config)
+to manage configuration, shares the same options to provide additional configuration. The most basic way
 to provide external configuration file is to export an environment variable:
 
 ```
-SPRING_CONFIG_LOCATION="file:///opt/hermes/conf/management.properties"
+SPRING_CONFIG_LOCATION="file:///opt/hermes/conf/management.yaml"
 ```
+or specify its location in system property:
+```bash
+export HERMES_FRONTEND_OPTS="-Dspring.config.location=file:///opt/hermes/conf/frontend.yaml"
+export HERMES_CONSUMERS_OPTS="-Dspring.config.location=file:///opt/hermes/conf/consumers.yaml"
+```
+
+Configuration is stored in YAML format.
 
 ### Overwriting configuration using ENV
 
