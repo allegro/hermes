@@ -3,7 +3,8 @@
 Hermes Frontend API has option to register callbacks triggered during different phases of message lifetime:
 
 * BrokerAcknowledgedListener: message has been acknowledged by broker, can be considered as persisted
-* BrokerTimeoutListener: broker did not save message in time, it is now stored in memory buffer and retried until  successful
+* BrokerTimeoutListener: broker did not save message in time, it is now stored in memory buffer and retried until
+  successful
 * BrokerErrorListener: there was some kind of error (e.g. no connection to broker) when trying to send message to broker
 
 ## ChronicleMap implementation
@@ -23,14 +24,14 @@ This might be useful when reviving Frontend nodes that have been down for a long
 Option                                          | Description                                            | Default value
 ----------------------------------------------- | ------------------------------------------------------ | --------------
 frontend.messages.local.storage.enabled         | enable persistent buffer                               | false
-frontend.messages.local.storage.max.age.hours   | ignore messages in buffer that are older than N hours  | 72
+frontend.messages.local.storage.maxAge          | ignore messages in buffer that are older than N hours  | 72h
 frontend.messages.local.storage.directory       | location of memory mapped files                        | /tmp/<tmp dir>
 
 ### Buffer files
 
 Buffer is persisted into `hermes-buffer.dat` file in storage directory. On startup, if previous persistence file exists,
-it is renamed to `hermes-buffer-<timestamp>.dat`. This is a temporary file, deleted after all messages are
-read and sent to Kafka.
+it is renamed to `hermes-buffer-<timestamp>.dat`. This is a temporary file, deleted after all messages are read and sent
+to Kafka.
 
 ## Custom implementation
 
@@ -38,8 +39,8 @@ To register custom callbacks register the implementations as beans:
 
 ```java
 class MyCustomBrokerListener implements BrokerAcknowledgedListener,
-                                BrokerTimeoutListener,
-                                BrokerErrorListener {
+        BrokerTimeoutListener,
+        BrokerErrorListener {
 
     @Override
     public void onAcknowledge(Message message, Topic topic) {
