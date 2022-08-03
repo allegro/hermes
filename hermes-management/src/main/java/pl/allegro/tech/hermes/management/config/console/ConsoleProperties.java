@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.config.console;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -88,8 +87,7 @@ public class ConsoleProperties {
         private String footer = "";
         private String environmentName = "LOCAL";
 
-        @JsonProperty(value="isCriticalEnvironment")
-        private boolean isCriticalEnvironment = false;
+        private boolean criticalEnvironment = false;
 
         public String getTitle() {
             return title;
@@ -108,11 +106,11 @@ public class ConsoleProperties {
         }
 
         public boolean isCriticalEnvironment() {
-            return isCriticalEnvironment;
+            return criticalEnvironment;
         }
 
-        public void setCriticalEnvironment(boolean isCriticalEnvironment) {
-            this.isCriticalEnvironment = isCriticalEnvironment;
+        public void setCriticalEnvironment(boolean criticalEnvironment) {
+            this.criticalEnvironment = criticalEnvironment;
         }
 
         public String getEnvironmentName() {
