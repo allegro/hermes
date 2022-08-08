@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignment;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
-import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadConstraints;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -16,8 +16,8 @@ import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toSet;
 
-public class AvailableWork extends Spliterators.AbstractSpliterator<SubscriptionAssignment> {
-    private SubscriptionAssignmentView state;
+class AvailableWork extends Spliterators.AbstractSpliterator<SubscriptionAssignment> {
+    private final SubscriptionAssignmentView state;
     private final WorkloadConstraints constraints;
 
     private AvailableWork(SubscriptionAssignmentView state, WorkloadConstraints constraints) {
@@ -42,7 +42,7 @@ public class AvailableWork extends Spliterators.AbstractSpliterator<Subscription
 
     private Optional<SubscriptionName> getNextSubscription(SubscriptionAssignmentView state, Set<String> availableConsumerNodes) {
         return state.getSubscriptions().stream()
-                .filter(s -> state.getAssignmentsCountForSubscription(s) < constraints.getConsumersNumber(s))
+                .filter(s -> state.getAssignmentsCountForSubscription(s) < constraints.getConsumerCount(s))
                 .filter(s -> !Sets.difference(availableConsumerNodes, state.getConsumerNodesForSubscription(s)).isEmpty())
                 .min(Comparator.comparingInt(state::getAssignmentsCountForSubscription));
     }
@@ -64,7 +64,7 @@ public class AvailableWork extends Spliterators.AbstractSpliterator<Subscription
                 .collect(toSet());
     }
 
-    public static Stream<SubscriptionAssignment> stream(SubscriptionAssignmentView state, WorkloadConstraints constraints) {
+    static Stream<SubscriptionAssignment> stream(SubscriptionAssignmentView state, WorkloadConstraints constraints) {
         AvailableWork work = new AvailableWork(state, constraints);
         return StreamSupport.stream(work, false);
     }

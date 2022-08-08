@@ -10,8 +10,6 @@ import org.junit.runner.RunWith;
 import pl.allegro.tech.hermes.api.Constraints;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.WorkBalancingResult;
-import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,8 +34,13 @@ public class SelectiveWorkBalancerTest {
         // given
         List<SubscriptionName> subscriptions = someSubscriptions(1);
         List<String> supervisors = someSupervisors(1);
-        WorkloadConstraints constraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                CONSUMERS_PER_SUBSCRIPTION,
+                MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                emptyMap(),
+                emptyMap()
+        );
         SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, constraints);
 
         // when
@@ -45,7 +48,7 @@ public class SelectiveWorkBalancerTest {
 
         // then
         assertThat(target.getAssignmentsView().getSubscriptions()).isEmpty();
-        assertThat(target.getRemovedSubscriptionsCount()).isEqualTo(subscriptions.size());
+        assertThat(currentState.deletions(target.getAssignmentsView()).getAllAssignments()).hasSize(subscriptions.size());
     }
 
     @Test
@@ -53,8 +56,13 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = someSupervisors(2);
         List<SubscriptionName> subscriptions = someSubscriptions(1);
-        WorkloadConstraints constraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                CONSUMERS_PER_SUBSCRIPTION,
+                MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                emptyMap(),
+                emptyMap()
+        );
         SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, constraints);
 
         // when
@@ -62,7 +70,7 @@ public class SelectiveWorkBalancerTest {
         WorkBalancingResult work = workBalancer.balance(subscriptions, supervisors, currentState, constraints);
 
         // then
-        assertThat(work.getRemovedSupervisorsCount()).isEqualTo(1);
+        assertThat(currentState.deletions(work.getAssignmentsView()).getAllAssignments()).hasSize(1);
         assertThatSubscriptionIsAssignedTo(work.getAssignmentsView(), subscriptions.get(0), supervisors.get(0));
     }
 
@@ -71,8 +79,13 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = someSupervisors(1);
         List<SubscriptionName> subscriptions = someSubscriptions(1);
-        WorkloadConstraints constraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                CONSUMERS_PER_SUBSCRIPTION,
+                MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                emptyMap(),
+                emptyMap()
+        );
 
         // when
         SubscriptionAssignmentView view = initialState(subscriptions, supervisors, constraints);
@@ -86,8 +99,13 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = someSupervisors(2);
         List<SubscriptionName> subscriptions = someSubscriptions(1);
-        WorkloadConstraints constraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                CONSUMERS_PER_SUBSCRIPTION,
+                MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                emptyMap(),
+                emptyMap()
+        );
 
         // when
         SubscriptionAssignmentView view = initialState(subscriptions, supervisors, constraints);
@@ -101,8 +119,13 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = someSupervisors(2);
         List<SubscriptionName> subscriptions = someSubscriptions(2);
-        WorkloadConstraints constraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                CONSUMERS_PER_SUBSCRIPTION,
+                MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                emptyMap(),
+                emptyMap()
+        );
 
         // when
         SubscriptionAssignmentView view = initialState(subscriptions, supervisors, constraints);
@@ -117,8 +140,13 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = someSupervisors(1);
         List<SubscriptionName> subscriptions = someSubscriptions(3);
-        WorkloadConstraints constraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                CONSUMERS_PER_SUBSCRIPTION,
+                MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                emptyMap(),
+                emptyMap()
+        );
 
         // when
         SubscriptionAssignmentView view = initialState(subscriptions, supervisors, constraints);
@@ -132,8 +160,13 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = ImmutableList.of("c1", "c2");
         List<SubscriptionName> subscriptions = someSubscriptions(2);
-        WorkloadConstraints constraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                CONSUMERS_PER_SUBSCRIPTION,
+                MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                emptyMap(),
+                emptyMap()
+        );
         SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, constraints);
 
         // when
@@ -151,14 +184,17 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = someSupervisors(2);
         List<SubscriptionName> subscriptions = someSubscriptions(2);
-        WorkloadConstraints initialConstraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
-        SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, initialConstraints);
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                CONSUMERS_PER_SUBSCRIPTION,
+                MAX_SUBSCRIPTIONS_PER_CONSUMER,
+                emptyMap(),
+                emptyMap()
+        );
+        SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, constraints);
 
         // when
         supervisors.add("new-supervisor");
-        WorkloadConstraints constraints = WorkloadConstraints
-                .defaultConstraints(CONSUMERS_PER_SUBSCRIPTION, MAX_SUBSCRIPTIONS_PER_CONSUMER, supervisors.size());
         SubscriptionAssignmentView stateAfterRebalance = workBalancer
                 .balance(subscriptions, supervisors, currentState, constraints)
                 .getAssignmentsView();
@@ -174,12 +210,23 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = ImmutableList.of("c1", "c2");
         List<SubscriptionName> subscriptions = someSubscriptions(50);
-        WorkloadConstraints initialConstraints = WorkloadConstraints.defaultConstraints(2, 200, supervisors.size());
-        SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, initialConstraints);
+        SelectiveWorkBalancer workBalancer = new SelectiveWorkBalancer();
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                2,
+                200,
+                emptyMap(),
+                emptyMap()
+        );
+        SubscriptionAssignmentView currentState = workBalancer.balance(
+                subscriptions,
+                supervisors,
+                new SubscriptionAssignmentView(emptyMap()),
+                constraints
+        ).getAssignmentsView();
 
         // when
         List<String> extendedSupervisorsList = ImmutableList.of("c1", "c2", "c3");
-        WorkloadConstraints constraints = WorkloadConstraints.defaultConstraints(2, 200, supervisors.size());
         SubscriptionAssignmentView stateAfterRebalance = workBalancer
                 .balance(subscriptions, extendedSupervisorsList, currentState, constraints)
                 .getAssignmentsView();
@@ -193,12 +240,23 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = ImmutableList.of("c1");
         List<SubscriptionName> subscriptions = someSubscriptions(10);
-        WorkloadConstraints initialConstraints = WorkloadConstraints.defaultConstraints(1, 100, supervisors.size());
-        SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, initialConstraints);
+        SelectiveWorkBalancer workBalancer = new SelectiveWorkBalancer();
+        WorkloadConstraints constraints = new WorkloadConstraints(
+                supervisors.size(),
+                1,
+                100,
+                emptyMap(),
+                emptyMap()
+        );
+        SubscriptionAssignmentView currentState = workBalancer.balance(
+                subscriptions,
+                supervisors,
+                new SubscriptionAssignmentView(emptyMap()),
+                constraints
+        ).getAssignmentsView();
 
         // when
         ImmutableList<String> extendedSupervisorsList = ImmutableList.of("c1", "c2", "c3", "c4", "c5");
-        WorkloadConstraints constraints = WorkloadConstraints.defaultConstraints(1, 100, supervisors.size());
         SubscriptionAssignmentView stateAfterRebalance = workBalancer
                 .balance(subscriptions, extendedSupervisorsList, currentState, constraints)
                 .getAssignmentsView();
@@ -212,41 +270,35 @@ public class SelectiveWorkBalancerTest {
         // given
         List<String> supervisors = ImmutableList.of("c1", "c2", "c3");
         List<SubscriptionName> subscriptions = someSubscriptions(10);
-        WorkloadConstraints initialConstraints = WorkloadConstraints.defaultConstraints(3, 100, supervisors.size());
-        SubscriptionAssignmentView currentState = initialState(subscriptions, supervisors, initialConstraints);
+        SelectiveWorkBalancer workBalancer = new SelectiveWorkBalancer();
+        WorkloadConstraints initialConstraints = new WorkloadConstraints(
+                supervisors.size(),
+                3,
+                100,
+                emptyMap(),
+                emptyMap()
+        );
+        SubscriptionAssignmentView currentState = workBalancer.balance(
+                subscriptions,
+                supervisors,
+                new SubscriptionAssignmentView(emptyMap()),
+                initialConstraints
+        ).getAssignmentsView();
 
         // when
-        WorkloadConstraints newConstraints = WorkloadConstraints.defaultConstraints(1, 100, supervisors.size());
+        WorkloadConstraints newConstraints = new WorkloadConstraints(
+                supervisors.size(),
+                3,
+                100,
+                ImmutableMap.of(subscriptions.get(0), new Constraints(1)),
+                emptyMap()
+        );
         SubscriptionAssignmentView stateAfterRebalance = workBalancer
                 .balance(subscriptions, supervisors, currentState, newConstraints)
                 .getAssignmentsView();
 
         // then
         assertThat(stateAfterRebalance.getAssignmentsCountForSubscription(subscriptions.get(0))).isEqualTo(1);
-    }
-
-    @Test
-    public void shouldNotRemoveAssignmentsThatAreMadeByAdmin() {
-        // given
-        SubscriptionName subscriptionName = SubscriptionName.fromString("a.a$a");
-        WorkloadConstraints initialConstraints = WorkloadConstraints.defaultConstraints(1, 100, 1);
-        SubscriptionAssignmentView currentState = initialState(ImmutableList.of(subscriptionName), ImmutableList.of("c1"), initialConstraints)
-                .transform((view, transformer) -> {
-                    transformer.addAssignment(new SubscriptionAssignment("c1", subscriptionName, true));
-                    transformer.addAssignment(new SubscriptionAssignment("c2", subscriptionName, false));
-                    transformer.addAssignment(new SubscriptionAssignment("c3", subscriptionName, false));
-                    transformer.addAssignment(new SubscriptionAssignment("c4", subscriptionName, false));
-                });
-
-        // when
-        WorkloadConstraints constraints = WorkloadConstraints.defaultConstraints(1, 100, 4);
-        SubscriptionAssignmentView stateAfterRebalance = workBalancer
-                .balance(ImmutableList.of(subscriptionName), ImmutableList.of("c1", "c2", "c3", "c4"), currentState, constraints)
-                .getAssignmentsView();
-
-        // then
-        assertThat(stateAfterRebalance.getAssignmentsForSubscription(subscriptionName)
-                .stream().map(SubscriptionAssignment::getConsumerNodeId).collect(toList())).containsOnly("c2", "c3", "c4");
     }
 
     @DataProvider
@@ -264,9 +316,14 @@ public class SelectiveWorkBalancerTest {
 
         List<String> supervisors = ImmutableList.of("c1", "c2", "c3");
         List<SubscriptionName> subscriptions = someSubscriptions(4);
-        WorkloadConstraints subscriptionConstraints = new WorkloadConstraints(ImmutableMap.of(
-                subscriptions.get(0), new Constraints(requiredConsumersNumber)
-        ), emptyMap(), 2, 4, supervisors.size());
+        SelectiveWorkBalancer workBalancer = new SelectiveWorkBalancer();
+        WorkloadConstraints subscriptionConstraints = new WorkloadConstraints(
+                supervisors.size(),
+                2,
+                4,
+                ImmutableMap.of(subscriptions.get(0), new Constraints(requiredConsumersNumber)),
+                emptyMap()
+        );
 
         // when
         SubscriptionAssignmentView state = workBalancer

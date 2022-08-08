@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadSupervisor;
 
 import java.time.Duration;
 import java.util.Set;
@@ -29,7 +29,7 @@ public class ConsumersRuntimeMonitor implements Runnable {
 
     private final ConsumersSupervisor consumerSupervisor;
 
-    private final SupervisorController workloadSupervisor;
+    private final WorkloadSupervisor workloadSupervisor;
 
     private final SubscriptionsCache subscriptionsCache;
 
@@ -38,7 +38,7 @@ public class ConsumersRuntimeMonitor implements Runnable {
     private ScheduledFuture<?> monitoringTask;
 
     public ConsumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
-                                   SupervisorController workloadSupervisor,
+                                   WorkloadSupervisor workloadSupervisor,
                                    HermesMetrics hermesMetrics,
                                    SubscriptionsCache subscriptionsCache,
                                    Duration scanInterval) {

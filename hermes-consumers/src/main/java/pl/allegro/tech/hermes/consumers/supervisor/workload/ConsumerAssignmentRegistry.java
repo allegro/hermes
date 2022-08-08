@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
-import com.google.common.collect.Sets;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -29,29 +28,15 @@ public class ConsumerAssignmentRegistry {
         this.paths = new WorkloadRegistryPaths(zookeeperPaths, clusterName);
     }
 
-    public WorkDistributionChanges updateAssignments(SubscriptionAssignmentView initialState,
-                                                     SubscriptionAssignmentView targetState) {
-        if (initialState.equals(targetState)) {
-            return WorkDistributionChanges.NO_CHANGES;
+    public void updateAssignments(String consumerNode, Set<SubscriptionName> subscriptions) {
+        byte[] encoded = consumerAssignmentsEncoder.encode(subscriptions);
+        try {
+            logger.info("Writing {} bytes of {} assignments for consumer {}",
+                    encoded.length, subscriptions.size(), consumerNode);
+            String path = paths.consumerWorkloadPath(consumerNode);
+            zookeeper.writeOrCreatePersistent(path, encoded);
+        } catch (Exception e) {
+            logger.error("Could not write consumer workload for {}", consumerNode);
         }
-        SubscriptionAssignmentView deletions = initialState.deletions(targetState);
-        SubscriptionAssignmentView additions = initialState.additions(targetState);
-        Sets.SetView<String> modifiedConsumerNodes = Sets.union(
-                deletions.getConsumerNodes(),
-                additions.getConsumerNodes()
-        );
-        for (String consumerNode : modifiedConsumerNodes) {
-            Set<SubscriptionName> subscriptions = targetState.getSubscriptionsForConsumerNode(consumerNode);
-            byte[] encoded = consumerAssignmentsEncoder.encode(subscriptions);
-            try {
-                logger.info("Writing {} bytes of {} assignments for consumer {}",
-                        encoded.length, subscriptions.size(), consumerNode);
-                String path = paths.consumerWorkloadPath(consumerNode);
-                zookeeper.writeOrCreatePersistent(path, encoded);
-            } catch (Exception e) {
-                logger.error("Could not write consumer workload for {}", consumerNode);
-            }
-        }
-        return new WorkDistributionChanges(deletions.getAllAssignments().size(), additions.getAllAssignments().size());
     }
 }

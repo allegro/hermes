@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.domain.workload.constraints
+package pl.allegro.tech.hermes.consumers.supervisor.workload
 
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
@@ -18,16 +18,16 @@ class WorkloadConstraintsTest extends Specification {
     def "should return constraints of given subscription or default value if constraints don't exist (#subscriptionName)"() {
         given:
         def workloadConstraints = new WorkloadConstraints(
-                [(SubscriptionName.fromString('group.topic$sub1')): new Constraints(3),
-                 (SubscriptionName.fromString('group.topic$sub2')): new Constraints(1)],
-                emptyMap(),
+                AVAILABLE_CONSUMERS,
                 DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
                 DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
-                AVAILABLE_CONSUMERS
+                [(SubscriptionName.fromString('group.topic$sub1')): new Constraints(3),
+                 (SubscriptionName.fromString('group.topic$sub2')): new Constraints(1)],
+                emptyMap()
         )
 
         expect:
-        workloadConstraints.getConsumersNumber(subscriptionName) == expectedResult
+        workloadConstraints.getConsumerCount(subscriptionName) == expectedResult
 
         where:
         subscriptionName                                        | expectedResult
@@ -38,15 +38,15 @@ class WorkloadConstraintsTest extends Specification {
     @Unroll
     def "should return subscription constraints or topic constraints if given subscription has no constraints (#subscriptionName)"() {
         def workloadConstraints = new WorkloadConstraints(
-                [(SubscriptionName.fromString('group.topic$sub1')): new Constraints(3)],
-                [(TopicName.fromQualifiedName('group.topic')): new Constraints(2)],
+                AVAILABLE_CONSUMERS,
                 DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
                 DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
-                AVAILABLE_CONSUMERS
+                [(SubscriptionName.fromString('group.topic$sub1')): new Constraints(3)],
+                [(TopicName.fromQualifiedName('group.topic')): new Constraints(2)]
         )
 
         expect:
-        workloadConstraints.getConsumersNumber(subscriptionName) == expectedResult
+        workloadConstraints.getConsumerCount(subscriptionName) == expectedResult
 
         where:
         subscriptionName                                | expectedResult
@@ -58,15 +58,15 @@ class WorkloadConstraintsTest extends Specification {
     def "should return max available number of consumers if specified constraint is higher than available consumers number"() {
         given:
         def workloadConstraints = new WorkloadConstraints(
-                [(SubscriptionName.fromString('group.topic1$sub')): new Constraints(AVAILABLE_CONSUMERS + 1)],
-                [(TopicName.fromQualifiedName('group.topic2')): new Constraints(AVAILABLE_CONSUMERS + 1)],
+                AVAILABLE_CONSUMERS,
                 DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
                 DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
-                AVAILABLE_CONSUMERS
+                [(SubscriptionName.fromString('group.topic1$sub')): new Constraints(AVAILABLE_CONSUMERS + 1)],
+                [(TopicName.fromQualifiedName('group.topic2')): new Constraints(AVAILABLE_CONSUMERS + 1)]
         )
 
         expect:
-        workloadConstraints.getConsumersNumber(subscriptionName) == AVAILABLE_CONSUMERS
+        workloadConstraints.getConsumerCount(subscriptionName) == AVAILABLE_CONSUMERS
 
         where:
         subscriptionName << [
@@ -80,15 +80,15 @@ class WorkloadConstraintsTest extends Specification {
         given:
         def subscriptionName = SubscriptionName.fromString('group.topic$sub')
         def workloadConstraints = new WorkloadConstraints(
-                emptyMap(),
-                [(TopicName.fromQualifiedName('group.topic')): new Constraints(incorrectConsumersNumber)],
+                AVAILABLE_CONSUMERS,
                 DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
                 DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
-                AVAILABLE_CONSUMERS
+                emptyMap(),
+                [(TopicName.fromQualifiedName('group.topic')): new Constraints(incorrectConsumersNumber)]
         )
 
         expect:
-        workloadConstraints.getConsumersNumber(subscriptionName) == DEFAULT_CONSUMERS_PER_SUBSCRIPTION
+        workloadConstraints.getConsumerCount(subscriptionName) == DEFAULT_CONSUMERS_PER_SUBSCRIPTION
 
         where:
         incorrectConsumersNumber << [0, -1]
@@ -99,15 +99,15 @@ class WorkloadConstraintsTest extends Specification {
         given:
         def subscriptionName = SubscriptionName.fromString('group.incorrect_topic$sub')
         def workloadConstraints = new WorkloadConstraints(
-                [(subscriptionName): new Constraints(incorrectConsumersNumber)],
-                emptyMap(),
+                AVAILABLE_CONSUMERS,
                 DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
                 DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
-                AVAILABLE_CONSUMERS
+                [(subscriptionName): new Constraints(incorrectConsumersNumber)],
+                emptyMap()
         )
 
         expect:
-        workloadConstraints.getConsumersNumber(subscriptionName) == DEFAULT_CONSUMERS_PER_SUBSCRIPTION
+        workloadConstraints.getConsumerCount(subscriptionName) == DEFAULT_CONSUMERS_PER_SUBSCRIPTION
 
         where:
         incorrectConsumersNumber << [0, -1]
@@ -118,15 +118,15 @@ class WorkloadConstraintsTest extends Specification {
         given:
         def subscriptionName = SubscriptionName.fromString('group.incorrect_topic$sub')
         def workloadConstraints = new WorkloadConstraints(
-                constraintsSubscription as Map,
-                constraintsTopic as Map,
+                AVAILABLE_CONSUMERS,
                 DEFAULT_CONSUMERS_PER_SUBSCRIPTION,
                 DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER,
-                AVAILABLE_CONSUMERS
+                constraintsSubscription as Map,
+                constraintsTopic as Map
         )
 
         expect:
-        workloadConstraints.getConsumersNumber(subscriptionName) == DEFAULT_CONSUMERS_PER_SUBSCRIPTION
+        workloadConstraints.getConsumerCount(subscriptionName) == DEFAULT_CONSUMERS_PER_SUBSCRIPTION
 
         where:
         constraintsSubscription | constraintsTopic

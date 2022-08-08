@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignment;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentView;
-import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraints;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkBalancer;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkBalancingResult;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadConstraints;
 
 import java.util.Iterator;
 import java.util.List;
@@ -15,10 +17,11 @@ import java.util.stream.Stream;
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.toList;
 
-public class SelectiveWorkBalancer {
+public class SelectiveWorkBalancer implements WorkBalancer {
 
     private static final Logger logger = LoggerFactory.getLogger(SelectiveWorkBalancer.class);
 
+    @Override
     public WorkBalancingResult balance(List<SubscriptionName> subscriptions,
                                        List<String> activeConsumerNodes,
                                        SubscriptionAssignmentView currentState,
@@ -34,11 +37,10 @@ public class SelectiveWorkBalancer {
 
         log(subscriptions, activeConsumerNodes, currentState, balancedState);
 
-        return new WorkBalancingResult.Builder(balancedState)
-                .withSubscriptionsStats(subscriptions.size(), removedSubscriptions.size(), newSubscriptions.size())
-                .withConsumersStats(activeConsumerNodes.size(), inactiveConsumers.size(), newConsumers.size())
-                .withMissingResources(countMissingResources(subscriptions, balancedState, constraints))
-                .build();
+        return new WorkBalancingResult(
+                balancedState,
+                countMissingResources(subscriptions, balancedState, constraints)
+        );
     }
 
     private SubscriptionAssignmentView balance(SubscriptionAssignmentView currentState,
@@ -72,17 +74,15 @@ public class SelectiveWorkBalancer {
                                                                     SubscriptionName subscriptionName,
                                                                     WorkloadConstraints constraints) {
         final int assignedConsumers = state.getAssignmentsCountForSubscription(subscriptionName);
-        final int requiredConsumers = constraints.getConsumersNumber(subscriptionName);
+        final int requiredConsumers = constraints.getConsumerCount(subscriptionName);
         int redundantConsumers = assignedConsumers - requiredConsumers;
         if (redundantConsumers > 0) {
             Stream.Builder<SubscriptionAssignment> redundant = Stream.builder();
             Iterator<SubscriptionAssignment> iterator = state.getAssignmentsForSubscription(subscriptionName).iterator();
             while (redundantConsumers > 0 && iterator.hasNext()) {
                 SubscriptionAssignment assignment = iterator.next();
-                if (assignment.isAutoAssigned()) {
-                    redundant.add(assignment);
-                    redundantConsumers--;
-                }
+                redundant.add(assignment);
+                redundantConsumers--;
             }
             return redundant.build();
         }
@@ -92,7 +92,7 @@ public class SelectiveWorkBalancer {
     private int countMissingResources(List<SubscriptionName> subscriptions, SubscriptionAssignmentView state, WorkloadConstraints constraints) {
         return subscriptions.stream()
                 .mapToInt(s -> {
-                    int requiredConsumers = constraints.getConsumersNumber(s);
+                    int requiredConsumers = constraints.getConsumerCount(s);
                     int subscriptionAssignments = state.getAssignmentsCountForSubscription(s);
                     int missing = requiredConsumers - subscriptionAssignments;
                     if (missing != 0) {

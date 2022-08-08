@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -17,6 +15,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.util.Collections;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -79,30 +78,15 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
     }
 
     @Test
-    public void shouldSaveComputedAssignmentsAndNotifyConsumers() {
-        // given
-        SubscriptionAssignmentView initView = new SubscriptionAssignmentView(Collections.emptyMap());
-        SubscriptionAssignmentView targetView = new SubscriptionAssignmentView(ImmutableMap.of(
-                subscription1, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription1),
-                        new SubscriptionAssignment(consumer2, subscription1)
-                ),
-                subscription2, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription2)
-                )
-        ));
-
+    public void shouldSaveAssignmentsAndNotifyConsumers() {
         // when
-        WorkDistributionChanges changes = registry.updateAssignments(initView, targetView);
-
-        // then
-        assertThat(changes.getCreatedAssignmentsCount()).isEqualTo(3);
-        assertThat(changes.getDeletedAssignmentsCount()).isZero();
+        registry.updateAssignments(consumer1, Set.of(subscription1, subscription2));
+        registry.updateAssignments(consumer2, Set.of(subscription1));
 
         wait.untilZookeeperPathIsCreated(registryPaths.consumerWorkloadPath(consumer1));
         wait.untilZookeeperPathIsCreated(registryPaths.consumerWorkloadPath(consumer2));
 
-        // and
+        // then
         assertThat(assignmentCacheOfConsumer1.isAssignedTo(subscription1)).isTrue();
         assertThat(assignmentCacheOfConsumer1.isAssignedTo(subscription2)).isTrue();
         assertThat(assignmentCacheOfConsumer1.isAssignedTo(subscription3)).isFalse();
@@ -112,27 +96,12 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
     }
 
     @Test
-    public void shouldSaveComputedAssignmentsAndReadThroughClusterAssignmentCache() {
-        // given
-        SubscriptionAssignmentView initView = new SubscriptionAssignmentView(Collections.emptyMap());
-        SubscriptionAssignmentView targetView = new SubscriptionAssignmentView(ImmutableMap.of(
-                subscription1, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription1),
-                        new SubscriptionAssignment(consumer2, subscription1)
-                ),
-                subscription2, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription2)
-                )
-        ));
-
+    public void shouldSaveAssignmentsAndReadThroughClusterAssignmentCache() {
         // when
-        WorkDistributionChanges changes = registry.updateAssignments(initView, targetView);
+        registry.updateAssignments(consumer1, Set.of(subscription1, subscription2));
+        registry.updateAssignments(consumer2, Set.of(subscription1));
 
-        // then
-        assertThat(changes.getCreatedAssignmentsCount()).isEqualTo(3);
-        assertThat(changes.getDeletedAssignmentsCount()).isZero();
-
-        // when
+        // and
         clusterAssignmentCache.refresh();
 
         // then
@@ -148,26 +117,11 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
 
     @Test
     public void shouldApplyChangesToAssignments() {
-        // given
-        SubscriptionAssignmentView initView = new SubscriptionAssignmentView(Collections.emptyMap());
-        SubscriptionAssignmentView targetView = new SubscriptionAssignmentView(ImmutableMap.of(
-                subscription1, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription1),
-                        new SubscriptionAssignment(consumer2, subscription1)
-                ),
-                subscription2, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription2)
-                )
-        ));
-
         // when
-        WorkDistributionChanges changes = registry.updateAssignments(initView, targetView);
+        registry.updateAssignments(consumer1, Set.of(subscription1, subscription2));
+        registry.updateAssignments(consumer2, Set.of(subscription1));
 
-        // then
-        assertThat(changes.getCreatedAssignmentsCount()).isEqualTo(3);
-        assertThat(changes.getDeletedAssignmentsCount()).isZero();
-
-        // when
+        // and
         clusterAssignmentCache.refresh();
 
         // then
@@ -177,21 +131,10 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
         assertThat(clusterAssignmentCache.getSubscriptionConsumers().get(subscription1)).containsOnly(consumer1, consumer2);
 
         // when
-        SubscriptionAssignmentView targetView2 = new SubscriptionAssignmentView(ImmutableMap.of(
-                subscription1, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer2, subscription1)
-                ),
-                subscription2, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription2)
-                )
-        ));
-        changes = registry.updateAssignments(clusterAssignmentCache.createSnapshot(), targetView2);
+        registry.updateAssignments(consumer1, Set.of(subscription2));
+        registry.updateAssignments(consumer2, Set.of(subscription1));
 
-        // then
-        assertThat(changes.getCreatedAssignmentsCount()).isEqualTo(0);
-        assertThat(changes.getDeletedAssignmentsCount()).isEqualTo(1);
-
-        // when
+        // and
         clusterAssignmentCache.refresh();
 
         // then
@@ -202,20 +145,9 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
 
     @Test
     public void shouldCleanStaleNodesFromRegistryOnRefresh() {
-        // given
-        SubscriptionAssignmentView initView = new SubscriptionAssignmentView(Collections.emptyMap());
-        SubscriptionAssignmentView targetView = new SubscriptionAssignmentView(ImmutableMap.of(
-                subscription1, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription1),
-                        new SubscriptionAssignment(consumer2, subscription1)
-                ),
-                subscription2, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription2)
-                )
-        ));
-
         // when
-        registry.updateAssignments(initView, targetView);
+        registry.updateAssignments(consumer1, Set.of(subscription1, subscription2));
+        registry.updateAssignments(consumer2, Set.of(subscription1));
 
         // and
         clusterAssignmentCache.refresh();
@@ -235,20 +167,9 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
 
     @Test
     public void shouldCleanRegistryFromStaleAssignments() {
-        // given
-        SubscriptionAssignmentView initView = new SubscriptionAssignmentView(Collections.emptyMap());
-        SubscriptionAssignmentView targetView = new SubscriptionAssignmentView(ImmutableMap.of(
-                subscription1, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription1),
-                        new SubscriptionAssignment(consumer2, subscription1)
-                ),
-                subscription2, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription2)
-                )
-        ));
-
         // when
-        registry.updateAssignments(initView, targetView);
+        registry.updateAssignments(consumer1, Set.of(subscription1, subscription2));
+        registry.updateAssignments(consumer2, Set.of(subscription1));
 
         // then
         wait.untilZookeeperPathIsCreated(registryPaths.consumerWorkloadPath(consumer1));
@@ -261,14 +182,8 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
         assertThat(clusterAssignmentCache.createSnapshot().getAssignmentsCountForConsumerNode(consumer1)).isEqualTo(2);
 
         // when subscription2 is removed
-        SubscriptionAssignmentView afterRebalanceView = new SubscriptionAssignmentView(ImmutableMap.of(
-                subscription1, ImmutableSet.of(
-                        new SubscriptionAssignment(consumer1, subscription1),
-                        new SubscriptionAssignment(consumer2, subscription1)
-                )
-        ));
-        // and
-        registry.updateAssignments(clusterAssignmentCache.createSnapshot(), afterRebalanceView);
+        registry.updateAssignments(consumer1, Set.of(subscription1));
+        registry.updateAssignments(consumer2, Set.of(subscription1));
 
         // and
         clusterAssignmentCache.refresh();

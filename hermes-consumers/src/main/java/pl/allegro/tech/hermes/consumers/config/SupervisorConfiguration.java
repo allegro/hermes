@@ -34,8 +34,8 @@ import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorController;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorController;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadSupervisor;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -62,25 +62,25 @@ public class SupervisorConfiguration {
     private static final Logger logger = getLogger(SupervisorConfiguration.class);
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public SupervisorController supervisorController(InternalNotificationsBus notificationsBus,
-                                                     ConsumerNodesRegistry consumerNodesRegistry,
-                                                     ConsumerAssignmentRegistry assignmentRegistry,
-                                                     ConsumerAssignmentCache consumerAssignmentCache,
-                                                     ClusterAssignmentCache clusterAssignmentCache,
-                                                     SubscriptionsCache subscriptionsCache,
-                                                     ConsumersSupervisor supervisor,
-                                                     ZookeeperAdminCache adminCache,
-                                                     HermesMetrics metrics,
-                                                     WorkloadProperties workloadProperties,
-                                                     KafkaClustersProperties kafkaClustersProperties,
-                                                     WorkloadConstraintsRepository workloadConstraintsRepository,
-                                                     DatacenterNameProvider datacenterNameProvider) {
+    public WorkloadSupervisor workloadSupervisor(InternalNotificationsBus notificationsBus,
+                                                 ConsumerNodesRegistry consumerNodesRegistry,
+                                                 ConsumerAssignmentRegistry assignmentRegistry,
+                                                 ConsumerAssignmentCache consumerAssignmentCache,
+                                                 ClusterAssignmentCache clusterAssignmentCache,
+                                                 SubscriptionsCache subscriptionsCache,
+                                                 ConsumersSupervisor supervisor,
+                                                 ZookeeperAdminCache adminCache,
+                                                 HermesMetrics metrics,
+                                                 WorkloadProperties workloadProperties,
+                                                 KafkaClustersProperties kafkaClustersProperties,
+                                                 WorkloadConstraintsRepository workloadConstraintsRepository,
+                                                 DatacenterNameProvider datacenterNameProvider) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("AssignmentExecutor-%d")
                 .setUncaughtExceptionHandler((t, e) -> logger.error("AssignmentExecutor failed {}", t.getName(), e)).build();
         ExecutorService assignmentExecutor = newFixedThreadPool(workloadProperties.getAssignmentProcessingThreadPoolSize(), threadFactory);
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new SelectiveSupervisorController(
+        return new WorkloadSupervisor(
                 supervisor,
                 notificationsBus,
                 subscriptionsCache,
@@ -93,7 +93,8 @@ public class SupervisorConfiguration {
                 workloadProperties,
                 kafkaProperties.getClusterName(),
                 metrics,
-                workloadConstraintsRepository
+                workloadConstraintsRepository,
+                new SelectiveWorkBalancer()
         );
     }
 
@@ -167,7 +168,7 @@ public class SupervisorConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public ConsumersRuntimeMonitor consumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
-                                                           SupervisorController workloadSupervisor,
+                                                           WorkloadSupervisor workloadSupervisor,
                                                            HermesMetrics hermesMetrics,
                                                            SubscriptionsCache subscriptionsCache,
                                                            WorkloadProperties workloadProperties) {
