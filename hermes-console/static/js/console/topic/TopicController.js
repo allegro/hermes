@@ -337,4 +337,10 @@ topics.controller('TopicEditController', ['TOPIC_CONFIG', 'TopicRepository', '$s
             }
         };
 
+        $scope.aceLoaded = function (_ace) {
+            $scope.modeChanged = function () {
+                const selectedMode = $scope.topic.avroType === 'SCHEMA' ? 'json' : 'kotlin'
+                _ace.getSession().setMode("ace/mode/" + selectedMode);
+            };
+        }
     }]);

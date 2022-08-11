@@ -21,8 +21,13 @@
       {"value": "AVRO", "label": "AVRO"},
       {"value": "JSON", "label": "JSON"}
     ],
+    "avroTypes": [
+      {"value": "SCHEMA", "label": "Schema (avsc)"},
+      {"value": "IDL", "label": "IDL (avdl)"}
+    ],
     "defaults": {
-      "contentType": "AVRO"
+      "contentType": "AVRO",
+      "avroType": "SCHEMA"
     },
     "offlineClientsEnabled": false
   },
