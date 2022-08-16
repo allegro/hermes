@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -17,6 +18,7 @@ import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
+import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
@@ -28,6 +30,7 @@ import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHold
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.commands.CreateTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.RemoveTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.TouchTopicRepositoryCommand;
@@ -59,6 +62,7 @@ public class TopicService {
 
     private final TopicRepository topicRepository;
     private final GroupService groupService;
+    private final SubscriptionService subscriptionService;
     private final TopicProperties topicProperties;
     private final SchemaService schemaService;
 
@@ -81,7 +85,7 @@ public class TopicService {
     public TopicService(MultiDCAwareService multiDCAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
-                        TopicProperties topicProperties,
+                        SubscriptionService subscriptionService, TopicProperties topicProperties,
                         SchemaService schemaService, TopicMetricsRepository metricRepository,
                         TopicBlacklistService topicBlacklistService, TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
@@ -93,6 +97,7 @@ public class TopicService {
         this.multiDCAwareService = multiDCAwareService;
         this.topicRepository = topicRepository;
         this.groupService = groupService;
+        this.subscriptionService = subscriptionService;
         this.topicProperties = topicProperties;
         this.schemaService = schemaService;
         this.metricRepository = metricRepository;
@@ -121,65 +126,9 @@ public class TopicService {
         createTopic(topic, createdBy, isAllowedToManage);
     }
 
-    private void ensureTopicDoesNotExist(Topic topic) {
-        if (topicRepository.topicExists(topic.getName())) {
-            throw new TopicAlreadyExistsException(topic.getName());
-        }
-    }
-
-    private void validateSchema(boolean shouldValidate, TopicWithSchema topicWithSchema, Topic topic) {
-        if (shouldValidate) {
-            schemaService.validateSchema(topic, topicWithSchema.getSchema());
-            boolean schemaAlreadyRegistered = schemaService.getSchema(topic.getQualifiedName()).isPresent();
-            if (schemaAlreadyRegistered) {
-                throw new TopicSchemaExistsException(topic.getQualifiedName());
-            }
-        }
-    }
-
-    private void registerAvroSchema(boolean shouldRegister, TopicWithSchema topicWithSchema, RequestUser createdBy) {
-        if (shouldRegister) {
-            try {
-                schemaService.registerSchema(topicWithSchema.getTopic(), topicWithSchema.getSchema());
-            } catch (Exception e) {
-                logger.error("Rolling back topic {} creation due to schema registration error", topicWithSchema.getQualifiedName(), e);
-                removeTopic(topicWithSchema.getTopic(), createdBy);
-                throw e;
-            }
-        }
-    }
-
-    private void createTopic(Topic topic, RequestUser createdBy, CreatorRights creatorRights) {
-        topicValidator.ensureCreatedTopicIsValid(topic, createdBy, creatorRights);
-
-        if (!multiDCAwareService.topicExists(topic)) {
-            createTopicInBrokers(topic, createdBy);
-            auditor.objectCreated(createdBy.getUsername(), topic);
-            topicOwnerCache.onCreatedTopic(topic);
-        } else {
-            logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
-        }
-
-        multiDcExecutor.executeByUser(new CreateTopicRepositoryCommand(topic), createdBy);
-    }
-
-    private void createTopicInBrokers(Topic topic, RequestUser createdBy) {
-        try {
-            multiDCAwareService.manageTopic(brokerTopicManagement ->
-                    brokerTopicManagement.createTopic(topic)
-            );
-        } catch (Exception exception) {
-            logger.error(
-                    String.format("Could not create topic %s, rollback topic creation.", topic.getQualifiedName()),
-                    exception
-            );
-            multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), createdBy);
-        }
-    }
-
     public void removeTopicWithSchema(Topic topic, RequestUser removedBy) {
         auditor.beforeObjectRemoval(removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
-        topicRepository.ensureTopicHasNoSubscriptions(topic.getName());
+        removeRelatedSubscriptions(topic, removedBy);
         removeSchema(topic);
         if (!topicProperties.isAllowRemoval()) {
             throw new TopicRemovalDisabledException(topic);
@@ -190,18 +139,25 @@ public class TopicService {
         removeTopic(topic, removedBy);
     }
 
-    private void removeSchema(Topic topic) {
-        if (AVRO.equals(topic.getContentType()) && topicProperties.isRemoveSchema()) {
-            schemaService.getSchema(topic.getQualifiedName()).ifPresent(s ->
-                    schemaService.deleteAllSchemaVersions(topic.getQualifiedName()));
+    private void removeRelatedSubscriptions(Topic topic, RequestUser removedBy) {
+        List<Subscription> subscriptions = subscriptionService.listSubscriptions(topic.getName());
+        if (subscriptions.isEmpty()) {
+            return;
         }
+
+        ensureSubscriptionsHaveAutoRemove(subscriptions, topic.getName());
+        subscriptions.forEach(subscription -> {
+            subscriptionService.removeSubscription(topic.getName(), subscription.getName(), removedBy);
+        });
     }
 
-    private void removeTopic(Topic topic, RequestUser removedBy) {
-        multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), removedBy);
-        multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
-        auditor.objectRemoved(removedBy.getUsername(), topic);
-        topicOwnerCache.onRemovedTopic(topic);
+    private void ensureSubscriptionsHaveAutoRemove(List<Subscription> subscriptions, TopicName topicName) {
+        boolean anySubscriptionWithoutAutoRemove = subscriptions.stream()
+                .anyMatch(sub -> !sub.isAutoDeleteWithTopicEnabled());
+
+        if (!anySubscriptionWithoutAutoRemove) {
+            throw new TopicNotEmptyException(topicName);
+        }
     }
 
     public void updateTopicWithSchema(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
@@ -212,10 +168,6 @@ public class TopicService {
                     scheduleTouchTopic(topicName, modifiedBy);
                 });
         updateTopic(topicName, patch, modifiedBy);
-    }
-
-    private Optional<String> extractSchema(PatchData patch) {
-        return Optional.ofNullable(patch.getPatch().get("schema")).map(o -> (String) o);
     }
 
     public void updateTopic(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
@@ -372,6 +324,87 @@ public class TopicService {
                 .collect(toList());
     }
 
+    public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
+        List<Topic> filteredNames = query.filterNames(getAllTopics())
+                .collect(toList());
+        return query.filter(getTopicsMetrics(filteredNames))
+                .collect(toList());
+    }
+
+    private void ensureTopicDoesNotExist(Topic topic) {
+        if (topicRepository.topicExists(topic.getName())) {
+            throw new TopicAlreadyExistsException(topic.getName());
+        }
+    }
+
+    private void validateSchema(boolean shouldValidate, TopicWithSchema topicWithSchema, Topic topic) {
+        if (shouldValidate) {
+            schemaService.validateSchema(topic, topicWithSchema.getSchema());
+            boolean schemaAlreadyRegistered = schemaService.getSchema(topic.getQualifiedName()).isPresent();
+            if (schemaAlreadyRegistered) {
+                throw new TopicSchemaExistsException(topic.getQualifiedName());
+            }
+        }
+    }
+
+    private void registerAvroSchema(boolean shouldRegister, TopicWithSchema topicWithSchema, RequestUser createdBy) {
+        if (shouldRegister) {
+            try {
+                schemaService.registerSchema(topicWithSchema.getTopic(), topicWithSchema.getSchema());
+            } catch (Exception e) {
+                logger.error("Rolling back topic {} creation due to schema registration error", topicWithSchema.getQualifiedName(), e);
+                removeTopic(topicWithSchema.getTopic(), createdBy);
+                throw e;
+            }
+        }
+    }
+
+    private void createTopic(Topic topic, RequestUser createdBy, CreatorRights creatorRights) {
+        topicValidator.ensureCreatedTopicIsValid(topic, createdBy, creatorRights);
+
+        if (!multiDCAwareService.topicExists(topic)) {
+            createTopicInBrokers(topic, createdBy);
+            auditor.objectCreated(createdBy.getUsername(), topic);
+            topicOwnerCache.onCreatedTopic(topic);
+        } else {
+            logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
+        }
+
+        multiDcExecutor.executeByUser(new CreateTopicRepositoryCommand(topic), createdBy);
+    }
+
+    private void createTopicInBrokers(Topic topic, RequestUser createdBy) {
+        try {
+            multiDCAwareService.manageTopic(brokerTopicManagement ->
+                    brokerTopicManagement.createTopic(topic)
+            );
+        } catch (Exception exception) {
+            logger.error(
+                    String.format("Could not create topic %s, rollback topic creation.", topic.getQualifiedName()),
+                    exception
+            );
+            multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), createdBy);
+        }
+    }
+
+    private void removeSchema(Topic topic) {
+        if (AVRO.equals(topic.getContentType()) && topicProperties.isRemoveSchema()) {
+            schemaService.getSchema(topic.getQualifiedName()).ifPresent(s ->
+                    schemaService.deleteAllSchemaVersions(topic.getQualifiedName()));
+        }
+    }
+
+    private void removeTopic(Topic topic, RequestUser removedBy) {
+        multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), removedBy);
+        multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
+        auditor.objectRemoved(removedBy.getUsername(), topic);
+        topicOwnerCache.onRemovedTopic(topic);
+    }
+
+    private Optional<String> extractSchema(PatchData patch) {
+        return Optional.ofNullable(patch.getPatch().get("schema")).map(o -> (String) o);
+    }
+
     private List<MessagePreview> loadMessagePreviewsFromAllDc(TopicName topicName) {
         List<DatacenterBoundRepositoryHolder<MessagePreviewRepository>> repositories =
                 repositoryManager.getRepositories(MessagePreviewRepository.class);
@@ -384,13 +417,6 @@ public class TopicService {
             }
         }
         return previews;
-    }
-
-    public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
-        List<Topic> filteredNames = query.filterNames(getAllTopics())
-                .collect(toList());
-        return query.filter(getTopicsMetrics(filteredNames))
-                .collect(toList());
     }
 
     private List<TopicNameWithMetrics> getTopicsMetrics(List<Topic> topics) {

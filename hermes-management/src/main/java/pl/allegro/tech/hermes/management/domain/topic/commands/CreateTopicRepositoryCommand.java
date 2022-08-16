@@ -23,7 +23,7 @@ public class CreateTopicRepositoryCommand extends RepositoryCommand<TopicReposit
 
     @Override
     public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
-        holder.getRepository().removeTopic(topic.getName());
+        holder.getRepository().removeTopic(topic.getName()); //remove topic
     }
 
     @Override
