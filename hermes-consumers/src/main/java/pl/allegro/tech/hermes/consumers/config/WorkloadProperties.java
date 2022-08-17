@@ -1,10 +1,13 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkBalancingParameters;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 import static java.lang.Math.abs;
 import static java.util.UUID.randomUUID;
@@ -29,6 +32,11 @@ public class WorkloadProperties implements WorkBalancingParameters {
     private boolean autoRebalance = true;
 
     private Duration deadAfter = Duration.ofSeconds(120);
+
+    private WorkBalancingStrategy workBalancingStrategy = WorkBalancingStrategy.WEIGHTED;
+
+    @NestedConfigurationProperty
+    private WeightedWorkBalancingProperties weightedWorkBalancing = new WeightedWorkBalancingProperties();
 
     public int getRegistryBinaryEncoderAssignmentsBufferSizeBytes() {
         return registryBinaryEncoderAssignmentsBufferSizeBytes;
@@ -104,5 +112,56 @@ public class WorkloadProperties implements WorkBalancingParameters {
 
     public void setDeadAfter(Duration deadAfter) {
         this.deadAfter = deadAfter;
+    }
+
+    public WorkBalancingStrategy getWorkBalancingStrategy() {
+        return workBalancingStrategy;
+    }
+
+    public void setWorkBalancingStrategy(WorkBalancingStrategy workBalancingStrategy) {
+        this.workBalancingStrategy = workBalancingStrategy;
+    }
+
+    public WeightedWorkBalancingProperties getWeightedWorkBalancing() {
+        return weightedWorkBalancing;
+    }
+
+    public void setWeightedWorkBalancing(WeightedWorkBalancingProperties weightedWorkBalancing) {
+        this.weightedWorkBalancing = weightedWorkBalancing;
+    }
+
+    public static class WeightedWorkBalancingProperties {
+
+        private double minSignificantChangePercent = 5;
+
+        private Duration loadReportingInterval = Duration.ofMinutes(1);
+
+        public double getMinSignificantChangePercent() {
+            return minSignificantChangePercent;
+        }
+
+        public void setMinSignificantChangePercent(double minSignificantChangePercent) {
+            this.minSignificantChangePercent = minSignificantChangePercent;
+        }
+
+        public Duration getLoadReportingInterval() {
+            return loadReportingInterval;
+        }
+
+        public void setLoadReportingInterval(Duration loadReportingInterval) {
+            this.loadReportingInterval = loadReportingInterval;
+        }
+    }
+
+    public enum WorkBalancingStrategy {
+        SELECTIVE,
+        WEIGHTED;
+
+        public static class UnknownWorkBalancingStrategyException extends InternalProcessingException {
+
+            public UnknownWorkBalancingStrategyException() {
+                super("Unknown work balancing strategy. Use one of: " + Arrays.toString(values()));
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.NoOpSubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
@@ -496,7 +497,8 @@ public class ConsumerMessageSenderTest {
                 hermesMetrics,
                 ASYNC_TIMEOUT_MS,
                 new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor()),
-                Clock.systemUTC()
+                Clock.systemUTC(),
+                new NoOpSubscriptionLoadRecorder()
         );
         sender.initialize();
 

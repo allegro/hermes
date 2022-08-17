@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchingResult;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.BatchConsumerRateLimiter;
@@ -49,6 +50,7 @@ public class BatchConsumer implements Consumer {
     private final MessageConverterResolver messageConverterResolver;
     private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final Trackers trackers;
+    private final SubscriptionLoadRecorder loadRecorder;
 
     private Topic topic;
     private final OffsetQueue offsetQueue;
@@ -69,7 +71,8 @@ public class BatchConsumer implements Consumer {
                          Trackers trackers,
                          Subscription subscription,
                          Topic topic,
-                         boolean useTopicMessageSize) {
+                         boolean useTopicMessageSize,
+                         SubscriptionLoadRecorder loadRecorder) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.sender = sender;
         this.batchFactory = batchFactory;
@@ -77,6 +80,7 @@ public class BatchConsumer implements Consumer {
         this.subscription = subscription;
         this.hermesMetrics = hermesMetrics;
         this.useTopicMessageSize = useTopicMessageSize;
+        this.loadRecorder = loadRecorder;
         this.monitoring = new BatchMonitoring(hermesMetrics, trackers);
         this.messageConverterResolver = messageConverterResolver;
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
@@ -123,10 +127,25 @@ public class BatchConsumer implements Consumer {
     @Override
     public void initialize() {
         logger.debug("Consumer: preparing receiver for subscription {}", subscription.getQualifiedName());
-        MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(topic, subscription, new BatchConsumerRateLimiter());
+        MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(
+                topic,
+                subscription,
+                new BatchConsumerRateLimiter(),
+                loadRecorder
+        );
 
         logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());
-        this.receiver = new MessageBatchReceiver(receiver, batchFactory, hermesMetrics, messageConverterResolver, compositeMessageContentWrapper, topic, trackers);
+        this.receiver = new MessageBatchReceiver(
+                receiver,
+                batchFactory,
+                hermesMetrics,
+                messageConverterResolver,
+                compositeMessageContentWrapper,
+                topic,
+                trackers,
+                loadRecorder
+        );
+        loadRecorder.initialize();
     }
 
     @Override
@@ -137,6 +156,7 @@ public class BatchConsumer implements Consumer {
         } else {
             logger.info("No batch receiver to stop [subscription={}].", subscription.getQualifiedName());
         }
+        loadRecorder.shutdown();
     }
 
     @Override
@@ -210,6 +230,7 @@ public class BatchConsumer implements Consumer {
     private void deliver(Runnable signalsInterrupt, MessageBatch batch, Retryer<MessageSendingResult> retryer) {
         try (Timer.Context timer = hermesMetrics.subscriptionLatencyTimer(subscription).time()) {
             retryer.call(() -> {
+                loadRecorder.recordSingleOperation();
                 signalsInterrupt.run();
                 return sender.send(
                         batch,
