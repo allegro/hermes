@@ -76,7 +76,7 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
                 workloadConstraintsRepository
         );
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("BalancingExecutor-%d").build();
+                .setNameFormat("balancing-executor-%d").build();
         this.rebalanceScheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 

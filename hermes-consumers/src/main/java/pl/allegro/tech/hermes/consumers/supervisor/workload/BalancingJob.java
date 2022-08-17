@@ -110,13 +110,13 @@ class BalancingJob implements Runnable {
 
     private WorkloadConstraints prepareWorkloadConstraints(List<String> activeConsumers) {
         ConsumersWorkloadConstraints constraints = workloadConstraintsRepository.getConsumersWorkloadConstraints();
-        return new WorkloadConstraints(
-                activeConsumers.size(),
-                workBalancingParameters.getConsumersPerSubscription(),
-                workBalancingParameters.getMaxSubscriptionsPerConsumer(),
-                constraints.getSubscriptionConstraints(),
-                constraints.getTopicConstraints()
-        );
+        return WorkloadConstraints.builder()
+                .withActiveConsumers(activeConsumers.size())
+                .withConsumersPerSubscription(workBalancingParameters.getConsumersPerSubscription())
+                .withMaxSubscriptionsPerConsumer(workBalancingParameters.getMaxSubscriptionsPerConsumer())
+                .withSubscriptionConstraints(constraints.getSubscriptionConstraints())
+                .withTopicConstraints(constraints.getTopicConstraints())
+                .build();
     }
 
     private WorkDistributionChanges calculateWorkDistributionChanges(SubscriptionAssignmentView initialState,
