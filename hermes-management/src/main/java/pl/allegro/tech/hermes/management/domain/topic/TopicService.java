@@ -155,7 +155,7 @@ public class TopicService {
         boolean anySubscriptionWithoutAutoRemove = subscriptions.stream()
                 .anyMatch(sub -> !sub.isAutoDeleteWithTopicEnabled());
 
-        if (!anySubscriptionWithoutAutoRemove) {
+        if (anySubscriptionWithoutAutoRemove) {
             logger.info("Cannot remove topic due to connected subscriptions");
             throw new TopicNotEmptyException(topicName);
         }
