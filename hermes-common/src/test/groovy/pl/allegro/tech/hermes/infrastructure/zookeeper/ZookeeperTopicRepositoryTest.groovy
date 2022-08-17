@@ -187,20 +187,6 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
         !repository.topicExists(new TopicName(GROUP, 'remove'))
     }
 
-    def "should throw exception when trying to remove topic with subscriptions"() {
-        given:
-        repository.createTopic(topic(GROUP, 'removeWithSubscriptions').build())
-        wait.untilTopicCreated(GROUP, 'removeWithSubscriptions')
-        subscriptionRepository.createSubscription(subscription("${GROUP}.removeWithSubscriptions", 'ups').build())
-        wait.untilSubscriptionCreated(new TopicName(GROUP, 'removeWithSubscriptions'), 'ups')
-
-        when:
-        repository.removeTopic(new TopicName(GROUP, 'removeWithSubscriptions'))
-
-        then:
-        thrown(TopicNotEmptyException)
-    }
-
     def "should remove topic with metrics but without subscriptions"() {
         given:
         def topicName = "topicWithMetrics"

@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.helpers.Patch;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -30,7 +31,7 @@ import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHold
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.subscription.commands.RemoveSubscriptionRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.CreateTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.RemoveTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.TouchTopicRepositoryCommand;
@@ -43,8 +44,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -62,7 +63,7 @@ public class TopicService {
 
     private final TopicRepository topicRepository;
     private final GroupService groupService;
-    private final SubscriptionService subscriptionService;
+    private final SubscriptionRepository subscriptionRepository;
     private final TopicProperties topicProperties;
     private final SchemaService schemaService;
 
@@ -85,7 +86,7 @@ public class TopicService {
     public TopicService(MultiDCAwareService multiDCAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
-                        SubscriptionService subscriptionService, TopicProperties topicProperties,
+                        SubscriptionRepository subscriptionRepository, TopicProperties topicProperties,
                         SchemaService schemaService, TopicMetricsRepository metricRepository,
                         TopicBlacklistService topicBlacklistService, TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
@@ -97,7 +98,7 @@ public class TopicService {
         this.multiDCAwareService = multiDCAwareService;
         this.topicRepository = topicRepository;
         this.groupService = groupService;
-        this.subscriptionService = subscriptionService;
+        this.subscriptionRepository = subscriptionRepository;
         this.topicProperties = topicProperties;
         this.schemaService = schemaService;
         this.metricRepository = metricRepository;
@@ -140,15 +141,14 @@ public class TopicService {
     }
 
     private void removeRelatedSubscriptions(Topic topic, RequestUser removedBy) {
-        List<Subscription> subscriptions = subscriptionService.listSubscriptions(topic.getName());
+        List<Subscription> subscriptions = subscriptionRepository.listSubscriptions(topic.getName());
+
         if (subscriptions.isEmpty()) {
             return;
         }
 
         ensureSubscriptionsHaveAutoRemove(subscriptions, topic.getName());
-        subscriptions.forEach(subscription -> {
-            subscriptionService.removeSubscription(topic.getName(), subscription.getName(), removedBy);
-        });
+        subscriptions.forEach(sub -> removeSubscription(topic.getName(), sub.getName(), removedBy));
     }
 
     private void ensureSubscriptionsHaveAutoRemove(List<Subscription> subscriptions, TopicName topicName) {
@@ -156,8 +156,16 @@ public class TopicService {
                 .anyMatch(sub -> !sub.isAutoDeleteWithTopicEnabled());
 
         if (!anySubscriptionWithoutAutoRemove) {
+            logger.info("Cannot remove topic due to connected subscriptions");
             throw new TopicNotEmptyException(topicName);
         }
+    }
+
+    private void removeSubscription(TopicName topicName, String subscriptionName, RequestUser removedBy) {
+        auditor.beforeObjectRemoval(removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);
+        multiDcExecutor.executeByUser(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
+        auditor.objectRemoved(removedBy.getUsername(), subscriptionName);
+        logger.info("Subscription [{}] has been automatically removed with topic [{}]", subscriptionName, topicName.getName());
     }
 
     public void updateTopicWithSchema(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
