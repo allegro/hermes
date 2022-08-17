@@ -55,7 +55,8 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
                               String kafkaClusterName,
                               HermesMetrics metrics,
                               WorkloadConstraintsRepository workloadConstraintsRepository,
-                              WorkBalancer workBalancer) {
+                              WorkBalancer workBalancer,
+                              BalancingListener balancingListener) {
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
         this.subscriptionsCache = subscriptionsCache;
@@ -73,7 +74,8 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
                 workBalancer,
                 metrics,
                 kafkaClusterName,
-                workloadConstraintsRepository
+                workloadConstraintsRepository,
+                balancingListener
         );
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("balancing-executor-%d").build();

@@ -44,7 +44,7 @@ public class SubscriptionAssignmentView {
     }
 
     public Set<SubscriptionName> getSubscriptions() {
-        return ImmutableSet.copyOf(subscriptionAssignments.keySet());
+        return subscriptionAssignments.keySet();
     }
 
     public int getSubscriptionsCount() {
@@ -52,7 +52,7 @@ public class SubscriptionAssignmentView {
     }
 
     public Set<String> getConsumerNodes() {
-        return ImmutableSet.copyOf(consumerNodeAssignments.keySet());
+        return consumerNodeAssignments.keySet();
     }
 
     public List<SubscriptionAssignment> getAllAssignments() {

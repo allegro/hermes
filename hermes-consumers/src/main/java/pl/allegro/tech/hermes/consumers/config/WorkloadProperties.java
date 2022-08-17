@@ -134,7 +134,15 @@ public class WorkloadProperties implements WorkBalancingParameters {
 
         private int consumerLoadEncoderBufferSizeBytes = 100_000;
 
+        private int subscriptionProfilesEncoderBufferSizeBytes = 100_000;
+
         private Duration loadReportingInterval = Duration.ofMinutes(1);
+
+        private Duration stabilizationWindowSize = Duration.ofMinutes(30);
+
+        private double minSignificantChangePercent = 5;
+
+        private Duration weightWindowSize = Duration.ofMinutes(15);
 
         public int getConsumerLoadEncoderBufferSizeBytes() {
             return consumerLoadEncoderBufferSizeBytes;
@@ -144,12 +152,44 @@ public class WorkloadProperties implements WorkBalancingParameters {
             this.consumerLoadEncoderBufferSizeBytes = consumerLoadEncoderBufferSizeBytes;
         }
 
+        public int getSubscriptionProfilesEncoderBufferSizeBytes() {
+            return subscriptionProfilesEncoderBufferSizeBytes;
+        }
+
+        public void setSubscriptionProfilesEncoderBufferSizeBytes(int subscriptionProfilesEncoderBufferSizeBytes) {
+            this.subscriptionProfilesEncoderBufferSizeBytes = subscriptionProfilesEncoderBufferSizeBytes;
+        }
+
         public Duration getLoadReportingInterval() {
             return loadReportingInterval;
         }
 
         public void setLoadReportingInterval(Duration loadReportingInterval) {
             this.loadReportingInterval = loadReportingInterval;
+        }
+
+        public Duration getStabilizationWindowSize() {
+            return stabilizationWindowSize;
+        }
+
+        public void setStabilizationWindowSize(Duration stabilizationWindowSize) {
+            this.stabilizationWindowSize = stabilizationWindowSize;
+        }
+
+        public double getMinSignificantChangePercent() {
+            return minSignificantChangePercent;
+        }
+
+        public void setMinSignificantChangePercent(double minSignificantChangePercent) {
+            this.minSignificantChangePercent = minSignificantChangePercent;
+        }
+
+        public Duration getWeightWindowSize() {
+            return weightWindowSize;
+        }
+
+        public void setWeightWindowSize(Duration weightWindowSize) {
+            this.weightWindowSize = weightWindowSize;
         }
     }
 

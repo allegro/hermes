@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.time;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -13,6 +14,10 @@ public class ModifiableClock extends Clock {
 
     public void advanceMinutes(int minutes) {
         clock = fixed(now(clock).plus(minutes, ChronoUnit.MINUTES), ZoneId.systemDefault());
+    }
+
+    public void advance(Duration step) {
+        clock = fixed(now(clock).plus(step), ZoneId.systemDefault());
     }
 
     @Override

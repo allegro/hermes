@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import com.codahale.metrics.Timer;
-import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConst
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 
 import java.util.List;
-import java.util.Set;
 
 class BalancingJob implements Runnable {
 
@@ -26,6 +25,7 @@ class BalancingJob implements Runnable {
     private final HermesMetrics metrics;
     private final String kafkaCluster;
     private final WorkloadConstraintsRepository workloadConstraintsRepository;
+    private final BalancingListener balancingListener;
     private final BalancingJobMetrics balancingMetrics = new BalancingJobMetrics();
 
     BalancingJob(ConsumerNodesRegistry consumersRegistry,
@@ -36,7 +36,8 @@ class BalancingJob implements Runnable {
                  WorkBalancer workBalancer,
                  HermesMetrics metrics,
                  String kafkaCluster,
-                 WorkloadConstraintsRepository workloadConstraintsRepository) {
+                 WorkloadConstraintsRepository workloadConstraintsRepository,
+                 BalancingListener balancingListener) {
         this.consumersRegistry = consumersRegistry;
         this.workBalancingParameters = workBalancingParameters;
         this.subscriptionsCache = subscriptionsCache;
@@ -46,6 +47,7 @@ class BalancingJob implements Runnable {
         this.metrics = metrics;
         this.kafkaCluster = kafkaCluster;
         this.workloadConstraintsRepository = workloadConstraintsRepository;
+        this.balancingListener = balancingListener;
         metrics.registerGauge(
                 gaugeName(kafkaCluster, ".all-assignments"),
                 () -> balancingMetrics.allAssignments
@@ -78,10 +80,13 @@ class BalancingJob implements Runnable {
                     clusterAssignmentCache.refresh();
 
                     SubscriptionAssignmentView initialState = clusterAssignmentCache.createSnapshot();
-
                     List<String> activeConsumers = consumersRegistry.listConsumerNodes();
+                    List<SubscriptionName> activeSubscriptions = subscriptionsCache.listActiveSubscriptionNames();
+
+                    balancingListener.onBeforeBalancing(activeConsumers, activeSubscriptions);
+
                     WorkBalancingResult work = workBalancer.balance(
-                            subscriptionsCache.listActiveSubscriptionNames(),
+                            activeSubscriptions,
                             activeConsumers,
                             initialState,
                             prepareWorkloadConstraints(activeConsumers)
@@ -94,6 +99,8 @@ class BalancingJob implements Runnable {
                         logger.info("Finished workload balance");
 
                         clusterAssignmentCache.refresh(); // refresh cache with just stored data
+
+                        balancingListener.onAfterBalancing(changes);
 
                         updateMetrics(work, changes);
                     } else {
@@ -124,15 +131,7 @@ class BalancingJob implements Runnable {
         SubscriptionAssignmentView balancedState = workBalancingResult.getAssignmentsView();
         SubscriptionAssignmentView deletions = initialState.deletions(balancedState);
         SubscriptionAssignmentView additions = initialState.additions(balancedState);
-        Sets.SetView<String> modifiedConsumerNodes = Sets.union(
-                deletions.getConsumerNodes(),
-                additions.getConsumerNodes()
-        );
-        return new WorkDistributionChanges(
-                deletions.getAllAssignments().size(),
-                additions.getAllAssignments().size(),
-                modifiedConsumerNodes
-        );
+        return new WorkDistributionChanges(deletions, additions);
     }
 
     private void applyWorkloadChanges(WorkDistributionChanges changes, WorkBalancingResult workBalancingResult) {
@@ -164,31 +163,6 @@ class BalancingJob implements Runnable {
             this.missingResources = 0;
             this.deletedAssignments = 0;
             this.createdAssignments = 0;
-        }
-    }
-
-    private static class WorkDistributionChanges {
-
-        private final int assignmentsDeleted;
-        private final int assignmentsCreated;
-        private final Set<String> modifiedConsumerNodes;
-
-        WorkDistributionChanges(int assignmentsDeleted, int assignmentsCreated, Set<String> modifiedConsumerNodes) {
-            this.assignmentsDeleted = assignmentsDeleted;
-            this.assignmentsCreated = assignmentsCreated;
-            this.modifiedConsumerNodes = modifiedConsumerNodes;
-        }
-
-        int getDeletedAssignmentsCount() {
-            return assignmentsDeleted;
-        }
-
-        int getCreatedAssignmentsCount() {
-            return assignmentsCreated;
-        }
-
-        Set<String> getModifiedConsumerNodes() {
-            return modifiedConsumerNodes;
         }
     }
 }
