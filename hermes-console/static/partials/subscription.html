@@ -185,6 +185,11 @@
                         <span uib-popover='If true Hermes will attach HTTP headers with subscription identity.'
                               popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
                     </p>
+                    <p>
+                        <strong>Automatically remove:</strong> {{subscription.autoDeleteWithTopic}}
+                        <span uib-popover='When the associated topic is deleted, Hermes will delete the subscription automatically.'
+                              popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                    </p>
                     <p ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">
                         <strong>{{entry.title}}:</strong>
                         {{entry.options[subscription.endpointAddressResolverMetadata[key]] || subscription.endpointAddressResolverMetadata[key]}}
