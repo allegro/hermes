@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.time.ModifiableClock;
+import pl.allegro.tech.hermes.test.helper.time.ModifiableClock;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;

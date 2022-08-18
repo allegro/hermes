@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.common.time;
+package pl.allegro.tech.hermes.test.helper.time;
 
 import java.time.Clock;
 import java.time.Instant;
