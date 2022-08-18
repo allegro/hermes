@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException
-import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
@@ -14,7 +13,6 @@ import pl.allegro.tech.hermes.test.IntegrationTest
 import java.time.Instant
 
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class ZookeeperTopicRepositoryTest extends IntegrationTest {

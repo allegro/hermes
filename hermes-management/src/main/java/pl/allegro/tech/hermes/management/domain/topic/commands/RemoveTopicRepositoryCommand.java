@@ -23,7 +23,7 @@ public class RemoveTopicRepositoryCommand extends RepositoryCommand<TopicReposit
 
     @Override
     public void execute(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
-        holder.getRepository().removeTopic(topicName); // remove topic
+        holder.getRepository().removeTopic(topicName);
     }
 
     @Override

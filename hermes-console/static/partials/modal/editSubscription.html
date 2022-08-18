@@ -315,14 +315,14 @@
                 </div>
             </div>
 
-            <div class="form-group {{subscriptionForm.autoDeleteWithTopic.$valid ? '' : 'has-error'}}">
+            <div class="form-group {{subscriptionForm.autoDeleteWithTopicEnabled.$valid ? '' : 'has-error'}}">
                 <label for="subscriptionIdentityHeadersEnabled" class="col-md-3 control-label">Delete the subscription automatically</label>
                 <div class="col-md-9">
                     <div class="input-group checkbox">
                         <label>
-                            <input type="checkbox" id="autoDeleteWithTopic"
-                                   name="autoDeleteWithTopic"
-                                   ng-model="subscription.autoDeleteWithTopic"/>
+                            <input type="checkbox" id="autoDeleteWithTopicEnabled"
+                                   name="autoDeleteWithTopicEnabled"
+                                   ng-model="subscription.autoDeleteWithTopicEnabled"/>
                         </label>
                     </div>
                 </div>

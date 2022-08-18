@@ -86,7 +86,7 @@ public class Subscription implements Anonymizable {
 
     private boolean subscriptionIdentityHeadersEnabled;
 
-    private boolean autoDeleteWithTopicEnabled = false;
+    private boolean autoDeleteWithTopicEnabled;
 
     private Instant createdAt;
 
@@ -158,10 +158,10 @@ public class Subscription implements Anonymizable {
                                                         SubscriptionOAuthPolicy oAuthPolicy,
                                                         boolean http2Enabled,
                                                         boolean subscriptionIdentityHeadersEnabled,
-                                                        boolean autoDeleteWithTopic) {
+                                                        boolean autoDeleteWithTopicEnabled) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
                 owner, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
-                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled, autoDeleteWithTopic);
+                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled, autoDeleteWithTopicEnabled);
     }
 
     public static Subscription createBatchSubscription(TopicName topicName,
@@ -208,7 +208,7 @@ public class Subscription implements Anonymizable {
             @JsonProperty("oAuthPolicy") SubscriptionOAuthPolicy oAuthPolicy,
             @JsonProperty("http2Enabled") boolean http2Enabled,
             @JsonProperty("subscriptionIdentityHeadersEnabled") boolean subscriptionIdentityHeadersEnabled,
-            @JsonProperty("autoDeleteWithTopic") boolean autoDeleteWithTopicEnabled) {
+            @JsonProperty("autoDeleteWithTopicEnabled") boolean autoDeleteWithTopicEnabled) {
 
         DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
         SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;

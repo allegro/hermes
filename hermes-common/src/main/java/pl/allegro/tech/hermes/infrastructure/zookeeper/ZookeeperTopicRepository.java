@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
-import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
