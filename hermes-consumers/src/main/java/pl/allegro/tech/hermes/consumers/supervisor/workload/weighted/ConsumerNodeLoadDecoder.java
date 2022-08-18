@@ -43,6 +43,10 @@ class ConsumerNodeLoadDecoder {
 
         body.wrap(buffer, header.encodedLength(), header.blockLength(), header.version());
 
+        return new ConsumerNodeLoad(decodeSubscriptionLoads(body));
+    }
+
+    private Map<SubscriptionName, SubscriptionLoad> decodeSubscriptionLoads(ConsumerLoadDecoder body) {
         Map<SubscriptionName, SubscriptionLoad> subscriptionLoads = new HashMap<>();
         for (SubscriptionsDecoder loadPerSubscriptionDecoder : body.subscriptions()) {
             long id = loadPerSubscriptionDecoder.id();
@@ -53,6 +57,6 @@ class ConsumerNodeLoadDecoder {
                 subscriptionLoads.put(subscriptionId.get().getSubscriptionName(), load);
             }
         }
-        return new ConsumerNodeLoad(subscriptionLoads);
+        return subscriptionLoads;
     }
 }

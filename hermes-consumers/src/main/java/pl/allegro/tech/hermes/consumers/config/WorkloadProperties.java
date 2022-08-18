@@ -132,16 +132,16 @@ public class WorkloadProperties implements WorkBalancingParameters {
 
     public static class WeightedWorkBalancingProperties {
 
-        private double minSignificantChangePercent = 5;
+        private int consumerLoadEncoderBufferSizeBytes = 100_000;
 
         private Duration loadReportingInterval = Duration.ofMinutes(1);
 
-        public double getMinSignificantChangePercent() {
-            return minSignificantChangePercent;
+        public int getConsumerLoadEncoderBufferSizeBytes() {
+            return consumerLoadEncoderBufferSizeBytes;
         }
 
-        public void setMinSignificantChangePercent(double minSignificantChangePercent) {
-            this.minSignificantChangePercent = minSignificantChangePercent;
+        public void setConsumerLoadEncoderBufferSizeBytes(int consumerLoadEncoderBufferSizeBytes) {
+            this.consumerLoadEncoderBufferSizeBytes = consumerLoadEncoderBufferSizeBytes;
         }
 
         public Duration getLoadReportingInterval() {

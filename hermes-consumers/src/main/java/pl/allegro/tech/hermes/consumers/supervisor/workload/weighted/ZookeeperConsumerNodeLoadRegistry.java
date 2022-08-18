@@ -54,14 +54,15 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
                                              Duration interval,
                                              ExecutorServiceFactory executorServiceFactory,
                                              Clock clock,
-                                             HermesMetrics metrics) {
+                                             HermesMetrics metrics,
+                                             int consumerLoadEncoderBufferSizeBytes) {
         this.curator = curator;
         this.zookeeperPaths = zookeeperPaths;
         this.clock = clock;
         this.basePath = zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_WORKLOAD_PATH, clusterName, CONSUMER_LOAD_PATH);
         this.currentConsumerPath = resolveConsumerLoadPath(currentConsumerId);
         this.interval = interval;
-        this.encoder = new ConsumerNodeLoadEncoder(subscriptionIds);
+        this.encoder = new ConsumerNodeLoadEncoder(subscriptionIds, consumerLoadEncoderBufferSizeBytes);
         this.decoder = new ConsumerNodeLoadDecoder(subscriptionIds);
         this.executor = executorServiceFactory.createSingleThreadScheduledExecutor("consumer-node-load-reporter-%d");
         metrics.registerGauge("consumer-workload.weighted.load.ops", (Gauge<Double>) () -> currentOperationsPerSecond);

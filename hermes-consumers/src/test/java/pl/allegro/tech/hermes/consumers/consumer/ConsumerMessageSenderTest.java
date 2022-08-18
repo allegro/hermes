@@ -18,7 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.NoOpSubscriptionLoadRecorder;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.NoOpConsumerNodeLoadRegistry;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
@@ -28,8 +28,8 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -498,7 +498,7 @@ public class ConsumerMessageSenderTest {
                 ASYNC_TIMEOUT_MS,
                 new FutureAsyncTimeout<>(MessageSendingResult::failedResult, Executors.newSingleThreadScheduledExecutor()),
                 Clock.systemUTC(),
-                new NoOpSubscriptionLoadRecorder()
+                new NoOpConsumerNodeLoadRegistry().register(subscription.getQualifiedName())
         );
         sender.initialize();
 

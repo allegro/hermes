@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WeightedWorkBalancingProperties;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WorkBalancingStrategy.UnknownWorkBalancingStrategyException;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
@@ -119,16 +120,18 @@ public class SupervisorConfiguration {
                 return new NoOpConsumerNodeLoadRegistry();
             case WEIGHTED:
                 KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+                WeightedWorkBalancingProperties weightedWorkBalancing = workloadProperties.getWeightedWorkBalancing();
                 return new ZookeeperConsumerNodeLoadRegistry(
                         curator,
                         subscriptionIds,
                         zookeeperPaths,
                         workloadProperties.getNodeId(),
                         kafkaProperties.getClusterName(),
-                        workloadProperties.getWeightedWorkBalancing().getLoadReportingInterval(),
+                        weightedWorkBalancing.getLoadReportingInterval(),
                         executorServiceFactory,
                         clock,
-                        metrics
+                        metrics,
+                        weightedWorkBalancing.getConsumerLoadEncoderBufferSizeBytes()
                 );
         }
         throw new UnknownWorkBalancingStrategyException();

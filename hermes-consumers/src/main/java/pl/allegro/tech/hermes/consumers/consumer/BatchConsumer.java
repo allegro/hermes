@@ -126,6 +126,7 @@ public class BatchConsumer implements Consumer {
 
     @Override
     public void initialize() {
+        loadRecorder.initialize();
         logger.debug("Consumer: preparing receiver for subscription {}", subscription.getQualifiedName());
         MessageReceiver receiver = messageReceiverFactory.createMessageReceiver(
                 topic,
@@ -145,7 +146,6 @@ public class BatchConsumer implements Consumer {
                 trackers,
                 loadRecorder
         );
-        loadRecorder.initialize();
     }
 
     @Override

@@ -44,7 +44,8 @@ public class ZookeeperConsumerNodeLoadRegistryTest extends ZookeeperBaseTest {
             Duration.ofMillis(50),
             new TestExecutorServiceFactory(scheduledExecutorService),
             clock,
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            100_000
     );
 
     @Before

@@ -15,14 +15,12 @@ import java.util.Optional;
 
 class ConsumerNodeLoadEncoder {
 
-    private static final int BUFFER_SIZE_IN_BYTES = 100_000;
-
     private final SubscriptionIds subscriptionIds;
     private final MutableDirectBuffer buffer;
 
-    ConsumerNodeLoadEncoder(SubscriptionIds subscriptionIds) {
+    ConsumerNodeLoadEncoder(SubscriptionIds subscriptionIds, int bufferSize) {
         this.subscriptionIds = subscriptionIds;
-        this.buffer = new ExpandableDirectByteBuffer(BUFFER_SIZE_IN_BYTES);
+        this.buffer = new ExpandableDirectByteBuffer(bufferSize);
     }
 
     byte[] encode(ConsumerNodeLoad metrics) {
