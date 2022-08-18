@@ -172,6 +172,23 @@ public class TopicManagementTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.FORBIDDEN).hasErrorCode(ErrorCode.TOPIC_NOT_EMPTY);
     }
 
+    @Test
+    public void shouldRemoveTopicWithRelatedSubscriptionsWhenAutoRemoveEnabled() {
+        // given
+        Topic topic = operations.buildTopic("removeNonemptyTopicGroup", "topic");
+        operations.createSubscription(
+                topic,
+                subscription(topic, "subscription")
+                        .withAutoDeleteWithTopicEnabled(true)
+                        .build());
+
+        // when
+        Response response = management.topic().remove("removeNonemptyTopicGroup.topic");
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+    }
+
     @Test(enabled = false)
     @Unreliable
     public void shouldRecreateTopicAfterDeletion() {
