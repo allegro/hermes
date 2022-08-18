@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ConsumerWorkloadEncoder {
+class ConsumerWorkloadEncoder {
 
     private final SubscriptionIds subscriptionIds;
     private final MutableDirectBuffer buffer;

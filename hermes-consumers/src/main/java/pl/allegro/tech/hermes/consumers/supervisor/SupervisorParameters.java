@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.supervisor.workload;
+package pl.allegro.tech.hermes.consumers.supervisor;
 
 import java.time.Duration;
 

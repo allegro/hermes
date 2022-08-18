@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumerParameters;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.SupervisorParameters;
+import pl.allegro.tech.hermes.consumers.supervisor.SupervisorParameters;
 
 import java.time.Duration;
 

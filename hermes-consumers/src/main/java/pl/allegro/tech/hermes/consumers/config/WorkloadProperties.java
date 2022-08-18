@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveSupervisorParameters;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkBalancingParameters;
 
 import java.time.Duration;
 
@@ -10,7 +10,7 @@ import static java.lang.Math.abs;
 import static java.util.UUID.randomUUID;
 
 @ConfigurationProperties(prefix = "consumer.workload")
-public class WorkloadProperties implements SelectiveSupervisorParameters {
+public class WorkloadProperties implements WorkBalancingParameters {
 
     private int registryBinaryEncoderAssignmentsBufferSizeBytes = 100_000;
 
@@ -73,7 +73,6 @@ public class WorkloadProperties implements SelectiveSupervisorParameters {
         this.assignmentProcessingThreadPoolSize = assignmentProcessingThreadPoolSize;
     }
 
-    @Override
     public String getNodeId() {
         return nodeId;
     }
