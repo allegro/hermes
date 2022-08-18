@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverter
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverterFactory
@@ -34,6 +35,7 @@ class KafkaSingleThreadedMessageReceiverTest extends Specification {
         receiver = new KafkaSingleThreadedMessageReceiver(
                 consumer, converterFactory, Mock(HermesMetrics),
                 kafkaNamesMapper, topic, subscription, Duration.ofMillis(10), 10,
+                Mock(SubscriptionLoadRecorder),
                 Mock(ConsumerPartitionAssignmentState)
         )
     }
