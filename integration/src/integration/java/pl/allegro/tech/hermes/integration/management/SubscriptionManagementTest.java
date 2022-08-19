@@ -107,7 +107,6 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(subscription.isAutoDeleteWithTopicEnabled()).isFalse();
         assertThat(subscription.getQualifiedTopicName()).isEqualTo(topic.getQualifiedName());
         assertThat(subscription.isTrackingEnabled()).isFalse();
-        assertThat(subscription.isTrackingEnabled()).isFalse();
     }
 
     @Test

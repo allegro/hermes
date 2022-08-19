@@ -10,16 +10,13 @@ import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.helpers.Patch;
-import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
-import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
@@ -31,7 +28,7 @@ import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHold
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
-import pl.allegro.tech.hermes.management.domain.subscription.commands.RemoveSubscriptionRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionRemover;
 import pl.allegro.tech.hermes.management.domain.topic.commands.CreateTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.RemoveTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.TouchTopicRepositoryCommand;
@@ -63,7 +60,6 @@ public class TopicService {
 
     private final TopicRepository topicRepository;
     private final GroupService groupService;
-    private final SubscriptionRepository subscriptionRepository;
     private final TopicProperties topicProperties;
     private final SchemaService schemaService;
 
@@ -77,6 +73,7 @@ public class TopicService {
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
     private final RepositoryManager repositoryManager;
     private final TopicOwnerCache topicOwnerCache;
+    private final SubscriptionRemover subscriptionRemover;
     private final ScheduledExecutorService scheduledTopicExecutor = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder()
                     .setNameFormat("scheduled-topic-executor-%d")
@@ -86,7 +83,7 @@ public class TopicService {
     public TopicService(MultiDCAwareService multiDCAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
-                        SubscriptionRepository subscriptionRepository, TopicProperties topicProperties,
+                        TopicProperties topicProperties,
                         SchemaService schemaService, TopicMetricsRepository metricRepository,
                         TopicBlacklistService topicBlacklistService, TopicValidator topicValidator,
                         TopicContentTypeMigrationService topicContentTypeMigrationService,
@@ -94,11 +91,11 @@ public class TopicService {
                         Auditor auditor,
                         MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
                         RepositoryManager repositoryManager,
-                        TopicOwnerCache topicOwnerCache) {
+                        TopicOwnerCache topicOwnerCache,
+                        SubscriptionRemover subscriptionRemover) {
         this.multiDCAwareService = multiDCAwareService;
         this.topicRepository = topicRepository;
         this.groupService = groupService;
-        this.subscriptionRepository = subscriptionRepository;
         this.topicProperties = topicProperties;
         this.schemaService = schemaService;
         this.metricRepository = metricRepository;
@@ -110,6 +107,7 @@ public class TopicService {
         this.multiDcExecutor = multiDcExecutor;
         this.repositoryManager = repositoryManager;
         this.topicOwnerCache = topicOwnerCache;
+        this.subscriptionRemover = subscriptionRemover;
     }
 
     public void createTopicWithSchema(TopicWithSchema topicWithSchema, RequestUser createdBy, CreatorRights isAllowedToManage) {
@@ -129,7 +127,7 @@ public class TopicService {
 
     public void removeTopicWithSchema(Topic topic, RequestUser removedBy) {
         auditor.beforeObjectRemoval(removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
-        removeRelatedSubscriptions(topic, removedBy);
+        subscriptionRemover.removeSubscriptionRelatedToTopic(topic, removedBy);
         removeSchema(topic);
         if (!topicProperties.isAllowRemoval()) {
             throw new TopicRemovalDisabledException(topic);
@@ -138,34 +136,6 @@ public class TopicService {
             topicBlacklistService.unblacklist(topic.getQualifiedName(), removedBy);
         }
         removeTopic(topic, removedBy);
-    }
-
-    private void removeRelatedSubscriptions(Topic topic, RequestUser removedBy) {
-        List<Subscription> subscriptions = subscriptionRepository.listSubscriptions(topic.getName());
-
-        if (subscriptions.isEmpty()) {
-            return;
-        }
-
-        ensureSubscriptionsHaveAutoRemove(subscriptions, topic.getName());
-        subscriptions.forEach(sub -> removeSubscription(topic.getName(), sub.getName(), removedBy));
-    }
-
-    private void ensureSubscriptionsHaveAutoRemove(List<Subscription> subscriptions, TopicName topicName) {
-        boolean anySubscriptionWithoutAutoRemove = subscriptions.stream()
-                .anyMatch(sub -> !sub.isAutoDeleteWithTopicEnabled());
-
-        if (anySubscriptionWithoutAutoRemove) {
-            logger.info("Cannot remove topic due to connected subscriptions");
-            throw new TopicNotEmptyException(topicName);
-        }
-    }
-
-    private void removeSubscription(TopicName topicName, String subscriptionName, RequestUser removedBy) {
-        auditor.beforeObjectRemoval(removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);
-        multiDcExecutor.executeByUser(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
-        auditor.objectRemoved(removedBy.getUsername(), subscriptionName);
-        logger.info("Subscription [{}] has been automatically removed with topic [{}]", subscriptionName, topicName.getName());
     }
 
     public void updateTopicWithSchema(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
