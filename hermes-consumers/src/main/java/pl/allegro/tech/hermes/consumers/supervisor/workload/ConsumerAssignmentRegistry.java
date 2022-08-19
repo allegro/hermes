@@ -31,8 +31,6 @@ public class ConsumerAssignmentRegistry {
     public void updateAssignments(String consumerNode, Set<SubscriptionName> subscriptions) {
         byte[] encoded = consumerAssignmentsEncoder.encode(subscriptions);
         try {
-            logger.info("Writing {} bytes of {} assignments for consumer {}",
-                    encoded.length, subscriptions.size(), consumerNode);
             String path = paths.consumerWorkloadPath(consumerNode);
             zookeeper.writeOrCreatePersistent(path, encoded);
         } catch (Exception e) {
