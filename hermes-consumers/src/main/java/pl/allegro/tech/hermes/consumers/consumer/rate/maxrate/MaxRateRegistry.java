@@ -93,7 +93,6 @@ public class MaxRateRegistry implements NodeCacheListener {
         if (nodeData != null) {
             byte[] data = nodeData.getData();
             ConsumerMaxRates decodedMaxRates = consumerMaxRatesDecoder.decode(data);
-            logger.info("Decoded {} bytes of max rates for current node with {} subscription entries", data.length, decodedMaxRates.size());
             currentConsumerMaxRates.setAllMaxRates(decodedMaxRates);
         }
     }
@@ -142,7 +141,7 @@ public class MaxRateRegistry implements NodeCacheListener {
     }
 
     private void refreshConsumerMaxRate(String consumerId) {
-        logger.info("Refreshing max rate of {}", consumerId);
+        logger.debug("Refreshing max rate of {}", consumerId);
         String consumerMaxRatePath = registryPaths.consumerMaxRatePath(consumerId);
         zookeeper.getNodeData(consumerMaxRatePath)
                 .map(consumerMaxRatesDecoder::decode)
@@ -151,22 +150,22 @@ public class MaxRateRegistry implements NodeCacheListener {
                     maxRates.cleanup(clusterAssignmentCache.getConsumerSubscriptions(consumerId));
                     int cleanedSize = maxRates.size();
                     if (decodedSize > cleanedSize) {
-                        logger.info("Refreshed max rates of {} with {} subscriptions ({} stale entries omitted)",
+                        logger.debug("Refreshed max rates of {} with {} subscriptions ({} stale entries omitted)",
                                 consumerId, cleanedSize, decodedSize - cleanedSize);
                     } else {
-                        logger.info("Refreshed max rates of {} with {} subscriptions", consumerId, cleanedSize);
+                        logger.debug("Refreshed max rates of {} with {} subscriptions", consumerId, cleanedSize);
                     }
                     consumersMaxRates.put(consumerId, maxRates);
                 });
     }
 
     private void refreshConsumerRateHistory(String consumerId) {
-        logger.info("Refreshing rate history of {}", consumerId);
+        logger.debug("Refreshing rate history of {}", consumerId);
         String consumerRateHistoryPath = registryPaths.consumerRateHistoryPath(consumerId);
         zookeeper.getNodeData(consumerRateHistoryPath)
                 .map(consumerRateHistoriesDecoder::decode)
                 .ifPresent(rateHistories -> {
-                    logger.info("Refreshed rate history of {} with {} subscriptions", consumerId, rateHistories.size());
+                    logger.debug("Refreshed rate history of {} with {} subscriptions", consumerId, rateHistories.size());
                     consumersRateHistories.put(consumerId, rateHistories);
                 });
     }
@@ -236,7 +235,6 @@ public class MaxRateRegistry implements NodeCacheListener {
         Set<SubscriptionName> subscriptions = consumerAssignmentCache.getConsumerSubscriptions();
         currentConsumerRateHistories.cleanup(subscriptions);
         byte[] encoded = consumerRateHistoriesEncoder.encode(currentConsumerRateHistories);
-        logger.info("Writing rate history of {} subscriptions, saving {} bytes", currentConsumerRateHistories.size(), encoded.length);
         try {
             zookeeper.writeOrCreatePersistent(registryPaths.currentConsumerRateHistoryPath(), encoded);
         } catch (Exception e) {

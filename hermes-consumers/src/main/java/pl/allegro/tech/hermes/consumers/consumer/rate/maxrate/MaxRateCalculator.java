@@ -61,8 +61,7 @@ class MaxRateCalculator {
                                 = balancer.balance(subscription.getSerialSubscriptionPolicy().getRate(), rateInfos);
 
                         newRates.ifPresent(rates -> {
-                            logger.info("Calculated new max rates for {}: {}",
-                                    subscription.getQualifiedName(), rates);
+                            logger.debug("Calculated new max rates for {}: {}", subscription.getQualifiedName(), rates);
 
                             maxRateRegistry.update(subscription.getQualifiedName(), rates);
                         });

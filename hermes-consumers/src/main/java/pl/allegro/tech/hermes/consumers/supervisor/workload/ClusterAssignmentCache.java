@@ -69,10 +69,7 @@ public class ClusterAssignmentCache {
         Optional<byte[]> nodeData = zookeeper.getNodeData(paths.consumerWorkloadPath(consumer));
         if (nodeData.isPresent()) {
             byte[] data = nodeData.get();
-            Set<SubscriptionName> subscriptions = consumerWorkloadDecoder.decode(data);
-            logger.info("Decoded {} bytes of assignments for consumer {} with {} subscription entries",
-                    data.length, consumer, subscriptions.size());
-            return subscriptions;
+            return consumerWorkloadDecoder.decode(data);
         } else {
             logger.info("No workload data available for consumer {}", consumer);
             return Collections.emptySet();

@@ -60,8 +60,6 @@ public class ConsumerAssignmentCache implements NodeCacheListener {
         if (nodeData != null) {
             byte[] data = nodeData.getData();
             Set<SubscriptionName> subscriptions = consumerWorkloadDecoder.decode(data);
-            logger.info("Decoded {} bytes of assignments for current node with {} subscription entries", data.length, subscriptions.size());
-
             updateAssignedSubscriptions(subscriptions);
         } else {
             logger.info("No workload data available for consumer");
