@@ -33,7 +33,7 @@ public class WorkloadProperties implements WorkBalancingParameters {
 
     private Duration deadAfter = Duration.ofSeconds(120);
 
-    private WorkBalancingStrategy workBalancingStrategy = WorkBalancingStrategy.WEIGHTED;
+    private WorkBalancingStrategy workBalancingStrategy = WorkBalancingStrategy.SELECTIVE;
 
     @NestedConfigurationProperty
     private WeightedWorkBalancingProperties weightedWorkBalancing = new WeightedWorkBalancingProperties();
