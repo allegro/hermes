@@ -1,6 +1,6 @@
 repositories {
     jcenter()
-    maven { url 'http://repository.jboss.org/nexus/content/groups/public' }
+    maven { url 'https://repository.jboss.org/nexus/content/groups/public' }
 }
 
 project.configurations {
