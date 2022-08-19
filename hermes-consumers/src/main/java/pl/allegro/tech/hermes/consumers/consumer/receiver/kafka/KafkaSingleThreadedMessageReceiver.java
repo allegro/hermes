@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import com.google.common.collect.ImmutableList;
-import java.util.concurrent.BlockingQueue;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -19,11 +18,13 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitterConsumerRebalanceListener;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.KafkaConsumerOffsetMover;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.RetryableReceiverError;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -32,9 +33,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.RetryableReceiverError;
 
 public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private static final Logger logger = LoggerFactory.getLogger(KafkaSingleThreadedMessageReceiver.class);
@@ -46,6 +47,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final KafkaConsumerOffsetMover offsetMover;
 
     private final HermesMetrics metrics;
+    private final SubscriptionLoadRecorder loadReporter;
     private volatile Subscription subscription;
 
     private final Duration poolTimeout;
@@ -59,10 +61,12 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                                               Subscription subscription,
                                               Duration poolTimeout,
                                               int readQueueCapacity,
+                                              SubscriptionLoadRecorder loadReporter,
                                               ConsumerPartitionAssignmentState partitionAssignmentState) {
         this.metrics = metrics;
         this.subscription = subscription;
         this.poolTimeout = poolTimeout;
+        this.loadReporter = loadReporter;
         this.partitionAssignmentState = partitionAssignmentState;
         this.consumer = consumer;
         this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
@@ -109,6 +113,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
             ConsumerRecords<byte[], byte[]> records = consumer.poll(poolTimeout);
             try {
                 for (ConsumerRecord<byte[], byte[]> record : records) {
+                    loadReporter.recordSingleOperation();
                     readQueue.add(record);
                 }
             } catch (Exception ex) {

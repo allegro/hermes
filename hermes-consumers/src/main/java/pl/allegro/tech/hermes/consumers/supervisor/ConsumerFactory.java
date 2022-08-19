@@ -12,6 +12,8 @@ import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecordersRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
@@ -40,6 +42,7 @@ public class ConsumerFactory {
     private final MessageBatchSenderFactory batchSenderFactory;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final Clock clock;
+    private final SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry;
 
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
                            HermesMetrics hermesMetrics,
@@ -55,8 +58,8 @@ public class ConsumerFactory {
                            CompositeMessageContentWrapper compositeMessageContentWrapper,
                            MessageBatchSenderFactory batchSenderFactory,
                            ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                           Clock clock) {
-
+                           Clock clock,
+                           SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
         this.commonConsumerParameters = commonConsumerParameters;
@@ -72,10 +75,12 @@ public class ConsumerFactory {
         this.batchSenderFactory = batchSenderFactory;
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
         this.clock = clock;
+        this.subscriptionLoadRecordersRegistry = subscriptionLoadRecordersRegistry;
     }
 
     public Consumer createConsumer(Subscription subscription) {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
+        SubscriptionLoadRecorder loadRecorder = subscriptionLoadRecordersRegistry.register(subscription.getQualifiedName());
         if (subscription.isBatchSubscription()) {
             return new BatchConsumer(messageReceiverFactory,
                     batchSenderFactory.create(subscription),
@@ -87,7 +92,9 @@ public class ConsumerFactory {
                     trackers,
                     subscription,
                     topic,
-                    commonConsumerParameters.isUseTopicMessageSizeEnabled());
+                    commonConsumerParameters.isUseTopicMessageSizeEnabled(),
+                    loadRecorder
+            );
         } else {
             SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription,
                     outputRateCalculatorFactory, hermesMetrics, consumerRateLimitSupervisor, clock);
@@ -103,7 +110,9 @@ public class ConsumerFactory {
                     topic,
                     commonConsumerParameters,
                     offsetQueue,
-                    consumerAuthorizationHandler);
+                    consumerAuthorizationHandler,
+                    loadRecorder
+            );
         }
     }
 }

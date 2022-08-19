@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
@@ -39,6 +40,7 @@ public class SerialConsumer implements Consumer {
     private final OffsetQueue offsetQueue;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final AdjustableSemaphore inflightSemaphore;
+    private final SubscriptionLoadRecorder loadRecorder;
 
     private final int defaultInflight;
     private final Duration signalProcessingInterval;
@@ -58,7 +60,8 @@ public class SerialConsumer implements Consumer {
                           Topic topic,
                           CommonConsumerParameters commonConsumerParameters,
                           OffsetQueue offsetQueue,
-                          ConsumerAuthorizationHandler consumerAuthorizationHandler) {
+                          ConsumerAuthorizationHandler consumerAuthorizationHandler,
+                          SubscriptionLoadRecorder loadRecorder) {
 
         this.defaultInflight = commonConsumerParameters.getSerialConsumer().getInflightSize();
         this.signalProcessingInterval = commonConsumerParameters.getSerialConsumer().getSignalProcessingInterval();
@@ -72,9 +75,16 @@ public class SerialConsumer implements Consumer {
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
+        this.loadRecorder = loadRecorder;
         this.messageReceiver = new UninitializedMessageReceiver();
         this.topic = topic;
-        this.sender = consumerMessageSenderFactory.create(subscription, rateLimiter, offsetQueue, inflightSemaphore::release);
+        this.sender = consumerMessageSenderFactory.create(
+                subscription,
+                rateLimiter,
+                offsetQueue,
+                inflightSemaphore::release,
+                loadRecorder
+        );
     }
 
     private int calculateInflightSize(Subscription subscription) {
@@ -88,6 +98,7 @@ public class SerialConsumer implements Consumer {
     public void consume(Runnable signalsInterrupt) {
         try {
             do {
+                loadRecorder.recordSingleOperation();
                 signalsInterrupt.run();
             } while (!inflightSemaphore.tryAcquire(signalProcessingInterval.toMillis(), TimeUnit.MILLISECONDS));
 
@@ -128,11 +139,12 @@ public class SerialConsumer implements Consumer {
         initializeMessageReceiver();
         sender.initialize();
         rateLimiter.initialize();
+        loadRecorder.initialize();
         consumerAuthorizationHandler.createSubscriptionHandler(subscription.getQualifiedName());
     }
 
     private void initializeMessageReceiver() {
-        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter);
+        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter, loadRecorder);
     }
 
     /**
@@ -143,6 +155,7 @@ public class SerialConsumer implements Consumer {
         messageReceiver.stop();
         sender.shutdown();
         rateLimiter.shutdown();
+        loadRecorder.shutdown();
         consumerAuthorizationHandler.removeSubscriptionHandler(subscription.getQualifiedName());
     }
 

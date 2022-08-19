@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeExcep
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
@@ -42,6 +43,7 @@ public class MessageBatchReceiver {
     private final Queue<Message> inflight;
     private final Topic topic;
     private boolean receiving = true;
+    private final SubscriptionLoadRecorder loadRecorder;
 
     public MessageBatchReceiver(MessageReceiver receiver,
                                 MessageBatchFactory batchFactory,
@@ -49,7 +51,8 @@ public class MessageBatchReceiver {
                                 MessageConverterResolver messageConverterResolver,
                                 CompositeMessageContentWrapper compositeMessageContentWrapper,
                                 Topic topic,
-                                Trackers trackers) {
+                                Trackers trackers,
+                                SubscriptionLoadRecorder loadRecorder) {
         this.receiver = receiver;
         this.batchFactory = batchFactory;
         this.hermesMetrics = hermesMetrics;
@@ -57,6 +60,7 @@ public class MessageBatchReceiver {
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.topic = topic;
         this.trackers = trackers;
+        this.loadRecorder = loadRecorder;
         this.inflight = new ArrayDeque<>(1);
     }
 
@@ -72,6 +76,7 @@ public class MessageBatchReceiver {
         List<MessageMetadata> discarded = new ArrayList<>();
 
         while (isReceiving() && !batch.isReadyForDelivery() && !Thread.currentThread().isInterrupted()) {
+            loadRecorder.recordSingleOperation();
             signalsInterrupt.run();
             Optional<Message> maybeMessage = inflight.isEmpty() ?
                     readAndTransform(subscription, batch.getId()) : Optional.ofNullable(inflight.poll());

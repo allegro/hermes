@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
@@ -57,8 +58,11 @@ public class ConsumerMessageSenderFactory {
         this.senderAsyncTimeoutMs = senderAsyncTimeoutMs;
     }
 
-    public ConsumerMessageSender create(Subscription subscription, SerialConsumerRateLimiter consumerRateLimiter,
-                                        OffsetQueue offsetQueue, InflightsPool inflight) {
+    public ConsumerMessageSender create(Subscription subscription,
+                                        SerialConsumerRateLimiter consumerRateLimiter,
+                                        OffsetQueue offsetQueue,
+                                        InflightsPool inflight,
+                                        SubscriptionLoadRecorder subscriptionLoadRecorder) {
 
         List<SuccessHandler> successHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
@@ -78,7 +82,9 @@ public class ConsumerMessageSenderFactory {
                 hermesMetrics,
                 senderAsyncTimeoutMs,
                 futureAsyncTimeout,
-                clock);
+                clock,
+                subscriptionLoadRecorder
+        );
     }
 
 }

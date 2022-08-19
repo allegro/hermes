@@ -7,13 +7,17 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
+import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WeightedWorkBalancingProperties;
+import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WorkBalancingStrategy.UnknownWorkBalancingStrategyException;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecordersRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
@@ -36,6 +40,9 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCa
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ConsumerNodeLoadRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.NoOpConsumerNodeLoadRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ZookeeperConsumerNodeLoadRegistry;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -98,6 +105,38 @@ public class SupervisorConfiguration {
         );
     }
 
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public ConsumerNodeLoadRegistry consumerNodeLoadRegistry(CuratorFramework curator,
+                                                             SubscriptionIds subscriptionIds,
+                                                             ZookeeperPaths zookeeperPaths,
+                                                             WorkloadProperties workloadProperties,
+                                                             KafkaClustersProperties kafkaClustersProperties,
+                                                             DatacenterNameProvider datacenterNameProvider,
+                                                             ExecutorServiceFactory executorServiceFactory,
+                                                             Clock clock,
+                                                             HermesMetrics metrics) {
+        switch (workloadProperties.getWorkBalancingStrategy()) {
+            case SELECTIVE:
+                return new NoOpConsumerNodeLoadRegistry();
+            case WEIGHTED:
+                KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+                WeightedWorkBalancingProperties weightedWorkBalancing = workloadProperties.getWeightedWorkBalancing();
+                return new ZookeeperConsumerNodeLoadRegistry(
+                        curator,
+                        subscriptionIds,
+                        zookeeperPaths,
+                        workloadProperties.getNodeId(),
+                        kafkaProperties.getClusterName(),
+                        weightedWorkBalancing.getLoadReportingInterval(),
+                        executorServiceFactory,
+                        clock,
+                        metrics,
+                        weightedWorkBalancing.getConsumerLoadEncoderBufferSizeBytes()
+                );
+        }
+        throw new UnknownWorkBalancingStrategyException();
+    }
+
     @Bean
     public Retransmitter retransmitter(SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator,
                                        KafkaClustersProperties kafkaClustersProperties,
@@ -122,7 +161,8 @@ public class SupervisorConfiguration {
                                            CompositeMessageContentWrapper compositeMessageContentWrapper,
                                            MessageBatchSenderFactory batchSenderFactory,
                                            ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                                           Clock clock) {
+                                           Clock clock,
+                                           SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry) {
         return new ConsumerFactory(
                 messageReceiverFactory,
                 hermesMetrics,
@@ -138,7 +178,8 @@ public class SupervisorConfiguration {
                 compositeMessageContentWrapper,
                 batchSenderFactory,
                 consumerAuthorizationHandler,
-                clock
+                clock,
+                subscriptionLoadRecordersRegistry
         );
     }
 

@@ -15,6 +15,7 @@ public class ZookeeperPaths {
     public static final String KAFKA_TOPICS_PATH = "kafka_topics";
     public static final String URL_SEPARATOR = "/";
     public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
+    public static final String CONSUMER_LOAD_PATH = "consumer-load";
     public static final String CONSUMERS_WORKLOAD_CONSTRAINTS_PATH = "consumers-workload-constraints";
     public static final String CONSUMERS_RATE_PATH = "consumers-rate";
     public static final String METRICS_PATH = "metrics";

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.ExponentiallyGrowingIdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.IdleTimeCalculator;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
@@ -89,9 +90,10 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     @Override
     public MessageReceiver createMessageReceiver(Topic topic,
                                                  Subscription subscription,
-                                                 ConsumerRateLimiter consumerRateLimiter) {
+                                                 ConsumerRateLimiter consumerRateLimiter,
+                                                 SubscriptionLoadRecorder loadReporter) {
 
-        MessageReceiver receiver = createKafkaSingleThreadedMessageReceiver(topic, subscription);
+        MessageReceiver receiver = createKafkaSingleThreadedMessageReceiver(topic, subscription, loadReporter);
 
         if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPolls()) {
             receiver = createThrottlingMessageReceiver(receiver, subscription);
@@ -105,7 +107,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     private MessageReceiver createKafkaSingleThreadedMessageReceiver(Topic topic,
-                                                                     Subscription subscription) {
+                                                                     Subscription subscription,
+                                                                     SubscriptionLoadRecorder loadReporter) {
         return new KafkaSingleThreadedMessageReceiver(
                 createKafkaConsumer(topic, subscription),
                 messageConverterFactory,
@@ -115,7 +118,9 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 subscription,
                 consumerReceiverParameters.getPoolTimeout(),
                 consumerReceiverParameters.getReadQueueCapacity(),
-                consumerPartitionAssignmentState);
+                loadReporter,
+                consumerPartitionAssignmentState
+        );
     }
 
     private MessageReceiver createThrottlingMessageReceiver(MessageReceiver receiver, Subscription subscription) {
