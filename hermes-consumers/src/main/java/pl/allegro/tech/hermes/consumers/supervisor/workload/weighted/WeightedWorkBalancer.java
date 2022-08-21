@@ -169,9 +169,9 @@ public class WeightedWorkBalancer implements WorkBalancer {
         List<ConsumerTask> candidatesToMoveOut = overloaded.getAssignedTasks().stream()
                 .filter(underloaded::isNotAssigned)
                 .collect(toList());
-        ListIterator<ConsumerTask> consumerTasIterator = candidatesToMoveOut.listIterator();
-        while (consumerTasIterator.hasNext() && hasTooManyTasks(overloaded, targetLoad) && !hasTooManyTasks(underloaded, targetLoad)) {
-            ConsumerTask taskFromOverloaded = consumerTasIterator.next();
+        ListIterator<ConsumerTask> consumerTaskIterator = candidatesToMoveOut.listIterator();
+        while (consumerTaskIterator.hasNext() && hasTooManyTasks(overloaded, targetLoad) && !hasTooManyTasks(underloaded, targetLoad)) {
+            ConsumerTask taskFromOverloaded = consumerTaskIterator.next();
             MoveOutProposal proposal = new MoveOutProposal(overloaded, underloaded, taskFromOverloaded);
             if (isProfitable(proposal, targetLoad)) {
                 overloaded.unassign(taskFromOverloaded);
