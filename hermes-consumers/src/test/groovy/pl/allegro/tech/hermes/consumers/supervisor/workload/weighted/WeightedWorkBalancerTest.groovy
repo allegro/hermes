@@ -55,6 +55,99 @@ class WeightedWorkBalancerTest extends Specification {
                 .hasAssignments(subscription("sub4"), "c3", "c4")
     }
 
+    def "should start by swapping the heaviest subscriptions"() {
+        given:
+        def previousRebalanceTimestamp = clock.instant()
+        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
+                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(3d))
+                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(2d))
+                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(1d))
+                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(0d))
+        def stabilizationWindow = ofHours(1)
+        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0d, subscriptionProfileRegistry)
+        def initial = new SubscriptionAssignmentViewBuilder()
+                .withAssignment(subscription("sub1"), "c1")
+                .withAssignment(subscription("sub2"), "c1")
+                .withAssignment(subscription("sub3"), "c2")
+                .withAssignment(subscription("sub4"), "c2")
+                .build()
+        def constraints = WorkloadConstraints.builder()
+                .withConsumersPerSubscription(1)
+                .withMaxSubscriptionsPerConsumer(3)
+                .withActiveConsumers(initial.consumerNodes.size())
+                .build()
+
+        and: "make sure that subscriptions are eligible for rebalancing"
+        clock.advance(stabilizationWindow.plusMinutes(1))
+
+        when:
+        def balanced = balancer.balance(initial.subscriptions as List, initial.consumerNodes as List, initial, constraints)
+
+        then:
+        // In this scenario, if we started by swapping the lightest subscription from c1 (sub2 = 2) for the heaviest one
+        // from c2 (sub3 = 1), we would end up in the following state:
+        // c1 = sub1+sub3 = 3+1 = 4
+        // c2 = sub2+sub4 = 2+0 = 2
+        //
+        // By starting with swapping the heaviest subscription from c1 (sub1 = 1) for sub4 from c2 we achieved
+        // the following state:
+        // c1 = sub2+sub3 = 2+1 = 3
+        // c2 = sub1+sub4 = 3+0 = 3
+        assertThat(balanced)
+                .hasAssignments(subscription("sub1"), "c2")
+                .hasAssignments(subscription("sub2"), "c1")
+                .hasAssignments(subscription("sub3"), "c1")
+                .hasAssignments(subscription("sub4"), "c2")
+    }
+
+    def "should not transfer subscriptions from lighter to heavier consumer through swapping"() {
+        given:
+        def previousRebalanceTimestamp = clock.instant()
+        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
+                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(3d))
+                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(0d))
+                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(10d))
+                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(0.1d))
+                .profile(subscription("sub5"), previousRebalanceTimestamp, new Weight(0.1d))
+                .profile(subscription("sub6"), previousRebalanceTimestamp, new Weight(0.1d))
+                .profile(subscription("sub7"), previousRebalanceTimestamp, new Weight(0.1d))
+        def stabilizationWindow = ofHours(1)
+        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0.1d, subscriptionProfileRegistry)
+        def initial = new SubscriptionAssignmentViewBuilder()
+                .withAssignment(subscription("sub1"), "c1")
+                .withAssignment(subscription("sub2"), "c1")
+                .withAssignment(subscription("sub3"), "c2")
+                .withAssignment(subscription("sub4"), "c3")
+                .withAssignment(subscription("sub5"), "c3")
+                .withAssignment(subscription("sub6"), "c3")
+                .withAssignment(subscription("sub7"), "c3")
+                .build()
+        def constraints = WorkloadConstraints.builder()
+                .withConsumersPerSubscription(1)
+                .withMaxSubscriptionsPerConsumer(4)
+                .withActiveConsumers(initial.consumerNodes.size())
+                .build()
+
+        and: "make sure that subscriptions are eligible for rebalancing"
+        clock.advance(stabilizationWindow.plusMinutes(1))
+
+        when:
+        def balanced = balancer.balance(initial.subscriptions as List, initial.consumerNodes as List, initial, constraints)
+
+        then:
+        // In this scenario, c3 has the most subscriptions of all consumers, but is also the lightest. We don't want it to
+        // become even lighter by swapping subscriptions with others. We only allow some of its subscriptions to be moved to c1,
+        // whose weight is below average.
+        assertThat(balanced)
+                .hasAssignments(subscription("sub1"), "c1")
+                .hasAssignments(subscription("sub2"), "c1")
+                .hasAssignments(subscription("sub3"), "c2")
+                .hasAssignments(subscription("sub4"), "c1")
+                .hasAssignments(subscription("sub5"), "c3")
+                .hasAssignments(subscription("sub6"), "c3")
+                .hasAssignments(subscription("sub7"), "c3")
+    }
+
     def "should handle weight equal to 0"() {
         given:
         def previousRebalanceTimestamp = clock.instant()

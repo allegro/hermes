@@ -129,20 +129,16 @@ public class WeightedWorkBalancer implements WorkBalancer {
                 .filter(consumerNode -> isOverloaded(consumerNode, targetLoad))
                 .collect(toList());
         for (ConsumerNode overloaded : overloadedConsumers) {
-            List<ConsumerNode> underloadedConsumers = consumers.stream()
+            List<ConsumerNode> candidates = consumers.stream()
                     .filter(consumer -> !consumer.equals(overloaded))
-                    .filter(consumerNode -> isUnderloaded(consumerNode, targetLoad))
                     .collect(toList());
-            for (ConsumerNode underloaded : underloadedConsumers) {
-                tryMoveOutTasksFromOverloaded(overloaded, underloaded, targetLoad);
-                trySwapTasks(overloaded, underloaded, targetLoad);
+            for (ConsumerNode candidate : candidates) {
+                tryMoveOutTasks(overloaded, candidate, targetLoad);
+                trySwapTasks(overloaded, candidate, targetLoad);
                 if (isBalanced(overloaded, targetLoad)) {
                     break;
                 }
             }
-        }
-        for (ConsumerNode consumerNode : consumers) {
-            logger.debug("Consumer {} weight after rebalance: {}", consumerNode, consumerNode.getWeight());
         }
         return new AssignmentPlan(plan.getUnassignedTasks(), consumers);
     }
@@ -165,17 +161,17 @@ public class WeightedWorkBalancer implements WorkBalancer {
         return sum.divide(consumers.size());
     }
 
-    private void tryMoveOutTasksFromOverloaded(ConsumerNode overloaded, ConsumerNode underloaded, TargetConsumerLoad targetLoad) {
+    private void tryMoveOutTasks(ConsumerNode overloaded, ConsumerNode candidate, TargetConsumerLoad targetLoad) {
         List<ConsumerTask> candidatesToMoveOut = overloaded.getAssignedTasks().stream()
-                .filter(underloaded::isNotAssigned)
+                .filter(candidate::isNotAssigned)
                 .collect(toList());
         ListIterator<ConsumerTask> consumerTaskIterator = candidatesToMoveOut.listIterator();
-        while (consumerTaskIterator.hasNext() && hasTooManyTasks(overloaded, targetLoad) && !hasTooManyTasks(underloaded, targetLoad)) {
+        while (consumerTaskIterator.hasNext() && hasTooManyTasks(overloaded, targetLoad) && !hasTooManyTasks(candidate, targetLoad)) {
             ConsumerTask taskFromOverloaded = consumerTaskIterator.next();
-            MoveOutProposal proposal = new MoveOutProposal(overloaded, underloaded, taskFromOverloaded);
+            MoveOutProposal proposal = new MoveOutProposal(overloaded, candidate, taskFromOverloaded);
             if (isProfitable(proposal, targetLoad)) {
                 overloaded.unassign(taskFromOverloaded);
-                underloaded.assign(taskFromOverloaded);
+                candidate.assign(taskFromOverloaded);
             }
         }
     }
@@ -185,25 +181,25 @@ public class WeightedWorkBalancer implements WorkBalancer {
     }
 
     private boolean isProfitable(MoveOutProposal proposal, TargetConsumerLoad targetLoad) {
-        if (targetLoad.getWeight().isGreaterThanOrEqualTo(proposal.getFinalUnderloadedWeight())) {
+        if (targetLoad.getWeight().isGreaterThanOrEqualTo(proposal.getFinalCandidateWeight())) {
             logger.debug("MoveOut proposal will be applied:\n{}", proposal);
             return true;
         }
         return false;
     }
 
-    private void trySwapTasks(ConsumerNode overloaded, ConsumerNode underloaded, TargetConsumerLoad targetLoad) {
-        List<ConsumerTask> candidatesFromOverloaded = findCandidatesForMovingOut(overloaded, underloaded);
-        List<ConsumerTask> candidatesFromUnderloaded = findCandidatesForMovingOut(underloaded, overloaded);
-        for (ConsumerTask taskFromOverloaded : candidatesFromOverloaded) {
-            ListIterator<ConsumerTask> candidatesFromUnderloadedIterator = candidatesFromUnderloaded.listIterator();
-            while (candidatesFromUnderloadedIterator.hasNext()) {
-                ConsumerTask taskFromUnderloaded = candidatesFromUnderloadedIterator.next();
-                SwapProposal proposal = new SwapProposal(overloaded, underloaded, taskFromOverloaded, taskFromUnderloaded);
+    private void trySwapTasks(ConsumerNode overloaded, ConsumerNode candidate, TargetConsumerLoad targetLoad) {
+        List<ConsumerTask> tasksFromOverloaded = findTasksForMovingOut(overloaded, candidate);
+        List<ConsumerTask> tasksFromCandidate = findTasksForMovingOut(candidate, overloaded);
+        for (ConsumerTask taskFromOverloaded : tasksFromOverloaded) {
+            ListIterator<ConsumerTask> tasksFromCandidateIterator = tasksFromCandidate.listIterator();
+            while (tasksFromCandidateIterator.hasNext()) {
+                ConsumerTask taskFromCandidate = tasksFromCandidateIterator.next();
+                SwapProposal proposal = new SwapProposal(overloaded, candidate, taskFromOverloaded, taskFromCandidate);
                 if (isProfitable(proposal, targetLoad)) {
-                    overloaded.swap(taskFromOverloaded, taskFromUnderloaded);
-                    underloaded.swap(taskFromUnderloaded, taskFromOverloaded);
-                    candidatesFromUnderloadedIterator.remove();
+                    overloaded.swap(taskFromOverloaded, taskFromCandidate);
+                    candidate.swap(taskFromCandidate, taskFromOverloaded);
+                    tasksFromCandidateIterator.remove();
                 }
                 if (isBalanced(overloaded, targetLoad)) {
                     return;
@@ -212,10 +208,11 @@ public class WeightedWorkBalancer implements WorkBalancer {
         }
     }
 
-    private List<ConsumerTask> findCandidatesForMovingOut(ConsumerNode source, ConsumerNode destination) {
+    private List<ConsumerTask> findTasksForMovingOut(ConsumerNode source, ConsumerNode destination) {
         return source.getAssignedTasks().stream()
                 .filter(destination::isNotAssigned)
                 .filter(this::isStable)
+                .sorted(HEAVIEST_TASK_FIRST)
                 .collect(toList());
     }
 
@@ -229,11 +226,6 @@ public class WeightedWorkBalancer implements WorkBalancer {
                 || consumerNode.getAssignedTaskCount() > targetLoad.getNumberOfTasks();
     }
 
-    private boolean isUnderloaded(ConsumerNode consumerNode, TargetConsumerLoad targetLoad) {
-        return consumerNode.getWeight().isLessThan(targetLoad.getWeight())
-                || consumerNode.getAssignedTaskCount() < targetLoad.getNumberOfTasks();
-    }
-
     private boolean isBalanced(ConsumerNode consumerNode, TargetConsumerLoad targetLoad) {
         return consumerNode.getWeight().isEqualTo(targetLoad.getWeight())
                 && consumerNode.getAssignedTaskCount() <= targetLoad.getNumberOfTasks();
@@ -242,9 +234,12 @@ public class WeightedWorkBalancer implements WorkBalancer {
     private boolean isProfitable(SwapProposal proposal, TargetConsumerLoad targetLoad) {
         Weight initialOverloadedWeight = proposal.getOverloadedWeight();
         Weight finalOverloadedWeight = proposal.getFinalOverloadedWeight();
-        Weight finalUnderloadedWeight = proposal.getFinalUnderloadedWeight();
+        Weight finalCandidateWeight = proposal.getFinalCandidateWeight();
 
-        if (finalUnderloadedWeight.isGreaterThan(targetLoad.getWeight())) {
+        if (initialOverloadedWeight.isLessThan(targetLoad.getWeight())) {
+            return false;
+        }
+        if (finalCandidateWeight.isGreaterThan(targetLoad.getWeight())) {
             return false;
         }
         if (finalOverloadedWeight.isGreaterThan(initialOverloadedWeight)) {
@@ -295,26 +290,26 @@ public class WeightedWorkBalancer implements WorkBalancer {
     private static class MoveOutProposal {
 
         private final ConsumerNode overloaded;
-        private final ConsumerNode underloaded;
+        private final ConsumerNode candidate;
         private final Weight finalOverloadedWeight;
-        private final Weight finalUnderloadedWeight;
+        private final Weight finalCandidateWeight;
 
-        MoveOutProposal(ConsumerNode overloaded, ConsumerNode underloaded, ConsumerTask taskFromOverloaded) {
+        MoveOutProposal(ConsumerNode overloaded, ConsumerNode candidate, ConsumerTask taskFromOverloaded) {
             this.overloaded = overloaded;
-            this.underloaded = underloaded;
+            this.candidate = candidate;
             this.finalOverloadedWeight = overloaded.getWeight()
                     .subtract(taskFromOverloaded.getWeight());
-            this.finalUnderloadedWeight = underloaded.getWeight()
+            this.finalCandidateWeight = candidate.getWeight()
                     .add(taskFromOverloaded.getWeight());
         }
 
-        Weight getFinalUnderloadedWeight() {
-            return finalUnderloadedWeight;
+        Weight getFinalCandidateWeight() {
+            return finalCandidateWeight;
         }
 
         @Override
         public String toString() {
-            return toString(overloaded, finalOverloadedWeight) + "\n" + toString(underloaded, finalUnderloadedWeight);
+            return toString(overloaded, finalOverloadedWeight) + "\n" + toString(candidate, finalCandidateWeight);
         }
 
         private String toString(ConsumerNode consumerNode, Weight newWeight) {
@@ -325,22 +320,22 @@ public class WeightedWorkBalancer implements WorkBalancer {
     private static class SwapProposal {
 
         private final ConsumerNode overloaded;
-        private final ConsumerNode underloaded;
+        private final ConsumerNode candidate;
         private final Weight finalOverloadedWeight;
-        private final Weight finalUnderloadedWeight;
+        private final Weight finalCandidateWeight;
 
         SwapProposal(ConsumerNode overloaded,
-                     ConsumerNode underloaded,
+                     ConsumerNode candidate,
                      ConsumerTask taskFromOverloaded,
-                     ConsumerTask taskFromUnderloaded) {
+                     ConsumerTask taskFromCandidate) {
             this.overloaded = overloaded;
-            this.underloaded = underloaded;
+            this.candidate = candidate;
             this.finalOverloadedWeight = overloaded.getWeight()
-                    .add(taskFromUnderloaded.getWeight())
+                    .add(taskFromCandidate.getWeight())
                     .subtract(taskFromOverloaded.getWeight());
-            this.finalUnderloadedWeight = underloaded.getWeight()
+            this.finalCandidateWeight = candidate.getWeight()
                     .add(taskFromOverloaded.getWeight())
-                    .subtract(taskFromUnderloaded.getWeight());
+                    .subtract(taskFromCandidate.getWeight());
         }
 
         Weight getOverloadedWeight() {
@@ -351,13 +346,13 @@ public class WeightedWorkBalancer implements WorkBalancer {
             return finalOverloadedWeight;
         }
 
-        Weight getFinalUnderloadedWeight() {
-            return finalUnderloadedWeight;
+        Weight getFinalCandidateWeight() {
+            return finalCandidateWeight;
         }
 
         @Override
         public String toString() {
-            return toString(overloaded, finalOverloadedWeight) + "\n" + toString(underloaded, finalUnderloadedWeight);
+            return toString(overloaded, finalOverloadedWeight) + "\n" + toString(candidate, finalCandidateWeight);
         }
 
         private String toString(ConsumerNode consumerNode, Weight newWeight) {
