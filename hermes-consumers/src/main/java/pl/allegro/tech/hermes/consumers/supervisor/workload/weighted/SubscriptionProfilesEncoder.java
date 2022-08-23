@@ -23,7 +23,7 @@ class SubscriptionProfilesEncoder {
         this.buffer = new ExpandableDirectByteBuffer(bufferSize);
     }
 
-    byte[] encode(Map<SubscriptionName, SubscriptionProfile> profiles) {
+    byte[] encode(SubscriptionProfiles profiles) {
         Map<SubscriptionId, SubscriptionProfile> subscriptionProfiles = mapToSubscriptionIds(profiles);
 
         MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
@@ -31,6 +31,7 @@ class SubscriptionProfilesEncoder {
                 .wrapAndApplyHeader(buffer, 0, headerEncoder);
 
         ProfilesEncoder.SubscriptionsEncoder subscriptionsEncoder = body
+                .updateTimestamp(toMillis(profiles.getUpdateTimestamp()))
                 .subscriptionsCount(subscriptionProfiles.size());
 
         for (Map.Entry<SubscriptionId, SubscriptionProfile> entry : subscriptionProfiles.entrySet()) {
@@ -49,11 +50,11 @@ class SubscriptionProfilesEncoder {
         return dst;
     }
 
-    private Map<SubscriptionId, SubscriptionProfile> mapToSubscriptionIds(Map<SubscriptionName, SubscriptionProfile> profiles) {
+    private Map<SubscriptionId, SubscriptionProfile> mapToSubscriptionIds(SubscriptionProfiles profiles) {
         Map<SubscriptionId, SubscriptionProfile> subscriptionProfiles = new HashMap<>();
-        for (Map.Entry<SubscriptionName, SubscriptionProfile> entry : profiles.entrySet()) {
-            Optional<SubscriptionId> subscriptionId = subscriptionIds.getSubscriptionId(entry.getKey());
-            subscriptionId.ifPresent(id -> subscriptionProfiles.put(id, entry.getValue()));
+        for (SubscriptionName subscriptionName : profiles.getSubscriptions()) {
+            Optional<SubscriptionId> subscriptionId = subscriptionIds.getSubscriptionId(subscriptionName);
+            subscriptionId.ifPresent(id -> subscriptionProfiles.put(id, profiles.getProfile(subscriptionName)));
         }
         return subscriptionProfiles;
     }

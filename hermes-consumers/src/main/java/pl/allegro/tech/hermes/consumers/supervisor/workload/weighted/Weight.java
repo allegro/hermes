@@ -36,6 +36,10 @@ class Weight implements Comparable<Weight> {
         return new Weight(Math.max(operationsPerSecond - subtrahend.operationsPerSecond, 0d));
     }
 
+    Weight multiply(double multiplicand) {
+        return new Weight(operationsPerSecond * multiplicand);
+    }
+
     Weight divide(int divisor) {
         return new Weight(operationsPerSecond / divisor);
     }

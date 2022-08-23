@@ -26,7 +26,7 @@ class SubscriptionProfilesDecoder {
         this.subscriptionIds = subscriptionIds;
     }
 
-    Map<SubscriptionName, SubscriptionProfile> decode(byte[] bytes) {
+    SubscriptionProfiles decode(byte[] bytes) {
         MessageHeaderDecoder header = new MessageHeaderDecoder();
         ProfilesDecoder body = new ProfilesDecoder();
 
@@ -39,7 +39,7 @@ class SubscriptionProfilesDecoder {
                             "encoded in payload: [schema id={}, template id={}]",
                     ProfilesDecoder.SCHEMA_ID, ProfilesDecoder.TEMPLATE_ID,
                     header.schemaId(), header.templateId());
-            return Map.of();
+            return SubscriptionProfiles.EMPTY;
         }
 
         body.wrap(buffer, header.encodedLength(), header.blockLength(), header.version());
@@ -47,7 +47,8 @@ class SubscriptionProfilesDecoder {
         return decodeSubscriptionProfiles(body);
     }
 
-    private Map<SubscriptionName, SubscriptionProfile> decodeSubscriptionProfiles(ProfilesDecoder body) {
+    private SubscriptionProfiles decodeSubscriptionProfiles(ProfilesDecoder body) {
+        Instant updateTimestamp = toInstant(body.updateTimestamp());
         Map<SubscriptionName, SubscriptionProfile> subscriptionProfiles = new HashMap<>();
         for (SubscriptionsDecoder subscriptionsDecoder : body.subscriptions()) {
             long id = subscriptionsDecoder.id();
@@ -62,7 +63,7 @@ class SubscriptionProfilesDecoder {
                 subscriptionProfiles.put(subscriptionId.get().getSubscriptionName(), profile);
             }
         }
-        return subscriptionProfiles;
+        return new SubscriptionProfiles(subscriptionProfiles, updateTimestamp);
     }
 
     private Instant toInstant(long millis) {

@@ -29,7 +29,7 @@ class SubscriptionProfilesCalculatorTest extends Specification {
     def cleanup() {
         consumerNodeLoadRegistry.reset()
         subscriptionProfileRegistry.reset()
-        calculator.onBeforeBalancing([], [])
+        calculator.onBeforeBalancing([])
     }
 
     def "should take the maximal value of operations per second as the subscription weight"() {
@@ -40,7 +40,7 @@ class SubscriptionProfilesCalculatorTest extends Specification {
                 .operationsPerSecond(subscription("sub3"), ["c3": 10d, "c4": 10d])
 
         when:
-        calculator.onBeforeBalancing(["c1", "c2", "c3"], [subscription("sub1"), subscription("sub2"), subscription("sub3")])
+        calculator.onBeforeBalancing(["c1", "c2", "c3"])
 
         then:
         assertThat(calculator.get(subscription("sub1")))
@@ -51,51 +51,54 @@ class SubscriptionProfilesCalculatorTest extends Specification {
                 .hasWeight(new Weight(10d))
     }
 
-    def "should combine previous weights with the current ones"() {
+    def "should calculate weight using exponentially weighted moving average"() {
         given:
         def previousRebalanceTimestamp = clock.instant()
         subscriptionProfileRegistry
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(50d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(20d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(300d))
+                .updateTimestamp(previousRebalanceTimestamp)
+                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(100d))
         consumerNodeLoadRegistry
-                .operationsPerSecond(subscription("sub1"), ["c1": 100d, "c2": 100d])
-                .operationsPerSecond(subscription("sub2"), ["c1": 10d, "c2": 10d])
+                .operationsPerSecond(subscription("sub1"), ["c1": 50d, "c2": 50d])
 
         when:
-        calculator.onBeforeBalancing(["c1", "c2", "c3"], [subscription("sub1"), subscription("sub2"), subscription("sub3")])
+        clock.advance(weightWindowSize.minusSeconds(30))
+        calculator.onBeforeBalancing(["c1", "c2"])
 
         then:
         assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(100d))
-        assertThat(calculator.get(subscription("sub2")))
-                .hasWeight(new Weight(20d))
-        assertThat(calculator.get(subscription("sub3")))
-                .hasWeight(new Weight(300d))
+                .hasWeight(new Weight(80.32653298563167d))
+
+        when:
+        workDistributionChanges.getRebalancedSubscriptions() >> []
+        calculator.onAfterBalancing(workDistributionChanges)
+        clock.advance(weightWindowSize.minusSeconds(30))
+        calculator.onBeforeBalancing(["c1", "c2"])
+
+        then:
+        assertThat(calculator.get(subscription("sub1")))
+                .hasWeight(new Weight(68.39397205857212d))
     }
 
     def "should take 0 as the default weight"() {
         given:
         def previousRebalanceTimestamp = clock.instant()
         subscriptionProfileRegistry
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(50d))
+                .updateTimestamp(previousRebalanceTimestamp)
+                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(100d))
                 .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(20d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(300d))
         consumerNodeLoadRegistry
-                .operationsPerSecond(subscription("sub1"), ["c1": 100d, "c2": 100d])
-                .operationsPerSecond(subscription("sub2"), ["c1": 10d, "c2": 10d])
+                .operationsPerSecond(subscription("sub1"), ["c1": 50d, "c2": 50d])
 
         when:
-        calculator.onBeforeBalancing(["c1", "c2", "c3"], [subscription("sub1"), subscription("sub2")])
+        clock.advance(weightWindowSize.minusSeconds(30))
+        calculator.onBeforeBalancing(["c1", "c2"])
 
         then:
         assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(100d))
+                .hasWeight(new Weight(80.32653298563167d))
         assertThat(calculator.get(subscription("sub2")))
-                .hasWeight(new Weight(20d))
-        assertThat(calculator.get(subscription("sub3")))
                 .hasWeight(Weight.ZERO)
-        assertThat(calculator.get(subscription("sub4")))
+        assertThat(calculator.get(subscription("sub3")))
                 .hasWeight(Weight.ZERO)
     }
 
@@ -114,7 +117,7 @@ class SubscriptionProfilesCalculatorTest extends Specification {
         clock.advanceMinutes(1)
 
         and:
-        calculator.onBeforeBalancing(["c1", "c2", "c3"], [subscription("sub1"), subscription("sub2")])
+        calculator.onBeforeBalancing(["c1", "c2", "c3"])
 
         when:
         calculator.onAfterBalancing(workDistributionChanges)
@@ -124,32 +127,6 @@ class SubscriptionProfilesCalculatorTest extends Specification {
                 .hasLastRebalanceTimestamp(clock.instant())
         assertThat(calculator.get(subscription("sub2")))
                 .hasLastRebalanceTimestamp(previousRebalanceTimestamp)
-    }
-
-    def "should try decrease weight after defined weightWindowSize"() {
-        given:
-        def previousRebalanceTimestamp = clock.instant()
-        subscriptionProfileRegistry
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(100d))
-        consumerNodeLoadRegistry
-                .operationsPerSecond(subscription("sub1"), ["c1": 5d, "c2": 5d])
-
-        when:
-        calculator.onBeforeBalancing(["c1", "c2"], [subscription("sub1")])
-
-        then:
-        assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(100d))
-
-        when:
-        clock.advance(weightWindowSize.plusMinutes(1))
-
-        and:
-        calculator.onBeforeBalancing(["c1", "c2"], [subscription("sub1")])
-
-        then:
-        assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(5d))
     }
 
     private static SubscriptionName subscription(String name) {

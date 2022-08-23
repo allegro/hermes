@@ -83,7 +83,7 @@ class BalancingJob implements Runnable {
                     List<String> activeConsumers = consumersRegistry.listConsumerNodes();
                     List<SubscriptionName> activeSubscriptions = subscriptionsCache.listActiveSubscriptionNames();
 
-                    balancingListener.onBeforeBalancing(activeConsumers, activeSubscriptions);
+                    balancingListener.onBeforeBalancing(activeConsumers);
 
                     WorkBalancingResult work = workBalancer.balance(
                             activeSubscriptions,

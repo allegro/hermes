@@ -32,16 +32,19 @@ public class ZookeeperSubscriptionProfileRegistryTest extends ZookeeperBaseTest 
                 "kafka-cluster",
                 100_000
         );
-        Map<SubscriptionName, SubscriptionProfile> profiles = Map.of(
-                firstSubscription, new SubscriptionProfile(Instant.now(), new Weight(100d)),
-                secondSubscription, new SubscriptionProfile(Instant.now(), Weight.ZERO)
+        SubscriptionProfiles profiles = new SubscriptionProfiles(
+                Map.of(
+                        firstSubscription, new SubscriptionProfile(Instant.now(), new Weight(100d)),
+                        secondSubscription, new SubscriptionProfile(Instant.now(), Weight.ZERO)
+                ),
+                Instant.now()
         );
 
         // when
         registry.persist(profiles);
 
         // then
-        Map<SubscriptionName, SubscriptionProfile> readProfiles = registry.getAll();
+        SubscriptionProfiles readProfiles = registry.fetch();
         assertThat(readProfiles).isEqualTo(profiles);
     }
 }

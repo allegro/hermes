@@ -1,18 +1,16 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
-import pl.allegro.tech.hermes.api.SubscriptionName;
-
-import java.util.Map;
+import static pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.SubscriptionProfiles.EMPTY;
 
 public class NoOpSubscriptionProfileRegistry implements SubscriptionProfileRegistry {
 
     @Override
-    public Map<SubscriptionName, SubscriptionProfile> getAll() {
-        return Map.of();
+    public SubscriptionProfiles fetch() {
+        return EMPTY;
     }
 
     @Override
-    public void persist(Map<SubscriptionName, SubscriptionProfile> profiles) {
+    public void persist(SubscriptionProfiles profiles) {
 
     }
 }

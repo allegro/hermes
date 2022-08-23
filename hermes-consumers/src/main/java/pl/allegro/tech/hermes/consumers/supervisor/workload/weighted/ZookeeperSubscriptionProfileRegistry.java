@@ -5,11 +5,8 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-
-import java.util.Map;
 
 import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMERS_WORKLOAD_PATH;
 import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.SUBSCRIPTION_PROFILES_PATH;
@@ -35,7 +32,7 @@ public class ZookeeperSubscriptionProfileRegistry implements SubscriptionProfile
     }
 
     @Override
-    public Map<SubscriptionName, SubscriptionProfile> getAll() {
+    public SubscriptionProfiles fetch() {
         try {
             if (curator.checkExists().forPath(profilesPath) != null) {
                 byte[] bytes = curator.getData().forPath(profilesPath);
@@ -44,11 +41,11 @@ public class ZookeeperSubscriptionProfileRegistry implements SubscriptionProfile
         } catch (Exception e) {
             logger.warn("Could not read node data on path " + profilesPath, e);
         }
-        return Map.of();
+        return SubscriptionProfiles.EMPTY;
     }
 
     @Override
-    public void persist(Map<SubscriptionName, SubscriptionProfile> profiles) {
+    public void persist(SubscriptionProfiles profiles) {
         byte[] encoded = encoder.encode(profiles);
         try {
             updateOrCreate(encoded);
