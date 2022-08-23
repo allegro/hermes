@@ -79,6 +79,24 @@ class SubscriptionProfilesCalculatorTest extends Specification {
                 .hasWeight(new Weight(68.39397205857212d))
     }
 
+    def "should return previous weight when the new timestamp is before the previous one"() {
+        given:
+        def previousRebalanceTimestamp = clock.instant()
+        subscriptionProfileRegistry
+                .updateTimestamp(previousRebalanceTimestamp)
+                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(100d))
+        consumerNodeLoadRegistry
+                .operationsPerSecond(subscription("sub1"), ["c1": 50d, "c2": 50d])
+
+        when:
+        clock.advanceMinutes(-1)
+        calculator.onBeforeBalancing(["c1", "c2"])
+
+        then:
+        assertThat(calculator.get(subscription("sub1")))
+                .hasWeight(new Weight(100d))
+    }
+
     def "should take 0 as the default weight"() {
         given:
         def previousRebalanceTimestamp = clock.instant()

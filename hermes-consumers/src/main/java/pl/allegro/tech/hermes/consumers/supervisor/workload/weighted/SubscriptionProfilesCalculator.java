@@ -116,7 +116,8 @@ public class SubscriptionProfilesCalculator implements SubscriptionProfileProvid
             // This calculation is done in the same way as the Linux load average is calculated.
             // See: https://www.helpsystems.com/resources/guides/unix-load-average-part-1-how-it-works
             Duration elapsed = Duration.between(previousUpdateTimestamp, now);
-            double alpha = 1.0 - Math.exp(-1.0 * ((double) elapsed.toMillis() / weightWindowSize.toMillis()));
+            long elapsedMillis = Math.max(elapsed.toMillis(), 0);
+            double alpha = 1.0 - Math.exp(-1.0 * ((double) elapsedMillis / weightWindowSize.toMillis()));
             return currentWeight.multiply(alpha)
                     .add(previousWeight.multiply(1.0 - alpha));
         }
