@@ -146,9 +146,13 @@ public class WeightedWorkBalancer implements WorkBalancer {
     private TargetConsumerLoad calculateTargetConsumerLoad(Collection<ConsumerNode> consumers) {
         int totalNumberOfTasks = consumers.stream().mapToInt(ConsumerNode::getAssignedTaskCount).sum();
         int consumerCount = consumers.size();
-        int maxNumberOfTasksPerConsumer = consumerCount == 0 ? 0 : (totalNumberOfTasks + consumerCount - 1) / consumerCount;
+        int maxNumberOfTasksPerConsumer = consumerCount == 0 ? 0 : divideWithRoundingUp(totalNumberOfTasks, consumerCount);
         Weight targetConsumerWeight = calculateTargetConsumerWeight(consumers);
         return new TargetConsumerLoad(targetConsumerWeight, maxNumberOfTasksPerConsumer);
+    }
+
+    private int divideWithRoundingUp(int dividend, int divisor) {
+        return (dividend / divisor) + (dividend % divisor > 0 ? 1 : 0);
     }
 
     private Weight calculateTargetConsumerWeight(Collection<ConsumerNode> consumers) {
