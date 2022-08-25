@@ -118,6 +118,15 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Topic> listAllTopics() {
+        return groupRepository.listGroupNames()
+                .stream()
+                .map(this::listTopics)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+    }
+
     private Optional<Topic> getTopicDetails(TopicName topicName, boolean quiet) {
         ensureTopicExists(topicName);
         return readWithStatFrom(

@@ -277,12 +277,7 @@ public class TopicService {
     }
 
     public List<Topic> getAllTopics() {
-        return groupService
-                .listGroupNames()
-                .stream()
-                .map(topicRepository::listTopics)
-                .flatMap(List::stream)
-                .collect(toList());
+        return topicRepository.listAllTopics();
     }
 
     public Optional<byte[]> preview(TopicName topicName, int idx) {

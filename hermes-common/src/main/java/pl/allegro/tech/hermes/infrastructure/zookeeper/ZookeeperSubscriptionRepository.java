@@ -1,9 +1,6 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.time.Instant;
-import java.util.Collection;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
@@ -17,6 +14,7 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -135,6 +133,14 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
                 .map(subscription -> getSubscriptionDetails(topicName, subscription, true))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Subscription> listAllSubscriptions() {
+        return topicRepository.listAllTopics().stream()
+                .map(topic -> listSubscriptions(topic.getName()))
+                .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 }

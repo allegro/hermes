@@ -30,4 +30,6 @@ public interface SubscriptionRepository {
     List<String> listSubscriptionNames(TopicName topicName);
 
     List<Subscription> listSubscriptions(TopicName topicName);
+
+    List<Subscription> listAllSubscriptions();
 }

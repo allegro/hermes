@@ -31,15 +31,13 @@ public class SubscriptionOwnerCache {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionOwnerCache.class);
 
     private final SubscriptionRepository subscriptionRepository;
-    private final TopicService topicService;
     private final ScheduledExecutorService scheduledExecutorService;
 
     private Multimap<OwnerId, SubscriptionName> cache = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
 
-    public SubscriptionOwnerCache(SubscriptionRepository subscriptionRepository, TopicService topicService,
+    public SubscriptionOwnerCache(SubscriptionRepository subscriptionRepository,
                                   @Value("${subscriptionOwnerCache.refreshRateInSeconds}") int refreshRateInSeconds) {
         this.subscriptionRepository = subscriptionRepository;
-        this.topicService = topicService;
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
                         .setNameFormat("subscription-owner-cache-%d")
@@ -78,8 +76,7 @@ public class SubscriptionOwnerCache {
             logger.info("Starting filling SubscriptionOwnerCache");
             long start = System.currentTimeMillis();
             Multimap<OwnerId, SubscriptionName> cache = ArrayListMultimap.create();
-            topicService.getAllTopics().stream()
-                    .flatMap(topic -> subscriptionRepository.listSubscriptions(topic.getName()).stream())
+            subscriptionRepository.listAllSubscriptions()
                     .forEach(subscription -> cache.put(subscription.getOwner(), subscription.getQualifiedName()));
             this.cache = Multimaps.synchronizedMultimap(cache);
             long end = System.currentTimeMillis();
