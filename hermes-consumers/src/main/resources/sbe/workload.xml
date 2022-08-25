@@ -18,4 +18,12 @@
             <field name="OperationsPerSecond" id="3" type="double"/>
         </group>
     </sbe:message>
+    <sbe:message name="Profiles" id="3" description="Subscription profiles">
+        <field name="UpdateTimestamp" id="1" type="int64"/>
+        <group name="Subscriptions" id="2">
+            <field name="Id" id="3" type="int64"/>
+            <field name="OperationsPerSecond" id="4" type="double"/>
+            <field name="LastRebalanceTimestamp" id="5" type="int64"/>
+        </group>
+    </sbe:message>
 </sbe:messageSchema>

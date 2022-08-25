@@ -179,7 +179,8 @@ class ConsumerTestRuntimeEnvironment {
                 kafkaProperties.getClusterName(),
                 metricsSupplier.get(),
                 workloadConstraintsRepository,
-                new SelectiveWorkBalancer()
+                new SelectiveWorkBalancer(),
+                new NoOpBalancingListener()
         );
     }
 

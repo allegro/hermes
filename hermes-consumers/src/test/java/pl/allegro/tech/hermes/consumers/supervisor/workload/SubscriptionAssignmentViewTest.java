@@ -140,26 +140,4 @@ public class SubscriptionAssignmentViewTest {
     private static SubscriptionAssignmentViewBuilder assignmentView() {
         return new SubscriptionAssignmentViewBuilder();
     }
-
-    private static class SubscriptionAssignmentViewBuilder {
-
-        private SubscriptionAssignmentView assignmentView;
-
-        private SubscriptionAssignmentViewBuilder() {
-            assignmentView = new SubscriptionAssignmentView(Collections.emptyMap());
-        }
-
-        public SubscriptionAssignmentView build() {
-            return SubscriptionAssignmentView.copyOf(assignmentView);
-        }
-
-        public SubscriptionAssignmentViewBuilder withAssignment(SubscriptionName subscriptionName, String consumerNodeId) {
-            assignmentView = assignmentView.transform((view, transformer) -> {
-                transformer.addSubscription(subscriptionName);
-                transformer.addConsumerNode(consumerNodeId);
-                transformer.addAssignment(new SubscriptionAssignment(consumerNodeId, subscriptionName));
-            });
-            return this;
-        }
-    }
 }

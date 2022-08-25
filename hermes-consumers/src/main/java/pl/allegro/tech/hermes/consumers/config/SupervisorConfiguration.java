@@ -35,14 +35,22 @@ import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.NonblockingConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.BalancingListener;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ConsumerAssignmentRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ConsumerNodeLoadRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.NoOpConsumerNodeLoadRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.NoOpSubscriptionProfileRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.SubscriptionProfileProvider;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.SubscriptionProfileRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.SubscriptionProfilesCalculator;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ZookeeperConsumerNodeLoadRegistry;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ZookeeperSubscriptionProfileRegistry;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -81,7 +89,9 @@ public class SupervisorConfiguration {
                                                  WorkloadProperties workloadProperties,
                                                  KafkaClustersProperties kafkaClustersProperties,
                                                  WorkloadConstraintsRepository workloadConstraintsRepository,
-                                                 DatacenterNameProvider datacenterNameProvider) {
+                                                 DatacenterNameProvider datacenterNameProvider,
+                                                 WorkBalancer workBalancer,
+                                                 BalancingListener balancingListener) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("AssignmentExecutor-%d")
                 .setUncaughtExceptionHandler((t, e) -> logger.error("AssignmentExecutor failed {}", t.getName(), e)).build();
@@ -101,8 +111,28 @@ public class SupervisorConfiguration {
                 kafkaProperties.getClusterName(),
                 metrics,
                 workloadConstraintsRepository,
-                new SelectiveWorkBalancer()
+                workBalancer,
+                balancingListener
         );
+    }
+
+    @Bean
+    public WorkBalancer workBalancer(WorkloadProperties workloadProperties,
+                                     Clock clock,
+                                     SubscriptionProfileProvider subscriptionProfileProvider) {
+        switch (workloadProperties.getWorkBalancingStrategy()) {
+            case SELECTIVE:
+                return new SelectiveWorkBalancer();
+            case WEIGHTED:
+                WeightedWorkBalancingProperties weightedWorkBalancingProperties = workloadProperties.getWeightedWorkBalancing();
+                return new WeightedWorkBalancer(
+                        clock,
+                        weightedWorkBalancingProperties.getStabilizationWindowSize(),
+                        weightedWorkBalancingProperties.getMinSignificantChangePercent(),
+                        subscriptionProfileProvider
+                );
+        }
+        throw new UnknownWorkBalancingStrategyException();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -132,6 +162,43 @@ public class SupervisorConfiguration {
                         clock,
                         metrics,
                         weightedWorkBalancing.getConsumerLoadEncoderBufferSizeBytes()
+                );
+        }
+        throw new UnknownWorkBalancingStrategyException();
+    }
+
+    @Bean
+    public SubscriptionProfilesCalculator subscriptionProfilesCalculator(ConsumerNodeLoadRegistry consumerNodeLoadRegistry,
+                                                                         SubscriptionProfileRegistry subscriptionProfileRegistry,
+                                                                         WorkloadProperties workloadProperties,
+                                                                         Clock clock) {
+        return new SubscriptionProfilesCalculator(
+                consumerNodeLoadRegistry,
+                subscriptionProfileRegistry,
+                clock,
+                workloadProperties.getWeightedWorkBalancing().getWeightWindowSize()
+        );
+    }
+
+    @Bean
+    public SubscriptionProfileRegistry subscriptionProfileRegistry(CuratorFramework curator,
+                                                                   SubscriptionIds subscriptionIds,
+                                                                   ZookeeperPaths zookeeperPaths,
+                                                                   WorkloadProperties workloadProperties,
+                                                                   KafkaClustersProperties kafkaClustersProperties,
+                                                                   DatacenterNameProvider datacenterNameProvider) {
+        switch (workloadProperties.getWorkBalancingStrategy()) {
+            case SELECTIVE:
+                return new NoOpSubscriptionProfileRegistry();
+            case WEIGHTED:
+                KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+                WeightedWorkBalancingProperties weightedWorkBalancing = workloadProperties.getWeightedWorkBalancing();
+                return new ZookeeperSubscriptionProfileRegistry(
+                        curator,
+                        subscriptionIds,
+                        zookeeperPaths,
+                        kafkaProperties.getClusterName(),
+                        weightedWorkBalancing.getSubscriptionProfilesEncoderBufferSizeBytes()
                 );
         }
         throw new UnknownWorkBalancingStrategyException();
