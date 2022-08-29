@@ -1,0 +1,9 @@
+@namespace("pl.local")
+protocol User {
+	record User {
+		union{null, map<string>} __metadata = null;
+		string name;
+		int age;
+		union{null, string} favoriteColor;
+	}
+}

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
+import pl.allegro.tech.hermes.api.AvroType;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.ErrorCode;
@@ -15,6 +16,7 @@ import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserIdlLoader;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
@@ -37,6 +39,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 public class TopicManagementTest extends IntegrationTest {
 
     private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
+    private static final String IDL = AvroUserIdlLoader.load();
 
     @Test
     public void shouldEmmitAuditEventWhenTopicCreated() {
@@ -115,6 +118,38 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         Assertions.assertThat(management.topic().get("createTopicGroup.topic")).isNotNull();
+    }
+
+    @Test
+    public void shouldCreateTopicWithIdlSchema() {
+        // given
+        operations.createGroup("createTopicGroup");
+        TopicWithSchema topicWithSchema = topicWithSchema(topic("createTopicGroup", "topic")
+                .withContentType(AVRO)
+                .withTrackingEnabled(false).build(), IDL, AvroType.IDL);
+
+        // when
+        Response response = management.topic().create(topicWithSchema);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        Assertions.assertThat(management.topic().get("createTopicGroup.topic")).isNotNull();
+    }
+
+    @Test
+    public void shouldNotCreateTopicWithInvalidIdlSchema() {
+        // given
+        operations.createGroup("invalidIdlSchema");
+        TopicWithSchema topicWithSchema = topicWithSchema(topic("invalidIdlSchema", "topic")
+                .withContentType(AVRO)
+                .withTrackingEnabled(false).build(), "invalid_idl", AvroType.IDL);
+
+        // when
+        Response response = management.topic().create(topicWithSchema);
+
+        // when
+        assertThat(response).hasStatus(BAD_REQUEST);
+        assertThat(response.readEntity(ErrorDescription.class).getCode()).isEqualTo(ErrorCode.SCHEMA_BAD_REQUEST);
     }
 
     @Test

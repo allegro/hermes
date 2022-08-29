@@ -18,10 +18,12 @@ public class TopicWithSchema extends Topic {
 
     private String schema;
 
-    public TopicWithSchema(Topic topic, String schema) {
+    private AvroType avroType;
+
+    public TopicWithSchema(Topic topic, String schema, AvroType avroType) {
         this(schema, topic.getQualifiedName(), topic.getDescription(), topic.getOwner(), topic.getRetentionTime(),
                 topic.isJsonToAvroDryRunEnabled(), topic.getAck(), topic.isTrackingEnabled(), topic.wasMigratedFromJsonType(),
-                topic.isSchemaIdAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
+                topic.isSchemaIdAwareSerializationEnabled(), topic.getContentType(), avroType, topic.getMaxMessageSize(),
                 topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage(), topic.getLabels(),
                 topic.getCreatedAt(), topic.getModifiedAt());
     }
@@ -38,6 +40,7 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
                            @JsonProperty("schemaIdAwareSerializationEnabled") @JacksonInject(value = Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
                            @JsonProperty("contentType") ContentType contentType,
+                           @JsonProperty("avroType") AvroType avroType,
                            @JsonProperty("maxMessageSize") Integer maxMessageSize,
                            @JsonProperty("auth") PublishingAuth publishingAuth,
                            @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
@@ -50,14 +53,19 @@ public class TopicWithSchema extends Topic {
                 publishingAuth, subscribingRestricted, offlineStorage, labels, createdAt, modifiedAt);
         this.topic = convertToTopic();
         this.schema = schema;
+        this.avroType = avroType;
     }
 
     public static TopicWithSchema topicWithSchema(Topic topic, String schema) {
-        return new TopicWithSchema(topic, schema);
+        return new TopicWithSchema(topic, schema, null);
+    }
+
+    public static TopicWithSchema topicWithSchema(Topic topic, String schema, AvroType avroType) {
+        return new TopicWithSchema(topic, schema, avroType);
     }
 
     public static TopicWithSchema topicWithSchema(Topic topic) {
-        return new TopicWithSchema(topic, null);
+        return new TopicWithSchema(topic, null, null);
     }
 
     private Topic convertToTopic() {
@@ -70,6 +78,10 @@ public class TopicWithSchema extends Topic {
 
     public String getSchema() {
         return schema;
+    }
+
+    public AvroType getAvroType() {
+        return avroType;
     }
 
     @JsonIgnore
@@ -90,11 +102,12 @@ public class TopicWithSchema extends Topic {
         }
         TopicWithSchema that = (TopicWithSchema) o;
         return Objects.equals(topic, that.topic) &&
-                Objects.equals(schema, that.schema);
+                Objects.equals(schema, that.schema) &&
+                Objects.equals(avroType, that.avroType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), topic, schema);
+        return Objects.hash(super.hashCode(), topic, schema, avroType);
     }
 }

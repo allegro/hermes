@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.management.domain.topic;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.avro.compiler.idl.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.AvroType;
 import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -32,6 +34,7 @@ import pl.allegro.tech.hermes.management.domain.topic.commands.CreateTopicReposi
 import pl.allegro.tech.hermes.management.domain.topic.commands.RemoveTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.TouchTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.commands.UpdateTopicRepositoryCommand;
+import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaConverter;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -116,10 +119,27 @@ public class TopicService {
         boolean validateAndRegisterSchema = AVRO.equals(topic.getContentType()) || (topic.isJsonToAvroDryRunEnabled()
                 && topicWithSchema.getSchema() != null);
 
+        if (AvroType.IDL.equals(topicWithSchema.getAvroType())) {
+            topicWithSchema = convertFromIdl(topicWithSchema, topic);
+        }
+
         validateSchema(validateAndRegisterSchema, topicWithSchema, topic);
         registerAvroSchema(validateAndRegisterSchema, topicWithSchema, createdBy);
         createTopic(topic, createdBy, isAllowedToManage);
     }
+
+    private TopicWithSchema convertFromIdl(TopicWithSchema topicWithSchema, Topic topic) {
+        String convertedSchema;
+        try {
+            convertedSchema = SchemaConverter.convertToAvroSchema(topicWithSchema.getSchema());
+            topicWithSchema = new TopicWithSchema(topic, convertedSchema, AvroType.SCHEMA);
+        }
+        catch (ParseException ex) {
+            throw new InvalidAvroIdlException(ex);
+        }
+        return topicWithSchema;
+    }
+
 
     private void ensureTopicDoesNotExist(Topic topic) {
         if (topicRepository.topicExists(topic.getName())) {

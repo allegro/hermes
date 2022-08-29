@@ -122,6 +122,14 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group" ng-show="topic.contentType === 'AVRO'">
+                <label for="avroType" class="col-md-3 control-label">AVRO type</label>
+                <div class="col-md-9">
+                    <select id="avroType" class="form-control" ng-model="topic.avroType" ng-change="modeChanged()">
+                        <option ng-repeat="avroType in config.avroTypes" value="{{avroType.value}}">{{avroType.label}}</option>
+                    </select>
+                </div>
+            </div>
             <div class="form-group {{topicForm.topicMaxMessageSize.$valid ? '' : 'has-error'}}">
                 <label for="topicMaxMessageSize" class="col-md-3 control-label">Max message size</label>
                 <div class="col-md-9">
@@ -172,13 +180,15 @@
                 <div class="col-md-9">
                     <div class="alert alert-info" ng-hide="config.avroContentTypeMetadataRequired === false">
                         Schema definition <b>must contain</b> an additional field for Hermes internal use:<br>
-                        <pre>
+                        <pre ng-show="topic.avroType === 'SCHEMA'">
 {
     "name": "__metadata", "default": null,
     "type": ["null", {"type": "map", "values": "string"}],
     "doc": "Field used in Hermes internals to propagate metadata"
-}
-                        </pre>
+}</pre>
+                        <pre ng-show="topic.avroType === 'IDL'">
+/** Field used in Hermes internals to propagate metadata */
+union{null, map&lt;string&gt;} __metadata = null;</pre>
                     </div>
                     <div class="form-control ace_editor_schema" id="messageSchema" ng-required="topic.contentType === 'AVRO'"
                          name="message" ng-model="messageSchema"
@@ -190,9 +200,15 @@
                             },
                             useWrapMode : true,
                             theme:'chrome',
-                            mode: 'json'}">
+                            mode: 'json',
+                            onLoad: aceLoaded
+                            }">
                     </div>
-                    <button class="btn btn-info pull-right margin-top-10" ng-click="beautifyText()">Beautify</button>
+                    <button ng-show="topic.avroType === 'SCHEMA'"
+                            class="btn btn-info pull-right margin-top-10"
+                            ng-click="beautifyText()">
+                        Beautify
+                    </button>
                 </div>
             </div>
         </form>
