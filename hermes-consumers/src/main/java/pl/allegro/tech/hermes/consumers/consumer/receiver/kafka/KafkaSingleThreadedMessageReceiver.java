@@ -153,9 +153,9 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         } catch (IllegalStateException ex) {
             // means it was already closed
         } catch (InterruptException ex) {
-            logger.warn("InterruptException occurred during closing consumer: " + ex);
+            // means that the thread was interrupted
         } catch (KafkaException ex) {
-            logger.warn("KafkaException occurred during closing consumer: " + ex);
+            logger.warn("KafkaException occurred during closing consumer.", ex);
         } finally {
             partitionAssignmentState.revokeAll(subscription.getQualifiedName());
         }
