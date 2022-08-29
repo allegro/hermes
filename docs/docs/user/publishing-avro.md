@@ -33,6 +33,12 @@ Schema requires two special fields that identify it:
 Hermes appends metadata to each event, which has to be reflected in defined schema as well. Thus, for each schema please
 append the following field definition. **You should not modify published JSON**. `__metadata` field defaults to `null`.
 
+Schemas can be imported from AVSC or AVDL files. 
+* **AVSC** - default format with json structure
+* **AVDL** - newer format with IDL language [Avro IDL specs](https://avro.apache.org/docs/1.10.2/idl.html)
+
+#### AVSC
+
 ```json
 {
   "name": "__metadata",
@@ -85,6 +91,33 @@ Example schema:
       "doc": "Field used in Hermes internals to propagate metadata like hermes-id"
     }
   ]
+}
+```
+
+#### AVDL
+
+```
+/** Field used in Hermes internals to propagate metadata like hermes-id */
+union{null, map<string>} __metadata = null;
+```
+
+Example schema:
+
+```
+@namespace("tech.hermes.group")
+protocol User {
+	record User {
+		/** Field used in Hermes internals to propagate metadata like hermes-id */
+		union{null, map<string>} __metadata = null;
+		string name;
+		int age;
+		Type type;
+	}
+
+	enum Type {
+		ADMIN,
+		USER
+	}
 }
 ```
 
