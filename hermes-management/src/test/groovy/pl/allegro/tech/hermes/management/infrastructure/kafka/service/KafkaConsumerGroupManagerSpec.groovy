@@ -167,7 +167,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
 
     private static def createTestSubscription(Topic topic, String subscriptionName) {
         Subscription.create(topic.getQualifiedName(), subscriptionName, null, Subscription.State.PENDING, "test", [:], false, null, null,
-                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false
+                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, false
         )
     }
 

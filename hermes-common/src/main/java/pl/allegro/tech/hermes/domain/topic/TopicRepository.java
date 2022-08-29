@@ -28,5 +28,6 @@ public interface TopicRepository {
 
     List<Topic> getTopicsDetails(Collection<TopicName> topicNames);
 
-    void ensureTopicHasNoSubscriptions(TopicName topicName);
+    List<Topic> listAllTopics();
+
 }

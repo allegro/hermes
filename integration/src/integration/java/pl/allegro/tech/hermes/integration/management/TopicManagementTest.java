@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUserIdlLoader;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
@@ -205,6 +207,27 @@ public class TopicManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.FORBIDDEN).hasErrorCode(ErrorCode.TOPIC_NOT_EMPTY);
+    }
+
+    @Test
+    public void shouldRemoveTopicWithRelatedSubscriptionsWhenAutoRemoveEnabled() {
+        // given
+        Topic topic = operations.buildTopic("removeNonemptyTopicGroup", "topic");
+        operations.createSubscription(
+                topic,
+                subscription(topic, "subscription")
+                        .withAutoDeleteWithTopicEnabled(true)
+                        .build());
+
+        // when
+        Response response = management.topic().remove("removeNonemptyTopicGroup.topic");
+
+        // then
+        assertThat(response).hasStatus(Response.Status.OK);
+
+        // and
+        Throwable thrown = catchThrowable(() -> management.subscription().get(topic.getQualifiedName(), "subscription"));
+        assertThat(thrown).isInstanceOf(BadRequestException.class);
     }
 
     @Test(enabled = false)
