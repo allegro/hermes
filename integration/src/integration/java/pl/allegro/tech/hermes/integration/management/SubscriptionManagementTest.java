@@ -90,6 +90,26 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldReturnSubscription() {
+        //given
+        Topic topic = operations.buildTopic(randomTopic("subscribeGroup", "topic").build());
+        String subName = "checkFieldSub";
+        operations.createSubscription(topic,
+                subscription(topic, subName)
+                        .build());
+
+        //when
+        Subscription subscription = management.subscription()
+                .get(topic.getQualifiedName(), subName);
+
+        //then
+        assertThat(subscription.getName()).isEqualTo(subName);
+        assertThat(subscription.isAutoDeleteWithTopicEnabled()).isFalse();
+        assertThat(subscription.getQualifiedTopicName()).isEqualTo(topic.getQualifiedName());
+        assertThat(subscription.isTrackingEnabled()).isFalse();
+    }
+
+    @Test
     public void shouldEmmitAuditEventWhenSubscriptionRemoved() {
         //given
         Topic topic = operations.buildTopic(randomTopic("subscribeGroup2", "topic").build());

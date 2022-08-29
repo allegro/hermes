@@ -27,7 +27,6 @@ import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHold
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.subscription.commands.CreateSubscriptionRepositoryCommand;
-import pl.allegro.tech.hermes.management.domain.subscription.commands.RemoveSubscriptionRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubscriptionRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
@@ -72,6 +71,7 @@ public class SubscriptionService {
     private final RepositoryManager repositoryManager;
     private final long subscriptionHealthCheckTimeoutMillis;
     private final ExecutorService subscriptionHealthCheckExecutorService;
+    private final SubscriptionRemover subscriptionRemover;
 
 
     public SubscriptionService(SubscriptionRepository subscriptionRepository,
@@ -86,7 +86,8 @@ public class SubscriptionService {
                                MultiDCAwareService multiDCAwareService,
                                RepositoryManager repositoryManager,
                                ExecutorService unhealthyGetExecutorService,
-                               long unhealthyGetTimeoutMillis) {
+                               long unhealthyGetTimeoutMillis,
+                               SubscriptionRemover subscriptionRemover) {
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionOwnerCache = subscriptionOwnerCache;
         this.topicService = topicService;
@@ -100,6 +101,7 @@ public class SubscriptionService {
         this.repositoryManager = repositoryManager;
         this.subscriptionHealthCheckExecutorService = unhealthyGetExecutorService;
         this.subscriptionHealthCheckTimeoutMillis = unhealthyGetTimeoutMillis;
+        this.subscriptionRemover = subscriptionRemover;
     }
 
     public List<String> listSubscriptionNames(TopicName topicName) {
@@ -176,11 +178,7 @@ public class SubscriptionService {
     }
 
     public void removeSubscription(TopicName topicName, String subscriptionName, RequestUser removedBy) {
-        auditor.beforeObjectRemoval(removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);
-        Subscription subscription = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
-        multiDcExecutor.executeByUser(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
-        auditor.objectRemoved(removedBy.getUsername(), subscription);
-        subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
+        subscriptionRemover.removeSubscription(topicName, subscriptionName, removedBy);
     }
 
     public void updateSubscription(TopicName topicName,
