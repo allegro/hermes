@@ -100,7 +100,8 @@ public class BackupMessagesLoader {
     }
 
     public void loadFromTemporaryBackupV2File(File file) {
-        try (FileInputStream fileInputStream = new FileInputStream(file); ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
+        try (FileInputStream fileInputStream = new FileInputStream(file);
+             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
             List<BackupMessage> messages = (List<BackupMessage>) objectInputStream.readObject();
             logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file);
             loadMessages(messages);
@@ -192,10 +193,12 @@ public class BackupMessagesLoader {
                 sendMessage(message, cachedTopic.get());
                 return true;
             }
-            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topicQualifiedName, new String(message.getData(), Charset.defaultCharset()));
+            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topicQualifiedName,
+                    new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
-        logger.error("Topic {} not present. Not {} message {} {}", topicQualifiedName, contextName, message.getId(), new String(message.getData(), Charset.defaultCharset()));
+        logger.error("Topic {} not present. Not {} message {} {}", topicQualifiedName, contextName, message.getId(),
+                new String(message.getData(), Charset.defaultCharset()));
         return false;
     }
 
