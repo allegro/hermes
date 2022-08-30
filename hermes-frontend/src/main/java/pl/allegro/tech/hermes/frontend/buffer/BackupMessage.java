@@ -11,13 +11,18 @@ public class BackupMessage implements Serializable {
     private final long timestamp;
     private final String qualifiedTopicName;
     private final String partitionKey;
+    private final Integer schemaVersion;
+    private final Integer schemaId;
 
-    public BackupMessage(String messageId, byte[] data, long timestamp, String qualifiedTopicName, String partitionKey) {
+    public BackupMessage(String messageId, byte[] data, long timestamp, String qualifiedTopicName, String partitionKey,
+                         Integer schemaVersion, Integer schemaId) {
         this.messageId = messageId;
         this.data = data;
         this.timestamp = timestamp;
         this.qualifiedTopicName = qualifiedTopicName;
         this.partitionKey = partitionKey;
+        this.schemaVersion = schemaVersion;
+        this.schemaId = schemaId;
     }
 
     public String getMessageId() {
@@ -40,6 +45,14 @@ public class BackupMessage implements Serializable {
         return partitionKey;
     }
 
+    public Integer getSchemaVersion() {
+        return schemaVersion;
+    }
+
+    public Integer getSchemaId() {
+        return schemaId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -49,11 +62,13 @@ public class BackupMessage implements Serializable {
                 Objects.equals(messageId, that.messageId) &&
                 Arrays.equals(data, that.data) &&
                 Objects.equals(qualifiedTopicName, that.qualifiedTopicName) &&
-                Objects.equals(partitionKey, that.partitionKey);
+                Objects.equals(partitionKey, that.partitionKey) &&
+                Objects.equals(schemaVersion, that.schemaVersion) &&
+                Objects.equals(schemaId, that.schemaId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(messageId, data, timestamp, qualifiedTopicName, partitionKey);
+        return Objects.hash(messageId, data, timestamp, qualifiedTopicName, partitionKey, schemaVersion, schemaId);
     }
 }

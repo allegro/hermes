@@ -45,7 +45,8 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id, messageContent, timestamp, qualifiedName, message.getPartitionKey()));
+        assertThat(messageRepository.findAll()).contains(
+                new BackupMessage(id, messageContent, timestamp, qualifiedName, message.getPartitionKey(), null, null));
 
         //when
         messageRepository.delete(id);
@@ -73,14 +74,16 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message2, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id1, messageContent.getBytes(), message1.getTimestamp(), qualifiedName, message1.getPartitionKey()));
+        assertThat(messageRepository.findAll()).contains(
+                new BackupMessage(id1, messageContent.getBytes(), message1.getTimestamp(), qualifiedName, message1.getPartitionKey(), null, null));
 
         //when
         messageRepository.delete(id1);
 
         //then
         assertThat(messageRepository.findAll()).hasSize(1);
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(id2, messageContent.getBytes(), message2.getTimestamp(), qualifiedName, message2.getPartitionKey()));
+        assertThat(messageRepository.findAll()).contains(
+                new BackupMessage(id2, messageContent.getBytes(), message2.getTimestamp(), qualifiedName, message2.getPartitionKey(), null, null));
     }
 
     @Test
@@ -118,7 +121,8 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(message.getId(), message.getData(), message.getTimestamp(), qualifiedName, message.getPartitionKey()));
+        assertThat(messageRepository.findAll()).contains(new BackupMessage(
+                message.getId(), message.getData(), message.getTimestamp(), qualifiedName, message.getPartitionKey(), null, null));
     }
 
     private Message generateMessage() {

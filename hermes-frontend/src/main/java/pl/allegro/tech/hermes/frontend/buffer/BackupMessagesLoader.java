@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.buffer;
 
 import com.google.common.collect.Lists;
 import java.util.Collections;
+import org.apache.avro.Schema;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -13,8 +14,14 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
+import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
+import pl.allegro.tech.hermes.schema.SchemaId;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 import java.io.File;
@@ -31,7 +38,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class BackupMessagesLoader {
@@ -41,6 +47,8 @@ public class BackupMessagesLoader {
     private final BrokerMessageProducer brokerMessageProducer;
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
+    private final SchemaRepository schemaRepository;
+    private final SchemaExistenceEnsurer schemaExistenceEnsurer;
     private final Trackers trackers;
     private final Duration messageMaxAgeHours;
     private final int maxResendRetries;
@@ -50,14 +58,12 @@ public class BackupMessagesLoader {
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
 
-    public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
-                                BrokerListeners brokerListeners,
-                                TopicsCache topicsCache,
-                                Trackers trackers,
-                                BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
+    public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer, BrokerListeners brokerListeners, TopicsCache topicsCache, SchemaRepository schemaRepository, SchemaExistenceEnsurer schemaExistenceEnsurer, Trackers trackers, BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
+        this.schemaRepository = schemaRepository;
+        this.schemaExistenceEnsurer = schemaExistenceEnsurer;
         this.trackers = trackers;
         this.messageMaxAgeHours = backupMessagesLoaderParameters.getMaxAge();
         this.resendSleep = backupMessagesLoaderParameters.getLoadingPauseBetweenResend();
@@ -94,18 +100,13 @@ public class BackupMessagesLoader {
     }
 
     public void loadFromTemporaryBackupV2File(File file) {
-        try (
-                FileInputStream fileInputStream = new FileInputStream(file);
-                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)
-        ) {
+        try (FileInputStream fileInputStream = new FileInputStream(file); ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
             List<BackupMessage> messages = (List<BackupMessage>) objectInputStream.readObject();
             logger.info("Loaded {} messages from temporary v2 backup file: {}", messages.size(), file);
             loadMessages(messages);
 
         } catch (IOException | ClassNotFoundException e) {
-            logger.error("Error reading temporary backup v2 files from path {}.",
-                    file.getAbsolutePath(),
-                    e);
+            logger.error("Error reading temporary backup v2 files from path {}.", file.getAbsolutePath(), e);
         }
     }
 
@@ -118,10 +119,9 @@ public class BackupMessagesLoader {
         int sentCounter = 0;
         int discardedCounter = 0;
         for (BackupMessage backupMessage : messages) {
-            Message message = new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), backupMessage.getPartitionKey());
             String topicQualifiedName = backupMessage.getQualifiedTopicName();
             Optional<CachedTopic> optionalCachedTopic = topicsCache.getTopic(topicQualifiedName);
-            if (sendMessageIfNeeded(message, topicQualifiedName, optionalCachedTopic, "sending")) {
+            if (sendBackupMessageIfNeeded(backupMessage, topicQualifiedName, optionalCachedTopic, "sending")) {
                 sentCounter++;
             } else {
                 discardedCounter++;
@@ -148,6 +148,43 @@ public class BackupMessagesLoader {
         logger.info("Resent {}/{} messages and discarded {} messages from the backup storage retry {}.", sentCounter, messageAndTopicList.size(), discardedCounter, retry);
     }
 
+    private boolean sendBackupMessageIfNeeded(BackupMessage backupMessage, String topicQualifiedName, Optional<CachedTopic> cachedTopic, String contextName) {
+        if (cachedTopic.isPresent()) {
+            Message message;
+            if (backupMessage.getSchemaVersion() != null) {
+                message = createAvroMessageFromVersion(backupMessage, cachedTopic);
+            } else if (backupMessage.getSchemaId() != null) {
+                message = createAvroMessageFromSchemaId(backupMessage, cachedTopic);
+            } else {
+                message = createJsonMessage(backupMessage);
+            }
+            return sendMessageIfNeeded(message, topicQualifiedName, cachedTopic, contextName);
+        }
+        return false;
+    }
+
+    private Message createAvroMessageFromSchemaId(BackupMessage backupMessage, Optional<CachedTopic> cachedTopic) {
+        SchemaId schemaId = SchemaId.valueOf(backupMessage.getSchemaId());
+        schemaExistenceEnsurer.ensureSchemaExists(cachedTopic.get().getTopic(), schemaId);
+        CompiledSchema<Schema> schema = schemaRepository.getAvroSchema(cachedTopic.get().getTopic(), schemaId);
+        return createAvroMessage(backupMessage, cachedTopic.get(), schema);
+    }
+
+    private Message createAvroMessageFromVersion(BackupMessage backupMessage, Optional<CachedTopic> cachedTopic) {
+        SchemaVersion version = SchemaVersion.valueOf(backupMessage.getSchemaVersion());
+        schemaExistenceEnsurer.ensureSchemaExists(cachedTopic.get().getTopic(), version);
+        CompiledSchema<Schema> schema = schemaRepository.getAvroSchema(cachedTopic.get().getTopic(), version);
+        return createAvroMessage(backupMessage, cachedTopic.get(), schema);
+    }
+
+    private Message createAvroMessage(BackupMessage backupMessage, CachedTopic topic, CompiledSchema<Schema> schema) {
+        return new AvroMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), schema, backupMessage.getPartitionKey());
+    }
+
+    private Message createJsonMessage(BackupMessage backupMessage) {
+        return new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), backupMessage.getPartitionKey());
+    }
+
     private boolean sendMessageIfNeeded(Message message, String topicQualifiedName, Optional<CachedTopic> cachedTopic, String contextName) {
         if (cachedTopic.isPresent()) {
             if (isNotStale(message)) {
@@ -155,12 +192,10 @@ public class BackupMessagesLoader {
                 sendMessage(message, cachedTopic.get());
                 return true;
             }
-            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(),
-                    topicQualifiedName, new String(message.getData(), Charset.defaultCharset()));
+            logger.warn("Not {} stale message {} {} {}", contextName, message.getId(), topicQualifiedName, new String(message.getData(), Charset.defaultCharset()));
             return false;
         }
-        logger.error("Topic {} not present. Not {} message {} {}", topicQualifiedName, contextName,
-                message.getId(), new String(message.getData(), Charset.defaultCharset()));
+        logger.error("Topic {} not present. Not {} message {} {}", topicQualifiedName, contextName, message.getId(), new String(message.getData(), Charset.defaultCharset()));
         return false;
     }
 
@@ -192,8 +227,7 @@ public class BackupMessagesLoader {
     }
 
     private boolean isNotStale(Message message) {
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(message.getTimestamp()), ZoneId.systemDefault())
-                .isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours.toHours()));
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(message.getTimestamp()), ZoneId.systemDefault()).isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours.toHours()));
     }
 
     private void sendMessage(Message message, CachedTopic cachedTopic) {

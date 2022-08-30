@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.SchemaExistenceEnsurer;
+import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 public class BasicMessageContentReaderFactory implements MessageContentReaderFactory {
