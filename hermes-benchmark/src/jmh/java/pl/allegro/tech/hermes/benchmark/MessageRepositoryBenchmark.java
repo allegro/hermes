@@ -107,8 +107,8 @@ public class MessageRepositoryBenchmark {
                     message.getTimestamp(),
                     topic.getQualifiedName(),
                     message.getPartitionKey(),
-                    message.getSchema()
-            );
+                    null,
+                    null);
             map.put(message.getId(), entryValue);
         }
 

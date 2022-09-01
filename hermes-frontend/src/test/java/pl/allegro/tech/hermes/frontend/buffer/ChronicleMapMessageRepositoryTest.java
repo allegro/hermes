@@ -5,12 +5,14 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
+import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 
 import java.io.File;
 import java.util.UUID;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -34,7 +36,7 @@ public class ChronicleMapMessageRepositoryTest {
         //given
         String qualifiedName = "groupName.topic";
 
-        Message message = generateMessage();
+        Message message = generateJsonMessage();
         String id = message.getId();
         byte[] messageContent = message.getData();
         long timestamp = message.getTimestamp();
@@ -59,8 +61,8 @@ public class ChronicleMapMessageRepositoryTest {
     public void shouldSaveMultipleTimesFindAndDeleteMessage() {
         //given
         String messageContent = "hello world";
-        Message message1 = generateMessage(messageContent);
-        Message message2 = generateMessage(messageContent);
+        Message message1 = generateJsonMessage(messageContent);
+        Message message2 = generateJsonMessage(messageContent);
         String id1 = message1.getId();
         String id2 = message2.getId();
         String qualifiedName = "groupName.topic";
@@ -102,7 +104,7 @@ public class ChronicleMapMessageRepositoryTest {
     @Test
     public void shouldCreateRepositoryThenCloseAndRestore() {
         //given
-        Message message = generateMessage();
+        Message message = generateJsonMessage();
         String qualifiedName = "groupName.topic";
         Topic topic = topic(qualifiedName).build();
 
@@ -125,15 +127,43 @@ public class ChronicleMapMessageRepositoryTest {
                 message.getId(), message.getData(), message.getTimestamp(), qualifiedName, message.getPartitionKey(), null, null));
     }
 
-    private Message generateMessage() {
-        return generateMessage(UUID.randomUUID().toString());
+    @Test
+    public void shouldSaveFindAndDeleteMessageAvroMessage() {
+        //given
+        String qualifiedName = "groupName.topic";
+
+        AvroUser avroUser = new AvroUser("Bob", 18, "blue");
+        String id = MessageIdGenerator.generate();
+        Message message = new AvroMessage(id, avroUser.asBytes(), System.currentTimeMillis(), avroUser.getCompiledSchema(), "partition-key");
+
+        byte[] messageContent = message.getData();
+        long timestamp = message.getTimestamp();
+
+        Topic topic = topic(qualifiedName).build();
+
+        //when
+        messageRepository.save(message, topic);
+
+        //then
+        assertThat(messageRepository.findAll()).contains(
+                new BackupMessage(id, messageContent, timestamp, qualifiedName, message.getPartitionKey(), 1, 1));
+
+        //when
+        messageRepository.delete(id);
+
+        //then
+        assertThat(messageRepository.findAll()).isEmpty();
     }
 
-    private Message generateMessage(String content) {
-        return generateMessage(content, System.currentTimeMillis());
+    private Message generateJsonMessage() {
+        return generateJsonMessage(UUID.randomUUID().toString());
     }
 
-    private Message generateMessage(String content, long timestamp) {
+    private Message generateJsonMessage(String content) {
+        return generateJsonMessage(content, System.currentTimeMillis());
+    }
+
+    private Message generateJsonMessage(String content, long timestamp) {
         byte[] messageContent = content.getBytes();
         String id = MessageIdGenerator.generate();
         return new JsonMessage(id, messageContent, timestamp, "partition-key");
