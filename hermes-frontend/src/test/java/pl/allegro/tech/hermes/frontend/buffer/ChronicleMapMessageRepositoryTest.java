@@ -12,7 +12,9 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 
 import java.io.File;
 import java.util.UUID;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -134,7 +136,8 @@ public class ChronicleMapMessageRepositoryTest {
 
         AvroUser avroUser = new AvroUser("Bob", 18, "blue");
         String id = MessageIdGenerator.generate();
-        Message message = new AvroMessage(id, avroUser.asBytes(), System.currentTimeMillis(), avroUser.getCompiledSchema(), "partition-key");
+        Message message = new AvroMessage(id, avroUser.asBytes(), System.currentTimeMillis(),
+                CompiledSchema.of(AvroUserSchemaLoader.load(), 1, 1), "partition-key");
 
         byte[] messageContent = message.getData();
         long timestamp = message.getTimestamp();

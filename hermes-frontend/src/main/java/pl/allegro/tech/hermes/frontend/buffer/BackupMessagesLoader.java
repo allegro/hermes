@@ -58,7 +58,13 @@ public class BackupMessagesLoader {
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
 
-    public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer, BrokerListeners brokerListeners, TopicsCache topicsCache, SchemaRepository schemaRepository, SchemaExistenceEnsurer schemaExistenceEnsurer, Trackers trackers, BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
+    public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
+                                BrokerListeners brokerListeners,
+                                TopicsCache topicsCache,
+                                SchemaRepository schemaRepository,
+                                SchemaExistenceEnsurer schemaExistenceEnsurer,
+                                Trackers trackers,
+                                BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
