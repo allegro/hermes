@@ -5,8 +5,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
-import pl.allegro.tech.hermes.schema.SchemaId;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.io.IOException;
@@ -28,6 +26,10 @@ public class AvroUser {
 
     public AvroUser() {
         this("defaultName", 0, "defaultColor") ;
+    }
+
+    public AvroUser(CompiledSchema<Schema> schema) {
+        this(schema, "defaultName", 0, "defaultColor");
     }
 
     public AvroUser(String name, int age, String favouriteColour) {

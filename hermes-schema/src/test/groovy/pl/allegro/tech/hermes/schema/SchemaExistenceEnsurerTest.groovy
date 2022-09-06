@@ -1,10 +1,5 @@
-package pl.allegro.tech.hermes.consumers.consumer.receiver
+package pl.allegro.tech.hermes.schema
 
-import pl.allegro.tech.hermes.schema.CompiledSchema
-import pl.allegro.tech.hermes.schema.SchemaId
-import pl.allegro.tech.hermes.schema.SchemaNotFoundException
-import pl.allegro.tech.hermes.schema.SchemaRepository
-import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import spock.lang.Specification
 
