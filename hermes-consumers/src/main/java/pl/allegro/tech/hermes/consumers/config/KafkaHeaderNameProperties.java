@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "frontend.kafka.header.name")
+@ConfigurationProperties(prefix = "consumer.kafka.header.name")
 public class KafkaHeaderNameProperties {
 
     private String schemaVersion = "sv";
