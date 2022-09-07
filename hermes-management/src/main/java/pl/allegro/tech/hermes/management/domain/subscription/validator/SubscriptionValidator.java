@@ -43,7 +43,7 @@ public class SubscriptionValidator {
     public void checkCreation(Subscription toCheck, RequestUser createdBy) {
         apiPreconditions.checkConstraints(toCheck, createdBy.isAdmin());
         checkOwner(toCheck);
-        checkEndpoint(toCheck);
+        checkEndpoint(toCheck, createdBy);
         checkPermissionsToManageSubscription(toCheck, createdBy);
         Topic topic = topicService.getTopicDetails(toCheck.getTopicName());
         checkFilters(toCheck, topic);
@@ -56,7 +56,7 @@ public class SubscriptionValidator {
     public void checkModification(Subscription toCheck, RequestUser modifiedBy, Subscription previous) {
         apiPreconditions.checkConstraints(toCheck, modifiedBy.isAdmin());
         checkOwner(toCheck);
-        checkEndpoint(toCheck);
+        checkEndpoint(toCheck, modifiedBy);
         checkPermissionsToManageSubscription(toCheck, modifiedBy);
         Topic topic = topicService.getTopicDetails(toCheck.getTopicName());
         checkFilters(toCheck, topic);
@@ -70,9 +70,9 @@ public class SubscriptionValidator {
         ownerIdValidator.check(toCheck.getOwner());
     }
 
-    private void checkEndpoint(Subscription toCheck) {
+    private void checkEndpoint(Subscription toCheck, RequestUser createdBy) {
         endpointAddressValidators.forEach(validator -> validator.check(toCheck.getEndpoint()));
-        endpointOwnershipValidator.check(toCheck.getOwner(), toCheck.getEndpoint());
+        endpointOwnershipValidator.check(toCheck.getOwner(), createdBy, toCheck.getEndpoint());
     }
 
     private void checkFilters(Subscription toCheck, Topic topic) {
