@@ -34,7 +34,7 @@ public class GooglePubSubMetadataAppender implements MetadataAppender<PubsubMess
                 .build();
     }
 
-    private Map<String, String> createMessageAttributes(Message message) {
+    protected Map<String, String> createMessageAttributes(Message message) {
         Optional<Pair<String, String>> schemaIdAndVersion = message.getSchema().map(s ->
                 Pair.of(String.valueOf(s.getId().value()), String.valueOf(s.getVersion().value())));
 

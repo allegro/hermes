@@ -11,17 +11,16 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.threeten.bp.Duration;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMetadataAppender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.*;
 
 import javax.inject.Named;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 @Configuration
 @EnableConfigurationProperties({
-        GooglePubSubSenderProperties.class
+        GooglePubSubSenderProperties.class, GooglePubSubCompressorProperties.class
 })
 public class GooglePubSubConfiguration {
 
@@ -31,8 +30,23 @@ public class GooglePubSubConfiguration {
     }
 
     @Bean
-    public GooglePubSubMessages pubSubMessages(GooglePubSubMetadataAppender googlePubSubMetadataAppender) {
-        return new GooglePubSubMessages(googlePubSubMetadataAppender);
+    public GooglePubSubMessages pubSubMessages(GooglePubSubMetadataAppender googlePubSubMetadataAppender,
+                                               GooglePubSubCompressorProperties compressorProperties) {
+        GooglePubSubMessages googlePubSubMessages = new GooglePubSubMessages(googlePubSubMetadataAppender);
+        if (compressorProperties.isEnabled()) {
+            Optional<CompressionCodecFactory> codecFactory = CompressionCodecFactory.builder()
+                    .fromCodecName(compressorProperties.getCodecName())
+                    .withCompressionLevel(compressorProperties.getCompressionLevel())
+                    .build();
+
+            return codecFactory.map(cf -> (GooglePubSubMessages) new GooglePubSubMessagesWithCompression(
+                    new GooglePubSubMetadataCompressionAppender(compressorProperties.getCodecName()),
+                    new GooglePubSubMessageCompressor(cf),
+                    googlePubSubMessages)
+            ).orElse(googlePubSubMessages);
+        } else {
+            return googlePubSubMessages;
+        }
     }
 
     @Bean
