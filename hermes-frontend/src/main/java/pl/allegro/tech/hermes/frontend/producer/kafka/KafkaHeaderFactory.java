@@ -26,6 +26,6 @@ public class KafkaHeaderFactory {
     }
 
     Header schemaId(int schemaId) {
-        return new RecordHeader(kafkaHeaderNameParameters.getSchemaVersion(), Ints.toByteArray(schemaId));
+        return new RecordHeader(kafkaHeaderNameParameters.getSchemaId(), Ints.toByteArray(schemaId));
     }
 }
