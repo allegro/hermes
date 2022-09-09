@@ -9,7 +9,7 @@ public class GooglePubSubCompressorProperties {
 
     private String codecName = "deflate";
 
-    private int compressionLevel = 3;
+    private String compressionLevel = "medium";
 
     public Boolean isEnabled() {
         return enabled;
@@ -27,11 +27,11 @@ public class GooglePubSubCompressorProperties {
         this.codecName = codecName;
     }
 
-    public int getCompressionLevel() {
+    public String getCompressionLevel() {
         return compressionLevel;
     }
 
-    public void setCompressionLevel(int compressionLevel) {
+    public void setCompressionLevel(String compressionLevel) {
         this.compressionLevel = compressionLevel;
     }
 }

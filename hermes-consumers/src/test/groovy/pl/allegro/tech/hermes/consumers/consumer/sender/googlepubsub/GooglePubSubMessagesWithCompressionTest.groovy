@@ -51,9 +51,9 @@ class GooglePubSubMessagesWithCompressionTest extends Specification {
 
         where:
         codecName       | compressionLevel
-        'deflate'       | 9
-        'bzip2'         | 9
-        'zstandard'     | 9
+        'deflate'       | 'high'
+        'bzip2'         | ''
+        'zstandard'     | 'low'
     }
 
     def 'should switch to raw processor on compression error'() {

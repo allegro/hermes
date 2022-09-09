@@ -12,6 +12,22 @@ public abstract class CompressionCodecFactory {
         ZSTANDARD
     }
 
+    public enum CompressionLevel {
+        LOW(1),
+        MEDIUM(3),
+        HIGH(9);
+
+        private final int levelId;
+
+        CompressionLevel(int levelId) {
+            this.levelId = levelId;
+        }
+
+        public int getLevelId() {
+            return levelId;
+        }
+    }
+
     private final String name;
 
     public abstract Codec createInstance();
