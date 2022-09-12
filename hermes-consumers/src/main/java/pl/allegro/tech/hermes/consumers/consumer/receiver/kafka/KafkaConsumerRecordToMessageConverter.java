@@ -17,17 +17,20 @@ public class KafkaConsumerRecordToMessageConverter {
     private volatile Subscription subscription;
     private final Map<String, KafkaTopic> topics;
     private final MessageContentReader messageContentReader;
+    private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final Clock clock;
 
     public KafkaConsumerRecordToMessageConverter(Topic topic,
                                                  Subscription subscription,
                                                  Map<String, KafkaTopic> topics,
                                                  MessageContentReader messageContentReader,
+                                                 KafkaHeaderExtractor kafkaHeaderExtractor,
                                                  Clock clock) {
         this.topic = topic;
         this.subscription = subscription;
         this.topics = topics;
         this.messageContentReader = messageContentReader;
+        this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.clock = clock;
     }
 
@@ -35,12 +38,12 @@ public class KafkaConsumerRecordToMessageConverter {
         KafkaTopic kafkaTopic = topics.get(record.topic());
         UnwrappedMessageContent unwrappedContent = messageContentReader.read(record, kafkaTopic.contentType());
         return new Message(
-                unwrappedContent.getMessageMetadata().getId(),
+                kafkaHeaderExtractor.extractMessageId(record.headers()),
                 topic.getQualifiedName(),
                 unwrappedContent.getContent(),
                 kafkaTopic.contentType(),
                 unwrappedContent.getSchema(),
-                unwrappedContent.getMessageMetadata().getTimestamp(),
+                kafkaHeaderExtractor.extractTimestamp(record.headers()),
                 clock.millis(),
                 new PartitionOffset(kafkaTopic.name(), record.offset(), record.partition()),
                 partitionAssignmentTerm,

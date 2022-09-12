@@ -9,6 +9,10 @@ public class KafkaHeaderNameProperties {
 
     private String schemaId = "sid";
 
+    private String messageId = "id";
+
+    private String timestamp = "ts";
+
     public String getSchemaVersion() {
         return schemaVersion;
     }
@@ -23,5 +27,21 @@ public class KafkaHeaderNameProperties {
 
     public void setSchemaId(String schemaId) {
         this.schemaId = schemaId;
+    }
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 }

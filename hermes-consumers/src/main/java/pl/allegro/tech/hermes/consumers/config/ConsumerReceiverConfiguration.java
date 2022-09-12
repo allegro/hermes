@@ -64,8 +64,9 @@ public class ConsumerReceiverConfiguration {
 
     @Bean
     public KafkaConsumerRecordToMessageConverterFactory kafkaMessageConverterFactory(MessageContentReaderFactory messageContentReaderFactory,
+                                                                                     KafkaHeaderExtractor kafkaHeaderExtractor,
                                                                                      Clock clock) {
-        return new KafkaConsumerRecordToMessageConverterFactory(messageContentReaderFactory, clock);
+        return new KafkaConsumerRecordToMessageConverterFactory(messageContentReaderFactory, kafkaHeaderExtractor, clock);
     }
 
     @Bean
@@ -77,6 +78,7 @@ public class ConsumerReceiverConfiguration {
 
     @Bean
     public KafkaHeaderExtractor kafkaHeaderExtractor(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
-        return new KafkaHeaderExtractor(kafkaHeaderNameProperties.getSchemaVersion(), kafkaHeaderNameProperties.getSchemaId());
+        return new KafkaHeaderExtractor(kafkaHeaderNameProperties.getSchemaVersion(), kafkaHeaderNameProperties.getSchemaId(),
+                kafkaHeaderNameProperties.getMessageId(), kafkaHeaderNameProperties.getTimestamp());
     }
 }
