@@ -43,7 +43,7 @@ class ConsumerNodeLoadDecoder {
 
         body.wrap(buffer, header.encodedLength(), header.blockLength(), header.version());
 
-        return new ConsumerNodeLoad(decodeSubscriptionLoads(body));
+        return new ConsumerNodeLoad(body.cpuUtilization(), decodeSubscriptionLoads(body));
     }
 
     private Map<SubscriptionName, SubscriptionLoad> decodeSubscriptionLoads(ConsumerLoadDecoder body) {

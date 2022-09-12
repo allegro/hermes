@@ -1,7 +1,11 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted
 
+import com.codahale.metrics.MetricFilter
+import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
+import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkDistributionChanges
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock
 import spock.lang.Specification
 import spock.lang.Subject
@@ -10,18 +14,23 @@ import java.time.Duration
 
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWorkloadAssertions.assertThat
 
-class SubscriptionProfilesCalculatorTest extends Specification {
+class WeightedWorkBalancingListenerTest extends Specification {
 
     def clock = new ModifiableClock()
     def workDistributionChanges = Mock(WorkDistributionChanges)
     def consumerNodeLoadRegistry = new MockConsumerNodeLoadRegistry()
     def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
     def weightWindowSize = Duration.ofMinutes(1)
+    def currentLoadProvider = new CurrentLoadProvider()
+    def metricsRegistry = new MetricRegistry()
+    def metrics = new WeightedWorkloadMetrics(new HermesMetrics(metricsRegistry, new PathsCompiler("host")))
 
     @Subject
-    def calculator = new SubscriptionProfilesCalculator(
+    def listener = new WeightedWorkBalancingListener(
             consumerNodeLoadRegistry,
             subscriptionProfileRegistry,
+            currentLoadProvider,
+            metrics,
             clock,
             weightWindowSize
     )
@@ -29,7 +38,7 @@ class SubscriptionProfilesCalculatorTest extends Specification {
     def cleanup() {
         consumerNodeLoadRegistry.reset()
         subscriptionProfileRegistry.reset()
-        calculator.onBeforeBalancing([])
+        currentLoadProvider.clear()
     }
 
     def "should take the maximal value of operations per second as the subscription weight"() {
@@ -40,15 +49,12 @@ class SubscriptionProfilesCalculatorTest extends Specification {
                 .operationsPerSecond(subscription("sub3"), ["c3": 10d, "c4": 10d])
 
         when:
-        calculator.onBeforeBalancing(["c1", "c2", "c3"])
+        listener.onBeforeBalancing(["c1", "c2", "c3"])
 
         then:
-        assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(500d))
-        assertThat(calculator.get(subscription("sub2")))
-                .hasWeight(new Weight(500d))
-        assertThat(calculator.get(subscription("sub3")))
-                .hasWeight(new Weight(10d))
+        assertSubscriptionWeight(subscription("sub1"), new Weight(500d))
+        assertSubscriptionWeight(subscription("sub2"), new Weight(500d))
+        assertSubscriptionWeight(subscription("sub3"), new Weight(10d))
     }
 
     def "should calculate weight using exponentially weighted moving average"() {
@@ -62,21 +68,19 @@ class SubscriptionProfilesCalculatorTest extends Specification {
 
         when:
         clock.advance(weightWindowSize.minusSeconds(30))
-        calculator.onBeforeBalancing(["c1", "c2"])
+        listener.onBeforeBalancing(["c1", "c2"])
 
         then:
-        assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(80.32653298563167d))
+        assertSubscriptionWeight(subscription("sub1"), new Weight(80.32653298563167d))
 
         when:
         workDistributionChanges.getRebalancedSubscriptions() >> []
-        calculator.onAfterBalancing(workDistributionChanges)
+        listener.onAfterBalancing(workDistributionChanges)
         clock.advance(weightWindowSize.minusSeconds(30))
-        calculator.onBeforeBalancing(["c1", "c2"])
+        listener.onBeforeBalancing(["c1", "c2"])
 
         then:
-        assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(68.39397205857212d))
+        assertSubscriptionWeight(subscription("sub1"), new Weight(68.39397205857212d))
     }
 
     def "should return previous weight when the new timestamp is before the previous one"() {
@@ -90,11 +94,10 @@ class SubscriptionProfilesCalculatorTest extends Specification {
 
         when:
         clock.advanceMinutes(-1)
-        calculator.onBeforeBalancing(["c1", "c2"])
+        listener.onBeforeBalancing(["c1", "c2"])
 
         then:
-        assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(100d))
+        assertSubscriptionWeight(subscription("sub1"), new Weight(100d))
     }
 
     def "should take 0 as the default weight"() {
@@ -109,15 +112,12 @@ class SubscriptionProfilesCalculatorTest extends Specification {
 
         when:
         clock.advance(weightWindowSize.minusSeconds(30))
-        calculator.onBeforeBalancing(["c1", "c2"])
+        listener.onBeforeBalancing(["c1", "c2"])
 
         then:
-        assertThat(calculator.get(subscription("sub1")))
-                .hasWeight(new Weight(80.32653298563167d))
-        assertThat(calculator.get(subscription("sub2")))
-                .hasWeight(Weight.ZERO)
-        assertThat(calculator.get(subscription("sub3")))
-                .hasWeight(Weight.ZERO)
+        assertSubscriptionWeight(subscription("sub1"), new Weight(80.32653298563167d))
+        assertSubscriptionWeight(subscription("sub2"), Weight.ZERO)
+        assertSubscriptionWeight(subscription("sub3"), Weight.ZERO)
     }
 
     def "should update rebalance timestamp"() {
@@ -135,19 +135,50 @@ class SubscriptionProfilesCalculatorTest extends Specification {
         clock.advanceMinutes(1)
 
         and:
-        calculator.onBeforeBalancing(["c1", "c2", "c3"])
+        listener.onBeforeBalancing(["c1", "c2", "c3"])
 
         when:
-        calculator.onAfterBalancing(workDistributionChanges)
+        listener.onAfterBalancing(workDistributionChanges)
 
         then:
-        assertThat(calculator.get(subscription("sub1")))
+        def profiles = subscriptionProfileRegistry.fetch()
+        assertThat(profiles.getProfile(subscription("sub1")))
                 .hasLastRebalanceTimestamp(clock.instant())
-        assertThat(calculator.get(subscription("sub2")))
+        assertThat(profiles.getProfile(subscription("sub2")))
                 .hasLastRebalanceTimestamp(previousRebalanceTimestamp)
+    }
+
+    def "should unregister workload metrics for inactive consumers"() {
+        given:
+        metrics.reportCurrentScore("c1", 0.5d)
+        metrics.reportCurrentScore("c2", 1.5d)
+
+        when:
+        listener.onBeforeBalancing(["c2"])
+
+        then:
+        metricsRegistry.getGauges(MetricFilter.contains(".c2.")).size() == 1
+        metricsRegistry.getGauges(MetricFilter.contains(".c1.")).size() == 0
+    }
+
+    def "should unregister workload metrics when the consumer is no longer a leader"() {
+        given:
+        metrics.reportCurrentScore("c1", 0.5d)
+        metrics.reportCurrentScore("c2", 1.5d)
+
+        when:
+        listener.onBalancingSkipped()
+
+        then:
+        metricsRegistry.getGauges().size() == 0
     }
 
     private static SubscriptionName subscription(String name) {
         return SubscriptionName.fromString("pl.allegro.tech.hermes\$$name")
+    }
+
+    private void assertSubscriptionWeight(SubscriptionName subscriptionName, Weight weight) {
+        def profiles = currentLoadProvider.getProfiles()
+        assertThat(profiles.getProfile(subscriptionName)).hasWeight(weight)
     }
 }

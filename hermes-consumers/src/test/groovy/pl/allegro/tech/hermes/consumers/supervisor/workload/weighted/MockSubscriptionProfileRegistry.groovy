@@ -4,15 +4,10 @@ import pl.allegro.tech.hermes.api.SubscriptionName
 
 import java.time.Instant
 
-class MockSubscriptionProfileRegistry implements SubscriptionProfileRegistry, SubscriptionProfileProvider {
+class MockSubscriptionProfileRegistry implements SubscriptionProfileRegistry {
 
     private Instant updateTimestamp
     private final Map<SubscriptionName, SubscriptionProfile> profiles = new HashMap<>()
-
-    @Override
-    SubscriptionProfile get(SubscriptionName subscriptionName) {
-        return profiles.getOrDefault(subscriptionName, SubscriptionProfile.UNDEFINED)
-    }
 
     @Override
     SubscriptionProfiles fetch() {
@@ -20,12 +15,10 @@ class MockSubscriptionProfileRegistry implements SubscriptionProfileRegistry, Su
     }
 
     @Override
-    void persist(SubscriptionProfiles profiles) {
-
-    }
-
-    Set<SubscriptionName> getSubscriptionNames() {
-        return profiles.keySet()
+    void persist(SubscriptionProfiles profilesToPersist) {
+        updateTimestamp = profilesToPersist.updateTimestamp
+        profiles.clear()
+        profiles.putAll(profilesToPersist.profiles)
     }
 
     MockSubscriptionProfileRegistry updateTimestamp(Instant updateTimestamp) {

@@ -3,23 +3,16 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import static pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.SubscriptionProfile.UNDEFINED;
 
 class SubscriptionProfiles {
 
     static final SubscriptionProfiles EMPTY = new SubscriptionProfiles(Map.of(), null);
 
     private final Map<SubscriptionName, SubscriptionProfile> profiles;
-    private Instant updateTimestamp;
-
-    SubscriptionProfiles() {
-        this(new HashMap<>(), null);
-    }
+    private final Instant updateTimestamp;
 
     SubscriptionProfiles(Map<SubscriptionName, SubscriptionProfile> profiles, Instant updateTimestamp) {
         this.profiles = profiles;
@@ -35,20 +28,11 @@ class SubscriptionProfiles {
     }
 
     SubscriptionProfile getProfile(SubscriptionName subscriptionName) {
-        return profiles.get(subscriptionName);
+        return profiles.getOrDefault(subscriptionName, SubscriptionProfile.UNDEFINED);
     }
 
-    SubscriptionProfile getProfileOrUndefined(SubscriptionName subscriptionName) {
-        return profiles.getOrDefault(subscriptionName, UNDEFINED);
-    }
-
-    void updateProfile(SubscriptionName subscriptionName, SubscriptionProfile newProfile) {
-        profiles.put(subscriptionName, newProfile);
-    }
-
-    void reset(Instant newUpdateTimestamp) {
-        profiles.clear();
-        updateTimestamp = newUpdateTimestamp;
+    Map<SubscriptionName, SubscriptionProfile> getProfiles() {
+        return profiles;
     }
 
     @Override

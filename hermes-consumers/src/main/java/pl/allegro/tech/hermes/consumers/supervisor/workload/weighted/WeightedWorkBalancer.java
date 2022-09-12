@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,16 +40,19 @@ public class WeightedWorkBalancer implements WorkBalancer {
     private final Clock clock;
     private final Duration stabilizationWindowSize;
     private final double minSignificantChangePercent;
-    private final SubscriptionProfileProvider subscriptionProfileProvider;
+    private final CurrentLoadProvider currentLoadProvider;
+    private final TargetWeightCalculator targetWeightCalculator;
 
     public WeightedWorkBalancer(Clock clock,
                                 Duration stabilizationWindowSize,
                                 double minSignificantChangePercent,
-                                SubscriptionProfileProvider subscriptionProfileProvider) {
+                                CurrentLoadProvider currentLoadProvider,
+                                TargetWeightCalculator targetWeightCalculator) {
         this.clock = clock;
         this.stabilizationWindowSize = stabilizationWindowSize;
         this.minSignificantChangePercent = minSignificantChangePercent;
-        this.subscriptionProfileProvider = subscriptionProfileProvider;
+        this.currentLoadProvider = currentLoadProvider;
+        this.targetWeightCalculator = targetWeightCalculator;
     }
 
     @Override
@@ -68,8 +72,9 @@ public class WeightedWorkBalancer implements WorkBalancer {
                                                    WorkloadConstraints constraints) {
         Map<String, ConsumerNode> consumers = createConsumers(activeConsumerNodes, constraints);
         List<ConsumerTask> unassignedTasks = new ArrayList<>();
+        SubscriptionProfiles profiles = currentLoadProvider.getProfiles();
         for (SubscriptionName subscriptionName : subscriptions) {
-            SubscriptionProfile subscriptionProfile = subscriptionProfileProvider.get(subscriptionName);
+            SubscriptionProfile subscriptionProfile = profiles.getProfile(subscriptionName);
             Queue<ConsumerTask> consumerTasks = createConsumerTasks(subscriptionName, subscriptionProfile, constraints);
             Set<String> consumerNodesForSubscription = currentState.getConsumerNodesForSubscription(subscriptionName);
             for (String consumerId : consumerNodesForSubscription) {
@@ -86,7 +91,10 @@ public class WeightedWorkBalancer implements WorkBalancer {
 
     private Map<String, ConsumerNode> createConsumers(List<String> activeConsumerNodes, WorkloadConstraints constraints) {
         return activeConsumerNodes.stream()
-                .map(consumerId -> new ConsumerNode(consumerId, constraints.getMaxSubscriptionsPerConsumer()))
+                .map(consumerId -> {
+                    ConsumerNodeLoad consumerNodeLoad = currentLoadProvider.getConsumerNodeLoad(consumerId);
+                    return new ConsumerNode(consumerId, consumerNodeLoad, constraints.getMaxSubscriptionsPerConsumer());
+                })
                 .collect(toMap(ConsumerNode::getConsumerId, Function.identity()));
     }
 
@@ -127,6 +135,7 @@ public class WeightedWorkBalancer implements WorkBalancer {
         TargetConsumerLoad targetLoad = calculateTargetConsumerLoad(consumers);
         List<ConsumerNode> overloadedConsumers = consumers.stream()
                 .filter(consumerNode -> isOverloaded(consumerNode, targetLoad))
+                .sorted(new MostOverloadedConsumerFirst(targetLoad))
                 .collect(toList());
         for (ConsumerNode overloaded : overloadedConsumers) {
             List<ConsumerNode> candidates = consumers.stream()
@@ -147,22 +156,12 @@ public class WeightedWorkBalancer implements WorkBalancer {
         int totalNumberOfTasks = consumers.stream().mapToInt(ConsumerNode::getAssignedTaskCount).sum();
         int consumerCount = consumers.size();
         int maxNumberOfTasksPerConsumer = consumerCount == 0 ? 0 : divideWithRoundingUp(totalNumberOfTasks, consumerCount);
-        Weight targetConsumerWeight = calculateTargetConsumerWeight(consumers);
-        return new TargetConsumerLoad(targetConsumerWeight, maxNumberOfTasksPerConsumer);
+        Map<String, Weight> targetWeights = targetWeightCalculator.calculate(consumers);
+        return new TargetConsumerLoad(targetWeights, maxNumberOfTasksPerConsumer);
     }
 
     private int divideWithRoundingUp(int dividend, int divisor) {
         return (dividend / divisor) + (dividend % divisor > 0 ? 1 : 0);
-    }
-
-    private Weight calculateTargetConsumerWeight(Collection<ConsumerNode> consumers) {
-        if (consumers.isEmpty()) {
-            return Weight.ZERO;
-        }
-        Weight sum = consumers.stream()
-                .map(ConsumerNode::getWeight)
-                .reduce(Weight.ZERO, Weight::add);
-        return sum.divide(consumers.size());
     }
 
     private void tryMoveOutTasks(ConsumerNode overloaded, ConsumerNode candidate, TargetConsumerLoad targetLoad) {
@@ -185,7 +184,8 @@ public class WeightedWorkBalancer implements WorkBalancer {
     }
 
     private boolean isProfitable(MoveOutProposal proposal, TargetConsumerLoad targetLoad) {
-        if (targetLoad.getWeight().isGreaterThanOrEqualTo(proposal.getFinalCandidateWeight())) {
+        Weight targetWeight = targetLoad.getWeightForConsumer(proposal.getCandidateId());
+        if (targetWeight.isGreaterThanOrEqualTo(proposal.getFinalCandidateWeight())) {
             logger.debug("MoveOut proposal will be applied:\n{}", proposal);
             return true;
         }
@@ -226,12 +226,14 @@ public class WeightedWorkBalancer implements WorkBalancer {
     }
 
     private boolean isOverloaded(ConsumerNode consumerNode, TargetConsumerLoad targetLoad) {
-        return consumerNode.getWeight().isGreaterThan(targetLoad.getWeight())
+        Weight targetWeight = targetLoad.getWeightForConsumer(consumerNode.getConsumerId());
+        return consumerNode.getWeight().isGreaterThan(targetWeight)
                 || consumerNode.getAssignedTaskCount() > targetLoad.getNumberOfTasks();
     }
 
     private boolean isBalanced(ConsumerNode consumerNode, TargetConsumerLoad targetLoad) {
-        return consumerNode.getWeight().isEqualTo(targetLoad.getWeight())
+        Weight targetWeight = targetLoad.getWeightForConsumer(consumerNode.getConsumerId());
+        return consumerNode.getWeight().isEqualTo(targetWeight)
                 && consumerNode.getAssignedTaskCount() <= targetLoad.getNumberOfTasks();
     }
 
@@ -239,11 +241,13 @@ public class WeightedWorkBalancer implements WorkBalancer {
         Weight initialOverloadedWeight = proposal.getOverloadedWeight();
         Weight finalOverloadedWeight = proposal.getFinalOverloadedWeight();
         Weight finalCandidateWeight = proposal.getFinalCandidateWeight();
+        Weight overloadedTargetWeight = targetLoad.getWeightForConsumer(proposal.getOverloadedId());
+        Weight candidateTargetWeight = targetLoad.getWeightForConsumer(proposal.getCandidateId());
 
-        if (initialOverloadedWeight.isLessThan(targetLoad.getWeight())) {
+        if (initialOverloadedWeight.isLessThan(overloadedTargetWeight)) {
             return false;
         }
-        if (finalCandidateWeight.isGreaterThan(targetLoad.getWeight())) {
+        if (finalCandidateWeight.isGreaterThan(candidateTargetWeight)) {
             return false;
         }
         if (finalOverloadedWeight.isGreaterThan(initialOverloadedWeight)) {
@@ -311,6 +315,10 @@ public class WeightedWorkBalancer implements WorkBalancer {
             return finalCandidateWeight;
         }
 
+        String getCandidateId() {
+            return candidate.getConsumerId();
+        }
+
         @Override
         public String toString() {
             return toString(overloaded, finalOverloadedWeight) + "\n" + toString(candidate, finalCandidateWeight);
@@ -354,6 +362,14 @@ public class WeightedWorkBalancer implements WorkBalancer {
             return finalCandidateWeight;
         }
 
+        String getCandidateId() {
+            return candidate.getConsumerId();
+        }
+
+        String getOverloadedId() {
+            return overloaded.getConsumerId();
+        }
+
         @Override
         public String toString() {
             return toString(overloaded, finalOverloadedWeight) + "\n" + toString(candidate, finalCandidateWeight);
@@ -366,20 +382,38 @@ public class WeightedWorkBalancer implements WorkBalancer {
 
     private static class TargetConsumerLoad {
 
-        private final Weight weight;
+        private final Map<String, Weight> weights;
         private final int numberOfTasks;
 
-        TargetConsumerLoad(Weight weight, int numberOfTasks) {
-            this.weight = weight;
+        TargetConsumerLoad(Map<String, Weight> weights, int numberOfTasks) {
+            this.weights = weights;
             this.numberOfTasks = numberOfTasks;
         }
 
-        Weight getWeight() {
-            return weight;
+        Weight getWeightForConsumer(String consumerId) {
+            return weights.get(consumerId);
         }
 
         int getNumberOfTasks() {
             return numberOfTasks;
+        }
+    }
+
+    private static class MostOverloadedConsumerFirst implements Comparator<ConsumerNode> {
+
+        private final TargetConsumerLoad targetLoad;
+
+        MostOverloadedConsumerFirst(TargetConsumerLoad targetLoad) {
+            this.targetLoad = targetLoad;
+        }
+
+        @Override
+        public int compare(ConsumerNode first, ConsumerNode second) {
+            Weight firstTargetLoad = targetLoad.getWeightForConsumer(first.getConsumerId());
+            Weight secondTargetLoad = targetLoad.getWeightForConsumer(second.getConsumerId());
+            Weight firstError = first.getWeight().subtract(firstTargetLoad);
+            Weight secondError = second.getWeight().subtract(secondTargetLoad);
+            return secondError.compareTo(firstError);
         }
     }
 }
