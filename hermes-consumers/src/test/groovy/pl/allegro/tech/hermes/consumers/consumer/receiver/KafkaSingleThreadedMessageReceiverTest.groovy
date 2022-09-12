@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRec
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverterFactory
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaSingleThreadedMessageReceiver
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
+import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification

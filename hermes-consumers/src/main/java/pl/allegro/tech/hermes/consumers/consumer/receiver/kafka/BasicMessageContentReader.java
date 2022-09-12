@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrap
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.RetryableReceiverError;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.SchemaExistenceEnsurer;
+import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 

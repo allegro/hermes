@@ -1,10 +1,6 @@
-package pl.allegro.tech.hermes.consumers.consumer.receiver;
+package pl.allegro.tech.hermes.schema;
 
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.schema.SchemaException;
-import pl.allegro.tech.hermes.schema.SchemaId;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import static java.lang.String.format;
 

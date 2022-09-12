@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
-import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
@@ -85,19 +84,8 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     @Override
     public void removeTopic(TopicName topicName) {
         ensureTopicExists(topicName);
-        ensureTopicHasNoSubscriptions(topicName);
         logger.info("Removing topic: " + topicName);
         remove(paths.topicPath(topicName));
-    }
-
-    @Override
-    public void ensureTopicHasNoSubscriptions(TopicName topicName) {
-        List<String> children = childrenOf(paths.subscriptionsPath(topicName));
-        boolean anyNodeNotEmpty = children.stream()
-                .anyMatch(sub -> !isEmpty(paths.subscriptionsPath(topicName) + "/" + sub));
-        if (!children.isEmpty() && anyNodeNotEmpty) {
-            throw new TopicNotEmptyException(topicName);
-        }
     }
 
     @Override
@@ -127,6 +115,15 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
                 .map(topicName -> getTopicDetails(topicName, true))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Topic> listAllTopics() {
+        return groupRepository.listGroupNames()
+                .stream()
+                .map(this::listTopics)
+                .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
 

@@ -1,6 +1,22 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
-import pl.allegro.tech.hermes.api.*;
+import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.DeliveryType;
+import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
+import pl.allegro.tech.hermes.api.Header;
+import pl.allegro.tech.hermes.api.MessageFilterSpecification;
+import pl.allegro.tech.hermes.api.MonitoringDetails;
+import pl.allegro.tech.hermes.api.OwnerId;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionMode;
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.TrackingMode;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -46,6 +62,8 @@ public class SubscriptionBuilder {
     private SubscriptionOAuthPolicy oAuthPolicy;
 
     private boolean attachingIdentityHeadersEnabled = false;
+
+    private boolean autoDeleteWithTopicEnabled = false;
 
     private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
@@ -96,14 +114,16 @@ public class SubscriptionBuilder {
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy, trackingEnabled,
                     trackingMode, owner, monitoringDetails, contentType,
-                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled, attachingIdentityHeadersEnabled
+                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled,
+                    attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
             );
         } else {
             return Subscription.createBatchSubscription(
                     topicName, name, endpoint, state, description,
                     batchSubscriptionPolicy, trackingEnabled,
                     trackingMode, owner, monitoringDetails, contentType,
-                    filters, headers, metadata, oAuthPolicy, http2Enabled, attachingIdentityHeadersEnabled
+                    filters, headers, metadata, oAuthPolicy, http2Enabled,
+                    attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
             );
         }
     }
@@ -211,6 +231,11 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withAttachingIdentityHeadersEnabled(boolean attachingIdentityHeadersEnabled) {
         this.attachingIdentityHeadersEnabled = attachingIdentityHeadersEnabled;
+        return this;
+    }
+
+    public SubscriptionBuilder withAutoDeleteWithTopicEnabled(boolean autoDeleteWithTopicEnabled) {
+        this.autoDeleteWithTopicEnabled = autoDeleteWithTopicEnabled;
         return this;
     }
 }

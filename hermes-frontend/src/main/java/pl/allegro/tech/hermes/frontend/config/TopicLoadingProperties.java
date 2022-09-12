@@ -91,7 +91,7 @@ public class TopicLoadingProperties {
 
     public static class MetadataRefreshJobProperties {
 
-        private boolean enabled = false;
+        private boolean enabled = true;
 
         private Duration interval = Duration.ofSeconds(60);
 

@@ -12,6 +12,8 @@ jobs:
   release:
 
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     environment: ci
 
     steps:
