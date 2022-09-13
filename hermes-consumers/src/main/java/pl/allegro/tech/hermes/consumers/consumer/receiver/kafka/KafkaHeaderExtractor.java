@@ -4,31 +4,26 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
+import pl.allegro.tech.hermes.consumers.config.KafkaHeaderNameProperties;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class KafkaHeaderExtractor {
 
-    private final String schemaVersionHeaderName;
-    private final String schemaIdHeaderName;
-    private final String messageIdHeaderName;
-    private final String timestampHeaderName;
+    private final KafkaHeaderNameProperties kafkaHeaderNameProperties;
 
-    public KafkaHeaderExtractor(String schemaVersionHeaderName, String schemaIdHeaderName, String messageIdHeaderName,
-                                String timestampHeaderName) {
-        this.schemaVersionHeaderName = schemaVersionHeaderName;
-        this.schemaIdHeaderName = schemaIdHeaderName;
-        this.messageIdHeaderName = messageIdHeaderName;
-        this.timestampHeaderName = timestampHeaderName;
+    public KafkaHeaderExtractor(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
+
+        this.kafkaHeaderNameProperties = kafkaHeaderNameProperties;
     }
 
     public Integer extractSchemaVersion(Headers headers) {
-        Header header = headers.lastHeader(schemaVersionHeaderName);
+        Header header = headers.lastHeader(kafkaHeaderNameProperties.getSchemaVersion());
         return extract(header);
     }
 
     public Integer extractSchemaId(Headers headers) {
-        Header header = headers.lastHeader(schemaIdHeaderName);
+        Header header = headers.lastHeader(kafkaHeaderNameProperties.getSchemaId());
         return extract(header);
     }
 
@@ -40,7 +35,7 @@ public class KafkaHeaderExtractor {
         }
     }
     public String extractMessageId(Headers headers) {
-        Header header = headers.lastHeader(messageIdHeaderName);
+        Header header = headers.lastHeader(kafkaHeaderNameProperties.getMessageId());
         if (header == null) {
             return "";
         }
@@ -48,7 +43,7 @@ public class KafkaHeaderExtractor {
     }
 
     public long extractTimestamp(Headers headers) {
-        Header header = headers.lastHeader(timestampHeaderName);
+        Header header = headers.lastHeader(kafkaHeaderNameProperties.getTimestamp());
         if (header == null) {
             return 0L;
         }

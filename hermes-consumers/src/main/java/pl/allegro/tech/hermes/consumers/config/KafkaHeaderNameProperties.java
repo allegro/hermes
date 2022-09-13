@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.common.kafka.KafkaHeaderNameParameters;
 
 @ConfigurationProperties(prefix = "consumer.kafka.header.name")
-public class KafkaHeaderNameProperties {
+public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
 
     private String schemaVersion = "sv";
 
@@ -13,6 +14,7 @@ public class KafkaHeaderNameProperties {
 
     private String timestamp = "ts";
 
+    @Override
     public String getSchemaVersion() {
         return schemaVersion;
     }
@@ -21,6 +23,7 @@ public class KafkaHeaderNameProperties {
         this.schemaVersion = schemaVersion;
     }
 
+    @Override
     public String getSchemaId() {
         return schemaId;
     }
@@ -29,6 +32,7 @@ public class KafkaHeaderNameProperties {
         this.schemaId = schemaId;
     }
 
+    @Override
     public String getMessageId() {
         return messageId;
     }
@@ -37,6 +41,7 @@ public class KafkaHeaderNameProperties {
         this.messageId = messageId;
     }
 
+    @Override
     public String getTimestamp() {
         return timestamp;
     }

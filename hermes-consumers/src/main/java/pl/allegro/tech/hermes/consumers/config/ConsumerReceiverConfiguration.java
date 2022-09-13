@@ -78,7 +78,6 @@ public class ConsumerReceiverConfiguration {
 
     @Bean
     public KafkaHeaderExtractor kafkaHeaderExtractor(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
-        return new KafkaHeaderExtractor(kafkaHeaderNameProperties.getSchemaVersion(), kafkaHeaderNameProperties.getSchemaId(),
-                kafkaHeaderNameProperties.getMessageId(), kafkaHeaderNameProperties.getTimestamp());
+        return new KafkaHeaderExtractor(kafkaHeaderNameProperties);
     }
 }
