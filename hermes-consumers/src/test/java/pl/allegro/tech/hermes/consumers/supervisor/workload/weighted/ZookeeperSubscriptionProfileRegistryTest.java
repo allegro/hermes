@@ -9,9 +9,11 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ZookeeperSubscriptionProfileRegistryTest extends ZookeeperBaseTest {
@@ -35,7 +37,7 @@ public class ZookeeperSubscriptionProfileRegistryTest extends ZookeeperBaseTest 
         SubscriptionProfiles profiles = new SubscriptionProfiles(
                 Map.of(
                         firstSubscription, new SubscriptionProfile(Instant.now(), new Weight(100d)),
-                        secondSubscription, new SubscriptionProfile(Instant.now(), Weight.ZERO)
+                        secondSubscription, SubscriptionProfile.UNDEFINED
                 ),
                 Instant.now()
         );
@@ -45,6 +47,41 @@ public class ZookeeperSubscriptionProfileRegistryTest extends ZookeeperBaseTest 
 
         // then
         SubscriptionProfiles readProfiles = registry.fetch();
-        assertThat(readProfiles).isEqualTo(profiles);
+        assertThatProfilesAreEqual(readProfiles, profiles);
+    }
+
+    @Test
+    public void shouldPersistAndReadEmptySubscriptionProfiles() {
+        // given
+        ZookeeperSubscriptionProfileRegistry registry = new ZookeeperSubscriptionProfileRegistry(
+                zookeeperClient,
+                new TestSubscriptionIds(List.of()),
+                new ZookeeperPaths("/hermes"),
+                "kafka-cluster",
+                100_000
+        );
+        SubscriptionProfiles profiles = SubscriptionProfiles.EMPTY;
+
+        // when
+        registry.persist(profiles);
+
+        // then
+        SubscriptionProfiles readProfiles = registry.fetch();
+        assertThatProfilesAreEqual(readProfiles, profiles);
+    }
+
+    private static void assertThatProfilesAreEqual(SubscriptionProfiles actual, SubscriptionProfiles expected) {
+        assertThat(actual)
+                .usingRecursiveComparison()
+                .withComparatorForType(new InstantComparatorIgnoringNanos(), Instant.class)
+                .isEqualTo(expected);
+    }
+
+    private static class InstantComparatorIgnoringNanos implements Comparator<Instant> {
+
+        @Override
+        public int compare(Instant o1, Instant o2) {
+            return o1.truncatedTo(MILLIS).compareTo(o2.truncatedTo(MILLIS));
+        }
     }
 }

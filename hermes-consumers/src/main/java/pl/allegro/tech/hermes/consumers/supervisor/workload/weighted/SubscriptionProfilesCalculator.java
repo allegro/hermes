@@ -26,8 +26,7 @@ class SubscriptionProfilesCalculator {
         for (Map.Entry<SubscriptionName, Weight> entry : currentWeights.entrySet()) {
             SubscriptionName subscriptionName = entry.getKey();
             Weight currentWeight = entry.getValue();
-            SubscriptionProfile previousProfile = previousProfiles.getProfile(subscriptionName);
-            SubscriptionProfile newProfile = applyCurrentWeight(previousProfile, previousProfiles.getUpdateTimestamp(), currentWeight, now);
+            SubscriptionProfile newProfile = applyCurrentWeight(previousProfiles, subscriptionName, currentWeight, now);
             newProfiles.put(subscriptionName, newProfile);
         }
         return new SubscriptionProfiles(newProfiles, now);
@@ -47,14 +46,15 @@ class SubscriptionProfilesCalculator {
         return currentWeights;
     }
 
-    private SubscriptionProfile applyCurrentWeight(SubscriptionProfile previousProfile, Instant previousUpdateTimestamp, Weight currentWeight, Instant now) {
-        if (previousProfile != null) {
-            Weight previousWeight = previousProfile.getWeight();
-            ExponentiallyWeightedMovingAverage average = new ExponentiallyWeightedMovingAverage(weightWindowSize);
-            average.update(previousWeight.getOperationsPerSecond(), previousUpdateTimestamp);
-            double opsAvg = average.update(currentWeight.getOperationsPerSecond(), now);
-            return new SubscriptionProfile(previousProfile.getLastRebalanceTimestamp(), new Weight(opsAvg));
-        }
-        return new SubscriptionProfile(null, currentWeight);
+    private SubscriptionProfile applyCurrentWeight(SubscriptionProfiles previousProfiles,
+                                                   SubscriptionName subscriptionName,
+                                                   Weight currentWeight,
+                                                   Instant now) {
+        SubscriptionProfile previousProfile = previousProfiles.getProfile(subscriptionName);
+        Weight previousWeight = previousProfile.getWeight();
+        ExponentiallyWeightedMovingAverage average = new ExponentiallyWeightedMovingAverage(weightWindowSize);
+        average.update(previousWeight.getOperationsPerSecond(), previousProfiles.getUpdateTimestamp());
+        double opsAvg = average.update(currentWeight.getOperationsPerSecond(), now);
+        return new SubscriptionProfile(previousProfile.getLastRebalanceTimestamp(), new Weight(opsAvg));
     }
 }

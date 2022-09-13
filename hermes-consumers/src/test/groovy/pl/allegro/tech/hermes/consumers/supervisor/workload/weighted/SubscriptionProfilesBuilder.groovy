@@ -20,6 +20,6 @@ class SubscriptionProfilesBuilder {
     }
 
     SubscriptionProfiles build() {
-        return new SubscriptionProfiles(profiles, null)
+        return new SubscriptionProfiles(profiles, Instant.MIN)
     }
 }

@@ -120,6 +120,20 @@ class WeightedWorkBalancingListenerTest extends Specification {
         assertSubscriptionWeight(subscription("sub3"), Weight.ZERO)
     }
 
+    def "should take value of operations per second reported by consumers as initial weight"() {
+        given:
+        subscriptionProfileRegistry
+                .persist(SubscriptionProfiles.EMPTY)
+        consumerNodeLoadRegistry
+                .operationsPerSecond(subscription("sub1"), ["c1": 50d, "c2": 50d])
+
+        when:
+        listener.onBeforeBalancing(["c1", "c2"])
+
+        then:
+        assertSubscriptionWeight(subscription("sub1"), new Weight(50d))
+    }
+
     def "should update rebalance timestamp"() {
         given:
         def previousRebalanceTimestamp = clock.instant()

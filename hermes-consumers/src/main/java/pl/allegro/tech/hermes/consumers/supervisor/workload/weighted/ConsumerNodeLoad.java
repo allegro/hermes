@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.Map;
-import java.util.Objects;
 
 class ConsumerNodeLoad {
 
@@ -33,23 +32,5 @@ class ConsumerNodeLoad {
 
     boolean isDefined() {
         return cpuUtilization != UNDEFINED.getCpuUtilization();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ConsumerNodeLoad that = (ConsumerNodeLoad) o;
-        return Objects.equals(loadPerSubscription, that.loadPerSubscription)
-                && Double.compare(cpuUtilization, that.cpuUtilization) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(cpuUtilization, loadPerSubscription);
     }
 }

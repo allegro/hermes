@@ -9,6 +9,7 @@ import spock.lang.Subject
 
 import java.time.Clock
 import java.time.Duration
+import java.time.Instant
 
 class ScoringTargetWeightCalculatorTest extends Specification {
 
@@ -157,7 +158,7 @@ class ScoringTargetWeightCalculatorTest extends Specification {
                 subscription, new SubscriptionLoad(weight.getOperationsPerSecond())
         )
         ConsumerNode consumerNode = new ConsumerNode(consumerId, new ConsumerNodeLoad(cpu, subscriptions), 3)
-        consumerNode.assign(new ConsumerTask(subscription, new SubscriptionProfile(null, weight)))
+        consumerNode.assign(new ConsumerTask(subscription, new SubscriptionProfile(Instant.now(), weight)))
         return consumerNode
     }
 

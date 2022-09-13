@@ -221,8 +221,7 @@ public class WeightedWorkBalancer implements WorkBalancer {
     }
 
     private boolean isStable(ConsumerTask task) {
-        return task.getLastRebalanceTimestamp() == null
-                || !task.getLastRebalanceTimestamp().plus(stabilizationWindowSize).isAfter(clock.instant());
+        return clock.instant().isAfter(task.getLastRebalanceTimestamp().plus(stabilizationWindowSize));
     }
 
     private boolean isOverloaded(ConsumerNode consumerNode, TargetConsumerLoad targetLoad) {
