@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import pl.allegro.tech.hermes.consumers.config.KafkaHeaderNameProperties;
@@ -40,14 +39,6 @@ public class KafkaHeaderExtractor {
             return "";
         }
         return new String(header.value(), UTF_8);
-    }
-
-    public long extractTimestamp(Headers headers) {
-        Header header = headers.lastHeader(kafkaHeaderNameProperties.getTimestamp());
-        if (header == null) {
-            return 0L;
-        }
-        return Longs.fromByteArray(header.value());
     }
 
 }
