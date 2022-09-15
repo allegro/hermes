@@ -314,6 +314,26 @@ public class TopicManagementTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldAllowUpdateTopicWithAvdlSchemeFormat() {
+        // given
+        operations.createGroup("updateAvroGroup");
+        TopicWithSchema topicWithSchema = topicWithSchema(topic("updateAvroGroup", "updateAvroTopic")
+                .withContentType(AVRO)
+                .withTrackingEnabled(false).build(), SCHEMA, AvroType.SCHEMA);
+        operations.createTopic(topicWithSchema, AvroUserSchemaLoader.load().toString());
+
+        // when
+        PatchData patch = patchData()
+                .set("avroType", AvroType.IDL)
+                .set("schema", AvroUserIdlLoader.load())
+                .build();
+        Response response = management.topic().update(topicWithSchema.getQualifiedName(), patch);
+
+        // when
+        assertThat(response).hasStatus(OK);
+    }
+
+    @Test
     public void shouldNotAllowMigratingTopicFromJsonToAvroWhenProvidingInvalidSchema() throws Exception {
         // given
         operations.createGroup("jsonToAvroTopicWithInvalidSchema");

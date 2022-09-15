@@ -53,6 +53,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
+import static pl.allegro.tech.hermes.api.AvroType.IDL;
+import static pl.allegro.tech.hermes.api.AvroType.SCHEMA;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 
@@ -123,8 +125,8 @@ public class TopicService {
         boolean validateAndRegisterSchema = AVRO.equals(topic.getContentType()) || (topic.isJsonToAvroDryRunEnabled()
                 && topicWithSchema.getSchema() != null);
 
-        if (AvroType.IDL.equals(topicWithSchema.getAvroType())) {
-            topicWithSchema = convertFromIdl(topicWithSchema, topic);
+        if (IDL.equals(topicWithSchema.getAvroType())) {
+            topicWithSchema = convertFromIdl(topicWithSchema);
         }
 
         validateSchema(validateAndRegisterSchema, topicWithSchema, topic);
@@ -132,16 +134,26 @@ public class TopicService {
         createTopic(topic, createdBy, isAllowedToManage);
     }
 
-    private TopicWithSchema convertFromIdl(TopicWithSchema topicWithSchema, Topic topic) {
-        String convertedSchema;
+    private TopicWithSchema convertFromIdl(TopicWithSchema topicWithSchema) {
         try {
-            convertedSchema = SchemaConverter.convertToAvroSchema(topicWithSchema.getSchema());
-            topicWithSchema = new TopicWithSchema(topic, convertedSchema, AvroType.SCHEMA);
+            String convertedSchema = SchemaConverter.convertToAvroSchema(topicWithSchema.getSchema());
+            return new TopicWithSchema(topicWithSchema.getTopic(), convertedSchema, AvroType.SCHEMA);
         }
         catch (ParseException ex) {
             throw new InvalidAvroIdlException(ex);
         }
-        return topicWithSchema;
+    }
+
+    private PatchData convertFromIdl(PatchData patchData) {
+        try {
+            String convertedSchema = SchemaConverter.convertToAvroSchema(patchData.getPatch().get("schema").toString());
+            patchData.getPatch().put("schema", convertedSchema);
+            patchData.getPatch().put("avroType", SCHEMA);
+            return patchData;
+        }
+        catch (ParseException ex) {
+            throw new InvalidAvroIdlException(ex);
+        }
     }
 
     public void removeTopicWithSchema(Topic topic, RequestUser removedBy) {
@@ -159,6 +171,9 @@ public class TopicService {
 
     public void updateTopicWithSchema(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
         Topic topic = getTopicDetails(topicName);
+        if ((IDL.name().equals(patch.getPatch().get("avroType")) && patch.getPatch().get("schema") != null)) {
+            convertFromIdl(patch);
+        }
         extractSchema(patch)
                 .ifPresent(schema -> {
                     schemaService.registerSchema(topic, schema);
