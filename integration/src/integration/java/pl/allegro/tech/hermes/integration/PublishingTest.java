@@ -28,7 +28,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.util.UUID;
 
@@ -368,7 +367,10 @@ public class PublishingTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("MY-HEADER", "myHeader123");
+        remoteService.waitUntilRequestReceived(request -> {
+            assertThat(request).hasHeaderValue("MY-HEADER", "myHeader123");
+            assertThat(request.getHeader("Hermes-Message-Id")).isNotEmpty();
+        });
     }
 
     @Test
