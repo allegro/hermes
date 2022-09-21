@@ -109,6 +109,7 @@ class BalancingJob implements Runnable {
                 }
             } else {
                 balancingMetrics.reset();
+                balancingListener.onBalancingSkipped();
             }
         } catch (Exception e) {
             logger.error("Caught exception when running balancing job", e);

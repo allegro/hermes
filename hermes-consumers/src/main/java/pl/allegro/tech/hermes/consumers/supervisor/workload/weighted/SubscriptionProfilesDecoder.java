@@ -68,7 +68,7 @@ class SubscriptionProfilesDecoder {
 
     private Instant toInstant(long millis) {
         if (millis < 0) {
-            return null;
+            return Instant.MIN;
         }
         return Instant.ofEpochMilli(millis);
     }

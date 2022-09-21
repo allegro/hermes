@@ -29,7 +29,7 @@ class MockConsumerNodeLoadRegistry implements ConsumerNodeLoadRegistry {
 
     MockConsumerNodeLoadRegistry operationsPerSecond(SubscriptionName subscriptionName, Map<String, Double> opsPerConsumer) {
         opsPerConsumer.entrySet().each {
-            ConsumerNodeLoad consumerNodeLoad = loads.getOrDefault(it.key, new ConsumerNodeLoad([:]))
+            ConsumerNodeLoad consumerNodeLoad = loads.getOrDefault(it.key, new ConsumerNodeLoad(1d, [:]))
             consumerNodeLoad.loadPerSubscription.put(subscriptionName, new SubscriptionLoad(it.value))
             loads.put(it.key, consumerNodeLoad)
         }

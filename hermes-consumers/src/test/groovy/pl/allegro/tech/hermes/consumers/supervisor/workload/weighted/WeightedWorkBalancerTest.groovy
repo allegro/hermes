@@ -1,12 +1,17 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted
 
+import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.Constraints
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
+import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentViewBuilder
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadConstraints
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock
 import spock.lang.Specification
+
+import java.time.Duration
 
 import static java.time.Duration.ofHours
 import static pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWorkloadAssertions.assertThat
@@ -17,14 +22,15 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should balance taking into account subscription weight"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(10d))
-                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(10d))
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), new Weight(500d))
+                .withProfile(subscription("sub2"), new Weight(500d))
+                .withProfile(subscription("sub3"), new Weight(10d))
+                .withProfile(subscription("sub4"), new Weight(10d))
+                .build()
         def stabilizationWindow = ofHours(1)
-        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0d, subscriptionProfileRegistry)
+        def balancer = createWeightedWorkBalancer(stabilizationWindow, 0d, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c1", "c2")
@@ -57,14 +63,15 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should start by swapping the heaviest subscriptions"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(3d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(2d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(1d))
-                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(0d))
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), new Weight(3d))
+                .withProfile(subscription("sub2"), new Weight(2d))
+                .withProfile(subscription("sub3"), new Weight(1d))
+                .withProfile(subscription("sub4"), new Weight(0d))
+                .build()
         def stabilizationWindow = ofHours(1)
-        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0d, subscriptionProfileRegistry)
+        def balancer = createWeightedWorkBalancer(stabilizationWindow, 0d, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1")
                 .withAssignment(subscription("sub2"), "c1")
@@ -102,17 +109,18 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should not transfer subscriptions from lighter to heavier consumer through swapping"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(3d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(0d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(10d))
-                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(0.1d))
-                .profile(subscription("sub5"), previousRebalanceTimestamp, new Weight(0.1d))
-                .profile(subscription("sub6"), previousRebalanceTimestamp, new Weight(0.1d))
-                .profile(subscription("sub7"), previousRebalanceTimestamp, new Weight(0.1d))
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), new Weight(3d))
+                .withProfile(subscription("sub2"), new Weight(0d))
+                .withProfile(subscription("sub3"), new Weight(10d))
+                .withProfile(subscription("sub4"), new Weight(0.1d))
+                .withProfile(subscription("sub5"), new Weight(0.1d))
+                .withProfile(subscription("sub6"), new Weight(0.1d))
+                .withProfile(subscription("sub7"), new Weight(0.1d))
+                .build()
         def stabilizationWindow = ofHours(1)
-        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0.1d, subscriptionProfileRegistry)
+        def balancer = createWeightedWorkBalancer(stabilizationWindow, 0.1d, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1")
                 .withAssignment(subscription("sub2"), "c1")
@@ -150,14 +158,15 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should handle weight equal to 0"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, Weight.ZERO)
-                .profile(subscription("sub2"), previousRebalanceTimestamp, Weight.ZERO)
-                .profile(subscription("sub3"), previousRebalanceTimestamp, Weight.ZERO)
-                .profile(subscription("sub4"), previousRebalanceTimestamp, Weight.ZERO)
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), Weight.ZERO)
+                .withProfile(subscription("sub2"), Weight.ZERO)
+                .withProfile(subscription("sub3"), Weight.ZERO)
+                .withProfile(subscription("sub4"), Weight.ZERO)
+                .build()
         def stabilizationWindow = ofHours(1)
-        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0d, subscriptionProfileRegistry)
+        def balancer = createWeightedWorkBalancer(stabilizationWindow, 0d, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c1", "c2")
@@ -186,14 +195,15 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should assign unassigned subscriptions to least loaded consumers"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(10d))
-                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(10d))
-                .profile(subscription("sub5"), previousRebalanceTimestamp, new Weight(490d))
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, subscriptionProfileRegistry)
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), new Weight(500d))
+                .withProfile(subscription("sub2"), new Weight(500d))
+                .withProfile(subscription("sub3"), new Weight(10d))
+                .withProfile(subscription("sub4"), new Weight(10d))
+                .withProfile(subscription("sub5"), new Weight(490d))
+                .build()
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c3")
                 .withAssignment(subscription("sub2"), "c2")
@@ -206,7 +216,7 @@ class WeightedWorkBalancerTest extends Specification {
                 .build()
 
         when:
-        def balanced = balancer.balance(subscriptionProfileRegistry.subscriptionNames as List, initial.consumerNodes as List, initial, constraints)
+        def balanced = balancer.balance(subscriptionProfiles.subscriptions as List, initial.consumerNodes as List, initial, constraints)
 
         then:
         // c1 = sub3+sub5 = 10+490 = 500
@@ -222,13 +232,14 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should not overload underloaded node while rebalancing"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(10d))
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), new Weight(500d))
+                .withProfile(subscription("sub2"), new Weight(500d))
+                .withProfile(subscription("sub3"), new Weight(10d))
+                .build()
         def stabilizationWindow = ofHours(1)
-        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0d, subscriptionProfileRegistry)
+        def balancer = createWeightedWorkBalancer(stabilizationWindow, 0d, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1")
                 .withAssignment(subscription("sub2"), "c2")
@@ -244,7 +255,7 @@ class WeightedWorkBalancerTest extends Specification {
         clock.advance(stabilizationWindow.plusMinutes(1))
 
         when:
-        def balanced = balancer.balance(subscriptionProfileRegistry.subscriptionNames as List, initial.consumerNodes as List, initial, constraints)
+        def balanced = balancer.balance(subscriptionProfiles.subscriptions as List, initial.consumerNodes as List, initial, constraints)
 
         then:
         assertThat(balanced)
@@ -255,15 +266,16 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should not rebalance when change is insignificant"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(5d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(10d))
-                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(10d))
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), new Weight(5d))
+                .withProfile(subscription("sub2"), new Weight(500d))
+                .withProfile(subscription("sub3"), new Weight(10d))
+                .withProfile(subscription("sub4"), new Weight(10d))
+                .build()
         def stabilizationWindow = ofHours(1)
         def minSignificantChangePercent = 10.0d
-        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, minSignificantChangePercent, subscriptionProfileRegistry)
+        def balancer = createWeightedWorkBalancer(stabilizationWindow, minSignificantChangePercent, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c3", "c4")
@@ -303,14 +315,15 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should not rebalance if the stabilization window has not elapsed yet"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(10d))
-                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(10d))
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), new Weight(500d))
+                .withProfile(subscription("sub2"), new Weight(500d))
+                .withProfile(subscription("sub3"), new Weight(10d))
+                .withProfile(subscription("sub4"), new Weight(10d))
+                .build()
         def stabilizationWindow = ofHours(1)
-        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0d, subscriptionProfileRegistry)
+        def balancer = createWeightedWorkBalancer(stabilizationWindow, 0d, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c1", "c2")
@@ -339,14 +352,15 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should rebalance if the stabilization window has elapsed"() {
         given:
-        def previousRebalanceTimestamp = clock.instant()
-        def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
-                .profile(subscription("sub1"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub2"), previousRebalanceTimestamp, new Weight(500d))
-                .profile(subscription("sub3"), previousRebalanceTimestamp, new Weight(10d))
-                .profile(subscription("sub4"), previousRebalanceTimestamp, new Weight(10d))
+        def subscriptionProfiles = new SubscriptionProfilesBuilder()
+                .withRebalanceTimestamp(clock.instant())
+                .withProfile(subscription("sub1"), new Weight(500d))
+                .withProfile(subscription("sub2"), new Weight(500d))
+                .withProfile(subscription("sub3"), new Weight(10d))
+                .withProfile(subscription("sub4"), new Weight(10d))
+                .build()
         def stabilizationWindow = ofHours(1)
-        def balancer = new WeightedWorkBalancer(clock, stabilizationWindow, 0d, subscriptionProfileRegistry)
+        def balancer = createWeightedWorkBalancer(stabilizationWindow, 0d, subscriptionProfiles)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c1", "c2")
@@ -375,7 +389,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should not change assignments when rebalance is not needed"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c2", "c3")
@@ -396,7 +410,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should remove an inactive subscriptions"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c2", "c3")
@@ -421,7 +435,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should remove an inactive consumer"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c2", "c3")
@@ -447,7 +461,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should assign subscriptions to a new consumer node"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1")
                 .withAssignment(subscription("sub2"), "c2")
@@ -475,7 +489,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should respect limit of subscriptions per consumer"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1"), "c1", "c2")
                 .withAssignment(subscription("sub2"), "c1", "c2")
@@ -500,7 +514,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should respect workload constraints"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def topic = TopicName.fromQualifiedName("pl.allegro.tech.hermes")
         def initial = new SubscriptionAssignmentViewBuilder()
                 .withAssignment(subscription("sub1", topic), "c1", "c2")
@@ -529,7 +543,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should balance work for one consumer node"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder().build()
         def constraints = WorkloadConstraints.builder()
                 .withConsumersPerSubscription(2)
@@ -550,7 +564,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should balance one subscription"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder().build()
         def constraints = WorkloadConstraints.builder()
                 .withConsumersPerSubscription(2)
@@ -570,7 +584,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should not create assignments when there are no consumers"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder().build()
         def constraints = WorkloadConstraints.builder()
                 .withConsumersPerSubscription(2)
@@ -589,7 +603,7 @@ class WeightedWorkBalancerTest extends Specification {
 
     def "should not create assignments when there are no subscriptions"() {
         given:
-        def balancer = new WeightedWorkBalancer(clock, ofHours(1), 0d, new MockSubscriptionProfileRegistry())
+        def balancer = createWeightedWorkBalancer(ofHours(1), 0d, SubscriptionProfiles.EMPTY)
         def initial = new SubscriptionAssignmentViewBuilder().build()
         def constraints = WorkloadConstraints.builder()
                 .withConsumersPerSubscription(2)
@@ -612,5 +626,21 @@ class WeightedWorkBalancerTest extends Specification {
 
     private static SubscriptionName subscription(String name, TopicName topicName) {
         return new SubscriptionName(name, topicName)
+    }
+
+    private WeightedWorkBalancer createWeightedWorkBalancer(Duration stabilizationWindowSize,
+                                                            double minSignificantChangePercent,
+                                                            SubscriptionProfiles subscriptionProfiles) {
+        CurrentLoadProvider currentLoadProvider = new CurrentLoadProvider()
+        currentLoadProvider.updateProfiles(subscriptionProfiles)
+        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
+        WeightedWorkloadMetrics workloadMetrics = new WeightedWorkloadMetrics(hermesMetrics)
+        return new WeightedWorkBalancer(
+                clock,
+                stabilizationWindowSize,
+                minSignificantChangePercent,
+                currentLoadProvider,
+                new AvgTargetWeightCalculator(workloadMetrics)
+        )
     }
 }

@@ -164,6 +164,11 @@ public class HermesMetrics {
         }
     }
 
+    public void unregisterGauge(String name) {
+        String path = pathCompiler.compile(name);
+        metricRegistry.remove(path);
+    }
+
     private String metricRegistryName(String metricDisplayName, TopicName topicName, String subscription) {
         PathContext pathContext = PathContext.pathContext()
                 .withGroup(escapeDots(topicName.getGroupName()))

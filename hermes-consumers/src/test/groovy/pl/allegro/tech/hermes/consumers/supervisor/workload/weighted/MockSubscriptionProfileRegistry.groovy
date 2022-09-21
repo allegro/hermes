@@ -4,42 +4,33 @@ import pl.allegro.tech.hermes.api.SubscriptionName
 
 import java.time.Instant
 
-class MockSubscriptionProfileRegistry implements SubscriptionProfileRegistry, SubscriptionProfileProvider {
+class MockSubscriptionProfileRegistry implements SubscriptionProfileRegistry {
 
-    private Instant updateTimestamp
-    private final Map<SubscriptionName, SubscriptionProfile> profiles = new HashMap<>()
-
-    @Override
-    SubscriptionProfile get(SubscriptionName subscriptionName) {
-        return profiles.getOrDefault(subscriptionName, SubscriptionProfile.UNDEFINED)
-    }
+    private SubscriptionProfiles subscriptionProfiles = SubscriptionProfiles.EMPTY
 
     @Override
     SubscriptionProfiles fetch() {
-        return new SubscriptionProfiles(profiles, updateTimestamp)
+        return subscriptionProfiles
     }
 
     @Override
-    void persist(SubscriptionProfiles profiles) {
-
-    }
-
-    Set<SubscriptionName> getSubscriptionNames() {
-        return profiles.keySet()
+    void persist(SubscriptionProfiles profilesToPersist) {
+        subscriptionProfiles = profilesToPersist
     }
 
     MockSubscriptionProfileRegistry updateTimestamp(Instant updateTimestamp) {
-        this.updateTimestamp = updateTimestamp
+        subscriptionProfiles = new SubscriptionProfiles(subscriptionProfiles.getProfiles(), updateTimestamp)
         return this
     }
 
     MockSubscriptionProfileRegistry profile(SubscriptionName subscriptionName, Instant lastRebalanceTimestamp, Weight weight) {
+        def profiles = new HashMap<>(subscriptionProfiles.getProfiles())
         profiles.put(subscriptionName, new SubscriptionProfile(lastRebalanceTimestamp, weight))
+        subscriptionProfiles = new SubscriptionProfiles(profiles, subscriptionProfiles.updateTimestamp)
         return this
     }
 
     void reset() {
-        profiles.clear()
-        updateTimestamp = null
+        subscriptionProfiles = SubscriptionProfiles.EMPTY
     }
 }
