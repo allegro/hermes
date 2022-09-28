@@ -13,9 +13,10 @@
         </group>
     </sbe:message>
     <sbe:message name="ConsumerLoad" id="2" description="Consumer node load metrics">
-        <group name="Subscriptions" id="1">
-            <field name="Id" id="2" type="int64"/>
-            <field name="OperationsPerSecond" id="3" type="double"/>
+        <field name="cpuUtilization" id="1" type="double"/>
+        <group name="Subscriptions" id="2">
+            <field name="Id" id="3" type="int64"/>
+            <field name="OperationsPerSecond" id="4" type="double"/>
         </group>
     </sbe:message>
     <sbe:message name="Profiles" id="3" description="Subscription profiles">

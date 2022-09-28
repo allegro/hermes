@@ -13,4 +13,9 @@ public class NoOpBalancingListener implements BalancingListener {
     public void onAfterBalancing(WorkDistributionChanges changes) {
 
     }
+
+    @Override
+    public void onBalancingSkipped() {
+
+    }
 }

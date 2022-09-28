@@ -60,7 +60,7 @@ class SubscriptionProfilesEncoder {
     }
 
     private long toMillis(Instant timestamp) {
-        if (timestamp == null) {
+        if (timestamp == Instant.MIN) {
             return -1;
         }
         return timestamp.toEpochMilli();

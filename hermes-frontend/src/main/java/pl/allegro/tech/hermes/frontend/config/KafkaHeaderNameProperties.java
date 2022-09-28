@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderNameParameters;
+import pl.allegro.tech.hermes.common.kafka.KafkaHeaderNameParameters;
 
 @ConfigurationProperties(prefix = "frontend.kafka.header.name")
-public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters{
+public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
 
     private String messageId = "id";
 

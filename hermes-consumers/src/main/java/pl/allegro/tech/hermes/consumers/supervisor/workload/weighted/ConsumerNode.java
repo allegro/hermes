@@ -12,12 +12,14 @@ class ConsumerNode {
     static Comparator<ConsumerNode> LIGHTEST_CONSUMER_FIRST = comparing(ConsumerNode::getWeight);
 
     private final String consumerId;
+    private final ConsumerNodeLoad initialLoad;
     private final int maxSubscriptionsPerConsumer;
     private final Set<ConsumerTask> tasks = new HashSet<>();
     private Weight weight = Weight.ZERO;
 
-    ConsumerNode(String consumerId, int maxSubscriptionsPerConsumer) {
+    ConsumerNode(String consumerId, ConsumerNodeLoad initialLoad, int maxSubscriptionsPerConsumer) {
         this.consumerId = consumerId;
+        this.initialLoad = initialLoad;
         this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
     }
 
@@ -58,6 +60,10 @@ class ConsumerNode {
 
     Weight getWeight() {
         return weight;
+    }
+
+    ConsumerNodeLoad getInitialLoad() {
+        return initialLoad;
     }
 
     @Override

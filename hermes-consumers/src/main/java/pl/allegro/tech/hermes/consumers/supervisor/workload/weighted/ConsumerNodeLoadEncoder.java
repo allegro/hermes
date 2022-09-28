@@ -23,14 +23,15 @@ class ConsumerNodeLoadEncoder {
         this.buffer = new ExpandableDirectByteBuffer(bufferSize);
     }
 
-    byte[] encode(ConsumerNodeLoad metrics) {
-        Map<SubscriptionId, SubscriptionLoad> subscriptionLoads = mapToSubscriptionIds(metrics);
+    byte[] encode(ConsumerNodeLoad consumerNodeLoad) {
+        Map<SubscriptionId, SubscriptionLoad> subscriptionLoads = mapToSubscriptionIds(consumerNodeLoad);
 
         MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         ConsumerLoadEncoder body = new ConsumerLoadEncoder()
                 .wrapAndApplyHeader(buffer, 0, headerEncoder);
 
         SubscriptionsEncoder loadPerSubscriptionEncoder = body
+                .cpuUtilization(consumerNodeLoad.getCpuUtilization())
                 .subscriptionsCount(subscriptionLoads.size());
 
         for (Map.Entry<SubscriptionId, SubscriptionLoad> entry : subscriptionLoads.entrySet()) {

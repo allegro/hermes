@@ -144,6 +144,10 @@ public class WorkloadProperties implements WorkBalancingParameters {
 
         private Duration weightWindowSize = Duration.ofMinutes(15);
 
+        private TargetWeightCalculationStrategy targetWeightCalculationStrategy = TargetWeightCalculationStrategy.AVG;
+
+        private double scoringGain = 1.0d;
+
         public int getConsumerLoadEncoderBufferSizeBytes() {
             return consumerLoadEncoderBufferSizeBytes;
         }
@@ -191,6 +195,22 @@ public class WorkloadProperties implements WorkBalancingParameters {
         public void setWeightWindowSize(Duration weightWindowSize) {
             this.weightWindowSize = weightWindowSize;
         }
+
+        public TargetWeightCalculationStrategy getTargetWeightCalculationStrategy() {
+            return targetWeightCalculationStrategy;
+        }
+
+        public void setTargetWeightCalculationStrategy(TargetWeightCalculationStrategy targetWeightCalculationStrategy) {
+            this.targetWeightCalculationStrategy = targetWeightCalculationStrategy;
+        }
+
+        public double getScoringGain() {
+            return scoringGain;
+        }
+
+        public void setScoringGain(double scoringGain) {
+            this.scoringGain = scoringGain;
+        }
     }
 
     public enum WorkBalancingStrategy {
@@ -201,6 +221,18 @@ public class WorkloadProperties implements WorkBalancingParameters {
 
             public UnknownWorkBalancingStrategyException() {
                 super("Unknown work balancing strategy. Use one of: " + Arrays.toString(values()));
+            }
+        }
+    }
+
+    public enum TargetWeightCalculationStrategy {
+        AVG,
+        SCORING;
+
+        public static class UnknownTargetWeightCalculationStrategyException extends InternalProcessingException {
+
+            public UnknownTargetWeightCalculationStrategyException() {
+                super("Unknown target weight calculation strategy. Use one of: " + Arrays.toString(values()));
             }
         }
     }

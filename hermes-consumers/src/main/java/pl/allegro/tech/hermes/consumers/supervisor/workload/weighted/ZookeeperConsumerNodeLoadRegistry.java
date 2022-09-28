@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
 import com.codahale.metrics.Gauge;
+import com.sun.management.OperatingSystemMXBean;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -13,6 +14,7 @@ import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
+import java.lang.management.ManagementFactory;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Map;
@@ -41,10 +43,12 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
     private final ConsumerNodeLoadEncoder encoder;
     private final ConsumerNodeLoadDecoder decoder;
     private final ScheduledExecutorService executor;
+    private final OperatingSystemMXBean platformMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
 
     private final Set<ZookeeperSubscriptionLoadRecorder> subscriptionLoadRecorders = newSetFromMap(new ConcurrentHashMap<>());
-    private volatile long lastReset = 0;
+    private volatile long lastReset;
     private volatile double currentOperationsPerSecond = 0d;
+    private volatile double cpuUtilization = -1;
 
     public ZookeeperConsumerNodeLoadRegistry(CuratorFramework curator,
                                              SubscriptionIds subscriptionIds,
@@ -65,7 +69,12 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
         this.encoder = new ConsumerNodeLoadEncoder(subscriptionIds, consumerLoadEncoderBufferSizeBytes);
         this.decoder = new ConsumerNodeLoadDecoder(subscriptionIds);
         this.executor = executorServiceFactory.createSingleThreadScheduledExecutor("consumer-node-load-reporter-%d");
+        this.lastReset = clock.millis();
         metrics.registerGauge("consumer-workload.weighted.load.ops", (Gauge<Double>) () -> currentOperationsPerSecond);
+        metrics.registerGauge("consumer-workload.weighted.load.cpu-utilization", (Gauge<Double>) () -> cpuUtilization);
+        if (platformMXBean.getProcessCpuLoad() < 0d) {
+            logger.warn("Process CPU load is not available.");
+        }
     }
 
     @Override
@@ -95,9 +104,10 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
         long elapsedMillis = now - lastReset;
         long elapsedSeconds = Math.max(MILLISECONDS.toSeconds(elapsedMillis), 1);
         lastReset = now;
+        cpuUtilization = platformMXBean.getProcessCpuLoad();
         Map<SubscriptionName, SubscriptionLoad> loadPerSubscription = subscriptionLoadRecorders.stream()
                 .collect(toMap(ZookeeperSubscriptionLoadRecorder::getSubscriptionName, recorder -> recorder.calculate(elapsedSeconds)));
-        return new ConsumerNodeLoad(loadPerSubscription);
+        return new ConsumerNodeLoad(cpuUtilization, loadPerSubscription);
     }
 
     private void persist(ConsumerNodeLoad metrics) throws Exception {

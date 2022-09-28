@@ -32,7 +32,8 @@ public class MessageToKafkaProducerRecordConverter {
         Iterable<Header> headers = createRecordHeaders(message.getId(), message.getTimestamp(), schemaId, schemaVersion);
         byte[] partitionKey = ofNullable(message.getPartitionKey()).map(String::getBytes).orElse(null);
 
-        return new ProducerRecord<>(kafkaTopicName.asString(), null, partitionKey, message.getData(), headers);
+        return new ProducerRecord<>(kafkaTopicName.asString(), null, message.getTimestamp(),
+                partitionKey, message.getData(), headers);
     }
 
     private Optional<SchemaId> createSchemaId(Message message) {
