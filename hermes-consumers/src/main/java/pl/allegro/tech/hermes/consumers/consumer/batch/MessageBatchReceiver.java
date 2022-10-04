@@ -8,8 +8,8 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
@@ -38,7 +38,7 @@ public class MessageBatchReceiver {
     private final MessageBatchFactory batchFactory;
     private final MessageConverterResolver messageConverterResolver;
     private final CompositeMessageContentWrapper compositeMessageContentWrapper;
-    private final HermesMetrics hermesMetrics;
+    private final SubscriptionMetrics metrics;
     private final Trackers trackers;
     private final Queue<Message> inflight;
     private final Topic topic;
@@ -47,7 +47,7 @@ public class MessageBatchReceiver {
 
     public MessageBatchReceiver(MessageReceiver receiver,
                                 MessageBatchFactory batchFactory,
-                                HermesMetrics hermesMetrics,
+                                SubscriptionMetrics metrics,
                                 MessageConverterResolver messageConverterResolver,
                                 CompositeMessageContentWrapper compositeMessageContentWrapper,
                                 Topic topic,
@@ -55,7 +55,7 @@ public class MessageBatchReceiver {
                                 SubscriptionLoadRecorder loadRecorder) {
         this.receiver = receiver;
         this.batchFactory = batchFactory;
-        this.hermesMetrics = hermesMetrics;
+        this.metrics = metrics;
         this.messageConverterResolver = messageConverterResolver;
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.topic = topic;
@@ -114,7 +114,7 @@ public class MessageBatchReceiver {
 
             Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
             transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
-            hermesMetrics.incrementInflightCounter(subscription);
+            metrics.markAttempt();
             trackers.get(subscription).logInflight(toMessageMetadata(transformed, subscription, batchId));
 
             return Optional.of(transformed);
@@ -148,9 +148,9 @@ public class MessageBatchReceiver {
 
     public void commit(Set<SubscriptionPartitionOffset> offsets) {
         receiver.commit(offsets);
-    };
+    }
 
     public boolean moveOffset(PartitionOffset offset) {
         return receiver.moveOffset(offset);
-    };
+    }
 }

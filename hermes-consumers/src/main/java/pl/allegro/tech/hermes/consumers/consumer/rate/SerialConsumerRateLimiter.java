@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate;
 
 import com.google.common.util.concurrent.RateLimiter;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculationResult;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
@@ -14,7 +14,7 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
 
     private Subscription subscription;
 
-    private final HermesMetrics hermesMetrics;
+    private final SubscriptionMetrics metrics;
 
     private final ConsumerRateLimitSupervisor rateLimitSupervisor;
 
@@ -30,14 +30,14 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
 
     public SerialConsumerRateLimiter(Subscription subscription,
                                      OutputRateCalculatorFactory outputRateCalculatorFactory,
-                                     HermesMetrics hermesMetrics,
+                                     SubscriptionMetrics metrics,
                                      ConsumerRateLimitSupervisor rateLimitSupervisor,
                                      Clock clock) {
         this.subscription = subscription;
-        this.hermesMetrics = hermesMetrics;
+        this.metrics = metrics;
         this.rateLimitSupervisor = rateLimitSupervisor;
         this.sendCounters = new SendCounters(clock);
-        this.outputRateCalculator = outputRateCalculatorFactory.createCalculator(subscription, sendCounters);
+        this.outputRateCalculator = outputRateCalculatorFactory.createCalculator(subscription, sendCounters, metrics);
         this.currentMode = OutputRateCalculator.Mode.NORMAL;
         this.rateLimiter = RateLimiter.create(calculateInitialRate().rate());
         this.filterRateLimiter = RateLimiter.create(subscription.getSerialSubscriptionPolicy().getRate());
@@ -47,14 +47,12 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
     public void initialize() {
         outputRateCalculator.start();
         adjustConsumerRate();
-        hermesMetrics.registerOutputRateGauge(
-                subscription.getTopicName(), subscription.getName(), rateLimiter::getRate);
+        metrics.registerOutputRateGauge(rateLimiter::getRate);
         rateLimitSupervisor.register(this);
     }
 
     @Override
     public void shutdown() {
-        hermesMetrics.unregisterOutputRateGauge(subscription.getTopicName(), subscription.getName());
         rateLimitSupervisor.unregister(this);
         outputRateCalculator.shutdown();
     }

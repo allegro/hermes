@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.ExponentiallyGrowingIdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.idleTime.IdleTimeCalculator;
@@ -91,16 +92,17 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     public MessageReceiver createMessageReceiver(Topic topic,
                                                  Subscription subscription,
                                                  ConsumerRateLimiter consumerRateLimiter,
-                                                 SubscriptionLoadRecorder loadReporter) {
+                                                 SubscriptionLoadRecorder loadReporter,
+                                                 SubscriptionMetrics metrics) {
 
         MessageReceiver receiver = createKafkaSingleThreadedMessageReceiver(topic, subscription, loadReporter);
 
         if (consumerReceiverParameters.isWaitBetweenUnsuccessfulPolls()) {
-            receiver = createThrottlingMessageReceiver(receiver, subscription);
+            receiver = createThrottlingMessageReceiver(receiver, metrics);
         }
 
         if (consumerReceiverParameters.isFilteringEnabled()) {
-            receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription);
+            receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription, metrics);
         }
 
         return receiver;
@@ -123,23 +125,24 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         );
     }
 
-    private MessageReceiver createThrottlingMessageReceiver(MessageReceiver receiver, Subscription subscription) {
+    private MessageReceiver createThrottlingMessageReceiver(MessageReceiver receiver, SubscriptionMetrics metrics) {
         IdleTimeCalculator idleTimeCalculator = new ExponentiallyGrowingIdleTimeCalculator(
                 consumerReceiverParameters.getInitialIdleTime().toMillis(),
                 consumerReceiverParameters.getMaxIdleTime().toMillis());
 
-        return new ThrottlingMessageReceiver(receiver, idleTimeCalculator, subscription, hermesMetrics);
+        return new ThrottlingMessageReceiver(receiver, idleTimeCalculator, metrics);
     }
 
     private MessageReceiver createFilteringMessageReceiver(MessageReceiver receiver,
                                                            ConsumerRateLimiter consumerRateLimiter,
-                                                           Subscription subscription) {
+                                                           Subscription subscription,
+                                                           SubscriptionMetrics metrics) {
         boolean filteringRateLimitEnabled = consumerReceiverParameters.isFilteringRateLimiterEnabled();
         FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
                 offsetQueue,
                 filteringRateLimitEnabled ? consumerRateLimiter : null,
                 trackers,
-                hermesMetrics);
+                metrics);
         return new FilteringMessageReceiver(receiver, filteredMessageHandler, filterChainFactory, subscription);
     }
 

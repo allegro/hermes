@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
@@ -29,7 +30,7 @@ class DefaultSuccessHandlerTest extends Specification {
     private Subscription subscription = subscription('group.topic', 'subscription')
             .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
-    private DefaultSuccessHandler handler = new DefaultSuccessHandler(offsetQueue, Stub(HermesMetrics), trackers)
+    private DefaultSuccessHandler handler = new DefaultSuccessHandler(offsetQueue, Stub(SubscriptionMetrics), trackers)
 
     def "should commit message and save tracking information on message success"() {
         given:
