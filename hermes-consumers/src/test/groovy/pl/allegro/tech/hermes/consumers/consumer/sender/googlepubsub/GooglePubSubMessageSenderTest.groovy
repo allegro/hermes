@@ -8,6 +8,7 @@ import com.google.cloud.pubsub.v1.Publisher
 import com.google.pubsub.v1.PubsubMessage
 import com.google.pubsub.v1.TopicName
 import io.grpc.Status
+import pl.allegro.tech.hermes.consumers.config.GooglePubSubSenderProperties
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import spock.lang.Specification
@@ -24,9 +25,10 @@ class GooglePubSubMessageSenderTest extends Specification {
         .build()
 
     GooglePubSubClientsPool clientsPool = Mock(GooglePubSubClientsPool)
+    GooglePubSubSenderProperties properties = new GooglePubSubSenderProperties()
 
     GooglePubSubClient client = new GooglePubSubClient(publisher, new GooglePubSubMessages(
-            new GooglePubSubMetadataAppender()))
+            new GooglePubSubMetadataAppender(properties)))
 
     @Subject
     GooglePubSubMessageSender sender
@@ -34,6 +36,7 @@ class GooglePubSubMessageSenderTest extends Specification {
     void setup() {
         clientsPool.acquire(senderTarget) >> client
         sender = new GooglePubSubMessageSender(senderTarget, clientsPool)
+        properties.includeMoreAttributes = true
     }
 
     def 'should return result on a happy path'() {

@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString
 import com.google.pubsub.v1.PubsubMessage
 import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.Header
+import pl.allegro.tech.hermes.consumers.config.GooglePubSubSenderProperties
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import spock.lang.Specification
@@ -14,10 +15,15 @@ import java.nio.charset.StandardCharsets
 
 class GooglePubSubMessagesTest extends Specification {
 
-    GooglePubSubMetadataAppender metadataAppender = new GooglePubSubMetadataAppender()
+    GooglePubSubSenderProperties properties = new GooglePubSubSenderProperties()
+    GooglePubSubMetadataAppender metadataAppender = new GooglePubSubMetadataAppender(properties)
 
     @Subject
     GooglePubSubMessages pubSubMessages = new GooglePubSubMessages(metadataAppender)
+
+    void setup() {
+        properties.includeMoreAttributes = true
+    }
 
     def 'should convert standard message'() {
         given:
