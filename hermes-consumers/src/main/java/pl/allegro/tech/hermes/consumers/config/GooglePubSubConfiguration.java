@@ -36,8 +36,8 @@ public class GooglePubSubConfiguration {
     }
 
     @Bean
-    public GooglePubSubMetadataAppender pubSubMetadataAppender() {
-        return new GooglePubSubMetadataAppender();
+    public GooglePubSubMetadataAppender pubSubMetadataAppender(GooglePubSubSenderProperties properties) {
+        return new GooglePubSubMetadataAppender(properties);
     }
 
     @Bean

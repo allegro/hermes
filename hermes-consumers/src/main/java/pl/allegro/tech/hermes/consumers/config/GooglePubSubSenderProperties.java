@@ -19,6 +19,8 @@ public class GooglePubSubSenderProperties {
 
     private String transportChannelProviderAddress = "integration";
 
+    private boolean includeMoreAttributes = false;
+
     public int getCorePoolSize() {
         return corePoolSize;
     }
@@ -65,5 +67,13 @@ public class GooglePubSubSenderProperties {
 
     public void setTransportChannelProviderAddress(String transportChannelProviderAddress) {
         this.transportChannelProviderAddress = transportChannelProviderAddress;
+    }
+
+    public boolean isIncludeMoreAttributes() {
+        return includeMoreAttributes;
+    }
+
+    public void setIncludeMoreAttributes(boolean includeMoreAttributes) {
+        this.includeMoreAttributes = includeMoreAttributes;
     }
 }

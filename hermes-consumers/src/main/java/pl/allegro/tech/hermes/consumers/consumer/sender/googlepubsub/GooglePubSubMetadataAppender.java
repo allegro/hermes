@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.lang3.tuple.Pair;
 import pl.allegro.tech.hermes.api.Header;
+import pl.allegro.tech.hermes.consumers.config.GooglePubSubSenderProperties;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
@@ -21,17 +22,28 @@ public class GooglePubSubMetadataAppender implements MetadataAppender<PubsubMess
     public static final String HEADER_NAME_SCHEMA_ID = "sid";
     public static final String HEADER_NAME_SCHEMA_VERSION = "sv";
 
+    private final GooglePubSubSenderProperties pubSubSenderProperties;
+
+    public GooglePubSubMetadataAppender(GooglePubSubSenderProperties pubSubSenderProperties) {
+        this.pubSubSenderProperties = pubSubSenderProperties;
+    }
+
     @Override
     public PubsubMessage append(PubsubMessage target, Message message) {
+        if (pubSubSenderProperties.isIncludeMoreAttributes()) {
+            final Map<String, String> additionalHeaders = message.getAdditionalHeaders().stream().collect(
+                    Collectors.toMap(Header::getName, Header::getValue));
 
-        final Map<String, String> additionalHeaders = message.getAdditionalHeaders().stream().collect(
-                Collectors.toMap(Header::getName, Header::getValue));
-
-        return PubsubMessage.newBuilder(target)
-                .putAllAttributes(additionalHeaders)
-                .putAllAttributes(message.getExternalMetadata())
-                .putAllAttributes(createMessageAttributes(message))
-                .build();
+            return PubsubMessage.newBuilder(target)
+                    .putAllAttributes(additionalHeaders)
+                    .putAllAttributes(message.getExternalMetadata())
+                    .putAllAttributes(createMessageAttributes(message))
+                    .build();
+        } else {
+            return PubsubMessage.newBuilder(target)
+                    .putAllAttributes(createMessageAttributes(message))
+                    .build();
+        }
     }
 
     private Map<String, String> createMessageAttributes(Message message) {

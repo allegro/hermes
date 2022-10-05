@@ -5,6 +5,7 @@ import com.google.pubsub.v1.PubsubMessage
 import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Header
+import pl.allegro.tech.hermes.consumers.config.GooglePubSubSenderProperties
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import spock.lang.Specification
@@ -26,8 +27,14 @@ class GooglePubSubMetadataAppenderTest extends Specification {
             .setData(ByteString.copyFrom("test", StandardCharsets.UTF_8))
             .build()
 
+    private GooglePubSubSenderProperties properties = new GooglePubSubSenderProperties()
+
     @Subject
-    GooglePubSubMetadataAppender appender = new GooglePubSubMetadataAppender()
+    GooglePubSubMetadataAppender appender = new GooglePubSubMetadataAppender(properties)
+
+    void setup() {
+        properties.includeMoreAttributes = true
+    }
 
     @Unroll
     def 'should add all basic headers for json message (with subscription identity headers: #hasSubscriptionIdentityHeaders)'(boolean hasSubscriptionIdentityHeaders) {
@@ -79,19 +86,7 @@ class GooglePubSubMetadataAppenderTest extends Specification {
     }
 
     def 'should add additional headers and external metadata to the message'() {
-        Message message = MessageBuilder.newBuilder()
-                .withTopic(TOPIC_NAME)
-                .withId(MESSAGE_ID)
-                .withPublishingTimestamp(PUBLISHING_TIMESTAMP)
-                .withContentType(ContentType.JSON)
-                .withAdditionalHeaders([
-                        new Header("additional-header1", "additional-header-value1"),
-                        new Header("additional-header2", "additional-header-value2")])
-                .withExternalMetadata([
-                        externalMetadata1: "external-metadata-value1",
-                        externalMetadata2: "external-metadata-value2"])
-                .withSubscription(SUBSCRIPTION_NAME)
-                .build()
+        Message message = messageWithAdditionalMetadata()
 
         when:
         PubsubMessage enrichedMessage = appender.append(pubSubMessage, message)
@@ -133,5 +128,38 @@ class GooglePubSubMetadataAppenderTest extends Specification {
         enrichedMessage.getAttributesOrThrow(GooglePubSubMetadataAppender.HEADER_NAME_SUBSCRIPTION_NAME) == SUBSCRIPTION_NAME
         enrichedMessage.getAttributesOrThrow(GooglePubSubMetadataAppender.HEADER_NAME_SCHEMA_ID) == SCHEMA_ID.toString()
         enrichedMessage.getAttributesOrThrow(GooglePubSubMetadataAppender.HEADER_NAME_SCHEMA_VERSION) == SCHEMA_VERSION.toString()
+    }
+
+    def 'should not add additional and external headers where includeMoreAttributes property is false'() {
+        given:
+        GooglePubSubSenderProperties properties = new GooglePubSubSenderProperties()
+        properties.includeMoreAttributes = false
+        GooglePubSubMetadataAppender appenderUnderTest = new GooglePubSubMetadataAppender(properties)
+
+        when:
+        PubsubMessage enrichedMessage = appenderUnderTest.append(pubSubMessage, messageWithAdditionalMetadata())
+
+        then:
+        !enrichedMessage.containsAttributes("additional-header1")
+        !enrichedMessage.containsAttributes("additional-header2")
+        !enrichedMessage.containsAttributes("externalMetadata1")
+        !enrichedMessage.containsAttributes("externalMetadata2")
+    }
+
+    private static Message messageWithAdditionalMetadata() {
+        Message message = MessageBuilder.newBuilder()
+                .withTopic(TOPIC_NAME)
+                .withId(MESSAGE_ID)
+                .withPublishingTimestamp(PUBLISHING_TIMESTAMP)
+                .withContentType(ContentType.JSON)
+                .withAdditionalHeaders([
+                        new Header("additional-header1", "additional-header-value1"),
+                        new Header("additional-header2", "additional-header-value2")])
+                .withExternalMetadata([
+                        externalMetadata1: "external-metadata-value1",
+                        externalMetadata2: "external-metadata-value2"])
+                .withSubscription(SUBSCRIPTION_NAME)
+                .build()
+        message
     }
 }
