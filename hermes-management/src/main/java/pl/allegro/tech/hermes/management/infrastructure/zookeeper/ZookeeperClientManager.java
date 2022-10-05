@@ -2,7 +2,10 @@ package pl.allegro.tech.hermes.management.infrastructure.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.data.ACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -91,8 +94,22 @@ public class ZookeeperClientManager {
                 .connectionTimeoutMs(clusterProperties.getConnectTimeout())
                 .retryPolicy(retryPolicy);
 
-        Optional.ofNullable(commonProperties.getAuthorization()).ifPresent(it ->
-                builder.authorization(it.getScheme(), (it.getUser() + ":" + it.getPassword()).getBytes())
+        Optional.ofNullable(commonProperties.getAuthorization()).ifPresent(it -> {
+                    builder.authorization(it.getScheme(), (it.getUser() + ":" + it.getPassword()).getBytes());
+                    builder.aclProvider(
+                            new ACLProvider() {
+                                @Override
+                                public List<ACL> getDefaultAcl() {
+                                    return ZooDefs.Ids.CREATOR_ALL_ACL;
+                                }
+
+                                @Override
+                                public List<ACL> getAclForPath(String path) {
+                                    return ZooDefs.Ids.CREATOR_ALL_ACL;
+                                }
+                            }
+                    );
+                }
         );
 
         CuratorFramework curator = builder.build();
