@@ -90,7 +90,7 @@ public class WeightedWorkloadMetrics {
         for (String consumerId : consumerIdsToRemove) {
             if (!consumerIds.contains(consumerId)) {
                 String metricPath = buildFullMetricPath(metric, consumerId);
-                metrics.unregisterGauge(metricPath);
+                metrics.unregister(metricPath);
                 currentValues.remove(consumerId);
             }
         }

@@ -128,9 +128,8 @@ public class ConsumerConfiguration {
     public MaxRateProviderFactory maxRateProviderFactory(MaxRateProperties maxRateProperties,
                                                          MaxRateRegistry maxRateRegistry,
                                                          MaxRateSupervisor maxRateSupervisor,
-                                                         HermesMetrics metrics,
                                                          WorkloadProperties workloadProperties) {
-        return new MaxRateProviderFactory(maxRateProperties, workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor, metrics);
+        return new MaxRateProviderFactory(maxRateProperties, workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor);
     }
 
     @Bean
@@ -169,7 +168,6 @@ public class ConsumerConfiguration {
 
     @Bean
     public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaClustersProperties kafkaClustersProperties,
-                                                                     HermesMetrics hermesMetrics,
                                                                      MessageSenderFactory messageSenderFactory,
                                                                      Trackers trackers,
                                                                      FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
@@ -182,7 +180,6 @@ public class ConsumerConfiguration {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new ConsumerMessageSenderFactory(
                 kafkaProperties.getClusterName(),
-                hermesMetrics,
                 messageSenderFactory,
                 trackers,
                 futureAsyncTimeout,
