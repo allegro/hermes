@@ -40,6 +40,9 @@ dependencies {
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
     testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
     testCompile group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.23.2'
+    testCompile group: 'io.github.wimdeblauwe', name: 'testcontainers-cypress', version: '1.7.0', {
+        exclude group: 'org.testcontainers', module: 'testcontainers'
+    }
 
     testCompile(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
@@ -91,3 +94,11 @@ task integrationTest(type: Test) {
         events "passed", "skipped", "failed", "standardError", "standardOut"
     }
 }
+
+processIntegrationResources {
+    from("src/integration/e2e") {
+        exclude 'node_modules'
+        into("e2e")
+    }
+}
+

@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@faker-js/faker": "^7.5.0",
+    "axios": "^1.1.2",
+    "cypress": "^10.7.0",
+    "cypress-multi-reporters": "^1.6.1",
+    "mocha": "^10.0.0",
+    "mochawesome": "^7.1.3"
+  }
+}

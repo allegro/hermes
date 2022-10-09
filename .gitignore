@@ -32,6 +32,11 @@ hermes-console/static/components
 hermes-console/node_modules
 hermes-console/config.json
 
+integration/src/integration/e2e/node_modules
+integration/src/integration/e2e/cypress/reports
+integration/src/integration/e2e/cypress/videos
+integration/src/integration/e2e/cypress/screenshots
+
 scripts/.Python
 scripts/bin/
 scripts/include/
