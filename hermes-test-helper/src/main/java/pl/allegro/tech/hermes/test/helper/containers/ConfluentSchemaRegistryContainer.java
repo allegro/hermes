@@ -8,7 +8,7 @@ import static java.lang.String.format;
 
 public class ConfluentSchemaRegistryContainer extends GenericContainer<ConfluentSchemaRegistryContainer> {
     private static final DockerImageName DEFAULT_SCHEMA_REGISTRY_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-schema-registry")
-            .withTag("6.1.0");
+            .withTag(ImageTags.confluentImagesTag());
     private static final int SCHEMA_REGISTRY_PORT = 8081;
 
     public ConfluentSchemaRegistryContainer() {
