@@ -22,13 +22,14 @@ public class Meters {
         STATUS_CODES = "http-status-codes.code" + HTTP_CODE,
         TOPIC_STATUS_CODES = "http-status-codes." + GROUP + "." + TOPIC + ".code" + HTTP_CODE,
 
-        ERRORS_TIMEOUTS = "status." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".errors.timeout",
-        ERRORS_OTHER = "status." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".errors.other",
-        ERRORS_HTTP_BY_FAMILY = "status." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + "." + HTTP_CODE_FAMILY,
+        SUBSCRIPTION_STATUS = "status." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
+        ERRORS_TIMEOUTS = SUBSCRIPTION_STATUS + ".errors.timeout",
+        ERRORS_OTHER = SUBSCRIPTION_STATUS + ".errors.other",
+        ERRORS_HTTP_BY_FAMILY = SUBSCRIPTION_STATUS + "." + HTTP_CODE_FAMILY,
 
         ERRORS_HTTP_BY_CODE = ERRORS_HTTP_BY_FAMILY + "." + HTTP_CODE,
 
-        FAILED_METER_SUBSCRIPTION = FAILED_METER + "." + SUBSCRIPTION,
+        FAILED_METER_SUBSCRIPTION = FAILED_TOPIC_METER + "." + SUBSCRIPTION,
 
         DISCARDED_METER = "discarded-meter",
         DISCARDED_TOPIC_METER = DISCARDED_METER + "." + GROUP + "." + TOPIC,

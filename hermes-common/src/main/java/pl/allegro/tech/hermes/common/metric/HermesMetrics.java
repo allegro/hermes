@@ -4,11 +4,12 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
@@ -16,7 +17,12 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFF
 import static pl.allegro.tech.hermes.common.metric.Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.LEADER_CONFIRMS_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Timers.SUBSCRIPTION_LATENCY;
+import static pl.allegro.tech.hermes.common.metric.Histograms.INFLIGHT_TIME;
+import static pl.allegro.tech.hermes.common.metric.Meters.ERRORS_HTTP_BY_CODE;
+import static pl.allegro.tech.hermes.common.metric.Meters.ERRORS_HTTP_BY_FAMILY;
+import static pl.allegro.tech.hermes.common.metric.Meters.ERRORS_OTHER;
+import static pl.allegro.tech.hermes.common.metric.Meters.ERRORS_TIMEOUTS;
+import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_STATUS;
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 public class HermesMetrics {
@@ -106,29 +112,20 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_2_REQUEST_QUEUE_SIZE), gauge);
     }
 
-    public <T> void registerOutputRateGauge(TopicName topicName, String name, Gauge<T> gauge) {
-        metricRegistry.register(metricRegistryName(Gauges.OUTPUT_RATE, topicName, name), gauge);
-    }
-
-    public void unregisterOutputRateGauge(TopicName topicName, String name) {
-        String normalizedMetricName = metricRegistryName(Gauges.OUTPUT_RATE, topicName, name);
-        metricRegistry.remove(normalizedMetricName);
-    }
-
-    public ConsumerLatencyTimer latencyTimer(Subscription subscription) {
-        return new ConsumerLatencyTimer(this, subscription.getTopicName(), subscription.getName());
-    }
-
-    public void incrementInflightCounter(Subscription subscription) {
+    public void incrementInflightCounter(SubscriptionName subscription) {
         getInflightCounter(subscription).inc();
     }
 
-    public void decrementInflightCounter(Subscription subscription) {
+    public void decrementInflightCounter(SubscriptionName subscription) {
         getInflightCounter(subscription).dec();
     }
 
-    public void decrementInflightCounter(Subscription subscription, int size) {
+    public void decrementInflightCounter(SubscriptionName subscription, int size) {
         getInflightCounter(subscription).dec(size);
+    }
+
+    public void unregisterInflightCounter(SubscriptionName subscription) {
+        unregister(Counters.INFLIGHT, subscription);
     }
 
     public static void close(Timer.Context... timers) {
@@ -153,7 +150,7 @@ public class HermesMetrics {
         return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
     }
 
-    private Counter getInflightCounter(Subscription subscription) {
+    private Counter getInflightCounter(SubscriptionName subscription) {
         return counter(Counters.INFLIGHT, subscription.getTopicName(), subscription.getName());
     }
 
@@ -164,7 +161,17 @@ public class HermesMetrics {
         }
     }
 
-    public void unregisterGauge(String name) {
+    public void registerGauge(String name, SubscriptionName subscription, Gauge<?> gauge) {
+        if (!metricRegistry.getGauges().containsKey(name)) {
+            metricRegistry.register(metricRegistryName(name, subscription.getTopicName(), subscription.getName()), gauge);
+        }
+    }
+
+    public void unregister(String metric, SubscriptionName subscription) {
+        metricRegistry.remove(metricRegistryName(metric, subscription.getTopicName(), subscription.getName()));
+    }
+
+    public void unregister(String name) {
         String path = pathCompiler.compile(name);
         metricRegistry.remove(path);
     }
@@ -230,15 +237,15 @@ public class HermesMetrics {
                 .build()));
     }
 
-    public Histogram inflightTimeHistogram(Subscription subscription) {
-        return metricRegistry.histogram(pathCompiler.compile(Histograms.INFLIGHT_TIME, pathContext()
-                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
-                .withTopic(escapeDots(subscription.getTopicName().getName()))
-                .withSubscription(escapeDots(subscription.getName()))
-                .build()));
+    public Histogram inflightTimeHistogram(SubscriptionName subscription) {
+        return metricRegistry.histogram(metricRegistryName(INFLIGHT_TIME, subscription.getTopicName(), subscription.getName()));
     }
 
-    public void registerConsumerHttpAnswer(Subscription subscription, int statusCode) {
+    public void unregisterInflightTimeHistogram(SubscriptionName subscription) {
+        unregister(INFLIGHT_TIME, subscription);
+    }
+
+    public void registerConsumerHttpAnswer(SubscriptionName subscription, int statusCode) {
         PathContext pathContext = pathContext()
                 .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
                 .withTopic(escapeDots(subscription.getTopicName().getName()))
@@ -246,39 +253,38 @@ public class HermesMetrics {
                 .withHttpCode(statusCode)
                 .withHttpCodeFamily(httpStatusFamily(statusCode))
                 .build();
-        metricRegistry.meter(pathCompiler.compile(Meters.ERRORS_HTTP_BY_FAMILY, pathContext)).mark();
-        metricRegistry.meter(pathCompiler.compile(Meters.ERRORS_HTTP_BY_CODE, pathContext)).mark();
+        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_FAMILY, pathContext)).mark();
+        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_CODE, pathContext)).mark();
+    }
+
+    public void unregisterStatusMeters(SubscriptionName subscription) {
+        String prefix = metricRegistryName(SUBSCRIPTION_STATUS, subscription.getTopicName(), subscription.getName());
+        metricRegistry.removeMatching(MetricFilter.startsWith(prefix));
     }
 
     private String httpStatusFamily(int statusCode) {
         return String.format("%dxx", statusCode / 100);
     }
 
-    public Meter consumerErrorsTimeoutMeter(Subscription subscription) {
-        PathContext pathContext = pathContext()
-                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
-                .withTopic(escapeDots(subscription.getTopicName().getName()))
-                .withSubscription(escapeDots(subscription.getName()))
-                .build();
-        return metricRegistry.meter(pathCompiler.compile(Meters.ERRORS_TIMEOUTS, pathContext));
+    public Meter consumerErrorsTimeoutMeter(SubscriptionName subscription) {
+        return metricRegistry.meter(metricRegistryName(ERRORS_TIMEOUTS, subscription.getTopicName(), subscription.getName()));
     }
 
-    public Meter consumerErrorsOtherMeter(Subscription subscription) {
-        PathContext pathContext = pathContext()
-                .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
-                .withTopic(escapeDots(subscription.getTopicName().getName()))
-                .withSubscription(escapeDots(subscription.getName()))
-                .build();
-        return metricRegistry.meter(pathCompiler.compile(Meters.ERRORS_OTHER, pathContext));
+    public void unregisterConsumerErrorsTimeoutMeter(SubscriptionName subscription) {
+        unregister(ERRORS_TIMEOUTS, subscription);
+    }
+
+    public Meter consumerErrorsOtherMeter(SubscriptionName subscription) {
+        return metricRegistry.meter(metricRegistryName(ERRORS_OTHER, subscription.getTopicName(), subscription.getName()));
+    }
+
+    public void unregisterConsumerErrorsOtherMeter(SubscriptionName subscription) {
+        unregister(ERRORS_OTHER, subscription);
     }
 
     public Timer consumersWorkloadRebalanceDurationTimer(String kafkaCluster) {
         PathContext pathContext = pathContext().withKafkaCluster(kafkaCluster).build();
         return metricRegistry.timer(pathCompiler.compile(Timers.CONSUMER_WORKLOAD_REBALANCE_DURATION, pathContext));
-    }
-
-    public Timer subscriptionLatencyTimer(Subscription subscription) {
-        return timer(SUBSCRIPTION_LATENCY, subscription.getTopicName(), subscription.getName());
     }
 
     public Timer oAuthProviderLatencyTimer(String oAuthProviderName) {
@@ -296,36 +302,6 @@ public class HermesMetrics {
                 .withOAuthProvider(escapeDots(oAuthProviderName))
                 .build();
         return metricRegistry.meter(pathCompiler.compile(Meters.OAUTH_SUBSCRIPTION_TOKEN_REQUEST, pathContext));
-    }
-
-    public Counter rateHistoryFailuresCounter(Subscription subscription) {
-        return metricRegistry.counter(metricRegistryName(
-                Counters.MAXRATE_RATE_HISTORY_FAILURES, subscription.getTopicName(), subscription.getName()));
-    }
-
-    public Counter maxRateFetchFailuresCounter(Subscription subscription) {
-        return metricRegistry.counter(metricRegistryName(
-                Counters.MAXRATE_FETCH_FAILURES, subscription.getTopicName(), subscription.getName()));
-    }
-
-    public void registerMaxRateGauge(Subscription subscription, Gauge<Double> gauge) {
-        metricRegistry.register(metricRegistryName(
-                Gauges.MAX_RATE_VALUE, subscription.getTopicName(), subscription.getName()), gauge);
-    }
-
-    public void unregisterMaxRateGauge(Subscription subscription) {
-        metricRegistry.remove(metricRegistryName(
-                Gauges.MAX_RATE_VALUE, subscription.getTopicName(), subscription.getName()));
-    }
-
-    public void registerRateGauge(Subscription subscription, Gauge<Double> gauge) {
-        metricRegistry.register(metricRegistryName(
-                Gauges.MAX_RATE_ACTUAL_RATE_VALUE, subscription.getTopicName(), subscription.getName()), gauge);
-    }
-
-    public void unregisterRateGauge(Subscription subscription) {
-        metricRegistry.remove(metricRegistryName(
-                Gauges.MAX_RATE_ACTUAL_RATE_VALUE, subscription.getTopicName(), subscription.getName()));
     }
 
     public void registerRunningConsumerProcessesCountGauge(Gauge<Integer> gauge) {

@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
@@ -81,6 +82,7 @@ public class ConsumerFactory {
     public Consumer createConsumer(Subscription subscription) {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
         SubscriptionLoadRecorder loadRecorder = subscriptionLoadRecordersRegistry.register(subscription.getQualifiedName());
+        SubscriptionMetrics metrics = new SubscriptionMetrics(hermesMetrics, subscription.getQualifiedName());
         if (subscription.isBatchSubscription()) {
             return new BatchConsumer(messageReceiverFactory,
                     batchSenderFactory.create(subscription),
@@ -88,7 +90,7 @@ public class ConsumerFactory {
                     offsetQueue,
                     messageConverterResolver,
                     compositeMessageContentWrapper,
-                    hermesMetrics,
+                    metrics,
                     trackers,
                     subscription,
                     topic,
@@ -97,11 +99,11 @@ public class ConsumerFactory {
             );
         } else {
             SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription,
-                    outputRateCalculatorFactory, hermesMetrics, consumerRateLimitSupervisor, clock);
+                    outputRateCalculatorFactory, metrics, consumerRateLimitSupervisor, clock);
 
             return new SerialConsumer(
                     messageReceiverFactory,
-                    hermesMetrics,
+                    metrics,
                     subscription,
                     consumerRateLimiter,
                     consumerMessageSenderFactory,

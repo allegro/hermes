@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
@@ -31,7 +30,7 @@ public class SerialConsumer implements Consumer {
     private static final Logger logger = LoggerFactory.getLogger(SerialConsumer.class);
 
     private final ReceiverFactory messageReceiverFactory;
-    private final HermesMetrics hermesMetrics;
+    private final SubscriptionMetrics metrics;
     private final SerialConsumerRateLimiter rateLimiter;
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
@@ -51,7 +50,7 @@ public class SerialConsumer implements Consumer {
     private MessageReceiver messageReceiver;
 
     public SerialConsumer(ReceiverFactory messageReceiverFactory,
-                          HermesMetrics hermesMetrics,
+                          SubscriptionMetrics metrics,
                           Subscription subscription,
                           SerialConsumerRateLimiter rateLimiter,
                           ConsumerMessageSenderFactory consumerMessageSenderFactory,
@@ -67,7 +66,7 @@ public class SerialConsumer implements Consumer {
         this.signalProcessingInterval = commonConsumerParameters.getSerialConsumer().getSignalProcessingInterval();
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;
-        this.hermesMetrics = hermesMetrics;
+        this.metrics = metrics;
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
         this.useTopicMessageSizeEnabled = commonConsumerParameters.isUseTopicMessageSizeEnabled();
@@ -83,7 +82,8 @@ public class SerialConsumer implements Consumer {
                 rateLimiter,
                 offsetQueue,
                 inflightSemaphore::release,
-                loadRecorder
+                loadRecorder,
+                metrics
         );
     }
 
@@ -127,7 +127,7 @@ public class SerialConsumer implements Consumer {
     private void sendMessage(Message message) {
         offsetQueue.offerInflightOffset(subscriptionPartitionOffset(subscription.getQualifiedName(), message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
-        hermesMetrics.incrementInflightCounter(subscription);
+        metrics.markAttempt();
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
 
         sender.sendAsync(message);
@@ -144,7 +144,7 @@ public class SerialConsumer implements Consumer {
     }
 
     private void initializeMessageReceiver() {
-        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter, loadRecorder);
+        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter, loadRecorder, metrics);
     }
 
     /**
@@ -157,6 +157,7 @@ public class SerialConsumer implements Consumer {
         rateLimiter.shutdown();
         loadRecorder.shutdown();
         consumerAuthorizationHandler.removeSubscriptionHandler(subscription.getQualifiedName());
+        metrics.shutdown();
     }
 
     @Override
