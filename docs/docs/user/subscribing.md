@@ -497,7 +497,7 @@ Subscription metrics are available at:
 and include:
 
 * **delivered**: number of delivered messages through the lifetime of subscriptions
-* **discarded**: number of delivered messages through the lifetime of subscriptions
+* **discarded**: number of discarded messages through the lifetime of subscriptions
 * **inflight**: number of messages currently in send Buffer
 * **timeouts**: number of requests per second that end in subscribing service timeout
 * **otherErrors**: number of requests per second that end in some other network error
