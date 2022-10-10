@@ -19,12 +19,13 @@ class GooglePubSubMessagesWithCompressionTest extends Specification {
                 .withCompressionLevel(compressionLevel)
                 .build()
         def rawPubSubMessages = new GooglePubSubMessages(new GooglePubSubMetadataAppender())
-        def deflateCompressor = new GooglePubSubMessageCompressor(codecFactory.get())
+        def compressor = new GooglePubSubMessageCompressor(codecFactory.get())
 
         def pubSubMessagesWithCompression = new GooglePubSubMessagesWithCompression(
                 new GooglePubSubMetadataCompressionAppender(codecName),
-                deflateCompressor,
-                rawPubSubMessages
+                compressor,
+                rawPubSubMessages,
+                0L
         )
         def msg = MessageBuilder.testMessage()
 
@@ -34,7 +35,7 @@ class GooglePubSubMessagesWithCompressionTest extends Specification {
 
         then:
         ByteString.copyFrom(MessageBuilder.TEST_MESSAGE_CONTENT, StandardCharsets.UTF_8).toByteArray() ==
-                deflateCompressor.decompress(pubsubMessage.getData().toByteArray())
+                compressor.decompress(pubsubMessage.getData().toByteArray())
 
         assert attributes["cn"] == codecName
 
@@ -50,10 +51,10 @@ class GooglePubSubMessagesWithCompressionTest extends Specification {
         })
 
         where:
-        codecName       | compressionLevel
-        'deflate'       | 'high'
-        'bzip2'         | ''
-        'zstandard'     | 'low'
+        codecName | compressionLevel
+        'deflate' | 'high'
+        'bzip2'   | ''
+        'zstd'    | 'low'
     }
 
     def 'should switch to raw processor on compression error'() {
@@ -69,7 +70,8 @@ class GooglePubSubMessagesWithCompressionTest extends Specification {
         def pubSubMessagesWithCompression = new GooglePubSubMessagesWithCompression(
                 new GooglePubSubMetadataCompressionAppender(codecName),
                 compressorStub,
-                rawPubSubMessages
+                rawPubSubMessages,
+                0L
         )
         def msg = MessageBuilder.testMessage()
 

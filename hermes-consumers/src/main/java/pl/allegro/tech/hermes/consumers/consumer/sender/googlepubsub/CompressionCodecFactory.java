@@ -9,7 +9,7 @@ public abstract class CompressionCodecFactory {
     public enum SupportedCodec {
         DEFLATE,
         BZIP2,
-        ZSTANDARD
+        ZSTD
     }
 
     public enum CompressionLevel {

@@ -42,7 +42,8 @@ public class GooglePubSubConfiguration {
             return codecFactory.map(cf -> (GooglePubSubMessages) new GooglePubSubMessagesWithCompression(
                     new GooglePubSubMetadataCompressionAppender(compressorProperties.getCodecName()),
                     new GooglePubSubMessageCompressor(cf),
-                    googlePubSubMessages)
+                    googlePubSubMessages,
+                    compressorProperties.getCompressionThresholdBytes())
             ).orElse(googlePubSubMessages);
         } else {
             return googlePubSubMessages;

@@ -7,9 +7,11 @@ public class GooglePubSubCompressorProperties {
 
     private Boolean enabled = false;
 
-    private String codecName = "deflate";
+    private String codecName = "bzip2";
 
     private String compressionLevel = "medium";
+
+    private Long compressionThresholdBytes = 400L;
 
     public Boolean isEnabled() {
         return enabled;
@@ -33,5 +35,13 @@ public class GooglePubSubCompressorProperties {
 
     public void setCompressionLevel(String compressionLevel) {
         this.compressionLevel = compressionLevel;
+    }
+
+    public Long getCompressionThresholdBytes() {
+        return compressionThresholdBytes;
+    }
+
+    public void setCompressionThresholdBytes(Long compressionThresholdBytes) {
+        this.compressionThresholdBytes = compressionThresholdBytes;
     }
 }

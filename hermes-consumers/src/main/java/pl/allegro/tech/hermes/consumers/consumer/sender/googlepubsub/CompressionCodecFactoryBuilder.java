@@ -44,7 +44,7 @@ public class CompressionCodecFactoryBuilder {
         switch (codec) {
             case DEFLATE: return new CompressionCodecFactory.DeflateCodecFactory(codec.name(), this.compressionLevel.getLevelId());
             case BZIP2: return new CompressionCodecFactory.Bzip2CodecFactory(codec.name());
-            case ZSTANDARD: return new CompressionCodecFactory.ZstandardCodecFactory(codec.name(), this.compressionLevel.getLevelId());
+            case ZSTD: return new CompressionCodecFactory.ZstandardCodecFactory(codec.name(), this.compressionLevel.getLevelId());
             default: return null;
         }
     }
