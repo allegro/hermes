@@ -59,9 +59,9 @@ class ScoringTargetWeightCalculatorTest extends Specification {
         // c2 = 200 * 0.01 / 1.06 ~ 1.88
         // c3 = 200 * 0.35 / 1.06 ~ 66
         def expected = [
-                "c1": new Weight(132.07547169811323),
-                "c2": new Weight(1.8867924528301887),
-                "c3": new Weight(66.03773584905662)
+                "c1": new Weight(132.08),
+                "c2": new Weight(1.89),
+                "c3": new Weight(66.04)
         ]
         areClose(expected, weights)
     }
@@ -99,8 +99,8 @@ class ScoringTargetWeightCalculatorTest extends Specification {
 
         then:
         def expected = [
-                "c1": new Weight(96.00000000000003),
-                "c2": new Weight(64.00000000000001),
+                "c1": new Weight(96.0),
+                "c2": new Weight(64.0),
                 "c3": new Weight(80.0)
         ]
         areClose(expected, weights)
@@ -157,7 +157,7 @@ class ScoringTargetWeightCalculatorTest extends Specification {
         weights == [:]
     }
 
-    private static boolean areClose(Map<String, Weight> expected, Map<String, Weight> actual, Float eps = 1e-8) {
+    private static boolean areClose(Map<String, Weight> expected, Map<String, Weight> actual, Float eps = 1e-2) {
         if (expected.keySet() != actual.keySet()) return false
         return expected.every { consumer, weight -> isClose(weight, actual[consumer], eps) }
     }
