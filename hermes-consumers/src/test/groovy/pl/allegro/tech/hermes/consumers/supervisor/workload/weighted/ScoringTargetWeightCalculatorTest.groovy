@@ -58,11 +58,12 @@ class ScoringTargetWeightCalculatorTest extends Specification {
         // c1 = 200 * 0.7 / 1.06 ~ 132
         // c2 = 200 * 0.01 / 1.06 ~ 1.88
         // c3 = 200 * 0.35 / 1.06 ~ 66
-        weights == [
-                "c1": new Weight(132.07547169811323),
-                "c2": new Weight(1.8867924528301887),
-                "c3": new Weight(66.03773584905662)
+        def expected = [
+                "c1": new Weight(132.08),
+                "c2": new Weight(1.89),
+                "c3": new Weight(66.04)
         ]
+        areClose(expected, weights)
     }
 
     def "should not change correct weights"() {
@@ -77,11 +78,12 @@ class ScoringTargetWeightCalculatorTest extends Specification {
         def weights = calculator.calculate(consumers)
 
         then:
-        weights == [
+        def expected = [
                 "c1": new Weight(100),
                 "c2": new Weight(70),
                 "c3": new Weight(90)
         ]
+        areClose(expected, weights)
     }
 
     def "should use weight average when consumers have undefined load"() {
@@ -96,11 +98,12 @@ class ScoringTargetWeightCalculatorTest extends Specification {
         def weights = calculator.calculate(consumers)
 
         then:
-        weights == [
-                "c1": new Weight(96.00000000000003),
-                "c2": new Weight(64.00000000000001),
+        def expected = [
+                "c1": new Weight(96.0),
+                "c2": new Weight(64.0),
                 "c3": new Weight(80.0)
         ]
+        areClose(expected, weights)
     }
 
     def "should use weight average when consumers have subscriptions assigned and undefined CPU utilization"() {
@@ -115,11 +118,12 @@ class ScoringTargetWeightCalculatorTest extends Specification {
         def weights = calculator.calculate(consumers)
 
         then:
-        weights == [
+        def expected = [
                 "c1": new Weight(80),
                 "c2": new Weight(80),
                 "c3": new Weight(80)
         ]
+        areClose(expected, weights)
     }
 
     def "should assign weight zero to all consumers when there are no subscriptions"() {
@@ -134,11 +138,12 @@ class ScoringTargetWeightCalculatorTest extends Specification {
         def weights = calculator.calculate(consumers)
 
         then:
-        weights == [
+        def expected = [
                 "c1": Weight.ZERO,
                 "c2": Weight.ZERO,
                 "c3": Weight.ZERO
         ]
+        areClose(expected, weights)
     }
 
     def "should return empty map when consumer list is empty"() {
@@ -151,6 +156,16 @@ class ScoringTargetWeightCalculatorTest extends Specification {
         then:
         weights == [:]
     }
+
+    private static boolean areClose(Map<String, Weight> expected, Map<String, Weight> actual, Float eps = 1e-2) {
+        if (expected.keySet() != actual.keySet()) return false
+        return expected.every { consumer, weight -> isClose(weight, actual[consumer], eps) }
+    }
+
+    private static boolean isClose(Weight a, Weight b, Float eps) {
+        return Math.abs(a.getOperationsPerSecond() - b.getOperationsPerSecond()) < eps
+    }
+
 
     private static ConsumerNode consumerNode(String consumerId, double cpu, Weight weight) {
         def subscription = SubscriptionName.fromString("pl.allegro.tech.hermes\$sub1")
