@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProvider;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
@@ -16,9 +17,10 @@ public class OutputRateCalculatorFactory {
         this.maxRateProviderFactory = maxRateProviderFactory;
     }
 
-    public OutputRateCalculator createCalculator(Subscription subscription, SendCounters sendCounters) {
-        MaxRateProvider maxRateProvider =
-                maxRateProviderFactory.create(subscription, sendCounters);
+    public OutputRateCalculator createCalculator(Subscription subscription,
+                                                 SendCounters sendCounters,
+                                                 SubscriptionMetrics metrics) {
+        MaxRateProvider maxRateProvider = maxRateProviderFactory.create(subscription, sendCounters, metrics);
         return new OutputRateCalculator(rateCalculatorParameters, maxRateProvider);
     }
 }

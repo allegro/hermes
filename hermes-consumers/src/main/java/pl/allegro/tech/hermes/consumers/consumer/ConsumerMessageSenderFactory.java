@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.consumers.consumer;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
@@ -25,7 +24,6 @@ import java.util.concurrent.ExecutorService;
 public class ConsumerMessageSenderFactory {
 
     private final String kafkaClusterName;
-    private final HermesMetrics hermesMetrics;
     private final MessageSenderFactory messageSenderFactory;
     private final Trackers trackers;
     private final FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout;
@@ -35,7 +33,7 @@ public class ConsumerMessageSenderFactory {
     private final ExecutorService rateLimiterReportingExecutor;
     private final int senderAsyncTimeoutMs;
 
-    public ConsumerMessageSenderFactory(String kafkaClusterName, HermesMetrics hermesMetrics, MessageSenderFactory messageSenderFactory,
+    public ConsumerMessageSenderFactory(String kafkaClusterName, MessageSenderFactory messageSenderFactory,
                                         Trackers trackers, FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
                                         UndeliveredMessageLog undeliveredMessageLog, Clock clock,
                                         InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
@@ -45,7 +43,6 @@ public class ConsumerMessageSenderFactory {
                                         boolean rateLimiterReportingThreadMonitoringEnabled) {
 
         this.kafkaClusterName = kafkaClusterName;
-        this.hermesMetrics = hermesMetrics;
         this.messageSenderFactory = messageSenderFactory;
         this.trackers = trackers;
         this.futureAsyncTimeout = futureAsyncTimeout;
@@ -62,15 +59,16 @@ public class ConsumerMessageSenderFactory {
                                         SerialConsumerRateLimiter consumerRateLimiter,
                                         OffsetQueue offsetQueue,
                                         InflightsPool inflight,
-                                        SubscriptionLoadRecorder subscriptionLoadRecorder) {
+                                        SubscriptionLoadRecorder subscriptionLoadRecorder,
+                                        SubscriptionMetrics metrics) {
 
         List<SuccessHandler> successHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
-                new DefaultSuccessHandler(offsetQueue, hermesMetrics, trackers));
+                new DefaultSuccessHandler(offsetQueue, metrics, trackers));
 
         List<ErrorHandler> errorHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
-                new DefaultErrorHandler(offsetQueue, hermesMetrics, undeliveredMessageLog, clock, trackers, kafkaClusterName));
+                new DefaultErrorHandler(offsetQueue, metrics, undeliveredMessageLog, clock, trackers, kafkaClusterName));
 
         return new ConsumerMessageSender(subscription,
                 messageSenderFactory,
@@ -79,7 +77,7 @@ public class ConsumerMessageSenderFactory {
                 consumerRateLimiter,
                 rateLimiterReportingExecutor,
                 inflight,
-                hermesMetrics,
+                metrics,
                 senderAsyncTimeoutMs,
                 futureAsyncTimeout,
                 clock,

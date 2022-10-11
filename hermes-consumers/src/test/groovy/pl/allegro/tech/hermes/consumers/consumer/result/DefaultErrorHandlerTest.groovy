@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
@@ -35,7 +36,7 @@ class DefaultErrorHandlerTest extends Specification {
             .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
     private DefaultErrorHandler handler = new DefaultErrorHandler(
-            offsetQueue, Stub(HermesMetrics), undeliveredLog, Clock.systemUTC(), trackers, "cluster")
+            offsetQueue, Stub(SubscriptionMetrics), undeliveredLog, Clock.systemUTC(), trackers, "cluster")
 
     def "should save tracking information on message failure but not commit message"() {
         given:

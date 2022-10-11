@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.Counters;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -12,12 +10,15 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
-public class DefaultSuccessHandler extends AbstractHandler implements SuccessHandler {
+public class DefaultSuccessHandler implements SuccessHandler {
 
     private final Trackers trackers;
+    private final OffsetQueue offsetQueue;
+    private final SubscriptionMetrics metrics;
 
-    public DefaultSuccessHandler(OffsetQueue offsetQueue, HermesMetrics hermesMetrics, Trackers trackers) {
-        super(offsetQueue, hermesMetrics);
+    public DefaultSuccessHandler(OffsetQueue offsetQueue, SubscriptionMetrics metrics, Trackers trackers) {
+        this.offsetQueue = offsetQueue;
+        this.metrics = metrics;
         this.trackers = trackers;
     }
 
@@ -25,22 +26,7 @@ public class DefaultSuccessHandler extends AbstractHandler implements SuccessHan
     public void handleSuccess(Message message, Subscription subscription, MessageSendingResult result) {
         offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
-
-        updateMeters(message, subscription, result);
-        updateMetrics(Counters.DELIVERED, message, subscription);
-
+        metrics.markSuccess(message, result);
         trackers.get(subscription).logSent(toMessageMetadata(message, subscription), result.getHostname());
-    }
-
-    private void updateMeters(Message message, Subscription subscription, MessageSendingResult result) {
-        hermesMetrics.meter(Meters.METER).mark();
-        hermesMetrics.meter(Meters.TOPIC_METER, subscription.getTopicName()).mark();
-        hermesMetrics.meter(Meters.SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark();
-        hermesMetrics.meter(
-                Meters.SUBSCRIPTION_THROUGHPUT_BYTES,
-                subscription.getTopicName(),
-                subscription.getName())
-                .mark(message.getSize());
-        hermesMetrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
     }
 }

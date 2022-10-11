@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.base.Preconditions;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 public class MaxRateProviderFactory {
@@ -12,11 +12,10 @@ public class MaxRateProviderFactory {
     public MaxRateProviderFactory(MaxRateParameters maxRateParameters,
                                   String nodeId,
                                   MaxRateRegistry maxRateRegistry,
-                                  MaxRateSupervisor maxRateSupervisor,
-                                  HermesMetrics metrics) {
+                                  MaxRateSupervisor maxRateSupervisor) {
         double minSignificantChange = maxRateParameters.getMinSignificantUpdatePercent() / 100;
         checkNegotiatedSettings(minSignificantChange, maxRateParameters.getBusyTolerance());
-        providerCreator = (subscription, sendCounters) -> {
+        providerCreator = (subscription, sendCounters, metrics) -> {
             int historyLimit = maxRateParameters.getHistorySize();
             double initialMaxRate = maxRateParameters.getMinMaxRate();
 
@@ -25,12 +24,12 @@ public class MaxRateProviderFactory {
         };
     }
 
-    public MaxRateProvider create(Subscription subscription, SendCounters sendCounters) {
-        return providerCreator.create(subscription, sendCounters);
+    public MaxRateProvider create(Subscription subscription, SendCounters sendCounters, SubscriptionMetrics metrics) {
+        return providerCreator.create(subscription, sendCounters, metrics);
     }
 
     private interface Creator {
-        MaxRateProvider create(Subscription subscription, SendCounters sendCounters);
+        MaxRateProvider create(Subscription subscription, SendCounters sendCounters, SubscriptionMetrics metrics);
     }
 
     private void checkNegotiatedSettings(double minSignificantChange, double busyTolerance) {

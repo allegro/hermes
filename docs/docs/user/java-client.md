@@ -12,11 +12,13 @@ A thin library designed to publish messages to Hermes.
 ## Overview
 
 Core functionality is provided by `HermesClient` class, which in turn uses `HermesSender` to do the heavy lifting.
-At the moment there are three implementations of `HermesSender`:
+At the moment there are four implementations of `HermesSender`:
 
 * **RestTemplateHermesSender** - recommended for services built on [Spring framework](https://spring.io/projects/spring-framework);
   uses [AsyncRestTemplate](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/client/AsyncRestTemplate.html)
   for asynchronous transmission
+* **WebClientHermesSender** - for services using [Spring WebFlux](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html); 
+  uses [WebClient](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html)
 * **JerseyHermesSender** - recommended for services using  [Jersey](<https://jersey.java.net/>)
 * **OkHttpHermesSender** - supports both HTTP/1.1 and HTTP/2 protocols, uses [OkHttp3 client](http://square.github.io/okhttp/)
 

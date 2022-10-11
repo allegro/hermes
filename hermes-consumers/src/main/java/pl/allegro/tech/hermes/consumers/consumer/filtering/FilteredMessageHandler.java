@@ -1,16 +1,16 @@
 package pl.allegro.tech.hermes.consumers.consumer.filtering;
 
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
+import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
+
+import java.util.Optional;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
@@ -20,14 +20,14 @@ public class FilteredMessageHandler {
     private final OffsetQueue offsetQueue;
     private final Optional<ConsumerRateLimiter> consumerRateLimiter;
     private final Trackers trackers;
-    private final HermesMetrics metrics;
+    private final SubscriptionMetrics metrics;
 
     private static final Logger logger = LoggerFactory.getLogger(FilteredMessageHandler.class);
 
     public FilteredMessageHandler(OffsetQueue offsetQueue,
                                   ConsumerRateLimiter consumerRateLimiter,
                                   Trackers trackers,
-                                  HermesMetrics metrics) {
+                                  SubscriptionMetrics metrics) {
         this.offsetQueue = offsetQueue;
         this.consumerRateLimiter = Optional.ofNullable(consumerRateLimiter);
         this.trackers = trackers;
@@ -43,17 +43,13 @@ public class FilteredMessageHandler {
             offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
                     message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
-            updateMetrics(subscription);
+            metrics.markFilteredOut();
 
-            if(subscription.isTrackingEnabled()) {
+            if (subscription.isTrackingEnabled()) {
                 trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());
             }
 
             consumerRateLimiter.ifPresent(ConsumerRateLimiter::acquireFiltered);
         }
-    }
-
-    private void updateMetrics(Subscription subscription) {
-        metrics.meter(Meters.FILTERED_METER, subscription.getTopicName(), subscription.getName()).mark();
     }
 }

@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.timer.ConsumerLatencyTimer;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
@@ -45,11 +44,10 @@ public class ConsumerMessageSender {
     private final InflightsPool inflight;
     private final FutureAsyncTimeout<MessageSendingResult> async;
     private final int asyncTimeoutMs;
-    private final HermesMetrics hermesMetrics;
     private final SubscriptionLoadRecorder loadRecorder;
 
     private int requestTimeoutMs;
-    private ConsumerLatencyTimer consumerLatencyTimer;
+    private final Timer consumerLatencyTimer;
     private MessageSender messageSender;
     private Subscription subscription;
 
@@ -63,7 +61,7 @@ public class ConsumerMessageSender {
                                  SerialConsumerRateLimiter rateLimiter,
                                  ExecutorService deliveryReportingExecutor,
                                  InflightsPool inflight,
-                                 HermesMetrics hermesMetrics,
+                                 SubscriptionMetrics metrics,
                                  int asyncTimeoutMs,
                                  FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
                                  Clock clock,
@@ -81,8 +79,7 @@ public class ConsumerMessageSender {
         this.async = futureAsyncTimeout;
         this.requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
         this.asyncTimeoutMs = asyncTimeoutMs;
-        this.hermesMetrics = hermesMetrics;
-        this.consumerLatencyTimer = hermesMetrics.latencyTimer(subscription);
+        this.consumerLatencyTimer = metrics.subscriptionLatencyTimer();
     }
 
     public void initialize() {
@@ -130,7 +127,7 @@ public class ConsumerMessageSender {
     private void sendMessage(final Message message) {
         rateLimiter.acquire();
         loadRecorder.recordSingleOperation();
-        ConsumerLatencyTimer.Context timer = consumerLatencyTimer.time();
+        Timer.Context timer = consumerLatencyTimer.time();
         CompletableFuture<MessageSendingResult> response = async.within(
                 messageSender.send(message),
                 Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs)
@@ -238,10 +235,6 @@ public class ConsumerMessageSender {
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
     }
 
-    private void decrementInflightMessageCounterAfterSenderShutdown() {
-        hermesMetrics.decrementInflightCounter(subscription);
-    }
-
     private boolean messageSentSucceeded(MessageSendingResult result) {
         return result.succeeded() || (result.isClientError() && !shouldRetryOnClientError());
     }
@@ -262,16 +255,16 @@ public class ConsumerMessageSender {
     class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
 
         private final Message message;
-        private final ConsumerLatencyTimer.Context timer;
+        private final Timer.Context timer;
 
-        public ResponseHandlingListener(Message message, ConsumerLatencyTimer.Context timer) {
+        public ResponseHandlingListener(Message message, Timer.Context timer) {
             this.message = message;
             this.timer = timer;
         }
 
         @Override
         public void accept(MessageSendingResult result) {
-            timer.stop();
+            timer.close();
             loadRecorder.recordSingleOperation();
             if (running) {
                 if (result.succeeded()) {
@@ -280,7 +273,6 @@ public class ConsumerMessageSender {
                     handleFailedSending(message, result);
                 }
             } else {
-                decrementInflightMessageCounterAfterSenderShutdown();
                 logger.warn("Process of subscription {} is not running. " +
                                 "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
                         subscription.getQualifiedName(), result.succeeded(), message.getPartition(),
