@@ -36,4 +36,8 @@
     <suppress checks="VisibilityModifier"
               files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
             />
+
+    <!-- Build dirs -->
+    <suppress checks="[a-zA-Z0-9]*"
+              files="[/\\]build[/\\]generated[/\\]java[/\\]" />
 </suppressions>

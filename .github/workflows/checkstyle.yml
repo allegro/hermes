@@ -1,0 +1,25 @@
+name: Checkstyle
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  checkstyle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Run check style
+        uses: nikitasavinov/checkstyle-action@master
+        with:
+          checkstyle_config: config/checkstyle/checkstyle.xml
+          checkstyle_version: 10.3.4
+          fail_on_error: false
+          filter_mode: nofilter
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-check
+
