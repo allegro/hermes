@@ -79,7 +79,7 @@ At this point, you should see your group on the group list. Now let's add new `c
 * click the group header (direct link to com.example.events group: [link](http://localhost:8090/#/groups/com.example.events))
 * click the blue plus button
 * enter topic name: `clicks`
-* enter some description
+* enter some description and owner
 * change content type to JSON - we don't want to add AVRO schema yet for the sake of simplicity
 
 ## Publishing and receiving messages
@@ -92,6 +92,7 @@ So let's create a `clicks-receiver` subscription:
 * click the topic header (direct link to com.example.events.clicks group: [link](http://localhost:8090/#/groups/com.example.events/topics/com.example.events.clicks))
 * click the blue plus button
 * enter subscription name: `clicks-receiver`
+* set rate limit, e.g: 100
 * set the endpoint to which messages will be sent, in this example we can use `http://webhook.site/aa715639-e85d-43b4-9a29-ec46824021fe`
 * enter some description and contact data
 

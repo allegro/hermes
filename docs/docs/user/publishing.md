@@ -21,7 +21,7 @@ Sample request:
 
 ```json
 {
-    "groupName": "my-group"
+    "groupName": "my.group"
 }
 ```
 
@@ -48,7 +48,7 @@ Minimal request:
 
 ```json
 {
-    "name": "my-group.my-topic",
+    "name": "my.group.my-topic",
     "description": "This is my topic",
     "contentType": "JSON",
     "retentionTime": {
@@ -73,14 +73,18 @@ Request that specifies all available options:
 
 ```json
 {
-    "name": "myTopic",
-    "description": "This is my topic",
-    "ack": "LEADER",
-    "retentionTime": {
-        "duration": 1
-    },
-    "trackingEnabled": false,
-    "contentType": "JSON"
+  "name": "my.group.my-topic",
+  "description": "This is my topic",
+  "ack": "LEADER",
+  "retentionTime": {
+    "duration": 1
+  },
+  "trackingEnabled": false,
+  "contentType": "JSON",
+  "owner": {
+    "source": "Plaintext",
+    "id": "My Team"
+  }
 }
 ```
 
