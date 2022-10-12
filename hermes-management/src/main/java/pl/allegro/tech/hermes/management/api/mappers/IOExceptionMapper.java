@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.management.api.mappers;
 
 import pl.allegro.tech.hermes.api.ErrorCode;
 
+import java.io.IOException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 
 @Provider
 public class IOExceptionMapper extends AbstractExceptionMapper<IOException> {

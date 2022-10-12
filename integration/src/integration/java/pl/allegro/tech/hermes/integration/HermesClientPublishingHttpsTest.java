@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
 import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
-import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
+import pl.allegro.tech.hermes.common.ssl.SslContextHolder;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
 import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
@@ -49,7 +49,7 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
 
         OkHttpHermesSender okHttpHermesSender = new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());
         HermesClient client = hermesClient(okHttpHermesSender)
-                .withURI(URI.create("https://localhost:" + sslPort))
+                .withUri(URI.create("https://localhost:" + sslPort))
                 .build();
 
         try {
@@ -73,7 +73,7 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
                 new ProvidedKeyManagersProvider(keystoreProperties),
                 new ProvidedTrustManagersProvider(truststoreProperties)
         );
-        SSLContextHolder sslContextHolder = sslContextFactory.create();
+        SslContextHolder sslContextHolder = sslContextFactory.create();
         return new OkHttpClient.Builder()
                 .sslSocketFactory(
                         sslContextHolder.getSslContext().getSocketFactory(),

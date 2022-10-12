@@ -17,7 +17,9 @@ public class SubscriptionPartitionOffset {
         this.offset = offset;
     }
 
-    public static SubscriptionPartitionOffset subscriptionPartitionOffset(SubscriptionName subscriptionName, PartitionOffset partitionOffset, long partitionAssignmentTerm) {
+    public static SubscriptionPartitionOffset subscriptionPartitionOffset(SubscriptionName subscriptionName,
+                                                                          PartitionOffset partitionOffset,
+                                                                          long partitionAssignmentTerm) {
         return new SubscriptionPartitionOffset(
                 new SubscriptionPartition(
                         partitionOffset.getTopic(),
@@ -54,19 +56,23 @@ public class SubscriptionPartitionOffset {
 
     @Override
     public String toString() {
-        return "SubscriptionPartitionOffset{" +
-                "subscriptionPartition=" + subscriptionPartition +
-                ", offset=" + offset +
-                '}';
+        return "SubscriptionPartitionOffset{"
+                + "subscriptionPartition=" + subscriptionPartition
+                + ", offset=" + offset
+                + '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SubscriptionPartitionOffset that = (SubscriptionPartitionOffset) o;
-        return offset == that.offset &&
-                Objects.equals(subscriptionPartition, that.subscriptionPartition);
+        return offset == that.offset
+                && Objects.equals(subscriptionPartition, that.subscriptionPartition);
     }
 
     @Override

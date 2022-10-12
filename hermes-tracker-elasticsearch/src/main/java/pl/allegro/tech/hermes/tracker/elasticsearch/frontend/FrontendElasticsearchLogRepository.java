@@ -7,7 +7,11 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
-import pl.allegro.tech.hermes.tracker.elasticsearch.*;
+import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument;
+import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchQueueCommitter;
+import pl.allegro.tech.hermes.tracker.elasticsearch.IndexFactory;
+import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
+import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Gauges;
 import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
@@ -22,7 +26,9 @@ import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
 import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
 
-public class FrontendElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
+public class FrontendElasticsearchLogRepository
+        extends BatchingLogRepository<ElasticsearchDocument>
+        implements LogRepository, LogSchemaAware {
 
     private static final int DOCUMENT_EXPECTED_SIZE = 1024;
 
@@ -48,17 +54,30 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
     }
 
     @Override
-    public void logPublished(String messageId, long timestamp, String topicName, String hostname, Map<String, String> extraRequestHeaders) {
+    public void logPublished(String messageId,
+                             long timestamp,
+                             String topicName,
+                             String hostname,
+                             Map<String, String> extraRequestHeaders) {
         queue.offer(build(() -> document(messageId, timestamp, topicName, SUCCESS, hostname, extraRequestHeaders)));
     }
 
     @Override
-    public void logError(String messageId, long timestamp, String topicName, String reason, String hostname, Map<String, String> extraRequestHeaders) {
+    public void logError(String messageId,
+                         long timestamp,
+                         String topicName,
+                         String reason,
+                         String hostname,
+                         Map<String, String> extraRequestHeaders) {
         queue.offer(build(() -> document(messageId, timestamp, topicName, ERROR, reason, hostname, extraRequestHeaders)));
     }
 
     @Override
-    public void logInflight(String messageId, long timestamp, String topicName, String hostname, Map<String, String> extraRequestHeaders) {
+    public void logInflight(String messageId,
+                            long timestamp,
+                            String topicName,
+                            String hostname,
+                            Map<String, String> extraRequestHeaders) {
         queue.offer(build(() -> document(messageId, timestamp, topicName, INFLIGHT, hostname, extraRequestHeaders)));
     }
 
@@ -85,10 +104,17 @@ public class FrontendElasticsearchLogRepository extends BatchingLogRepository<El
                                      String hostname,
                                      Map<String, String> extraRequestHeaders)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname, extraRequestHeaders).field(REASON, reason).endObject();
+        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname, extraRequestHeaders)
+                .field(REASON, reason)
+                .endObject();
     }
 
-    protected XContentBuilder notEndedDocument(String messageId, long timestamp, String topicName, String status, String hostname, Map<String, String> extraRequestHeaders)
+    protected XContentBuilder notEndedDocument(String messageId,
+                                               long timestamp,
+                                               String topicName,
+                                               String status,
+                                               String hostname,
+                                               Map<String, String> extraRequestHeaders)
             throws IOException {
         return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()

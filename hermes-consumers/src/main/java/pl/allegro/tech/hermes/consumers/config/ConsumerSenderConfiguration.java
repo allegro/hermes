@@ -49,12 +49,12 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEn
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
-import javax.inject.Named;
-import javax.jms.Message;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import javax.inject.Named;
+import javax.jms.Message;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -69,7 +69,8 @@ public class ConsumerSenderConfiguration {
     @Bean
     public MessageBatchSenderFactory httpMessageBatchSenderFactory(SendingResultHandlers resultHandlers,
                                                                    BatchProperties batchProperties) {
-        return new HttpMessageBatchSenderFactory(resultHandlers, batchProperties.getConnectionTimeout(), batchProperties.getConnectionRequestTimeout());
+        return new HttpMessageBatchSenderFactory(resultHandlers, batchProperties.getConnectionTimeout(),
+                batchProperties.getConnectionRequestTimeout());
     }
 
     @Bean(destroyMethod = "closeProviders")
@@ -141,11 +142,17 @@ public class ConsumerSenderConfiguration {
                                                                    @Named("http-1-client") HttpClient httpClient,
                                                                    Http2ClientHolder http2ClientHolder,
                                                                    HttpClientProperties httpClientProperties) {
-        return new HttpClientsWorkloadReporter(metrics, httpClient, http2ClientHolder, httpClientProperties.isRequestQueueMonitoringEnabled(), httpClientProperties.isConnectionPoolMonitoringEnabled());
+        return new HttpClientsWorkloadReporter(
+                metrics,
+                httpClient,
+                http2ClientHolder,
+                httpClientProperties.isRequestQueueMonitoringEnabled(),
+                httpClientProperties.isConnectionPoolMonitoringEnabled());
     }
 
     @Bean
-    public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory, SslContextProperties sslContextProperties) {
+    public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory,
+                                                               SslContextProperties sslContextProperties) {
         return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslContextProperties);
     }
 

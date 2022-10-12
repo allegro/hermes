@@ -32,7 +32,7 @@ class HermesClientTest extends Specification {
             assert message.body == CONTENT
             statusFuture(message, 201)
         })
-                .withURI(create(HERMES_URI))
+                .withUri(create(HERMES_URI))
                 .build()
 
         when:
@@ -48,7 +48,7 @@ class HermesClientTest extends Specification {
     def "should interpret message as accepted when sender returns 202"() {
         given:
         HermesClient client = hermesClient({ uri, msg -> statusFuture(msg, 202) })
-                .withURI(create(HERMES_URI))
+                .withUri(create(HERMES_URI))
                 .build()
 
         when:
@@ -62,7 +62,7 @@ class HermesClientTest extends Specification {
     def "should interpret message as failed for status different than 201 or 202"() {
         given:
         HermesClient client = hermesClient({uri, msg -> statusFuture(msg, status)})
-                .withURI(create(HERMES_URI))
+                .withUri(create(HERMES_URI))
                 .withRetrySleep(0)
                 .build()
 

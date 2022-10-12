@@ -21,9 +21,9 @@ import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
+import java.net.URI;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import java.net.URI;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -53,8 +53,15 @@ public class SchemaConfiguration {
                                            ObjectMapper objectMapper,
                                            SchemaRepositoryInstanceResolver resolver,
                                            SchemaProperties schemaProperties) {
-        return new RawSchemaClientFactory(kafkaClustersProperties.getNamespace(), kafkaClustersProperties.getNamespaceSeparator(), hermesMetrics, objectMapper, resolver,
-                schemaProperties.getRepository().isSubjectSuffixEnabled(), schemaProperties.getRepository().isSubjectNamespaceEnabled()).provide();
+        return new RawSchemaClientFactory(
+                kafkaClustersProperties.getNamespace(),
+                kafkaClustersProperties.getNamespaceSeparator(),
+                hermesMetrics,
+                objectMapper,
+                resolver,
+                schemaProperties.getRepository().isSubjectSuffixEnabled(),
+                schemaProperties.getRepository().isSubjectNamespaceEnabled()
+        ).provide();
     }
 
     @Bean

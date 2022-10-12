@@ -6,12 +6,12 @@ import pl.allegro.tech.hermes.management.api.auth.AuthorizationFilter;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 
+import java.io.IOException;
 import javax.annotation.Priority;
 import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 
 @Provider
 @Priority(AuthorizationFilter.AUTHORIZATION_FILTER_PRIORITY + 2)
@@ -43,14 +43,14 @@ public class ReadOnlyFilter implements ContainerRequestFilter {
         if (req.getMethod().equals("GET")) {
             return true;
         }
-        String requestURI = req.getUriInfo().getPath();
-        if (requestURI.startsWith("/query")) {
+        String requestUri = req.getUriInfo().getPath();
+        if (requestUri.startsWith("/query")) {
             return true;
         }
-        if (requestURI.startsWith("/mode")) {
+        if (requestUri.startsWith("/mode")) {
             return true;
         }
-        if (requestURI.startsWith("/topics") && requestURI.endsWith("query")) {
+        if (requestUri.startsWith("/topics") && requestUri.endsWith("query")) {
             return true;
         }
         return false;

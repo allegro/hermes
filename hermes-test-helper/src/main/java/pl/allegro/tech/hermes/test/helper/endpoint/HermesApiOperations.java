@@ -5,7 +5,6 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Readiness;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
@@ -14,10 +13,9 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
-import javax.ws.rs.core.Response;
-
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.ACCEPTED;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -29,12 +27,12 @@ import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
-public class HermesAPIOperations {
+public class HermesApiOperations {
 
     protected final HermesEndpoints endpoints;
     protected final Waiter wait;
 
-    public HermesAPIOperations(HermesEndpoints endpoints, Waiter wait) {
+    public HermesApiOperations(HermesEndpoints endpoints, Waiter wait) {
         this.endpoints = endpoints;
         this.wait = wait;
     }
@@ -112,11 +110,13 @@ public class HermesAPIOperations {
     }
 
     public Subscription createSubscription(Topic topic, String subscriptionName, URI endpoint, ContentType contentType) {
-        return createSubscription(topic, subscriptionName, endpoint.toString(), contentType, SubscriptionMode.ANYCAST, Subscription.State.PENDING);
-    }
-
-    public Subscription createBroadcastSubscription(Topic topic, String subscriptionName, String endpoint) {
-        return createSubscription(topic, subscriptionName, endpoint, ContentType.JSON, SubscriptionMode.BROADCAST, Subscription.State.PENDING);
+        return createSubscription(
+                topic,
+                subscriptionName,
+                endpoint.toString(),
+                contentType,
+                SubscriptionMode.ANYCAST,
+                Subscription.State.PENDING);
     }
 
     public Subscription createSubscription(Topic topic,
@@ -137,7 +137,8 @@ public class HermesAPIOperations {
     }
 
     public Subscription createSubscription(Topic topic, Subscription subscription) {
-        if (endpoints.findSubscriptions(topic.getName().getGroupName(), topic.getName().getName(), subscription.isTrackingEnabled()).contains(subscription.getName())) {
+        if (endpoints.findSubscriptions(topic.getName().getGroupName(), topic.getName().getName(), subscription.isTrackingEnabled())
+                .contains(subscription.getName())) {
             return subscription;
         }
 
@@ -145,6 +146,16 @@ public class HermesAPIOperations {
 
         wait.untilSubscriptionCreated(topic, subscription);
         return subscription;
+    }
+
+    public Subscription createBroadcastSubscription(Topic topic, String subscriptionName, String endpoint) {
+        return createSubscription(
+                topic,
+                subscriptionName,
+                endpoint,
+                ContentType.JSON,
+                SubscriptionMode.BROADCAST,
+                Subscription.State.PENDING);
     }
 
     public Topic buildTopic(String group, String topic) {
@@ -192,7 +203,8 @@ public class HermesAPIOperations {
         wait.untilTopicUpdated(reference);
     }
 
-    public void createBatchSubscription(Topic topic, String endpoint, int messageTtl, int messageBackoff, int batchSize, int batchTime, int batchVolume, boolean retryOnClientErrors) {
+    public void createBatchSubscription(Topic topic, String endpoint, int messageTtl, int messageBackoff, int batchSize, int batchTime,
+                                        int batchVolume, boolean retryOnClientErrors) {
         BatchSubscriptionPolicy policy = batchSubscriptionPolicy()
                 .applyDefaults()
                 .withMessageTtl(messageTtl)

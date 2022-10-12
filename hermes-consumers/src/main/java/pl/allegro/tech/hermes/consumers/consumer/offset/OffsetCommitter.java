@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,44 +20,53 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Note on algorithm used to calculate offsets to actually commit.
- * <p>
- * The idea behind this algorithm is that we would like to commit:
- * * maximal offset marked as committed
- * * but not larger than smallest inflight offset (smallest inflight - 1)
- * <p>
- * Important note! This class is Kafka OffsetCommiter, and so it perceives offsets in Kafka way. Most importantly
- * committed offset marks message that is read as first on Consumer restart (offset is inclusive for reading and
- * exclusive for writing).
- * <p>
- * There are two queues which are used by Consumers to report message state:
- * * inflightOffsets: message offsets that are currently being sent (inflight)
- * * committedOffsets: message offsets that are ready to get committed
- * <p>
- * This committer class holds internal state in form of inflightOffsets and maxCommittedOffsets collections.
- * * inlfightOffsets are all offsets that are currently in inflight state.
- * * maxCommittedOffsets are offsets (maximum per partition) of already committed messages that could not yet be committed
- * to kafka due to an existing inflight offset on the same partition
+ * <p>Note on algorithm used to calculate offsets to actually commit.
+ * The idea behind this algorithm is that we would like to commit:</p>
  *
- * <p>
- * In scheduled periods, commit algorithm is run. It has three phases. First one is draining the queues and performing
- * reductions:
- * * drain committedOffsets queue to collection - it needs to be done before draining inflights, so this collection
+ * <ul>
+ * <li>maximal offset marked as committed,</li>
+ * <li>but not larger than smallest inflight offset (smallest inflight - 1).</li>
+ * </ul>
+ *
+ * <p>Important note! This class is Kafka <code>OffsetCommiter</code>, and so it perceives offsets in Kafka way. Most importantly
+ * committed offset marks message that is read as first on Consumer restart (offset is inclusive for reading and
+ * exclusive for writing).</p>
+ *
+ * <p>There are two queues which are used by Consumers to report message state:</p>
+ * <ul>
+ * <li><code>inflightOffsets</code>: message offsets that are currently being sent (inflight),</li>
+ * <li><code>commitedOffsets</code>: message offsets that are ready to get committed.</li>
+ * </ul>
+ *
+ * <p>This committer class holds internal state in form of inflightOffsets and maxCommittedOffsets collections.</p>
+ * <ul>
+ * <li><code>inflightOffsets</code> are all offsets that are currently in inflight state,</li>
+ * <li><code>maxCommittedOffsets</code> are offsets (maximum per partition) of already committed messages that could not yet be committed
+ * to kafka due to an existing inflight offset on the same partition.</li>
+ * </ul>
+ *
+ * <p>In scheduled periods, commit algorithm is run. It has three phases. First one is draining the queues and performing
+ * reductions:</p>
+ * <ul>
+ * <li>drain <code>committedOffsets</code> queue to collection - it needs to be done before draining inflights, so this collection
  * will not grow anymore, resulting in having inflights unmatched by commits; commits are incremented by 1 to match
- * Kafka commit definition
- * * update the maxCommittedOffsets map with largest committed offsets
- * * drain inflightOffsets
- * <p>
- * Second phase is calculating the offsets:
- * <p>
- * * calculate maximal committed offset for each subscription and partition
- * * calculate minimal inflight offset for each subscription and partition
- * <p>
- * Third phase is choosing which offset to commit for each subscription/partition. This is the minimal value of
- * * maximum committed offset
- * * minimum inflight offset
- * <p>
- * This algorithm is very simple, memory efficient, can be performed in single thread and introduces no locks.
+ * Kafka commit definition,</li>
+ * <li>update the <code>maxCommittedOffsets</code> map with largest committed offsets,</li>
+ * <li>drain <code>inflightOffsets</code>.</li>
+ * </ul>
+ *
+ * <p>Second phase is calculating the offsets:</p>
+ * <ul>
+ * <li>calculate maximal committed offset for each subscription and partition,</li>
+ * <li>calculate minimal inflight offset for each subscription and partition.</li>
+ * </ul>
+ *
+ * <p>Third phase is choosing which offset to commit for each subscription/partition. This is the minimal value of:</p>
+ * <ul>
+ * <li>maximum committed offset,</li>
+ * <li>minimum inflight offset.</li>
+ * </ul>
+ * <p>This algorithm is very simple, memory efficient, can be performed in single thread and introduces no locks.</p>
  */
 public class OffsetCommitter implements Runnable {
 

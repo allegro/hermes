@@ -26,7 +26,7 @@ public class KeystoreProperties {
         return password;
     }
 
-    public URI getLocationAsURI() {
+    public URI getLocationAsUri() {
         return URI.create(getLocation());
     }
 }

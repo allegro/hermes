@@ -12,19 +12,18 @@ import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_JSON;
 
 public class MessageContentTypeEnforcer implements AvroEnforcer {
 
-    private final JsonAvroConverter defaultJsonAvroConverter = new JsonAvroConverter();
-    private final AvroEncodedJsonAvroConverter avroEncodedJsonAvroConverter = new AvroEncodedJsonAvroConverter();
-
     private static final String APPLICATION_JSON_WITH_DELIM = APPLICATION_JSON + ";";
     private static final String AVRO_JSON_WITH_DELIM = AVRO_JSON + ";";
     private static final String AVRO_BINARY_WITH_DELIM = AVRO_BINARY + ";";
+    private final JsonAvroConverter defaultJsonAvroConverter = new JsonAvroConverter();
+    private final AvroEncodedJsonAvroConverter avroEncodedJsonAvroConverter = new AvroEncodedJsonAvroConverter();
 
     @Override
     public byte[] enforceAvro(String payloadContentType, byte[] data, Schema schema, Topic topic) {
         String contentTypeLowerCase = StringUtils.lowerCase(payloadContentType);
-        if (isJSON(contentTypeLowerCase)) {
+        if (isJson(contentTypeLowerCase)) {
             return defaultJsonAvroConverter.convertToAvro(data, schema);
-        } else if (isAvroJSON(contentTypeLowerCase)) {
+        } else if (isAvroJson(contentTypeLowerCase)) {
             return avroEncodedJsonAvroConverter.convertToAvro(data, schema);
         } else if (isAvroBinary(contentTypeLowerCase)) {
             return data;
@@ -33,11 +32,11 @@ public class MessageContentTypeEnforcer implements AvroEnforcer {
         }
     }
 
-    private boolean isJSON(String contentType) {
+    private boolean isJson(String contentType) {
         return isOfType(contentType, APPLICATION_JSON, APPLICATION_JSON_WITH_DELIM);
     }
 
-    private boolean isAvroJSON(String contentType) {
+    private boolean isAvroJson(String contentType) {
         return isOfType(contentType, AVRO_JSON, AVRO_JSON_WITH_DELIM);
     }
 

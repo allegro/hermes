@@ -10,7 +10,9 @@ public class UpdateSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
 
     private Subscription backup;
 
-    public UpdateSubscriptionRepositoryCommand(Subscription subscription) {this.subscription = subscription;}
+    public UpdateSubscriptionRepositoryCommand(Subscription subscription) {
+        this.subscription = subscription;
+    }
 
     @Override
     public void backup(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {

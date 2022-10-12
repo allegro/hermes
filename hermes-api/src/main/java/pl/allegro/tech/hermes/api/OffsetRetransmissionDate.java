@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import pl.allegro.tech.hermes.api.jackson.OffsetDateTimeSerializer;
 
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
+import javax.validation.constraints.NotNull;
 
 public class OffsetRetransmissionDate {
 

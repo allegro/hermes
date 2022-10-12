@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import java.util.Collections;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
@@ -9,6 +8,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.metric.Gauges;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +66,30 @@ public class Producers {
         registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-max", "leader-confirms", brokers);
     }
 
+    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
+                                               HermesMetrics metrics,
+                                               String metricName,
+                                               String producerName,
+                                               List<Node> brokers) {
+        for (Node broker : brokers) {
+            registerLatencyPerBrokerGauge(producer, metrics, metricName, producerName, broker);
+        }
+    }
+
+    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
+                                               HermesMetrics metrics,
+                                               String metricName,
+                                               String producerName,
+                                               Node node) {
+
+        String gauge = Gauges.JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
+        registerGauge(producer, metrics, gauge,
+                entry -> entry.getKey().group().equals("producer-node-metrics")
+                        && entry.getKey().name().equals(metricName)
+                        && entry.getKey().tags().containsValue("node-" + node.id()));
+
+    }
+
     private void registerCompressionRateGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
         registerProducerGauge(producer, metrics, new MetricName("compression-rate-avg", "producer-metrics", "average compression rate", Collections.emptyMap()), gauge);
     }
@@ -99,37 +123,13 @@ public class Producers {
                 entry -> entry.getKey().group().equals(name.group()) && entry.getKey().name().equals(name.name()));
     }
 
-    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
-                                               HermesMetrics metrics,
-                                               String metricName,
-                                               String producerName,
-                                               List<Node> brokers) {
-        for (Node broker : brokers) {
-            registerLatencyPerBrokerGauge(producer, metrics, metricName, producerName, broker);
-        }
-    }
-
-    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
-                                               HermesMetrics metrics,
-                                               String metricName,
-                                               String producerName,
-                                               Node node) {
-
-        String gauge = Gauges.JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
-        registerGauge(producer, metrics, gauge,
-                entry -> entry.getKey().group().equals("producer-node-metrics")
-                        && entry.getKey().name().equals(metricName)
-                        && entry.getKey().tags().containsValue("node-" + node.id()));
-
-    }
-
     private void registerGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge,
                                Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
         metrics.registerGauge(gauge, () -> {
             Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                     producer.metrics().entrySet().stream().filter(predicate).findFirst();
             double value = first.map(metricNameEntry -> metricNameEntry.getValue().value()).orElse(0.0);
-            return value < 0? 0.0 : value;
+            return value < 0 ? 0.0 : value;
         });
     }
 

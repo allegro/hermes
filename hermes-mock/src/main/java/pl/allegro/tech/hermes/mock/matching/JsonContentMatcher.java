@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.mock.matching;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.matching.MatchResult;
 import com.github.tomakehurst.wiremock.matching.ValueMatcher;
-
 import pl.allegro.tech.hermes.mock.HermesMockHelper;
 
 import java.util.function.Predicate;

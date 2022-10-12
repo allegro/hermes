@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
-public class MultiDCAwareService {
+public class MultiDcAwareService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultiDCAwareService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MultiDcAwareService.class);
 
     private final List<BrokersClusterService> clusters;
     private final Clock clock;
@@ -37,7 +37,7 @@ public class MultiDCAwareService {
     private final Duration offsetsMovedTimeout;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-    public MultiDCAwareService(List<BrokersClusterService> clusters, Clock clock,
+    public MultiDcAwareService(List<BrokersClusterService> clusters, Clock clock,
                                Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.clusters = clusters;
@@ -59,10 +59,14 @@ public class MultiDCAwareService {
                 .readMessageFromPrimary(topic, partition, offset);
     }
 
-    public MultiDCOffsetChangeSummary moveOffset(Topic topic, String subscriptionName, Long timestamp, boolean dryRun, RequestUser requester) {
-        MultiDCOffsetChangeSummary multiDCOffsetChangeSummary = new MultiDCOffsetChangeSummary();
+    public MultiDcOffsetChangeSummary moveOffset(Topic topic,
+                                                 String subscriptionName,
+                                                 Long timestamp,
+                                                 boolean dryRun,
+                                                 RequestUser requester) {
+        MultiDcOffsetChangeSummary multiDcOffsetChangeSummary = new MultiDcOffsetChangeSummary();
 
-        clusters.forEach(cluster -> multiDCOffsetChangeSummary.addPartitionOffsetList(
+        clusters.forEach(cluster -> multiDcOffsetChangeSummary.addPartitionOffsetList(
                 cluster.getClusterName(),
                 cluster.indicateOffsetChange(topic, subscriptionName, timestamp, dryRun)));
 
@@ -71,11 +75,12 @@ public class MultiDCAwareService {
                     topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
             multiDcExecutor.executeByUser(new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())), requester);
             clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
-            logger.info("Successfully moved offsets for retransmission of subscription {}. Requested by user: {}. Retransmission timestamp: {}",
+            logger.info(
+                    "Successfully moved offsets for retransmission of subscription {}. Requested by user: {}. Retransmission timestamp: {}",
                     topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
         }
 
-        return multiDCOffsetChangeSummary;
+        return multiDcOffsetChangeSummary;
     }
 
     public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
@@ -86,11 +91,11 @@ public class MultiDCAwareService {
         return clusters.stream().allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
     }
 
-    public Set<String> listTopicFromAllDC() {
+    public Set<String> listTopicFromAllDc() {
         return clusters.stream()
-            .map(BrokersClusterService::listTopicsFromCluster)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toCollection(HashSet::new));
+                .map(BrokersClusterService::listTopicsFromCluster)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toCollection(HashSet::new));
     }
 
     public void removeTopicByName(String topicName) {
@@ -106,7 +111,8 @@ public class MultiDCAwareService {
 
         while (!areOffsetsMoved(topic, subscriptionName)) {
             if (clock.instant().isAfter(abortAttemptsInstant)) {
-                logger.error("Not all offsets related to hermes subscription {}${} were moved.", topic.getQualifiedName(), subscriptionName);
+                logger.error("Not all offsets related to hermes subscription {}${} were moved.", topic.getQualifiedName(),
+                        subscriptionName);
                 throw new UnableToMoveOffsetsException(topic, subscriptionName);
             }
             logger.debug("Not all offsets related to hermes subscription {} were moved, will retry", topic.getQualifiedName());

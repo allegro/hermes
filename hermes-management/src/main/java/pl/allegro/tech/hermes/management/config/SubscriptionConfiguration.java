@@ -41,7 +41,9 @@ public class SubscriptionConfiguration {
         );
     }
 
-    private List<SubscriberWithAccessToAnyTopic> createListOfSubscribersWithAccessToAnyTopic(SubscriptionProperties subscriptionProperties) {
+    private List<SubscriberWithAccessToAnyTopic> createListOfSubscribersWithAccessToAnyTopic(
+            SubscriptionProperties subscriptionProperties
+    ) {
         return subscriptionProperties.getSubscribersWithAccessToAnyTopic().stream()
                 .map(subscriber -> new SubscriberWithAccessToAnyTopic(
                         subscriber.getOwnerSource(),

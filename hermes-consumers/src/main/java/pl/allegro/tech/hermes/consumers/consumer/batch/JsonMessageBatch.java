@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
-import javax.annotation.concurrent.NotThreadSafe;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.time.Clock;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.concurrent.NotThreadSafe;
 
 import static com.google.common.base.Preconditions.checkState;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
@@ -62,8 +62,12 @@ public class JsonMessageBatch implements MessageBatch {
     @Override
     public void append(byte[] data, MessageMetadata metadata) {
         checkState(!closed, "Batch already closed.");
-        if (!canFit(data)) throw new BufferOverflowException();
-        if (isEmpty()) batchStart = clock.millis();
+        if (!canFit(data)) {
+            throw new BufferOverflowException();
+        }
+        if (isEmpty()) {
+            batchStart = clock.millis();
+        }
 
         byteBuffer.put((byte) (isEmpty() ? '[' : ',')).put(data);
         this.metadata.add(metadata);
@@ -96,7 +100,9 @@ public class JsonMessageBatch implements MessageBatch {
 
     @Override
     public MessageBatch close() {
-        if (!isEmpty()) byteBuffer.put((byte)']');
+        if (!isEmpty()) {
+            byteBuffer.put((byte) ']');
+        }
         int position = byteBuffer.position();
         byteBuffer.position(0);
         byteBuffer.limit(position);
@@ -106,7 +112,9 @@ public class JsonMessageBatch implements MessageBatch {
 
     @Override
     public ByteBuffer getContent() {
-        if (closed) byteBuffer.position(0);
+        if (closed) {
+            byteBuffer.position(0);
+        }
         return byteBuffer;
     }
 
@@ -114,7 +122,8 @@ public class JsonMessageBatch implements MessageBatch {
     public List<SubscriptionPartitionOffset> getPartitionOffsets() {
         return metadata.stream()
                 .map(m -> subscriptionPartitionOffset(this.subscription,
-                        new PartitionOffset(KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()), m.getPartitionAssignmentTerm()))
+                        new PartitionOffset(KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()),
+                        m.getPartitionAssignmentTerm()))
                 .collect(Collectors.toList());
     }
 

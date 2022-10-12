@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 public class RetentionTime {
     private static final TimeUnit DEFAULT_UNIT = TimeUnit.DAYS;

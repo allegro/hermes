@@ -3,14 +3,14 @@ package pl.allegro.tech.hermes.management.domain.consistency
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties
 import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.topic.TopicService
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcAwareService
 import spock.lang.Specification
 
 class KafkaHermesConsistencyServiceSpec extends Specification {
 
     TopicService topicService = Stub()
     KafkaClustersProperties kafkaClustersProperties = Stub()
-    MultiDCAwareService multiDCAwareService = Mock()
+    MultiDcAwareService multiDCAwareService = Mock()
 
     KafkaHermesConsistencyService kafkaHermesConsistencyService =
             new KafkaHermesConsistencyService(topicService, multiDCAwareService, kafkaClustersProperties)
@@ -22,7 +22,7 @@ class KafkaHermesConsistencyServiceSpec extends Specification {
                                          "pl.allegro.test.SecondTopic"]
         kafkaClustersProperties.getDefaultNamespace() >> ""
         kafkaClustersProperties.getNamespaceSeparator() >> "_"
-        multiDCAwareService.listTopicFromAllDC() >> ["pl.allegro.test.FirstTopic_avro",
+        multiDCAwareService.listTopicFromAllDc() >> ["pl.allegro.test.FirstTopic_avro",
                                                      "pl.allegro.test.SecondTopic"]
 
         when:
@@ -38,7 +38,7 @@ class KafkaHermesConsistencyServiceSpec extends Specification {
                                                     "pl.allegro.test.SecondTopic"]
         kafkaClustersProperties.getDefaultNamespace() >> "namespace"
         kafkaClustersProperties.getNamespaceSeparator() >> "_"
-        multiDCAwareService.listTopicFromAllDC() >> ["namespace_pl.allegro.test.FirstTopic_avro",
+        multiDCAwareService.listTopicFromAllDc() >> ["namespace_pl.allegro.test.FirstTopic_avro",
                                                      "namespace_pl.allegro.test.SecondTopic"]
 
         when:
@@ -54,7 +54,7 @@ class KafkaHermesConsistencyServiceSpec extends Specification {
                                                     "pl.allegro.test.SecondTopic"]
         kafkaClustersProperties.getDefaultNamespace() >> "namespace"
         kafkaClustersProperties.getNamespaceSeparator() >> "_"
-        multiDCAwareService.listTopicFromAllDC() >> ["namespace_pl.allegro.test.FirstTopic_avro",
+        multiDCAwareService.listTopicFromAllDc() >> ["namespace_pl.allegro.test.FirstTopic_avro",
                                                      "namespace_pl.allegro.test.SecondTopic",
                                                      "__consumer_offsets"]
 
@@ -70,7 +70,7 @@ class KafkaHermesConsistencyServiceSpec extends Specification {
         topicService.listQualifiedTopicNames() >> [ "pl.allegro.test.FirstTopic"]
         kafkaClustersProperties.getDefaultNamespace() >> ""
         kafkaClustersProperties.getNamespaceSeparator() >> "_"
-        multiDCAwareService.listTopicFromAllDC() >> ["pl.allegro.test.FirstTopic_avro",
+        multiDCAwareService.listTopicFromAllDc() >> ["pl.allegro.test.FirstTopic_avro",
                                                      "pl.allegro.test.SecondTopic"]
 
         when:

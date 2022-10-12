@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcOffsetChangeSummary;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
@@ -20,7 +20,6 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import static java.util.stream.Collectors.summingLong;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
@@ -86,7 +85,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(OK);
-        MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
+        MultiDcOffsetChangeSummary summary = response.readEntity(MultiDcOffsetChangeSummary.class);
 
         assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset())
                 .isEqualTo(2);
@@ -130,7 +129,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(OK);
-        MultiDCOffsetChangeSummary summary = response.readEntity(MultiDCOffsetChangeSummary.class);
+        MultiDcOffsetChangeSummary summary = response.readEntity(MultiDcOffsetChangeSummary.class);
         PartitionOffsetsPerKafkaTopic offsets = PartitionOffsetsPerKafkaTopic.from(
                 summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME)
         );

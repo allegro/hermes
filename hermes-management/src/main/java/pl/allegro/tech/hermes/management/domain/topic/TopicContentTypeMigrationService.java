@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.management.domain.topic;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +8,14 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcAwareService;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class TopicContentTypeMigrationService {
@@ -27,15 +27,15 @@ public class TopicContentTypeMigrationService {
     private static final Duration INTERVAL_BETWEEN_ASSIGNMENTS_COMPLETED_CHECK = Duration.ofMillis(500);
 
     private final SubscriptionRepository subscriptionRepository;
-    private final MultiDCAwareService multiDCAwareService;
+    private final MultiDcAwareService multiDcAwareService;
     private final Clock clock;
 
     @Autowired
     public TopicContentTypeMigrationService(SubscriptionRepository subscriptionRepository,
-                                            MultiDCAwareService multiDCAwareService,
+                                            MultiDcAwareService multiDcAwareService,
                                             Clock clock) {
         this.subscriptionRepository = subscriptionRepository;
-        this.multiDCAwareService = multiDCAwareService;
+        this.multiDcAwareService = multiDcAwareService;
         this.clock = clock;
     }
 
@@ -59,13 +59,13 @@ public class TopicContentTypeMigrationService {
     }
 
     private void notifySingleSubscription(Topic topic, Instant beforeMigrationInstant, String subscriptionName, RequestUser requester) {
-        multiDCAwareService.moveOffset(topic, subscriptionName, beforeMigrationInstant.toEpochMilli(), false, requester);
+        multiDcAwareService.moveOffset(topic, subscriptionName, beforeMigrationInstant.toEpochMilli(), false, requester);
     }
 
     private void waitUntilOffsetsAvailableOnAllKafkaTopics(Topic topic, Duration offsetsAvailableTimeout) {
         Instant abortAttemptsInstant = clock.instant().plus(offsetsAvailableTimeout);
 
-        while (!multiDCAwareService.areOffsetsAvailableOnAllKafkaTopics(topic)) {
+        while (!multiDcAwareService.areOffsetsAvailableOnAllKafkaTopics(topic)) {
             if (clock.instant().isAfter(abortAttemptsInstant)) {
                 throw new OffsetsNotAvailableException(topic);
             }
@@ -85,7 +85,7 @@ public class TopicContentTypeMigrationService {
     private boolean allSubscriptionsHaveConsumersAssigned(Topic topic) {
         List<Subscription> notSuspendedSubscriptions = notSuspendedSubscriptionsForTopic(topic)
                 .collect(Collectors.toList());
-        return multiDCAwareService.allSubscriptionsHaveConsumersAssigned(topic, notSuspendedSubscriptions);
+        return multiDcAwareService.allSubscriptionsHaveConsumersAssigned(topic, notSuspendedSubscriptions);
     }
 
     private Stream<Subscription> notSuspendedSubscriptionsForTopic(Topic topic) {

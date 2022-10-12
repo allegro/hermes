@@ -18,9 +18,11 @@ import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcOffsetChangeSummary;
 
+import java.util.List;
+import java.util.Optional;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -37,8 +39,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -50,15 +50,15 @@ public class SubscriptionsEndpoint {
 
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
-    private final MultiDCAwareService multiDCAwareService;
+    private final MultiDcAwareService multiDcAwareService;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
-                                 MultiDCAwareService multiDCAwareService) {
+                                 MultiDcAwareService multiDcAwareService) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
-        this.multiDCAwareService = multiDCAwareService;
+        this.multiDcAwareService = multiDcAwareService;
     }
 
     @GET
@@ -68,9 +68,9 @@ public class SubscriptionsEndpoint {
             @PathParam("topicName") String qualifiedTopicName,
             @DefaultValue("false") @QueryParam("tracked") boolean tracked) {
 
-        return tracked ?
-                subscriptionService.listTrackedSubscriptionNames(fromQualifiedName(qualifiedTopicName)) :
-                subscriptionService.listSubscriptionNames(fromQualifiedName(qualifiedTopicName));
+        return tracked
+                ? subscriptionService.listTrackedSubscriptionNames(fromQualifiedName(qualifiedTopicName))
+                : subscriptionService.listSubscriptionNames(fromQualifiedName(qualifiedTopicName));
     }
 
     @POST
@@ -154,7 +154,8 @@ public class SubscriptionsEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/metrics/persistent")
-    @ApiOperation(value = "Get persistent subscription metrics", response = PersistentSubscriptionMetrics.class, httpMethod = HttpMethod.GET)
+    @ApiOperation(
+            value = "Get persistent subscription metrics", response = PersistentSubscriptionMetrics.class, httpMethod = HttpMethod.GET)
     public PersistentSubscriptionMetrics getPersistentMetrics(@PathParam("topicName") String qualifiedTopicName,
                                                               @PathParam("subscriptionName") String subscriptionName) {
         return subscriptionService.getPersistentSubscriptionMetrics(fromQualifiedName(qualifiedTopicName), subscriptionName);
@@ -232,7 +233,7 @@ public class SubscriptionsEndpoint {
                                @Valid OffsetRetransmissionDate offsetRetransmissionDate,
                                @Context ContainerRequestContext requestContext) {
 
-        MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
+        MultiDcOffsetChangeSummary summary = multiDcAwareService.moveOffset(
                 topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 subscriptionName,
                 offsetRetransmissionDate.getRetransmissionDate().toInstant().toEpochMilli(),
@@ -261,7 +262,7 @@ public class SubscriptionsEndpoint {
     public List<ConsumerGroup> describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
                                                       @PathParam("subscriptionName") String subscriptionName) {
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
-        return multiDCAwareService.describeConsumerGroups(topic, subscriptionName);
+        return multiDcAwareService.describeConsumerGroups(topic, subscriptionName);
     }
 
     private Response responseStatus(Response.Status responseStatus) {

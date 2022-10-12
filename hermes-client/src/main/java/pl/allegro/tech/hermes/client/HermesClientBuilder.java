@@ -44,7 +44,7 @@ public class HermesClientBuilder {
         return hermesClient;
     }
 
-    public HermesClientBuilder withURI(URI uri) {
+    public HermesClientBuilder withUri(URI uri) {
         this.uri = uri;
         return this;
     }

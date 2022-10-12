@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.test.helper.concurrent;
 
-import javax.annotation.Nonnull;
-
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -10,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.annotation.Nonnull;
 
 class ScheduledTask<T> implements ScheduledFuture<T> {
 

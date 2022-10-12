@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MultiDCOffsetChangeSummary {
+public class MultiDcOffsetChangeSummary {
 
     private Map<String, List<PartitionOffset>> partitionOffsetListPerBrokerName = new HashMap<>();
 
-    public MultiDCOffsetChangeSummary() {
+    public MultiDcOffsetChangeSummary() {
     }
 
     @JsonAnySetter

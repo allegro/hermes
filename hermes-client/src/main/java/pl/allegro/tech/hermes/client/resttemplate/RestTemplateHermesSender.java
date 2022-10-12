@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.client.restTemplate;
+package pl.allegro.tech.hermes.client.resttemplate;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +29,12 @@ public class RestTemplateHermesSender implements HermesSender {
     @Override
     public CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
         CompletableFuture<HermesResponse> future = new CompletableFuture<>();
-        template.postForEntity(uri, new HttpEntity<>(message.getBody(), new LinkedMultiValueMap<String, String>() {{
-            message.consumeHeaders(this::add);
-        }}), String.class)
-                .addCallback(new ListenableFutureCallback<ResponseEntity>() {
+        template.postForEntity(uri, new HttpEntity<>(message.getBody(), new LinkedMultiValueMap<String, String>() {
+                    {
+                        message.consumeHeaders(this::add);
+                    }
+                }), String.class)
+                .addCallback(new ListenableFutureCallback<ResponseEntity<?>>() {
                     @Override
                     public void onSuccess(ResponseEntity response) {
                         future.complete(fromRestTemplateResponse(message, response));
@@ -50,7 +52,7 @@ public class RestTemplateHermesSender implements HermesSender {
         return future;
     }
 
-    private HermesResponse fromRestTemplateResponse(HermesMessage message, ResponseEntity response) {
+    private HermesResponse fromRestTemplateResponse(HermesMessage message, ResponseEntity<?> response) {
         return hermesResponse(message)
                 .withHttpStatus(response.getStatusCode().value())
                 .withBody(response.toString())

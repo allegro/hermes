@@ -35,7 +35,7 @@ import pl.allegro.tech.hermes.management.domain.topic.commands.TouchTopicReposit
 import pl.allegro.tech.hermes.management.domain.topic.commands.UpdateTopicRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcAwareService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -64,7 +64,7 @@ public class TopicService {
     private final SchemaService schemaService;
 
     private final TopicMetricsRepository metricRepository;
-    private final MultiDCAwareService multiDCAwareService;
+    private final MultiDcAwareService multiDcAwareService;
     private final TopicBlacklistService topicBlacklistService;
     private final TopicValidator topicValidator;
     private final TopicContentTypeMigrationService topicContentTypeMigrationService;
@@ -80,7 +80,7 @@ public class TopicService {
                     .build());
 
     @Autowired
-    public TopicService(MultiDCAwareService multiDCAwareService,
+    public TopicService(MultiDcAwareService multiDcAwareService,
                         TopicRepository topicRepository,
                         GroupService groupService,
                         TopicProperties topicProperties,
@@ -93,7 +93,7 @@ public class TopicService {
                         RepositoryManager repositoryManager,
                         TopicOwnerCache topicOwnerCache,
                         SubscriptionRemover subscriptionRemover) {
-        this.multiDCAwareService = multiDCAwareService;
+        this.multiDcAwareService = multiDcAwareService;
         this.topicRepository = topicRepository;
         this.groupService = groupService;
         this.topicProperties = topicProperties;
@@ -160,14 +160,16 @@ public class TopicService {
         if (!retrieved.equals(modified)) {
             Instant beforeMigrationInstant = clock.instant();
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
-                multiDCAwareService.manageTopic(brokerTopicManagement ->
+                multiDcAwareService.manageTopic(brokerTopicManagement ->
                         brokerTopicManagement.updateTopic(modified)
                 );
             }
             multiDcExecutor.executeByUser(new UpdateTopicRepositoryCommand(modified), modifiedBy);
 
             if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
-                logger.info("Waiting until all subscriptions have consumers assigned during topic {} content type migration...", topicName.qualifiedName());
+                logger.info(
+                        "Waiting until all subscriptions have consumers assigned during topic {} content type migration...",
+                        topicName.qualifiedName());
                 topicContentTypeMigrationService.waitUntilAllSubscriptionsHasConsumersAssigned(modified,
                         Duration.ofSeconds(topicProperties.getSubscriptionsAssignmentsCompletedTimeoutSeconds()));
                 logger.info("Notifying subscriptions' consumers about changes in topic {} content type...", topicName.qualifiedName());
@@ -206,16 +208,16 @@ public class TopicService {
                 .collect(toList());
     }
 
-    public List<Topic> listTopics(String groupName) {
-        return topicRepository.listTopics(groupName);
-    }
-
     public List<String> listQualifiedTopicNames() {
         return groupService.listGroupNames().stream()
                 .map(this::listQualifiedTopicNames)
                 .flatMap(List::stream)
                 .sorted()
                 .collect(toList());
+    }
+
+    public List<Topic> listTopics(String groupName) {
+        return topicRepository.listTopics(groupName);
     }
 
     public Topic getTopicDetails(TopicName topicName) {
@@ -238,7 +240,7 @@ public class TopicService {
     }
 
     public String fetchSingleMessageFromPrimary(String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
-        return multiDCAwareService.readMessageFromPrimary(brokersClusterName, getTopicDetails(topicName), partition, offset);
+        return multiDcAwareService.readMessageFromPrimary(brokersClusterName, getTopicDetails(topicName), partition, offset);
     }
 
     public List<String> listTrackedTopicNames() {
@@ -288,7 +290,9 @@ public class TopicService {
 
         if (idx >= 0 && idx < result.size()) {
             return Optional.of(result.get(idx));
-        } else return Optional.empty();
+        } else {
+            return Optional.empty();
+        }
     }
 
     public List<MessageTextPreview> previewText(TopicName topicName) {
@@ -335,7 +339,7 @@ public class TopicService {
     private void createTopic(Topic topic, RequestUser createdBy, CreatorRights creatorRights) {
         topicValidator.ensureCreatedTopicIsValid(topic, createdBy, creatorRights);
 
-        if (!multiDCAwareService.topicExists(topic)) {
+        if (!multiDcAwareService.topicExists(topic)) {
             createTopicInBrokers(topic, createdBy);
             auditor.objectCreated(createdBy.getUsername(), topic);
             topicOwnerCache.onCreatedTopic(topic);
@@ -348,7 +352,7 @@ public class TopicService {
 
     private void createTopicInBrokers(Topic topic, RequestUser createdBy) {
         try {
-            multiDCAwareService.manageTopic(brokerTopicManagement ->
+            multiDcAwareService.manageTopic(brokerTopicManagement ->
                     brokerTopicManagement.createTopic(topic)
             );
         } catch (Exception exception) {
@@ -369,7 +373,7 @@ public class TopicService {
 
     private void removeTopic(Topic topic, RequestUser removedBy) {
         multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), removedBy);
-        multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
+        multiDcAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
         auditor.objectRemoved(removedBy.getUsername(), topic);
         topicOwnerCache.onRemovedTopic(topic);
     }

@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
-import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
+import pl.allegro.tech.hermes.client.resttemplate.RestTemplateHermesSender;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.net.URI;
@@ -38,7 +38,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishUsingJerseyClient() {
         // given
-        HermesClient client = hermesClient(new JerseyHermesSender(newClient())).withURI(topicURI).build();
+        HermesClient client = hermesClient(new JerseyHermesSender(newClient())).withUri(topicURI).build();
 
         // when & then
         runTestSuiteForHermesClient(client);
@@ -47,7 +47,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishUsingRestTemplate() {
         // given
-        HermesClient client = hermesClient(new RestTemplateHermesSender(new AsyncRestTemplate())).withURI(topicURI).build();
+        HermesClient client = hermesClient(new RestTemplateHermesSender(new AsyncRestTemplate())).withUri(topicURI).build();
 
         // when & then
         runTestSuiteForHermesClient(client);
@@ -56,7 +56,7 @@ public class HermesClientPublishingTest extends IntegrationTest {
     @Test
     public void shouldPublishUsingOkHttpClient() {
         // given
-        HermesClient client = hermesClient(new OkHttpHermesSender(new OkHttpClient())).withURI(topicURI).build();
+        HermesClient client = hermesClient(new OkHttpHermesSender(new OkHttpClient())).withUri(topicURI).build();
 
         // when & then
         runTestSuiteForHermesClient(client);

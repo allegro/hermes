@@ -49,8 +49,12 @@ class ConsumerMaxRates {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ConsumerMaxRates that = (ConsumerMaxRates) o;
         return Objects.equals(maxRates, that.maxRates);
     }

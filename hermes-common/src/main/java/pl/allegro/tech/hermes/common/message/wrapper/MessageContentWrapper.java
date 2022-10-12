@@ -12,7 +12,12 @@ public interface MessageContentWrapper {
 
     UnwrappedMessageContent unwrapJson(byte[] data);
 
-    byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata);
+    byte[] wrapAvro(byte[] data,
+                    String id,
+                    long timestamp,
+                    Topic topic,
+                    CompiledSchema<Schema> schema,
+                    Map<String, String> externalMetadata);
 
     byte[] wrapJson(byte[] data, String id, long timestamp, Map<String, String> externalMetadata);
 }

@@ -121,7 +121,7 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
     }
 
     public void start() throws Exception {
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
         adminCache.start();
         adminCache.addCallback(this);

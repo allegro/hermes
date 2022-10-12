@@ -66,7 +66,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @BeforeMethod
     public void initializeAlways() {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
-        client = hermesClient(new JerseyHermesSender(newClient())).withURI(create("http://localhost:" + FRONTEND_PORT)).build();
+        client = hermesClient(new JerseyHermesSender(newClient())).withUri(create("http://localhost:" + FRONTEND_PORT)).build();
         graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
     }
 

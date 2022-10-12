@@ -1,25 +1,23 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 
+import pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-import pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator;
-
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.AND;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.EQ;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.GREATER_THAN;
-import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.LIKE;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.IN;
+import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.LIKE;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.LOWER_THAN;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.NE;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.NOT;
 import static pl.allegro.tech.hermes.management.infrastructure.query.parser.Operator.OR;
 
-
 public class MatcherFactories {
 
-    private final static Map<Operator, MatcherFactory> FACTORIES = new EnumMap<>(Operator.class);
+    private static final Map<Operator, MatcherFactory> FACTORIES = new EnumMap<>(Operator.class);
 
     static {
         registerFactories();
@@ -35,12 +33,12 @@ public class MatcherFactories {
         }
     }
 
-    public static MatcherFactory defaultMatcher() {
-        return getMatcherFactory(EQ);
-    }
-
     private static MatcherFactory getMatcherFactory(Operator operator) {
         return FACTORIES.get(operator);
+    }
+
+    public static MatcherFactory defaultMatcher() {
+        return getMatcherFactory(EQ);
     }
 
     private static void registerFactories() {

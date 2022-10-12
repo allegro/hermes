@@ -16,7 +16,9 @@ public interface Message {
 
     String getPartitionKey();
 
-    default <T> Optional<CompiledSchema<T>> getCompiledSchema() { return Optional.empty(); }
+    default <T> Optional<CompiledSchema<T>> getCompiledSchema() {
+        return Optional.empty();
+    }
 
     default <T> T getSchema() {
         return this.<T>getCompiledSchema().get().getSchema();

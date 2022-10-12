@@ -44,7 +44,8 @@ public class KafkaClustersProperties {
                 .stream()
                 .filter(cluster -> cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No properties for datacenter: " + datacenterNameProvider.getDatacenterName() +" defined."));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No properties for datacenter: " + datacenterNameProvider.getDatacenterName() + " defined."));
     }
 }
 

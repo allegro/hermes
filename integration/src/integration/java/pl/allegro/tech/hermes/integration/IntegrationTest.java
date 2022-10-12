@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.AuditEventEndpoint;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesApiOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 
@@ -28,7 +28,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
 
     protected HermesPublisher publisher;
 
-    protected HermesAPIOperations operations;
+    protected HermesApiOperations operations;
 
     protected Waiter wait;
 
@@ -46,7 +46,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
                         SECONDARY_KAFKA_CLUSTER_NAME, kafkaClusterTwo.getBootstrapServersForExternalClients()
                 ));
         this.wait = new Waiter(management, services().zookeeper(), brokerOperations, PRIMARY_KAFKA_CLUSTER_NAME, KAFKA_NAMESPACE);
-        this.operations = new HermesAPIOperations(management, wait);
+        this.operations = new HermesApiOperations(management, wait);
         this.auditEvents = new AuditEventEndpoint(SharedServices.services().auditEventMock());
     }
 

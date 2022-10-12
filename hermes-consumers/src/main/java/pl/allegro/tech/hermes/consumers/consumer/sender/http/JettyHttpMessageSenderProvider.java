@@ -68,14 +68,23 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     public MessageSender create(Subscription subscription) {
         EndpointAddress endpoint = subscription.getEndpoint();
         EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
-        ResolvableEndpointAddress resolvableEndpoint = new ResolvableEndpointAddress(endpoint,
-                endpointAddressResolver, endpointAddressResolverMetadata);
-        HttpRequestFactory requestFactory = requestFactoryProvider.provideRequestFactory(subscription, getHttpClient(subscription), metadataAppender);
+        ResolvableEndpointAddress resolvableEndpoint =
+                new ResolvableEndpointAddress(endpoint, endpointAddressResolver, endpointAddressResolverMetadata);
+        HttpRequestFactory requestFactory =
+                requestFactoryProvider.provideRequestFactory(subscription, getHttpClient(subscription), metadataAppender);
 
         if (subscription.getMode() == SubscriptionMode.BROADCAST) {
-            return new JettyBroadCastMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
+            return new JettyBroadCastMessageSender(
+                    requestFactory,
+                    resolvableEndpoint,
+                    getHttpRequestHeadersProvider(subscription),
+                    sendingResultHandlers);
         } else {
-            return new JettyMessageSender(requestFactory, resolvableEndpoint, getHttpRequestHeadersProvider(subscription), sendingResultHandlers);
+            return new JettyMessageSender(
+                    requestFactory,
+                    resolvableEndpoint,
+                    getHttpRequestHeadersProvider(subscription),
+                    sendingResultHandlers);
         }
     }
 

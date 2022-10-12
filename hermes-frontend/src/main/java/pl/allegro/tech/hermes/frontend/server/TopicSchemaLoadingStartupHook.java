@@ -49,7 +49,7 @@ public class TopicSchemaLoadingStartupHook {
     }
 
     public void run() {
-        if(isTopicSchemaLoadingStartupHookEnabled) {
+        if (isTopicSchemaLoadingStartupHookEnabled) {
             long start = System.currentTimeMillis();
             logger.info("Loading topic schemas");
             List<Topic> topics = getAvroTopics();

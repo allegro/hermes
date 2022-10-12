@@ -7,6 +7,9 @@ import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.consistency.DcConsistencyService;
 import pl.allegro.tech.hermes.management.domain.consistency.KafkaHermesConsistencyService;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -17,9 +20,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -31,7 +31,7 @@ public class ConsistencyEndpoint {
     private final KafkaHermesConsistencyService kafkaHermesConsistencyService;
 
     public ConsistencyEndpoint(DcConsistencyService dcConsistencyService,
-        KafkaHermesConsistencyService kafkaHermesConsistencyService) {
+                               KafkaHermesConsistencyService kafkaHermesConsistencyService) {
         this.dcConsistencyService = dcConsistencyService;
         this.kafkaHermesConsistencyService = kafkaHermesConsistencyService;
     }
@@ -42,7 +42,8 @@ public class ConsistencyEndpoint {
     public Response listInconsistentGroups(@QueryParam("groupNames") List<String> groupNames) {
         List<InconsistentGroup> inconsistentGroups = dcConsistencyService.listInconsistentGroups(new HashSet<>(groupNames));
         return Response.ok()
-                .entity(new GenericEntity<List<InconsistentGroup>>(inconsistentGroups){})
+                .entity(new GenericEntity<List<InconsistentGroup>>(inconsistentGroups) {
+                })
                 .build();
     }
 
@@ -51,8 +52,9 @@ public class ConsistencyEndpoint {
     @Path("/inconsistencies/topics")
     public Response listInconsistentTopics() {
         return Response
-            .ok(new GenericEntity<Set<String>>(kafkaHermesConsistencyService.listInconsistentTopics()){})
-            .build();
+                .ok(new GenericEntity<Set<String>>(kafkaHermesConsistencyService.listInconsistentTopics()) {
+                })
+                .build();
     }
 
     @DELETE
@@ -69,7 +71,8 @@ public class ConsistencyEndpoint {
     public Response listAllGroups() {
         Set<String> groupNames = dcConsistencyService.listAllGroupNames();
         return Response.ok()
-                .entity(new GenericEntity<Set<String>>(groupNames){})
+                .entity(new GenericEntity<Set<String>>(groupNames) {
+                })
                 .build();
     }
 }

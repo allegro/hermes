@@ -4,8 +4,7 @@ import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEven
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.MutablePropertySources;
 
-
-public abstract class ApplicationEnvironmentPreparedEventListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent>{
+public abstract class ApplicationEnvironmentPreparedEventListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
     protected abstract void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event);
 

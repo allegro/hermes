@@ -22,14 +22,13 @@ public class Trackers {
     public SendingTracker get(Subscription subscription) {
         switch (subscription.getTrackingMode()) {
             case TRACK_ALL:
-                return  sendingMessageTracker;
+                return sendingMessageTracker;
             case TRACK_DISCARDED_ONLY:
-                return  discardedSendingTracker;
-            case TRACKING_OFF:
+                return discardedSendingTracker;
+            default:
                 return noOperationDeliveryTracker;
-        }
 
-        return noOperationDeliveryTracker;
+        }
     }
 
     public void close() {
