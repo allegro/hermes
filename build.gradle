@@ -75,7 +75,7 @@ allprojects {
             spring_web        : '5.1.5.RELEASE',
             failsafe          : '2.3.1',
             junit_jupiter     : '5.8.2',
-            testcontainers    : '1.15.3',
+            testcontainers    : '1.17.3',
             spring            : '2.4.2',
             assertj           : '3.22.0'
     ]

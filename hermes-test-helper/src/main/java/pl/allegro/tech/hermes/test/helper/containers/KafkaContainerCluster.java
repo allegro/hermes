@@ -26,13 +26,12 @@ import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.
 import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.readFileFromClasspath;
 
 public class KafkaContainerCluster implements Startable {
-    private static final String CONFLUENT_PLATFORM_VERSION = "6.1.0";
     private static final DockerImageName ZOOKEEPER_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-zookeeper")
-            .withTag(CONFLUENT_PLATFORM_VERSION);
+            .withTag(ImageTags.confluentImagesTag());
     private static final DockerImageName KAFKA_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka")
-            .withTag(CONFLUENT_PLATFORM_VERSION);
-    private static final DockerImageName TOXIPROXY_IMAGE_NAME = DockerImageName.parse("shopify/toxiproxy")
-            .withTag("2.1.0");
+            .withTag(ImageTags.confluentImagesTag());
+    private static final DockerImageName TOXIPROXY_IMAGE_NAME = DockerImageName.parse("ghcr.io/shopify/toxiproxy")
+            .withTag("2.4.0");
 
     private static final Duration CLUSTER_START_TIMEOUT = Duration.ofMinutes(360);
     private static final String ZOOKEEPER_NETWORK_ALIAS = "zookeeper";

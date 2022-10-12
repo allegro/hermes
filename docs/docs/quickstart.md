@@ -62,6 +62,22 @@ To start hermes frontend, management and consumers we can use the following comm
 
 or use `Run/Debug Configurations` in IntelliJ
 
+### Testing 
+
+#### Unit tests
+
+`./gradlew check`
+
+#### Integration tests
+
+`./gradlew integrationTest`
+
+Optionally `confluentImagesTag` parameter can be provided to run tests with specified versions of
+Kafka, ZooKeeper and SchemaRegistry. E.g. to run tests with images dedicated for arm64:
+
+`./gradlew integrationTest -PconfluentImagesTag=7.2.2.arm64`
+
+
 ## Creating group and topic
 
 Now you're ready to create a **topic** for publishing messages.
