@@ -178,6 +178,13 @@ subprojects {
         }
     }
 
+    tasks.withType(Checkstyle) {
+        reports {
+            xml.required = true
+            html.required = false
+        }
+    }
+
     checkstyle {
         toolVersion '10.3.4'
     }
