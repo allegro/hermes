@@ -8,6 +8,7 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageTransformers;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ class GooglePubSubClientsPool {
     private final ExecutorProvider publishingExecutorProvider;
     private final RetrySettings retrySettings;
     private final BatchingSettings batchingSettings;
-    private final GooglePubSubMessages pubSubMessages;
+    private final GooglePubSubMessageTransformers pubSubMessageTransformers;
     private final Map<GooglePubSubSenderTarget, GooglePubSubClient> clients = new HashMap<>();
     private final Map<GooglePubSubSenderTarget, Integer> counters = new HashMap<>();
 
@@ -30,13 +31,13 @@ class GooglePubSubClientsPool {
                             ExecutorProvider publishingExecutorProvider,
                             RetrySettings retrySettings,
                             BatchingSettings batchingSettings,
-                            GooglePubSubMessages pubSubMessages,
+                            GooglePubSubMessageTransformers pubSubMessageTransformers,
                             TransportChannelProvider transportChannelProvider) {
         this.credentialsProvider = credentialsProvider;
         this.publishingExecutorProvider = publishingExecutorProvider;
         this.retrySettings = retrySettings;
         this.batchingSettings = batchingSettings;
-        this.pubSubMessages = pubSubMessages;
+        this.pubSubMessageTransformers = pubSubMessageTransformers;
         this.transportChannelProvider = transportChannelProvider;
     }
 
@@ -84,6 +85,6 @@ class GooglePubSubClientsPool {
         } else {
             publisher = builder.setChannelProvider(transportChannelProvider).build();
         }
-        return new GooglePubSubClient(publisher, pubSubMessages);
+        return new GooglePubSubClient(publisher, pubSubMessageTransformers.createMessageTransformer(resolvedTarget));
     }
 }

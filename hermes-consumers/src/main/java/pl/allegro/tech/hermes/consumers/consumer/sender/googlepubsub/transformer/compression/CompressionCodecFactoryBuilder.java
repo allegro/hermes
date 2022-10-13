@@ -1,24 +1,30 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.CompressionCodecFactory.SupportedCodec;
 import java.util.Optional;
 
 public class CompressionCodecFactoryBuilder {
-    private Optional<SupportedCodec> codec;
+    private CompressionCodec codec;
     private CompressionCodecFactory.CompressionLevel compressionLevel;
 
     private static final Logger logger = LoggerFactory.getLogger(CompressionCodecFactoryBuilder.class);
+
+
+    public CompressionCodecFactoryBuilder withCodec(CompressionCodec codec) {
+        this.codec = codec;
+        return this;
+    }
 
     public CompressionCodecFactoryBuilder fromCodecName(String codecName) {
         try {
             this.codec = Optional.ofNullable(codecName)
                     .map(String::toUpperCase)
-                    .map(SupportedCodec::valueOf);
+                    .map(CompressionCodec::valueOf)
+                    .orElse(CompressionCodec.EMPTY);
         } catch (IllegalArgumentException ex) {
             logger.warn("Unsupported codec name: {}, turning compression off.", codecName);
-            this.codec = Optional.empty();
+            this.codec = CompressionCodec.EMPTY;
         }
         return this;
     }
@@ -37,14 +43,14 @@ public class CompressionCodecFactoryBuilder {
     }
 
     public Optional<CompressionCodecFactory> build() {
-        return this.codec.map(this::getCodecFactory);
+        return Optional.ofNullable(getCodecFactory(codec));
     }
 
-    private CompressionCodecFactory getCodecFactory(SupportedCodec codec) {
+    private CompressionCodecFactory getCodecFactory(CompressionCodec codec) {
         switch (codec) {
             case DEFLATE: return new CompressionCodecFactory.DeflateCodecFactory(codec.name(), this.compressionLevel.getLevelId());
             case BZIP2: return new CompressionCodecFactory.Bzip2CodecFactory(codec.name());
-            case ZSTD: return new CompressionCodecFactory.ZstandardCodecFactory(codec.name(), this.compressionLevel.getLevelId());
+            case ZSTANDARD: return new CompressionCodecFactory.ZstandardCodecFactory(codec.name(), this.compressionLevel.getLevelId());
             default: return null;
         }
     }

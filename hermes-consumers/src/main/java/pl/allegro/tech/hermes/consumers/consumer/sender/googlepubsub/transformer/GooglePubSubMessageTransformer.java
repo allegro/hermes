@@ -1,15 +1,15 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer;
 
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
-public class GooglePubSubMessages {
+public class GooglePubSubMessageTransformer {
 
     private final MetadataAppender<PubsubMessage> metadataAppender;
 
-    public GooglePubSubMessages(MetadataAppender<PubsubMessage> metadataAppender) {
+    public GooglePubSubMessageTransformer(MetadataAppender<PubsubMessage> metadataAppender) {
         this.metadataAppender = metadataAppender;
     }
 

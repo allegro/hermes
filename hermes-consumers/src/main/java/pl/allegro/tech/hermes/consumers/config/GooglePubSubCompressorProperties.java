@@ -7,9 +7,7 @@ public class GooglePubSubCompressorProperties {
 
     private Boolean enabled = false;
 
-    private String codecName = "bzip2";
-
-    private String compressionLevel = "medium";
+    private String compressionLevel = "high";
 
     private Long compressionThresholdBytes = 400L;
 
@@ -19,14 +17,6 @@ public class GooglePubSubCompressorProperties {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public String getCodecName() {
-        return codecName;
-    }
-
-    public void setCodecName(String codecName) {
-        this.codecName = codecName;
     }
 
     public String getCompressionLevel() {

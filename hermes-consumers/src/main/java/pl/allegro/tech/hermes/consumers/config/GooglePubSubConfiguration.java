@@ -12,9 +12,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.threeten.bp.Duration;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.*;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.*;
 
 import javax.inject.Named;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -30,24 +30,9 @@ public class GooglePubSubConfiguration {
     }
 
     @Bean
-    public GooglePubSubMessages pubSubMessages(GooglePubSubMetadataAppender googlePubSubMetadataAppender,
-                                               GooglePubSubCompressorProperties compressorProperties) {
-        GooglePubSubMessages googlePubSubMessages = new GooglePubSubMessages(googlePubSubMetadataAppender);
-        if (compressorProperties.isEnabled()) {
-            Optional<CompressionCodecFactory> codecFactory = CompressionCodecFactory.builder()
-                    .fromCodecName(compressorProperties.getCodecName())
-                    .withCompressionLevel(compressorProperties.getCompressionLevel())
-                    .build();
-
-            return codecFactory.map(cf -> (GooglePubSubMessages) new GooglePubSubMessagesWithCompression(
-                    new GooglePubSubMetadataCompressionAppender(compressorProperties.getCodecName()),
-                    new GooglePubSubMessageCompressor(cf),
-                    googlePubSubMessages,
-                    compressorProperties.getCompressionThresholdBytes())
-            ).orElse(googlePubSubMessages);
-        } else {
-            return googlePubSubMessages;
-        }
+    public GooglePubSubMessageTransformers pubSubMessageTransformers(GooglePubSubMetadataAppender googlePubSubMetadataAppender,
+                                                                     GooglePubSubCompressorProperties compressorProperties) {
+        return new GooglePubSubMessageTransformers(googlePubSubMetadataAppender, compressorProperties);
     }
 
     @Bean

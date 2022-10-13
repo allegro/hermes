@@ -1,16 +1,10 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression;
 
 import org.apache.avro.file.*;
 import org.apache.avro.file.Codec;
 
 
 public abstract class CompressionCodecFactory {
-
-    public enum SupportedCodec {
-        DEFLATE,
-        BZIP2,
-        ZSTD
-    }
 
     public enum CompressionLevel {
         LOW(1),

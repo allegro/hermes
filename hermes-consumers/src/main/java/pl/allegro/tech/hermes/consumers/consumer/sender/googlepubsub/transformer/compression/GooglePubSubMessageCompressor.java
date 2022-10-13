@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression;
 
 import org.apache.avro.file.Codec;
 
