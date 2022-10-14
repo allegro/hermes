@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.slf4j.Logger;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
@@ -17,9 +18,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesManagementInstance {
+    private static final Logger logger = getLogger(HermesManagementInstance.class);
     private final HermesAPIOperations operations;
 
     private HermesManagementInstance(HermesAPIOperations operations) {
@@ -89,6 +92,7 @@ public class HermesManagementInstance {
         }
 
         private void waitUntilStructureInZookeeperIsCreated(CuratorFramework zookeeper) {
+            logger.info("Waiting for zookeeper structure to be created");
             waitAtMost(adjust(120), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath("/hermes/groups") != null);
         }
 
