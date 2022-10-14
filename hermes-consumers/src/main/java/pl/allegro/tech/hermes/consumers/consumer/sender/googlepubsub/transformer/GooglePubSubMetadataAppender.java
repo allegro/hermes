@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.lang3.tuple.Pair;
 import pl.allegro.tech.hermes.api.Header;
+import pl.allegro.tech.hermes.consumers.config.GooglePubSubSenderProperties;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
@@ -23,13 +24,7 @@ public class GooglePubSubMetadataAppender implements MetadataAppender<PubsubMess
 
     @Override
     public PubsubMessage append(PubsubMessage target, Message message) {
-
-        final Map<String, String> additionalHeaders = message.getAdditionalHeaders().stream().collect(
-                Collectors.toMap(Header::getName, Header::getValue));
-
         return PubsubMessage.newBuilder(target)
-                .putAllAttributes(additionalHeaders)
-                .putAllAttributes(message.getExternalMetadata())
                 .putAllAttributes(createMessageAttributes(message))
                 .build();
     }

@@ -6,7 +6,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
     private static final DockerImageName DEFAULT_ZOOKEEPER_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-zookeeper")
-            .withTag("6.1.0");
+            .withTag(ImageTags.confluentImagesTag());
     private static final int DEFAULT_ZOOKEEPER_PORT = 2181;
 
     private final int clientPort;
@@ -17,6 +17,7 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
 
     public ZookeeperContainer(DockerImageName zooKeeperImage, int clientPort) {
         super(zooKeeperImage);
+        withExposedPorts(clientPort);
         withEnv("ZOOKEEPER_CLIENT_PORT", String.valueOf(clientPort));
         this.clientPort = clientPort;
     }

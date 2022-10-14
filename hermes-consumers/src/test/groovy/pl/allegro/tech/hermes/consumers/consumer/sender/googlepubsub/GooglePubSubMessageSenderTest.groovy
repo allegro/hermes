@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub
 
-
 import com.google.api.core.SettableApiFuture
 import com.google.api.gax.grpc.GrpcStatusCode
 import com.google.api.gax.rpc.ApiException

@@ -74,6 +74,11 @@ task integrationTest(type: Test) {
     if (project.hasProperty('tests.timeout.multiplier')) {
         args += "-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"
     }
+
+    if (project.hasProperty("confluentImagesTag")) {
+        args += "-DconfluentImagesTag=${project.property("confluentImagesTag")}"
+    }
+
     jvmArgs = args
     minHeapSize "2000m"
     maxHeapSize "3500m"
