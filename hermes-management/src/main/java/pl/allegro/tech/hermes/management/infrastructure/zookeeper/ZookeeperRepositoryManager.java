@@ -47,7 +47,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final ZookeeperPaths paths;
     private final ZookeeperClientManager clientManager;
     private ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
-    private Integer adminReaperInterval;
 
     private final Map<Class<?>, Object> repositoryByType = new HashMap<>();
 
@@ -69,14 +68,12 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
                                       DatacenterNameProvider datacenterNameProvider,
                                       ObjectMapper mapper,
                                       ZookeeperPaths paths,
-                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory,
-                                      Integer adminReaperInterval) {
+                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
         this.datacenterNameProvider = datacenterNameProvider;
         this.mapper = mapper;
         this.paths = paths;
         this.clientManager = clientManager;
         this.zookeeperGroupRepositoryFactory = zookeeperGroupRepositoryFactory;
-        this.adminReaperInterval = adminReaperInterval;
         initRepositoryTypeMap();
     }
 
@@ -101,13 +98,11 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             WorkloadConstraintsRepository workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(
                     zookeeper, mapper, paths);
             UndeliveredMessageLog undeliveredMessageLog = new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
-            AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(),
-                    mapper, adminReaperInterval);
+            AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(), mapper);
 
             ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
             ZookeeperOfflineRetransmissionRepository offlineRetransmissionRepository =
                     new ZookeeperOfflineRetransmissionRepository(zookeeper, mapper, paths);
-            adminTool.start();
 
             groupRepositoriesByDc.put(dcName, groupRepository);
             credentialsRepositoriesByDc.put(dcName, credentialsRepository);
