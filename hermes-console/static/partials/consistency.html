@@ -33,13 +33,13 @@
         <b>{{processedGroupsPercent}}%</b>
     </uib-progressbar>
 
-    <div class="row text-center" ng-if="consistencyChecking.result.inconsistentGroups.length == 0">
+    <div class="row text-center" ng-if="consistencyChecking.result.length == 0">
         <div class="col-md-12">
             <p class="alert alert-success">All groups are consistent.</p>
         </div>
     </div>
 
-    <div class="row container" ng-if="consistencyChecking.result.inconsistentGroups.length > 0">
+    <div class="row container" ng-if="consistencyChecking.result.length > 0">
         <div class="list-group">
             <div class="list-group-item list-group-item-warning">
                 <div class="form-inline pull-right">
@@ -51,7 +51,7 @@
                 <h4>Inconsistent groups</h4>
             </div>
             <a class="list-group-item"
-               ng-repeat="group in consistencyChecking.result.inconsistentGroups | filter:search:strict | orderBy:'name'"
+               ng-repeat="group in consistencyChecking.result | filter:search:strict | orderBy:'name'"
                ng-href="#/consistency/{{group.name}}">
                 <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
                 <strong>{{group.name}}</strong>
@@ -62,7 +62,7 @@
         </div>
     </div>
 
-    <div class="row container" ng-if="topicsConsistencyChecking.result.inconsistentTopics.length > 0" >
+    <div class="row container" ng-if="topicsConsistencyChecking.result.length > 0" >
         <div class="list-group">
             <div class="list-group-item list-group-item-warning">
                 <div class="form-inline pull-right">
@@ -74,7 +74,7 @@
                 <h4>Topics existing on kafka cluster but not present in hermes</h4>
             </div>
             <div class="list-group-item clearfix"
-                 ng-repeat="topic in topicsConsistencyChecking.result.inconsistentTopics | filter:search:strict | orderBy">
+                 ng-repeat="topic in topicsConsistencyChecking.result | filter:search:strict | orderBy">
                 <small>{{$index + 1}}</small>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
                 <strong>{{topic}}</strong>
                 <div class="pull-right">
