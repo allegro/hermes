@@ -6,21 +6,18 @@ repo_url: https://github.com/allegro/hermes
 
 docs_dir: docs/docs
 theme: 
-  name: null
-  custom_dir: docs/theme
-
-extra_css:
-    - styles.css
+    name: material
+    palette:
+        primary: white
+    logo: 'img/hermes-mini.png'
+    features:
+        - navigation.sections
 
 markdown_extensions:
     - toc:
         anchorlink: true
 
-extra:
-    version: '2.1.5'
-    brand_image: 'img/hermes-mini.png'
-
-pages:
+nav:
   - Home: 'index.md'
   - 'Quickstart': 'quickstart.md'
   - Overview:
