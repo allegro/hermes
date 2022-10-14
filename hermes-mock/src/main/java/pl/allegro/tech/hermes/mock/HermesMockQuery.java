@@ -5,18 +5,23 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import com.github.tomakehurst.wiremock.matching.ValueMatcher;
 import com.google.common.collect.Lists;
 
 import static java.util.stream.Collectors.toList;
 
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.mock.exchange.Request;
+import pl.allegro.tech.hermes.mock.matching.ContentMatchers;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class HermesMockQuery {
+
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String AVRO_BINARY = "avro/binary";
     private final HermesMockHelper hermesMockHelper;
 
     public HermesMockQuery(HermesMockHelper hermesMockHelper) {
@@ -122,5 +127,15 @@ public class HermesMockQuery {
     public <T> Optional<T> lastAvroMessageAs(String topicName, Schema schema, Class<T> clazz) {
         return lastRequest(topicName)
                 .map(req -> hermesMockHelper.deserializeAvro(req, schema, clazz));
+    }
+
+    public <T> void resetReceivedAvroRequests(String topicName, Schema schema, Class<T> clazz, Predicate<T> predicate) {
+        ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher = ContentMatchers.matchAvro(hermesMockHelper, predicate, schema, clazz);
+        hermesMockHelper.resetReceivedRequests(topicName, AVRO_BINARY, valueMatcher);
+    }
+
+    public <T> void resetReceivedJsonRequests(String topicName, Class<T> clazz, Predicate<T> predicate) {
+        ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher = ContentMatchers.matchJson(hermesMockHelper, predicate, clazz);
+        hermesMockHelper.resetReceivedRequests(topicName, APPLICATION_JSON, valueMatcher);
     }
 }

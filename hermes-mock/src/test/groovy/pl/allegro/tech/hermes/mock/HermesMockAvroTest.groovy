@@ -288,6 +288,33 @@ class HermesMockAvroTest extends Specification {
             1 == hermes.query().countMatchingAvroMessages(topicName, schema, TestMessage, filter)
     }
 
+    def "should reset received requests with Avro messages"() {
+        given:
+        def topicName = "my-test-avro-topic"
+        hermes.define().avroTopic(topicName)
+        publish(topicName, new TestMessage("test-key", "test-value"))
+
+        when:
+        hermes.query().resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "test-key"})
+
+        then:
+        hermes.query().countAvroMessages(topicName) == 0
+    }
+
+    def "should not reset received requests with Avro messages when predicate does not match"() {
+        given:
+        def topicName = "my-test-avro-topic"
+        hermes.define().avroTopic(topicName)
+        publish(topicName, new TestMessage("test-key", "test-value"))
+        def requestCountBeforeRest = hermes.query().countAvroMessages(topicName)
+
+        when:
+        hermes.query().resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "different-test-key"})
+
+        then:
+        hermes.query().countAvroMessages(topicName) == requestCountBeforeRest
+    }
+
     def asAvro(TestMessage message) {
         return jsonAvroConverter.convertToAvro(message.asJson().bytes, schema)
     }

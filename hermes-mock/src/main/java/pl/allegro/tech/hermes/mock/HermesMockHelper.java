@@ -4,9 +4,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.http.RequestMethod.POST;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.http.RequestMethod;
+import com.github.tomakehurst.wiremock.matching.RequestPattern;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.ValueMatcher;
@@ -94,6 +97,15 @@ public class HermesMockHelper {
                         .withFixedDelay(toIntMilliseconds(response.getFixedDelay()))
                 )
         );
+    }
+
+    public void resetReceivedRequests(String topicName, String contentType, ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher) {
+        RequestPattern requestPattern = RequestPatternBuilder
+                .newRequestPattern(POST, urlEqualTo("/topics/" + topicName))
+                .withHeader("Content-Type", startsWith(contentType))
+                .andMatching(valueMatcher)
+                .build();
+        wireMockServer.removeServeEventsMatching(requestPattern);
     }
 
     private static Integer toIntMilliseconds(Duration duration) {

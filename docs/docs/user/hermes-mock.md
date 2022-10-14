@@ -82,6 +82,10 @@ as a specific type.
 - `<T> Optional<T> lastAvroMessageAs(String topicName, Schema schema, Class<T> clazz)` - get last received Avro message
  on topic as a specific type.
 
+- `<T> void resetReceivedAvroRequests(String topicName, Schema schema, Class<T> clazz, Predicate<T> predicate)` - resets requests received by Avro topic matching given predicate
+
+- `<T> void resetReceivedJsonRequests(String topicName, Class<T> clazz, Predicate<T> predicate)` - resets requests received by Json topic matching given predicate
+
 ## Creating
 
 To start using Hermes mock, add it as a dependency:
