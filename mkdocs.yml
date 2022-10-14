@@ -16,6 +16,8 @@ theme:
 markdown_extensions:
     - toc:
         anchorlink: true
+    - attr_list
+    - md_in_html
 
 nav:
   - Home: 'index.md'
