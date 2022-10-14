@@ -2,23 +2,25 @@ version: '3'
 
 services:
   zk:
-    image: confluentinc/cp-zookeeper:5.1.0
+    image: "confluentinc/cp-zookeeper:${CONFLUENT_IMAGES_TAG}"
     ports:
       - "2181:2181"
+    user: root
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
     volumes:
       - zk_secrets:/etc/zookeeper/secrets
-      - zk_data:/var/lib/zookeeper/data
-      - zk_log:/var/lib/zookeeper/log
+      - zk_data:/var/lib/zookeeper/data/version-2
+      - zk_log:/var/lib/zookeeper/log/version-2
 
   kafka:
-    image: confluentinc/cp-kafka:5.1.0
+    image: "confluentinc/cp-kafka:${CONFLUENT_IMAGES_TAG}"
     ports:
       - '9092:9092'
       - '29092:29092'
     depends_on:
       - zk
+    user: root
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zk:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
@@ -68,14 +70,15 @@ services:
       - graphite
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.1.0
+    image: "confluentinc/cp-schema-registry:${CONFLUENT_IMAGES_TAG}"
     depends_on:
       - zk
       - kafka
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zk:2181
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zk:2181 # CONFLUENT_IMAGES_TAG < 7.x.x
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092" # CONFLUENT_IMAGES_TAG >= 7.x.x
     ports:
       - "8081:8081"
 
