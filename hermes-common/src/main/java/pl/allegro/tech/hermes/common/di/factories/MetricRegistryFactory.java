@@ -15,9 +15,7 @@ import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.MetricRegistryWithExponentiallyDecayingReservoir;
 import pl.allegro.tech.hermes.common.metric.MetricRegistryWithHdrHistogramReservoir;
-import pl.allegro.tech.hermes.common.metric.MetricsReservoirType;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
@@ -52,7 +50,7 @@ public class MetricRegistryFactory {
     }
 
     public MetricRegistry provide() {
-        MetricRegistry registry = createMetricsRegistry();
+        MetricRegistry registry = new MetricRegistryWithHdrHistogramReservoir();
 
         if (metricRegistryParameters.isGraphiteReporterEnabled()) {
             String prefix = Joiner.on(".").join(
@@ -86,17 +84,6 @@ public class MetricRegistryFactory {
         registerJvmMetrics(registry);
 
         return registry;
-    }
-
-    private MetricRegistry createMetricsRegistry() {
-        String metricsReservoirType = metricRegistryParameters.getReservoirType().toUpperCase();
-        switch (MetricsReservoirType.valueOf(metricsReservoirType)) {
-            case HDR:
-                return new MetricRegistryWithHdrHistogramReservoir();
-            case EXPONENTIALLY_DECAYING:
-            default:
-                return new MetricRegistryWithExponentiallyDecayingReservoir();
-        }
     }
 
     private void registerJvmMetrics(MetricRegistry metricRegistry) {

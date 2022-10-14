@@ -10,8 +10,6 @@ public interface MetricRegistryParameters {
 
     boolean isConsoleReporterEnabled();
 
-    String getReservoirType();
-
     String getDisabledAttributes();
 
     Duration getReportPeriod();
