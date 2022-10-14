@@ -1,14 +1,10 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer
 
 import com.google.protobuf.ByteString
 import com.google.pubsub.v1.PubsubMessage
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression.CompressionCodec
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression.CompressionCodecFactory
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression.GooglePubSubMessageCompressor
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageTransformer
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageCompressionTransformer
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMetadataAppender
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMetadataCompressionAppender
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -50,13 +46,6 @@ class GooglePubSubMessageCompressionTransformerTest extends Specification {
         assert attributes["ts"] == msg.getPublishingTimestamp().toString()
         assert attributes["id"] == msg.getId()
 
-        msg.getExternalMetadata().forEach({k, v ->
-            assert attributes[k] == v
-        })
-        msg.getAdditionalHeaders().forEach({
-            assert attributes[it.name] == it.value
-        })
-
         where:
         codec                      | header | compressionLevel
         CompressionCodec.DEFLATE   | 'df'   | 'high'
@@ -64,7 +53,7 @@ class GooglePubSubMessageCompressionTransformerTest extends Specification {
         CompressionCodec.ZSTANDARD | 'zstd' | 'low'
     }
 
-    def 'should switch to raw processor on compression error'() {
+    def 'should switch to raw transformer when compression error'() {
         given:
         def rawPubSubMessages = new GooglePubSubMessageTransformer(new GooglePubSubMetadataAppender())
 
@@ -94,12 +83,5 @@ class GooglePubSubMessageCompressionTransformerTest extends Specification {
         assert attributes["tn"] == msg.getTopic()
         assert attributes["ts"] == msg.getPublishingTimestamp().toString()
         assert attributes["id"] == msg.getId()
-
-        msg.getExternalMetadata().forEach({k, v ->
-            assert attributes[k] == v
-        })
-        msg.getAdditionalHeaders().forEach({
-            assert attributes[it.name] == it.value
-        })
     }
 }

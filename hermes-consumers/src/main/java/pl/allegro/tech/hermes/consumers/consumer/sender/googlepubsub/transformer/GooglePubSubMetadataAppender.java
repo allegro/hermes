@@ -3,15 +3,12 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transforme
 import com.google.common.collect.ImmutableMap;
 import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.lang3.tuple.Pair;
-import pl.allegro.tech.hermes.api.Header;
-import pl.allegro.tech.hermes.consumers.config.GooglePubSubSenderProperties;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class GooglePubSubMetadataAppender implements MetadataAppender<PubsubMessage> {
 
