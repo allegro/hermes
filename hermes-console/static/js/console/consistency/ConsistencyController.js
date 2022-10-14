@@ -42,7 +42,7 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
                 consistencyRepository.removeTopic(topicName);
             })
             .then(function () {
-                let newArray = $scope.topicsConsistencyChecking.result.inconsistentTopics.filter(
+                let newArray = $scope.topicsConsistencyChecking.result.filter(
                     function (element) {
                         return element !== topicName;
                     });
@@ -107,24 +107,20 @@ consistency.controller('ConsistencyController', ['$scope', '$state', 'toaster', 
             );
         }
 
-        function setGroupsState(inconsistentGroups) {
-            $scope.consistencyChecking.state = inconsistentGroups;
+        function setGroupsState(inconsistentGroupsState) {
+            $scope.consistencyChecking.state = inconsistentGroupsState;
         }
 
-        function setTopicsState(inconsistentGroups) {
-            $scope.topicsConsistencyChecking.state = inconsistentGroups;
+        function setTopicsState(inconsistentGroupsState) {
+            $scope.topicsConsistencyChecking.state = inconsistentGroupsState;
         }
 
         function setInconsistentGroups(inconsistentGroups) {
-            $scope.consistencyChecking.result = {
-                inconsistentGroups: inconsistentGroups
-            };
+            $scope.consistencyChecking.result = inconsistentGroups
         }
 
         function setInconsistentTopics(inconsistentTopics) {
-            $scope.topicsConsistencyChecking.result = {
-                inconsistentTopics: inconsistentTopics
-            };
+            $scope.topicsConsistencyChecking.result =inconsistentTopics
         }
 
         function partition(items, size) {
@@ -156,8 +152,7 @@ consistency.controller('TopicConsistencyController', ['$scope', '$stateParams', 
         $scope.groupName = $stateParams.groupName;
         $scope.topicName = $stateParams.topicName;
         $scope.topic = consistencyRepository.getTopic($scope.groupName, $scope.topicName);
-
         if (!$scope.topic) {
-            $state.go('consistency');
+            $state.go('groupConsistency',{groupName: $scope.groupName});
         }
     }]);
