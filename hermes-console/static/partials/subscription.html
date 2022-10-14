@@ -230,6 +230,21 @@
                     </form>
                 </div>
             </div>
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Skip messages</h3>
+                </div>
+                <div class="panel-body">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <button class="btn btn-danger" ng-click="skipMessages()" ng-disabled="userWithoutAccess || subscription.state !== 'ACTIVE'"></span> Skip messages</button>
+                            <span class="loading-in-panel" ng-show="skipMessagesLoading">
+                                <i class=" fa fa-circle-o-notch fa-spin fa-2x"></i>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
