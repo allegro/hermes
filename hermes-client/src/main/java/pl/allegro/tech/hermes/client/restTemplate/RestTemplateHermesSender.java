@@ -18,6 +18,10 @@ import java.util.concurrent.CompletableFuture;
 import static java.util.stream.Collectors.toMap;
 import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
+/**
+ * @deprecated as of Hermes 2.1.6, in favor of {@link pl.allegro.tech.hermes.client.webclient.WebClientHermesSender}
+ */
+@Deprecated
 public class RestTemplateHermesSender implements HermesSender {
 
     private final AsyncRestTemplate template;

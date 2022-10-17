@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration.management;
 import java.time.Instant;
 import java.util.List;
 import javax.ws.rs.core.Response;
+
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -78,8 +79,8 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
         assertThat(response).containsMessages(
-                "sourceTopic may not be empty",
-                "targetTopic may not be empty",
+                "sourceTopic must not be empty",
+                "targetTopic must not be empty",
                 "startTimestamp must not be null",
                 "endTimestamp must not be null");
     }
