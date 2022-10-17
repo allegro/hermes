@@ -15,6 +15,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
+import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL;
+import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER;
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 
@@ -38,14 +40,14 @@ public class Producers {
     }
 
     public void registerGauges(HermesMetrics metrics) {
-        registerTotalBytesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES);
-        registerTotalBytesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES);
-        registerCompressionRateGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_COMPRESSION_RATE);
-        registerCompressionRateGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_COMPRESSION_RATE);
-        registerFailedBatchesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_FAILED_BATCHES_TOTAL);
-        registerFailedBatchesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_FAILED_BATCHES_TOTAL);
+        registerTotalBytesGauge(leaderConfirms, metrics, Gauges.ACK_LEADER_BUFFER_TOTAL_BYTES);
+        registerAvailableBytesGauge(leaderConfirms, metrics, Gauges.ACK_LEADER_BUFFER_AVAILABLE_BYTES);
+        registerTotalBytesGauge(everyoneConfirms, metrics, Gauges.ACK_ALL_BUFFER_TOTAL_BYTES);
+        registerAvailableBytesGauge(everyoneConfirms, metrics, Gauges.ACK_ALL_BUFFER_AVAILABLE_BYTES);
+        registerCompressionRateGauge(leaderConfirms, metrics, Gauges.ACK_LEADER_COMPRESSION_RATE);
+        registerCompressionRateGauge(everyoneConfirms, metrics, Gauges.ACK_ALL_COMPRESSION_RATE);
+        registerFailedBatchesGauge(everyoneConfirms, metrics, Gauges.ACK_ALL_FAILED_BATCHES_TOTAL);
+        registerFailedBatchesGauge(leaderConfirms, metrics, Gauges.ACK_LEADER_FAILED_BATCHES_TOTAL);
     }
 
     public void maybeRegisterNodeMetricsGauges(HermesMetrics metrics) {
@@ -56,10 +58,10 @@ public class Producers {
 
     private void registerLatencyPerBrokerGauge(HermesMetrics metrics) {
         List<Node> brokers = ProducerBrokerNodeReader.read(leaderConfirms);
-        registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-avg", "everyone-confirms", brokers);
-        registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-avg", "leader-confirms", brokers);
-        registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-max", "everyone-confirms", brokers);
-        registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-max", "leader-confirms", brokers);
+        registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-avg", ACK_ALL, brokers);
+        registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-avg", ACK_LEADER, brokers);
+        registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-max", ACK_ALL, brokers);
+        registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-max", ACK_LEADER, brokers);
     }
 
     private void registerCompressionRateGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
@@ -103,7 +105,7 @@ public class Producers {
                                                String producerName,
                                                Node node) {
 
-        String gauge = Gauges.JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
+        String gauge = Gauges.KAFKA_PRODUCER + "." + producerName + "." + metricName + "." + escapeDots(node.host());
         registerGauge(producer, metrics, gauge,
                 entry -> entry.getKey().group().equals("producer-node-metrics")
                         && entry.getKey().name().equals(metricName)

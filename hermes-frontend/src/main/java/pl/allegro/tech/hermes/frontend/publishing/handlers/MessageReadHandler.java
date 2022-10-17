@@ -6,7 +6,6 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
@@ -80,21 +79,15 @@ class MessageReadHandler implements HttpHandler {
         ByteArrayOutputStream messageContent = new ByteArrayOutputStream();
         MessageState state = attachment.getMessageState();
 
-        StartedTimersPair readingTimers = attachment.getCachedTopic().startRequestReadTimers();
-
         Receiver receiver = exchange.getRequestReceiver();
 
-        attachment.getTimeoutHolder().onTimeout((Void) -> {
-            readingTimers.close();
-            receiver.pause();
-        });
+        attachment.getTimeoutHolder().onTimeout((Void) -> receiver.pause());
 
         if (state.setReading()) {
             receiver.receivePartialBytes(
-                    partialMessageRead(state, messageContent, readingTimers, attachment),
-                    readingError(state, readingTimers, attachment));
+                    partialMessageRead(state, messageContent, attachment),
+                    readingError(state, attachment));
         } else {
-            readingTimers.close();
             messageErrorProcessor.sendAndLog(
                     exchange,
                     attachment.getTopic(),
@@ -103,8 +96,7 @@ class MessageReadHandler implements HttpHandler {
         }
     }
 
-    private Receiver.PartialBytesCallback partialMessageRead(MessageState state, ByteArrayOutputStream messageContent,
-                                                             StartedTimersPair readingTimers, AttachmentContent attachment) {
+    private Receiver.PartialBytesCallback partialMessageRead(MessageState state, ByteArrayOutputStream messageContent, AttachmentContent attachment) {
         return (exchange, message, last) -> {
             if (state.isReadingTimeout()) {
                 endWithoutDefaultResponse(exchange);
@@ -114,7 +106,6 @@ class MessageReadHandler implements HttpHandler {
 
             if (last) {
                 if (state.setFullyRead()) {
-                    readingTimers.close();
                     messageRead(exchange, messageContent.toByteArray(), attachment);
                 } else {
                     endWithoutDefaultResponse(exchange);
@@ -123,10 +114,9 @@ class MessageReadHandler implements HttpHandler {
         };
     }
 
-    private Receiver.ErrorCallback readingError(MessageState state, StartedTimersPair readingTimers, AttachmentContent attachment) {
+    private Receiver.ErrorCallback readingError(MessageState state, AttachmentContent attachment) {
         return (exchange, exception) -> {
             if (state.setReadingError()) {
-                readingTimers.close();
                 attachment.removeTimeout();
                 messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
                         error("Error while reading message. " + getRootCauseMessage(exception), INTERNAL_ERROR), exception);

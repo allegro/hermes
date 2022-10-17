@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.config.LocalMessageStorageProperties;
@@ -69,7 +68,7 @@ public class BackupMessagesLoaderTest {
         tempDir = Files.createTempDir();
 
         when(cachedTopic.getTopic()).thenReturn(topic);
-        when(cachedTopic.startBrokerLatencyTimers()).thenReturn(new StartedTimersPair(new Timer(), new Timer()));
+        when(cachedTopic.startBrokerLatencyTimer()).thenReturn(new Timer().time());
         when(topicsCache.getTopic(topic.getQualifiedName())).thenReturn(Optional.of(cachedTopic));
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
     }
