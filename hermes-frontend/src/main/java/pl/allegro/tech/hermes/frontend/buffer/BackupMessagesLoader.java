@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
+import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
 import java.util.Collections;
 import org.apache.avro.Schema;
@@ -8,7 +9,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
@@ -174,17 +174,17 @@ public class BackupMessagesLoader {
         SchemaId schemaId = SchemaId.valueOf(backupMessage.getSchemaId());
         schemaExistenceEnsurer.ensureSchemaExists(cachedTopic.get().getTopic(), schemaId);
         CompiledSchema<Schema> schema = schemaRepository.getAvroSchema(cachedTopic.get().getTopic(), schemaId);
-        return createAvroMessage(backupMessage, cachedTopic.get(), schema);
+        return createAvroMessage(backupMessage, schema);
     }
 
     private Message createAvroMessageFromVersion(BackupMessage backupMessage, Optional<CachedTopic> cachedTopic) {
         SchemaVersion version = SchemaVersion.valueOf(backupMessage.getSchemaVersion());
         schemaExistenceEnsurer.ensureSchemaExists(cachedTopic.get().getTopic(), version);
         CompiledSchema<Schema> schema = schemaRepository.getAvroSchema(cachedTopic.get().getTopic(), version);
-        return createAvroMessage(backupMessage, cachedTopic.get(), schema);
+        return createAvroMessage(backupMessage, schema);
     }
 
-    private Message createAvroMessage(BackupMessage backupMessage, CachedTopic topic, CompiledSchema<Schema> schema) {
+    private Message createAvroMessage(BackupMessage backupMessage, CompiledSchema<Schema> schema) {
         return new AvroMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), schema, backupMessage.getPartitionKey());
     }
 
@@ -240,11 +240,11 @@ public class BackupMessagesLoader {
     }
 
     private void sendMessage(Message message, CachedTopic cachedTopic) {
-        StartedTimersPair brokerTimers = cachedTopic.startBrokerLatencyTimers();
+        Timer.Context brokerTimer = cachedTopic.startBrokerLatencyTimer();
         brokerMessageProducer.send(message, cachedTopic, new PublishingCallback() {
             @Override
             public void onUnpublished(Message message, Topic topic, Exception exception) {
-                brokerTimers.close();
+                brokerTimer.close();
                 brokerListeners.onError(message, topic, exception);
                 trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "", Collections.emptyMap());
                 toResend.get().add(ImmutablePair.of(message, cachedTopic));
@@ -252,7 +252,7 @@ public class BackupMessagesLoader {
 
             @Override
             public void onPublished(Message message, Topic topic) {
-                brokerTimers.close();
+                brokerTimer.close();
                 cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
                 trackers.get(topic).logPublished(message.getId(), topic.getName(), "", Collections.emptyMap());

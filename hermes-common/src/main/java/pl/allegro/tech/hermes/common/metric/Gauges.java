@@ -6,22 +6,26 @@ import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
 public class Gauges {
 
-    public static final String EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES = "everyone-confirms-buffer-total-bytes",
-            EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES = "everyone-confirms-buffer-available-bytes",
-            EVERYONE_CONFIRMS_COMPRESSION_RATE = "everyone-confirms-compression-rate-avg",
-            EVERYONE_CONFIRMS_FAILED_BATCHES_TOTAL = "everyone-confirms-failed-batches-total",
-            EVERYONE_CONFIRMS_METADATA_AGE = "everyone-confirms-metadata-age",
-            EVERYONE_CONFIRMS_RECORD_QUEUE_TIME_MAX = "everyone-confirms-record-queue-time-max",
-            LEADER_CONFIRMS_FAILED_BATCHES_TOTAL = "leader-confirms-failed-batches-total",
-            LEADER_CONFIRMS_BUFFER_TOTAL_BYTES = "leader-confirms-buffer-total-bytes",
-            LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES = "leader-confirms-buffer-available-bytes",
-            LEADER_CONFIRMS_COMPRESSION_RATE = "leader-confirms-compression-rate-avg",
-            LEADER_CONFIRMS_METADATA_AGE = "leader-confirms-metadata-age",
-            LEADER_CONFIRMS_RECORD_QUEUE_TIME_MAX = "leader-confirms-record-queue-time-max",
+    public static final String KAFKA_PRODUCER = "kafka-producer",
+            ACK_LEADER = "ack-leader",
+            ACK_ALL = "ack-all",
+
+            ACK_ALL_BUFFER_TOTAL_BYTES = KAFKA_PRODUCER + ACK_ALL + "buffer-total-bytes",
+            ACK_ALL_BUFFER_AVAILABLE_BYTES = KAFKA_PRODUCER + ACK_ALL + "buffer-available-bytes",
+                    EVERYONE_CONFIRMS_METADATA_AGE = "everyone-confirms-metadata-age",
+                    EVERYONE_CONFIRMS_RECORD_QUEUE_TIME_MAX = "everyone-confirms-record-queue-time-max",
+            ACK_ALL_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_ALL + "compression-rate-avg",
+            ACK_ALL_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_ALL + "failed-batches-total",
+
+            ACK_LEADER_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_LEADER + "failed-batches-total",
+            ACK_LEADER_BUFFER_TOTAL_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-total-bytes",
+                    LEADER_CONFIRMS_METADATA_AGE = "leader-confirms-metadata-age",
+                    LEADER_CONFIRMS_RECORD_QUEUE_TIME_MAX = "leader-confirms-record-queue-time-max",
+            ACK_LEADER_BUFFER_AVAILABLE_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-available-bytes",
+            ACK_LEADER_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_LEADER + "compression-rate-avg",
 
             BATCH_BUFFER_TOTAL_BYTES = "batch-buffer-total-bytes",
             BATCH_BUFFER_AVAILABLE_BYTES = "batch-buffer-available-bytes",
-            JMX_PREFIX = "jmx",
 
             THREADS = "threads",
             INFLIGHT_REQUESTS = "inflight-requests",

@@ -12,13 +12,8 @@ public class Timers {
 
     public static final String
             ACK_ALL_BROKER_LATENCY = "ack-all.broker-latency",
-            ACK_ALL_BROKER_TOPIC_LATENCY = ACK_ALL_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
 
             ACK_LEADER_BROKER_LATENCY = "ack-leader.broker-latency",
-            ACK_LEADER_BROKER_TOPIC_LATENCY = ACK_LEADER_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
-
-            PARSING_REQUEST = "parsing-request",
-            TOPIC_PARSING_REQUEST = PARSING_REQUEST + "." + GROUP + "." + TOPIC,
 
             ACK_ALL_LATENCY = "ack-all.latency",
             ACK_ALL_TOPIC_LATENCY = ACK_ALL_LATENCY + "." + GROUP + "." + TOPIC,
@@ -26,13 +21,8 @@ public class Timers {
             ACK_LEADER_LATENCY = "ack-leader.latency",
             ACK_LEADER_TOPIC_LATENCY = ACK_LEADER_LATENCY + "." + GROUP + "." + TOPIC,
 
-            MESSAGE_CREATION_LATENCY = "message-creation-latency",
-            MESSAGE_CREATION_TOPIC_LATENCY = MESSAGE_CREATION_LATENCY + "." + TOPIC,
-
             LATENCY = "latency",
             SUBSCRIPTION_LATENCY = LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
-
-            READ_LATENCY = "read-latency",
 
             SCHEMA = "schema." + SCHEMA_REPO_TYPE,
             GET_SCHEMA_LATENCY = SCHEMA + ".get-schema",

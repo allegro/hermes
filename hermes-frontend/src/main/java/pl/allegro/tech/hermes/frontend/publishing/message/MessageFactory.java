@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroInvalidMetadataExceptio
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.common.message.wrapper.WrappingException;
-import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
@@ -61,13 +60,11 @@ public class MessageFactory {
     }
 
     public Message create(HeaderMap headerMap, AttachmentContent attachment) {
-        try (StartedTimersPair startedTimersPair = attachment.getCachedTopic().startMessageCreationTimers()) {
-            return create(
-                    headerMap,
-                    attachment.getTopic(),
-                    attachment.getMessageId(),
-                    attachment.getMessageContent());
-        }
+        return create(
+                headerMap,
+                attachment.getTopic(),
+                attachment.getMessageId(),
+                attachment.getMessageContent());
     }
 
     private Message create(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent) {
@@ -104,14 +101,14 @@ public class MessageFactory {
 
     private CompiledSchema<Schema> getCompiledSchemaBySchemaVersion(HeaderMap headerMap, Topic topic) {
         return extractSchemaVersion(headerMap)
-            .map(version -> schemaRepository.getAvroSchema(topic, version))
-            .orElseGet(() -> schemaRepository.getLatestAvroSchema(topic));
+                .map(version -> schemaRepository.getAvroSchema(topic, version))
+                .orElseGet(() -> schemaRepository.getLatestAvroSchema(topic));
     }
 
     private CompiledSchema<Schema> getCompiledSchema(HeaderMap headerMap, Topic topic) {
         return extractSchemaId(headerMap)
-            .map(id -> schemaRepository.getAvroSchema(topic, id))
-            .orElseGet(() -> getCompiledSchemaBySchemaVersion(headerMap, topic));
+                .map(id -> schemaRepository.getAvroSchema(topic, id))
+                .orElseGet(() -> getCompiledSchemaBySchemaVersion(headerMap, topic));
     }
 
     private AvroMessage createAvroMessage(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent, long timestamp) {
