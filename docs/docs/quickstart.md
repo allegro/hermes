@@ -66,7 +66,7 @@ just comment out the module in `services` section of the `docker-compose.yml` fi
 `./gradlew -p hermes-consumers run`
 
 or use `Run/Debug Configurations` in IntelliJ.
-The `application-local.yaml` configuration in each module is adjusted to work with docker dependencies.
+The `application-local.yaml` configuration in each module is already adjusted to work with docker dependencies.
 
 ### Testing 
 

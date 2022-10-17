@@ -73,8 +73,6 @@ services:
       - zk
       - kafka
       - graphite
-    environment:
-      KAFKA_CLUSTERS_0_BOOTSTRAP_KAFKA_SERVER: kafka:29092
 
   schema-registry:
     image: "confluentinc/cp-schema-registry:${CONFLUENT_IMAGES_TAG}"
