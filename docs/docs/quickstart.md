@@ -55,13 +55,9 @@ image: allegro/hermes-management:hermes-[specific version tag]
 
 ## Development
 
-File docker/docker-compose.development.yml disables deployment of hermes frontend, management, and consumers.
-
-We have to provide an environment (Kafka, ZooKeeper, Graphite, Schema Registry) with command executed in the project directory:
-
-`docker-compose -f docker/docker-compose.yml -f docker/docker-compose.development.yml up`
-
-To start hermes frontend, management and consumers we can use the following commands
+The default `docker-compose` setup will start all hermes modules (consumers, frontend, management), together
+with its dependencies (Kafka, ZooKeeper, Graphite, Schema Registry). To run a specific module with gradle/IntelliJ,
+just comment out the module in `services` section of `docker-compose.yml`, and start the java process locally:
 
 `./gradlew -p hermes-frontend run`
 
@@ -69,7 +65,8 @@ To start hermes frontend, management and consumers we can use the following comm
 
 `./gradlew -p hermes-consumers run`
 
-or use `Run/Debug Configurations` in IntelliJ
+or use `Run/Debug Configurations` in IntelliJ.
+The configuration (`application-local.yaml`) in each module is adjusted to automatically work with docker dependencies. 
 
 ### Testing 
 

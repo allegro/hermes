@@ -1,5 +1,4 @@
-consumer:
-  healthCheckPort: 8070
+frontend:
   zookeeper:
     clusters:
       - datacenter: "dc"
@@ -13,8 +12,6 @@ consumer:
     host: "localhost"
   metrics:
     graphiteReporterEnabled: true
-  workload:
-    consumerPerSubscription: 1
   schema:
     cache:
       refreshAfterWrite: 1m
