@@ -293,6 +293,7 @@ class HermesMockAvroTest extends Specification {
         def topicName = "my-test-avro-topic"
         hermes.define().avroTopic(topicName)
         publish(topicName, new TestMessage("test-key", "test-value"))
+        assert hermes.query().countAvroMessages(topicName) == 1
 
         when:
         hermes.query().resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "test-key"})
@@ -306,13 +307,12 @@ class HermesMockAvroTest extends Specification {
         def topicName = "my-test-avro-topic"
         hermes.define().avroTopic(topicName)
         publish(topicName, new TestMessage("test-key", "test-value"))
-        def requestCountBeforeRest = hermes.query().countAvroMessages(topicName)
 
         when:
         hermes.query().resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "different-test-key"})
 
         then:
-        hermes.query().countAvroMessages(topicName) == requestCountBeforeRest
+        hermes.query().countAvroMessages(topicName) == 1
     }
 
     def asAvro(TestMessage message) {

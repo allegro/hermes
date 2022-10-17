@@ -111,12 +111,13 @@ class HermesMockJsonTest extends Specification {
         def topicName = "my-test-json-topic"
         hermes.define().avroTopic(topicName)
         publishJson(topicName, new TestMessage("test-key", "test-value").asJson())
+        hermes.query().countJsonMessages(topicName, TestMessage) == 1
 
         when:
         hermes.query().resetReceivedJsonRequests(topicName, TestMessage, {it -> it.key == "test-key"})
 
         then:
-        hermes.query().countAvroMessages(topicName) == 0
+        hermes.query().countJsonMessages(topicName, TestMessage) == 0
     }
 
     def "should not reset received requests with JSON messages when predicate does not match"() {
@@ -124,13 +125,12 @@ class HermesMockJsonTest extends Specification {
         def topicName = "my-test-json-topic"
         hermes.define().avroTopic(topicName)
         publishJson(topicName, new TestMessage("test-key", "test-value").asJson())
-        def requestCountBeforeRest = hermes.query().countAvroMessages(topicName)
 
         when:
         hermes.query().resetReceivedJsonRequests(topicName, TestMessage, {it -> it.key == "different-test-key"})
 
         then:
-        hermes.query().countAvroMessages(topicName) == requestCountBeforeRest
+        hermes.query().countJsonMessages(topicName, TestMessage) == 1
     }
 
     private def publishJson(String topic, String message) {
