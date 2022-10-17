@@ -57,7 +57,7 @@ image: allegro/hermes-management:hermes-[specific version tag]
 
 The default `docker-compose` setup will start all hermes modules (consumers, frontend, management), together
 with its dependencies (Kafka, ZooKeeper, Graphite, Schema Registry). To run a specific module with gradle/IntelliJ,
-just comment out the module in `services` section of `docker-compose.yml`, and start the java process locally:
+just comment out the module in `services` section of the `docker-compose.yml` file, and start the java process locally:
 
 `./gradlew -p hermes-frontend run`
 
@@ -66,7 +66,7 @@ just comment out the module in `services` section of `docker-compose.yml`, and s
 `./gradlew -p hermes-consumers run`
 
 or use `Run/Debug Configurations` in IntelliJ.
-The configuration (`application-local.yaml`) in each module is adjusted to automatically work with docker dependencies. 
+The `application-local.yaml` configuration in each module is adjusted to work with docker dependencies.
 
 ### Testing 
 
