@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
-public class MultiDcAwareService {
+public class MultiDCAwareService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultiDcAwareService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MultiDCAwareService.class);
 
     private final List<BrokersClusterService> clusters;
     private final Clock clock;
@@ -37,7 +37,7 @@ public class MultiDcAwareService {
     private final Duration offsetsMovedTimeout;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-    public MultiDcAwareService(List<BrokersClusterService> clusters, Clock clock,
+    public MultiDCAwareService(List<BrokersClusterService> clusters, Clock clock,
                                Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.clusters = clusters;
@@ -59,14 +59,14 @@ public class MultiDcAwareService {
                 .readMessageFromPrimary(topic, partition, offset);
     }
 
-    public MultiDcOffsetChangeSummary moveOffset(Topic topic,
+    public MultiDCOffsetChangeSummary moveOffset(Topic topic,
                                                  String subscriptionName,
                                                  Long timestamp,
                                                  boolean dryRun,
                                                  RequestUser requester) {
-        MultiDcOffsetChangeSummary multiDcOffsetChangeSummary = new MultiDcOffsetChangeSummary();
+        MultiDCOffsetChangeSummary multiDCOffsetChangeSummary = new MultiDCOffsetChangeSummary();
 
-        clusters.forEach(cluster -> multiDcOffsetChangeSummary.addPartitionOffsetList(
+        clusters.forEach(cluster -> multiDCOffsetChangeSummary.addPartitionOffsetList(
                 cluster.getClusterName(),
                 cluster.indicateOffsetChange(topic, subscriptionName, timestamp, dryRun)));
 
@@ -80,7 +80,7 @@ public class MultiDcAwareService {
                     topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
         }
 
-        return multiDcOffsetChangeSummary;
+        return multiDCOffsetChangeSummary;
     }
 
     public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
@@ -91,7 +91,7 @@ public class MultiDcAwareService {
         return clusters.stream().allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
     }
 
-    public Set<String> listTopicFromAllDc() {
+    public Set<String> listTopicFromAllDC() {
         return clusters.stream()
                 .map(BrokersClusterService::listTopicsFromCluster)
                 .flatMap(Collection::stream)

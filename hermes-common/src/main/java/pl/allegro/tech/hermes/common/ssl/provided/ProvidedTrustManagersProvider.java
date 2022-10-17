@@ -20,7 +20,7 @@ public class ProvidedTrustManagersProvider implements TrustManagersProvider, Res
     public TrustManager[] getTrustManagers() throws Exception {
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         KeyStore keyStore = KeyStore.getInstance(keystoreProperties.getFormat());
-        try (InputStream stream = getResourceAsInputStream(keystoreProperties.getLocationAsUri())) {
+        try (InputStream stream = getResourceAsInputStream(keystoreProperties.getLocationAsURI())) {
             keyStore.load(stream, keystoreProperties.getPassword().toCharArray());
             trustManagerFactory.init(keyStore);
         }

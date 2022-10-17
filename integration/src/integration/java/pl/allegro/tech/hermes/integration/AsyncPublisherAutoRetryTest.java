@@ -9,7 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.web.client.AsyncRestTemplate;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesClientBuilder;
-import pl.allegro.tech.hermes.client.resttemplate.RestTemplateHermesSender;
+import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
 import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 import java.net.URI;
@@ -61,7 +61,7 @@ public class AsyncPublisherAutoRetryTest implements EnvironmentAware {
     private HermesClient retryingHermesClient(int retries) {
          return HermesClientBuilder.hermesClient(new RestTemplateHermesSender(new AsyncRestTemplate()))
                 .withRetries(retries)
-                .withUri(URI.create(strip(FRONTEND_URL, "/"))).build();
+                .withURI(URI.create(strip(FRONTEND_URL, "/"))).build();
     }
 
 }

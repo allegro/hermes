@@ -72,11 +72,11 @@ public class HermesClient {
         return uriString + (uriString.endsWith("/") ? "" : "/") + "topics/";
     }
 
-    public CompletableFuture<HermesResponse> publishJson(String topic, byte[] message) {
+    public CompletableFuture<HermesResponse> publishJSON(String topic, byte[] message) {
         return publish(hermesMessage(topic, message).json().build());
     }
 
-    public CompletableFuture<HermesResponse> publishJson(String topic, String message) {
+    public CompletableFuture<HermesResponse> publishJSON(String topic, String message) {
         return publish(hermesMessage(topic, message).json().build());
     }
 

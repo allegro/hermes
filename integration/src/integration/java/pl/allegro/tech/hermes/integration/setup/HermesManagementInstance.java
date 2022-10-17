@@ -7,7 +7,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesApiOperations;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
@@ -20,13 +20,13 @@ import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesManagementInstance {
-    private final HermesApiOperations operations;
+    private final HermesAPIOperations operations;
 
-    private HermesManagementInstance(HermesApiOperations operations) {
+    private HermesManagementInstance(HermesAPIOperations operations) {
         this.operations = operations;
     }
 
-    public HermesApiOperations operations() {
+    public HermesAPIOperations operations() {
         return operations;
     }
 
@@ -82,7 +82,7 @@ public class HermesManagementInstance {
                 List<CuratorFramework> clusters = startSeparateZookeeperClientPerCluster();
                 waitUntilStructureInZookeeperIsCreated(clusters);
                 closeZookeeperClustersConnections(clusters);
-                HermesApiOperations operations = setupOperations(startZookeeperClient());
+                HermesAPIOperations operations = setupOperations(startZookeeperClient());
                 return new HermesManagementInstance(operations);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -134,12 +134,12 @@ public class HermesManagementInstance {
             HermesManagement.main(args.toArray(new String[0]));
         }
 
-        private HermesApiOperations setupOperations(CuratorFramework zookeeper) {
+        private HermesAPIOperations setupOperations(CuratorFramework zookeeper) {
             BrokerOperations brokerOperations = new BrokerOperations(ImmutableMap.of());
             String managementUrl = "http://localhost:" + port + "/";
             HermesEndpoints management = new HermesEndpoints(managementUrl, managementUrl);
             Waiter wait = new Waiter(management, zookeeper, brokerOperations, null, KAFKA_NAMESPACE);
-            return new HermesApiOperations(management, wait);
+            return new HermesAPIOperations(management, wait);
         }
 
         private CuratorFramework startZookeeperClient() {

@@ -21,8 +21,8 @@ public interface MessageSendingResult {
         return new SingleMessageSendingResult(OK.getStatusCode());
     }
 
-    static SingleMessageSendingResult succeededResult(URI requestUri) {
-        return new SingleMessageSendingResult(OK.getStatusCode(), requestUri);
+    static SingleMessageSendingResult succeededResult(URI requestURI) {
+        return new SingleMessageSendingResult(OK.getStatusCode(), requestURI);
     }
 
     static SingleMessageSendingResult failedResult(Throwable cause) {

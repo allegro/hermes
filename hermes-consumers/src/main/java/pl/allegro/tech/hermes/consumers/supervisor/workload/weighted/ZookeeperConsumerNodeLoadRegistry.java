@@ -43,7 +43,7 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
     private final ConsumerNodeLoadEncoder encoder;
     private final ConsumerNodeLoadDecoder decoder;
     private final ScheduledExecutorService executor;
-    private final OperatingSystemMXBean platformMxBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+    private final OperatingSystemMXBean platformMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
 
     private final Set<ZookeeperSubscriptionLoadRecorder> subscriptionLoadRecorders = newSetFromMap(new ConcurrentHashMap<>());
     private volatile long lastReset;
@@ -72,7 +72,7 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
         this.lastReset = clock.millis();
         metrics.registerGauge("consumer-workload.weighted.load.ops", (Gauge<Double>) () -> currentOperationsPerSecond);
         metrics.registerGauge("consumer-workload.weighted.load.cpu-utilization", (Gauge<Double>) () -> cpuUtilization);
-        if (platformMxBean.getProcessCpuLoad() < 0d) {
+        if (platformMXBean.getProcessCpuLoad() < 0d) {
             logger.warn("Process CPU load is not available.");
         }
     }
@@ -104,7 +104,7 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
         long elapsedMillis = now - lastReset;
         long elapsedSeconds = Math.max(MILLISECONDS.toSeconds(elapsedMillis), 1);
         lastReset = now;
-        cpuUtilization = platformMxBean.getProcessCpuLoad();
+        cpuUtilization = platformMXBean.getProcessCpuLoad();
         Map<SubscriptionName, SubscriptionLoad> loadPerSubscription = subscriptionLoadRecorders.stream()
                 .collect(toMap(ZookeeperSubscriptionLoadRecorder::getSubscriptionName, recorder -> recorder.calculate(elapsedSeconds)));
         return new ConsumerNodeLoad(cpuUtilization, loadPerSubscription);

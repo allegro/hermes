@@ -27,12 +27,12 @@ import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
-public class HermesApiOperations {
+public class HermesAPIOperations {
 
     protected final HermesEndpoints endpoints;
     protected final Waiter wait;
 
-    public HermesApiOperations(HermesEndpoints endpoints, Waiter wait) {
+    public HermesAPIOperations(HermesEndpoints endpoints, Waiter wait) {
         this.endpoints = endpoints;
         this.wait = wait;
     }

@@ -62,9 +62,9 @@ public class SingleMessageSendingResult implements MessageSendingResult {
         initializeForStatusCode(statusCode);
     }
 
-    SingleMessageSendingResult(int statusCode, URI requestUri) {
+    SingleMessageSendingResult(int statusCode, URI requestURI) {
         this(statusCode);
-        this.requestUri = Optional.of(requestUri);
+        this.requestUri = Optional.of(requestURI);
     }
 
     SingleMessageSendingResult(int statusCode, long retryAfterMillis) {

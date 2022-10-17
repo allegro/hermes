@@ -65,11 +65,11 @@ public class ReactiveHermesClient {
         return uriString + (uriString.endsWith("/") ? "" : "/") + "topics/";
     }
 
-    public Mono<HermesResponse> publishJson(String topic, byte[] message) {
+    public Mono<HermesResponse> publishJSON(String topic, byte[] message) {
         return publish(hermesMessage(topic, message).json().build());
     }
 
-    public Mono<HermesResponse> publishJson(String topic, String message) {
+    public Mono<HermesResponse> publishJSON(String topic, String message) {
         return publish(hermesMessage(topic, message).json().build());
     }
 

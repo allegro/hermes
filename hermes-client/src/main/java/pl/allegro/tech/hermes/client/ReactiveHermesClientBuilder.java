@@ -46,7 +46,7 @@ public class ReactiveHermesClientBuilder {
         return hermesClient;
     }
 
-    public ReactiveHermesClientBuilder withUri(URI uri) {
+    public ReactiveHermesClientBuilder withURI(URI uri) {
         this.uri = uri;
         return this;
     }

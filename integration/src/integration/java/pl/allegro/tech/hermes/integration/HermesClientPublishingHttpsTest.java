@@ -49,7 +49,7 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
 
         OkHttpHermesSender okHttpHermesSender = new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());
         HermesClient client = hermesClient(okHttpHermesSender)
-                .withUri(URI.create("https://localhost:" + sslPort))
+                .withURI(URI.create("https://localhost:" + sslPort))
                 .build();
 
         try {

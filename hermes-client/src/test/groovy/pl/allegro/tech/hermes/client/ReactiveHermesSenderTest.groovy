@@ -34,7 +34,7 @@ class ReactiveHermesSenderTest extends Specification {
         ReactiveHermesClient client = ReactiveHermesClientBuilder
                 .hermesClient(currentSender)
                 .withDefaultContentType("application/json")
-                .withUri(URI.create("http://localhost:" + service.port()))
+                .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
         service.stubFor(post(urlEqualTo('/topics/topic.test'))
@@ -59,7 +59,7 @@ class ReactiveHermesSenderTest extends Specification {
         ReactiveHermesSender currentSender = sender
         ReactiveHermesClient client = ReactiveHermesClientBuilder
                 .hermesClient(currentSender)
-                .withUri(URI.create("http://localhost:" + service.port()))
+                .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
         service.stubFor(post(urlEqualTo('/topics/topic.test'))
@@ -84,7 +84,7 @@ class ReactiveHermesSenderTest extends Specification {
         ReactiveHermesSender currentSender = sender
         ReactiveHermesClient client = ReactiveHermesClientBuilder
                 .hermesClient(currentSender)
-                .withUri(URI.create("http://localhost:" + service.port()))
+                .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
         service.stubFor(post(urlEqualTo('/topics/topic.test'))
@@ -110,7 +110,7 @@ class ReactiveHermesSenderTest extends Specification {
         ReactiveHermesClient client = ReactiveHermesClientBuilder
                 .hermesClient(currentSender)
                 .withDefaultContentType("application/json")
-                .withUri(URI.create("http://localhost:" + service.port()))
+                .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
         service.stubFor(

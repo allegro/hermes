@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesApiOperations;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesAPIOperations;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -43,7 +43,7 @@ public class MessageBufferLoadingTest extends IntegrationTest {
     private static final int AVERAGE_MESSAGE_SIZE = 600;
 
     private final HermesEndpoints management = new HermesEndpoints(MANAGEMENT_ENDPOINT_URL, CONSUMER_ENDPOINT_URL);
-    private final HermesApiOperations operations = new HermesApiOperations(management, new Waiter(management));
+    private final HermesAPIOperations operations = new HermesAPIOperations(management, new Waiter(management));
 
     private RemoteServiceEndpoint remoteService;
 

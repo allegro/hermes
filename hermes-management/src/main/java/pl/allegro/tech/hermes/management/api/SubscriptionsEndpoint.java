@@ -18,8 +18,8 @@ import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcAwareService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcOffsetChangeSummary;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,15 +50,15 @@ public class SubscriptionsEndpoint {
 
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
-    private final MultiDcAwareService multiDcAwareService;
+    private final MultiDCAwareService multiDCAwareService;
 
     @Autowired
     public SubscriptionsEndpoint(SubscriptionService subscriptionService,
                                  TopicService topicService,
-                                 MultiDcAwareService multiDcAwareService) {
+                                 MultiDCAwareService multiDCAwareService) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
-        this.multiDcAwareService = multiDcAwareService;
+        this.multiDCAwareService = multiDCAwareService;
     }
 
     @GET
@@ -233,7 +233,7 @@ public class SubscriptionsEndpoint {
                                @Valid OffsetRetransmissionDate offsetRetransmissionDate,
                                @Context ContainerRequestContext requestContext) {
 
-        MultiDcOffsetChangeSummary summary = multiDcAwareService.moveOffset(
+        MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
                 topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 subscriptionName,
                 offsetRetransmissionDate.getRetransmissionDate().toInstant().toEpochMilli(),
@@ -262,7 +262,7 @@ public class SubscriptionsEndpoint {
     public List<ConsumerGroup> describeConsumerGroups(@PathParam("topicName") String qualifiedTopicName,
                                                       @PathParam("subscriptionName") String subscriptionName) {
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
-        return multiDcAwareService.describeConsumerGroups(topic, subscriptionName);
+        return multiDCAwareService.describeConsumerGroups(topic, subscriptionName);
     }
 
     private Response responseStatus(Response.Status responseStatus) {

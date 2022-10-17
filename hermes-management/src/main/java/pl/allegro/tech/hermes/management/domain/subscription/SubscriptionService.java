@@ -31,7 +31,7 @@ import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubs
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class SubscriptionService {
     private final SubscriptionValidator subscriptionValidator;
     private final Auditor auditor;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
-    private final MultiDcAwareService multiDcAwareService;
+    private final MultiDCAwareService multiDCAwareService;
     private final RepositoryManager repositoryManager;
     private final long subscriptionHealthCheckTimeoutMillis;
     private final ExecutorService subscriptionHealthCheckExecutorService;
@@ -83,7 +83,7 @@ public class SubscriptionService {
                                SubscriptionValidator subscriptionValidator,
                                Auditor auditor,
                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                               MultiDcAwareService multiDcAwareService,
+                               MultiDCAwareService multiDCAwareService,
                                RepositoryManager repositoryManager,
                                ExecutorService unhealthyGetExecutorService,
                                long unhealthyGetTimeoutMillis,
@@ -97,7 +97,7 @@ public class SubscriptionService {
         this.subscriptionValidator = subscriptionValidator;
         this.auditor = auditor;
         this.multiDcExecutor = multiDcExecutor;
-        this.multiDcAwareService = multiDcAwareService;
+        this.multiDCAwareService = multiDCAwareService;
         this.repositoryManager = repositoryManager;
         this.subscriptionHealthCheckExecutorService = unhealthyGetExecutorService;
         this.subscriptionHealthCheckTimeoutMillis = unhealthyGetTimeoutMillis;
@@ -130,7 +130,7 @@ public class SubscriptionService {
         subscriptionValidator.checkCreation(subscription, createdBy);
 
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
-        multiDcAwareService.createConsumerGroups(topic, subscription);
+        multiDCAwareService.createConsumerGroups(topic, subscription);
 
         multiDcExecutor.executeByUser(new CreateSubscriptionRepositoryCommand(subscription), createdBy);
         auditor.objectCreated(createdBy.getUsername(), subscription);

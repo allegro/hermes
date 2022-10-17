@@ -9,7 +9,7 @@ import org.junit.ClassRule
 import org.springframework.web.client.AsyncRestTemplate
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender
-import pl.allegro.tech.hermes.client.resttemplate.RestTemplateHermesSender
+import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -41,7 +41,7 @@ class HermesSenderTest extends Specification {
         HermesClient client = HermesClientBuilder
                 .hermesClient(currentSender)
                 .withDefaultContentType("application/json")
-                .withUri(URI.create("http://localhost:" + service.port()))
+                .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
         service.stubFor(post(urlEqualTo('/topics/topic.test'))
@@ -69,7 +69,7 @@ class HermesSenderTest extends Specification {
         HermesSender currentSender = sender
         HermesClient client = HermesClientBuilder
                 .hermesClient(currentSender)
-                .withUri(URI.create("http://localhost:" + service.port()))
+                .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
         service.stubFor(post(urlEqualTo('/topics/topic.test'))
@@ -97,7 +97,7 @@ class HermesSenderTest extends Specification {
         HermesSender currentSender = sender
         HermesClient client = HermesClientBuilder
                 .hermesClient(currentSender)
-                .withUri(URI.create("http://localhost:" + service.port()))
+                .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
         service.stubFor(post(urlEqualTo('/topics/topic.test'))
@@ -126,7 +126,7 @@ class HermesSenderTest extends Specification {
         HermesClient client = HermesClientBuilder
                 .hermesClient(currentSender)
                 .withDefaultContentType("application/json")
-                .withUri(URI.create("http://localhost:" + service.port()))
+                .withURI(URI.create("http://localhost:" + service.port()))
                 .build()
 
         service.stubFor(

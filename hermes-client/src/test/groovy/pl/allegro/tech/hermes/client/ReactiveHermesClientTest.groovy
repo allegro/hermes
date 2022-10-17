@@ -36,7 +36,7 @@ class ReactiveHermesClientTest extends Specification {
             assert message.body == CONTENT
             statusFuture(message, 201)
         })
-                .withUri(create(HERMES_URI))
+                .withURI(create(HERMES_URI))
                 .build()
 
         when:
@@ -52,7 +52,7 @@ class ReactiveHermesClientTest extends Specification {
     def "should interpret message as accepted when sender returns 202"() {
         given:
         ReactiveHermesClient client = hermesClient({ uri, msg -> statusFuture(msg, 202) })
-                .withUri(create(HERMES_URI))
+                .withURI(create(HERMES_URI))
                 .build()
 
         when:
@@ -67,7 +67,7 @@ class ReactiveHermesClientTest extends Specification {
     def "should interpret message as failed for status different than 201 or 202"() {
         given:
         ReactiveHermesClient client = hermesClient({ uri, msg -> statusFuture(msg, status) })
-                .withUri(create(HERMES_URI))
+                .withURI(create(HERMES_URI))
                 .withRetrySleep(0)
                 .build()
 

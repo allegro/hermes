@@ -43,14 +43,14 @@ public class ReadOnlyFilter implements ContainerRequestFilter {
         if (req.getMethod().equals("GET")) {
             return true;
         }
-        String requestUri = req.getUriInfo().getPath();
-        if (requestUri.startsWith("/query")) {
+        String requestURI = req.getUriInfo().getPath();
+        if (requestURI.startsWith("/query")) {
             return true;
         }
-        if (requestUri.startsWith("/mode")) {
+        if (requestURI.startsWith("/mode")) {
             return true;
         }
-        if (requestUri.startsWith("/topics") && requestUri.endsWith("query")) {
+        if (requestURI.startsWith("/topics") && requestURI.endsWith("query")) {
             return true;
         }
         return false;

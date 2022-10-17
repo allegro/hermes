@@ -19,7 +19,7 @@ import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHold
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerGroupManager;
@@ -71,7 +71,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     @Bean
-    MultiDcAwareService multiDcAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
+    MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
                                             Clock clock, JsonAvroConverter jsonAvroConverter) {
         List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
                 zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
@@ -101,7 +101,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
         }).collect(toList());
 
-        return new MultiDcAwareService(
+        return new MultiDCAwareService(
                 clusters,
                 clock,
                 ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),

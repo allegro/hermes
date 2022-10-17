@@ -57,8 +57,8 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
         }
     }
 
-    private String extractTopicName(URI endpointUri) {
-        return UriUtils.extractContextFromUri(endpointUri).replaceFirst("/", "");
+    private String extractTopicName(URI endpointURI) {
+        return UriUtils.extractContextFromUri(endpointURI).replaceFirst("/", "");
     }
 
     protected class ConnectionFactoryLoader extends CacheLoader<URI, ConnectionFactory> {

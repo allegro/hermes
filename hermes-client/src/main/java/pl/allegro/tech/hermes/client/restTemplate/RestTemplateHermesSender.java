@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.client.resttemplate;
+package pl.allegro.tech.hermes.client.restTemplate; // @checkstyle.suppress [PackageName]
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;

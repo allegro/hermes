@@ -20,7 +20,7 @@ public class ProvidedKeyManagersProvider implements KeyManagersProvider, Resourc
     public KeyManager[] getKeyManagers() throws Exception {
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         KeyStore keyStore = KeyStore.getInstance(keystoreProperties.getFormat());
-        try (InputStream stream = getResourceAsInputStream(keystoreProperties.getLocationAsUri())) {
+        try (InputStream stream = getResourceAsInputStream(keystoreProperties.getLocationAsURI())) {
             keyStore.load(stream, keystoreProperties.getPassword().toCharArray());
             keyManagerFactory.init(keyStore, keystoreProperties.getPassword().toCharArray());
         }

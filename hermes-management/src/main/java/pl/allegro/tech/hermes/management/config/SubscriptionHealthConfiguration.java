@@ -23,7 +23,7 @@ import pl.allegro.tech.hermes.management.domain.subscription.health.problem.Timi
 import pl.allegro.tech.hermes.management.domain.subscription.health.problem.UnreachableIndicator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDcAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.util.concurrent.Executors;
@@ -94,7 +94,7 @@ public class SubscriptionHealthConfiguration {
                                                    SubscriptionValidator subscriptionValidator,
                                                    Auditor auditor,
                                                    MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                                                   MultiDcAwareService multiDcAwareService,
+                                                   MultiDCAwareService multiDCAwareService,
                                                    RepositoryManager repositoryManager,
                                                    SubscriptionHealthProperties subscriptionHealthProperties,
                                                    SubscriptionRemover subscriptionRemover) {
@@ -108,7 +108,7 @@ public class SubscriptionHealthConfiguration {
                 subscriptionValidator,
                 auditor,
                 multiDcExecutor,
-                multiDcAwareService,
+                multiDCAwareService,
                 repositoryManager,
                 Executors.newFixedThreadPool(
                         subscriptionHealthProperties.getThreads(),
