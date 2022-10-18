@@ -46,6 +46,10 @@ public class Producers {
         registerCompressionRateGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_COMPRESSION_RATE);
         registerFailedBatchesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_FAILED_BATCHES_TOTAL);
         registerFailedBatchesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_FAILED_BATCHES_TOTAL);
+        registerMetadataAgeGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_METADATA_AGE);
+        registerMetadataAgeGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_METADATA_AGE);
+        registerRecordQueueTimeMaxGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_RECORD_QUEUE_TIME_MAX);
+        registerRecordQueueTimeMaxGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_RECORD_QUEUE_TIME_MAX);
     }
 
     public void maybeRegisterNodeMetricsGauges(HermesMetrics metrics) {
@@ -76,6 +80,14 @@ public class Producers {
 
     private void registerFailedBatchesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
         registerProducerGauge(producer, metrics, new MetricName("record-error-total", "producer-metrics", "failed publishing batches", Collections.emptyMap()), gauge);
+    }
+
+    private void registerRecordQueueTimeMaxGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
+        registerProducerGauge(producer, metrics, new MetricName("record-queue-time-max", "producer-metrics", "maximum time [ms] that batch spent in the send buffer", Collections.emptyMap()), gauge);
+    }
+
+    private void registerMetadataAgeGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
+        registerProducerGauge(producer, metrics, new MetricName("metadata-age", "producer-metrics", "age [s] of metadata", Collections.emptyMap()), gauge);
     }
 
     private void registerProducerGauge(final Producer<byte[], byte[]> producer,
