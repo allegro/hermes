@@ -137,11 +137,7 @@ public class HermesManagementInstance {
         }
 
         private CuratorFramework startZookeeperClient() {
-            final CuratorFramework zookeeperClient = buildCuratorFramework(
-                    zkClusters.stream()
-                            .map(ClusterInfo::getConnectionString)
-                            .collect(Collectors.joining(","))
-            );
+            final CuratorFramework zookeeperClient = buildCuratorFramework(zkClusters.get(0).getConnectionString());
             zookeeperClient.start();
             return zookeeperClient;
         }
