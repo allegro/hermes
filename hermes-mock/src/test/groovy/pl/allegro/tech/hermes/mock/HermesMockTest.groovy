@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.mock
 
+import org.apache.avro.Schema
+import org.apache.avro.reflect.ReflectData
 import org.apache.http.HttpStatus
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
 class HermesMockTest extends Specification {
 
@@ -17,6 +20,10 @@ class HermesMockTest extends Specification {
     HermesMockRule hermes = new HermesMockRule(port)
 
     HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
+
+    Schema schema = ReflectData.get().getSchema(TestMessage)
+
+    JsonAvroConverter jsonAvroConverter = new JsonAvroConverter()
 
     def setup() {
         hermes.resetReceivedRequest()
@@ -276,11 +283,73 @@ class HermesMockTest extends Specification {
             1 == hermes.query().countMatchingJsonMessages(topicName, TestMessage, filter)
     }
 
+    def "should reset received requests with Avro messages"() {
+        given:
+        def topicName = "my-test-avro-topic"
+        hermes.define().avroTopic(topicName)
+        publish(topicName, new TestMessage("test-key", "test-value"))
+        assert hermes.query().countAvroMessages(topicName) == 1
+
+        when:
+        hermes.resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "test-key"})
+
+        then:
+        hermes.query().countAvroMessages(topicName) == 0
+    }
+
+    def "should not reset received requests with Avro messages when predicate does not match"() {
+        given:
+        def topicName = "my-test-avro-topic"
+        hermes.define().avroTopic(topicName)
+        publish(topicName, new TestMessage("test-key", "test-value"))
+
+        when:
+        hermes.resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "different-test-key"})
+
+        then:
+        hermes.query().countAvroMessages(topicName) == 1
+    }
+
+    def "should reset received requests with JSON messages"() {
+        given:
+        def topicName = "my-test-json-topic"
+        hermes.define().avroTopic(topicName)
+        publish(topicName, new TestMessage("test-key", "test-value").asJson())
+        hermes.query().countJsonMessages(topicName, TestMessage) == 1
+
+        when:
+        hermes.resetReceivedJsonRequests(topicName, TestMessage, {it -> it.key == "test-key"})
+
+        then:
+        hermes.query().countJsonMessages(topicName, TestMessage) == 0
+    }
+
+    def "should not reset received requests with JSON messages when predicate does not match"() {
+        given:
+        def topicName = "my-test-json-topic"
+        hermes.define().avroTopic(topicName)
+        publish(topicName, new TestMessage("test-key", "test-value").asJson())
+
+        when:
+        hermes.resetReceivedJsonRequests(topicName, TestMessage, {it -> it.key == "different-test-key"})
+
+        then:
+        hermes.query().countJsonMessages(topicName, TestMessage) == 1
+    }
+
     def publish(String topic) {
         publish(topic, TestMessage.random().asJson())
     }
 
     def publish(String topic, String body) {
         publisher.publish(topic, body)
+    }
+
+    def publish(String topic, TestMessage message) {
+        publisher.publish(topic, asAvro(message))
+    }
+
+    def asAvro(TestMessage message) {
+        return jsonAvroConverter.convertToAvro(message.asJson().bytes, schema)
     }
 }

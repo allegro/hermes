@@ -99,15 +99,6 @@ public class HermesMockHelper {
         );
     }
 
-    public void resetReceivedRequests(String topicName, String contentType, ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher) {
-        RequestPattern requestPattern = RequestPatternBuilder
-                .newRequestPattern(POST, urlEqualTo("/topics/" + topicName))
-                .withHeader("Content-Type", startsWith(contentType))
-                .andMatching(valueMatcher)
-                .build();
-        wireMockServer.removeServeEventsMatching(requestPattern);
-    }
-
     private static Integer toIntMilliseconds(Duration duration) {
         return Optional.ofNullable(duration)
                 .map(Duration::toMillis)
