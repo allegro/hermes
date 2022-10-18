@@ -106,6 +106,7 @@ public class FrontendStarter implements Starter<ConfigurableApplicationContext> 
     private void setSpringProfilesArg() {
         String profilesString = profiles.stream().collect(Collectors.joining(",", "", ""));
         args.add("--spring.profiles.active=" + profilesString);
+        args.add("-e " + profilesString);
     }
 
     private void waitForStartup() {
