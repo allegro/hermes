@@ -6,21 +6,21 @@ import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
 public class Gauges {
 
-    public static final String KAFKA_PRODUCER = "kafka-producer",
-            ACK_LEADER = "ack-leader",
-            ACK_ALL = "ack-all",
+    public static final String KAFKA_PRODUCER = "kafka-producer.",
+            ACK_LEADER = "ack-leader.",
+            ACK_ALL = "ack-all.",
 
             ACK_ALL_BUFFER_TOTAL_BYTES = KAFKA_PRODUCER + ACK_ALL + "buffer-total-bytes",
             ACK_ALL_BUFFER_AVAILABLE_BYTES = KAFKA_PRODUCER + ACK_ALL + "buffer-available-bytes",
-                    EVERYONE_CONFIRMS_METADATA_AGE = "everyone-confirms-metadata-age",
-                    EVERYONE_CONFIRMS_RECORD_QUEUE_TIME_MAX = "everyone-confirms-record-queue-time-max",
+            ACK_ALL_CONFIRMS_METADATA_AGE = KAFKA_PRODUCER + ACK_ALL + "metadata-age",
+            ACK_ALL_RECORD_QUEUE_TIME_MAX = KAFKA_PRODUCER + ACK_ALL + "record-queue-time-max",
             ACK_ALL_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_ALL + "compression-rate-avg",
             ACK_ALL_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_ALL + "failed-batches-total",
 
             ACK_LEADER_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_LEADER + "failed-batches-total",
             ACK_LEADER_BUFFER_TOTAL_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-total-bytes",
-                    LEADER_CONFIRMS_METADATA_AGE = "leader-confirms-metadata-age",
-                    LEADER_CONFIRMS_RECORD_QUEUE_TIME_MAX = "leader-confirms-record-queue-time-max",
+            ACK_LEADER_METADATA_AGE = KAFKA_PRODUCER + ACK_LEADER + "metadata-age",
+            ACK_LEADER_RECORD_QUEUE_TIME_MAX = KAFKA_PRODUCER + ACK_LEADER + "record-queue-time-max",
             ACK_LEADER_BUFFER_AVAILABLE_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-available-bytes",
             ACK_LEADER_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_LEADER + "compression-rate-avg",
 
