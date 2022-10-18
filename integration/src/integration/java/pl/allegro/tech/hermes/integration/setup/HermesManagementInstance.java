@@ -79,7 +79,9 @@ public class HermesManagementInstance {
         public HermesManagementInstance start() {
             try {
                 startManagement();
-                waitUntilStructureInZookeeperIsCreated(startSeparateZookeeperClientPerCluster());
+                List<CuratorFramework> clusters = startSeparateZookeeperClientPerCluster();
+                waitUntilStructureInZookeeperIsCreated(clusters);
+                closeZookeeperClustersConnections(clusters);
                 HermesAPIOperations operations = setupOperations(startZookeeperClient());
                 return new HermesManagementInstance(operations);
             } catch (Exception e) {
@@ -98,6 +100,10 @@ public class HermesManagementInstance {
                 }
             }
             return true;
+        }
+
+        private void closeZookeeperClustersConnections(List<CuratorFramework> zookeeperClusters) {
+            zookeeperClusters.forEach(CuratorFramework::close);
         }
 
         private void startManagement() {
