@@ -9,10 +9,10 @@ import org.apache.zookeeper.data.ACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties;
-import pl.allegro.tech.hermes.management.config.storage.StorageProperties;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
+import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties;
+import pl.allegro.tech.hermes.management.config.storage.StorageProperties;
 
 import java.util.Collections;
 import java.util.List;

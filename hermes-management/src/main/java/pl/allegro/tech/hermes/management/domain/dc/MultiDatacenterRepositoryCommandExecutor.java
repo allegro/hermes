@@ -26,8 +26,11 @@ public class MultiDatacenterRepositoryCommandExecutor {
     }
 
     public <T> void executeByUser(RepositoryCommand<T> command, RequestUser requestUser) {
-        if (requestUser.isAdmin() && modeService.isReadOnlyEnabled()) execute(command, false, false);
-        else execute(command);
+        if (requestUser.isAdmin() && modeService.isReadOnlyEnabled()) {
+            execute(command, false, false);
+        } else {
+            execute(command);
+        }
     }
 
     public <T> void execute(RepositoryCommand<T> command) {
@@ -48,12 +51,17 @@ public class MultiDatacenterRepositoryCommandExecutor {
                 command.execute(repoHolder);
             } catch (RepositoryNotAvailableException e) {
                 logger.warn("Execute failed with an RepositoryNotAvailableException error", e);
-                if (isRollbackEnabled) rollback(executedRepoHolders, command);
-                if (shouldStopExecutionOnFailure)
+                if (isRollbackEnabled) {
+                    rollback(executedRepoHolders, command);
+                }
+                if (shouldStopExecutionOnFailure) {
                     throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
+                }
             } catch (Exception e) {
                 logger.warn("Execute failed with an error", e);
-                if (isRollbackEnabled) rollback(executedRepoHolders, command);
+                if (isRollbackEnabled) {
+                    rollback(executedRepoHolders, command);
+                }
                 throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
             }
         }
@@ -75,8 +83,8 @@ public class MultiDatacenterRepositoryCommandExecutor {
             logger.debug("Creating backup for command: {}", command);
             command.backup(repoHolder);
         } catch (Exception e) {
-            throw new InternalProcessingException("Backup procedure for command '" + command +
-                    "' failed on DC '" + repoHolder.getDatacenterName() + "'.", e);
+            throw new InternalProcessingException("Backup procedure for command '" + command
+                    + "' failed on DC '" + repoHolder.getDatacenterName() + "'.", e);
         }
     }
 

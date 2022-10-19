@@ -22,7 +22,9 @@ public class ReceivingMalformedMessagesIndicator implements SubscriptionHealthPr
         if (context.subscriptionHasRetryOnError()
                 && areSubscriptionMetricsReliable(context)
                 && isCode4xxErrorsRateHigh(context)) {
-            return Optional.of(receivingMalformedMessages(context.getCode4xxErrorsRate(), context.getSubscription().getQualifiedName().toString()));
+            return Optional.of(
+                    receivingMalformedMessages(context.getCode4xxErrorsRate(), context.getSubscription().getQualifiedName().toString())
+            );
         }
         return Optional.empty();
     }

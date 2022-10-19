@@ -26,7 +26,11 @@ public class UnhealthySubscription {
     }
 
     public static UnhealthySubscription from(Subscription subscription, SubscriptionHealth subscriptionHealth) {
-        return new UnhealthySubscription(subscription.getName(), subscription.getQualifiedTopicName(), subscription.getMonitoringDetails().getSeverity(), subscriptionHealth.getProblems());
+        return new UnhealthySubscription(
+                subscription.getName(),
+                subscription.getQualifiedTopicName(),
+                subscription.getMonitoringDetails().getSeverity(),
+                subscriptionHealth.getProblems());
     }
 
     @JsonProperty("name")
@@ -51,23 +55,27 @@ public class UnhealthySubscription {
 
     @Override
     public String toString() {
-        return "UnhealthySubscription{" +
-                "name='" + name + '\'' +
-                ", qualifiedTopicName='" + qualifiedTopicName + '\'' +
-                ", severity=" + severity +
-                ", problems=" + problems +
-                '}';
+        return "UnhealthySubscription{"
+                + "name='" + name + '\''
+                + ", qualifiedTopicName='" + qualifiedTopicName + '\''
+                + ", severity=" + severity
+                + ", problems=" + problems
+                + '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UnhealthySubscription that = (UnhealthySubscription) o;
-        return Objects.equals(name, that.name) &&
-                Objects.equals(qualifiedTopicName, that.qualifiedTopicName) &&
-                severity == that.severity &&
-                Objects.equals(problems, that.problems);
+        return Objects.equals(name, that.name)
+                && Objects.equals(qualifiedTopicName, that.qualifiedTopicName)
+                && severity == that.severity
+                && Objects.equals(problems, that.problems);
     }
 
     @Override

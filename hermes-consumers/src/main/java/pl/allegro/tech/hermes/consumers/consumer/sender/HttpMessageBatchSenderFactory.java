@@ -16,7 +16,9 @@ public class HttpMessageBatchSenderFactory implements MessageBatchSenderFactory 
     private final Duration connectionTimeout;
     private final Duration connectionRequestTimeout;
 
-    public HttpMessageBatchSenderFactory(SendingResultHandlers resultHandlers, Duration connectionTimeout, Duration connectionRequestTimeout) {
+    public HttpMessageBatchSenderFactory(SendingResultHandlers resultHandlers,
+                                         Duration connectionTimeout,
+                                         Duration connectionRequestTimeout) {
         this.resultHandlers = resultHandlers;
         this.connectionTimeout = connectionTimeout;
         this.connectionRequestTimeout = connectionRequestTimeout;

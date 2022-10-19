@@ -39,6 +39,7 @@ nexusPublishing {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'groovy'
+    apply plugin: 'checkstyle'
 
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
@@ -175,6 +176,17 @@ subprojects {
             exceptionFormat = 'full'
             events 'passed', 'skipped', 'failed'
         }
+    }
+
+    tasks.withType(Checkstyle) {
+        reports {
+            xml.required = true
+            html.required = false
+        }
+    }
+
+    checkstyle {
+        toolVersion '10.3.4'
     }
 }
 

@@ -10,10 +10,15 @@ import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 
-import javax.ws.rs.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -32,7 +37,8 @@ public class OwnersEndpoint {
     @GET
     @Path("/sources/{source}")
     @Produces(APPLICATION_JSON)
-    @ApiOperation(value = "Lists owners from the given source matching the search string", response = List.class, httpMethod = HttpMethod.GET)
+    @ApiOperation(value = "Lists owners from the given source matching the search string",
+            response = List.class, httpMethod = HttpMethod.GET)
     public List<Owner> search(@PathParam("source") String source,
                               @QueryParam("search") String searchString) {
         return ownerSources.getAutocompletionFor(source).ownersMatching(searchString);

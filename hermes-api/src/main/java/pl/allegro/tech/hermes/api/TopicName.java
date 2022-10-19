@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
+import java.util.Objects;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
-
-import java.util.Objects;
 
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
@@ -15,28 +15,18 @@ public class TopicName {
 
     public static final char GROUP_SEPARATOR = '.';
 
-    @NotEmpty @Pattern(regexp = ALLOWED_NAME_REGEX)
+    @NotEmpty
+    @Pattern(regexp = ALLOWED_NAME_REGEX)
     private final String groupName;
 
-    @NotEmpty @Pattern(regexp = ALLOWED_NAME_REGEX)
+    @NotEmpty
+    @Pattern(regexp = ALLOWED_NAME_REGEX)
     private final String name;
 
     @JsonCreator
     public TopicName(@JsonProperty("groupName") String groupName, @JsonProperty("name") String name) {
         this.groupName = groupName;
         this.name = name;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String qualifiedName() {
-        return groupName + GROUP_SEPARATOR + name;
     }
 
     public static String toQualifiedName(TopicName topicName) {
@@ -56,6 +46,18 @@ public class TopicName {
         String groupName = qualifiedName.substring(0, index);
         String topicName = qualifiedName.substring(index + 1, qualifiedName.length());
         return new TopicName(groupName, topicName);
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String qualifiedName() {
+        return groupName + GROUP_SEPARATOR + name;
     }
 
     @Override

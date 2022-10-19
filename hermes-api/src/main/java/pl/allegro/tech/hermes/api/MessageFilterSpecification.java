@@ -32,7 +32,9 @@ public class MessageFilterSpecification {
         return getStringValue("header");
     }
 
-    public String getMatchingStrategy() { return getStringValue("matchingStrategy"); }
+    public String getMatchingStrategy() {
+        return getStringValue("matchingStrategy");
+    }
 
     @SuppressWarnings("unchecked")
     public <T> T getFieldValue(String key) {
@@ -57,8 +59,8 @@ public class MessageFilterSpecification {
             return false;
         }
         MessageFilterSpecification that = (MessageFilterSpecification) o;
-        return Objects.equals(type, that.type) &&
-                Objects.equals(spec, that.spec);
+        return Objects.equals(type, that.type)
+                && Objects.equals(spec, that.spec);
     }
 
     @Override

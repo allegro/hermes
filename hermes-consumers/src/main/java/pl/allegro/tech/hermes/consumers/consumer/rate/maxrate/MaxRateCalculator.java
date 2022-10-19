@@ -46,7 +46,7 @@ class MaxRateCalculator {
         try {
             logger.info("Max rate calculation started");
 
-            long start = clock.millis();
+            final long start = clock.millis();
             maxRateRegistry.onBeforeMaxRateCalculation();
 
             clusterAssignmentCache.getSubscriptionConsumers().forEach((subscriptionName, consumerIds) -> {

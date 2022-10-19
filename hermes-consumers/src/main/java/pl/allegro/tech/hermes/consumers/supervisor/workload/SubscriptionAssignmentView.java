@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
@@ -26,9 +25,11 @@ public class SubscriptionAssignmentView {
         this.consumerNodeAssignments = setupConsumerNodeAssignments(view);
     }
 
-    private Map<SubscriptionName, Set<SubscriptionAssignment>> setupSubscriptionAssignments(Map<SubscriptionName, Set<SubscriptionAssignment>> view) {
+    private Map<SubscriptionName, Set<SubscriptionAssignment>> setupSubscriptionAssignments(
+            Map<SubscriptionName, Set<SubscriptionAssignment>> view
+    ) {
         Map<SubscriptionName, Set<SubscriptionAssignment>> map = new HashMap<>();
-        view.entrySet().stream().forEach(entry -> map.put(entry.getKey(), new HashSet<>(entry.getValue())));
+        view.entrySet().forEach(entry -> map.put(entry.getKey(), new HashSet<>(entry.getValue())));
         return map;
     }
 
@@ -76,12 +77,14 @@ public class SubscriptionAssignmentView {
     }
 
     private void removeSubscription(SubscriptionName subscription) {
-        consumerNodeAssignments.values().stream().forEach(assignments -> assignments.removeIf(assignment -> assignment.getSubscriptionName().equals(subscription)));
+        consumerNodeAssignments.values()
+                .forEach(assignments -> assignments.removeIf(assignment -> assignment.getSubscriptionName().equals(subscription)));
         subscriptionAssignments.remove(subscription);
     }
 
     private void removeConsumerNode(String nodeId) {
-        subscriptionAssignments.values().stream().forEach(assignments -> assignments.removeIf(assignment -> assignment.getConsumerNodeId().equals(nodeId)));
+        subscriptionAssignments.values()
+                .forEach(assignments -> assignments.removeIf(assignment -> assignment.getConsumerNodeId().equals(nodeId)));
         consumerNodeAssignments.remove(nodeId);
     }
 
@@ -126,7 +129,8 @@ public class SubscriptionAssignmentView {
             if (!second.getSubscriptions().contains(subscription)) {
                 result.put(subscription, assignments);
             } else {
-                Sets.SetView<SubscriptionAssignment> difference = Sets.difference(assignments, second.getAssignmentsForSubscription(subscription));
+                Sets.SetView<SubscriptionAssignment> difference =
+                        Sets.difference(assignments, second.getAssignmentsForSubscription(subscription));
                 if (!difference.isEmpty()) {
                     result.put(subscription, difference);
                 }
@@ -166,19 +170,29 @@ public class SubscriptionAssignmentView {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SubscriptionAssignmentView that = (SubscriptionAssignmentView) o;
         return Objects.equals(subscriptionAssignments, that.subscriptionAssignments);
     }
 
     public interface Transformer {
         void removeSubscription(SubscriptionName subscriptionName);
+
         void removeConsumerNode(String nodeId);
+
         void addSubscription(SubscriptionName subscriptionName);
+
         void addConsumerNode(String nodeId);
+
         void addAssignment(SubscriptionAssignment assignment);
+
         void removeAssignment(SubscriptionAssignment assignment);
+
         void transferAssignment(String from, String to, SubscriptionName subscriptionName);
     }
 

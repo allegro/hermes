@@ -1,7 +1,8 @@
 package pl.allegro.tech.hermes.management.domain.retransmit;
 
-import java.util.List;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
+
+import java.util.List;
 
 public interface OfflineRetransmissionRepository {
     void saveTask(OfflineRetransmissionTask task);

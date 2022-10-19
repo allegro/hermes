@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.idleTime;
+package pl.allegro.tech.hermes.consumers.consumer.idletime;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.min;

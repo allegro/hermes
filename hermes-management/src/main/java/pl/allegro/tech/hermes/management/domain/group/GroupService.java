@@ -11,13 +11,13 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
+import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.group.commands.CreateGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.group.commands.RemoveGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.group.commands.UpdateGroupRepositoryCommand;
-import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
-import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 
 import java.util.List;
 import java.util.stream.Collectors;

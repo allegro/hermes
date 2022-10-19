@@ -8,11 +8,11 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Message;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Set;
+import javax.jms.ConnectionFactory;
+import javax.jms.Message;
 
 public class JmsHornetQMessageSenderProvider extends AbstractJmsMessageSenderProvider {
     private static final Set<String> SUPPORTED_PROTOCOLS = ImmutableSet.of("jms");

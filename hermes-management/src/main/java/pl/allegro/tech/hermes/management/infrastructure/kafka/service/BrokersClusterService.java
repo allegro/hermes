@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
@@ -17,7 +15,9 @@ import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManage
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -124,9 +124,11 @@ public class BrokersClusterService {
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {
-        Collection<ConsumerGroupDescription> consumerGroupsDescriptions = adminClient.describeConsumerGroups(consumerGroupsIds).all().get().values();
+        Collection<ConsumerGroupDescription> consumerGroupsDescriptions =
+                adminClient.describeConsumerGroups(consumerGroupsIds).all().get().values();
         Stream<MemberDescription> memberDescriptions = consumerGroupsDescriptions.stream().flatMap(desc -> desc.members().stream());
-        return memberDescriptions.flatMap(memberDescription -> memberDescription.assignment().topicPartitions().stream()).collect(Collectors.toList()).size();
+        return memberDescriptions.flatMap(memberDescription -> memberDescription.assignment().topicPartitions().stream())
+                .collect(Collectors.toList()).size();
     }
 
     private int numberOfPartitionsForTopic(Topic topic) throws ExecutionException, InterruptedException {

@@ -167,7 +167,9 @@ public class TopicService {
             multiDcExecutor.executeByUser(new UpdateTopicRepositoryCommand(modified), modifiedBy);
 
             if (!retrieved.wasMigratedFromJsonType() && modified.wasMigratedFromJsonType()) {
-                logger.info("Waiting until all subscriptions have consumers assigned during topic {} content type migration...", topicName.qualifiedName());
+                logger.info(
+                        "Waiting until all subscriptions have consumers assigned during topic {} content type migration...",
+                        topicName.qualifiedName());
                 topicContentTypeMigrationService.waitUntilAllSubscriptionsHasConsumersAssigned(modified,
                         Duration.ofSeconds(topicProperties.getSubscriptionsAssignmentsCompletedTimeoutSeconds()));
                 logger.info("Notifying subscriptions' consumers about changes in topic {} content type...", topicName.qualifiedName());
@@ -206,16 +208,16 @@ public class TopicService {
                 .collect(toList());
     }
 
-    public List<Topic> listTopics(String groupName) {
-        return topicRepository.listTopics(groupName);
-    }
-
     public List<String> listQualifiedTopicNames() {
         return groupService.listGroupNames().stream()
                 .map(this::listQualifiedTopicNames)
                 .flatMap(List::stream)
                 .sorted()
                 .collect(toList());
+    }
+
+    public List<Topic> listTopics(String groupName) {
+        return topicRepository.listTopics(groupName);
     }
 
     public Topic getTopicDetails(TopicName topicName) {
@@ -288,7 +290,9 @@ public class TopicService {
 
         if (idx >= 0 && idx < result.size()) {
             return Optional.of(result.get(idx));
-        } else return Optional.empty();
+        } else {
+            return Optional.empty();
+        }
     }
 
     public List<MessageTextPreview> previewText(TopicName topicName) {

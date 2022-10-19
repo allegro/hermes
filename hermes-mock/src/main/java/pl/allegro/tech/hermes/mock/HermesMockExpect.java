@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.mock;
 
-import static com.jayway.awaitility.Awaitility.await;
 import com.jayway.awaitility.core.ConditionTimeoutException;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.toList;
 import org.apache.avro.Schema;
 
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import static com.jayway.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toList;
 
 public class HermesMockExpect {
     private final HermesMockHelper hermesMockHelper;

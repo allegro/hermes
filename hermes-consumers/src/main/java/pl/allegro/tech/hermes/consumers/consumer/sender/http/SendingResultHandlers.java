@@ -9,6 +9,8 @@ import java.util.concurrent.CompletableFuture;
 
 public interface SendingResultHandlers {
     CompleteListener handleSendingResultForSerial(CompletableFuture<MessageSendingResult> resultFuture);
+
     CompleteListener handleSendingResultForBroadcast(CompletableFuture<SingleMessageSendingResult> resultFuture);
+
     MessageSendingResult handleSendingResultForBatch(CloseableHttpResponse response);
 }

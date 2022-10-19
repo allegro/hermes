@@ -30,8 +30,8 @@ public class JsonToAvroMigrationKafkaNamesMapper extends NamespaceKafkaNamesMapp
                 return kafkaTopic;
             case AVRO:
                 return new KafkaTopic(KafkaTopicName.valueOf(kafkaTopic.name().asString() + "_avro"), kafkaTopic.contentType());
+            default:
+                throw new IllegalStateException(String.format("Unknown content type '%s'", kafkaTopic.contentType()));
         }
-
-        throw new IllegalStateException("unknown content type '" + kafkaTopic.contentType() + "'");
     };
 }

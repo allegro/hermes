@@ -177,15 +177,19 @@ public class ConsumerProcess implements Runnable {
 
     @Override
     public String toString() {
-        return "ConsumerProcess{" +
-                "subscriptionName=" + getSubscriptionName() +
-                '}';
+        return "ConsumerProcess{"
+                + "subscriptionName=" + getSubscriptionName()
+                + '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ConsumerProcess that = (ConsumerProcess) o;
         return Objects.equals(getSubscriptionName(), that.getSubscriptionName());
     }

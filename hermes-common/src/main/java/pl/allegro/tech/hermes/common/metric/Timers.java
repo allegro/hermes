@@ -4,45 +4,44 @@ import static pl.allegro.tech.hermes.metrics.PathsCompiler.EXECUTOR_NAME;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.KAFKA_CLUSTER;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.OAUTH_PROVIDER_NAME;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.SCHEMA_REPO_TYPE;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.SCHEMA_REPO_TYPE;
 
 public class Timers {
 
-    public static final String
-            ACK_ALL_BROKER_LATENCY = "ack-all.broker-latency",
-            ACK_ALL_BROKER_TOPIC_LATENCY = ACK_ALL_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
+    public static final String ACK_ALL_BROKER_LATENCY = "ack-all.broker-latency";
+    public static final String ACK_ALL_BROKER_TOPIC_LATENCY = ACK_ALL_BROKER_LATENCY + "." + GROUP + "." + TOPIC;
 
-            ACK_LEADER_BROKER_LATENCY = "ack-leader.broker-latency",
-            ACK_LEADER_BROKER_TOPIC_LATENCY = ACK_LEADER_BROKER_LATENCY + "." + GROUP + "." + TOPIC,
+    public static final String ACK_LEADER_BROKER_LATENCY = "ack-leader.broker-latency";
+    public static final String ACK_LEADER_BROKER_TOPIC_LATENCY = ACK_LEADER_BROKER_LATENCY + "." + GROUP + "." + TOPIC;
 
-            PARSING_REQUEST = "parsing-request",
-            TOPIC_PARSING_REQUEST = PARSING_REQUEST + "." + GROUP + "." + TOPIC,
+    public static final String PARSING_REQUEST = "parsing-request";
+    public static final String TOPIC_PARSING_REQUEST = PARSING_REQUEST + "." + GROUP + "." + TOPIC;
 
-            ACK_ALL_LATENCY = "ack-all.latency",
-            ACK_ALL_TOPIC_LATENCY = ACK_ALL_LATENCY + "." + GROUP + "." + TOPIC,
+    public static final String ACK_ALL_LATENCY = "ack-all.latency";
+    public static final String ACK_ALL_TOPIC_LATENCY = ACK_ALL_LATENCY + "." + GROUP + "." + TOPIC;
 
-            ACK_LEADER_LATENCY = "ack-leader.latency",
-            ACK_LEADER_TOPIC_LATENCY = ACK_LEADER_LATENCY + "." + GROUP + "." + TOPIC,
+    public static final String ACK_LEADER_LATENCY = "ack-leader.latency";
+    public static final String ACK_LEADER_TOPIC_LATENCY = ACK_LEADER_LATENCY + "." + GROUP + "." + TOPIC;
 
-            MESSAGE_CREATION_LATENCY = "message-creation-latency",
-            MESSAGE_CREATION_TOPIC_LATENCY = MESSAGE_CREATION_LATENCY + "." + TOPIC,
+    public static final String MESSAGE_CREATION_LATENCY = "message-creation-latency";
+    public static final String MESSAGE_CREATION_TOPIC_LATENCY = MESSAGE_CREATION_LATENCY + "." + TOPIC;
 
-            LATENCY = "latency",
-            SUBSCRIPTION_LATENCY = LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
+    public static final String LATENCY = "latency";
+    public static final String SUBSCRIPTION_LATENCY = LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
 
-            READ_LATENCY = "read-latency",
+    public static final String READ_LATENCY = "read-latency";
 
-            SCHEMA = "schema." + SCHEMA_REPO_TYPE,
-            GET_SCHEMA_LATENCY = SCHEMA + ".get-schema",
-            GET_SCHEMA_VERSIONS_LATENCY = SCHEMA + ".get-schema-versions",
+    public static final String SCHEMA = "schema." + SCHEMA_REPO_TYPE;
+    public static final String GET_SCHEMA_LATENCY = SCHEMA + ".get-schema";
+    public static final String GET_SCHEMA_VERSIONS_LATENCY = SCHEMA + ".get-schema-versions";
 
-            CONSUMER_WORKLOAD_REBALANCE_DURATION = "consumers-workload." + KAFKA_CLUSTER + ".rebalance-duration",
-            CONSUMER_IDLE_TIME = "idle-time." + GROUP + "." + TOPIC + "." + SUBSCRIPTION,
+    public static final String CONSUMER_WORKLOAD_REBALANCE_DURATION = "consumers-workload." + KAFKA_CLUSTER + ".rebalance-duration";
+    public static final String CONSUMER_IDLE_TIME = "idle-time." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
 
-            OAUTH_PROVIDER_TOKEN_REQUEST_LATENCY = "oauth.provider." + OAUTH_PROVIDER_NAME + ".token-request-latency",
+    public static final String OAUTH_PROVIDER_TOKEN_REQUEST_LATENCY = "oauth.provider." + OAUTH_PROVIDER_NAME + ".token-request-latency";
 
-            EXECUTOR_DURATION = "executors." + EXECUTOR_NAME + ".duration",
-            EXECUTOR_WAITING = "executors." + EXECUTOR_NAME + ".waiting";
+    public static final String EXECUTOR_DURATION = "executors." + EXECUTOR_NAME + ".duration";
+    public static final String EXECUTOR_WAITING = "executors." + EXECUTOR_NAME + ".waiting";
 }

@@ -22,8 +22,8 @@ public class ManagementRights {
     }
 
     public boolean isUserAllowedToManageTopic(Topic topic, ContainerRequestContext requestContext) {
-        return isAdmin(requestContext) ||
-                getOwnershipResolver(requestContext).isUserAnOwner(topic.getOwner());
+        return isAdmin(requestContext)
+                || getOwnershipResolver(requestContext).isUserAnOwner(topic.getOwner());
     }
 
     public boolean isUserAllowedToCreateGroup(ContainerRequestContext requestContext) {

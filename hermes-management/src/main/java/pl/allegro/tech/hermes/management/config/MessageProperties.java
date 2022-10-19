@@ -29,9 +29,13 @@ public class MessageProperties {
         this.metadataContentRoot = metadataContentRoot;
     }
 
-    public boolean isSchemaIdHeaderEnabled() { return schemaIdHeaderEnabled; }
+    public boolean isSchemaIdHeaderEnabled() {
+        return schemaIdHeaderEnabled;
+    }
 
-    public void setSchemaIdHeaderEnabled(boolean schemaIdHeaderEnabled) { this.schemaIdHeaderEnabled = schemaIdHeaderEnabled; }
+    public void setSchemaIdHeaderEnabled(boolean schemaIdHeaderEnabled) {
+        this.schemaIdHeaderEnabled = schemaIdHeaderEnabled;
+    }
 
     public boolean isSchemaVersionTruncationEnabled() {
         return schemaVersionTruncationEnabled;

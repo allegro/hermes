@@ -16,6 +16,8 @@ public class FilteringException extends InternalProcessingException {
     }
 
     public static void check(boolean condition, String message) {
-        if (!condition) throw new FilteringException(message);
+        if (!condition) {
+            throw new FilteringException(message);
+        }
     }
 }

@@ -116,7 +116,7 @@ public class ConsumerConfiguration {
     @Bean
     public OffsetQueue offsetQueue(HermesMetrics metrics,
                                    CommitOffsetProperties commitOffsetProperties) {
-        return new OffsetQueue(metrics, commitOffsetProperties.getQueuesSize(), commitOffsetProperties.isQueuesInflightDrainFullEnabled());
+        return new OffsetQueue(metrics, commitOffsetProperties.getQueuesSize());
     }
 
     @Bean

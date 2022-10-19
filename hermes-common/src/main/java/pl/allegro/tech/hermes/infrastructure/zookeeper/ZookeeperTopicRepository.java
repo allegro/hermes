@@ -109,6 +109,19 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         return getTopicDetails(topicName, false).get();
     }
 
+    private Optional<Topic> getTopicDetails(TopicName topicName, boolean quiet) {
+        ensureTopicExists(topicName);
+        return readWithStatFrom(
+                paths.topicPath(topicName),
+                Topic.class,
+                (topic, stat) -> {
+                    topic.setCreatedAt(stat.getCtime());
+                    topic.setModifiedAt(stat.getMtime());
+                },
+                quiet
+        );
+    }
+
     @Override
     public List<Topic> getTopicsDetails(Collection<TopicName> topicNames) {
         return topicNames.stream()
@@ -125,18 +138,5 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
                 .map(this::listTopics)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
-    }
-
-    private Optional<Topic> getTopicDetails(TopicName topicName, boolean quiet) {
-        ensureTopicExists(topicName);
-        return readWithStatFrom(
-                paths.topicPath(topicName),
-                Topic.class,
-                (topic, stat) -> {
-                    topic.setCreatedAt(stat.getCtime());
-                    topic.setModifiedAt(stat.getMtime());
-                },
-                quiet
-        );
     }
 }

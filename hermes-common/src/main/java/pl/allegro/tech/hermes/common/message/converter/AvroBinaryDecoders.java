@@ -21,7 +21,7 @@ public class AvroBinaryDecoders {
             ThreadLocal.withInitial(() -> DecoderFactory.get().binaryDecoder(threadLocalEmptyInputStream.get(), null));
 
     static GenericRecord decodeReusingThreadLocalBinaryDecoder(byte[] message, Schema schema) {
-        try (FlushableBinaryDecoderHolder holder = new FlushableBinaryDecoderHolder()){
+        try (FlushableBinaryDecoderHolder holder = new FlushableBinaryDecoderHolder()) {
             BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(message, holder.getBinaryDecoder());
             return new GenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
         } catch (Exception e) {

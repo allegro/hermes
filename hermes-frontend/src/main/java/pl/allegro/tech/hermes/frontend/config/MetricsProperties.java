@@ -16,8 +16,6 @@ public class MetricsProperties implements MetricRegistryParameters {
 
     private Duration counterExpireAfterAccess = Duration.ofHours(72);
 
-    private String reservoirType = "exponentially_decaying";
-
     private String disabledAttributes = "M15_RATE, M5_RATE, MEAN, MEAN_RATE, MIN, STDDEV";
 
     private Duration reportPeriod = Duration.ofSeconds(20);
@@ -55,15 +53,6 @@ public class MetricsProperties implements MetricRegistryParameters {
 
     public void setCounterExpireAfterAccess(Duration counterExpireAfterAccess) {
         this.counterExpireAfterAccess = counterExpireAfterAccess;
-    }
-
-    @Override
-    public String getReservoirType() {
-        return reservoirType;
-    }
-
-    public void setReservoirType(String reservoirType) {
-        this.reservoirType = reservoirType;
     }
 
     @Override

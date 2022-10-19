@@ -22,8 +22,7 @@ class DefaultErrorHandlerTest extends Specification {
 
     private OffsetQueue offsetQueue = new OffsetQueue(
             new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
-            200_000,
-            false
+            200_000
     )
 
     private UndeliveredMessageLog undeliveredLog = Mock(UndeliveredMessageLog)

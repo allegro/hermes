@@ -7,13 +7,13 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.ImmutableMap;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.validation.constraints.NotNull;
 
 @JsonSerialize(using = EndpointAddressResolverMetadata.EndpointAddressResolverMetadataSerializer.class)
 public class EndpointAddressResolverMetadata {
@@ -26,6 +26,14 @@ public class EndpointAddressResolverMetadata {
     @JsonCreator
     public EndpointAddressResolverMetadata(Map<String, Object> entries) {
         this.entries = ImmutableMap.copyOf(entries);
+    }
+
+    public static EndpointAddressResolverMetadata empty() {
+        return EMPTY_INSTANCE;
+    }
+
+    public static Builder endpointAddressResolverMetadata() {
+        return new Builder();
     }
 
     public Optional<Object> get(String key) {
@@ -69,14 +77,6 @@ public class EndpointAddressResolverMetadata {
                 throws IOException {
             jgen.writeObject(metadata.entries);
         }
-    }
-
-    public static EndpointAddressResolverMetadata empty() {
-        return EMPTY_INSTANCE;
-    }
-
-    public static Builder endpointAddressResolverMetadata() {
-        return new Builder();
     }
 
     public static class Builder {

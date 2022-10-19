@@ -117,8 +117,8 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
                 return false;
             }
             TopicAndSchemaVersion that = (TopicAndSchemaVersion) o;
-            return Objects.equals(schemaVersion, that.schemaVersion) &&
-                    Objects.equals(topic, that.topic);
+            return Objects.equals(schemaVersion, that.schemaVersion)
+                    && Objects.equals(topic, that.topic);
         }
 
         @Override
@@ -146,8 +146,8 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
                 return false;
             }
             TopicAndSchemaId that = (TopicAndSchemaId) o;
-            return Objects.equals(schemaId, that.schemaId) &&
-                Objects.equals(topic, that.topic);
+            return Objects.equals(schemaId, that.schemaId)
+                    && Objects.equals(topic, that.topic);
         }
 
         @Override

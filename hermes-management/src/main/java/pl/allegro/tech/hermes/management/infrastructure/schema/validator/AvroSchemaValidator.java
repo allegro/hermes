@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.management.infrastructure.schema.validator;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
@@ -15,6 +15,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 @Component
 public class AvroSchemaValidator implements SchemaValidator {
 
+    private static final Schema HERMES_METADATA_SCHEMA =
+            metadataFieldSchema(readAndParseResourceSchema("/avro-schema-metadata-field.avsc"));
     private final boolean metadataFieldIsRequired;
 
     public AvroSchemaValidator(boolean metadataFieldIsRequired) {
@@ -24,30 +26,6 @@ public class AvroSchemaValidator implements SchemaValidator {
     @Autowired
     public AvroSchemaValidator(TopicProperties topicProperties) {
         this(topicProperties.isAvroContentTypeMetadataRequired());
-    }
-
-    private static final Schema HERMES_METADATA_SCHEMA =
-            metadataFieldSchema(readAndParseResourceSchema("/avro-schema-metadata-field.avsc"));
-
-    @Override
-    public void check(String schema) throws InvalidSchemaException {
-        checkArgument(!isNullOrEmpty(schema), "Message schema cannot be empty");
-        Schema parsedSchema = parseSchema(schema);
-        if (metadataFieldIsRequired) {
-            checkHermesMetadataField(parsedSchema);
-        }
-    }
-
-    private void checkHermesMetadataField(Schema parsedSchema) {
-        Schema metadata = metadataFieldSchema(parsedSchema);
-
-        boolean metadataTypeMatches = HERMES_METADATA_SCHEMA.getType().equals(metadata.getType());
-        boolean metadataNestedTypesMatch = HERMES_METADATA_SCHEMA.getTypes().equals(metadata.getTypes());
-        boolean valid = metadataTypeMatches && metadataNestedTypesMatch;
-
-        if (!valid) {
-            throw new InvalidSchemaException("Invalid types used in field __metadata");
-        }
     }
 
     private static Schema metadataFieldSchema(Schema schema) {
@@ -72,6 +50,27 @@ public class AvroSchemaValidator implements SchemaValidator {
             return new Schema.Parser().parse(schema);
         } catch (SchemaParseException e) {
             throw new InvalidSchemaException(e);
+        }
+    }
+
+    @Override
+    public void check(String schema) throws InvalidSchemaException {
+        checkArgument(!isNullOrEmpty(schema), "Message schema cannot be empty");
+        Schema parsedSchema = parseSchema(schema);
+        if (metadataFieldIsRequired) {
+            checkHermesMetadataField(parsedSchema);
+        }
+    }
+
+    private void checkHermesMetadataField(Schema parsedSchema) {
+        Schema metadata = metadataFieldSchema(parsedSchema);
+
+        boolean metadataTypeMatches = HERMES_METADATA_SCHEMA.getType().equals(metadata.getType());
+        boolean metadataNestedTypesMatch = HERMES_METADATA_SCHEMA.getTypes().equals(metadata.getTypes());
+        boolean valid = metadataTypeMatches && metadataNestedTypesMatch;
+
+        if (!valid) {
+            throw new InvalidSchemaException("Invalid types used in field __metadata");
         }
     }
 }

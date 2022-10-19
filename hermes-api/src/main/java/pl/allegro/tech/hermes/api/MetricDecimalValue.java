@@ -57,8 +57,8 @@ public class MetricDecimalValue {
             return false;
         }
         MetricDecimalValue that = (MetricDecimalValue) o;
-        return available == that.available &&
-                Objects.equals(value, that.value);
+        return available == that.available
+                && Objects.equals(value, that.value);
     }
 
     @Override

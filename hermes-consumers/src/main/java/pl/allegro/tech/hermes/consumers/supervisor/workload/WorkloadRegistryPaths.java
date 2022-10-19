@@ -6,7 +6,7 @@ import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CON
 
 class WorkloadRegistryPaths {
 
-    private final static String WORKLOAD_RUNTIME_PATH = "runtime-bin";
+    private static final String WORKLOAD_RUNTIME_PATH = "runtime-bin";
 
     private final ZookeeperPaths zookeeperPaths;
     private final String clusterName;

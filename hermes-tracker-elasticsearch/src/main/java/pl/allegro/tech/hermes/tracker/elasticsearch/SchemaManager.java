@@ -112,9 +112,9 @@ public class SchemaManager {
     }
 
     private XContentBuilder prepareSentMapping() {
-        return prepareMapping(SENT_TYPE, xContentBuilder -> {
+        return prepareMapping(SENT_TYPE, contentBuilder -> {
             try {
-                return xContentBuilder
+                return contentBuilder
                         .startObject(SUBSCRIPTION).field("type", "keyword").field("norms", false).endObject()
                         .startObject(PUBLISH_TIMESTAMP).field("type", "date").field("index", false).endObject()
                         .startObject(BATCH_ID).field("type", "keyword").field("norms", false).endObject()

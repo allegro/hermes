@@ -38,7 +38,8 @@ public class GraphiteClientConfiguration {
 
     @Bean
     public GraphiteClient graphiteClient(@Qualifier("graphiteRestTemplate") RestTemplate graphiteRestTemplate) {
-        RestTemplateGraphiteClient underlyingGraphiteClient = new RestTemplateGraphiteClient(graphiteRestTemplate, URI.create(metricsProperties.getGraphiteHttpUri()));
+        RestTemplateGraphiteClient underlyingGraphiteClient =
+                new RestTemplateGraphiteClient(graphiteRestTemplate, URI.create(metricsProperties.getGraphiteHttpUri()));
         return new CachingGraphiteClient(
                 underlyingGraphiteClient,
                 systemTicker(),

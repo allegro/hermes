@@ -23,9 +23,9 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdCo
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
+import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
@@ -65,9 +65,9 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperIn
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
-import javax.inject.Named;
 import java.time.Clock;
 import java.util.List;
+import javax.inject.Named;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -129,7 +129,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public CuratorClientFactory curatorClientFactory(ZookeeperClustersProperties zookeeperClustersProperties, DatacenterNameProvider datacenterNameProvider) {
+    public CuratorClientFactory curatorClientFactory(ZookeeperClustersProperties zookeeperClustersProperties,
+                                                     DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new CuratorClientFactory(zookeeperProperties);
     }
@@ -179,14 +180,19 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public CompositeMessageContentWrapper messageContentWrapper(JsonMessageContentWrapper jsonMessageContentWrapper,
-                                                                AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
-                                                                AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
-                                                                AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
-                                                                AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
-        return new CompositeMessageContentWrapper(jsonMessageContentWrapper, avroMessageContentWrapper, schemaIdAwareContentWrapper,
-                headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper,
+    public CompositeMessageContentWrapper messageContentWrapper(
+            JsonMessageContentWrapper jsonMessageContentWrapper,
+            AvroMessageContentWrapper avroMessageContentWrapper,
+            AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
+            AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
+            AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
+            AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
+        return new CompositeMessageContentWrapper(
+                jsonMessageContentWrapper,
+                avroMessageContentWrapper,
+                schemaIdAwareContentWrapper,
+                headerSchemaVersionContentWrapper,
+                headerSchemaIdContentWrapper,
                 schemaVersionTruncationContentWrapper);
     }
 
@@ -202,10 +208,11 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public AvroMessageSchemaVersionTruncationContentWrapper avroMessageSchemaVersionTruncationContentWrapper(SchemaRepository schemaRepository,
-                                                                                                             AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                                             DeserializationMetrics deserializationMetrics,
-                                                                                                             SchemaProperties schemaProperties) {
+    public AvroMessageSchemaVersionTruncationContentWrapper avroMessageSchemaVersionTruncationContentWrapper(
+            SchemaRepository schemaRepository,
+            AvroMessageContentWrapper avroMessageContentWrapper,
+            DeserializationMetrics deserializationMetrics,
+            SchemaProperties schemaProperties) {
         return new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper,
                 deserializationMetrics, schemaProperties.isVersionTruncationEnabled());
     }
@@ -216,26 +223,29 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public AvroMessageHeaderSchemaIdContentWrapper avroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
-                                                                                           AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                           DeserializationMetrics deserializationMetrics,
-                                                                                           SchemaProperties schemaProperties) {
+    public AvroMessageHeaderSchemaIdContentWrapper avroMessageHeaderSchemaIdContentWrapper(
+            SchemaRepository schemaRepository,
+            AvroMessageContentWrapper avroMessageContentWrapper,
+            DeserializationMetrics deserializationMetrics,
+            SchemaProperties schemaProperties) {
         return new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper,
                 deserializationMetrics, schemaProperties.isIdHeaderEnabled());
     }
 
     @Bean
-    public AvroMessageHeaderSchemaVersionContentWrapper avroMessageHeaderSchemaVersionContentWrapper(SchemaRepository schemaRepository,
-                                                                                                     AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                                     DeserializationMetrics deserializationMetrics) {
+    public AvroMessageHeaderSchemaVersionContentWrapper avroMessageHeaderSchemaVersionContentWrapper(
+            SchemaRepository schemaRepository,
+            AvroMessageContentWrapper avroMessageContentWrapper,
+            DeserializationMetrics deserializationMetrics) {
         return new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroMessageContentWrapper,
                 deserializationMetrics);
     }
 
     @Bean
-    public AvroMessageSchemaIdAwareContentWrapper avroMessageSchemaIdAwareContentWrapper(SchemaRepository schemaRepository,
-                                                                                         AvroMessageContentWrapper avroMessageContentWrapper,
-                                                                                         DeserializationMetrics deserializationMetrics) {
+    public AvroMessageSchemaIdAwareContentWrapper avroMessageSchemaIdAwareContentWrapper(
+            SchemaRepository schemaRepository,
+            AvroMessageContentWrapper avroMessageContentWrapper,
+            DeserializationMetrics deserializationMetrics) {
         return new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroMessageContentWrapper,
                 deserializationMetrics);
     }
@@ -251,7 +261,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ZookeeperPaths zookeeperPaths(ZookeeperClustersProperties zookeeperClustersProperties, DatacenterNameProvider datacenterNameProvider) {
+    public ZookeeperPaths zookeeperPaths(ZookeeperClustersProperties zookeeperClustersProperties,
+                                         DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new ZookeeperPaths(zookeeperProperties.getRoot());
     }
@@ -304,7 +315,8 @@ public class CommonConfiguration {
                 metricsProperties.getCounterExpireAfterAccess(),
                 zookeeperProperties.getBaseSleepTime(),
                 zookeeperProperties.getMaxRetries()
-        );    }
+        );
+    }
 
     @Bean
     public InstanceIdResolver instanceIdResolver() {

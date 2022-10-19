@@ -12,10 +12,10 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 
-import javax.annotation.PostConstruct;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
 
 @Component
 @ConditionalOnProperty(name = "management.health.enabled", havingValue = "true")
@@ -36,9 +36,11 @@ public class HealthCheckScheduler {
                                 ModeService modeService,
                                 MeterRegistry meterRegistry,
                                 @Value("${management.health.periodSeconds}") Long periodSeconds) {
-        String healthCheckPath = zookeeperPaths.nodeHealthPathForManagementHost(nodeDataProvider.getHostname(), nodeDataProvider.getServerPort());
+        String healthCheckPath =
+                zookeeperPaths.nodeHealthPathForManagementHost(nodeDataProvider.getHostname(), nodeDataProvider.getServerPort());
         this.period = periodSeconds;
-        this.healthCheckTask = new HealthCheckTask(zookeeperClientManager.getClients(), healthCheckPath, objectMapper, modeService, meterRegistry);
+        this.healthCheckTask =
+                new HealthCheckTask(zookeeperClientManager.getClients(), healthCheckPath, objectMapper, modeService, meterRegistry);
     }
 
     @PostConstruct

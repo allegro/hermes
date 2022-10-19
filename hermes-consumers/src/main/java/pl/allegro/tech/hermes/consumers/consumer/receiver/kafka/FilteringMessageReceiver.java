@@ -4,20 +4,20 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChain;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 public class FilteringMessageReceiver implements MessageReceiver {
-    private MessageReceiver receiver;
-    private FilteredMessageHandler filteredMessageHandler;
-    private FilterChainFactory filterChainFactory;
+    private final MessageReceiver receiver;
+    private final FilteredMessageHandler filteredMessageHandler;
+    private final FilterChainFactory filterChainFactory;
 
     private volatile FilterChain filterChain;
     private Subscription subscription;

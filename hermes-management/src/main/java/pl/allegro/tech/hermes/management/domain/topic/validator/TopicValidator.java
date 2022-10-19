@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
-import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
+import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
+import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -65,7 +65,8 @@ public class TopicValidator {
                 throw new TopicValidationException("Avro schema not available, migration not permitted", e);
             }
         } else if (contentTypeChanged(updated, previous)) {
-            throw new TopicValidationException("Cannot change content type, except for migration to Avro with setting migratedFromJsonType flag.");
+            throw new TopicValidationException(
+                    "Cannot change content type, except for migration to Avro with setting migratedFromJsonType flag.");
         } else if (migrationFromJsonTypeFlagChangedToFalse(updated, previous)) {
             throw new TopicValidationException("Cannot migrate back to JSON!");
         }
@@ -91,5 +92,7 @@ public class TopicValidator {
         contentTypeValidator.check(checked.getContentType());
     }
 
-    private void checkTopicLabels(Topic checked) { topicLabelsValidator.check(checked.getLabels()); }
+    private void checkTopicLabels(Topic checked) {
+        topicLabelsValidator.check(checked.getLabels());
+    }
 }

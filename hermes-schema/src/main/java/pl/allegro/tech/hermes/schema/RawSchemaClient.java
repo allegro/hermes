@@ -11,9 +11,9 @@ public interface RawSchemaClient {
 
     Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version);
 
-    Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic);
-
     Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId);
+
+    Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic);
 
     List<SchemaVersion> getVersions(TopicName topic);
 

@@ -2,7 +2,19 @@ package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.*;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.DELAYED_PROCESSING;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.DELAYED_SENDING;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.DELAYED_SENT_TO_KAFKA;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.ERROR_IN_SENDING_TO_KAFKA;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.FULLY_READ;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.INIT;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.PREMATURE_TIMEOUT;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.READING;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.READING_ERROR;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.READING_TIMEOUT;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.SENDING_TO_KAFKA;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.SENDING_TO_KAFKA_PRODUCER_QUEUE;
+import static pl.allegro.tech.hermes.frontend.publishing.message.MessageState.State.SENT_TO_KAFKA;
 
 public class MessageState {
 
@@ -78,7 +90,8 @@ public class MessageState {
     }
 
     public boolean setDelayedSentToKafka() {
-        return state.compareAndSet(DELAYED_SENDING, DELAYED_SENT_TO_KAFKA) || state.compareAndSet(DELAYED_PROCESSING, DELAYED_SENT_TO_KAFKA);
+        return state.compareAndSet(DELAYED_SENDING, DELAYED_SENT_TO_KAFKA)
+                || state.compareAndSet(DELAYED_PROCESSING, DELAYED_SENT_TO_KAFKA);
     }
 
     public void setTimeoutHasPassed() {

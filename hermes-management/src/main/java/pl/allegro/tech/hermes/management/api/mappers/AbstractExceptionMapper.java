@@ -23,5 +23,6 @@ abstract class AbstractExceptionMapper<T extends Throwable> implements Exception
     }
 
     abstract Response.Status httpStatus();
+
     abstract ErrorCode errorCode();
 }

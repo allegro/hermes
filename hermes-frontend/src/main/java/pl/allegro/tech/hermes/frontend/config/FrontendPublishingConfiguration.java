@@ -15,17 +15,17 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiterFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.DefaultTrackingHeaderExtractor;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersExtractor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersExtractor;
 import pl.allegro.tech.hermes.frontend.publishing.message.AvroEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.HeadersPropagator;
+import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
-import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -51,7 +51,8 @@ public class FrontendPublishingConfiguration {
                                    ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig,
                                    MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,
-                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(), handlersChainProperties).provide();
+                brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(),
+                handlersChainProperties).provide();
     }
 
     @Bean
@@ -113,6 +114,7 @@ public class FrontendPublishingConfiguration {
     public DefaultMessagePreviewPersister messagePreviewPersister(MessagePreviewLog messagePreviewLog,
                                                                   MessagePreviewRepository repository,
                                                                   MessagePreviewProperties messagePreviewProperties) {
-        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, messagePreviewProperties.getLogPersistPeriod(), messagePreviewProperties.isEnabled());
+        return new DefaultMessagePreviewPersister(messagePreviewLog, repository, messagePreviewProperties.getLogPersistPeriod(),
+                messagePreviewProperties.isEnabled());
     }
 }
