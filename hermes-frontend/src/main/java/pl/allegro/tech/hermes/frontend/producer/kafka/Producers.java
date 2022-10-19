@@ -17,7 +17,6 @@ import java.util.function.Predicate;
 
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
-
 public class Producers {
     private final Producer<byte[], byte[]> leaderConfirms;
     private final Producer<byte[], byte[]> everyoneConfirms;
@@ -91,27 +90,61 @@ public class Producers {
     }
 
     private void registerCompressionRateGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("compression-rate-avg", "producer-metrics", "average compression rate", Collections.emptyMap()), gauge);
+        registerProducerGauge(
+                producer,
+                metrics,
+                new MetricName("compression-rate-avg", "producer-metrics", "average compression rate", Collections.emptyMap()),
+                gauge
+        );
     }
 
     private void registerTotalBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("buffer-total-bytes", "producer-metrics", "buffer total bytes", Collections.emptyMap()), gauge);
+        registerProducerGauge(
+                producer,
+                metrics,
+                new MetricName("buffer-total-bytes", "producer-metrics", "buffer total bytes", Collections.emptyMap()),
+                gauge
+        );
     }
 
     private void registerAvailableBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("buffer-available-bytes", "producer-metrics", "buffer available bytes", Collections.emptyMap()), gauge);
+        registerProducerGauge(
+                producer,
+                metrics,
+                new MetricName("buffer-available-bytes", "producer-metrics", "buffer available bytes", Collections.emptyMap()),
+                gauge
+        );
     }
 
     private void registerFailedBatchesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("record-error-total", "producer-metrics", "failed publishing batches", Collections.emptyMap()), gauge);
+        registerProducerGauge(
+                producer,
+                metrics,
+                new MetricName("record-error-total", "producer-metrics", "failed publishing batches", Collections.emptyMap()),
+                gauge
+        );
     }
 
     private void registerRecordQueueTimeMaxGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("record-queue-time-max", "producer-metrics", "maximum time [ms] that batch spent in the send buffer", Collections.emptyMap()), gauge);
+        registerProducerGauge(
+                producer,
+                metrics,
+                new MetricName(
+                        "record-queue-time-max",
+                        "producer-metrics",
+                        "maximum time [ms] that batch spent in the send buffer",
+                        Collections.emptyMap()),
+                gauge
+        );
     }
 
     private void registerMetadataAgeGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(producer, metrics, new MetricName("metadata-age", "producer-metrics", "age [s] of metadata", Collections.emptyMap()), gauge);
+        registerProducerGauge(
+                producer,
+                metrics,
+                new MetricName("metadata-age", "producer-metrics", "age [s] of metadata", Collections.emptyMap()),
+                gauge
+        );
     }
 
     private void registerProducerGauge(final Producer<byte[], byte[]> producer,
