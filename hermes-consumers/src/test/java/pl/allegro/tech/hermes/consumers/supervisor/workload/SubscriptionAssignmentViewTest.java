@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
-import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;

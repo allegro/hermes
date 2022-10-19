@@ -45,7 +45,7 @@ public class HermesMockRule implements MethodRule, TestRule {
         hermesMock.resetReceivedJsonRequests(topicName, clazz, predicate);
     }
 
-    public void resetMappings(){
+    public void resetMappings() {
         hermesMock.resetMappings();
     }
 

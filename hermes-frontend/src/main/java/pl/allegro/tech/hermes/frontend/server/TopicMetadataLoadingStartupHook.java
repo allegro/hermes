@@ -10,13 +10,14 @@ public class TopicMetadataLoadingStartupHook {
 
     private final boolean isTopicMetadataLoadingStartupHookEnabled;
 
-    public TopicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, boolean isTopicMetadataLoadingStartupHookEnabled) {
+    public TopicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
+                                           boolean isTopicMetadataLoadingStartupHookEnabled) {
         this.topicMetadataLoadingRunner = topicMetadataLoadingRunner;
         this.isTopicMetadataLoadingStartupHookEnabled = isTopicMetadataLoadingStartupHookEnabled;
     }
 
     public void run() {
-        if(isTopicMetadataLoadingStartupHookEnabled) {
+        if (isTopicMetadataLoadingStartupHookEnabled) {
             try {
                 topicMetadataLoadingRunner.refreshMetadata();
             } catch (Exception e) {

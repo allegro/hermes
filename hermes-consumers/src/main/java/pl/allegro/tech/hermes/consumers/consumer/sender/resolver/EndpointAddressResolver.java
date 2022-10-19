@@ -21,16 +21,16 @@ public interface EndpointAddressResolver {
         return resolve(address);
     }
 
-    default List<URI> resolveAll(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
-            throws EndpointAddressResolutionException {
-        return Collections.singletonList(resolve(address, message, metadata));
-    }
-
     static URI resolve(EndpointAddress address) throws EndpointAddressResolutionException {
         try {
             return address.getUri();
         } catch (Exception ex) {
             throw new EndpointAddressResolutionException(address, ex);
         }
+    }
+
+    default List<URI> resolveAll(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
+            throws EndpointAddressResolutionException {
+        return Collections.singletonList(resolve(address, message, metadata));
     }
 }

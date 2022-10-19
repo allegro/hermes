@@ -37,6 +37,8 @@ public interface HermesResponse {
     }
 
     /**
+     * Retrieves failed HermesMessage.
+     *
      * @deprecated as of Hermes 1.2.4, in favor of {@link #getHermesMessage()}
      */
     @Deprecated

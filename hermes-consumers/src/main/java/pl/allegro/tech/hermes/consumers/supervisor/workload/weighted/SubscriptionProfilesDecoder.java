@@ -34,9 +34,9 @@ class SubscriptionProfilesDecoder {
         header.wrap(buffer, 0);
 
         if (header.schemaId() != ProfilesDecoder.SCHEMA_ID || header.templateId() != ProfilesDecoder.TEMPLATE_ID) {
-            logger.warn("Unable to decode subscription profiles, schema or template id mismatch. " +
-                            "Required by decoder: [schema id={}, template id={}], " +
-                            "encoded in payload: [schema id={}, template id={}]",
+            logger.warn("Unable to decode subscription profiles, schema or template id mismatch. "
+                            + "Required by decoder: [schema id={}, template id={}], "
+                            + "encoded in payload: [schema id={}, template id={}]",
                     ProfilesDecoder.SCHEMA_ID, ProfilesDecoder.TEMPLATE_ID,
                     header.schemaId(), header.templateId());
             return SubscriptionProfiles.EMPTY;

@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.client;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -52,9 +50,8 @@ public class HermesMessage {
     }
 
     /**
-     * Message on given topic with given MIME Content Type.
-     * <p>
-     * Use builder via: HermesMessage#hermesMessage instead.
+     * <p>Message on given topic with given MIME Content Type.</p>
+     * <p>Use builder via: HermesMessage#hermesMessage instead.</p>
      *
      * @param topic       topic name
      * @param contentType MIME content type

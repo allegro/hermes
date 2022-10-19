@@ -71,9 +71,9 @@ public class NotificationsBasedSubscriptionCache implements SubscriptionsCache, 
 
     @Override
     public void start() {
-        for(String groupName : groupRepository.listGroupNames()) {
-            for(String topicName : topicRepository.listTopicNames(groupName)) {
-                for(Subscription subscription : subscriptionRepository.listSubscriptions(new TopicName(groupName, topicName))) {
+        for (String groupName : groupRepository.listGroupNames()) {
+            for (String topicName : topicRepository.listTopicNames(groupName)) {
+                for (Subscription subscription : subscriptionRepository.listSubscriptions(new TopicName(groupName, topicName))) {
                     subscriptions.put(subscription.getQualifiedName(), subscription);
                 }
             }

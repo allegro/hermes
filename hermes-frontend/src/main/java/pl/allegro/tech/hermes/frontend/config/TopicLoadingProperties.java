@@ -13,7 +13,7 @@ public class TopicLoadingProperties {
 
     private MetadataRefreshJobProperties metadataRefreshJob = new MetadataRefreshJobProperties();
 
-    public static class MetadataLoadingProperties{
+    public static class MetadataLoadingProperties {
 
         private boolean enabled = false;
 
@@ -56,7 +56,7 @@ public class TopicLoadingProperties {
         }
     }
 
-    public static class SchemaLoadingProperties{
+    public static class SchemaLoadingProperties {
 
         private boolean enabled = false;
 

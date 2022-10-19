@@ -2,7 +2,11 @@ package pl.allegro.tech.hermes.domain.topic.preview;
 
 import pl.allegro.tech.hermes.api.TopicName;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TopicsMessagesPreview {
 

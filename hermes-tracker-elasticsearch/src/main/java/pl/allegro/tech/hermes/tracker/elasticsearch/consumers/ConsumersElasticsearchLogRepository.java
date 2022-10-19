@@ -20,10 +20,16 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 import java.io.IOException;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.*;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FAILED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FILTERED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
 
-public class ConsumersElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument> implements LogRepository, LogSchemaAware {
+public class ConsumersElasticsearchLogRepository
+        extends BatchingLogRepository<ElasticsearchDocument>
+        implements LogRepository, LogSchemaAware {
 
     private static final int DOCUMENT_EXPECTED_SIZE = 1024;
 

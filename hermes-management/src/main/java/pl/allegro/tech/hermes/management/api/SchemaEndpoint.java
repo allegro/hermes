@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
+import java.util.Optional;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -26,7 +27,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
@@ -71,8 +71,8 @@ public class SchemaEndpoint {
     public Response getById(@PathParam("topicName") String qualifiedTopicName, @PathParam("id") int id) {
         Optional<RawSchema> rawSchema = schemaService.getSchema(qualifiedTopicName, SchemaId.valueOf(id));
         return rawSchema.map(RawSchema::value)
-            .map(v -> Response.ok(v).build())
-            .orElse(Response.noContent().build());
+                .map(v -> Response.ok(v).build())
+                .orElse(Response.noContent().build());
     }
 
     @POST

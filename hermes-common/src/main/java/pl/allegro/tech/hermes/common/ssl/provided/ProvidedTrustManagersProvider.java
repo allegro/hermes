@@ -3,10 +3,10 @@ package pl.allegro.tech.hermes.common.ssl.provided;
 import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 import pl.allegro.tech.hermes.common.ssl.TrustManagersProvider;
 
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.InputStream;
 import java.security.KeyStore;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 public class ProvidedTrustManagersProvider implements TrustManagersProvider, ResourceLoader {
 

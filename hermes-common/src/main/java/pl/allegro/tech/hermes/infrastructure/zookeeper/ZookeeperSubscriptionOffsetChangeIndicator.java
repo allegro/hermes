@@ -34,10 +34,18 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
     }
 
     @Override
-    public void setSubscriptionOffset(TopicName topicName, String subscriptionName, String brokersClusterName, PartitionOffset partitionOffset) {
+    public void setSubscriptionOffset(TopicName topicName,
+                                      String subscriptionName,
+                                      String brokersClusterName,
+                                      PartitionOffset partitionOffset) {
         subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
 
-        String offsetPath = paths.offsetPath(topicName, subscriptionName, partitionOffset.getTopic(), brokersClusterName, partitionOffset.getPartition());
+        String offsetPath = paths.offsetPath(
+                topicName,
+                subscriptionName,
+                partitionOffset.getTopic(),
+                brokersClusterName,
+                partitionOffset.getPartition());
         try {
             byte[] offset = String.valueOf(partitionOffset.getOffset()).getBytes(StandardCharsets.UTF_8);
             if (zookeeper.checkExists().forPath(offsetPath) == null) {
@@ -65,13 +73,21 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
     }
 
     @Override
-    public boolean areOffsetsMoved(TopicName topicName, String subscriptionName, String brokersClusterName,
-                                   KafkaTopic kafkaTopic, List<Integer> partitionIds) {
-        return partitionIds.stream().allMatch(partitionId -> offsetDoesNotExist(topicName, subscriptionName, brokersClusterName, partitionId, kafkaTopic));
+    public boolean areOffsetsMoved(TopicName topicName,
+                                   String subscriptionName,
+                                   String brokersClusterName,
+                                   KafkaTopic kafkaTopic,
+                                   List<Integer> partitionIds) {
+        return partitionIds.stream()
+                .allMatch(partitionId -> offsetDoesNotExist(topicName, subscriptionName, brokersClusterName, partitionId, kafkaTopic));
     }
 
     @Override
-    public void removeOffset(TopicName topicName, String subscriptionName, String brokersClusterName, KafkaTopicName kafkaTopicName, int partitionId) {
+    public void removeOffset(TopicName topicName,
+                             String subscriptionName,
+                             String brokersClusterName,
+                             KafkaTopicName kafkaTopicName,
+                             int partitionId) {
         String offsetPath = paths.offsetPath(topicName, subscriptionName, kafkaTopicName, brokersClusterName, partitionId);
 
         try {
@@ -81,7 +97,11 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         }
     }
 
-    private boolean offsetDoesNotExist(TopicName topicName, String subscriptionName, String brokersClusterName, Integer partitionId,  KafkaTopic kafkaTopic) {
+    private boolean offsetDoesNotExist(TopicName topicName,
+                                       String subscriptionName,
+                                       String brokersClusterName,
+                                       Integer partitionId,
+                                       KafkaTopic kafkaTopic) {
         String offsetPath = paths.offsetPath(topicName, subscriptionName, kafkaTopic.name(), brokersClusterName, partitionId);
         try {
             boolean result = zookeeper.checkExists().forPath(offsetPath) == null;
@@ -94,7 +114,10 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         }
     }
 
-    private PartitionOffsets getOffsetsForKafkaTopic(TopicName topic, KafkaTopicName kafkaTopicName, String subscriptionName, String brokersClusterName) {
+    private PartitionOffsets getOffsetsForKafkaTopic(TopicName topic,
+                                                     KafkaTopicName kafkaTopicName,
+                                                     String subscriptionName,
+                                                     String brokersClusterName) {
         String offsetsPath = paths.offsetsPath(topic, subscriptionName, kafkaTopicName, brokersClusterName);
 
         PartitionOffsets offsets = new PartitionOffsets();
@@ -117,8 +140,11 @@ public class ZookeeperSubscriptionOffsetChangeIndicator implements SubscriptionO
         }
     }
 
-    private Long getOffsetForPartition(TopicName topic, KafkaTopicName kafkaTopicName,
-                                       String subscriptionName, String brokersClusterName, int partitionId) {
+    private Long getOffsetForPartition(TopicName topic,
+                                       KafkaTopicName kafkaTopicName,
+                                       String subscriptionName,
+                                       String brokersClusterName,
+                                       int partitionId) {
         try {
             String offsetPath = paths.offsetPath(topic,
                     subscriptionName,

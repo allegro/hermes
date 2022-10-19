@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import java.util.Collections;
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.broker.BrokerStorage;
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.common.exception.PartitionsNotFoundForGivenTopicException;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+
+import java.util.Collections;
 
 public class OffsetsAvailableChecker {
 
@@ -29,8 +30,8 @@ public class OffsetsAvailableChecker {
                 consumerPool.get(topic, partition).beginningOffsets(Collections.singleton(topicPartition));
                 return true;
             });
-        } catch (PartitionsNotFoundForGivenTopicException | BrokerNotFoundForPartitionException |
-                org.apache.kafka.common.errors.TimeoutException e) {
+        } catch (PartitionsNotFoundForGivenTopicException | BrokerNotFoundForPartitionException
+                 | org.apache.kafka.common.errors.TimeoutException e) {
             logger.debug("Offsets reported as not available due to failure", e);
             return false;
         }

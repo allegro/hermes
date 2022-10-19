@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
+import javax.validation.constraints.NotNull;
 
 public final class MonitoringDetails {
     public static final MonitoringDetails EMPTY = new MonitoringDetails(Severity.NON_IMPORTANT, "");
@@ -30,22 +30,17 @@ public final class MonitoringDetails {
         return reaction;
     }
 
-    public enum Severity {
-        @JsonProperty("CRITICAL")
-        CRITICAL,
-        @JsonProperty("IMPORTANT")
-        IMPORTANT,
-        @JsonProperty("NON_IMPORTANT")
-        NON_IMPORTANT
-    }
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MonitoringDetails)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MonitoringDetails)) {
+            return false;
+        }
         MonitoringDetails that = (MonitoringDetails) o;
-        return severity == that.severity &&
-                Objects.equals(reaction, that.reaction);
+        return severity == that.severity
+                && Objects.equals(reaction, that.reaction);
     }
 
     @Override
@@ -55,9 +50,18 @@ public final class MonitoringDetails {
 
     @Override
     public String toString() {
-        return "MonitoringDetails{" +
-                "severity=" + severity +
-                ", reaction='" + reaction + '\'' +
-                '}';
+        return "MonitoringDetails{"
+                + "severity=" + severity
+                + ", reaction='" + reaction + '\''
+                + '}';
+    }
+
+    public enum Severity {
+        @JsonProperty("CRITICAL")
+        CRITICAL,
+        @JsonProperty("IMPORTANT")
+        IMPORTANT,
+        @JsonProperty("NON_IMPORTANT")
+        NON_IMPORTANT
     }
 }

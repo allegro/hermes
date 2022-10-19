@@ -23,7 +23,6 @@ class MaxRateBalancer {
     }
 
     Optional<Map<String, MaxRate>> balance(double subscriptionMax, Set<ConsumerRateInfo> rateInfos) {
-        double minChange = (minAllowedChangePercent / 100) * subscriptionMax;
         double defaultRate = Math.max(minMax, subscriptionMax / Math.max(1, rateInfos.size()));
 
         if (shouldResortToDefaults(subscriptionMax, rateInfos)) {
@@ -48,6 +47,7 @@ class MaxRateBalancer {
             return Optional.empty();
         }
 
+        double minChange = (minAllowedChangePercent / 100) * subscriptionMax;
         NotBusyBalancer.Result notBusyChanges = handleNotBusy(notBusy, minChange);
         Map<String, MaxRate> busyUpdates =
                 handleBusy(minChange, busy, notBusyChanges.getReleasedRate()).calculateNewMaxRates();

@@ -13,7 +13,8 @@ class SchemaRegistryValidationResponse {
     private final List<SchemaRegistryValidationError> errors;
 
     @JsonCreator
-    SchemaRegistryValidationResponse(@JsonProperty("is_valid") boolean valid, @JsonProperty("errors") List<SchemaRegistryValidationError> errors) {
+    SchemaRegistryValidationResponse(@JsonProperty("is_valid") boolean valid,
+                                     @JsonProperty("errors") List<SchemaRegistryValidationError> errors) {
         this.valid = valid;
         this.errors = errors;
     }
@@ -24,6 +25,8 @@ class SchemaRegistryValidationResponse {
 
     @JsonIgnore
     public String getErrorsMessage() {
-        return errors.stream().map(error -> error.getMessage()).collect(Collectors.joining(". "));
+        return errors.stream()
+                .map(SchemaRegistryValidationError::getMessage)
+                .collect(Collectors.joining(". "));
     }
 }

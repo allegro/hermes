@@ -46,7 +46,7 @@ public class HierarchicalCache {
         this.levelPrefixes.addAll(levelPrefixes);
         this.maxDepth = maxDepth;
 
-        for(int i = 0; i < maxDepth; ++i) {
+        for (int i = 0; i < maxDepth; ++i) {
             levelCallbacks.add(new CacheListeners());
         }
     }

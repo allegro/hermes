@@ -20,7 +20,9 @@ public class MessageFilters implements MessageFilterSource {
 
     @Override
     public MessageFilter compile(MessageFilterSpecification specification) {
-        if (!filters.containsKey(specification.getType())) throw new NoSuchFilterException(specification.getType());
+        if (!filters.containsKey(specification.getType())) {
+            throw new NoSuchFilterException(specification.getType());
+        }
         return filters.get(specification.getType()).getMessageFilter(specification);
     }
 

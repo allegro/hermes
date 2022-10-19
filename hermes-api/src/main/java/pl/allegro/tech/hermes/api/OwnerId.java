@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
+import javax.validation.constraints.NotNull;
 
 public final class OwnerId {
 
@@ -31,11 +31,15 @@ public final class OwnerId {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         OwnerId that = (OwnerId) o;
-        return Objects.equals(source, that.source) &&
-                Objects.equals(id, that.id);
+        return Objects.equals(source, that.source)
+                && Objects.equals(id, that.id);
     }
 
     @Override
@@ -45,9 +49,9 @@ public final class OwnerId {
 
     @Override
     public String toString() {
-        return "OwnerId{" +
-                "source='" + source + '\'' +
-                ", id='" + id + '\'' +
-                '}';
+        return "OwnerId{"
+                + "source='" + source + '\''
+                + ", id='" + id + '\''
+                + '}';
     }
 }

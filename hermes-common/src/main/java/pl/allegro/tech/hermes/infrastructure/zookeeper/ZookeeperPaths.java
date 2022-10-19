@@ -98,12 +98,25 @@ public class ZookeeperPaths {
         return subscriptionPath(subscriptionName.getTopicName(), subscriptionName.getName(), METRICS_PATH, metricName);
     }
 
-    public String offsetPath(TopicName topicName, String subscriptionName, KafkaTopicName kafkaTopicName, String brokersClusterName, int partitionId) {
-        return Joiner.on(URL_SEPARATOR).join(offsetsPath(topicName, subscriptionName, kafkaTopicName, brokersClusterName), partitionId);
+    public String offsetPath(TopicName topicName,
+                             String subscriptionName,
+                             KafkaTopicName kafkaTopicName,
+                             String brokersClusterName,
+                             int partitionId) {
+        return Joiner.on(URL_SEPARATOR).join(
+                offsetsPath(topicName, subscriptionName, kafkaTopicName, brokersClusterName),
+                partitionId);
     }
 
-    public String offsetsPath(TopicName topicName, String subscriptionName, KafkaTopicName kafkaTopicName, String brokersClusterName) {
-        return Joiner.on(URL_SEPARATOR).join(subscribedKafkaTopicsPath(topicName, subscriptionName), kafkaTopicName.asString(), "offset", brokersClusterName);
+    public String offsetsPath(TopicName topicName,
+                              String subscriptionName,
+                              KafkaTopicName kafkaTopicName,
+                              String brokersClusterName) {
+        return Joiner.on(URL_SEPARATOR).join(
+                subscribedKafkaTopicsPath(topicName, subscriptionName),
+                kafkaTopicName.asString(),
+                "offset",
+                brokersClusterName);
     }
 
     public String subscribedKafkaTopicsPath(TopicName topicName, String subscriptionName) {

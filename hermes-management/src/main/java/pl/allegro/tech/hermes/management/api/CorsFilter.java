@@ -10,12 +10,12 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 
 @Provider
-public class CORSFilter implements ContainerResponseFilter {
+public class CorsFilter implements ContainerResponseFilter {
 
     private final CorsProperties corsProperties;
 
     @Autowired
-    public CORSFilter(CorsProperties corsProperties) {
+    public CorsFilter(CorsProperties corsProperties) {
         this.corsProperties = corsProperties;
     }
 

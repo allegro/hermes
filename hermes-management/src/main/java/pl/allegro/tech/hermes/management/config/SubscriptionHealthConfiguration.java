@@ -47,7 +47,9 @@ public class SubscriptionHealthConfiguration {
     @Bean
     public SubscriptionHealthProblemIndicator unreachableIndicator() {
         if (subscriptionHealthProperties.isUnreachableIndicatorEnabled()) {
-            return new UnreachableIndicator(subscriptionHealthProperties.getMaxOtherErrorsRatio(), subscriptionHealthProperties.getMinSubscriptionRateForReliableMetrics());
+            return new UnreachableIndicator(
+                    subscriptionHealthProperties.getMaxOtherErrorsRatio(),
+                    subscriptionHealthProperties.getMinSubscriptionRateForReliableMetrics());
         }
         return DISABLED_INDICATOR;
     }
@@ -55,7 +57,9 @@ public class SubscriptionHealthConfiguration {
     @Bean
     public SubscriptionHealthProblemIndicator timingOutIndicator() {
         if (subscriptionHealthProperties.isTimingOutIndicatorEnabled()) {
-            return new TimingOutIndicator(subscriptionHealthProperties.getMaxTimeoutsRatio(), subscriptionHealthProperties.getMinSubscriptionRateForReliableMetrics());
+            return new TimingOutIndicator(
+                    subscriptionHealthProperties.getMaxTimeoutsRatio(),
+                    subscriptionHealthProperties.getMinSubscriptionRateForReliableMetrics());
         }
         return DISABLED_INDICATOR;
     }
@@ -63,7 +67,9 @@ public class SubscriptionHealthConfiguration {
     @Bean
     public SubscriptionHealthProblemIndicator malfunctioningIndicator() {
         if (subscriptionHealthProperties.isMalfunctioningIndicatorEnabled()) {
-            return new MalfunctioningIndicator(subscriptionHealthProperties.getMax5xxErrorsRatio(), subscriptionHealthProperties.getMinSubscriptionRateForReliableMetrics());
+            return new MalfunctioningIndicator(
+                    subscriptionHealthProperties.getMax5xxErrorsRatio(),
+                    subscriptionHealthProperties.getMinSubscriptionRateForReliableMetrics());
         }
         return DISABLED_INDICATOR;
     }
@@ -71,7 +77,9 @@ public class SubscriptionHealthConfiguration {
     @Bean
     public SubscriptionHealthProblemIndicator receivingMalformedMessagesIndicator() {
         if (subscriptionHealthProperties.isReceivingMalformedMessagesIndicatorEnabled()) {
-            return new ReceivingMalformedMessagesIndicator(subscriptionHealthProperties.getMax4xxErrorsRatio(), subscriptionHealthProperties.getMinSubscriptionRateForReliableMetrics());
+            return new ReceivingMalformedMessagesIndicator(
+                    subscriptionHealthProperties.getMax4xxErrorsRatio(),
+                    subscriptionHealthProperties.getMinSubscriptionRateForReliableMetrics());
         }
         return DISABLED_INDICATOR;
     }

@@ -14,22 +14,13 @@ public enum TrackingMode {
         this.value = s;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public String toString() {
-        return this.value;
-    }
-
     public static Optional<TrackingMode> fromString(String trackingMode) {
 
-        if(trackingMode == null) {
+        if (trackingMode == null) {
             return Optional.empty();
         }
 
-        switch(trackingMode){
+        switch (trackingMode) {
             case "trackingAll":
                 return Optional.of(TRACK_ALL);
             case "discardedOnly":
@@ -38,5 +29,14 @@ public enum TrackingMode {
             default:
                 return Optional.of(TRACKING_OFF);
         }
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return this.value;
     }
 }

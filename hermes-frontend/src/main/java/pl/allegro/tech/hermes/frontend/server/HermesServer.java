@@ -23,9 +23,6 @@ import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 
 public class HermesServer {
 
-    private Undertow undertow;
-    private HermesShutdownHandler gracefulShutdown;
-
     private final HermesMetrics hermesMetrics;
     private final HermesServerParameters hermesServerParameters;
     private final SslParameters sslParameters;
@@ -37,6 +34,8 @@ public class HermesServer {
     private final TopicMetadataLoadingJob topicMetadataLoadingJob;
     private final boolean topicMetadataLoadingJobEnabled;
     private final SslContextFactoryProvider sslContextFactoryProvider;
+    private Undertow undertow;
+    private HermesShutdownHandler gracefulShutdown;
 
     public HermesServer(
             SslParameters sslParameters,
@@ -76,7 +75,7 @@ public class HermesServer {
     }
 
     public void stop() throws InterruptedException {
-        if(hermesServerParameters.isGracefulShutdownEnabled()) {
+        if (hermesServerParameters.isGracefulShutdownEnabled()) {
             prepareForGracefulShutdown();
         }
         shutdown();
@@ -119,7 +118,8 @@ public class HermesServer {
                 .setHandler(gracefulShutdown);
 
         if (sslParameters.isEnabled()) {
-            builder.addHttpsListener(sslParameters.getPort(), hermesServerParameters.getHost(), sslContextFactoryProvider.getSslContextFactory().create().getSslContext())
+            builder.addHttpsListener(sslParameters.getPort(), hermesServerParameters.getHost(),
+                            sslContextFactoryProvider.getSslContextFactory().create().getSslContext())
                     .setSocketOption(SSL_CLIENT_AUTH_MODE,
                             SslClientAuthMode.valueOf(sslParameters.getClientAuthMode().toUpperCase()))
                     .setServerOption(ENABLE_HTTP2, hermesServerParameters.isHttp2Enabled());
@@ -132,7 +132,7 @@ public class HermesServer {
         HttpHandler healthCheckHandler = new HealthCheckHandler(healthCheckService);
         HttpHandler readinessHandler = new ReadinessCheckHandler(readinessChecker, healthCheckService);
 
-        RoutingHandler routingHandler =  new RoutingHandler()
+        RoutingHandler routingHandler = new RoutingHandler()
                 .post("/topics/{qualifiedTopicName}", publishingHandler)
                 .get("/status/ping", healthCheckHandler)
                 .get("/status/health", healthCheckHandler)

@@ -144,6 +144,11 @@ public class SubscriptionService {
         return subscription;
     }
 
+    private CompletableFuture<List<Subscription>> getSubscriptionDetails(Collection<SubscriptionName> subscriptionNames) {
+        return CompletableFuture.supplyAsync(() ->
+                subscriptionRepository.getSubscriptionDetails(subscriptionNames), subscriptionHealthCheckExecutorService);
+    }
+
     private Subscription.State getEffectiveState(TopicName topicName, String subscriptionName) {
         Set<Subscription.State> states = loadSubscriptionStatesFromAllDc(topicName, subscriptionName);
 
@@ -185,7 +190,8 @@ public class SubscriptionService {
                                    String subscriptionName,
                                    PatchData patch,
                                    RequestUser modifiedBy) {
-        auditor.beforeObjectUpdate(modifiedBy.getUsername(), Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patch);
+        auditor.beforeObjectUpdate(modifiedBy.getUsername(), Subscription.class.getSimpleName(),
+                new SubscriptionName(subscriptionName, topicName), patch);
 
         Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
         Subscription.State oldState = retrieved.getState();
@@ -209,7 +215,11 @@ public class SubscriptionService {
     public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state, RequestUser modifiedBy) {
         if (state != Subscription.State.PENDING) {
             PatchData patchData = PatchData.patchData().set("state", state).build();
-            auditor.beforeObjectUpdate(modifiedBy.getUsername(), Subscription.class.getSimpleName(), new SubscriptionName(subscriptionName, topicName), patchData);
+            auditor.beforeObjectUpdate(
+                    modifiedBy.getUsername(),
+                    Subscription.class.getSimpleName(),
+                    new SubscriptionName(subscriptionName, topicName),
+                    patchData);
             Subscription retrieved = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
             if (!retrieved.getState().equals(state)) {
                 Subscription updated = Patch.apply(retrieved, patchData);
@@ -334,12 +344,10 @@ public class SubscriptionService {
         return CompletableFuture.supplyAsync(() -> getForOwnerId(ownerId));
     }
 
-    private CompletableFuture<List<Subscription>> getSubscriptionDetails(Collection<SubscriptionName> subscriptionNames) {
-        return CompletableFuture.supplyAsync(() -> subscriptionRepository.getSubscriptionDetails(subscriptionNames), subscriptionHealthCheckExecutorService);
-    }
-
-    private List<CompletableFuture<UnhealthySubscription>> filterSubscriptions(Collection<Subscription> subscriptions, boolean respectMonitoringSeverity,
-                                                                               List<String> subscriptionNames, List<String> qualifiedTopicNames) {
+    private List<CompletableFuture<UnhealthySubscription>> filterSubscriptions(Collection<Subscription> subscriptions,
+                                                                               boolean respectMonitoringSeverity,
+                                                                               List<String> subscriptionNames,
+                                                                               List<String> qualifiedTopicNames) {
         boolean shouldFilterBySubscriptionNames = CollectionUtils.isNotEmpty(subscriptionNames);
         boolean shouldFilterByQualifiedTopicNames = CollectionUtils.isNotEmpty(qualifiedTopicNames);
 
@@ -350,10 +358,13 @@ public class SubscriptionService {
             subscriptionStream = subscriptionStream.filter(s -> filterBySubscriptionNames(subscriptionNames, s.getName()));
         }
         if (shouldFilterByQualifiedTopicNames) {
-            subscriptionStream = subscriptionStream.filter(s -> filterByQualifiedTopicNames(qualifiedTopicNames, s.getQualifiedTopicName()));
+            subscriptionStream =
+                    subscriptionStream.filter(s -> filterByQualifiedTopicNames(qualifiedTopicNames, s.getQualifiedTopicName()));
         }
 
-        return subscriptionStream.map(s -> CompletableFuture.supplyAsync(() -> getUnhealthy(s), subscriptionHealthCheckExecutorService)).collect(toList());
+        return subscriptionStream
+                .map(s -> CompletableFuture.supplyAsync(() -> getUnhealthy(s), subscriptionHealthCheckExecutorService))
+                .collect(toList());
     }
 
     private boolean filterBySubscriptionNames(List<String> subscriptionNames, String subscriptionName) {

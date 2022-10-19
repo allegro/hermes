@@ -13,7 +13,7 @@ public class OffsetsToCommit {
 
     public OffsetsToCommit add(SubscriptionPartitionOffset offset) {
         Set<SubscriptionPartitionOffset> subscriptionOffsets = offsets.get(offset.getSubscriptionName());
-        if(subscriptionOffsets == null) {
+        if (subscriptionOffsets == null) {
             subscriptionOffsets = new HashSet<>();
             offsets.put(offset.getSubscriptionName(), subscriptionOffsets);
         }

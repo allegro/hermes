@@ -63,7 +63,8 @@ public class KafkaRetransmissionService implements RetransmissionService {
     public boolean areOffsetsMoved(Topic topic, String subscriptionName, String brokersClusterName) {
         return kafkaNamesMapper.toKafkaTopics(topic).allMatch(kafkaTopic -> {
             List<Integer> partitionIds = brokerStorage.readPartitionsIds(kafkaTopic.name().asString());
-            return subscriptionOffsetChange.areOffsetsMoved(topic.getName(), subscriptionName, brokersClusterName, kafkaTopic, partitionIds);
+            return subscriptionOffsetChange.areOffsetsMoved(
+                    topic.getName(), subscriptionName, brokersClusterName, kafkaTopic, partitionIds);
         });
     }
 
@@ -71,7 +72,10 @@ public class KafkaRetransmissionService implements RetransmissionService {
         return consumerPool.get(kafkaTopic, partition);
     }
 
-    private long findClosestOffsetJustBeforeTimestamp(KafkaConsumer<byte[], byte[]> consumer, KafkaTopic kafkaTopic, int partition, long timestamp) {
+    private long findClosestOffsetJustBeforeTimestamp(KafkaConsumer<byte[], byte[]> consumer,
+                                                      KafkaTopic kafkaTopic,
+                                                      int partition,
+                                                      long timestamp) {
         long endOffset = getEndingOffset(consumer, kafkaTopic, partition);
         TopicPartition topicPartition = new TopicPartition(kafkaTopic.name().asString(), partition);
         return Optional.ofNullable(consumer.offsetsForTimes(Collections.singletonMap(topicPartition, timestamp)).get(topicPartition))

@@ -43,13 +43,17 @@ public class ConsumerGroup {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ConsumerGroup that = (ConsumerGroup) o;
-        return Objects.equals(clusterName, that.clusterName) &&
-                Objects.equals(groupId, that.groupId) &&
-                Objects.equals(state, that.state) &&
-                Objects.equals(members, that.members);
+        return Objects.equals(clusterName, that.clusterName)
+                && Objects.equals(groupId, that.groupId)
+                && Objects.equals(state, that.state)
+                && Objects.equals(members, that.members);
     }
 
     @Override

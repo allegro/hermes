@@ -4,13 +4,13 @@ import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.HermesSender;
 
+import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.concurrent.CompletableFuture;
 
 import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 

@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.management.api.auth;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import java.security.Principal;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.SecurityContext;
-import java.security.Principal;
 
 public class AllowAllSecurityProvider implements SecurityProvider {
 

@@ -122,8 +122,8 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
 
         @Override
         public boolean matches(String name, Metric metric) {
-            return (metric instanceof Counter && !name.startsWith(offsetPrefix)) ||
-                    (metric instanceof Meter && name.startsWith(Meters.THROUGHPUT_BYTES + "."));
+            return (metric instanceof Counter && !name.startsWith(offsetPrefix))
+                    || (metric instanceof Meter && name.startsWith(Meters.THROUGHPUT_BYTES + "."));
         }
     }
 }
