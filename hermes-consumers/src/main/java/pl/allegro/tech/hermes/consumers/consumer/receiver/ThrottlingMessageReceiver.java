@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.idleTime.IdleTimeCalculator;
+import pl.allegro.tech.hermes.consumers.consumer.idletime.IdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
 import java.util.Optional;

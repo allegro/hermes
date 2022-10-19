@@ -40,13 +40,12 @@ public class ZookeeperResource extends ExternalResource {
     
     @Override
     protected void before() throws Throwable {
-        if(initializeOnce) {
-            if(zookeeperStarter == null) {
+        if (initializeOnce) {
+            if (zookeeperStarter == null) {
                 zookeeperStarter = new Starter(curatorPort, initializer);
                 zookeeperStarter.start();
             }
-        }
-        else {
+        } else {
             zookeeperStarter = new Starter(curatorPort, initializer);
             zookeeperStarter.start();
         }
@@ -54,10 +53,9 @@ public class ZookeeperResource extends ExternalResource {
 
     @Override
     protected void after() {
-        if(!initializeOnce) {
+        if (!initializeOnce) {
             zookeeperStarter.stop();
-        }
-        else {
+        } else {
             zookeeperStarter.registerShutdownHook();
         }
     }

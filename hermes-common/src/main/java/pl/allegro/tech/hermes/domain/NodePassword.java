@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.RandomStringUtils;
 
 import java.util.Arrays;
 

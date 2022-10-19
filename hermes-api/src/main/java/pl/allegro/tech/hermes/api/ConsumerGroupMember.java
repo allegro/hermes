@@ -42,13 +42,17 @@ public class ConsumerGroupMember {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ConsumerGroupMember that = (ConsumerGroupMember) o;
-        return Objects.equals(consumerId, that.consumerId) &&
-                Objects.equals(clientId, that.clientId) &&
-                Objects.equals(host, that.host) &&
-                Objects.equals(partitions, that.partitions);
+        return Objects.equals(consumerId, that.consumerId)
+                && Objects.equals(clientId, that.clientId)
+                && Objects.equals(host, that.host)
+                && Objects.equals(partitions, that.partitions);
     }
 
     @Override

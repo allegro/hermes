@@ -44,7 +44,10 @@ public class MessageToKafkaProducerRecordConverter {
         return Optional.empty();
     }
 
-    private Iterable<Header> createRecordHeaders(String id, long timestamp, Optional<SchemaId> schemaId, Optional<SchemaVersion> schemaVersion) {
+    private Iterable<Header> createRecordHeaders(String id,
+                                                 long timestamp,
+                                                 Optional<SchemaId> schemaId,
+                                                 Optional<SchemaVersion> schemaVersion) {
         Stream<Optional<Header>> headers = Stream.of(
                 Optional.of(kafkaHeaderFactory.messageId(id)),
                 Optional.of(kafkaHeaderFactory.timestamp(timestamp)),

@@ -118,7 +118,8 @@ class TopicHandler implements HttpHandler {
                 qualifiedTopicName);
     }
 
-    // Default Undertow's response code (200) was changed in order to avoid situations in which something wrong happens and Hermes-Frontend does not publish message but return code 200
+    // Default Undertow's response code (200) was changed in order to avoid situations in which something wrong happens and Hermes-Frontend
+    // does not publish message but return code 200
     // Since the default code is 500, clients have information that they should retry publishing
     private void setDefaultResponseCode(HttpServerExchange exchange) {
         exchange.setStatusCode(INTERNAL_SERVER_ERROR);

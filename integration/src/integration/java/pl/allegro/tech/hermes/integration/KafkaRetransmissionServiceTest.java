@@ -20,7 +20,6 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import static java.util.stream.Collectors.summingLong;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;

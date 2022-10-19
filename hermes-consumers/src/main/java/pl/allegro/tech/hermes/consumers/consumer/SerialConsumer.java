@@ -125,7 +125,11 @@ public class SerialConsumer implements Consumer {
     }
 
     private void sendMessage(Message message) {
-        offsetQueue.offerInflightOffset(subscriptionPartitionOffset(subscription.getQualifiedName(), message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
+        offsetQueue.offerInflightOffset(
+                subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(),
+                message.getPartitionAssignmentTerm())
+        );
 
         metrics.markAttempt();
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
@@ -148,7 +152,7 @@ public class SerialConsumer implements Consumer {
     }
 
     /**
-     * Try to keep shutdown order the same as initialization so nothing will left to clean up when error occurs during initialization
+     * Try to keep shutdown order the same as initialization so nothing will left to clean up when error occurs during initialization.
      */
     @Override
     public void tearDown() {

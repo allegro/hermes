@@ -11,11 +11,11 @@ class AvroMessageContentUnwrapperResult {
         this.status = status;
     }
 
-    static public AvroMessageContentUnwrapperResult success(UnwrappedMessageContent content) {
+    public static AvroMessageContentUnwrapperResult success(UnwrappedMessageContent content) {
         return new AvroMessageContentUnwrapperResult(content, AvroMessageContentUnwrapperResultStatus.SUCCESS);
     }
 
-    static public AvroMessageContentUnwrapperResult failure() {
+    public static AvroMessageContentUnwrapperResult failure() {
         return new AvroMessageContentUnwrapperResult(null, AvroMessageContentUnwrapperResultStatus.FAILURE);
     }
 

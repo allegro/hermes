@@ -22,10 +22,10 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-import javax.inject.Named;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import javax.inject.Named;
 
 @Configuration
 @EnableConfigurationProperties(OAuthProperties.class)
@@ -34,7 +34,8 @@ public class OAuthConfiguration {
     @Bean
     public OAuthTokenRequestRateLimiterFactory oAuthTokenRequestRateLimiterFactory(OAuthProviderRepository oAuthProviderRepository,
                                                                                    OAuthProperties oAuthProperties) {
-        return new OAuthTokenRequestRateLimiterFactory(oAuthProviderRepository, oAuthProperties.getProvidersTokenRequestRateLimiterRateReductionFactor());
+        return new OAuthTokenRequestRateLimiterFactory(oAuthProviderRepository,
+                oAuthProperties.getProvidersTokenRequestRateLimiterRateReductionFactor());
     }
 
     @Bean
@@ -84,6 +85,7 @@ public class OAuthConfiguration {
     public ConsumerAuthorizationHandler oAuthConsumerAuthorizationHandler(OAuthSubscriptionHandlerFactory handlerFactory,
                                                                           OAuthProperties oAuthProperties,
                                                                           OAuthProvidersNotifyingCache oAuthProvidersCache) {
-        return new OAuthConsumerAuthorizationHandler(handlerFactory, oAuthProperties.getMissingSubscriptionHandlersCreationDelay(), oAuthProvidersCache);
+        return new OAuthConsumerAuthorizationHandler(handlerFactory, oAuthProperties.getMissingSubscriptionHandlersCreationDelay(),
+                oAuthProvidersCache);
     }
 }

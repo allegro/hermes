@@ -33,6 +33,7 @@ public class KafkaHeaderExtractor {
             return null;
         }
     }
+
     public String extractMessageId(Headers headers) {
         Header header = headers.lastHeader(kafkaHeaderNameProperties.getMessageId());
         if (header == null) {

@@ -71,10 +71,11 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     private void logResult(Message message, Subscription subscription, MessageSendingResult result) {
-        if(result.isLoggable()) {
-            result.getLogInfo().stream().forEach(logInfo ->
+        if (result.isLoggable()) {
+            result.getLogInfo().forEach(logInfo ->
                     logger.warn(
-                            "Abnormal delivery failure: subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
+                            "Abnormal delivery failure: "
+                                    + "subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
                             subscription.getQualifiedName(), logInfo.getRootCause(), logInfo.getUrlString(), message.getId(),
                             message.getPartition(), message.getOffset(), logInfo.getFailure()
                     )

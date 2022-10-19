@@ -10,13 +10,13 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignm
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaHeaderExtractor;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaMessageReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.MessageContentReaderFactory;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
-import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
@@ -63,9 +63,10 @@ public class ConsumerReceiverConfiguration {
     }
 
     @Bean
-    public KafkaConsumerRecordToMessageConverterFactory kafkaMessageConverterFactory(MessageContentReaderFactory messageContentReaderFactory,
-                                                                                     KafkaHeaderExtractor kafkaHeaderExtractor,
-                                                                                     Clock clock) {
+    public KafkaConsumerRecordToMessageConverterFactory kafkaMessageConverterFactory(
+            MessageContentReaderFactory messageContentReaderFactory,
+            KafkaHeaderExtractor kafkaHeaderExtractor,
+            Clock clock) {
         return new KafkaConsumerRecordToMessageConverterFactory(messageContentReaderFactory, kafkaHeaderExtractor, clock);
     }
 

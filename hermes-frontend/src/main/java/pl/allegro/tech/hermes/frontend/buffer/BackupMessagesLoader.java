@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.buffer;
 
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
-import java.util.Collections;
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,6 +32,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -102,7 +102,8 @@ public class BackupMessagesLoader {
             retry++;
         } while (toResend.get().size() > 0 && retry <= maxResendRetries);
 
-        logger.info("Finished resending messages from backup storage after retry #{} with {} unsent messages.", retry - 1, toResend.get().size());
+        logger.info("Finished resending messages from backup storage after retry #{} with {} unsent messages.", retry - 1,
+                toResend.get().size());
     }
 
     public void loadFromTemporaryBackupV2File(File file) {
@@ -152,10 +153,12 @@ public class BackupMessagesLoader {
             }
         }
 
-        logger.info("Resent {}/{} messages and discarded {} messages from the backup storage retry {}.", sentCounter, messageAndTopicList.size(), discardedCounter, retry);
+        logger.info("Resent {}/{} messages and discarded {} messages from the backup storage retry {}.", sentCounter,
+                messageAndTopicList.size(), discardedCounter, retry);
     }
 
-    private boolean sendBackupMessageIfNeeded(BackupMessage backupMessage, String topicQualifiedName, Optional<CachedTopic> cachedTopic, String contextName) {
+    private boolean sendBackupMessageIfNeeded(BackupMessage backupMessage, String topicQualifiedName, Optional<CachedTopic> cachedTopic,
+                                              String contextName) {
         if (cachedTopic.isPresent()) {
             Message message;
             if (backupMessage.getSchemaVersion() != null) {
@@ -185,11 +188,13 @@ public class BackupMessagesLoader {
     }
 
     private Message createAvroMessage(BackupMessage backupMessage, CompiledSchema<Schema> schema) {
-        return new AvroMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), schema, backupMessage.getPartitionKey());
+        return new AvroMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), schema,
+                backupMessage.getPartitionKey());
     }
 
     private Message createJsonMessage(BackupMessage backupMessage) {
-        return new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), backupMessage.getPartitionKey());
+        return new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(),
+                backupMessage.getPartitionKey());
     }
 
     private boolean sendMessageIfNeeded(Message message, String topicQualifiedName, Optional<CachedTopic> cachedTopic, String contextName) {
@@ -236,7 +241,8 @@ public class BackupMessagesLoader {
     }
 
     private boolean isNotStale(Message message) {
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(message.getTimestamp()), ZoneId.systemDefault()).isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours.toHours()));
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(message.getTimestamp()), ZoneId.systemDefault())
+                .isAfter(LocalDateTime.now().minusHours(messageMaxAgeHours.toHours()));
     }
 
     private void sendMessage(Message message, CachedTopic cachedTopic) {

@@ -171,7 +171,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     public void commit(Set<SubscriptionPartitionOffset> offsets) {
         try {
             consumer.commitSync(createOffset(offsets));
-        } catch (InterruptException ex ) {
+        } catch (InterruptException ex) {
             logger.info("Kafka consumer thread interrupted", ex);
             Thread.currentThread().interrupt();
         } catch (Exception ex) {
@@ -194,7 +194,9 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                     metrics.counter("offset-committer.skipped").inc();
                 }
             } else {
-                logger.warn("Consumer is not assigned to partition {} of subscription {} at current term {}, ignoring offset {} from term {} to commit",
+                logger.warn(
+                        "Consumer is not assigned to partition {} of subscription {} at current term {},"
+                                + " ignoring offset {} from term {} to commit",
                         partitionOffset.getPartition(), partitionOffset.getSubscriptionName(),
                         partitionAssignmentState.currentTerm(partitionOffset.getSubscriptionName()),
                         partitionOffset.getOffset(), partitionOffset.getPartitionAssignmentTerm());

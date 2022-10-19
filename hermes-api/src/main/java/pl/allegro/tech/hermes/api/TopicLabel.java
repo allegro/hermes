@@ -21,8 +21,12 @@ public class TopicLabel {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         TopicLabel that = (TopicLabel) o;
         return Objects.equal(value, that.value);
     }

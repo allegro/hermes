@@ -20,22 +20,22 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 
-import javax.inject.Named;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Named;
 
 public class MetricRegistryFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
     private final MetricRegistryParameters metricRegistryParameters;
     private final GraphiteParameters graphiteParameters;
     private final CounterStorage counterStorage;
     private final InstanceIdResolver instanceIdResolver;
     private final String moduleName;
-    private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
 
     public MetricRegistryFactory(MetricRegistryParameters metricRegistryParameters,
                                  GraphiteParameters graphiteParameters,
@@ -107,15 +107,13 @@ public class MetricRegistryFactory {
         String disabledAttributesFromConfig = metricRegistryParameters.getDisabledAttributes();
         List<String> disabledAttributesList = Arrays.asList(disabledAttributesFromConfig.split("\\s*,\\s*"));
 
-        disabledAttributesList.forEach(singleAttribute ->
-                {
-                    try {
-                        disabledAttributes.add(MetricAttribute.valueOf(singleAttribute));
-                    } catch (IllegalArgumentException e) {
-                        logger.warn("Failed to add disabled attribute from config: {}", e.getMessage());
-                    }
-                }
-        );
+        disabledAttributesList.forEach(singleAttribute -> {
+            try {
+                disabledAttributes.add(MetricAttribute.valueOf(singleAttribute));
+            } catch (IllegalArgumentException e) {
+                logger.warn("Failed to add disabled attribute from config: {}", e.getMessage());
+            }
+        });
 
         return disabledAttributes;
     }

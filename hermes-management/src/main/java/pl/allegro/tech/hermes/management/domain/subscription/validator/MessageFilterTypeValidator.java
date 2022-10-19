@@ -24,11 +24,11 @@ class MessageFilterTypeValidator {
         subscription.getFilters()
                 .stream()
                 .map(filter -> new ContentTypeFilterTypePair(topic.getContentType(), filter.getType()))
-                .forEach(pair -> checkTypeMaching(pair));
+                .forEach(this::checkTypeMaching);
     }
 
     private void checkTypeMaching(ContentTypeFilterTypePair pair) {
-        if (!VALID_TYPES_COMBINATIONS.contains(pair)){
+        if (!VALID_TYPES_COMBINATIONS.contains(pair)) {
             throw new SubscriptionValidationException(String.format(ERROR_MESSAGE, pair.filterType, pair.contentType));
         }
     }
@@ -44,11 +44,15 @@ class MessageFilterTypeValidator {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             ContentTypeFilterTypePair validPair = (ContentTypeFilterTypePair) o;
-            return contentType == validPair.contentType &&
-                    Objects.equal(filterType, validPair.filterType);
+            return contentType == validPair.contentType
+                    && Objects.equal(filterType, validPair.filterType);
         }
 
         @Override

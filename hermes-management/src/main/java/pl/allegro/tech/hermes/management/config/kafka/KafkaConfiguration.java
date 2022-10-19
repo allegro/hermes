@@ -78,26 +78,22 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
         List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
-
             AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
-
             BrokerStorage storage = brokersStorage(brokerAdminClient);
-
-            BrokerTopicManagement brokerTopicManagement = new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
-
+            BrokerTopicManagement brokerTopicManagement =
+                    new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
             KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBootstrapKafkaServer());
             KafkaRawMessageReader kafkaRawMessageReader =
                     new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
-
             SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
-
             KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
                     storage,
                     subscriptionOffsetChangeIndicator,
                     consumerPool,
                     kafkaNamesMapper
             );
-            KafkaSingleMessageReader messageReader = new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
+            KafkaSingleMessageReader messageReader =
+                    new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
             return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
@@ -114,26 +110,27 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     }
 
     private ConsumerGroupManager createConsumerGroupManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
-        return subscriptionProperties.isCreateConsumerGroupManuallyEnabled() ?
-                new KafkaConsumerGroupManager(kafkaNamesMapper, kafkaProperties.getQualifiedClusterName(),
-                        kafkaProperties.getBootstrapKafkaServer(), kafkaProperties) :
-                new NoOpConsumerGroupManager();
+        return subscriptionProperties.isCreateConsumerGroupManuallyEnabled()
+                ? new KafkaConsumerGroupManager(kafkaNamesMapper, kafkaProperties.getQualifiedClusterName(),
+                        kafkaProperties.getBootstrapKafkaServer(), kafkaProperties)
+                : new NoOpConsumerGroupManager();
     }
 
     private SubscriptionOffsetChangeIndicator getRepository(
-            List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repostories,
+            List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories,
             KafkaProperties kafkaProperties) {
-        if (repostories.size() == 1) {
-            return repostories.get(0).getRepository();
+        if (repositories.size() == 1) {
+            return repositories.get(0).getRepository();
         }
-
-        return repostories.stream()
-                .filter(x -> kafkaProperties.getDatacenter().equals(x.getDatacenterName()))
+        return repositories.stream()
+                .filter(repository -> kafkaProperties.getDatacenter().equals(repository.getDatacenterName()))
                 .findFirst().orElseThrow(() ->
                         new IllegalArgumentException(
                                 String.format("Kafka cluster dc name '%s' not matched with Zookeeper dc names: %s",
                                         kafkaProperties.getDatacenter(),
-                                        repostories.stream().map(x -> x.getDatacenterName()).collect(Collectors.joining(","))
+                                        repositories.stream()
+                                                .map(DatacenterBoundRepositoryHolder::getDatacenterName)
+                                                .collect(Collectors.joining(","))
                                 )
                         )
                 )

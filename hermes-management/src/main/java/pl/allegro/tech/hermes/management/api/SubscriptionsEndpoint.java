@@ -21,6 +21,8 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 
+import java.util.List;
+import java.util.Optional;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -37,8 +39,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -68,9 +68,9 @@ public class SubscriptionsEndpoint {
             @PathParam("topicName") String qualifiedTopicName,
             @DefaultValue("false") @QueryParam("tracked") boolean tracked) {
 
-        return tracked ?
-                subscriptionService.listTrackedSubscriptionNames(fromQualifiedName(qualifiedTopicName)) :
-                subscriptionService.listSubscriptionNames(fromQualifiedName(qualifiedTopicName));
+        return tracked
+                ? subscriptionService.listTrackedSubscriptionNames(fromQualifiedName(qualifiedTopicName))
+                : subscriptionService.listSubscriptionNames(fromQualifiedName(qualifiedTopicName));
     }
 
     @POST
@@ -154,7 +154,8 @@ public class SubscriptionsEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/metrics/persistent")
-    @ApiOperation(value = "Get persistent subscription metrics", response = PersistentSubscriptionMetrics.class, httpMethod = HttpMethod.GET)
+    @ApiOperation(
+            value = "Get persistent subscription metrics", response = PersistentSubscriptionMetrics.class, httpMethod = HttpMethod.GET)
     public PersistentSubscriptionMetrics getPersistentMetrics(@PathParam("topicName") String qualifiedTopicName,
                                                               @PathParam("subscriptionName") String subscriptionName) {
         return subscriptionService.getPersistentSubscriptionMetrics(fromQualifiedName(qualifiedTopicName), subscriptionName);

@@ -32,9 +32,9 @@ class ConsumerWorkloadDecoder {
         header.wrap(buffer, 0);
 
         if (header.schemaId() != AssignmentsDecoder.SCHEMA_ID || header.templateId() != AssignmentsDecoder.TEMPLATE_ID) {
-            logger.warn("Unable to decode assignments, schema or template id mismatch. " +
-                    "Required by decoder: [schema id={}, template id={}], " +
-                    "encoded in payload: [schema id={}, template id={}]",
+            logger.warn("Unable to decode assignments, schema or template id mismatch. "
+                            + "Required by decoder: [schema id={}, template id={}], "
+                            + "encoded in payload: [schema id={}, template id={}]",
                     AssignmentsDecoder.SCHEMA_ID, AssignmentsDecoder.TEMPLATE_ID,
                     header.schemaId(), header.templateId());
             return Collections.emptySet();
