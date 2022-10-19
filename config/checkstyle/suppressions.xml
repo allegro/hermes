@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE suppressions PUBLIC
-        "-//Puppy Crawl//DTD Suppressions 1.1//EN"
-        "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+        "-//Puppy Crawl//DTD Suppressions 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
 
 <suppressions>
     <!-- Suppress all checks in test helpers -->
@@ -14,7 +14,7 @@
               files="[/\\]src[/\\](main)[/\\]java[/\\].+Properties\.java$"
             />
 
-    <!-- Suppressions for unit (test|integration)ing code -->
+    <!-- Suppressions for unit testing code -->
     <suppress checks="MagicNumber"
               files="[/\\]src[/\\](test|integration|jmh)[/\\]java[/\\]"
             />
@@ -36,4 +36,12 @@
     <suppress checks="VisibilityModifier"
               files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
             />
+
+    <!-- Build dirs -->
+    <suppress checks="[a-zA-Z0-9]*"
+              files="[/\\]build[/\\]generated[/\\]java[/\\]" />
+
+    <!-- Classes repackaged from external libraries -->
+    <suppress checks="[a-zA-Z0-9]*"
+              files="(DirectBufferPool|LinkedHashSetBlockingQueue)\.java" />
 </suppressions>

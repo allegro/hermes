@@ -27,11 +27,15 @@ public class KafkaTopic {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         KafkaTopic that = (KafkaTopic) o;
-        return Objects.equals(name, that.name) &&
-                Objects.equals(contentType, that.contentType);
+        return Objects.equals(name, that.name)
+                && Objects.equals(contentType, that.contentType);
     }
 
     @Override

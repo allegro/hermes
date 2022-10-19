@@ -19,8 +19,8 @@ public class KafkaHermesConsistencyService {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaHermesConsistencyService.class);
 
-    private final static String AVRO_SUFFIX = "_avro";
-    private final static List<String> IGNORED_TOPIC = asList("__consumer_offsets");
+    private static final String AVRO_SUFFIX = "_avro";
+    private static final List<String> IGNORED_TOPIC = asList("__consumer_offsets");
     private final TopicService topicService;
     private final MultiDCAwareService multiDCAwareService;
     private final KafkaClustersProperties kafkaClustersProperties;

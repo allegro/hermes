@@ -1,6 +1,18 @@
 package pl.allegro.tech.hermes.management.api;
 
 import io.swagger.annotations.Api;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
+import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
+import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionService;
+
 import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -13,17 +25,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
-import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
-import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
-import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionService;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 

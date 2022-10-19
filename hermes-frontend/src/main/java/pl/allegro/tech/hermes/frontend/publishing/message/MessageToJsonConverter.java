@@ -21,7 +21,7 @@ public class MessageToJsonConverter {
     }
 
     private byte[] convertToJson(byte[] avro, CompiledSchema<Schema> schema, boolean schemaIdAwareSerializationEnabled) {
-        byte[] schemaAwareAvro = schemaIdAwareSerializationEnabled ? SchemaAwareSerDe.trimMagicByteAndSchemaVersion(avro): avro;
+        byte[] schemaAwareAvro = schemaIdAwareSerializationEnabled ? SchemaAwareSerDe.trimMagicByteAndSchemaVersion(avro) : avro;
         return converter.convertToJson(bytesToRecord(schemaAwareAvro, schema.getSchema()));
     }
 

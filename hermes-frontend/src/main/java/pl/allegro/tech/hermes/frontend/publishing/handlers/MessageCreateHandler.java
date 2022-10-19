@@ -61,7 +61,9 @@ class MessageCreateHandler implements HttpHandler {
                     exchange,
                     attachment.getTopic(),
                     attachment.getMessageId(),
-                    error(format("Given schema version '%s' does not exist", exception.getSchemaVersion().value()), SCHEMA_VERSION_DOES_NOT_EXIST),
+                    error(
+                            format("Given schema version '%s' does not exist", exception.getSchemaVersion().value()),
+                            SCHEMA_VERSION_DOES_NOT_EXIST),
                     exception);
         } catch (AvroInvalidMetadataException exception) {
             attachment.removeTimeout();
@@ -69,7 +71,8 @@ class MessageCreateHandler implements HttpHandler {
                     exchange,
                     attachment.getTopic(),
                     attachment.getMessageId(),
-                    error("Schema does not contain mandatory __metadata field for Hermes internal metadata. Please fix topic schema.", AVRO_SCHEMA_INVALID_METADATA),
+                    error("Schema does not contain mandatory __metadata field for Hermes internal metadata. Please fix topic schema.",
+                            AVRO_SCHEMA_INVALID_METADATA),
                     exception);
         } catch (Exception exception) {
             attachment.removeTimeout();

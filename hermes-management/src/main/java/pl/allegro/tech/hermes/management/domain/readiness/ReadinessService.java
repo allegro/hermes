@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.management.domain.readiness;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import pl.allegro.tech.hermes.api.DatacenterReadiness;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryQueryExecutor;
 
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReadinessService {
     private final MultiDatacenterRepositoryCommandExecutor commandExecutor;

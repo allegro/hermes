@@ -7,9 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 import pl.allegro.tech.hermes.api.constraints.ValidContentType;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
@@ -24,57 +24,41 @@ import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 @JsonIgnoreProperties(value = {"createdAt", "modifiedAt"}, allowGetters = true)
 public class Subscription implements Anonymizable {
 
+    @NotNull
+    private final MonitoringDetails monitoringDetails;
+    private final SubscriptionName subscriptionName;
     @Valid
     @NotNull
     private TopicName topicName;
-
     @NotEmpty
     @Pattern(regexp = ALLOWED_NAME_REGEX)
     private String name;
-
     private State state = State.PENDING;
-
     @NotNull
     @Valid
     private EndpointAddress endpoint;
-
     @NotNull
     private ContentType contentType = ContentType.JSON;
-
     @NotNull
     private String description;
-
     @Valid
     private SubscriptionPolicy serialSubscriptionPolicy;
-
     @Valid
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
-
     /**
      * Use trackingMode field instead.
      */
     @Deprecated
     private boolean trackingEnabled = false;
-
     private TrackingMode trackingMode = TrackingMode.TRACKING_OFF;
-
     private boolean http2Enabled = false;
-
     @Valid
     @NotNull
     private OwnerId owner;
-
-    @NotNull
-    private final MonitoringDetails monitoringDetails;
-
     @NotNull
     private DeliveryType deliveryType = DeliveryType.SERIAL;
-
     @NotNull
     private SubscriptionMode mode = SubscriptionMode.ANYCAST;
-
-    private final SubscriptionName subscriptionName;
-
     private List<MessageFilterSpecification> filters = new ArrayList<>();
 
     private List<Header> headers;
@@ -91,10 +75,6 @@ public class Subscription implements Anonymizable {
     private Instant createdAt;
 
     private Instant modifiedAt;
-
-    public enum State {
-        PENDING, ACTIVE, SUSPENDED
-    }
 
     private Subscription(TopicName topicName,
                          String name,
@@ -224,8 +204,9 @@ public class Subscription implements Anonymizable {
                 endpoint,
                 state,
                 description,
-                validDeliveryType == DeliveryType.SERIAL ?
-                        SubscriptionPolicy.create(validSubscriptionPolicy) : BatchSubscriptionPolicy.create(validSubscriptionPolicy),
+                validDeliveryType == DeliveryType.SERIAL
+                        ? SubscriptionPolicy.create(validSubscriptionPolicy)
+                        : BatchSubscriptionPolicy.create(validSubscriptionPolicy),
                 validTrackingEnabled,
                 validTrackingMode,
                 owner,
@@ -308,10 +289,6 @@ public class Subscription implements Anonymizable {
         return description;
     }
 
-    public void setSerialSubscriptionPolicy(SubscriptionPolicy serialSubscriptionPolicy) {
-        this.serialSubscriptionPolicy = serialSubscriptionPolicy;
-    }
-
     public State getState() {
         return state;
     }
@@ -380,6 +357,10 @@ public class Subscription implements Anonymizable {
     @JsonIgnore
     public SubscriptionPolicy getSerialSubscriptionPolicy() {
         return serialSubscriptionPolicy;
+    }
+
+    public void setSerialSubscriptionPolicy(SubscriptionPolicy serialSubscriptionPolicy) {
+        this.serialSubscriptionPolicy = serialSubscriptionPolicy;
     }
 
     @JsonIgnore
@@ -466,5 +447,9 @@ public class Subscription implements Anonymizable {
     @Override
     public String toString() {
         return "Subscription(" + getQualifiedName() + ")";
+    }
+
+    public enum State {
+        PENDING, ACTIVE, SUSPENDED
     }
 }

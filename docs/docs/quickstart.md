@@ -27,6 +27,15 @@ docker-compose up
 ```
 This may take up to several minutes as all docker images need to be downloaded from docker servers.
 
+If you want to run kafka, zk, and schema-registry with specified image version (e.g. built for arm architecture)
+set `CONFLUENT_IMAGES_TAG` env variable before running `docker-compose up`:
+
+```bash
+export CONFLUENT_IMAGES_TAG=7.2.2.arm64
+docker-compose up
+```
+
+
 #### Checking the setup
 
 Hermes console should be up and running on port 8090. Simply head [here](http://localhost:8090/).

@@ -2,13 +2,13 @@ package pl.allegro.tech.hermes.common.ssl.jvm;
 
 import pl.allegro.tech.hermes.common.ssl.TrustManagersProvider;
 
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.security.KeyStore;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import static java.lang.String.format;
 

@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer
 
-import pl.allegro.tech.hermes.consumers.consumer.idleTime.ExponentiallyGrowingIdleTimeCalculator
-import pl.allegro.tech.hermes.consumers.consumer.idleTime.IdleTimeCalculator
+import pl.allegro.tech.hermes.consumers.consumer.idletime.ExponentiallyGrowingIdleTimeCalculator
+import pl.allegro.tech.hermes.consumers.consumer.idletime.IdleTimeCalculator
 import spock.lang.Specification
 
 

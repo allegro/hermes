@@ -38,7 +38,9 @@ public class KafkaMessageProducerFactory {
     private final KafkaProducerParameters kafkaProducerParameters;
     private final long bufferedSizeBytes;
 
-    public KafkaMessageProducerFactory(KafkaParameters kafkaParameters, KafkaProducerParameters kafkaProducerParameters, long bufferedSizeBytes) {
+    public KafkaMessageProducerFactory(KafkaParameters kafkaParameters,
+                                       KafkaProducerParameters kafkaProducerParameters,
+                                       long bufferedSizeBytes) {
         this.kafkaProducerParameters = kafkaProducerParameters;
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;

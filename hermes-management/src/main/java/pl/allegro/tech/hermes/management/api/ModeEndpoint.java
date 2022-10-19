@@ -17,8 +17,8 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static pl.allegro.tech.hermes.management.domain.mode.ModeService.ManagementMode.READ_WRITE;
 import static pl.allegro.tech.hermes.management.domain.mode.ModeService.ManagementMode.READ_ONLY_ADMIN;
+import static pl.allegro.tech.hermes.management.domain.mode.ModeService.ManagementMode.READ_WRITE;
 
 @Component
 @Path("/mode")

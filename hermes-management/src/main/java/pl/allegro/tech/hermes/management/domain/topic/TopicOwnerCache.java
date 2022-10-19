@@ -14,11 +14,11 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 
-import javax.annotation.PreDestroy;
 import java.util.Collection;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.PreDestroy;
 
 @Component
 public class TopicOwnerCache {

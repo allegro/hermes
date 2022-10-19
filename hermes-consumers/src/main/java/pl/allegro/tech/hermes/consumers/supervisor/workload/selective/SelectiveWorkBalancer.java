@@ -89,7 +89,9 @@ public class SelectiveWorkBalancer implements WorkBalancer {
         return Stream.empty();
     }
 
-    private int countMissingResources(List<SubscriptionName> subscriptions, SubscriptionAssignmentView state, WorkloadConstraints constraints) {
+    private int countMissingResources(List<SubscriptionName> subscriptions,
+                                      SubscriptionAssignmentView state,
+                                      WorkloadConstraints constraints) {
         return subscriptions.stream()
                 .mapToInt(s -> {
                     int requiredConsumers = constraints.getConsumerCount(s);
@@ -121,7 +123,9 @@ public class SelectiveWorkBalancer implements WorkBalancer {
                     if (subscription.isPresent()) {
                         transformer.transferAssignment(maxLoaded, minLoaded, subscription.get());
                         transferred = true;
-                    } else break;
+                    } else {
+                        break;
+                    }
                     maxLoad--;
                     minLoad++;
                 }
@@ -165,8 +169,8 @@ public class SelectiveWorkBalancer implements WorkBalancer {
 
     private void log(List<SubscriptionName> subscriptions, List<String> activeConsumerNodes,
                      SubscriptionAssignmentView currentState, SubscriptionAssignmentView balancedState) {
-        logger.info("Balancing {} subscriptions across {} nodes with previous {} assignments" +
-                        " produced {} assignments",
+        logger.info("Balancing {} subscriptions across {} nodes with previous {} assignments"
+                        + " produced {} assignments",
                 subscriptions.size(),
                 activeConsumerNodes.size(),
                 currentState.getAllAssignments().size(),

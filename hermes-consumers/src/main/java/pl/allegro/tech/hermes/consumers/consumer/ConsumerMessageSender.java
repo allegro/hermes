@@ -84,7 +84,8 @@ public class ConsumerMessageSender {
 
     public void initialize() {
         running = true;
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(subscription.getQualifiedName() + "-retry-executor-%d").build();
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder().setNameFormat(subscription.getQualifiedName() + "-retry-executor-%d").build();
         this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1, threadFactory);
     }
 
@@ -134,7 +135,8 @@ public class ConsumerMessageSender {
         );
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor)
                 .exceptionally(e -> {
-                    logger.error("An error occurred while handling message sending response of subscription {} [partition={}, offset={}, id={}]",
+                    logger.error(
+                            "An error occurred while handling message sending response of subscription {} [partition={}, offset={}, id={}]",
                             subscription.getQualifiedName(), message.getPartition(), message.getOffset(), message.getId(), e);
                     return null;
                 });
@@ -273,8 +275,8 @@ public class ConsumerMessageSender {
                     handleFailedSending(message, result);
                 }
             } else {
-                logger.warn("Process of subscription {} is not running. " +
-                                "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
+                logger.warn("Process of subscription {} is not running. "
+                                + "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
                         subscription.getQualifiedName(), result.succeeded(), message.getPartition(),
                         message.getOffset(), message.getId());
             }

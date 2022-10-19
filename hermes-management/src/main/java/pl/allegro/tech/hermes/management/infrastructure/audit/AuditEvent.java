@@ -7,7 +7,7 @@ public class AuditEvent {
     private final String payload;
     private final String username;
 
-    public AuditEvent(AuditEventType eventType, String payload, String payloadClass, String resourceName, String username){
+    public AuditEvent(AuditEventType eventType, String payload, String payloadClass, String resourceName, String username) {
         this.eventType = eventType;
         this.payload = payload;
         this.payloadClass = payloadClass;
@@ -34,10 +34,4 @@ public class AuditEvent {
     public String getResourceName() {
         return resourceName;
     }
-}
-
-enum AuditEventType {
-    BEFORE_CREATION, CREATED,
-    BEFORE_UPDATE, UPDATED,
-    BEFORE_REMOVAL, REMOVED
 }

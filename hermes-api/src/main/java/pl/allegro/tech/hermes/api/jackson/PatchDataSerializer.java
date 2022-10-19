@@ -14,7 +14,7 @@ public class PatchDataSerializer extends JsonSerializer<PatchData> {
     public void serialize(PatchData value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
         gen.writeStartObject();
 
-        for(Map.Entry<String, Object> entry : value.getPatch().entrySet()) {
+        for (Map.Entry<String, Object> entry : value.getPatch().entrySet()) {
             gen.writeObjectField(entry.getKey(), entry.getValue());
         }
 

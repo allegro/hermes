@@ -17,7 +17,7 @@ import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse
 
 public class WebClientHermesSender implements HermesSender, ReactiveHermesSender {
 
-    private final static Mono<String> NO_BODY = Mono.just("");
+    private static final Mono<String> NO_BODY = Mono.just("");
     private final WebClient webClient;
 
     public WebClientHermesSender(WebClient webClient) {

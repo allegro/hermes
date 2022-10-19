@@ -42,10 +42,8 @@ public class OAuthProvidersNotifyingCache extends PathChildrenCache implements P
         if (event.getData() == null || event.getData().getData() == null) {
             return;
         }
-        switch (event.getType()) {
-            case CHILD_UPDATED:
-                parseEvent(event.getData().getPath(), event.getData().getData()).ifPresent(listener::oAuthProviderUpdate);
-                break;
+        if (event.getType() == PathChildrenCacheEvent.Type.CHILD_UPDATED) {
+            parseEvent(event.getData().getPath(), event.getData().getData()).ifPresent(listener::oAuthProviderUpdate);
         }
     }
 

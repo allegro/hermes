@@ -84,7 +84,7 @@ class MessageReadHandler implements HttpHandler {
 
         Receiver receiver = exchange.getRequestReceiver();
 
-        attachment.getTimeoutHolder().onTimeout((Void) -> {
+        attachment.getTimeoutHolder().onTimeout((Void unused) -> {
             readingTimers.close();
             receiver.pause();
         });
@@ -205,7 +205,7 @@ class MessageReadHandler implements HttpHandler {
         exchange.addDefaultResponseListener(new DefaultResponseSimulator());
     }
 
-    final static class DefaultResponseSimulator implements DefaultResponseListener {
+    static final class DefaultResponseSimulator implements DefaultResponseListener {
 
         private static final boolean RESPONSE_SIMULATED = true;
         private final AtomicBoolean responseNotSimulatedOnlyOnce = new AtomicBoolean();

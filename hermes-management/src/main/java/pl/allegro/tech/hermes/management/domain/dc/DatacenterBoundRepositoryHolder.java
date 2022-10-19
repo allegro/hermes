@@ -1,16 +1,16 @@
 package pl.allegro.tech.hermes.management.domain.dc;
 
-public class DatacenterBoundRepositoryHolder<Repository> {
+public class DatacenterBoundRepositoryHolder<R> {
 
-    private final Repository repository;
+    private final R repository;
     private final String datacenterName;
 
-    public DatacenterBoundRepositoryHolder(Repository repository, String datacenterName) {
+    public DatacenterBoundRepositoryHolder(R repository, String datacenterName) {
         this.repository = repository;
         this.datacenterName = datacenterName;
     }
 
-    public Repository getRepository() {
+    public R getRepository() {
         return repository;
     }
 

@@ -24,16 +24,21 @@ public class HermesMockDefine {
         jsonTopic(topicName, HttpStatus.SC_CREATED);
     }
 
-    public void avroTopic(String topicName) {
-        avroTopic(topicName, HttpStatus.SC_CREATED);
-    }
-
     public void jsonTopic(String topicName, int statusCode) {
         addTopic(topicName, aResponse().withStatusCode(statusCode).build(), APPLICATION_JSON);
     }
 
     public void jsonTopic(String topicName, Response response) {
         addTopic(topicName, response, APPLICATION_JSON);
+    }
+
+    public <T> void jsonTopic(String topicName, Response response, Class<T> clazz, Predicate<T> predicate) {
+        ValueMatcher<Request> jsonMatchesPattern = ContentMatchers.matchJson(hermesMockHelper, predicate, clazz);
+        addTopic(topicName, response, APPLICATION_JSON, jsonMatchesPattern);
+    }
+
+    public void avroTopic(String topicName) {
+        avroTopic(topicName, HttpStatus.SC_CREATED);
     }
 
     public void avroTopic(String topicName, int statusCode) {
@@ -47,11 +52,6 @@ public class HermesMockDefine {
     public <T> void avroTopic(String topicName, Response response, Schema schema, Class<T> clazz, Predicate<T> predicate) {
         ValueMatcher<Request> avroMatchesPattern = ContentMatchers.matchAvro(hermesMockHelper, predicate, schema, clazz);
         addTopic(topicName, response, AVRO_BINARY, avroMatchesPattern);
-    }
-
-    public <T> void jsonTopic(String topicName, Response response, Class<T> clazz, Predicate<T> predicate) {
-        ValueMatcher<Request> jsonMatchesPattern = ContentMatchers.matchJson(hermesMockHelper, predicate, clazz);
-        addTopic(topicName, response, APPLICATION_JSON, jsonMatchesPattern);
     }
 
     private void addTopic(String topicName, Response response, String contentType) {

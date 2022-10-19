@@ -37,15 +37,25 @@ public class TopicProperties {
     private boolean avroContentTypeMetadataRequired = true;
 
     /**
-     * Introduced in Kafka 0.11.0.0 mechanism of splitting oversized batches does not respect configuration of maximum
+     * <p>Introduced in Kafka 0.11.0.0 mechanism of splitting oversized batches does not respect configuration of maximum
      * message size which broker can accept. It can cause an infinite loop of resending the same records in one batch.
      * To avoid the issue this parameter should be greater than or equal to maximum size of request that the producer
      * can send (parameter kafka.producer.max.request.size). Note that if you change this setting, it is necessary to
-     * manually update max.message.bytes for existing topics on broker side.
+     * manually update max.message.bytes for existing topics on broker side.</p>
      *
-     * For more information see:
-     * https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=68715855
-     * https://issues.apache.org/jira/browse/KAFKA-8202
+     * <p>For more information see:</p>
+     * <ul>
+     * <li>
+     *     <a href="https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=68715855">
+     *         Kafka Confluence: KIP-126 – Allow KafkaProducer to split and resend oversized batches.
+     *        </a>
+     * </li>
+     * <li>
+     *     <a href="https://issues.apache.org/jira/browse/KAFKA-8202">
+     *      Kafka Jira: KAFKA-8202 – StackOverflowError on producer when splitting batches
+     *     </a>
+ *     </li>
+     * </ul>
      */
     private int maxMessageSize = 1024 * 1024;
 
@@ -137,12 +147,12 @@ public class TopicProperties {
         this.maxMessageSize = maxMessageSize;
     }
 
-    public void setDefaultSchemaIdAwareSerializationEnabled(boolean defaultSchemaIdAwareSerializationEnabled) {
-        this.defaultSchemaIdAwareSerializationEnabled = defaultSchemaIdAwareSerializationEnabled;
-    }
-
     public boolean isDefaultSchemaIdAwareSerializationEnabled() {
         return defaultSchemaIdAwareSerializationEnabled;
+    }
+
+    public void setDefaultSchemaIdAwareSerializationEnabled(boolean defaultSchemaIdAwareSerializationEnabled) {
+        this.defaultSchemaIdAwareSerializationEnabled = defaultSchemaIdAwareSerializationEnabled;
     }
 
     public boolean isAvroContentTypeMetadataRequired() {

@@ -6,16 +6,16 @@ import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser;
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.json.JsonQueryParser;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.Provider;
 
 @Provider
 public class QueryBodyReader implements MessageBodyReader<Query> {

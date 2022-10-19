@@ -14,9 +14,9 @@ import org.threeten.bp.Duration;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.*;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.*;
 
-import javax.inject.Named;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import javax.inject.Named;
 
 @Configuration
 @EnableConfigurationProperties({
