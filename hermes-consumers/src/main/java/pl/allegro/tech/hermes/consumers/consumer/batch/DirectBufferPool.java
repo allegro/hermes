@@ -1,6 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.batch;
-
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +14,7 @@ package pl.allegro.tech.hermes.consumers.consumer.batch;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package pl.allegro.tech.hermes.consumers.consumer.batch;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -34,11 +33,12 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  *  Implementation was deliberately not refactored for easier comparison with the original.
  *
-* */
+ * */
+
 
 /**
  * A pool of ByteBuffers kept under a given memory limit. This class is fairly specific to the needs of the producer. In
- * particular, it has the following properties:
+ * particular it has the following properties:
  * <ol>
  * <li>There is a special "poolable size" and buffers of this size are kept in a free list and recycled
  * <li>It is fair. That is all memory is given to the longest waiting thread until it has sufficient memory. This
@@ -57,13 +57,13 @@ public final class DirectBufferPool {
     private long availableMemory;
 
     /**
-     * Create a new buffer pool.
+     * Create a new buffer pool
      *
      * @param memory The maximum amount of memory that this buffer pool can allocate
      * @param poolableSize The buffer size to cache in the free list rather than deallocating
      * @param blockOnExhaustion This controls the behavior when the buffer pool is out of memory. If true the
-     *                          {@link #allocate(int)} call will block and wait for memory to be returned to the pool. If false
-     *                          {@link #allocate(int)} will throw an exception if the buffer is out of memory.
+     *        {@link #allocate(int)} call will block and wait for memory to be returned to the pool. If false
+     *        {@link #allocate(int)} will throw an exception if the buffer is out of memory.
      */
     public DirectBufferPool(long memory, int poolableSize, boolean blockOnExhaustion) {
         this.poolableSize = poolableSize;
@@ -87,19 +87,17 @@ public final class DirectBufferPool {
      * @throws BufferOverflowException if the pool is in non-blocking mode and size exceeds the free memory in the pool
      */
     public ByteBuffer allocate(int size) throws InterruptedException {
-        if (size > this.totalMemory) {
+        if (size > this.totalMemory)
             throw new IllegalArgumentException("Attempt to allocate " + size
                     + " bytes, but there is a hard limit of "
                     + this.totalMemory
                     + " on memory allocations.");
-        }
 
         this.lock.lock();
         try {
             // check if we have a free buffer of the right size pooled
-            if (size == poolableSize && !this.free.isEmpty()) {
+            if (size == poolableSize && !this.free.isEmpty())
                 return this.free.pollFirst();
-            }
 
             // now check if the request is immediately satisfiable with the
             // memory on hand or if we need to block
@@ -143,41 +141,36 @@ public final class DirectBufferPool {
                 // remove the condition for this thread to let the next thread
                 // in line start getting memory
                 Condition removed = this.waiters.removeFirst();
-                if (removed != moreMemory) {
+                if (removed != moreMemory)
                     throw new IllegalStateException("Wrong condition: this shouldn't happen.");
-                }
 
                 // signal any additional waiters if there is more memory left
                 // over for them
                 if (this.availableMemory > 0 || !this.free.isEmpty()) {
-                    if (!this.waiters.isEmpty()) {
+                    if (!this.waiters.isEmpty())
                         this.waiters.peekFirst().signal();
-                    }
                 }
 
                 // unlock and return the buffer
                 lock.unlock();
-                if (buffer == null) {
+                if (buffer == null)
                     return ByteBuffer.allocateDirect(size);
-                } else {
+                else
                     return buffer;
-                }
             }
         } finally {
-            if (lock.isHeldByCurrentThread()) {
+            if (lock.isHeldByCurrentThread())
                 lock.unlock();
-            }
         }
     }
 
     /**
      * Attempt to ensure we have at least the requested number of bytes of memory for allocation by deallocating pooled
-     * buffers (if needed).
+     * buffers (if needed)
      */
     private void freeUp(int size) {
-        while (!this.free.isEmpty() && this.availableMemory < size) {
+        while (!this.free.isEmpty() && this.availableMemory < size)
             this.availableMemory += this.free.pollLast().capacity();
-        }
     }
 
     /**
@@ -199,9 +192,8 @@ public final class DirectBufferPool {
                 this.availableMemory += size;
             }
             Condition moreMem = this.waiters.peekFirst();
-            if (moreMem != null) {
+            if (moreMem != null)
                 moreMem.signal();
-            }
         } finally {
             lock.unlock();
         }
@@ -212,7 +204,7 @@ public final class DirectBufferPool {
     }
 
     /**
-     * The total free memory both unallocated and in the free list.
+     * the total free memory both unallocated and in the free list
      */
     public long availableMemory() {
         lock.lock();
@@ -224,7 +216,7 @@ public final class DirectBufferPool {
     }
 
     /**
-     * Get the unallocated memory (not in the free list or in use).
+     * Get the unallocated memory (not in the free list or in use)
      */
     public long unallocatedMemory() {
         lock.lock();
@@ -236,7 +228,7 @@ public final class DirectBufferPool {
     }
 
     /**
-     * The number of threads blocked waiting on memory.
+     * The number of threads blocked waiting on memory
      */
     public int queued() {
         lock.lock();
@@ -248,14 +240,14 @@ public final class DirectBufferPool {
     }
 
     /**
-     * The buffer size that will be retained in the free list after use.
+     * The buffer size that will be retained in the free list after use
      */
     public int poolableSize() {
         return this.poolableSize;
     }
 
     /**
-     * The total memory managed by this pool.
+     * The total memory managed by this pool
      */
     public long totalMemory() {
         return this.totalMemory;

@@ -15,11 +15,11 @@ public class DefaultSslContextFactory implements SslContextFactory {
     }
 
     @Override
-    public SslContextHolder create() {
+    public SSLContextHolder create() {
         try {
             SSLContext sslContext = SSLContext.getInstance(protocol);
             sslContext.init(keyManagersProvider.getKeyManagers(), trustManagersProvider.getTrustManagers(), null);
-            return new SslContextHolder(sslContext, trustManagersProvider.getTrustManagers());
+            return new SSLContextHolder(sslContext, trustManagersProvider.getTrustManagers());
         } catch (Exception e) {
             throw new SslContextCreationException(e);
         }

@@ -14,7 +14,7 @@
               files="[/\\]src[/\\](main)[/\\]java[/\\].+Properties\.java$"
             />
 
-    <!-- Suppressions for unit (test|integration)ing code -->
+    <!-- Suppressions for unit testing code -->
     <suppress checks="MagicNumber"
               files="[/\\]src[/\\](test|integration|jmh)[/\\]java[/\\]"
             />
@@ -40,4 +40,8 @@
     <!-- Build dirs -->
     <suppress checks="[a-zA-Z0-9]*"
               files="[/\\]build[/\\]generated[/\\]java[/\\]" />
+
+    <!-- Classes repackaged from external libraries -->
+    <suppress checks="[a-zA-Z0-9]*"
+              files="(DirectBufferPool|LinkedHashSetBlockingQueue)\.java" />
 </suppressions>
