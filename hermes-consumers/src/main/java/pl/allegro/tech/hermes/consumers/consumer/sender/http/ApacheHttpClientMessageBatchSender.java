@@ -37,7 +37,11 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
 
     private final CloseableHttpClient client = HttpClients.createMinimal();
 
-    public ApacheHttpClientMessageBatchSender(Duration connectionTimeout, Duration connectionRequestTimeout, EndpointAddressResolver resolver, SendingResultHandlers resultHandlers, BatchHttpHeadersProvider headersProvider) {
+    public ApacheHttpClientMessageBatchSender(Duration connectionTimeout,
+                                              Duration connectionRequestTimeout,
+                                              EndpointAddressResolver resolver,
+                                              SendingResultHandlers resultHandlers,
+                                              BatchHttpHeadersProvider headersProvider) {
         this.connectionTimeout = connectionTimeout;
         this.connectionRequestTimeout = connectionRequestTimeout;
         this.resolver = resolver;
@@ -46,7 +50,9 @@ public class ApacheHttpClientMessageBatchSender implements MessageBatchSender {
     }
 
     @Override
-    public MessageSendingResult send(MessageBatch batch, EndpointAddress address, EndpointAddressResolverMetadata metadata,
+    public MessageSendingResult send(MessageBatch batch,
+                                     EndpointAddress address,
+                                     EndpointAddressResolverMetadata metadata,
                                      int requestTimeout) {
         try {
             HttpRequestHeaders headers = headersProvider.getHeaders(address);

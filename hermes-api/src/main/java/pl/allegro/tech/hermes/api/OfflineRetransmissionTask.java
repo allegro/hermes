@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.time.Instant;
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
+
+import java.time.Instant;
 
 public class OfflineRetransmissionTask {
     private final String taskId;
@@ -63,9 +64,9 @@ public class OfflineRetransmissionTask {
 
     @Override
     public String toString() {
-        return "OfflineRetransmissionTask{" +
-                "taskId='" + taskId + '\'' +
-                ", request=" + request +
-                '}';
+        return "OfflineRetransmissionTask{"
+                + "taskId='" + taskId + '\''
+                + ", request=" + request
+                + '}';
     }
 }

@@ -7,9 +7,7 @@ import java.util.Objects;
 public final class RawSchemaWithMetadata {
 
     private final RawSchema schema;
-
     private final int id;
-
     private final int version;
 
     private RawSchemaWithMetadata(RawSchema schema, int id, int version) {
@@ -22,15 +20,21 @@ public final class RawSchemaWithMetadata {
         return new RawSchemaWithMetadata(RawSchema.valueOf(schema), id, version);
     }
 
-    public RawSchema getSchema() { return schema; }
+    public RawSchema getSchema() {
+        return schema;
+    }
 
     public String getSchemaString() {
         return schema.value();
     }
 
-    public int getId() { return id; }
+    public int getId() {
+        return id;
+    }
 
-    public int getVersion() { return version; }
+    public int getVersion() {
+        return version;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -49,10 +53,10 @@ public final class RawSchemaWithMetadata {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-            .add("schema", schema)
-            .add("id", id)
-            .add("version", version)
-            .toString();
+                .add("schema", schema)
+                .add("id", id)
+                .add("version", version)
+                .toString();
     }
 
     @Override

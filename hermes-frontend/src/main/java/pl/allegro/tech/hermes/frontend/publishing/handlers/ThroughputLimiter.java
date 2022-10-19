@@ -7,8 +7,12 @@ import static java.lang.String.format;
 
 public interface ThroughputLimiter {
     QuotaInsight checkQuota(TopicName topic, Metered throughput);
-    default void start() {}
-    default void stop() {}
+
+    default void start() {
+    }
+
+    default void stop() {
+    }
 
     class QuotaInsight {
         private static final QuotaInsight QUOTA_CONFIRMED = new QuotaInsight();

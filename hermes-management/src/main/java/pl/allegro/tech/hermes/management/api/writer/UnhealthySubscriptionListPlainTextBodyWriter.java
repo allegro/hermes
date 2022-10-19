@@ -3,18 +3,18 @@ package pl.allegro.tech.hermes.management.api.writer;
 import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
 
 import static java.util.stream.Collectors.joining;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -22,6 +22,13 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 @Provider
 @Produces(TEXT_PLAIN)
 public class UnhealthySubscriptionListPlainTextBodyWriter implements MessageBodyWriter<List<UnhealthySubscription>> {
+
+    private static String toPlainText(UnhealthySubscription unhealthySubscription) {
+        String problemDescriptions = unhealthySubscription.getProblems().stream()
+                .map(SubscriptionHealthProblem::getDescription)
+                .collect(joining("; "));
+        return unhealthySubscription.getName() + " - " + problemDescriptions;
+    }
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -54,12 +61,5 @@ public class UnhealthySubscriptionListPlainTextBodyWriter implements MessageBody
                 .map(UnhealthySubscriptionListPlainTextBodyWriter::toPlainText)
                 .collect(joining("\r\n"));
         entityStream.write(body.getBytes());
-    }
-
-    private static String toPlainText(UnhealthySubscription unhealthySubscription) {
-        String problemDescriptions = unhealthySubscription.getProblems().stream()
-                .map(SubscriptionHealthProblem::getDescription)
-                .collect(joining("; "));
-        return unhealthySubscription.getName() + " - " + problemDescriptions;
     }
 }

@@ -11,10 +11,12 @@ import static java.util.stream.Collectors.toMap;
 public interface MultipleDcKafkaNamesMappersFactory {
 
     default KafkaNamesMappers createDefaultKafkaNamesMapper(KafkaClustersProperties clustersProperties) {
-        return createKafkaNamesMapper(clustersProperties, namespace -> new NamespaceKafkaNamesMapper(namespace, clustersProperties.getNamespaceSeparator()));
+        return createKafkaNamesMapper(clustersProperties,
+                namespace -> new NamespaceKafkaNamesMapper(namespace, clustersProperties.getNamespaceSeparator()));
     }
 
-    default KafkaNamesMappers createKafkaNamesMapper(KafkaClustersProperties clustersProperties, Function<String, KafkaNamesMapper> factoryFunction) {
+    default KafkaNamesMappers createKafkaNamesMapper(KafkaClustersProperties clustersProperties,
+                                                     Function<String, KafkaNamesMapper> factoryFunction) {
         Map<String, KafkaNamesMapper> mappers = clustersProperties.getClusters().stream()
                 .filter(c -> c.getNamespace().isEmpty())
                 .collect(toMap(KafkaProperties::getQualifiedClusterName,

@@ -70,13 +70,26 @@ public class MessageEndProcessor {
             exchange.setStatusCode(statusCode);
             exchange.getResponseHeaders().add(messageIdHeader, attachment.getMessageId());
         } else {
-            logger.warn("The response has already been started. Status code set on exchange: {}; Expected status code: {};" + "Topic: {}; Message id: {}; Remote host {}", exchange.getStatusCode(), statusCode, attachment.getCachedTopic().getQualifiedName(), attachment.getMessageId(), readHostAndPort(exchange));
+            logger.warn("The response has already been started. Status code set on exchange: {}; Expected status code: {};"
+                            + "Topic: {}; Message id: {}; Remote host {}",
+                    exchange.getStatusCode(),
+                    statusCode,
+                    attachment.getCachedTopic().getQualifiedName(),
+                    attachment.getMessageId(),
+                    readHostAndPort(exchange));
         }
         attachment.markResponseAsReady();
         try {
             exchange.endExchange();
         } catch (RuntimeException exception) {
-            logger.error("Exception while ending exchange. Status code set on exchange: {}; Expected status code: {};" + "Topic: {}; Message id: {}; Remote host {}", exchange.getStatusCode(), statusCode, attachment.getCachedTopic().getQualifiedName(), attachment.getMessageId(), readHostAndPort(exchange), exception);
+            logger.error("Exception while ending exchange. Status code set on exchange: {}; Expected status code: {};"
+                            + "Topic: {}; Message id: {}; Remote host {}",
+                    exchange.getStatusCode(),
+                    statusCode,
+                    attachment.getCachedTopic().getQualifiedName(),
+                    attachment.getMessageId(),
+                    readHostAndPort(exchange),
+                    exception);
         }
     }
 }

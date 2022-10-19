@@ -192,6 +192,33 @@ public class WeightedWorkBalancer implements WorkBalancer {
         return false;
     }
 
+    private boolean isProfitable(SwapProposal proposal, TargetConsumerLoad targetLoad) {
+        Weight initialOverloadedWeight = proposal.getOverloadedWeight();
+        Weight finalOverloadedWeight = proposal.getFinalOverloadedWeight();
+        Weight finalCandidateWeight = proposal.getFinalCandidateWeight();
+        Weight overloadedTargetWeight = targetLoad.getWeightForConsumer(proposal.getOverloadedId());
+        Weight candidateTargetWeight = targetLoad.getWeightForConsumer(proposal.getCandidateId());
+
+        if (initialOverloadedWeight.isLessThan(overloadedTargetWeight)) {
+            return false;
+        }
+        if (finalCandidateWeight.isGreaterThan(candidateTargetWeight)) {
+            return false;
+        }
+        if (finalOverloadedWeight.isGreaterThan(initialOverloadedWeight)) {
+            return false;
+        }
+        if (initialOverloadedWeight.isEqualTo(Weight.ZERO)) {
+            return false;
+        }
+        double percentageChange = Weight.calculatePercentageChange(initialOverloadedWeight, finalOverloadedWeight);
+        if (percentageChange >= minSignificantChangePercent) {
+            logger.debug("Swap proposal will be applied:\n{}", proposal);
+            return true;
+        }
+        return false;
+    }
+
     private void trySwapTasks(ConsumerNode overloaded, ConsumerNode candidate, TargetConsumerLoad targetLoad) {
         List<ConsumerTask> tasksFromOverloaded = findTasksForMovingOut(overloaded, candidate);
         List<ConsumerTask> tasksFromCandidate = findTasksForMovingOut(candidate, overloaded);
@@ -234,33 +261,6 @@ public class WeightedWorkBalancer implements WorkBalancer {
         Weight targetWeight = targetLoad.getWeightForConsumer(consumerNode.getConsumerId());
         return consumerNode.getWeight().isEqualTo(targetWeight)
                 && consumerNode.getAssignedTaskCount() <= targetLoad.getNumberOfTasks();
-    }
-
-    private boolean isProfitable(SwapProposal proposal, TargetConsumerLoad targetLoad) {
-        Weight initialOverloadedWeight = proposal.getOverloadedWeight();
-        Weight finalOverloadedWeight = proposal.getFinalOverloadedWeight();
-        Weight finalCandidateWeight = proposal.getFinalCandidateWeight();
-        Weight overloadedTargetWeight = targetLoad.getWeightForConsumer(proposal.getOverloadedId());
-        Weight candidateTargetWeight = targetLoad.getWeightForConsumer(proposal.getCandidateId());
-
-        if (initialOverloadedWeight.isLessThan(overloadedTargetWeight)) {
-            return false;
-        }
-        if (finalCandidateWeight.isGreaterThan(candidateTargetWeight)) {
-            return false;
-        }
-        if (finalOverloadedWeight.isGreaterThan(initialOverloadedWeight)) {
-            return false;
-        }
-        if (initialOverloadedWeight.isEqualTo(Weight.ZERO)) {
-            return false;
-        }
-        double percentageChange = Weight.calculatePercentageChange(initialOverloadedWeight, finalOverloadedWeight);
-        if (percentageChange >= minSignificantChangePercent) {
-            logger.debug("Swap proposal will be applied:\n{}", proposal);
-            return true;
-        }
-        return false;
     }
 
     private static class AssignmentPlan {

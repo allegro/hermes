@@ -17,7 +17,7 @@ public class ElasticsearchClientFactory {
         client = new PreBuiltTransportClient(
                 Settings.builder().put("cluster.name", clusterName).build());
 
-        for (String host: hosts) {
+        for (String host : hosts) {
             try {
                 client.addTransportAddress(new TransportAddress(InetAddress.getByName(host), port));
             } catch (UnknownHostException e) {
@@ -31,6 +31,8 @@ public class ElasticsearchClientFactory {
     }
 
     public void close() {
-        if (client != null) client.close();
+        if (client != null) {
+            client.close();
+        }
     }
 }

@@ -52,7 +52,7 @@ public final class FilterResult {
     @Override
     public String toString() {
         return "[" + Joiner.on(",").skipNulls()
-                  .join(format("%s={%s}","filtered", filtered),
+                .join(format("%s={%s}", "filtered", filtered),
                         toString("filterType", filterType),
                         toString("message", message),
                         toString("cause", cause)) + "]";

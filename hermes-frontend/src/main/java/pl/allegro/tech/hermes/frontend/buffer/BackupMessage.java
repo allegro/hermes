@@ -55,16 +55,20 @@ public class BackupMessage implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BackupMessage)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BackupMessage)) {
+            return false;
+        }
         BackupMessage that = (BackupMessage) o;
-        return Objects.equals(timestamp, that.timestamp) &&
-                Objects.equals(messageId, that.messageId) &&
-                Arrays.equals(data, that.data) &&
-                Objects.equals(qualifiedTopicName, that.qualifiedTopicName) &&
-                Objects.equals(partitionKey, that.partitionKey) &&
-                Objects.equals(schemaVersion, that.schemaVersion) &&
-                Objects.equals(schemaId, that.schemaId);
+        return Objects.equals(timestamp, that.timestamp)
+                && Objects.equals(messageId, that.messageId)
+                && Arrays.equals(data, that.data)
+                && Objects.equals(qualifiedTopicName, that.qualifiedTopicName)
+                && Objects.equals(partitionKey, that.partitionKey)
+                && Objects.equals(schemaVersion, that.schemaVersion)
+                && Objects.equals(schemaId, that.schemaId);
     }
 
     @Override

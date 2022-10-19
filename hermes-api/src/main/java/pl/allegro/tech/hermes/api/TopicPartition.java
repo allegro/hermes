@@ -65,16 +65,20 @@ public class TopicPartition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         TopicPartition that = (TopicPartition) o;
-        return partition == that.partition &&
-                currentOffset == that.currentOffset &&
-                logEndOffset == that.logEndOffset &&
-                contentType == that.contentType &&
-                lag == that.lag &&
-                Objects.equals(topic, that.topic) &&
-                Objects.equals(offsetMetadata, that.offsetMetadata);
+        return partition == that.partition
+                && currentOffset == that.currentOffset
+                && logEndOffset == that.logEndOffset
+                && contentType == that.contentType
+                && lag == that.lag
+                && Objects.equals(topic, that.topic)
+                && Objects.equals(offsetMetadata, that.offsetMetadata);
     }
 
     @Override

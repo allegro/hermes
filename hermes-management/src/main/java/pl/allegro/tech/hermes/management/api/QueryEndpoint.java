@@ -3,20 +3,20 @@ package pl.allegro.tech.hermes.management.api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
+import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 

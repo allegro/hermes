@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.validation.constraints.Min;
 import java.util.Objects;
+import javax.validation.constraints.Min;
 
 public class OfflineRetentionTime {
 
@@ -35,11 +35,15 @@ public class OfflineRetentionTime {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof OfflineRetentionTime)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof OfflineRetentionTime)) {
+            return false;
+        }
         OfflineRetentionTime that = (OfflineRetentionTime) o;
-        return infinite == that.infinite &&
-                Objects.equals(duration, that.duration);
+        return infinite == that.infinite
+                && Objects.equals(duration, that.duration);
     }
 
     @Override

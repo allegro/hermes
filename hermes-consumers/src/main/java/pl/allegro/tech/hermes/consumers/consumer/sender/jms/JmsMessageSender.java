@@ -7,12 +7,12 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMe
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
+import java.util.concurrent.CompletableFuture;
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
-import java.util.concurrent.CompletableFuture;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;

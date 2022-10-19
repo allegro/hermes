@@ -8,7 +8,7 @@ import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.MAX
 
 class MaxRateRegistryPaths {
 
-    private final static String RATE_RUNTIME_PATH = "runtime-bin";
+    private static final String RATE_RUNTIME_PATH = "runtime-bin";
 
     private final ZookeeperPaths zookeeperPaths;
     private final String clusterName;

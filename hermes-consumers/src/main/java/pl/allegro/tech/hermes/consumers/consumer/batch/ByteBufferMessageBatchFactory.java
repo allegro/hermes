@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.time.Clock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 
 public class ByteBufferMessageBatchFactory implements MessageBatchFactory {
@@ -32,7 +31,8 @@ public class ByteBufferMessageBatchFactory implements MessageBatchFactory {
                     return new JsonMessageBatch(randomUUID().toString(), buffer, subscription, clock);
                 case AVRO:
                 default:
-                    throw new UnsupportedOperationException("Batching is not supported yet for contentType " + subscription.getContentType());
+                    throw new UnsupportedOperationException(
+                            "Batching is not supported yet for contentType " + subscription.getContentType());
             }
         } catch (InterruptedException e) {
             throw new InternalProcessingException(e);

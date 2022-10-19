@@ -10,11 +10,11 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 
+import java.net.URI;
+import java.util.concurrent.ExecutionException;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import javax.jms.Message;
-import java.net.URI;
-import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSenderProvider {
 

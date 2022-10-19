@@ -6,6 +6,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
+import pl.allegro.tech.hermes.api.endpoints.AllTopicClientsEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.BlacklistEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.FilterEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.GroupEndpoint;
@@ -20,17 +21,16 @@ import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.UnhealthyEndpoint;
-import pl.allegro.tech.hermes.api.endpoints.AllTopicClientsEndpoint;
 import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Function;
 import javax.ws.rs.Path;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.WebTarget;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.function.Function;
 
 public class Hermes {
 
@@ -49,6 +49,32 @@ public class Hermes {
     public Hermes(String url, String consumerUrl) {
         this.url = url;
         this.consumerUrl = consumerUrl;
+    }
+
+    private static ClientConfig getDefaultManagementConfig() {
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, DEFAULT_MANAGEMENT_READ_TIMEOUT);
+        clientConfig.property(ClientProperties.READ_TIMEOUT, DEFAULT_MANAGEMENT_READ_TIMEOUT);
+
+        return clientConfig;
+    }
+
+    private static ClientConfig getDefaultPublisherConfig() {
+        ClientConfig clientConfig = new ClientConfig();
+        clientConfig.property(ClientProperties.ASYNC_THREADPOOL_SIZE, DEFAULT_THREAD_POOL_SIZE);
+        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
+        clientConfig.property(ClientProperties.READ_TIMEOUT, DEFAULT_PUBLISHER_READ_TIMEOUT);
+
+        return clientConfig;
+    }
+
+    private static ClientBuilder getClientBuilder(ClientConfig clientConfig) {
+        return ClientBuilder.newBuilder().withConfig(clientConfig).register(
+                new JacksonJaxbJsonProvider(
+                        new ObjectMapper().registerModule(new JavaTimeModule()),
+                        JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS
+                )
+        );
     }
 
     public Hermes withPassword(String password) {
@@ -156,31 +182,5 @@ public class Hermes {
             clientBuilder.register(filter);
         }
         return WebResourceFactory.newResource(endpoint, clientBuilder.build().target(url));
-    }
-
-    private static ClientConfig getDefaultManagementConfig() {
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, DEFAULT_MANAGEMENT_READ_TIMEOUT);
-        clientConfig.property(ClientProperties.READ_TIMEOUT, DEFAULT_MANAGEMENT_READ_TIMEOUT);
-
-        return clientConfig;
-    }
-
-    private static ClientConfig getDefaultPublisherConfig() {
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.property(ClientProperties.ASYNC_THREADPOOL_SIZE, DEFAULT_THREAD_POOL_SIZE);
-        clientConfig.property(ClientProperties.CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
-        clientConfig.property(ClientProperties.READ_TIMEOUT, DEFAULT_PUBLISHER_READ_TIMEOUT);
-
-        return clientConfig;
-    }
-
-    private static ClientBuilder getClientBuilder(ClientConfig clientConfig) {
-        return ClientBuilder.newBuilder().withConfig(clientConfig).register(
-                new JacksonJaxbJsonProvider(
-                        new ObjectMapper().registerModule(new JavaTimeModule()),
-                        JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS
-                )
-        );
     }
 }

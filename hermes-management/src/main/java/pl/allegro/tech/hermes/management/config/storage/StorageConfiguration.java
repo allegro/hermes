@@ -15,6 +15,10 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
+import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
@@ -29,19 +33,14 @@ import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryQuer
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
-import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
-import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
-import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
-import pl.allegro.tech.hermes.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 import pl.allegro.tech.hermes.management.infrastructure.retransmit.ZookeeperOfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 
-import javax.annotation.PostConstruct;
-
 import java.util.List;
+import javax.annotation.PostConstruct;
 
 import static java.util.stream.Collectors.toList;
 

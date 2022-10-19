@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.management.config.ConsistencyCheckerProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 
-import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
+import javax.annotation.PreDestroy;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -45,8 +45,8 @@ public class DcConsistencyService {
     private final ObjectMapper objectMapper;
 
     public DcConsistencyService(RepositoryManager repositoryManager,
-                              ObjectMapper objectMapper,
-                              ConsistencyCheckerProperties properties) {
+                                ObjectMapper objectMapper,
+                                ConsistencyCheckerProperties properties) {
         this.groupRepositories = repositoryManager.getRepositories(GroupRepository.class);
         this.topicRepositories = repositoryManager.getRepositories(TopicRepository.class);
         this.subscriptionRepositories = repositoryManager.getRepositories(SubscriptionRepository.class);

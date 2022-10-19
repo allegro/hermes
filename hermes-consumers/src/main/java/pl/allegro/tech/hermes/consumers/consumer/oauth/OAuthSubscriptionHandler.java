@@ -33,7 +33,8 @@ public class OAuthSubscriptionHandler {
         this.providerName = providerName;
         this.accessTokens = accessTokens;
         this.rateLimiter = rateLimiter;
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(subscriptionName.getQualifiedName() + "-oauth-handler-%d").build();
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder().setNameFormat(subscriptionName.getQualifiedName() + "-oauth-handler-%d").build();
         this.executorService = Executors.newScheduledThreadPool(1, threadFactory);
     }
 

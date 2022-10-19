@@ -7,10 +7,10 @@ import org.glassfish.jersey.server.validation.ValidationErrorData;
 import org.glassfish.jersey.server.validation.internal.ValidationHelper;
 import pl.allegro.tech.hermes.api.ErrorCode;
 
+import java.util.List;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import java.util.List;
 
 @Provider
 public class ConstraintViolationMapper extends AbstractExceptionMapper<ConstraintViolationException> {

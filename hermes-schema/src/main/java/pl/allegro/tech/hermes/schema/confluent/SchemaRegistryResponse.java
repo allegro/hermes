@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
+import javax.validation.constraints.NotNull;
 
 class SchemaRegistryResponse {
 
@@ -23,9 +23,9 @@ class SchemaRegistryResponse {
 
     @JsonCreator
     SchemaRegistryResponse(@JsonProperty("subject") String subject,
-                                  @JsonProperty("id") Integer id,
-                                  @JsonProperty("version") Integer version,
-                                  @JsonProperty("schema") String schema) {
+                           @JsonProperty("id") Integer id,
+                           @JsonProperty("version") Integer version,
+                           @JsonProperty("schema") String schema) {
         this.subject = subject;
         this.version = version;
         this.id = id;
@@ -57,10 +57,10 @@ class SchemaRegistryResponse {
             return false;
         }
         SchemaRegistryResponse that = (SchemaRegistryResponse) o;
-        return Objects.equals(subject, that.subject) &&
-                Objects.equals(version, that.version) &&
-                Objects.equals(id, that.id) &&
-                Objects.equals(schema, that.schema);
+        return Objects.equals(subject, that.subject)
+                && Objects.equals(version, that.version)
+                && Objects.equals(id, that.id)
+                && Objects.equals(schema, that.schema);
     }
 
     @Override
@@ -68,5 +68,7 @@ class SchemaRegistryResponse {
         return Objects.hash(subject, version, id, schema);
     }
 
-    RawSchemaWithMetadata toRawSchemaWithMetadata() { return RawSchemaWithMetadata.of(schema, id, version); }
+    RawSchemaWithMetadata toRawSchemaWithMetadata() {
+        return RawSchemaWithMetadata.of(schema, id, version);
+    }
 }

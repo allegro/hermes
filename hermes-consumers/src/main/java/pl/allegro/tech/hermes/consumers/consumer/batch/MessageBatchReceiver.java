@@ -17,13 +17,13 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import javax.annotation.concurrent.NotThreadSafe;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import javax.annotation.concurrent.NotThreadSafe;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
@@ -42,8 +42,8 @@ public class MessageBatchReceiver {
     private final Trackers trackers;
     private final Queue<Message> inflight;
     private final Topic topic;
-    private boolean receiving = true;
     private final SubscriptionLoadRecorder loadRecorder;
+    private boolean receiving = true;
 
     public MessageBatchReceiver(MessageReceiver receiver,
                                 MessageBatchFactory batchFactory,
@@ -78,8 +78,9 @@ public class MessageBatchReceiver {
         while (isReceiving() && !batch.isReadyForDelivery() && !Thread.currentThread().isInterrupted()) {
             loadRecorder.recordSingleOperation();
             signalsInterrupt.run();
-            Optional<Message> maybeMessage = inflight.isEmpty() ?
-                    readAndTransform(subscription, batch.getId()) : Optional.ofNullable(inflight.poll());
+            Optional<Message> maybeMessage = inflight.isEmpty()
+                    ? readAndTransform(subscription, batch.getId())
+                    : Optional.ofNullable(inflight.poll());
 
             if (maybeMessage.isPresent()) {
                 Message message = maybeMessage.get();
@@ -125,9 +126,11 @@ public class MessageBatchReceiver {
     private byte[] wrap(Subscription subscription, Message next) {
         switch (subscription.getContentType()) {
             case AVRO:
-                return compositeMessageContentWrapper.wrapAvro(next.getData(), next.getId(), next.getPublishingTimestamp(), topic, next.<Schema>getSchema().get(), next.getExternalMetadata());
+                return compositeMessageContentWrapper.wrapAvro(next.getData(), next.getId(), next.getPublishingTimestamp(), topic,
+                        next.<Schema>getSchema().get(), next.getExternalMetadata());
             case JSON:
-                return compositeMessageContentWrapper.wrapJson(next.getData(), next.getId(), next.getPublishingTimestamp(), next.getExternalMetadata());
+                return compositeMessageContentWrapper.wrapJson(next.getData(), next.getId(), next.getPublishingTimestamp(),
+                        next.getExternalMetadata());
             default:
                 throw new UnsupportedContentTypeException(subscription);
         }

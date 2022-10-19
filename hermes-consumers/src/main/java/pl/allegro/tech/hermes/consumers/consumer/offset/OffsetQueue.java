@@ -14,8 +14,10 @@ public class OffsetQueue {
     private final MpscQueue<SubscriptionPartitionOffset> commitOffsetsQueue;
 
     public OffsetQueue(HermesMetrics metrics, int commitOffsetQueuesSize) {
-        this.inflightOffsetsQueue = new MonitoredMpscQueue<>(new FullDrainMpscQueue<>(commitOffsetQueuesSize), metrics, "inflightOffsets");
-        this.commitOffsetsQueue = new MonitoredMpscQueue<>(new WaitFreeDrainMpscQueue<>(commitOffsetQueuesSize), metrics, "committedOffsets");
+        this.inflightOffsetsQueue =
+                new MonitoredMpscQueue<>(new FullDrainMpscQueue<>(commitOffsetQueuesSize), metrics, "inflightOffsets");
+        this.commitOffsetsQueue =
+                new MonitoredMpscQueue<>(new WaitFreeDrainMpscQueue<>(commitOffsetQueuesSize), metrics, "committedOffsets");
     }
 
     public void offerInflightOffset(SubscriptionPartitionOffset offset) {
