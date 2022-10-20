@@ -64,7 +64,6 @@ public class ConsumersStarter implements Starter<ConfigurableApplicationContext>
     public void setSpringProfiles(String... profiles) {
         String profilesString = Arrays.stream(profiles).collect(Collectors.joining(",", "", ""));
         args.add("--spring.profiles.active=" + profilesString);
-        args.add("-e " + profilesString);
     }
 
 }

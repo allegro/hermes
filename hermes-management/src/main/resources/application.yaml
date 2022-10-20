@@ -21,6 +21,8 @@ kafka:
 spring:
   jersey:
     type: filter
+  profiles:
+    default: local
 
 server:
   port: 8090
