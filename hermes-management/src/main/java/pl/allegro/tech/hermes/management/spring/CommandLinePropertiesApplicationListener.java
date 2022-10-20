@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.spring;
 
 import joptsimple.OptionParser;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.JOptCommandLinePropertySource;

@@ -55,8 +55,14 @@ public class HandlersChainFactory {
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
         HttpHandler timeoutHandler = new TimeoutHandler(messageEndProcessor, messageErrorProcessor);
         HttpHandler handlerAfterRead = previewEnabled ? new PreviewHandler(messageCreateHandler, previewLog) : messageCreateHandler;
-        HttpHandler readHandler = new MessageReadHandler(handlerAfterRead, timeoutHandler, messageErrorProcessor, throughputLimiter,
-                handlersChainParameters.isForceTopicMaxMessageSize(), handlersChainParameters.getIdleTimeout(), handlersChainParameters.getLongIdleTimeout());
+        HttpHandler readHandler = new MessageReadHandler(
+                handlerAfterRead,
+                timeoutHandler,
+                messageErrorProcessor,
+                throughputLimiter,
+                handlersChainParameters.isForceTopicMaxMessageSize(),
+                handlersChainParameters.getIdleTimeout(),
+                handlersChainParameters.getLongIdleTimeout());
         TopicHandler topicHandler = new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
         boolean keepAliveHeaderEnabled = handlersChainParameters.isKeepAliveHeaderEnabled();
         HttpHandler rootPublishingHandler = keepAliveHeaderEnabled ? withKeepAliveHeaderHandler(topicHandler) : topicHandler;

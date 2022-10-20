@@ -24,6 +24,8 @@ import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
+import java.util.List;
+import java.util.Optional;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -40,8 +42,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.String.format;
@@ -86,9 +86,9 @@ public class TopicsEndpoint {
             @DefaultValue("") @QueryParam("groupName") String groupName,
             Query<Topic> query) {
 
-        return isNullOrEmpty(groupName) ?
-                topicService.listFilteredTopicNames(query) :
-                topicService.listFilteredTopicNames(groupName, query);
+        return isNullOrEmpty(groupName)
+                ? topicService.listFilteredTopicNames(query)
+                : topicService.listFilteredTopicNames(groupName, query);
     }
 
     @POST
@@ -179,12 +179,12 @@ public class TopicsEndpoint {
                           @PathParam("partition") Integer partition,
                           @PathParam("offset") Long offset) {
         try {
-            return topicService.fetchSingleMessageFromPrimary(brokersClusterName, TopicName.fromQualifiedName(qualifiedTopicName), partition, offset);
+            return topicService.fetchSingleMessageFromPrimary(brokersClusterName, TopicName.fromQualifiedName(qualifiedTopicName),
+                    partition, offset);
         } catch (BrokerNotFoundForPartitionException | SingleMessageReaderException exception) {
-            throw new NotFoundException(format(
-                    "Message not found for brokers cluster %s, topic %s, partition %d and offset %d",
-                    brokersClusterName, qualifiedTopicName, partition, offset
-            ));
+            throw new NotFoundException(
+                    format("Message not found for brokers cluster %s, topic %s, partition %d and offset %d", brokersClusterName,
+                            qualifiedTopicName, partition, offset));
         }
     }
 

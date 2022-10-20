@@ -15,29 +15,27 @@ import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.MetricRegistryWithExponentiallyDecayingReservoir;
 import pl.allegro.tech.hermes.common.metric.MetricRegistryWithHdrHistogramReservoir;
-import pl.allegro.tech.hermes.common.metric.MetricsReservoirType;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 
-import javax.inject.Named;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Named;
 
 public class MetricRegistryFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
     private final MetricRegistryParameters metricRegistryParameters;
     private final GraphiteParameters graphiteParameters;
     private final CounterStorage counterStorage;
     private final InstanceIdResolver instanceIdResolver;
     private final String moduleName;
-    private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
 
     public MetricRegistryFactory(MetricRegistryParameters metricRegistryParameters,
                                  GraphiteParameters graphiteParameters,
@@ -52,7 +50,7 @@ public class MetricRegistryFactory {
     }
 
     public MetricRegistry provide() {
-        MetricRegistry registry = createMetricsRegistry();
+        MetricRegistry registry = new MetricRegistryWithHdrHistogramReservoir();
 
         if (metricRegistryParameters.isGraphiteReporterEnabled()) {
             String prefix = Joiner.on(".").join(
@@ -88,17 +86,6 @@ public class MetricRegistryFactory {
         return registry;
     }
 
-    private MetricRegistry createMetricsRegistry() {
-        String metricsReservoirType = metricRegistryParameters.getReservoirType().toUpperCase();
-        switch (MetricsReservoirType.valueOf(metricsReservoirType)) {
-            case HDR:
-                return new MetricRegistryWithHdrHistogramReservoir();
-            case EXPONENTIALLY_DECAYING:
-            default:
-                return new MetricRegistryWithExponentiallyDecayingReservoir();
-        }
-    }
-
     private void registerJvmMetrics(MetricRegistry metricRegistry) {
         registerAll("jvm.gc", new GarbageCollectorMetricSet(), metricRegistry);
         registerAll("jvm.memory", new MemoryUsageGaugeSet(), metricRegistry);
@@ -120,15 +107,13 @@ public class MetricRegistryFactory {
         String disabledAttributesFromConfig = metricRegistryParameters.getDisabledAttributes();
         List<String> disabledAttributesList = Arrays.asList(disabledAttributesFromConfig.split("\\s*,\\s*"));
 
-        disabledAttributesList.forEach(singleAttribute ->
-                {
-                    try {
-                        disabledAttributes.add(MetricAttribute.valueOf(singleAttribute));
-                    } catch (IllegalArgumentException e) {
-                        logger.warn("Failed to add disabled attribute from config: {}", e.getMessage());
-                    }
-                }
-        );
+        disabledAttributesList.forEach(singleAttribute -> {
+            try {
+                disabledAttributes.add(MetricAttribute.valueOf(singleAttribute));
+            } catch (IllegalArgumentException e) {
+                logger.warn("Failed to add disabled attribute from config: {}", e.getMessage());
+            }
+        });
 
         return disabledAttributes;
     }

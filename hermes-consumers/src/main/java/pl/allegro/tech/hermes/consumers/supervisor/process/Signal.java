@@ -65,7 +65,7 @@ public class Signal {
 
     @Override
     public String toString() {
-        return "Signal(" + id + ", " + type +", " + target + ")";
+        return "Signal(" + id + ", " + type + ", " + target + ")";
     }
 
     public String getLogWithIdAndType() {
@@ -81,8 +81,8 @@ public class Signal {
             return false;
         }
         Signal signal = (Signal) o;
-        return type == signal.type &&
-                Objects.equals(target, signal.target);
+        return type == signal.type
+                && Objects.equals(target, signal.target);
     }
 
     @Override

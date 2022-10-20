@@ -8,7 +8,7 @@ class RemoteHostReader {
 
     static String readHostAndPort(HttpServerExchange exchange) {
         InetSocketAddress sourceAddress = exchange.getSourceAddress();
-        if(sourceAddress == null) {
+        if (sourceAddress == null) {
             return "";
         }
 

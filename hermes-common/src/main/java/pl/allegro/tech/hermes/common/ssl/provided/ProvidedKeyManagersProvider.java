@@ -3,10 +3,10 @@ package pl.allegro.tech.hermes.common.ssl.provided;
 import pl.allegro.tech.hermes.common.ssl.KeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import java.io.InputStream;
 import java.security.KeyStore;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 
 public class ProvidedKeyManagersProvider implements KeyManagersProvider, ResourceLoader {
 

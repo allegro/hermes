@@ -20,7 +20,10 @@ public class DefaultMessagePreviewPersister implements MessagePreviewPersister {
 
     private final Optional<ScheduledExecutorService> scheduledExecutorService;
 
-    public DefaultMessagePreviewPersister(MessagePreviewLog messagePreviewLog, MessagePreviewRepository repository, Duration logPersistPeriod, boolean previewEnabled) {
+    public DefaultMessagePreviewPersister(MessagePreviewLog messagePreviewLog,
+                                          MessagePreviewRepository repository,
+                                          Duration logPersistPeriod,
+                                          boolean previewEnabled) {
         this.messagePreviewLog = messagePreviewLog;
         this.repository = repository;
         this.period = logPersistPeriod;
@@ -31,7 +34,8 @@ public class DefaultMessagePreviewPersister implements MessagePreviewPersister {
 
     @Override
     public void start() {
-        scheduledExecutorService.ifPresent(s -> s.scheduleAtFixedRate(this::persist, period.toSeconds(), period.toSeconds(), TimeUnit.SECONDS));
+        scheduledExecutorService.ifPresent(
+                s -> s.scheduleAtFixedRate(this::persist, period.toSeconds(), period.toSeconds(), TimeUnit.SECONDS));
     }
 
     private void persist() {

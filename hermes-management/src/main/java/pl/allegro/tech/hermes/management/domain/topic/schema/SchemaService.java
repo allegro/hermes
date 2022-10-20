@@ -39,6 +39,18 @@ public class SchemaService {
             .map(RawSchemaWithMetadata::getSchema);
     }
 
+    public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {
+        return rawSchemaClient
+                .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), version)
+                .map(RawSchemaWithMetadata::getSchema);
+    }
+
+    public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaId id) {
+        return rawSchemaClient
+                .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), id)
+                .map(RawSchemaWithMetadata::getSchema);
+    }
+
     public void registerSchema(Topic topic, String schema) {
         boolean validate = AVRO.equals(topic.getContentType());
         registerSchema(topic, schema, validate);
@@ -50,18 +62,6 @@ public class SchemaService {
             validator.check(schema);
         }
         rawSchemaClient.registerSchema(topic.getName(), RawSchema.valueOf(schema));
-    }
-
-    public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {
-        return rawSchemaClient
-            .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), version)
-            .map(RawSchemaWithMetadata::getSchema);
-    }
-
-    public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaId id) {
-        return rawSchemaClient
-            .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), id)
-            .map(RawSchemaWithMetadata::getSchema);
     }
 
     public void deleteAllSchemaVersions(String qualifiedTopicName) {

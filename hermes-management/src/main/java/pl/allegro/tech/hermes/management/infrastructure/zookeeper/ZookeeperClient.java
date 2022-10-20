@@ -24,7 +24,7 @@ public class ZookeeperClient {
 
     public void ensurePathExists(String path) {
         try {
-            if(curatorFramework.checkExists().forPath(path) ==  null) {
+            if (curatorFramework.checkExists().forPath(path) == null) {
                 curatorFramework.create().creatingParentsIfNeeded().forPath(path);
             }
         } catch (Exception e) {

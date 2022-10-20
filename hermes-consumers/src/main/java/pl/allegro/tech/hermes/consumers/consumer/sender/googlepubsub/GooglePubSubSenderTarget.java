@@ -24,10 +24,15 @@ class GooglePubSubSenderTarget {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         GooglePubSubSenderTarget that = (GooglePubSubSenderTarget) o;
-        return Objects.equals(topicName, that.topicName) && Objects.equals(pubSubEndpoint, that.pubSubEndpoint);
+        return Objects.equals(topicName, that.topicName)
+                && Objects.equals(pubSubEndpoint, that.pubSubEndpoint);
     }
 
     @Override

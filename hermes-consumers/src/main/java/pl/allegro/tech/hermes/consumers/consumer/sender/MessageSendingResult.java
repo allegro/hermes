@@ -54,7 +54,7 @@ public interface MessageSendingResult {
     }
 
     static SingleMessageSendingResult ofResultWithUri(Result result, URI uri) {
-        return new SingleMessageSendingResult(result,uri);
+        return new SingleMessageSendingResult(result, uri);
     }
 
     String getRootCause();
@@ -84,6 +84,9 @@ public interface MessageSendingResult {
     List<URI> getSucceededUris(Predicate<MessageSendingResult> filter);
 
     default String getHostname() {
-        return getLogInfo().stream().filter(i -> i.getUrl().isPresent()).map(i -> i.getUrl().get().getHost()).collect(joining(","));
-    };
+        return getLogInfo().stream()
+                .filter(logInfo -> logInfo.getUrl().isPresent())
+                .map(logInfo -> logInfo.getUrl().get().getHost())
+                .collect(joining(","));
+    }
 }

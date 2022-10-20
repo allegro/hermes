@@ -1,4 +1,7 @@
+<figure markdown>
 ![Hermes logo](img/hermes.png)
+</figure>
+
 
 Hermes is a message broker that greatly simplifies communication between services using publish-subscribe pattern.
 It is HTTP-native, exposing REST endpoints for message publishing as well as pushing messages to subscribers REST endpoints.

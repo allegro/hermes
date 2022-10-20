@@ -45,15 +45,15 @@ public class ZookeeperWaiter {
         await().atMost(2, TimeUnit.SECONDS).until(() -> zookeeper.getChildren().forPath(path).isEmpty());
     }
 
+    public void untilZookeeperPathIsEmpty(String... path) {
+        untilZookeeperPathIsEmpty(stream(path).collect(joining("/")));
+    }
+
     public void untilZookeeperPathNotExists(final String path) {
         await().atMost(2, TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath(path) == null);
     }
 
     public void untilZookeeperPathNotExists(String... path) {
         untilZookeeperPathNotExists(stream(path).collect(joining("/")));
-    }
-
-    public void untilZookeeperPathIsEmpty(String... path) {
-        untilZookeeperPathIsEmpty(stream(path).collect(joining("/")));
     }
 }

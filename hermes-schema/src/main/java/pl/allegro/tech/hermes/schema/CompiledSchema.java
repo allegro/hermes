@@ -17,21 +17,29 @@ public class CompiledSchema<T> {
         this.version = version;
     }
 
-    static public <T> CompiledSchema<T> of(T schema, int id, int version) {
+    public static <T> CompiledSchema<T> of(T schema, int id, int version) {
         return new CompiledSchema<>(schema, SchemaId.valueOf(id), SchemaVersion.valueOf(version));
     }
 
-    static public <T> CompiledSchema<T> of(SchemaCompiler<T> schemaCompiler, RawSchemaWithMetadata rawSchemaWithMetadata) {
-        return CompiledSchema.of(schemaCompiler.compile(rawSchemaWithMetadata.getSchema()), rawSchemaWithMetadata.getId(), rawSchemaWithMetadata.getVersion());
+    public static <T> CompiledSchema<T> of(SchemaCompiler<T> schemaCompiler, RawSchemaWithMetadata rawSchemaWithMetadata) {
+        return CompiledSchema.of(
+                schemaCompiler.compile(rawSchemaWithMetadata.getSchema()),
+                rawSchemaWithMetadata.getId(),
+                rawSchemaWithMetadata.getVersion()
+        );
     }
 
     public T getSchema() {
         return schema;
     }
 
-    public SchemaVersion getVersion() { return version; }
+    public SchemaVersion getVersion() {
+        return version;
+    }
 
-    public SchemaId getId() { return id; }
+    public SchemaId getId() {
+        return id;
+    }
 
     @Override
     public int hashCode() {
@@ -48,7 +56,9 @@ public class CompiledSchema<T> {
         }
 
         CompiledSchema<?> that = (CompiledSchema<?>) o;
-        return Objects.equals(id, that.id) && Objects.equals(version, that.version) && Objects.equals(schema, that.schema);
+        return Objects.equals(id, that.id)
+                && Objects.equals(version, that.version)
+                && Objects.equals(schema, that.schema);
     }
 
     @Override

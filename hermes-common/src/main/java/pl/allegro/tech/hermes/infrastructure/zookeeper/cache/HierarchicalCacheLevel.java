@@ -128,7 +128,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
     }
 
     private void printChildrenWithEmptyParentRecursively(String pathWithEmptyParent, List<String> children) {
-        children.forEach( c -> {
+        children.forEach(c -> {
             try {
                 String nextPath = pathWithEmptyParent + "/" + c;
                 logger.warn("Node with empty parent: {}", nextPath);

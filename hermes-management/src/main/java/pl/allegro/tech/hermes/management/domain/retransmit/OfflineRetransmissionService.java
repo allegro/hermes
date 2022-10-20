@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.management.domain.retransmit;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 public class OfflineRetransmissionService {
     private final OfflineRetransmissionRepository offlineRetransmissionRepository;
@@ -59,8 +60,8 @@ public class OfflineRetransmissionService {
     }
 
     private void ensureTimeRangeIsProper(OfflineRetransmissionRequest request) {
-        if (request.getStartTimestamp().isAfter(request.getEndTimestamp()) ||
-                request.getStartTimestamp().equals(request.getEndTimestamp())) {
+        if (request.getStartTimestamp().isAfter(request.getEndTimestamp())
+                || request.getStartTimestamp().equals(request.getEndTimestamp())) {
             throw new OfflineRetransmissionValidationException("End timestamp must be greater than start timestamp");
         }
     }

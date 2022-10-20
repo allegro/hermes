@@ -21,9 +21,12 @@ public class ConsumerHttpServer {
 
     public ConsumerHttpServer(int healthCheckPort, ConsumerMonitor monitor, ObjectMapper mapper) throws IOException {
         server = createServer(healthCheckPort);
-        server.createContext("/status/health", (exchange) -> respondWithString(exchange, STATUS_UP));
-        server.createContext("/status/subscriptions", (exchange) -> respondWithObject(exchange, mapper, monitor.check(SUBSCRIPTIONS)));
-        server.createContext("/status/subscriptionsCount", (exchange) -> respondWithObject(exchange, mapper, monitor.check(SUBSCRIPTIONS_COUNT)));
+        server.createContext("/status/health",
+                (exchange) -> respondWithString(exchange, STATUS_UP));
+        server.createContext("/status/subscriptions",
+                (exchange) -> respondWithObject(exchange, mapper, monitor.check(SUBSCRIPTIONS)));
+        server.createContext("/status/subscriptionsCount",
+                (exchange) -> respondWithObject(exchange, mapper, monitor.check(SUBSCRIPTIONS_COUNT)));
     }
 
     private HttpServer createServer(int port) throws IOException {

@@ -4,37 +4,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
+import javax.validation.constraints.NotNull;
 
 public class SubscriptionOAuthPolicy {
 
     private static final String ANONYMIZED_PASSWORD = "******";
-
-    public enum GrantType {
-        CLIENT_CREDENTIALS("clientCredentials"), USERNAME_PASSWORD("password");
-
-        private final String name;
-
-        GrantType(String name) {
-            this.name = name;
-        }
-
-        @JsonValue
-        public String getName() {
-            return name;
-        }
-    }
     @NotNull
     private final GrantType grantType;
-
     @NotNull
     private final String providerName;
-
     private final String scope;
-
     private final String username;
-
     private final String password;
 
     @JsonCreator
@@ -50,6 +31,14 @@ public class SubscriptionOAuthPolicy {
         this.scope = scope;
         this.username = username;
         this.password = password;
+    }
+
+    public static Builder passwordGrantOAuthPolicy(String providerName) {
+        return new Builder(providerName, GrantType.USERNAME_PASSWORD);
+    }
+
+    public static Builder clientCredentialsGrantOAuthPolicy(String providerName) {
+        return new Builder(providerName, GrantType.CLIENT_CREDENTIALS);
     }
 
     public GrantType getGrantType() {
@@ -88,11 +77,11 @@ public class SubscriptionOAuthPolicy {
             return false;
         }
         SubscriptionOAuthPolicy that = (SubscriptionOAuthPolicy) o;
-        return grantType == that.grantType &&
-                Objects.equals(providerName, that.providerName) &&
-                Objects.equals(scope, that.scope) &&
-                Objects.equals(username, that.username) &&
-                Objects.equals(password, that.password);
+        return grantType == that.grantType
+                && Objects.equals(providerName, that.providerName)
+                && Objects.equals(scope, that.scope)
+                && Objects.equals(username, that.username)
+                && Objects.equals(password, that.password);
     }
 
     @Override
@@ -100,12 +89,19 @@ public class SubscriptionOAuthPolicy {
         return Objects.hash(grantType, providerName, scope, username, password);
     }
 
-    public static Builder passwordGrantOAuthPolicy(String providerName) {
-        return new Builder(providerName, GrantType.USERNAME_PASSWORD);
-    }
+    public enum GrantType {
+        CLIENT_CREDENTIALS("clientCredentials"), USERNAME_PASSWORD("password");
 
-    public static Builder clientCredentialsGrantOAuthPolicy(String providerName) {
-        return new Builder(providerName, GrantType.CLIENT_CREDENTIALS);
+        private final String name;
+
+        GrantType(String name) {
+            this.name = name;
+        }
+
+        @JsonValue
+        public String getName() {
+            return name;
+        }
     }
 
     public static class Builder {

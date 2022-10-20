@@ -10,10 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
 
-import javax.ws.rs.core.UriBuilder;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.List;
+import javax.ws.rs.core.UriBuilder;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
@@ -22,8 +22,9 @@ public class RestTemplateGraphiteClient implements GraphiteClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RestTemplateGraphiteClient.class);
 
-    private static final ParameterizedTypeReference<List<GraphiteResponse>> GRAPHITE_RESPONSE_TYPE = new ParameterizedTypeReference<List<GraphiteResponse>>() {
-    };
+    private static final ParameterizedTypeReference<List<GraphiteResponse>> GRAPHITE_RESPONSE_TYPE =
+            new ParameterizedTypeReference<>() {
+            };
 
     private static final String DEFAULT_VALUE = "0.0";
 

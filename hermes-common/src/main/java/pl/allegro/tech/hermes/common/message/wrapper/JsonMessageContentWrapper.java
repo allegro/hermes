@@ -65,6 +65,10 @@ public class JsonMessageContentWrapper {
         }
     }
 
+    private byte[] unwrapContent(byte[] json, int rootIndex) {
+        return copyOfRange(json, rootIndex + contentRootField.length, json.length - BRACKET_LENGTH);
+    }
+
     private UnwrappedMessageContent unwrapMessageContent(byte[] json) {
         int rootIndex = indexOf(json, contentRootField);
         int metadataIndex = indexOf(json, metadataRootField);
@@ -73,10 +77,6 @@ public class JsonMessageContentWrapper {
         } catch (Exception exception) {
             throw new UnwrappingException("Could not unwrap json message", exception);
         }
-    }
-
-    private byte[] unwrapContent(byte[] json, int rootIndex) {
-        return copyOfRange(json, rootIndex + contentRootField.length, json.length - BRACKET_LENGTH);
     }
 
     private MessageMetadata unwrapMesssageMetadata(byte[] json, int metadataIndexStart, int metadataIndexEnd) throws IOException {

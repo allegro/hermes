@@ -151,6 +151,7 @@ public class PathContext {
             this.oAuthProviderName = Optional.of(oAuthProviderName);
             return this;
         }
+
         public Builder withSchemaRepoType(String schemaRepoType) {
             this.schemaRepoType = Optional.of(schemaRepoType);
             return this;

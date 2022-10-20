@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.api.constraints;
 
-import javax.validation.Constraint;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import javax.validation.Constraint;
 
 import static java.lang.annotation.ElementType.TYPE;
 
@@ -15,7 +15,7 @@ import static java.lang.annotation.ElementType.TYPE;
 public @interface ValidContentType {
     String message();
 
-    Class[] groups() default { };
+    Class[] groups() default {};
 
-    Class[] payload() default { };
+    Class[] payload() default {};
 }

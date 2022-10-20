@@ -31,13 +31,13 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     }
 
     @Override
-    public Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic) {
-        return timedSchema(() -> rawSchemaClient.getLatestRawSchemaWithMetadata(topic));
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
+        return timedSchema(() -> rawSchemaClient.getRawSchemaWithMetadata(topic, schemaId));
     }
 
     @Override
-    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
-        return timedSchema(() -> rawSchemaClient.getRawSchemaWithMetadata(topic, schemaId));
+    public Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic) {
+        return timedSchema(() -> rawSchemaClient.getLatestRawSchemaWithMetadata(topic));
     }
 
     @Override

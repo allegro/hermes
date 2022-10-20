@@ -6,8 +6,8 @@ import java.util.Objects;
 
 final class ConsumerInstance {
 
-    private String consumerId;
-    private SubscriptionName subscription;
+    private final String consumerId;
+    private final SubscriptionName subscription;
 
     ConsumerInstance(String consumerId, SubscriptionName subscription) {
         this.consumerId = consumerId;
@@ -31,8 +31,8 @@ final class ConsumerInstance {
             return false;
         }
         ConsumerInstance that = (ConsumerInstance) o;
-        return Objects.equals(consumerId, that.consumerId) &&
-                Objects.equals(subscription, that.subscription);
+        return Objects.equals(consumerId, that.consumerId)
+                && Objects.equals(subscription, that.subscription);
     }
 
     @Override
@@ -42,9 +42,9 @@ final class ConsumerInstance {
 
     @Override
     public String toString() {
-        return "ConsumerInstance{" +
-                "consumerId='" + consumerId + '\'' +
-                ", subscription=" + subscription +
-                '}';
+        return "ConsumerInstance{"
+                + "consumerId='" + consumerId + '\''
+                + ", subscription=" + subscription
+                + '}';
     }
 }

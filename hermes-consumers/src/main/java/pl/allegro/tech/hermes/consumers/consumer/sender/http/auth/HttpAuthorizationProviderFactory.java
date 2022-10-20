@@ -14,7 +14,7 @@ public class HttpAuthorizationProviderFactory {
     }
 
     public Optional<HttpAuthorizationProvider> create(Subscription subscription) {
-        if(subscription.getEndpoint().containsCredentials()) {
+        if (subscription.getEndpoint().containsCredentials()) {
             return Optional.of(new BasicAuthProvider(subscription.getEndpoint()));
         } else if (subscription.hasOAuthPolicy()) {
             return Optional.of(new OAuthHttpAuthorizationProvider(subscription.getQualifiedName(), accessTokens));

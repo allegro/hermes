@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class ReactiveHermesClientBuilder {
 
-    private ReactiveHermesSender sender;
+    private final ReactiveHermesSender sender;
     private URI uri = URI.create("http://localhost:8080");
     private final Map<String, String> defaultHeaders = new HashMap<>();
     private int retries = 3;
