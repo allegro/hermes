@@ -35,7 +35,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            def response = publish(topicName)
+            def response = publishJson(topicName)
 
         then:
             hermes.expect().singleMessageOnTopic(topicName)
@@ -48,7 +48,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            3.times { publish(topicName) }
+            3.times { publishJson(topicName) }
 
         then:
             hermes.expect().messagesOnTopic(topicName, 3)
@@ -60,11 +60,11 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            2.times { publish(topicName) }
+            2.times { publishJson(topicName) }
 
             Thread.start {
                 sleep(100)
-                publish(topicName)
+                publishJson(topicName)
             }
 
         then:
@@ -77,7 +77,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            publish(topicName)
+            publishJson(topicName)
 
         then:
             hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
@@ -89,8 +89,8 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            3.times { publish(topicName) }
-            3.times { publish("whatever") }
+            3.times { publishJson(topicName) }
+            3.times { publishJson("whatever") }
 
         then:
             hermes.expect().jsonMessagesOnTopicAs(topicName, 3, TestMessage)
@@ -105,7 +105,7 @@ class HermesMockTest extends Specification {
 
         when:
             messages.each { publish(topicName, it.asJson()) }
-            3.times { publish("whatever") }
+            3.times { publishJson("whatever") }
 
         then:
             hermes.expect().jsonMessagesOnTopicAs(topicName, 2, TestMessage, filter)
@@ -117,7 +117,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            2.times { publish(topicName) }
+            2.times { publishJson(topicName) }
 
         and:
             hermes.expect().singleMessageOnTopic(topicName)
@@ -133,7 +133,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            2.times { publish(topicName) }
+            2.times { publishJson(topicName) }
 
         and:
             hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
@@ -149,7 +149,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            5.times { publish(topicName) }
+            5.times { publishJson(topicName) }
 
         then:
             def requests = hermes.query().allRequests()
@@ -164,8 +164,8 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName2)
 
         when:
-            5.times { publish(topicName) }
-            2.times { publish(topicName2) }
+            5.times { publishJson(topicName) }
+            2.times { publishJson(topicName2) }
 
         then:
             def requests1 = hermes.query().allRequestsOnTopic(topicName)
@@ -185,7 +185,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            5.times { publish(topicName) }
+            5.times { publishJson(topicName) }
 
         then:
             hermes.query().allRequestsOnTopic(topicName).size() == 5
@@ -277,7 +277,7 @@ class HermesMockTest extends Specification {
 
         when:
             messages.each { publish(topicName, it.asJson()) }
-            5.times { publish(topicName) }
+            5.times { publishJson(topicName) }
 
         then:
             1 == hermes.query().countMatchingJsonMessages(topicName, TestMessage, filter)
@@ -287,7 +287,7 @@ class HermesMockTest extends Specification {
         given:
         def topicName = "my-test-avro-topic"
         hermes.define().avroTopic(topicName)
-        publish(topicName, new TestMessage("test-key", "test-value"))
+        publishAvro(topicName, new TestMessage("test-key", "test-value"))
         assert hermes.query().countAvroMessages(topicName) == 1
 
         when:
@@ -301,7 +301,7 @@ class HermesMockTest extends Specification {
         given:
         def topicName = "my-test-avro-topic"
         hermes.define().avroTopic(topicName)
-        publish(topicName, new TestMessage("test-key", "test-value"))
+        publishAvro(topicName, new TestMessage("test-key", "test-value"))
 
         when:
         hermes.resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "different-test-key"})
@@ -337,7 +337,7 @@ class HermesMockTest extends Specification {
         hermes.query().countJsonMessages(topicName, TestMessage) == 1
     }
 
-    def publish(String topic) {
+    def publishJson(String topic) {
         publish(topic, TestMessage.random().asJson())
     }
 
@@ -345,7 +345,7 @@ class HermesMockTest extends Specification {
         publisher.publish(topic, body)
     }
 
-    def publish(String topic, TestMessage message) {
+    def publishAvro(String topic, TestMessage message) {
         publisher.publish(topic, asAvro(message))
     }
 
