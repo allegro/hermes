@@ -36,7 +36,7 @@ public class ZookeeperAdminTool implements AdminTool {
         String path = zookeeperPaths.adminOperationPath(name);
 
         curatorFramework.create()
-                .withMode(CreateMode.CONTAINER)
+                .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
                 .forPath(path, objectMapper.writeValueAsBytes(subscriptionName));
     }
 }
