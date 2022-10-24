@@ -11,8 +11,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.threeten.bp.Duration;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.*;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.*;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageTransformers;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMetadataAppender;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

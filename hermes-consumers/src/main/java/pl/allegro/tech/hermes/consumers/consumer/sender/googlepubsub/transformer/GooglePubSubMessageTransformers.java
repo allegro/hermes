@@ -19,7 +19,6 @@ public class GooglePubSubMessageTransformers {
     private final GooglePubSubCompressorProperties compressorProperties;
     private final GooglePubSubMessageTransformer rawMessageTransformer;
 
-
     public GooglePubSubMessageTransformers(MetadataAppender<PubsubMessage> metadataAppender,
                                            GooglePubSubCompressorProperties compressorProperties) {
         this.compressorProperties = compressorProperties;
@@ -28,7 +27,8 @@ public class GooglePubSubMessageTransformers {
 
     public GooglePubSubMessageTransformer createMessageTransformer(GooglePubSubSenderTarget pubSubTarget) {
         if (pubSubTarget.isCompressionRequested()) {
-            Optional<GooglePubSubMessageTransformer> compressingTransformer = createCompressingTransformer(pubSubTarget.getCompressionCodec());
+            Optional<GooglePubSubMessageTransformer> compressingTransformer =
+                    createCompressingTransformer(pubSubTarget.getCompressionCodec());
             if (compressingTransformer.isPresent()) {
                 return compressingTransformer.get();
             } else {
