@@ -59,11 +59,13 @@ public class HermesMock {
     }
 
     public <T> void resetReceivedJsonRequests(String topicName, Class<T> clazz, Predicate<T> predicate) {
-        ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher = ContentMatchers.matchJson(hermesMockHelper, predicate, clazz);
+        ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher =
+                ContentMatchers.matchJson(hermesMockHelper, predicate, clazz);
         resetReceivedRequests(topicName, APPLICATION_JSON, valueMatcher);
     }
 
-    private void resetReceivedRequests(String topicName, String contentType, ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher) {
+    private void resetReceivedRequests(String topicName, String contentType,
+                                       ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher) {
         RequestPattern requestPattern = RequestPatternBuilder
                 .newRequestPattern(POST, urlEqualTo("/topics/" + topicName))
                 .withHeader("Content-Type", startsWith(contentType))
