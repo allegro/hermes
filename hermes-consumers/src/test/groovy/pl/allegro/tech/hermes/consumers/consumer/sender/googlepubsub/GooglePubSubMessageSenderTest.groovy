@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import spock.lang.Specification
 import spock.lang.Subject
 
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class GooglePubSubMessageSenderTest extends Specification {
@@ -40,8 +41,9 @@ class GooglePubSubMessageSenderTest extends Specification {
         publisher.publish(_ as PubsubMessage) >> apiFuture("test")
 
         when:
-        MessageSendingResult result = sender.send(MessageBuilder.testMessage())
-                .get(1, TimeUnit.SECONDS)
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture();
+        sender.send(MessageBuilder.testMessage(), future)
+        MessageSendingResult result = future.get(1, TimeUnit.SECONDS)
 
         then:
         result.succeeded()
@@ -53,8 +55,9 @@ class GooglePubSubMessageSenderTest extends Specification {
         publisher.publish(_ as PubsubMessage) >> apiFuture(exception)
 
         when:
-        MessageSendingResult result = sender.send(MessageBuilder.testMessage())
-                .get(1, TimeUnit.SECONDS)
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture();
+        sender.send(MessageBuilder.testMessage(), future)
+        MessageSendingResult result = future.get(1, TimeUnit.SECONDS)
 
         then:
         !result.succeeded()

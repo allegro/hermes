@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
@@ -26,7 +25,7 @@ public class ConsumerMessageSenderFactory {
     private final String kafkaClusterName;
     private final MessageSenderFactory messageSenderFactory;
     private final Trackers trackers;
-    private final FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout;
+    private final FutureAsyncTimeout futureAsyncTimeout;
     private final UndeliveredMessageLog undeliveredMessageLog;
     private final Clock clock;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
@@ -34,7 +33,7 @@ public class ConsumerMessageSenderFactory {
     private final int senderAsyncTimeoutMs;
 
     public ConsumerMessageSenderFactory(String kafkaClusterName, MessageSenderFactory messageSenderFactory,
-                                        Trackers trackers, FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
+                                        Trackers trackers, FutureAsyncTimeout futureAsyncTimeout,
                                         UndeliveredMessageLog undeliveredMessageLog, Clock clock,
                                         InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
                                         ConsumerAuthorizationHandler consumerAuthorizationHandler,

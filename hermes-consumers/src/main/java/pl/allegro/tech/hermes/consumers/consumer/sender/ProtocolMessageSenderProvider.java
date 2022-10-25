@@ -6,7 +6,7 @@ import java.util.Set;
 
 public interface ProtocolMessageSenderProvider {
 
-    MessageSender create(Subscription subscription);
+    MessageSender create(Subscription subscription, SendFutureProviderSupplier futureProviderSupplier);
 
     Set<String> getSupportedProtocols();
 

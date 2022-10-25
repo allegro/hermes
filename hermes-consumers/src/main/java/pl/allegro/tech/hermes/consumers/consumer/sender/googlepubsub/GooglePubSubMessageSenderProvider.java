@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableSet;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderAdapter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SendFutureProviderSupplier;
 
 import java.io.IOException;
 import java.util.Set;
@@ -40,10 +42,12 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
     }
 
     @Override
-    public MessageSender create(final Subscription subscription) {
+    public MessageSender create(final Subscription subscription, SendFutureProviderSupplier sendFutureProviderSupplier) {
         final GooglePubSubSenderTarget resolvedTarget = resolver.resolve(subscription.getEndpoint());
+
         try {
-            return new GooglePubSubMessageSender(resolvedTarget, clientsPool);
+            GooglePubSubMessageSender pubSubMessageSender = new GooglePubSubMessageSender(resolvedTarget, clientsPool);
+            return new MessageSenderAdapter(pubSubMessageSender, sendFutureProviderSupplier.supply());
         } catch (IOException e) {
             throw new RuntimeException("Cannot create Google PubSub publishers cache", e);
         }

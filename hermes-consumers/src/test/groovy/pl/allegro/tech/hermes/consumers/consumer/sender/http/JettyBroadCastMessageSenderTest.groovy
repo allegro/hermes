@@ -8,6 +8,8 @@ import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult
+import pl.allegro.tech.hermes.consumers.consumer.sender.SendFutureProvider
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HermesHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1HeadersProvider
@@ -20,7 +22,10 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
 
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
+import java.util.function.Function
 
 import static java.util.Collections.singleton
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.TEST_MESSAGE_CONTENT
@@ -51,6 +56,16 @@ class JettyBroadCastMessageSenderTest extends Specification {
 
     SendingResultHandlers resultHandlersProvider = new DefaultSendingResultHandlers()
 
+    @Shared
+    SendFutureProvider<SingleMessageSendingResult> futureProvider = new SendFutureProvider<SingleMessageSendingResult>() {
+        @Override
+        CompletableFuture<SingleMessageSendingResult> provide(Consumer<CompletableFuture<SingleMessageSendingResult>> resultFutureConsumer, Function<Throwable, SingleMessageSendingResult> exceptionMapper) {
+            CompletableFuture<SingleMessageSendingResult> cf = new CompletableFuture<>()
+            resultFutureConsumer.accept(cf)
+            return cf
+        }
+    }
+
     def setupSpec() throws Exception {
         wireMockServers.forEach { it.start() }
 
@@ -67,8 +82,9 @@ class JettyBroadCastMessageSenderTest extends Specification {
         def address = new ResolvableEndpointAddress(endpoint, new MultiUrlEndpointAddressResolver(),
                 EndpointAddressResolverMetadata.empty());
         def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
+
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
-                requestHeadersProvider, resultHandlersProvider);
+                requestHeadersProvider, resultHandlersProvider, futureProvider);
     }
 
     def "should send message successfully in parallel to all urls"() {
@@ -133,7 +149,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
 
         def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
-                requestHeadersProvider, resultHandlersProvider)
+                requestHeadersProvider, resultHandlersProvider, futureProvider)
 
         when:
         def future = messageSender.send(testMessage())

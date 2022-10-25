@@ -3,10 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 import com.google.common.collect.ImmutableList;
 import org.eclipse.jetty.client.api.Request;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult;
-import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.*;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData.HttpRequestDataBuilder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
@@ -16,6 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpo
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class JettyBroadCastMessageSender implements MessageSender {
@@ -24,15 +22,20 @@ public class JettyBroadCastMessageSender implements MessageSender {
     private final ResolvableEndpointAddress endpoint;
     private final HttpHeadersProvider requestHeadersProvider;
     private final SendingResultHandlers sendingResultHandlers;
-
+    private final SendFutureProvider<SingleMessageSendingResult> futureProvider;
+    private final Function<Throwable, SingleMessageSendingResult> exceptionMapper = MessageSendingResult::failedResult;
 
     public JettyBroadCastMessageSender(HttpRequestFactory requestFactory,
                                        ResolvableEndpointAddress endpoint,
-                                       HttpHeadersProvider requestHeadersProvider, SendingResultHandlers sendingResultHandlers) {
+                                       HttpHeadersProvider requestHeadersProvider,
+                                       SendingResultHandlers sendingResultHandlers,
+                                       SendFutureProvider<SingleMessageSendingResult> sendFutureProvider
+    ) {
         this.requestFactory = requestFactory;
         this.endpoint = endpoint;
         this.requestHeadersProvider = requestHeadersProvider;
         this.sendingResultHandlers = sendingResultHandlers;
+        this.futureProvider = sendFutureProvider;
     }
 
     @Override
@@ -40,7 +43,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
         try {
             return sendMessage(message).thenApply(MultiMessageSendingResult::new);
         } catch (Exception exception) {
-            return CompletableFuture.completedFuture(MessageSendingResult.failedResult(exception));
+            return CompletableFuture.completedFuture(exceptionMapper.apply(exception));
         }
     }
 
@@ -49,7 +52,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
             List<CompletableFuture<SingleMessageSendingResult>> results = collectResults(message);
             return mergeResults(results);
         } catch (EndpointAddressResolutionException exception) {
-            return CompletableFuture.completedFuture(Collections.singletonList(MessageSendingResult.failedResult(exception)));
+            return CompletableFuture.completedFuture(Collections.singletonList(exceptionMapper.apply(exception)));
         }
     }
 
@@ -80,9 +83,10 @@ public class JettyBroadCastMessageSender implements MessageSender {
     }
 
     private CompletableFuture<SingleMessageSendingResult> processResponse(Request request) {
-        CompletableFuture<SingleMessageSendingResult> resultFuture = new CompletableFuture<>();
-        request.send(sendingResultHandlers.handleSendingResultForBroadcast(resultFuture));
-        return resultFuture;
+        return futureProvider.provide(
+                resultFuture -> request.send(sendingResultHandlers.handleSendingResultForBroadcast(resultFuture)),
+                exceptionMapper);
+
     }
 
     @Override

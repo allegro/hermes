@@ -10,7 +10,9 @@ import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderAdapter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SendFutureProviderSupplier;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
@@ -65,7 +67,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     @Override
-    public MessageSender create(Subscription subscription) {
+    public MessageSender create(Subscription subscription, SendFutureProviderSupplier futureProviderSupplier) {
         EndpointAddress endpoint = subscription.getEndpoint();
         EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
         ResolvableEndpointAddress resolvableEndpoint =
@@ -78,13 +80,16 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
-                    sendingResultHandlers);
+                    sendingResultHandlers,
+                    futureProviderSupplier.supply());
+
         } else {
-            return new JettyMessageSender(
+            JettyMessageSender messageSender = new JettyMessageSender(
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers);
+            return new MessageSenderAdapter(messageSender, futureProviderSupplier.supply());
         }
     }
 
