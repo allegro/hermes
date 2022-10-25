@@ -11,15 +11,12 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
+import pl.allegro.tech.hermes.consumers.consumer.sender.*;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.net.URI;
 import java.time.Clock;
-import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -28,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
@@ -38,21 +36,22 @@ public class ConsumerMessageSender {
     private final ExecutorService deliveryReportingExecutor;
     private final List<SuccessHandler> successHandlers;
     private final List<ErrorHandler> errorHandlers;
-    private final SerialConsumerRateLimiter rateLimiter;
     private final MessageSenderFactory messageSenderFactory;
     private final Clock clock;
     private final InflightsPool inflight;
-    private final FutureAsyncTimeout<MessageSendingResult> async;
-    private final int asyncTimeoutMs;
     private final SubscriptionLoadRecorder loadRecorder;
-
-    private int requestTimeoutMs;
     private final Timer consumerLatencyTimer;
+    private final SerialConsumerRateLimiter rateLimiter;
+    private final FutureAsyncTimeout async;
+    private final int asyncTimeoutMs;
+
     private MessageSender messageSender;
     private Subscription subscription;
+    private SendFutureProvider sendFutureProvider;
 
     private ScheduledExecutorService retrySingleThreadExecutor;
     private volatile boolean running = true;
+
 
     public ConsumerMessageSender(Subscription subscription,
                                  MessageSenderFactory messageSenderFactory,
@@ -63,22 +62,22 @@ public class ConsumerMessageSender {
                                  InflightsPool inflight,
                                  SubscriptionMetrics metrics,
                                  int asyncTimeoutMs,
-                                 FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
+                                 FutureAsyncTimeout futureAsyncTimeout,
                                  Clock clock,
                                  SubscriptionLoadRecorder loadRecorder) {
         this.deliveryReportingExecutor = deliveryReportingExecutor;
         this.successHandlers = successHandlers;
         this.errorHandlers = errorHandlers;
-        this.rateLimiter = rateLimiter;
         this.messageSenderFactory = messageSenderFactory;
         this.clock = clock;
         this.loadRecorder = loadRecorder;
+        this.async = futureAsyncTimeout;
+        this.rateLimiter = rateLimiter;
+        this.asyncTimeoutMs = asyncTimeoutMs;
+        this.sendFutureProvider = provider(rateLimiter, futureAsyncTimeout, subscription, asyncTimeoutMs);
         this.messageSender = messageSenderFactory.create(subscription);
         this.subscription = subscription;
         this.inflight = inflight;
-        this.async = futureAsyncTimeout;
-        this.requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
-        this.asyncTimeoutMs = asyncTimeoutMs;
         this.consumerLatencyTimer = metrics.subscriptionLatencyTimer();
     }
 
@@ -121,18 +120,16 @@ public class ConsumerMessageSender {
         return Math.max(delay, INTEGER_ZERO);
     }
 
+
     /**
      * Method is calling MessageSender and is registering listeners to handle response.
      * Main responsibility of this method is that no message will be fully processed or rejected without release on semaphore.
      */
     private void sendMessage(final Message message) {
-        rateLimiter.acquire();
         loadRecorder.recordSingleOperation();
         Timer.Context timer = consumerLatencyTimer.time();
-        CompletableFuture<MessageSendingResult> response = async.within(
-                messageSender.send(message),
-                Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs)
-        );
+        CompletableFuture<MessageSendingResult> response = messageSender.send(message, sendFutureProvider);
+
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor)
                 .exceptionally(e -> {
                     logger.error(
@@ -157,7 +154,7 @@ public class ConsumerMessageSender {
         );
 
         this.subscription = newSubscription;
-        this.requestTimeoutMs = newSubscription.getSerialSubscriptionPolicy().getRequestTimeout();
+        this.sendFutureProvider = provider(this.rateLimiter, this.async, this.subscription, this.asyncTimeoutMs);
 
         boolean httpClientChanged = this.subscription.isHttp2Enabled() != newSubscription.isHttp2Enabled();
 
@@ -168,6 +165,22 @@ public class ConsumerMessageSender {
         }
     }
 
+    private static SendFutureProvider provider(SerialConsumerRateLimiter serialConsumerRateLimiter,
+                                                       FutureAsyncTimeout asyncTimeout, Subscription subscription, int asyncTimeoutMs
+    ) {
+        Integer requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
+        List<Predicate<MessageSendingResult>> ignorableErrors = ignorableErrors(subscription);
+        return new SendFutureProvider(serialConsumerRateLimiter, ignorableErrors, asyncTimeout, requestTimeoutMs, asyncTimeoutMs);
+
+    }
+
+
+    private static List<Predicate<MessageSendingResult>> ignorableErrors(Subscription subscription) {
+        Predicate<MessageSendingResult> ignore = (MessageSendingResult result) -> result.ignoreInRateCalculation(subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
+                subscription.hasOAuthPolicy());
+        return Collections.singletonList(ignore);
+    }
+
     private boolean willExceedTtl(Message message, long delay) {
         long ttl = TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
         long remainingTtl = Math.max(ttl - delay, 0);
@@ -175,18 +188,8 @@ public class ConsumerMessageSender {
     }
 
     private void handleFailedSending(Message message, MessageSendingResult result) {
-        registerResultInRateLimiter(result);
         retrySending(message, result);
         errorHandlers.forEach(h -> h.handleFailed(message, subscription, result));
-    }
-
-    private void registerResultInRateLimiter(MessageSendingResult result) {
-        if (result.ignoreInRateCalculation(subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
-                subscription.hasOAuthPolicy())) {
-            rateLimiter.registerSuccessfulSending();
-        } else {
-            rateLimiter.registerFailedSending();
-        }
     }
 
     private void retrySending(Message message, MessageSendingResult result) {
@@ -232,7 +235,6 @@ public class ConsumerMessageSender {
     }
 
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
-        rateLimiter.registerSuccessfulSending();
         inflight.release();
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
     }

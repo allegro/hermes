@@ -160,7 +160,7 @@ public class ConsumerConfiguration {
     public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaClustersProperties kafkaClustersProperties,
                                                                      MessageSenderFactory messageSenderFactory,
                                                                      Trackers trackers,
-                                                                     FutureAsyncTimeout<MessageSendingResult> futureAsyncTimeout,
+                                                                     FutureAsyncTimeout futureAsyncTimeout,
                                                                      UndeliveredMessageLog undeliveredMessageLog, Clock clock,
                                                                      InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
                                                                      ConsumerAuthorizationHandler consumerAuthorizationHandler,

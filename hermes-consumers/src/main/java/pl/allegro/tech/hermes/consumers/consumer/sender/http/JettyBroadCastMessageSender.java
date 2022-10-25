@@ -3,10 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 import com.google.common.collect.ImmutableList;
 import org.eclipse.jetty.client.api.Request;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult;
-import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.*;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData.HttpRequestDataBuilder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
@@ -16,6 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpo
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class JettyBroadCastMessageSender implements MessageSender {
@@ -24,11 +22,13 @@ public class JettyBroadCastMessageSender implements MessageSender {
     private final ResolvableEndpointAddress endpoint;
     private final HttpHeadersProvider requestHeadersProvider;
     private final SendingResultHandlers sendingResultHandlers;
-
+    private final Function<Throwable, SingleMessageSendingResult> exceptionMapper = MessageSendingResult::failedResult;
 
     public JettyBroadCastMessageSender(HttpRequestFactory requestFactory,
                                        ResolvableEndpointAddress endpoint,
-                                       HttpHeadersProvider requestHeadersProvider, SendingResultHandlers sendingResultHandlers) {
+                                       HttpHeadersProvider requestHeadersProvider,
+                                       SendingResultHandlers sendingResultHandlers
+    ) {
         this.requestFactory = requestFactory;
         this.endpoint = endpoint;
         this.requestHeadersProvider = requestHeadersProvider;
@@ -36,24 +36,24 @@ public class JettyBroadCastMessageSender implements MessageSender {
     }
 
     @Override
-    public CompletableFuture<MessageSendingResult> send(Message message) {
+    public CompletableFuture<MessageSendingResult> send(Message message, SendFutureProvider sendFutureProvider) {
         try {
-            return sendMessage(message).thenApply(MultiMessageSendingResult::new);
+            return sendMessage(message, sendFutureProvider).thenApply(MultiMessageSendingResult::new);
         } catch (Exception exception) {
-            return CompletableFuture.completedFuture(MessageSendingResult.failedResult(exception));
+            return CompletableFuture.completedFuture(exceptionMapper.apply(exception));
         }
     }
 
-    private CompletableFuture<List<SingleMessageSendingResult>> sendMessage(Message message) {
+    private CompletableFuture<List<SingleMessageSendingResult>> sendMessage(Message message, SendFutureProvider sendFutureProvider) {
         try {
-            List<CompletableFuture<SingleMessageSendingResult>> results = collectResults(message);
-            return mergeResults(results);
+            List<CompletableFuture<SingleMessageSendingResult>> results = collectResults(message, sendFutureProvider);
+            return mergeResults(results, sendFutureProvider);
         } catch (EndpointAddressResolutionException exception) {
-            return CompletableFuture.completedFuture(Collections.singletonList(MessageSendingResult.failedResult(exception)));
+            return CompletableFuture.completedFuture(Collections.singletonList(exceptionMapper.apply(exception)));
         }
     }
 
-    private List<CompletableFuture<SingleMessageSendingResult>> collectResults(Message message) throws EndpointAddressResolutionException {
+    private List<CompletableFuture<SingleMessageSendingResult>> collectResults(Message message, SendFutureProvider sendFutureProvider) throws EndpointAddressResolutionException {
 
         final HttpRequestData requestData = new HttpRequestDataBuilder()
                 .withRawAddress(endpoint.getRawAddress())
@@ -64,11 +64,11 @@ public class JettyBroadCastMessageSender implements MessageSender {
         return endpoint.resolveAllFor(message).stream()
                 .filter(uri -> message.hasNotBeenSentTo(uri.toString()))
                 .map(uri -> requestFactory.buildRequest(message, uri, headers))
-                .map(this::processResponse)
+                .map(r -> processResponse(r, sendFutureProvider))
                 .collect(Collectors.toList());
     }
 
-    private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(List<CompletableFuture<SingleMessageSendingResult>> results) {
+    private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(List<CompletableFuture<SingleMessageSendingResult>> results, SendFutureProvider sendFutureProvider)  {
         return CompletableFuture.allOf(results.toArray(new CompletableFuture[results.size()]))
                 .thenApply(v -> results.stream()
                         .map(CompletableFuture::join)
@@ -79,10 +79,11 @@ public class JettyBroadCastMessageSender implements MessageSender {
                         ).build());
     }
 
-    private CompletableFuture<SingleMessageSendingResult> processResponse(Request request) {
-        CompletableFuture<SingleMessageSendingResult> resultFuture = new CompletableFuture<>();
-        request.send(sendingResultHandlers.handleSendingResultForBroadcast(resultFuture));
-        return resultFuture;
+    private CompletableFuture<SingleMessageSendingResult> processResponse(Request request, SendFutureProvider sendFutureProvider) {
+        return sendFutureProvider.provide(
+                resultFuture -> request.send(sendingResultHandlers.handleSendingResultForBroadcast(resultFuture)),
+                exceptionMapper);
+
     }
 
     @Override

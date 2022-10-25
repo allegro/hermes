@@ -6,13 +6,16 @@ import org.eclipse.jetty.util.HttpCookieStore
 import pl.allegro.tech.hermes.api.EndpointAddress
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata
 import pl.allegro.tech.hermes.consumers.consumer.Message
+import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult
+import pl.allegro.tech.hermes.consumers.consumer.sender.SendFutureProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HermesHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1HeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress
+import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout
 import pl.allegro.tech.hermes.test.helper.endpoint.MultiUrlEndpointAddressResolver
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -20,6 +23,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
 
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 import static java.util.Collections.singleton
@@ -51,6 +55,14 @@ class JettyBroadCastMessageSenderTest extends Specification {
 
     SendingResultHandlers resultHandlersProvider = new DefaultSendingResultHandlers()
 
+    ConsumerRateLimiter consumerRateLimiter = Mock(ConsumerRateLimiter)
+    FutureAsyncTimeout futureAsyncTimeout = new FutureAsyncTimeout(Executors.newSingleThreadScheduledExecutor())
+
+    SendFutureProvider sendFutureProvider = new SendFutureProvider(
+            consumerRateLimiter, [], futureAsyncTimeout, 1000, 1000
+    )
+
+
     def setupSpec() throws Exception {
         wireMockServers.forEach { it.start() }
 
@@ -67,6 +79,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
         def address = new ResolvableEndpointAddress(endpoint, new MultiUrlEndpointAddressResolver(),
                 EndpointAddressResolverMetadata.empty());
         def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
+
         messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
                 requestHeadersProvider, resultHandlersProvider);
     }
@@ -76,7 +89,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
         serviceEndpoints.forEach { endpoint -> endpoint.setDelay(300).expectMessages(TEST_MESSAGE_CONTENT)}
 
         when:
-        def future = messageSender.send(testMessage());
+        def future = messageSender.send(testMessage(), sendFutureProvider);
 
         then:
         future.get(1, TimeUnit.SECONDS).succeeded()
@@ -92,7 +105,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
         serviceEndpoints.forEach { endpoint -> endpoint.expectMessages(TEST_MESSAGE_CONTENT)}
 
         when:
-        def future = messageSender.send(testMessage())
+        def future = messageSender.send(testMessage(), sendFutureProvider)
 
         then:
         serviceEndpoints.forEach { it.waitUntilReceived() }
@@ -114,7 +127,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
         message.incrementRetryCounter([alreadySentServiceEndpoint.url]);
 
         when:
-        def future = messageSender.send(message)
+        def future = messageSender.send(message, sendFutureProvider)
 
         then:
         alreadySentServiceEndpoint.makeSureNoneReceived()
@@ -136,7 +149,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
                 requestHeadersProvider, resultHandlersProvider)
 
         when:
-        def future = messageSender.send(testMessage())
+        def future = messageSender.send(testMessage(), sendFutureProvider)
 
         then:
         MessageSendingResult messageSendingResult = future.get(1, TimeUnit.SECONDS)

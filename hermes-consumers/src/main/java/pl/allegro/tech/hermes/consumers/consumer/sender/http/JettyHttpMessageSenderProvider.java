@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSenderAdapter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
@@ -80,11 +81,12 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers);
         } else {
-            return new JettyMessageSender(
+            JettyMessageSender jettyMessageSender =  new JettyMessageSender(
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers);
+            return new SingleMessageSenderAdapter(jettyMessageSender);
         }
     }
 

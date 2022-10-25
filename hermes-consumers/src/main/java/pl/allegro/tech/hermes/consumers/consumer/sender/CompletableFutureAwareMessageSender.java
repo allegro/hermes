@@ -4,19 +4,9 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 import java.util.concurrent.CompletableFuture;
 
-public abstract class CompletableFutureAwareMessageSender implements MessageSender {
+public interface CompletableFutureAwareMessageSender {
 
-    @Override
-    public CompletableFuture<MessageSendingResult> send(Message message) {
-        try {
-            CompletableFuture<MessageSendingResult> resultFuture = new CompletableFuture<>();
-            sendMessage(message, resultFuture);
-            return resultFuture;
-        } catch (Exception e) {
-            return CompletableFuture.completedFuture(MessageSendingResult.failedResult(e));
-        }
-    }
+    void send(Message message, CompletableFuture<MessageSendingResult> resultFuture);
 
-    protected abstract void sendMessage(Message message, CompletableFuture<MessageSendingResult> resultFuture);
-
+    void stop();
 }

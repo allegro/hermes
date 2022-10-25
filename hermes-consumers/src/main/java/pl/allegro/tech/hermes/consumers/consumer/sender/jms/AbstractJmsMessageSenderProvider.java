@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSenderAdapter;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 
@@ -36,7 +37,8 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
                 endpoint.getPassword()
         );
 
-        return new JmsMessageSender(jmsContext, extractTopicName(uri), metadataAppender);
+        JmsMessageSender jmsMessageSender = new JmsMessageSender(jmsContext, extractTopicName(uri), metadataAppender);
+        return new SingleMessageSenderAdapter(jmsMessageSender);
     }
 
     @Override
