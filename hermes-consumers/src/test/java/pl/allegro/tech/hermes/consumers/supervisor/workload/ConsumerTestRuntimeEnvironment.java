@@ -154,16 +154,37 @@ class ConsumerTestRuntimeEnvironment {
         SubscriptionIds subscriptionIds = subscriptionConfiguration.subscriptionIds(notificationsBus, subscriptionsCache,
                 new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths), new CommonConsumerProperties());
 
-        ConsumerAssignmentCache consumerAssignmentCache = new ConsumerAssignmentCache(curator, workloadProperties.getNodeId(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
+        ConsumerAssignmentCache consumerAssignmentCache =
+            new ConsumerAssignmentCache(
+                curator,
+                workloadProperties.getNodeId(),
+                kafkaProperties.getClusterName(),
+                zookeeperPaths,
+                subscriptionIds
+            );
         try {
             consumerAssignmentCache.start();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
 
-        ClusterAssignmentCache clusterAssignmentCache = new ClusterAssignmentCache(curator, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds, nodesRegistry);
+        ClusterAssignmentCache clusterAssignmentCache =
+            new ClusterAssignmentCache(
+                curator,
+                kafkaProperties.getClusterName(),
+                zookeeperPaths,
+                subscriptionIds,
+                nodesRegistry
+            );
 
-        ConsumerAssignmentRegistry consumerAssignmentRegistry = new ConsumerAssignmentRegistry(curator, workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
+        ConsumerAssignmentRegistry consumerAssignmentRegistry =
+            new ConsumerAssignmentRegistry(
+                curator,
+                workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(),
+                kafkaProperties.getClusterName(),
+                zookeeperPaths,
+                subscriptionIds
+            );
 
         return new WorkloadSupervisor(
                 consumersSupervisor,
@@ -182,6 +203,10 @@ class ConsumerTestRuntimeEnvironment {
                 new SelectiveWorkBalancer(),
                 new NoOpBalancingListener()
         );
+    }
+
+    WorkloadSupervisor spawnConsumer() {
+        return spawnConsumers(1).get(0);
     }
 
     WorkloadSupervisor spawnConsumer(String consumerId, ConsumersSupervisor consumersSupervisor) {
@@ -240,10 +265,6 @@ class ConsumerTestRuntimeEnvironment {
                     return consumer;
                 })
                 .collect(toList());
-    }
-
-    WorkloadSupervisor spawnConsumer() {
-        return spawnConsumers(1).get(0);
     }
 
     void kill(WorkloadSupervisor node) {

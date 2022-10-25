@@ -186,7 +186,11 @@ public class ConsumerMessageSenderTest {
 
         // then
         verifySemaphoreReleased();
-        verify(errorHandler, timeout(1000).times(3)).handleFailed(eq(message), eq(subscriptionWith4xxRetry), any(MessageSendingResult.class));
+        verify(errorHandler,
+            timeout(1000).times(3)).handleFailed(eq(message),
+            eq(subscriptionWith4xxRetry),
+            any(MessageSendingResult.class)
+        );
     }
 
     @Test
@@ -266,7 +270,7 @@ public class ConsumerMessageSenderTest {
     @Test
     public void shouldBackoffRetriesWhenEndpointFails() throws InterruptedException {
         // given
-        int executionTime = 100;
+        final int executionTime = 100;
         int senderBackoffTime = 50;
         Subscription subscriptionWithBackoff = subscriptionWithBackoff(senderBackoffTime);
         setUpMetrics(subscriptionWithBackoff);
@@ -464,8 +468,8 @@ public class ConsumerMessageSenderTest {
         sender.sendAsync(message);
 
         //then
-        verify(successHandler, timeout(retrySeconds * 1000 * 2 + 500 ))
-                .handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
+        verify(successHandler, timeout(retrySeconds * 1000 * 2 + 500))
+            .handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
     }
 
     @Test

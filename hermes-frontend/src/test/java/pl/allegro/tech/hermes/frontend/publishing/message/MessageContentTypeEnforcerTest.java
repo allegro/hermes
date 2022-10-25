@@ -54,7 +54,8 @@ public class MessageContentTypeEnforcerTest {
     @Test
     public void shouldStringContentTypeOfAdditionalOptionsWhenInterpretingIt() {
         // when
-        byte[] enforcedMessage = enforcer.enforceAvro("application/json;encoding=utf-8", avroMessage.asJson().getBytes(), schema.getSchema(), topic);
+        byte[] enforcedMessage =
+            enforcer.enforceAvro("application/json;encoding=utf-8", avroMessage.asJson().getBytes(), schema.getSchema(), topic);
 
         // then
         assertThat(enforcedMessage).isEqualTo(avroMessage.asBytes());
