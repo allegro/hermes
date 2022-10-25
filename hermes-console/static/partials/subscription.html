@@ -99,6 +99,59 @@
                     <p><strong><a ng-href="{{metricsUrls.networkErrors}}">Other network errors</a></strong></p>
                 </div>
             </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Manage subscription messages</h3>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <p>
+                            <strong>Retransmit messages from the past:</strong>
+                            <span uib-popover='This action re-send all messages starting the date chosen in datepicker.'
+                                  popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                        </p>
+                        <form class="form-inline">
+                            <div class="form-group">
+
+                                <div class="input-group date" id="retransmitFromDate" calendar days-back="daysBack">
+                                    <input type="text" class="form-control" style="width: 250px"
+                                           placeholder="since..."
+                                           ng-disabled="disabled || subscription.state !== 'ACTIVE'"/>
+                                    <span class="input-group-addon"
+                                          ng-disabled="disabled || subscription.state !== 'ACTIVE'">
+                                        <span class="glyphicon glyphicon-time"></span>
+                                    </span>
+                                </div>
+                                <button class="btn btn-danger" ng-click="retransmit()"
+                                        ng-disabled="userWithoutAccess || subscription.state !== 'ACTIVE'"></span>
+                                    Retransmit
+                                </button>
+                                <span class="loading-in-panel" ng-show="retransmissionLoading">
+                                    <i class=" fa fa-circle-o-notch fa-spin fa-2x"></i>
+                                </span>
+                            </div>
+                        </form>
+                    </li>
+                    <li class="list-group-item">
+                        <p>
+                            <strong>Skip all messages:</strong>
+                            <span uib-popover="This action skips all messages from the past (messages from the past won't be send to subscription endpoint)."
+                                  popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>
+                        </p>
+                        <form class="form-inline">
+                            <div class="form-group">
+                                <button class="btn btn-danger" ng-click="skipMessages()"
+                                        ng-disabled="userWithoutAccess || subscription.state !== 'ACTIVE'"></span>
+                                    Skip messages
+                                </button>
+                                <span class="loading-in-panel" ng-show="skipMessagesLoading">
+                                    <i class=" fa fa-circle-o-notch fa-spin fa-2x"></i>
+                                </span>
+                            </div>
+                        </form>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="col-md-6">
             <div class="panel panel-default">
@@ -206,43 +259,6 @@
                     <p ng-show="subscription.modifiedAt">
                         <strong>Modification date:</strong> {{subscription.modifiedAt | date:'yyyy-MM-dd HH:mm:ss'}}
                     </p>
-                </div>
-            </div>
-
-            <div class="panel panel-danger">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Messages retransmission</h3>
-                </div>
-                <div class="panel-body">
-                    <form class="form-inline">
-                        <div class="form-group">
-                            <div class="input-group date" id="retransmitFromDate" calendar days-back="daysBack">
-                                <input type="text" class="form-control" style="width: 250px" placeholder="since..." ng-disabled="disabled || subscription.state !== 'ACTIVE'"/>
-                                <span class="input-group-addon" ng-disabled="disabled || subscription.state !== 'ACTIVE'">
-                                    <span class="glyphicon glyphicon-time"></span>
-                                </span>
-                            </div>
-                            <button class="btn btn-danger" ng-click="retransmit()" ng-disabled="userWithoutAccess || subscription.state !== 'ACTIVE'"></span> Retransmit</button>
-                            <span class="loading-in-panel" ng-show="retransmissionLoading">
-                                <i class=" fa fa-circle-o-notch fa-spin fa-2x"></i>
-                            </span>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="panel panel-danger">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Skip messages</h3>
-                </div>
-                <div class="panel-body">
-                    <form class="form-inline">
-                        <div class="form-group">
-                            <button class="btn btn-danger" ng-click="skipMessages()" ng-disabled="userWithoutAccess || subscription.state !== 'ACTIVE'"></span> Skip messages</button>
-                            <span class="loading-in-panel" ng-show="skipMessagesLoading">
-                                <i class=" fa fa-circle-o-notch fa-spin fa-2x"></i>
-                            </span>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
