@@ -33,7 +33,7 @@ public class EventAuditor implements Auditor {
 
     @Override
     public void beforeObjectCreation(String username, Anonymizable createdObject) {
-        ignoringExceptions(() -> {
+        retryThenLogExceptions(() -> {
             String createdObjectToString = objectMapper.writeValueAsString(createdObject);
             AuditEvent event = new AuditEvent(AuditEventType.BEFORE_CREATION,
                     createdObjectToString,
@@ -46,7 +46,7 @@ public class EventAuditor implements Auditor {
 
     @Override
     public void beforeObjectRemoval(String username, String removedObjectType, String removedObjectName) {
-        ignoringExceptions(() -> {
+        retryThenLogExceptions(() -> {
             AuditEvent event = new AuditEvent(AuditEventType.BEFORE_REMOVAL,
                     removedObjectName,
                     removedObjectType,
@@ -58,7 +58,7 @@ public class EventAuditor implements Auditor {
 
     @Override
     public void beforeObjectUpdate(String username, String objectClassName, Object objectName, PatchData patchData) {
-        ignoringExceptions(() -> {
+        retryThenLogExceptions(() -> {
             String patchDataToString = objectMapper.writeValueAsString(patchData);
             AuditEvent event = new AuditEvent(AuditEventType.BEFORE_UPDATE,
                     patchDataToString,
@@ -71,7 +71,7 @@ public class EventAuditor implements Auditor {
 
     @Override
     public void objectCreated(String username, Object createdObject) {
-        ignoringExceptions(() -> {
+        retryThenLogExceptions(() -> {
             String createdObjectToString = objectMapper.writeValueAsString(createdObject);
             AuditEvent event = new AuditEvent(AuditEventType.CREATED,
                     createdObjectToString,
@@ -84,7 +84,7 @@ public class EventAuditor implements Auditor {
 
     @Override
     public void objectRemoved(String username, Object removedObject) {
-        ignoringExceptions(() -> {
+        retryThenLogExceptions(() -> {
             String removedObjectToString = objectMapper.writeValueAsString(removedObject);
             AuditEvent event = new AuditEvent(AuditEventType.REMOVED,
                     removedObjectToString,
@@ -97,7 +97,7 @@ public class EventAuditor implements Auditor {
 
     @Override
     public void objectUpdated(String username, Object oldObject, Object newObject) {
-        ignoringExceptions(() -> {
+        retryThenLogExceptions(() -> {
             Diff diff = javers.compare(oldObject, newObject);
             AuditEvent event = new AuditEvent(AuditEventType.UPDATED,
                     diff.toString(),
@@ -108,11 +108,17 @@ public class EventAuditor implements Auditor {
         });
     }
 
-    private void ignoringExceptions(Wrapped wrapped) {
-        try {
-            wrapped.execute();
-        } catch (Exception e) {
-            logger.info("Audit event emission failed.", e);
+    private void retryThenLogExceptions(Wrapped wrapped) {
+        int maxAttempts = 2;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                wrapped.execute();
+                attempt = maxAttempts;
+            } catch (Exception e) {
+                if(attempt == maxAttempts) {
+                    logger.warn("Audit event emission failed.", e);
+                }
+            }
         }
     }
 
