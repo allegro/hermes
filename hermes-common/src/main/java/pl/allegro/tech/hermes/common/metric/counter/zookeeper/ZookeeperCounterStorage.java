@@ -3,13 +3,13 @@ package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.metrics.PathContext;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.MetricsDeltaCalculator;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
+import pl.allegro.tech.hermes.metrics.PathContext;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
@@ -20,9 +20,12 @@ public class ZookeeperCounterStorage implements CounterStorage {
 
     static final String TOPIC_PUBLISHED = "/groups/" + GROUP + "/topics/" + TOPIC + "/metrics/published";
     static final String TOPIC_VOLUME_COUNTER = "/groups/" + GROUP + "/topics/" + TOPIC + "/metrics/volume";
-    static final String SUBSCRIPTION_DELIVERED = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/delivered";
-    static final String SUBSCRIPTION_DISCARDED = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/discarded";
-    static final String SUBSCRIPTION_VOLUME_COUNTER = "/groups/" + GROUP + "/topics/" + TOPIC +"/subscriptions/" + SUBSCRIPTION + "/metrics/volume";
+    static final String SUBSCRIPTION_DELIVERED =
+            "/groups/" + GROUP + "/topics/" + TOPIC + "/subscriptions/" + SUBSCRIPTION + "/metrics/delivered";
+    static final String SUBSCRIPTION_DISCARDED =
+            "/groups/" + GROUP + "/topics/" + TOPIC + "/subscriptions/" + SUBSCRIPTION + "/metrics/discarded";
+    static final String SUBSCRIPTION_VOLUME_COUNTER =
+            "/groups/" + GROUP + "/topics/" + TOPIC + "/subscriptions/" + SUBSCRIPTION + "/metrics/volume";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperCounterStorage.class);
 

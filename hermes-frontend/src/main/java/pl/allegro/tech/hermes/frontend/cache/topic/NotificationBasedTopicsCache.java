@@ -57,8 +57,8 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
             if (cachedTopic.equals(topic)) {
                 topicCache.remove(topic.getName().qualifiedName());
             } else {
-                logger.warn("Received event about removed topic but cache contains different topic under the same name." +
-                        "Cached topic {}, removed topic {}", cachedTopic, topic);
+                logger.warn("Received event about removed topic but cache contains different topic under the same name."
+                        + "Cached topic {}, removed topic {}", cachedTopic, topic);
             }
         }
     }
@@ -100,8 +100,8 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
 
     @Override
     public void start() {
-        for(String groupName : groupRepository.listGroupNames()) {
-            for(Topic topic : topicRepository.listTopics(groupName)) {
+        for (String groupName : groupRepository.listGroupNames()) {
+            for (Topic topic : topicRepository.listTopics(groupName)) {
                 topicCache.put(topic.getQualifiedName(), cachedTopic(topic));
             }
         }

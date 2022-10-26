@@ -16,13 +16,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * This is a modified copy of InstrumentedExecutorService from https://github.com/dropwizard/metrics.
+ * <p>This is a modified copy of InstrumentedExecutorService from
+ * <a href="https://github.com/dropwizard/metrics">@dropwizard/metrics</a>.</p>
  *
- * An {@link java.util.concurrent.ExecutorService} that monitors the number of tasks submitted, running,
- * completed and also keeps a {@link com.codahale.metrics.Timer} for the task duration.
+ * <p>An {@link ExecutorService} that monitors the number of tasks submitted, running,
+ * completed and also keeps a {@link Timer} for the task duration.</p>
  *
- * It will register the metrics using the given (or auto-generated) name as classifier, e.g:
- * "your-executor-service.submitted", "your-executor-service.running", etc.
+ * <p>It will register the metrics using the given (or auto-generated) name as classifier, e.g:
+ * "your-executor-service.submitted", "your-executor-service.running", etc.</p>
  */
 public class InstrumentedExecutorService implements ExecutorService {
 
@@ -118,7 +119,8 @@ public class InstrumentedExecutorService implements ExecutorService {
      * {@inheritDoc}
      */
     @Override
-    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
+            throws ExecutionException, InterruptedException, TimeoutException {
         submitted.mark(tasks.size());
         Collection<? extends Callable<T>> instrumented = instrument(tasks);
         return delegate.invokeAny(instrumented, timeout, unit);

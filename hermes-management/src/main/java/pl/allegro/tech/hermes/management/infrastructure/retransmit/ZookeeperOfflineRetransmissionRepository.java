@@ -1,18 +1,19 @@
 package pl.allegro.tech.hermes.management.infrastructure.retransmit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperBasedRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
-import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionValidationException;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
+import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionValidationException;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -44,7 +45,8 @@ public class ZookeeperOfflineRetransmissionRepository extends ZookeeperBasedRepo
                 return zookeeper.getChildren()
                         .forPath(paths.offlineRetransmissionPath())
                         .stream()
-                        .map(id -> readFrom(paths.offlineRetransmissionPath(id), OfflineRetransmissionTask.class)).collect(Collectors.toList());
+                        .map(id -> readFrom(paths.offlineRetransmissionPath(id), OfflineRetransmissionTask.class))
+                        .collect(Collectors.toList());
             }
             return Collections.emptyList();
         } catch (Exception ex) {

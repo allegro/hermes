@@ -17,8 +17,13 @@ public class RawSchemaClientFactory {
     private final boolean subjectSuffixEnabled;
     private final boolean subjectNamespaceEnabled;
 
-    public RawSchemaClientFactory(String kafkaNamespace, String kafkaNamespaceSeparator, HermesMetrics hermesMetrics, ObjectMapper objectMapper,
-                                  SchemaRepositoryInstanceResolver resolver, boolean subjectSuffixEnabled, boolean subjectNamespaceEnabled) {
+    public RawSchemaClientFactory(String kafkaNamespace,
+                                  String kafkaNamespaceSeparator,
+                                  HermesMetrics hermesMetrics,
+                                  ObjectMapper objectMapper,
+                                  SchemaRepositoryInstanceResolver resolver,
+                                  boolean subjectSuffixEnabled,
+                                  boolean subjectNamespaceEnabled) {
         this.kafkaNamespace = kafkaNamespace;
         this.kafkaNamespaceSeparator = kafkaNamespaceSeparator;
         this.hermesMetrics = hermesMetrics;

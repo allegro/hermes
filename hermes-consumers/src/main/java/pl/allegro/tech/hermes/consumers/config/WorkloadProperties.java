@@ -25,7 +25,8 @@ public class WorkloadProperties implements WorkBalancingParameters {
 
     private int assignmentProcessingThreadPoolSize = 5;
 
-    private String nodeId = new InetAddressInstanceIdResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits());
+    private String nodeId =
+            new InetAddressInstanceIdResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits());
 
     private Duration monitorScanInterval = Duration.ofSeconds(120);
 

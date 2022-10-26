@@ -60,7 +60,11 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
         this.subscriptionRepository = subscriptionRepository;
         this.backgroundSupervisorInterval = commonConsumerParameters.getBackgroundSupervisor().getInterval();
         this.backgroundProcess = new ConsumerProcessSupervisor(executor, clock, metrics,
-                new ConsumerProcessFactory(retransmitter, consumerFactory, commonConsumerParameters.getBackgroundSupervisor().getUnhealthyAfter(), clock),
+                new ConsumerProcessFactory(
+                        retransmitter,
+                        consumerFactory,
+                        commonConsumerParameters.getBackgroundSupervisor().getUnhealthyAfter(),
+                        clock),
                 commonConsumerParameters.getSignalProcessingQueueSize(),
                 commonConsumerParameters.getBackgroundSupervisor().getKillAfter());
         this.scheduledExecutor = createExecutorForSupervision();

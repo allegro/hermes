@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperBasedRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.blacklist.NotUnblacklistedException;
+import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 
 import java.util.List;
 

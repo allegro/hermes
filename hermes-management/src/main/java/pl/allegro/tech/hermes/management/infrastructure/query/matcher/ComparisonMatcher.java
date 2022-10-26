@@ -41,15 +41,16 @@ public class ComparisonMatcher implements Matcher {
         try {
             Object value = ObjectGraph.from(object).navigate(attribute).value();
 
-            if (value == null)
+            if (value == null) {
                 throw new MatcherInputException(String.format("Cannot find '%s' attribute", this.attribute));
+            }
             return value;
         } catch (JXPathException e) {
             throw new MatcherException(String.format("Could not navigate to specific path: '%s'", attribute), e);
         }
     }
 
-    private Optional<Double> tryParseNumber(Object value){
+    private Optional<Double> tryParseNumber(Object value) {
         try {
             return Optional.of(parseDouble(asString(value)));
         } catch (NumberFormatException e) {

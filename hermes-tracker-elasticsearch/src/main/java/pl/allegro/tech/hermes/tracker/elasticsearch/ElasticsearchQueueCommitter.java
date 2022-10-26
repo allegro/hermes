@@ -40,8 +40,12 @@ public class ElasticsearchQueueCommitter extends QueueCommitter<ElasticsearchDoc
         bulk.execute().get();
     }
 
-    public static void scheduleCommitAtFixedRate(BlockingQueue<ElasticsearchDocument> queue, IndexFactory indexFactory, String typeName, Client client,
-                                                 Timer timer, int interval) {
+    public static void scheduleCommitAtFixedRate(BlockingQueue<ElasticsearchDocument> queue,
+                                                 IndexFactory indexFactory,
+                                                 String typeName,
+                                                 Client client,
+                                                 Timer timer,
+                                                 int interval) {
         ElasticsearchQueueCommitter committer = new ElasticsearchQueueCommitter(queue, timer, indexFactory, typeName, client);
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("elasticsearch-queue-committer-%d").build();
         newSingleThreadScheduledExecutor(factory).scheduleAtFixedRate(committer, interval, interval, MILLISECONDS);

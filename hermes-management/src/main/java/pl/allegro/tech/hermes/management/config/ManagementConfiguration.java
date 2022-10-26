@@ -38,8 +38,9 @@ public class ManagementConfiguration {
         mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
         mapper.registerModule(new JavaTimeModule());
 
-        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-            .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
+        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues.Std().addValue(
+                Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
+                topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 

@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.retransmit;
 
-import java.util.List;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
+
+import java.util.List;
 
 public class DcAwareOfflineRetransmissionRepository implements OfflineRetransmissionRepository {
     private final MultiDatacenterRepositoryCommandExecutor commandExecutor;

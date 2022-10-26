@@ -219,11 +219,13 @@ public class HermesMetrics {
     }
 
     public Counter executorRunningCounter(String executorName) {
-        return metricRegistry.counter(pathCompiler.compile(Counters.EXECUTOR_RUNNING, pathContext().withExecutorName(executorName).build()));
+        return metricRegistry.counter(
+                pathCompiler.compile(Counters.EXECUTOR_RUNNING, pathContext().withExecutorName(executorName).build()));
     }
 
     public Counter scheduledExecutorOverrun(String executorName) {
-        return metricRegistry.counter(pathCompiler.compile(Counters.SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
+        return metricRegistry.counter(
+                pathCompiler.compile(Counters.SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
     }
 
     public Histogram messageContentSizeHistogram() {

@@ -22,19 +22,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * This class is an implementation of TurboFilter interface that allows messages of configured loggers
- * to be aggregated and logged only once with specified time interval.
- * Logged message contains a suffix "[occurrences=N]" with a number of logged events.
- * The logging part is a little bit tricky, as the TurboFilter interface does not support a way of logging out of the box,
+ * <p>This class is an implementation of {@link TurboFilter} interface that allows messages of configured loggers
+ * to be aggregated and logged only once with specified time interval.</p>
+ *
+ * <p>Logged message contains a suffix "[occurrences=N]" with a number of logged events.
+ * The logging part is a little bit tricky, as the <code>TurboFilter</code> interface does not support a way of logging out of the box,
  * it just tells whether a logged message should be passed further or not.
- * In order to logging be possible from the TurboFilter a small trick has to be applied, the logged message is enriched
- * with a custom Marker which is checked by the filter itself, so it won't filter it's own messages
- * and we manage to avoid recursion.
+ * In order to logging be possible from the <code>TurboFilter</code> a small trick has to be applied, the logged message is enriched
+ * with a custom {@link Marker} which is checked by the filter itself, so it won't filter it's own messages
+ * and we manage to avoid recursion.</p>
  *
- * An instance of AggregatingTurboFilter starts it's own scheduled executor service with a single thread
- * that logs the messages asynchronously.
+ * <p>An instance of <code>AggregatingTurboFilter</code> starts it's own scheduled executor service with a single thread
+ * that logs the messages asynchronously.</p>
  *
- * Example logback configuration:
+ * <p>Example logback configuration:
  * <pre>{@code
  *  <configuration>
  *      ...
@@ -53,10 +54,10 @@ public class AggregatingTurboFilter extends TurboFilter {
     static final Marker MARKER = MarkerFactory.getMarker("AggregatingTurboFilterMarker");
 
     private ScheduledExecutorService executorService;
-    private List<String> aggregatedLogger = new ArrayList<>();
+    private final List<String> aggregatedLogger = new ArrayList<>();
     private long reportingIntervalMillis = 10_000;
 
-    private Map<Logger, LoggerAggregates> logAggregates = new ConcurrentHashMap<>();
+    private final Map<Logger, LoggerAggregates> logAggregates = new ConcurrentHashMap<>();
 
     private static final LongAdder filterClassCounter = new LongAdder();
 
@@ -191,13 +192,17 @@ public class AggregatingTurboFilter extends TurboFilter {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             LoggingEventKey that = (LoggingEventKey) o;
-            return level == that.level &&
-                    Objects.equals(message, that.message) &&
-                    Objects.equals(marker, that.marker) &&
-                    Arrays.equals(params, that.params);
+            return level == that.level
+                    && Objects.equals(message, that.message)
+                    && Objects.equals(marker, that.marker)
+                    && Arrays.equals(params, that.params);
         }
 
         @Override

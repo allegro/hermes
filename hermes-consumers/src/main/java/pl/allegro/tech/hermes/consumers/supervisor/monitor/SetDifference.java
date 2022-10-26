@@ -29,9 +29,9 @@ class SetDifference<E> {
 
     @Override
     public String toString() {
-        return "SetDifference{" +
-                "added=" + added +
-                ", removed=" + removed +
-                '}';
+        return "SetDifference{"
+                + "added=" + added
+                + ", removed=" + removed
+                + '}';
     }
 }

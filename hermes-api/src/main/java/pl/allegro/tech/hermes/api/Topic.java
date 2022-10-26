@@ -1,83 +1,64 @@
 package pl.allegro.tech.hermes.api;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import com.fasterxml.jackson.annotation.JacksonInject;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 @JsonIgnoreProperties(value = {"createdAt", "modifiedAt"}, allowGetters = true)
 public class Topic {
 
+    public static final int MIN_MESSAGE_SIZE = 1024;
+    public static final int MAX_MESSAGE_SIZE = 2 * 1024 * 1024;
+    public static final String DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY = "defaultSchemaIdAwareSerializationEnabled";
+    private static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024;
+    private final boolean schemaIdAwareSerializationEnabled;
+    private final TopicDataOfflineStorage offlineStorage;
     @Valid
     @NotNull
     private TopicName name;
-
     @NotNull
     private String description;
-
     @Valid
     @NotNull
     private OwnerId owner;
-
     private boolean jsonToAvroDryRunEnabled = false;
-
     @NotNull
     private Ack ack;
-
     @NotNull
     private ContentType contentType;
-
     @Min(MIN_MESSAGE_SIZE)
     @Max(MAX_MESSAGE_SIZE)
     private int maxMessageSize;
-
-    public static final int MIN_MESSAGE_SIZE = 1024;
-    public static final int MAX_MESSAGE_SIZE = 2 * 1024 * 1024;
-    private static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024;
-    public static final String DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY = "defaultSchemaIdAwareSerializationEnabled";
-
-    public enum Ack {
-        NONE, LEADER, ALL
-    }
-
     @Valid
     @NotNull
     private RetentionTime retentionTime = RetentionTime.of(1, TimeUnit.DAYS);
-
     private boolean trackingEnabled = false;
-
     private boolean migratedFromJsonType = false;
-
-    private final boolean schemaIdAwareSerializationEnabled;
-
     private boolean subscribingRestricted = false;
 
     private PublishingAuth publishingAuth;
-
-    private final TopicDataOfflineStorage offlineStorage;
-
     @Valid
     private Set<TopicLabel> labels;
-
     private Instant createdAt;
-
     private Instant modifiedAt;
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
-                 @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
+                 @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE)
+                 Boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
                  TopicDataOfflineStorage offlineStorage, Set<TopicLabel> labels, Instant createdAt, Instant modifiedAt) {
         this.name = name;
@@ -109,7 +90,9 @@ public class Topic {
             @JsonProperty("ack") Ack ack,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
-            @JsonProperty("schemaIdAwareSerializationEnabled") @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE) Boolean schemaIdAwareSerializationEnabled,
+            @JsonProperty("schemaIdAwareSerializationEnabled")
+            @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE)
+            Boolean schemaIdAwareSerializationEnabled,
             @JsonProperty("contentType") ContentType contentType,
             @JsonProperty("maxMessageSize") Integer maxMessageSize,
             @JsonProperty("auth") PublishingAuth publishingAuth,
@@ -271,5 +254,9 @@ public class Topic {
     @Override
     public String toString() {
         return "Topic(" + getQualifiedName() + ")";
+    }
+
+    public enum Ack {
+        NONE, LEADER, ALL
     }
 }

@@ -11,8 +11,8 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
-import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.DefaultReadinessChecker;
+import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
@@ -42,15 +42,28 @@ public class FrontendServerConfiguration {
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider,
                                      TopicLoadingProperties topicLoadingProperties) {
-        return new HermesServer(sslProperties, hermesServerProperties, hermesMetrics, publishingHandler, defaultReadinessChecker,
-                defaultMessagePreviewPersister, throughputLimiter, topicMetadataLoadingJob, topicLoadingProperties.getMetadataRefreshJob().isEnabled(), sslContextFactoryProvider);
+        return new HermesServer(
+                sslProperties,
+                hermesServerProperties,
+                hermesMetrics,
+                publishingHandler,
+                defaultReadinessChecker,
+                defaultMessagePreviewPersister,
+                throughputLimiter,
+                topicMetadataLoadingJob,
+                topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
+                sslContextFactoryProvider);
     }
 
     @Bean
     public DefaultReadinessChecker readinessChecker(ReadinessCheckProperties readinessCheckProperties,
                                                     TopicMetadataLoadingRunner topicMetadataLoadingRunner,
                                                     ReadinessRepository readinessRepository) {
-        return new DefaultReadinessChecker(topicMetadataLoadingRunner, readinessRepository, readinessCheckProperties.isEnabled(), readinessCheckProperties.getInterval());
+        return new DefaultReadinessChecker(
+                topicMetadataLoadingRunner,
+                readinessRepository,
+                readinessCheckProperties.isEnabled(),
+                readinessCheckProperties.getInterval());
     }
 
     @Bean
@@ -76,7 +89,8 @@ public class FrontendServerConfiguration {
     }
 
     @Bean(initMethod = "run")
-    public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner, TopicLoadingProperties topicLoadingProperties) {
+    public TopicMetadataLoadingStartupHook topicMetadataLoadingStartupHook(TopicMetadataLoadingRunner topicMetadataLoadingRunner,
+                                                                           TopicLoadingProperties topicLoadingProperties) {
         return new TopicMetadataLoadingStartupHook(topicMetadataLoadingRunner, topicLoadingProperties.getMetadata().isEnabled());
     }
 

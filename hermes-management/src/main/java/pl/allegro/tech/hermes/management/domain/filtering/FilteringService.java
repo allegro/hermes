@@ -72,8 +72,9 @@ public class FilteringService {
                 return message;
             case AVRO:
                 return jsonAvroConverter.convertToAvro(message, avroSchema.getSchema());
+            default:
+                throw new IllegalArgumentException();
         }
-        throw new IllegalArgumentException();
     }
 
     private MessageFiltersVerificationResult toMessageFiltersVerificationResult(FilterResult result) {

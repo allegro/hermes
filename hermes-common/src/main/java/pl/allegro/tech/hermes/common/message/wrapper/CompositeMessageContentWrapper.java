@@ -29,8 +29,11 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
 
         this.jsonMessageContentWrapper = jsonMessageContentWrapper;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
-        this.avroMessageContentUnwrappers =
-                asList(schemaIdAwareContentWrapper, schemaVersionTruncationContentWrapper, headerSchemaVersionContentWrapper, headerSchemaIdContentWrapper);
+        this.avroMessageContentUnwrappers = asList(
+                schemaIdAwareContentWrapper,
+                schemaVersionTruncationContentWrapper,
+                headerSchemaVersionContentWrapper,
+                headerSchemaIdContentWrapper);
     }
 
     public UnwrappedMessageContent unwrapJson(byte[] data) {
@@ -47,11 +50,18 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
             }
         }
 
-        logger.error("All attempts to unwrap Avro message for topic {} with schema version {} failed", topic.getQualifiedName(), schemaVersion);
+        logger.error("All attempts to unwrap Avro message for topic {} with schema version {} failed",
+                topic.getQualifiedName(),
+                schemaVersion);
         throw new SchemaMissingException(topic);
     }
 
-    public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata) {
+    public byte[] wrapAvro(byte[] data,
+                           String id,
+                           long timestamp,
+                           Topic topic,
+                           CompiledSchema<Schema> schema,
+                           Map<String, String> externalMetadata) {
         byte[] wrapped = avroMessageContentWrapper.wrapContent(data, id, timestamp, schema.getSchema(), externalMetadata);
         return topic.isSchemaIdAwareSerializationEnabled() ? SchemaAwareSerDe.serialize(schema.getId(), wrapped) : wrapped;
     }

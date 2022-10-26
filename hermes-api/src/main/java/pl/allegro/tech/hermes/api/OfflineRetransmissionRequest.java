@@ -2,12 +2,12 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.Instant;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.hibernate.validator.constraints.NotEmpty;
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
+
+import java.time.Instant;
+import javax.validation.constraints.NotNull;
 
 public class OfflineRetransmissionRequest {
     @NotEmpty
@@ -51,11 +51,11 @@ public class OfflineRetransmissionRequest {
 
     @Override
     public String toString() {
-        return "OfflineRetransmissionRequest{" +
-                "sourceTopic='" + sourceTopic + '\'' +
-                ", targetTopic='" + targetTopic + '\'' +
-                ", startTimestamp=" + startTimestamp +
-                ", endTimestamp=" + endTimestamp +
-                '}';
+        return "OfflineRetransmissionRequest{"
+                + "sourceTopic='" + sourceTopic + '\''
+                + ", targetTopic='" + targetTopic + '\''
+                + ", startTimestamp=" + startTimestamp
+                + ", endTimestamp=" + endTimestamp
+                + '}';
     }
 }

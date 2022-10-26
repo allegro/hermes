@@ -40,10 +40,16 @@ public class Owner {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Owner owner = (Owner) o;
-        return Objects.equals(id, owner.id) && Objects.equals(name, owner.name) && Objects.equals(url, owner.url);
+        return Objects.equals(id, owner.id)
+                && Objects.equals(name, owner.name)
+                && Objects.equals(url, owner.url);
     }
 
     @Override
@@ -53,10 +59,10 @@ public class Owner {
 
     @Override
     public String toString() {
-        return "Owner{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", url='" + url + '\'' +
-                '}';
+        return "Owner{"
+                + "id='" + id + '\''
+                + ", name='" + name + '\''
+                + ", url='" + url + '\''
+                + '}';
     }
 }

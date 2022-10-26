@@ -47,7 +47,7 @@ public class EndpointAddress implements Anonymizable {
         this.rawEndpoint = endpoint;
 
         Matcher matcher = URL_PATTERN.matcher(endpoint);
-        if(matcher.matches()) {
+        if (matcher.matches()) {
             this.protocol = matcher.group(PROTOCOL_GROUP);
             this.containsCredentials = !Strings.isNullOrEmpty(matcher.group(USER_INFO_GROUP));
 
@@ -55,8 +55,7 @@ public class EndpointAddress implements Anonymizable {
             this.password = containsCredentials ? matcher.group(PASSWORD_GROUP) : null;
 
             this.endpoint = containsCredentials ? protocol + "://" + matcher.group(ADDRESS_GROUP) : endpoint;
-        }
-        else {
+        } else {
             this.protocol = null;
             this.containsCredentials = false;
             this.username = null;
@@ -75,6 +74,20 @@ public class EndpointAddress implements Anonymizable {
         this.rawEndpoint = protocol + "://" + username + ":" + password + "@" + endpoint.replace(protocol + "://", "");
     }
 
+    public static EndpointAddress of(String endpoint) {
+        return new EndpointAddress(endpoint);
+    }
+
+    public static EndpointAddress of(URI endpoint) {
+        return new EndpointAddress(endpoint.toString());
+    }
+
+    public static String extractProtocolFromAddress(String endpoint) {
+        Preconditions.checkArgument(endpoint.indexOf(':') != -1);
+
+        return endpoint.substring(0, endpoint.indexOf(':'));
+    }
+
     public String getEndpoint() {
         return endpoint;
     }
@@ -85,14 +98,6 @@ public class EndpointAddress implements Anonymizable {
 
     public URI getUri() {
         return URI.create(endpoint);
-    }
-
-    public static EndpointAddress of(String endpoint) {
-        return new EndpointAddress(endpoint);
-    }
-
-    public static EndpointAddress of(URI endpoint) {
-        return new EndpointAddress(endpoint.toString());
     }
 
     public String getProtocol() {
@@ -123,12 +128,6 @@ public class EndpointAddress implements Anonymizable {
                 .toString();
     }
 
-    public static String extractProtocolFromAddress(String endpoint) {
-        Preconditions.checkArgument(endpoint.indexOf(':') != -1);
-
-        return endpoint.substring(0, endpoint.indexOf(':'));
-    }
-
     public boolean containsCredentials() {
         return containsCredentials;
     }
@@ -142,7 +141,7 @@ public class EndpointAddress implements Anonymizable {
     }
 
     public EndpointAddress anonymize() {
-        if(containsCredentials) {
+        if (containsCredentials) {
             return new EndpointAddress(protocol, endpoint, username);
         }
         return this;

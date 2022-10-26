@@ -65,6 +65,7 @@ public final class Ports {
         public NoAvailablePortException(Throwable cause) {
             super(cause);
         }
+
         public NoAvailablePortException(String message) {
             super(message);
         }

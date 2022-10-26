@@ -138,8 +138,9 @@ public class SupervisorConfiguration {
                         currentLoadProvider,
                         targetWeightCalculator
                 );
+            default:
+                throw new UnknownWorkBalancingStrategyException();
         }
-        throw new UnknownWorkBalancingStrategyException();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -170,8 +171,9 @@ public class SupervisorConfiguration {
                         metrics,
                         weightedWorkBalancing.getConsumerLoadEncoderBufferSizeBytes()
                 );
+            default:
+                throw new UnknownWorkBalancingStrategyException();
         }
-        throw new UnknownWorkBalancingStrategyException();
     }
 
     @Bean
@@ -189,8 +191,9 @@ public class SupervisorConfiguration {
                         weightedWorkBalancing.getWeightWindowSize(),
                         weightedWorkBalancing.getScoringGain()
                 );
+            default:
+                throw new UnknownTargetWeightCalculationStrategyException();
         }
-        throw new UnknownTargetWeightCalculationStrategyException();
     }
 
     @Bean
@@ -212,8 +215,9 @@ public class SupervisorConfiguration {
                         clock,
                         workloadProperties.getWeightedWorkBalancing().getWeightWindowSize()
                 );
+            default:
+                throw new UnknownWorkBalancingStrategyException();
         }
-        throw new UnknownWorkBalancingStrategyException();
     }
 
     @Bean
@@ -337,7 +341,12 @@ public class SupervisorConfiguration {
                                                                  SubscriptionIds subscriptionIds,
                                                                  DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new ConsumerAssignmentRegistry(curator, workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
+        return new ConsumerAssignmentRegistry(
+                curator,
+                workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(),
+                kafkaProperties.getClusterName(),
+                zookeeperPaths,
+                subscriptionIds);
     }
 
     @Bean
@@ -348,7 +357,12 @@ public class SupervisorConfiguration {
                                                          ConsumerNodesRegistry consumerNodesRegistry,
                                                          DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new ClusterAssignmentCache(curator, kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds, consumerNodesRegistry);
+        return new ClusterAssignmentCache(
+                curator,
+                kafkaProperties.getClusterName(),
+                zookeeperPaths,
+                subscriptionIds,
+                consumerNodesRegistry);
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -359,6 +373,11 @@ public class SupervisorConfiguration {
                                                            SubscriptionIds subscriptionIds,
                                                            DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new ConsumerAssignmentCache(curator, workloadProperties.getNodeId(), kafkaProperties.getClusterName(), zookeeperPaths, subscriptionIds);
+        return new ConsumerAssignmentCache(
+                curator,
+                workloadProperties.getNodeId(),
+                kafkaProperties.getClusterName(),
+                zookeeperPaths,
+                subscriptionIds);
     }
 }

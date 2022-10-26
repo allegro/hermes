@@ -30,8 +30,8 @@ public class OAuthAccessToken {
             return false;
         }
         OAuthAccessToken that = (OAuthAccessToken) o;
-        return Objects.equals(tokenValue, that.tokenValue) &&
-                Objects.equals(expiresIn, that.expiresIn);
+        return Objects.equals(tokenValue, that.tokenValue)
+                && Objects.equals(expiresIn, that.expiresIn);
     }
 
     @Override

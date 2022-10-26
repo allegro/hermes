@@ -34,11 +34,15 @@ public final class SubscriptionHealth {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SubscriptionHealth)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SubscriptionHealth)) {
+            return false;
+        }
         SubscriptionHealth that = (SubscriptionHealth) o;
-        return status == that.status &&
-                Objects.equals(problems, that.problems);
+        return status == that.status
+                && Objects.equals(problems, that.problems);
     }
 
     @Override
@@ -48,10 +52,10 @@ public final class SubscriptionHealth {
 
     @Override
     public String toString() {
-        return "SubscriptionHealth{" +
-                "status=" + status +
-                ", problems=" + problems +
-                '}';
+        return "SubscriptionHealth{"
+                + "status=" + status
+                + ", problems=" + problems
+                + '}';
     }
 
     public static SubscriptionHealth of(Set<SubscriptionHealthProblem> problems) {

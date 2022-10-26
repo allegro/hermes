@@ -3,12 +3,12 @@ package pl.allegro.tech.hermes.management.api.validator;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 
+import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.groups.Default;
-import java.util.Set;
 
 @Component
 public class ApiPreconditions {
@@ -25,9 +25,9 @@ public class ApiPreconditions {
 
     private Class<?>[] groupsToValidate(boolean skipAdminPermitted) {
         if (skipAdminPermitted) {
-            return new Class[]{Default.class};
+            return new Class[] {Default.class};
         } else {
-            return new Class[]{Default.class, AdminPermitted.class};
+            return new Class[] {Default.class, AdminPermitted.class};
         }
     }
 }

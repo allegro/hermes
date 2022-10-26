@@ -58,7 +58,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
 
     @Override
     public List<Matcher> parseArrayNodes(JsonNode node) {
-        if(!node.isArray()) {
+        if (!node.isArray()) {
             throw new ParseException("Element value was expected to be an array");
         }
         return parseObjectArray(node);
@@ -66,7 +66,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
 
     @Override
     public Object parseValue(JsonNode node) {
-        if(!node.isValueNode()) {
+        if (!node.isValueNode()) {
             throw new ParseException("The node value wasn't present");
         }
         if (node.isTextual()) {
@@ -75,7 +75,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
             return node.asBoolean();
         } else if (node.isInt()) {
             return node.asInt();
-        } else if(node.isDouble()) {
+        } else if (node.isDouble()) {
             return node.asDouble();
         }
         return null;
@@ -83,7 +83,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
 
     @Override
     public Object[] parseArrayValue(JsonNode node) {
-        if(!node.isArray()) {
+        if (!node.isArray()) {
             throw new ParseException("Element value was expected to be an array");
         }
         return stream(node.spliterator(), false)
@@ -105,7 +105,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
     }
 
     private <T> Matcher parseSingleAttribute(String key, JsonNode node) {
-        if(isOperator(key)) {
+        if (isOperator(key)) {
             return parseOperator(key, node);
         } else if (node.isObject()) {
             return parseObject(key, node);

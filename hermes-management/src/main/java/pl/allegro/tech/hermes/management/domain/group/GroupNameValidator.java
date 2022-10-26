@@ -13,7 +13,7 @@ class GroupNameValidator {
     }
 
     public void requireValid(String groupName) {
-        if(!allowedPattern.matcher(groupName).matches()) {
+        if (!allowedPattern.matcher(groupName).matches()) {
             throw new GroupNameIsNotAllowedException(String.format("Group name should match pattern %s", allowedPattern));
         }
     }
