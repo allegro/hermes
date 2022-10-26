@@ -341,13 +341,13 @@ public class TopicService {
 
         if (!multiDCAwareService.topicExists(topic)) {
             createTopicInBrokers(topic, createdBy);
-            auditor.objectCreated(createdBy.getUsername(), topic);
             topicOwnerCache.onCreatedTopic(topic);
         } else {
             logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
         }
 
         multiDcExecutor.executeByUser(new CreateTopicRepositoryCommand(topic), createdBy);
+        auditor.objectCreated(createdBy.getUsername(), topic);
     }
 
     private void createTopicInBrokers(Topic topic, RequestUser createdBy) {
