@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.mock
 
+import org.apache.avro.Schema
+import org.apache.avro.reflect.ReflectData
 import org.apache.http.HttpStatus
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
 class HermesMockTest extends Specification {
 
@@ -18,6 +21,10 @@ class HermesMockTest extends Specification {
 
     HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
 
+    Schema schema = ReflectData.get().getSchema(TestMessage)
+
+    JsonAvroConverter jsonAvroConverter = new JsonAvroConverter()
+
     def setup() {
         hermes.resetReceivedRequest()
     }
@@ -28,7 +35,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            def response = publish(topicName)
+            def response = publishJson(topicName)
 
         then:
             hermes.expect().singleMessageOnTopic(topicName)
@@ -41,7 +48,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            3.times { publish(topicName) }
+            3.times { publishJson(topicName) }
 
         then:
             hermes.expect().messagesOnTopic(topicName, 3)
@@ -53,11 +60,11 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            2.times { publish(topicName) }
+            2.times { publishJson(topicName) }
 
             Thread.start {
                 sleep(100)
-                publish(topicName)
+                publishJson(topicName)
             }
 
         then:
@@ -70,7 +77,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            publish(topicName)
+            publishJson(topicName)
 
         then:
             hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
@@ -82,8 +89,8 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            3.times { publish(topicName) }
-            3.times { publish("whatever") }
+            3.times { publishJson(topicName) }
+            3.times { publishJson("whatever") }
 
         then:
             hermes.expect().jsonMessagesOnTopicAs(topicName, 3, TestMessage)
@@ -98,7 +105,7 @@ class HermesMockTest extends Specification {
 
         when:
             messages.each { publish(topicName, it.asJson()) }
-            3.times { publish("whatever") }
+            3.times { publishJson("whatever") }
 
         then:
             hermes.expect().jsonMessagesOnTopicAs(topicName, 2, TestMessage, filter)
@@ -110,7 +117,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            2.times { publish(topicName) }
+            2.times { publishJson(topicName) }
 
         and:
             hermes.expect().singleMessageOnTopic(topicName)
@@ -126,7 +133,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            2.times { publish(topicName) }
+            2.times { publishJson(topicName) }
 
         and:
             hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
@@ -142,7 +149,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            5.times { publish(topicName) }
+            5.times { publishJson(topicName) }
 
         then:
             def requests = hermes.query().allRequests()
@@ -157,8 +164,8 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName2)
 
         when:
-            5.times { publish(topicName) }
-            2.times { publish(topicName2) }
+            5.times { publishJson(topicName) }
+            2.times { publishJson(topicName2) }
 
         then:
             def requests1 = hermes.query().allRequestsOnTopic(topicName)
@@ -178,7 +185,7 @@ class HermesMockTest extends Specification {
             hermes.define().jsonTopic(topicName)
 
         when:
-            5.times { publish(topicName) }
+            5.times { publishJson(topicName) }
 
         then:
             hermes.query().allRequestsOnTopic(topicName).size() == 5
@@ -270,17 +277,79 @@ class HermesMockTest extends Specification {
 
         when:
             messages.each { publish(topicName, it.asJson()) }
-            5.times { publish(topicName) }
+            5.times { publishJson(topicName) }
 
         then:
             1 == hermes.query().countMatchingJsonMessages(topicName, TestMessage, filter)
     }
 
-    def publish(String topic) {
+    def "should reset received requests with Avro messages"() {
+        given:
+        def topicName = "my-test-avro-topic"
+        hermes.define().avroTopic(topicName)
+        publishAvro(topicName, new TestMessage("test-key", "test-value"))
+        assert hermes.query().countAvroMessages(topicName) == 1
+
+        when:
+        hermes.resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "test-key"})
+
+        then:
+        hermes.query().countAvroMessages(topicName) == 0
+    }
+
+    def "should not reset received requests with Avro messages when predicate does not match"() {
+        given:
+        def topicName = "my-test-avro-topic"
+        hermes.define().avroTopic(topicName)
+        publishAvro(topicName, new TestMessage("test-key", "test-value"))
+
+        when:
+        hermes.resetReceivedAvroRequests(topicName, schema, TestMessage, {it -> it.key == "different-test-key"})
+
+        then:
+        hermes.query().countAvroMessages(topicName) == 1
+    }
+
+    def "should reset received requests with JSON messages"() {
+        given:
+        def topicName = "my-test-json-topic"
+        hermes.define().avroTopic(topicName)
+        publish(topicName, new TestMessage("test-key", "test-value").asJson())
+        hermes.query().countJsonMessages(topicName, TestMessage) == 1
+
+        when:
+        hermes.resetReceivedJsonRequests(topicName, TestMessage, {it -> it.key == "test-key"})
+
+        then:
+        hermes.query().countJsonMessages(topicName, TestMessage) == 0
+    }
+
+    def "should not reset received requests with JSON messages when predicate does not match"() {
+        given:
+        def topicName = "my-test-json-topic"
+        hermes.define().avroTopic(topicName)
+        publish(topicName, new TestMessage("test-key", "test-value").asJson())
+
+        when:
+        hermes.resetReceivedJsonRequests(topicName, TestMessage, {it -> it.key == "different-test-key"})
+
+        then:
+        hermes.query().countJsonMessages(topicName, TestMessage) == 1
+    }
+
+    def publishJson(String topic) {
         publish(topic, TestMessage.random().asJson())
     }
 
     def publish(String topic, String body) {
         publisher.publish(topic, body)
+    }
+
+    def publishAvro(String topic, TestMessage message) {
+        publisher.publish(topic, asAvro(message))
+    }
+
+    def asAvro(TestMessage message) {
+        return jsonAvroConverter.convertToAvro(message.asJson().bytes, schema)
     }
 }
