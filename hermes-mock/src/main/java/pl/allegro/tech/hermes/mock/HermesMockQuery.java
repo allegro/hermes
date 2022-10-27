@@ -15,6 +15,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static java.util.stream.Collectors.toList;
 
 public class HermesMockQuery {
+
     private final HermesMockHelper hermesMockHelper;
 
     public HermesMockQuery(HermesMockHelper hermesMockHelper) {
@@ -121,4 +122,5 @@ public class HermesMockQuery {
         return lastRequest(topicName)
                 .map(req -> hermesMockHelper.deserializeAvro(req, schema, clazz));
     }
+
 }
