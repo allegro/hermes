@@ -32,7 +32,7 @@ class MessageReadHandler implements HttpHandler {
     private final ThroughputLimiter throughputLimiter;
 
     MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler,
-                       MessageErrorProcessor messageErrorProcessor,  ThroughputLimiter throughputLimiter,
+                       MessageErrorProcessor messageErrorProcessor, ThroughputLimiter throughputLimiter,
                        boolean forceMaxMessageSizePerTopic, Duration idleTime, Duration longIdleTime) {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
@@ -96,7 +96,9 @@ class MessageReadHandler implements HttpHandler {
         }
     }
 
-    private Receiver.PartialBytesCallback partialMessageRead(MessageState state, ByteArrayOutputStream messageContent, AttachmentContent attachment) {
+    private Receiver.PartialBytesCallback partialMessageRead(MessageState state,
+                                                             ByteArrayOutputStream messageContent,
+                                                             AttachmentContent attachment) {
         return (exchange, message, last) -> {
             if (state.isReadingTimeout()) {
                 endWithoutDefaultResponse(exchange);
