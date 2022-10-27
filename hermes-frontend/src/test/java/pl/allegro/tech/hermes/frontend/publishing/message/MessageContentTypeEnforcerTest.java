@@ -84,5 +84,4 @@ public class MessageContentTypeEnforcerTest {
         // when
         enforcer.enforceAvro(MediaType.TEXT_PLAIN, avroMessage.asBytes(), schema.getSchema(), topic);
     }
-
 }
