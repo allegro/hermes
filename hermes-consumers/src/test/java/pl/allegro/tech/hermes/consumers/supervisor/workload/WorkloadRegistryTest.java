@@ -44,7 +44,13 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
             ));
 
     private static final ConsumerAssignmentRegistry registry =
-            new ConsumerAssignmentRegistry(zookeeperClient, new WorkloadProperties().getRegistryBinaryEncoderAssignmentsBufferSizeBytes(), clusterName, zookeeperPaths, subscriptionIds);
+        new ConsumerAssignmentRegistry(
+            zookeeperClient,
+            new WorkloadProperties().getRegistryBinaryEncoderAssignmentsBufferSizeBytes(),
+            clusterName,
+            zookeeperPaths,
+            subscriptionIds
+        );
 
     private static final KafkaProperties kafkaProperties = new KafkaProperties();
 
@@ -58,7 +64,8 @@ public class WorkloadRegistryTest extends ZookeeperBaseTest {
 
     private static final ConsumerNodesRegistry consumerNodesRegistry = mock(ConsumerNodesRegistry.class);
 
-    private static final ClusterAssignmentCache clusterAssignmentCache = new ClusterAssignmentCache(zookeeperClient, cluster, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
+    private static final ClusterAssignmentCache clusterAssignmentCache =
+        new ClusterAssignmentCache(zookeeperClient, cluster, zookeeperPaths, subscriptionIds, consumerNodesRegistry);
 
     @BeforeClass
     public static void setUp() throws Exception {

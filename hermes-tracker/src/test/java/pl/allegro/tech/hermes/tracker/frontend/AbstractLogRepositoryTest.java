@@ -8,8 +8,8 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
-import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 import pl.allegro.tech.hermes.test.helper.retry.Retry;
+import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
 public abstract class AbstractLogRepositoryTest {
 
     private LogRepository logRepository;
-    
+
     @BeforeSuite
     public void setUpRetry(ITestContext context) {
         for (ITestNGMethod method : context.getAllTestMethods()) {
@@ -82,9 +82,22 @@ public abstract class AbstractLogRepositoryTest {
         awaitUntilMessageIsPersisted(topic, id, hostname, INFLIGHT, "header1", "value1", "header2", "value2");
     }
 
-    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, String remoteHostname, PublishedMessageTraceStatus status, String... extraRequestHeadersKeywords) throws Exception;
+    protected abstract void awaitUntilMessageIsPersisted(
+        String topic,
+        String id,
+        String remoteHostname,
+        PublishedMessageTraceStatus status,
+        String... extraRequestHeadersKeywords
+    )
+        throws Exception;
 
-    protected abstract void awaitUntilMessageIsPersisted(String topic, String id, String reason, String remoteHostname, PublishedMessageTraceStatus status, String... extraRequestHeadersKeywords)
-            throws Exception;
-
+    protected abstract void awaitUntilMessageIsPersisted(
+        String topic,
+        String id,
+        String reason,
+        String remoteHostname,
+        PublishedMessageTraceStatus status,
+        String... extraRequestHeadersKeywords
+    )
+        throws Exception;
 }

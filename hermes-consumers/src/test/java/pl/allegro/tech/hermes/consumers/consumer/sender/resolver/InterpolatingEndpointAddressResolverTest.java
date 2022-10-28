@@ -53,7 +53,7 @@ public class InterpolatingEndpointAddressResolverTest {
                 withTestMessage().withContent("content", StandardCharsets.UTF_8).build(), metadata);
 
         // then
-        assertThat(CatchException.<EndpointAddressResolutionException>caughtException()).isInstanceOf(EndpointAddressResolutionException.class);
+        assertThat(CatchException.<EndpointAddressResolutionException>caughtException())
+            .isInstanceOf(EndpointAddressResolutionException.class);
     }
-
 }

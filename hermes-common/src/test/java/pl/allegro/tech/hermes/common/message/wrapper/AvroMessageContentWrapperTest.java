@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
@@ -11,8 +9,10 @@ import org.junit.Test;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -42,8 +42,10 @@ public class AvroMessageContentWrapperTest {
     @Test
     public void shouldWrapAndUnwrapAvroMessageWithMetadata() {
         // when
-        byte [] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema(), Collections.emptyMap());
-        UnwrappedMessageContent unwrappedMessageContent = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
+        byte[] wrappedMessage =
+            avroMessageContentWrapper.wrapContent(content, id, timestamp, avroUser.getSchema(), Collections.emptyMap());
+        UnwrappedMessageContent unwrappedMessageContent =
+            avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
 
         // then
         assertThat(unwrappedMessageContent.getMessageMetadata().getId()).isEqualTo(id);
@@ -68,8 +70,14 @@ public class AvroMessageContentWrapperTest {
     @Test
     public void shouldWrappedMessageBeUnchangedWhenSchemaNotContainsMetadata() throws IOException {
         // when
-        Schema schemaWithoutMetadata = new Schema.Parser().parse(IOUtils.toString(getClass().getResourceAsStream("/schema/user_no_metadata.avsc"), StandardCharsets.UTF_8));
-        byte[] wrappedMessage = avroMessageContentWrapper.wrapContent(content, id, timestamp, schemaWithoutMetadata, Collections.emptyMap());
+        Schema schemaWithoutMetadata = new Schema.Parser().parse(
+            IOUtils.toString(
+                getClass().getResourceAsStream("/schema/user_no_metadata.avsc"),
+                StandardCharsets.UTF_8
+            )
+        );
+        byte[] wrappedMessage =
+            avroMessageContentWrapper.wrapContent(content, id, timestamp, schemaWithoutMetadata, Collections.emptyMap());
 
         // then
         GenericRecord wrappedMessageAsRecord = bytesToRecord(wrappedMessage, avroUser.getSchema());
@@ -82,7 +90,8 @@ public class AvroMessageContentWrapperTest {
         byte [] wrappedMessage = wrapContentWithoutMetadata(content, avroUser.getSchema());
 
         //when
-        UnwrappedMessageContent unwrappedMessage = avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
+        UnwrappedMessageContent unwrappedMessage =
+            avroMessageContentWrapper.unwrapContent(wrappedMessage, avroUser.getCompiledSchema());
 
         //then
         assertThat(unwrappedMessage.getMessageMetadata().getId()).isEmpty();
