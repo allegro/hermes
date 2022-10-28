@@ -82,18 +82,32 @@ public class HermesManagementInstance {
         public HermesManagementInstance start() {
             try {
                 startManagement();
-                CuratorFramework zookeeper = startZookeeperClient();
-                waitUntilStructureInZookeeperIsCreated(zookeeper);
-                HermesAPIOperations operations = setupOperations(zookeeper);
+                List<CuratorFramework> clusters = startSeparateZookeeperClientPerCluster();
+                waitUntilStructureInZookeeperIsCreated(clusters);
+                closeZookeeperClustersConnections(clusters);
+                HermesAPIOperations operations = setupOperations(startZookeeperClient());
                 return new HermesManagementInstance(operations);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private void waitUntilStructureInZookeeperIsCreated(CuratorFramework zookeeper) {
+        private void waitUntilStructureInZookeeperIsCreated(List<CuratorFramework> zookeeperClusters) {
             logger.info("Waiting for zookeeper structure to be created");
-            waitAtMost(adjust(120), TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath("/hermes/groups") != null);
+            waitAtMost(adjust(120), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
+        }
+
+        private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {
+            for (CuratorFramework zookeeper : zookeeperClusters) {
+                if (zookeeper.checkExists().forPath("/hermes/groups") == null) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void closeZookeeperClustersConnections(List<CuratorFramework> zookeeperClusters) {
+            zookeeperClusters.forEach(CuratorFramework::close);
         }
 
         private void startManagement() {
@@ -133,16 +147,26 @@ public class HermesManagementInstance {
         }
 
         private CuratorFramework startZookeeperClient() {
-            final CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-                    .connectString(
-                            zkClusters.stream()
-                                    .map(ClusterInfo::getConnectionString)
-                                    .collect(Collectors.joining(","))
-                    )
-                    .retryPolicy(new ExponentialBackoffRetry(1000, 3))
-                    .build();
+            final CuratorFramework zookeeperClient = buildCuratorFramework(zkClusters.get(0).getConnectionString());
             zookeeperClient.start();
             return zookeeperClient;
+        }
+
+        private List<CuratorFramework> startSeparateZookeeperClientPerCluster() {
+            final List<CuratorFramework> zookeeperClients =
+                    zkClusters.stream()
+                            .map(ClusterInfo::getConnectionString)
+                            .map(this::buildCuratorFramework)
+                            .collect(Collectors.toList());
+            zookeeperClients.forEach(CuratorFramework::start);
+            return zookeeperClients;
+        }
+
+        private CuratorFramework buildCuratorFramework(String connectString) {
+            return CuratorFrameworkFactory.builder()
+                    .connectString(connectString)
+                    .retryPolicy(new ExponentialBackoffRetry(1000, 3))
+                    .build();
         }
     }
 

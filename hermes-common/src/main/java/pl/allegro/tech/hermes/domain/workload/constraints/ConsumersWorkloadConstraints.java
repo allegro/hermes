@@ -29,11 +29,15 @@ public class ConsumersWorkloadConstraints {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ConsumersWorkloadConstraints that = (ConsumersWorkloadConstraints) o;
-        return Objects.equals(topicConstraints, that.topicConstraints) &&
-                Objects.equals(subscriptionConstraints, that.subscriptionConstraints);
+        return Objects.equals(topicConstraints, that.topicConstraints)
+                && Objects.equals(subscriptionConstraints, that.subscriptionConstraints);
     }
 
     @Override

@@ -1,10 +1,13 @@
 package pl.allegro.tech.hermes.mock;
 
+import org.apache.avro.Schema;
 import org.junit.rules.MethodRule;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
+
+import java.util.function.Predicate;
 
 public class HermesMockRule implements MethodRule, TestRule {
 
@@ -34,7 +37,15 @@ public class HermesMockRule implements MethodRule, TestRule {
         hermesMock.resetReceivedRequest();
     }
 
-    public void resetMappings(){
+    public <T> void resetReceivedAvroRequests(String topicName, Schema schema, Class<T> clazz, Predicate<T> predicate) {
+        hermesMock.resetReceivedAvroRequests(topicName, schema, clazz, predicate);
+    }
+
+    public <T> void resetReceivedJsonRequests(String topicName, Class<T> clazz, Predicate<T> predicate) {
+        hermesMock.resetReceivedJsonRequests(topicName, clazz, predicate);
+    }
+
+    public void resetMappings() {
         hermesMock.resetMappings();
     }
 

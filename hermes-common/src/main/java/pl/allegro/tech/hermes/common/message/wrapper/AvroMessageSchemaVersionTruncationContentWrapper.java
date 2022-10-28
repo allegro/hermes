@@ -41,7 +41,8 @@ public class AvroMessageSchemaVersionTruncationContentWrapper implements AvroMes
             byte[] dataWithoutMagicByteAndSchemaId = SchemaAwareSerDe.trimMagicByteAndSchemaVersion(data);
             CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(schemaVersion));
 
-            return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(dataWithoutMagicByteAndSchemaId, avroSchema));
+            return AvroMessageContentUnwrapperResult.success(
+                    avroMessageContentWrapper.unwrapContent(dataWithoutMagicByteAndSchemaId, avroSchema));
         } catch (Exception e) {
             logger.warn(
                     "Could not unwrap content for topic [{}] using schema id provided in header [{}] - falling back",

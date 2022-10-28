@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public class OAuthHttpAuthorizationProvider implements HttpAuthorizationProvider {
 
-    private final static String BEARER_TOKEN_PREFIX = "Bearer ";
+    private static final String BEARER_TOKEN_PREFIX = "Bearer ";
 
     private final SubscriptionName subscriptionName;
 

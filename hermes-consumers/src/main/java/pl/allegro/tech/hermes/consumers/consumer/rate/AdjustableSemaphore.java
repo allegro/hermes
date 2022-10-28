@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.concurrent.ThreadSafe;
 
 /*
  *  CAUTION!
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  *
  *  Implementation was deliberately not refactored for easier comparison with the original.
  *
-* */
+ * */
 
 /**
  * A simple implementation of an adjustable semaphore.
@@ -24,12 +24,12 @@ import java.util.concurrent.TimeUnit;
 public final class AdjustableSemaphore {
 
     /**
-     * semaphore starts at 0 capacity; must be set by setMaxPermits before use
+     * Semaphore starts at 0 capacity; must be set by setMaxPermits before use.
      */
     private final ResizeableSemaphore semaphore;
 
     /**
-     * how many permits are allowed as governed by this semaphore.
+     * How many permits are allowed as governed by this semaphore.
      * Access must be synchronized on this object.
      */
     private int maxPermits = 0;
@@ -45,16 +45,15 @@ public final class AdjustableSemaphore {
     /*
      * Must be synchronized because the underlying int is not thread safe
      */
+
     /**
-     * Set the max number of permits. Must be greater than zero.
+     * <p>Set the max number of permits. Must be greater than zero.</p>
      *
-     * Note that if there are more than the new max number of permits currently
+     * <p>Note that if there are more than the new max number of permits currently
      * outstanding, any currently blocking threads or any new threads that start
      * to block after the call will wait until enough permits have been released to
      * have the number of outstanding permits fall below the new maximum. In
-     * other words, it does what you probably think it should.
-     *
-     * @param newMax
+     * other words, it does what you probably think it should.</p>
      */
     public synchronized void setMaxPermits(int newMax) {
         if (newMax < 1) {
@@ -81,7 +80,6 @@ public final class AdjustableSemaphore {
 
     /**
      * Release a permit back to the semaphore. Make sure not to double-release.
-     *
      */
     public void release() {
         this.semaphore.release();
@@ -90,8 +88,7 @@ public final class AdjustableSemaphore {
     /**
      * Get a permit, blocking if necessary.
      *
-     * @throws InterruptedException
-     *             if interrupted while waiting for a permit
+     * @throws InterruptedException if interrupted while waiting for a permit
      */
     public void acquire() throws InterruptedException {
         this.semaphore.acquire();
@@ -101,7 +98,7 @@ public final class AdjustableSemaphore {
         return this.semaphore.tryAcquire(timeout, unit);
     }
 
-    public int availablePermits(){
+    public int availablePermits() {
         return this.semaphore.availablePermits();
     }
 
@@ -111,9 +108,6 @@ public final class AdjustableSemaphore {
      * http://osdir.com/ml/java.jsr.166-concurrency/2003-10/msg00042.html
      */
     private static final class ResizeableSemaphore extends Semaphore {
-        /**
-         *
-         */
         private static final long serialVersionUID = 1L;
 
         /**

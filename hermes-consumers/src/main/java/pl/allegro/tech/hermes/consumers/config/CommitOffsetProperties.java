@@ -11,8 +11,6 @@ public class CommitOffsetProperties {
 
     private int queuesSize = 200_000;
 
-    private boolean queuesInflightDrainFullEnabled = false;
-
     public Duration getPeriod() {
         return period;
     }
@@ -27,13 +25,5 @@ public class CommitOffsetProperties {
 
     public void setQueuesSize(int queuesSize) {
         this.queuesSize = queuesSize;
-    }
-
-    public boolean isQueuesInflightDrainFullEnabled() {
-        return queuesInflightDrainFullEnabled;
-    }
-
-    public void setQueuesInflightDrainFullEnabled(boolean queuesInflightDrainFullEnabled) {
-        this.queuesInflightDrainFullEnabled = queuesInflightDrainFullEnabled;
     }
 }

@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.management.domain.topic;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +13,9 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class TopicContentTypeMigrationService {

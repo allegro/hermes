@@ -72,7 +72,7 @@ public class ConsumerProcessSupervisor implements Runnable {
     @Override
     public void run() {
         logger.debug("Starting process supervisor loop");
-        long currentTime = clock.millis();
+        final long currentTime = clock.millis();
 
         restartUnhealthy();
         processKiller.killAllDying();

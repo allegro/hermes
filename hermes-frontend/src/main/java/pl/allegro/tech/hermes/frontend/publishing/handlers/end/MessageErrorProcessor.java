@@ -11,10 +11,10 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.util.Map;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import javax.ws.rs.core.MediaType;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
@@ -65,13 +65,13 @@ public class MessageErrorProcessor {
                 if (!exchange.isResponseStarted()) {
                     send(exchange, error, messageId);
                 } else {
-                    logger.warn("Not sending error message to a client as response has already been started. " +
-                                    "Error message: {} Topic: {} MessageId: {} Host: {}",
+                    logger.warn("Not sending error message to a client as response has already been started. "
+                                    + "Error message: {} Topic: {} MessageId: {} Host: {}",
                             error.getMessage(), topicName, messageId, readHostAndPort(exchange));
                 }
             } else {
-                logger.warn("Connection to a client closed. Can't send error response. " +
-                                "Error message: {} Topic: {} MessageId: {} Host: {}",
+                logger.warn("Connection to a client closed. Can't send error response. "
+                                + "Error message: {} Topic: {} MessageId: {} Host: {}",
                         error.getMessage(), topicName, messageId, readHostAndPort(exchange));
                 exchange.endExchange();
             }
@@ -87,36 +87,43 @@ public class MessageErrorProcessor {
                 trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
     }
 
+    private void log(String errorMessage,
+                     Topic topic,
+                     String messageId,
+                     String hostAndPort,
+                     Map<String, String> extraRequestHeaders) {
+        logger.error(errorMessage
+                + "; publishing on topic: "
+                + topic.getQualifiedName()
+                + "; message id: "
+                + messageId
+                + "; remote host: "
+                + hostAndPort);
+        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
+    }
+
+    private void log(String errorMessage,
+                     Topic topic,
+                     String messageId,
+                     String hostAndPort,
+                     Exception exception,
+                     Map<String, String> extraRequestHeaders) {
+        logger.error(errorMessage
+                        + "; publishing on topic: "
+                        + topic.getQualifiedName()
+                        + "; message id: "
+                        + messageId
+                        + "; remote host: "
+                        + hostAndPort,
+                exception);
+        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
+    }
+
     private void send(HttpServerExchange exchange, ErrorDescription error, String messageId) throws IOException {
         exchange.setStatusCode(error.getCode().getHttpCode());
         exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, MediaType.APPLICATION_JSON);
         exchange.getResponseHeaders().add(messageIdHeader, messageId);
         exchange.getResponseSender().send(objectMapper.writeValueAsString(error), StandardCharsets.UTF_8,
                 ResponseReadyIoCallback.INSTANCE);
-    }
-
-    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort,
-                     Map<String, String> extraRequestHeaders) {
-        logger.error(errorMessage +
-                "; publishing on topic: " +
-                topic.getQualifiedName() +
-                "; message id: " +
-                messageId +
-                "; remote host: " +
-                hostAndPort);
-        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
-    }
-
-    private void log(String errorMessage, Topic topic, String messageId, String hostAndPort,
-                     Exception exception, Map<String, String> extraRequestHeaders) {
-        logger.error(errorMessage +
-                        "; publishing on topic: " +
-                        topic.getQualifiedName() +
-                        "; message id: " +
-                        messageId +
-                        "; remote host: " +
-                        hostAndPort,
-                exception);
-        trackers.get(topic).logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
     }
 }

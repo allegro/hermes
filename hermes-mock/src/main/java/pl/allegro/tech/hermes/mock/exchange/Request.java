@@ -2,23 +2,13 @@ package pl.allegro.tech.hermes.mock.exchange;
 
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import static java.util.stream.Collectors.toMap;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Request {
-    enum Method {
-        GET,
-        POST,
-        PUT,
-        DELETE,
-        PATCH,
-        OPTIONS,
-        HEAD,
-        TRACE
-    }
+import static java.util.stream.Collectors.toMap;
 
+public class Request {
     private final String url;
     private final Method method;
     private final byte[] body;
@@ -59,5 +49,16 @@ public class Request {
         map.put(RequestMethod.HEAD, Method.HEAD);
         map.put(RequestMethod.TRACE, Method.TRACE);
         return map.get(req);
+    }
+
+    enum Method {
+        GET,
+        POST,
+        PUT,
+        DELETE,
+        PATCH,
+        OPTIONS,
+        HEAD,
+        TRACE
     }
 }

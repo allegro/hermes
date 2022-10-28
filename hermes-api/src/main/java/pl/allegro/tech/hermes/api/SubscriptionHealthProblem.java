@@ -38,28 +38,36 @@ public class SubscriptionHealthProblem {
     public static SubscriptionHealthProblem malfunctioning(double code5xxErrorsRate, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 MALFUNCTIONING,
-                format("Consuming service returns a lot of 5xx codes for subscription %s, currently %.0f 5xx/s", subscriptionName, code5xxErrorsRate)
+                format("Consuming service returns a lot of 5xx codes for subscription %s, currently %.0f 5xx/s",
+                        subscriptionName,
+                        code5xxErrorsRate)
         );
     }
 
     public static SubscriptionHealthProblem receivingMalformedMessages(double code4xxErrorsRate, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 RECEIVING_MALFORMED_MESSAGES,
-                format("Consuming service returns a lot of 4xx codes for subscription %s, currently %.0f 4xx/s", subscriptionName, code4xxErrorsRate)
+                format("Consuming service returns a lot of 4xx codes for subscription %s, currently %.0f 4xx/s",
+                        subscriptionName,
+                        code4xxErrorsRate)
         );
     }
 
     public static SubscriptionHealthProblem timingOut(double timeoutsRate, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 TIMING_OUT,
-                format("Consuming service times out a lot for subscription %s, currently %.0f timeouts/s", subscriptionName, timeoutsRate)
+                format("Consuming service times out a lot for subscription %s, currently %.0f timeouts/s",
+                        subscriptionName,
+                        timeoutsRate)
         );
     }
 
     public static SubscriptionHealthProblem unreachable(double otherErrorsRate, String subscriptionName) {
         return new SubscriptionHealthProblem(
                 UNREACHABLE,
-                format("Unable to connect to consuming service instances for subscription %s, current rate is %.0f failures/s", subscriptionName, otherErrorsRate)
+                format("Unable to connect to consuming service instances for subscription %s, current rate is %.0f failures/s",
+                        subscriptionName,
+                        otherErrorsRate)
         );
     }
 

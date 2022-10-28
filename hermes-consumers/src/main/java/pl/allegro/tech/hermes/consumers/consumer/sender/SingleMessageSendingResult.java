@@ -7,7 +7,6 @@ import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
-import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +14,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import javax.ws.rs.core.Response;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
@@ -112,8 +112,8 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     }
 
     private boolean shouldRetryOnStatusCode() {
-        return getStatusCode() == SERVICE_UNAVAILABLE.code() ||
-                getStatusCode() == TOO_MANY_REQUESTS.code();
+        return getStatusCode() == SERVICE_UNAVAILABLE.code()
+                || getStatusCode() == TOO_MANY_REQUESTS.code();
     }
 
     @Override
@@ -156,8 +156,9 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
     @Override
     public boolean ignoreInRateCalculation(boolean retryClientErrors, boolean isOAuthSecuredSubscription) {
-        return isRetryLater() || this.ignoreInRateCalculation ||
-                (isClientError() && !retryClientErrors && !(isOAuthSecuredSubscription && isUnauthorized()));
+        return isRetryLater()
+                || this.ignoreInRateCalculation
+                || (isClientError() && !retryClientErrors && !(isOAuthSecuredSubscription && isUnauthorized()));
     }
 
     private boolean isUnauthorized() {

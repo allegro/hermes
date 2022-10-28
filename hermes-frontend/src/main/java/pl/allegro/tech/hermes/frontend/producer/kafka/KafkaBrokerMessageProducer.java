@@ -12,8 +12,8 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
-import javax.inject.Singleton;
 import java.util.List;
+import javax.inject.Singleton;
 
 @Singleton
 public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
@@ -37,7 +37,8 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     @Override
     public void send(Message message, CachedTopic cachedTopic, final PublishingCallback callback) {
-        ProducerRecord<byte[], byte[]> producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
+        ProducerRecord<byte[], byte[]> producerRecord =
+                messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
         try {
             producers.get(cachedTopic.getTopic()).send(producerRecord, new SendCallback(message, cachedTopic.getTopic(), callback));

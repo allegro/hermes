@@ -75,6 +75,9 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
                     registerConsumerNode();
                 }
                 break;
+            default:
+                // noop
+                break;
         }
     }
 

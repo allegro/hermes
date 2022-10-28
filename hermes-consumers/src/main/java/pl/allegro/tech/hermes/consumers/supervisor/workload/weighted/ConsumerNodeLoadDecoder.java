@@ -33,9 +33,9 @@ class ConsumerNodeLoadDecoder {
         header.wrap(buffer, 0);
 
         if (header.schemaId() != ConsumerLoadDecoder.SCHEMA_ID || header.templateId() != ConsumerLoadDecoder.TEMPLATE_ID) {
-            logger.warn("Unable to decode consumer node load, schema or template id mismatch. " +
-                            "Required by decoder: [schema id={}, template id={}], " +
-                            "encoded in payload: [schema id={}, template id={}]",
+            logger.warn("Unable to decode consumer node load, schema or template id mismatch. "
+                            + "Required by decoder: [schema id={}, template id={}], "
+                            + "encoded in payload: [schema id={}, template id={}]",
                     ConsumerLoadDecoder.SCHEMA_ID, ConsumerLoadDecoder.TEMPLATE_ID,
                     header.schemaId(), header.templateId());
             return ConsumerNodeLoad.UNDEFINED;

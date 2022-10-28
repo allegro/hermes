@@ -8,7 +8,6 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,9 +26,9 @@ import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
+import java.net.URI;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import java.net.URI;
 
 import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName;
 
@@ -59,7 +58,8 @@ public class SchemaRepositoryConfiguration {
         return qualifiedName
                 .withNamespacePrefixIf(
                         schemaRepositoryProperties.isSubjectNamespaceEnabled(),
-                        new SubjectNamingStrategy.Namespace(kafkaClustersProperties.getDefaultNamespace(), kafkaClustersProperties.getNamespaceSeparator()))
+                        new SubjectNamingStrategy.Namespace(kafkaClustersProperties.getDefaultNamespace(),
+                                kafkaClustersProperties.getNamespaceSeparator()))
                 .withValueSuffixIf(schemaRepositoryProperties.isSubjectSuffixEnabled());
     }
 

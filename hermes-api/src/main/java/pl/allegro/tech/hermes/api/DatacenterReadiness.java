@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 public class DatacenterReadiness {
@@ -25,19 +26,23 @@ public class DatacenterReadiness {
 
     @Override
     public String toString() {
-        return "DatacenterReadiness{" +
-                "datacenter='" + datacenter + '\'' +
-                ", isReady=" + isReady +
-                '}';
+        return "DatacenterReadiness{"
+                + "datacenter='" + datacenter + '\''
+                + ", isReady=" + isReady
+                + '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DatacenterReadiness)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DatacenterReadiness)) {
+            return false;
+        }
         DatacenterReadiness that = (DatacenterReadiness) o;
-        return isReady == that.isReady &&
-                Objects.equals(datacenter, that.datacenter);
+        return isReady == that.isReady
+                && Objects.equals(datacenter, that.datacenter);
     }
 
     @Override

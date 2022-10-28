@@ -28,7 +28,8 @@ public class ZookeeperSubscriptionProfileRegistry implements SubscriptionProfile
         this.curator = curator;
         this.encoder = new SubscriptionProfilesEncoder(subscriptionIds, subscriptionProfilesEncoderBufferSizeBytes);
         this.decoder = new SubscriptionProfilesDecoder(subscriptionIds);
-        this.profilesPath = zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_WORKLOAD_PATH, clusterName, SUBSCRIPTION_PROFILES_PATH);
+        this.profilesPath =
+                zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_WORKLOAD_PATH, clusterName, SUBSCRIPTION_PROFILES_PATH);
     }
 
     @Override

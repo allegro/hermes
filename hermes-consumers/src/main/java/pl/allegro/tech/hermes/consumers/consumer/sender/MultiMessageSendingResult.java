@@ -55,8 +55,8 @@ public class MultiMessageSendingResult implements MessageSendingResult {
     @Override
     public boolean isClientError() {
         List<SingleMessageSendingResult> failed = children.stream().filter(child -> !child.succeeded()).collect(Collectors.toList());
-        return !failed.isEmpty() &&
-                failed.stream().allMatch(MessageSendingResult::isClientError);
+        return !failed.isEmpty()
+                && failed.stream().allMatch(MessageSendingResult::isClientError);
     }
 
     @Override

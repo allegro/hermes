@@ -2,9 +2,7 @@ package pl.allegro.tech.hermes.integration.test;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.pubsub.v1.PubsubMessage;
-import org.apache.curator.framework.CuratorFramework;
 import org.assertj.core.api.Assertions;
-import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 
 import javax.jms.Message;
 import javax.ws.rs.core.Response;

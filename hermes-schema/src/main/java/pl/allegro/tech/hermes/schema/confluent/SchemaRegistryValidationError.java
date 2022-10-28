@@ -21,8 +21,12 @@ class SchemaRegistryValidationError {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SchemaRegistryValidationError)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof SchemaRegistryValidationError)) {
+            return false;
+        }
         SchemaRegistryValidationError that = (SchemaRegistryValidationError) o;
         return Objects.equals(message, that.message);
     }

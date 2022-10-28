@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import java.util.Map;
 import java.util.Objects;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 public class SubscriptionPolicy {
 
@@ -197,6 +197,10 @@ public class SubscriptionPolicy {
             subscriptionPolicy = new SubscriptionPolicy();
         }
 
+        public static Builder subscriptionPolicy() {
+            return new Builder();
+        }
+
         public Builder applyDefaults() {
             subscriptionPolicy.rate = DEFAULT_RATE;
             subscriptionPolicy.messageTtl = DEFAULT_MESSAGE_TTL;
@@ -252,10 +256,6 @@ public class SubscriptionPolicy {
         public Builder withBackoffMaxIntervalInSec(int backoffMaxIntervalInSec) {
             subscriptionPolicy.backoffMaxIntervalInSec = backoffMaxIntervalInSec;
             return this;
-        }
-
-        public static Builder subscriptionPolicy() {
-            return new Builder();
         }
 
         public SubscriptionPolicy build() {

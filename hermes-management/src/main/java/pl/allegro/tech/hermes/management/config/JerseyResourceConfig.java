@@ -18,7 +18,7 @@ public class JerseyResourceConfig extends ResourceConfig {
     public JerseyResourceConfig(JerseyProperties jerseyProperties) {
         packages(true, "pl.allegro.tech.hermes.management.api");
 
-        for(String packageToScan : jerseyProperties.getPackagesToScan()) {
+        for (String packageToScan : jerseyProperties.getPackagesToScan()) {
             packages(true, packageToScan);
             logger.info("Scanning Jersey resources in: {}", packageToScan);
         }

@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  *  Implementation was deliberately not refactored for easier comparison with the original.
  *
-* */
+ * */
 
 
 /**
@@ -58,7 +58,7 @@ public final class DirectBufferPool {
 
     /**
      * Create a new buffer pool
-     * 
+     *
      * @param memory The maximum amount of memory that this buffer pool can allocate
      * @param poolableSize The buffer size to cache in the free list rather than deallocating
      * @param blockOnExhaustion This controls the behavior when the buffer pool is out of memory. If true the
@@ -78,7 +78,7 @@ public final class DirectBufferPool {
     /**
      * Allocate a buffer of the given size. This method blocks if there is not enough memory and the buffer pool
      * is configured with blocking mode.
-     * 
+     *
      * @param size The buffer size to allocate in bytes
      * @return The buffer
      * @throws InterruptedException If the thread is interrupted while blocked
@@ -89,9 +89,9 @@ public final class DirectBufferPool {
     public ByteBuffer allocate(int size) throws InterruptedException {
         if (size > this.totalMemory)
             throw new IllegalArgumentException("Attempt to allocate " + size
-                                               + " bytes, but there is a hard limit of "
-                                               + this.totalMemory
-                                               + " on memory allocations.");
+                    + " bytes, but there is a hard limit of "
+                    + this.totalMemory
+                    + " on memory allocations.");
 
         this.lock.lock();
         try {
@@ -176,7 +176,7 @@ public final class DirectBufferPool {
     /**
      * Return buffers to the pool. If they are of the poolable size add them to the free list, otherwise just mark the
      * memory as free.
-     * 
+     *
      * @param buffer The buffer to return
      * @param size The size of the buffer to mark as deallocated, note that this maybe smaller than buffer.capacity
      *             since the buffer may re-allocate itself during in-place compression

@@ -1,14 +1,7 @@
 package pl.allegro.tech.hermes.mock;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.google.common.collect.Lists;
-
-import static java.util.stream.Collectors.toList;
-
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.mock.exchange.Request;
 
@@ -16,7 +9,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static java.util.stream.Collectors.toList;
+
 public class HermesMockQuery {
+
     private final HermesMockHelper hermesMockHelper;
 
     public HermesMockQuery(HermesMockHelper hermesMockHelper) {
@@ -123,4 +122,5 @@ public class HermesMockQuery {
         return lastRequest(topicName)
                 .map(req -> hermesMockHelper.deserializeAvro(req, schema, clazz));
     }
+
 }

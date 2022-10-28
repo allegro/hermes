@@ -63,10 +63,10 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperIn
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
-import javax.inject.Named;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
+import javax.inject.Named;
 
 import static java.util.Collections.emptyList;
 
@@ -119,13 +119,15 @@ public class CommonConfiguration {
     }
 
     @Bean(destroyMethod = "close")
-    public CuratorFramework hermesCurator(ZookeeperClustersProperties zookeeperClustersProperties, CuratorClientFactory curatorClientFactory, DatacenterNameProvider datacenterNameProvider) {
+    public CuratorFramework hermesCurator(ZookeeperClustersProperties zookeeperClustersProperties,
+                                          CuratorClientFactory curatorClientFactory, DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new HermesCuratorClientFactory(zookeeperProperties, curatorClientFactory).provide();
     }
 
     @Bean
-    public CuratorClientFactory curatorClientFactory(ZookeeperClustersProperties zookeeperClustersProperties, DatacenterNameProvider datacenterNameProvider) {
+    public CuratorClientFactory curatorClientFactory(ZookeeperClustersProperties zookeeperClustersProperties,
+                                                     DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new CuratorClientFactory(zookeeperProperties);
     }
@@ -209,7 +211,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ZookeeperPaths zookeeperPaths(ZookeeperClustersProperties zookeeperClustersProperties, DatacenterNameProvider datacenterNameProvider) {
+    public ZookeeperPaths zookeeperPaths(ZookeeperClustersProperties zookeeperClustersProperties,
+                                         DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new ZookeeperPaths(zookeeperProperties.getRoot());
     }

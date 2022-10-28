@@ -7,7 +7,13 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.schema.*;
+import pl.allegro.tech.hermes.schema.CompiledSchema;
+import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
+import pl.allegro.tech.hermes.schema.SchemaId;
+import pl.allegro.tech.hermes.schema.SchemaRepository;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
+import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
+import pl.allegro.tech.hermes.schema.SchemaVersionsResult;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import java.nio.ByteBuffer;
@@ -48,13 +54,21 @@ public class MessageContentWrapperTest {
     private static final CompiledSchema<Schema> schema2 = CompiledSchema.of(load("/schema/user_v2.avsc"), ID_THREE, VERSION_TWO);
     private static final CompiledSchema<Schema> schema3 = CompiledSchema.of(load("/schema/user_v3.avsc"), ID_FIVE, VERSION_THREE);
 
-    private CompositeMessageContentWrapper createMessageContentWrapper(boolean schemaHeaderIdEnabled, boolean schemaVersionTruncationEnabled) {
+    private CompositeMessageContentWrapper createMessageContentWrapper(
+        boolean schemaHeaderIdEnabled,
+        boolean schemaVersionTruncationEnabled
+    ) {
 
         final AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdWrapper =
             new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroWrapper, metrics, schemaHeaderIdEnabled);
 
         final AvroMessageSchemaVersionTruncationContentWrapper schemaIdAndHeaderContentWrapper =
-                new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroWrapper, metrics, schemaVersionTruncationEnabled);
+            new AvroMessageSchemaVersionTruncationContentWrapper(
+                schemaRepository,
+                avroWrapper,
+                metrics,
+                schemaVersionTruncationEnabled
+            );
 
         return new CompositeMessageContentWrapper(jsonWrapper, avroWrapper, schemaAwareWrapper,
             headerSchemaVersionWrapper, headerSchemaIdWrapper, schemaIdAndHeaderContentWrapper);
@@ -125,11 +139,18 @@ public class MessageContentWrapperTest {
         Topic topic = createTopicWithSchemaIdAwarePayload();
         AvroUser user = createAvroUser(schemaId, topic);
 
-        byte[] wrapped =
-                compositeMessageContentWrapper.wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
+        byte[] wrapped = compositeMessageContentWrapper.wrapAvro(
+            user.asBytes(),
+            messageId,
+            messageTimestamp,
+            topic,
+            user.getCompiledSchema(),
+            NO_EXTERNAL_METADATA
+        );
 
         // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
+        UnwrappedMessageContent unwrappedMessageContent =
+            compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
 
         // then
         assertResult(unwrappedMessageContent, schemaId, user.asBytes(), messageId, messageTimestamp);
@@ -146,11 +167,18 @@ public class MessageContentWrapperTest {
         Topic topic = createTopic();
         AvroUser user = createAvroUser(schemaVersion, topic);
 
-        byte[] wrapped =
-                compositeMessageContentWrapper.wrapAvro(user.asBytes(), messageId, messageTimestamp, topic, user.getCompiledSchema(), NO_EXTERNAL_METADATA);
+        byte[] wrapped = compositeMessageContentWrapper.wrapAvro(
+            user.asBytes(),
+            messageId,
+            messageTimestamp,
+            topic,
+            user.getCompiledSchema(),
+            NO_EXTERNAL_METADATA
+        );
 
         // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, schemaVersion.value());
+        UnwrappedMessageContent unwrappedMessageContent =
+            compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, schemaVersion.value());
 
         // then
         assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
@@ -220,7 +248,8 @@ public class MessageContentWrapperTest {
         Topic topicToUnwrap = createTopicWithSchemaIdAwarePayload();
 
         // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topicToUnwrap, NO_ID_IN_HEADER, schemaVersion.value());
+        UnwrappedMessageContent unwrappedMessageContent =
+            compositeMessageContentWrapper.unwrapAvro(wrapped, topicToUnwrap, NO_ID_IN_HEADER, schemaVersion.value());
 
         // then
         assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
@@ -245,7 +274,8 @@ public class MessageContentWrapperTest {
         byte[] wrapped = serializeWithSchemaVersionInPayload(schemaVersion, message);
 
         // when
-        UnwrappedMessageContent unwrappedMessageContent = compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, VERSION_ONE);
+        UnwrappedMessageContent unwrappedMessageContent =
+            compositeMessageContentWrapper.unwrapAvro(wrapped, topic, NO_ID_IN_HEADER, VERSION_ONE);
 
         // then
         assertResult(unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);

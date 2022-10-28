@@ -13,10 +13,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DirectBufferPoolTest {
-    long totalMemory = 10*1024;
+    long totalMemory = 10 * 1024;
     int poolableSize = 1024;
 
     DirectBufferPool pool;
@@ -30,7 +31,9 @@ public class DirectBufferPoolTest {
 
     @After
     public void cleanup() {
-        if (buffer != null) pool.deallocate(buffer);
+        if (buffer != null) {
+            pool.deallocate(buffer);
+        }
     }
 
     @Test
@@ -194,7 +197,7 @@ public class DirectBufferPoolTest {
         public void run() {
             try {
                 for (int i = 0; i < iterations; i++) {
-                    int size = random.nextBoolean()? pool.poolableSize() : random.nextInt((int) pool.totalMemory());
+                    int size = random.nextBoolean() ? pool.poolableSize() : random.nextInt((int) pool.totalMemory());
                     ByteBuffer buffer = pool.allocate(size);
                     pool.deallocate(buffer);
                 }

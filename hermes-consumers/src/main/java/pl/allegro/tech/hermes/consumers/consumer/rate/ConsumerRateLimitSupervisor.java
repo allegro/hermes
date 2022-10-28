@@ -21,7 +21,8 @@ public class ConsumerRateLimitSupervisor implements Runnable {
     public ConsumerRateLimitSupervisor(Duration rateLimiterSupervisorPeriod) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("rate-limit-supervisor-%d").build();
         Executors.newSingleThreadScheduledExecutor(threadFactory)
-                .scheduleAtFixedRate(this, rateLimiterSupervisorPeriod.toSeconds(), rateLimiterSupervisorPeriod.toSeconds(), TimeUnit.SECONDS);
+                .scheduleAtFixedRate(this, rateLimiterSupervisorPeriod.toSeconds(), rateLimiterSupervisorPeriod.toSeconds(),
+                        TimeUnit.SECONDS);
     }
 
     @Override

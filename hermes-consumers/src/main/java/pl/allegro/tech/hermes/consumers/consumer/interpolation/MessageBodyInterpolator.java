@@ -70,6 +70,7 @@ public class MessageBodyInterpolator implements UriInterpolator {
     private static class JsonPathLoader extends CacheLoader<String, JsonPath> {
 
         private static final String ROOT_PREFIX = "$.";
+
         @Override
         public JsonPath load(String key) throws Exception {
             return JsonPath.compile(ROOT_PREFIX + key);
