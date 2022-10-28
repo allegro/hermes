@@ -18,11 +18,11 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscription() throws Exception {
         // given
-        String json = "{" +
-                "\"name\": \"test\", " +
-                "\"topicName\": \"g1.t1\", " +
-                "\"endpoint\": \"http://localhost:8888\"" +
-                "}";
+        String json = "{"
+            + "\"name\": \"test\", "
+            + "\"topicName\": \"g1.t1\", "
+            + "\"endpoint\": \"http://localhost:8888\""
+            + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -60,11 +60,11 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithDefaultTracking() throws Exception {
         // given
-        String json = "{" +
-                "\"name\": \"test\", " +
-                "\"topicName\": \"g1.t1\", " +
-                "\"endpoint\": \"http://localhost:8888\"" +
-                "}";
+        String json = "{"
+            + "\"name\": \"test\", "
+            + "\"topicName\": \"g1.t1\", "
+            + "\"endpoint\": \"http://localhost:8888\""
+            + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -77,12 +77,12 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithTrackAllMode() throws Exception {
         // given
-        String json = "{" +
-                "\"name\": \"test\", " +
-                "\"topicName\": \"g1.t1\", " +
-                "\"endpoint\": \"http://localhost:8888\", " +
-                "\"trackingMode\": \"trackingAll\"" +
-                "}";
+        String json = "{"
+            + "\"name\": \"test\", "
+            + "\"topicName\": \"g1.t1\", "
+            + "\"endpoint\": \"http://localhost:8888\", "
+            + "\"trackingMode\": \"trackingAll\""
+            + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -95,12 +95,12 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithTrackEnabled() throws Exception {
         // given
-        String json = "{" +
-                "\"name\": \"test\", " +
-                "\"topicName\": \"g1.t1\", " +
-                "\"endpoint\": \"http://localhost:8888\", " +
-                "\"trackingEnabled\": \"true\"" +
-                "}";
+        String json = "{"
+            + "\"name\": \"test\", "
+            + "\"topicName\": \"g1.t1\", "
+            + "\"endpoint\": \"http://localhost:8888\", "
+            + "\"trackingEnabled\": \"true\""
+            + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -113,13 +113,13 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithTrackEnabledAndTrackMode() throws Exception {
         // given
-        String json = "{" +
-                "\"name\": \"test\", " +
-                "\"topicName\": \"g1.t1\", " +
-                "\"endpoint\": \"http://localhost:8888\", " +
-                "\"trackingEnabled\": \"true\", " +
-                "\"trackingMode\": \"discardedOnly\"" +
-                "}";
+        String json = "{"
+            + "\"name\": \"test\", "
+            + "\"topicName\": \"g1.t1\", "
+            + "\"endpoint\": \"http://localhost:8888\", "
+            + "\"trackingEnabled\": \"true\", "
+            + "\"trackingMode\": \"discardedOnly\""
+            + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -177,7 +177,7 @@ public class SubscriptionTest {
     }
 
     @Test
-    public void shouldReadIntBackoffMultiplier() throws Exception{
+    public void shouldReadIntBackoffMultiplier() throws Exception {
         // given
         String json = "{\"name\": \"test\", \"endpoint\": \"http://localhost:8888\", \"subscriptionPolicy\": {\"messageBackoff\": 1000, \"backoffMultiplier\": 3}}";
 
