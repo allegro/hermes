@@ -18,8 +18,8 @@ import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.ws.rs.BadRequestException;
 import java.util.UUID;
+import javax.ws.rs.BadRequestException;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static com.googlecode.catchexception.CatchException.catchException;
@@ -123,7 +123,9 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
         operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", remoteService.getUrl());
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_subscription").withRate(15).build());
+        graphiteEndpoint.returnMetric(
+                subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_subscription").withRate(15).build()
+        );
 
         wait.until(() -> {
             // when

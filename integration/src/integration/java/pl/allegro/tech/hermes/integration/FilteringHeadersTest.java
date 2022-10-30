@@ -53,13 +53,16 @@ public class FilteringHeadersTest extends IntegrationTest {
         remoteService.expectMessages(ALICE.asJson());
 
         // when
-        assertThat(publisher.publish(topic.getQualifiedName(), ALICE.asJson(), of("Trace-Id", "vte12", "Span-Id", "my-span", "Content-Type", TEXT_PLAIN)))
-                .hasStatus(CREATED);
+        assertThat(publisher.publish(
+                topic.getQualifiedName(), ALICE.asJson(), of("Trace-Id", "vte12", "Span-Id", "my-span", "Content-Type", TEXT_PLAIN))
+        ).hasStatus(CREATED);
 
         assertThat(publisher.publish(topic.getQualifiedName(), BOB.asJson(), of("Trace-Id", "vte12"))).hasStatus(CREATED);
         assertThat(publisher.publish(topic.getQualifiedName(), BOB.asJson(), of("Span-Id", "my-span"))).hasStatus(CREATED);
-        assertThat(publisher.publish(topic.getQualifiedName(), BOB.asJson(), of("Trace-Id", "vte12", "Span-Id", "span-1"))).hasStatus(CREATED);
-        assertThat(publisher.publish(topic.getQualifiedName(), BOB.asJson(), of("Trace-Id", "invalid", "Span-Id", "my-span"))).hasStatus(CREATED);
+        assertThat(publisher.publish(topic.getQualifiedName(), BOB.asJson(), of("Trace-Id", "vte12", "Span-Id", "span-1")))
+                .hasStatus(CREATED);
+        assertThat(publisher.publish(topic.getQualifiedName(), BOB.asJson(), of("Trace-Id", "invalid", "Span-Id", "my-span")))
+                .hasStatus(CREATED);
 
         // then
         remoteService.waitUntilReceived();

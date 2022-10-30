@@ -5,13 +5,13 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
-import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
-
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
-import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;
 
 import javax.ws.rs.core.Response;
+
+import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;
 
 public class ReadOnlyModeTest extends IntegrationTest {
 
