@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class OfflineRetransmissionManagementTest extends IntegrationTest {
-    private final static String GROUP = "pl.allegro.retransmission";
+    private static final String GROUP = "pl.allegro.retransmission";
 
     @BeforeClass
     public void setupClass() {

@@ -24,7 +24,7 @@ public class JmsConsumingTest extends IntegrationTest {
 
     private RemoteJmsEndpoint jmsEndpoint;
 
-    private final static String JMS_TOPIC_NAME = "hermes";
+    private static final String JMS_TOPIC_NAME = "hermes";
 
     @BeforeMethod
     public void initializeAlways() {

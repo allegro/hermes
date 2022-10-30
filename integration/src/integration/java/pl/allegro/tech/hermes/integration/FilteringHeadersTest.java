@@ -21,14 +21,14 @@ public class FilteringHeadersTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
 
-    private final static MessageFilterSpecification TRACE_ID_HEADER_FILTER =
+    private static final MessageFilterSpecification TRACE_ID_HEADER_FILTER =
             new MessageFilterSpecification(of("type", "header", "header", "Trace-Id", "matcher", "^vte.*"));
 
-    private final static MessageFilterSpecification SPAN_ID_HEADER_FILTER =
+    private static final MessageFilterSpecification SPAN_ID_HEADER_FILTER =
             new MessageFilterSpecification(of("type", "header", "header", "Span-Id", "matcher", ".*span$"));
 
-    private final static AvroUser ALICE = new AvroUser("Alice", 20, "blue");
-    private final static AvroUser BOB = new AvroUser("Bob", 30, "red");
+    private static final AvroUser ALICE = new AvroUser("Alice", 20, "blue");
+    private static final AvroUser BOB = new AvroUser("Bob", 30, "red");
 
     @BeforeMethod
     public void initializeAlways() {

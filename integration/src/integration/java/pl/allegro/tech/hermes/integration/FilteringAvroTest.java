@@ -23,10 +23,10 @@ public class FilteringAvroTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
 
-    private final static MessageFilterSpecification MESSAGE_NAME_FILTER =
+    private static final MessageFilterSpecification MESSAGE_NAME_FILTER =
             new MessageFilterSpecification(of("type", "avropath", "path", ".name", "matcher", "Bob"));
 
-    private final static MessageFilterSpecification MESSAGE_COLOR_FILTER =
+    private static final MessageFilterSpecification MESSAGE_COLOR_FILTER =
             new MessageFilterSpecification(of("type", "avropath", "path", ".favoriteColor", "matcher", "grey"));
 
 
