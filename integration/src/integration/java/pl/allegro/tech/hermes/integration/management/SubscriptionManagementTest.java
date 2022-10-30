@@ -237,16 +237,16 @@ public class SubscriptionManagementTest extends IntegrationTest {
         wait.untilSubscriptionIsActivated(topic, "subscription");
 
         PatchData patchData = patchData().set("subscriptionPolicy", ImmutableMap.builder()
-                        .put("inflightSize", 100)
-                        .put("messageBackoff", 100)
-                        .put("messageTtl", 3600)
-                        .put("rate", 300)
-                        .put("requestTimeout", 1000)
-                        .put("socketTimeout", 3000)
-                        .put("retryClientErrors", false)
-                        .put("sendingDelay", 1000)
-                        .build())
-                .build();
+                .put("inflightSize", 100)
+                .put("messageBackoff", 100)
+                .put("messageTtl", 3600)
+                .put("rate", 300)
+                .put("requestTimeout", 1000)
+                .put("socketTimeout", 3000)
+                .put("retryClientErrors", false)
+                .put("sendingDelay", 1000)
+                .build()
+        ).build();
 
         // when
         Response response = management.subscription().update(
