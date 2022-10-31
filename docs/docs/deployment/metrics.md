@@ -23,11 +23,9 @@ Kafka response times, while Hermes latency measures time span between receiving 
 Metrics:
 
 * `ack-all.broker-latency`
-* `ack-all.broker-latency.{groupName}.{topicName}`
 * `ack-all.latency`
 * `ack-all.latency.{groupName}.{topicName}`
 * `ack-leader.broker-latency`
-* `ack-leader.broker-latency.{groupName}.{topicName}`
 * `ack-leader.latency`
 * `ack-leader.latency.{groupName}.{topicName}`
 
@@ -61,8 +59,6 @@ There are three metrics related to messages:
 
 Metrics:
 
-* `parsing-request`
-* `parsing-request.{groupName}.{topicName}`
 * `message-size`
 * `message-size.{groupName}.{topicName}`
 * `validation-latency`
@@ -72,20 +68,20 @@ Metrics:
 
 These metrics indicate available [buffer](../user/publishing.md#buffering) size for both ACK-all:
 
-* `everyone-confirms-buffer-total-bytes`
-* `everyone-confirms-buffer-available-bytes`
+* `ack-all.buffer-total-bytes`
+* `ack-all.buffer-available-bytes`
 
 and ACK-leader buffers:
 
-* `leader-confirms-buffer-total-bytes`
-* `leader-confirms-buffer-available-bytes`
+* `ack-leader.buffer-total-bytes`
+* `ack-leader.buffer-available-bytes`
 
 ### Compression
 
 When using Kafka compression algorithm, these metrics show average compression rate of messages:
 
-* `everyone-confirms-compression-rate`
-* `leader-confirms-compression-rate`
+* `ack-all.compression-rate`
+* `ack-leader.compression-rate`
 
 ## Consumers
 
@@ -106,5 +102,5 @@ issues:
 
 With tracing enabled, it is possible to observe the tracer queue size and remaining capacity:
 
-* `tracker-queue-size`
-* `tracker-remaining-capacity`
+* `tracker.elasticsearch.queue-size`
+* `tracker.elasticsearch.remaining-capacity`
