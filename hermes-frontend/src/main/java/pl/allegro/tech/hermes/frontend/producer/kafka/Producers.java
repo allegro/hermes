@@ -15,40 +15,42 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
+import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL;
+import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER;
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 public class Producers {
-    private final Producer<byte[], byte[]> leaderConfirms;
-    private final Producer<byte[], byte[]> everyoneConfirms;
+    private final Producer<byte[], byte[]> ackLeader;
+    private final Producer<byte[], byte[]> ackAll;
 
     private final boolean reportNodeMetrics;
     private final AtomicBoolean nodeMetricsRegistered = new AtomicBoolean(false);
 
-    public Producers(Producer<byte[], byte[]> leaderConfirms,
-                     Producer<byte[], byte[]> everyoneConfirms,
+    public Producers(Producer<byte[], byte[]> ackLeader,
+                     Producer<byte[], byte[]> ackAll,
                      boolean reportNodeMetrics) {
-        this.leaderConfirms = leaderConfirms;
-        this.everyoneConfirms = everyoneConfirms;
+        this.ackLeader = ackLeader;
+        this.ackAll = ackAll;
         this.reportNodeMetrics = reportNodeMetrics;
     }
 
     public Producer<byte[], byte[]> get(Topic topic) {
-        return topic.isReplicationConfirmRequired() ? everyoneConfirms : leaderConfirms;
+        return topic.isReplicationConfirmRequired() ? ackAll : ackLeader;
     }
 
     public void registerGauges(HermesMetrics metrics) {
-        registerTotalBytesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_BUFFER_AVAILABLE_BYTES);
-        registerTotalBytesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_BUFFER_AVAILABLE_BYTES);
-        registerCompressionRateGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_COMPRESSION_RATE);
-        registerCompressionRateGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_COMPRESSION_RATE);
-        registerFailedBatchesGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_FAILED_BATCHES_TOTAL);
-        registerFailedBatchesGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_FAILED_BATCHES_TOTAL);
-        registerMetadataAgeGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_METADATA_AGE);
-        registerMetadataAgeGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_METADATA_AGE);
-        registerRecordQueueTimeMaxGauge(everyoneConfirms, metrics, Gauges.EVERYONE_CONFIRMS_RECORD_QUEUE_TIME_MAX);
-        registerRecordQueueTimeMaxGauge(leaderConfirms, metrics, Gauges.LEADER_CONFIRMS_RECORD_QUEUE_TIME_MAX);
+        registerTotalBytesGauge(ackLeader, metrics, Gauges.ACK_LEADER_BUFFER_TOTAL_BYTES);
+        registerAvailableBytesGauge(ackLeader, metrics, Gauges.ACK_LEADER_BUFFER_AVAILABLE_BYTES);
+        registerTotalBytesGauge(ackAll, metrics, Gauges.ACK_ALL_BUFFER_TOTAL_BYTES);
+        registerAvailableBytesGauge(ackAll, metrics, Gauges.ACK_ALL_BUFFER_AVAILABLE_BYTES);
+        registerCompressionRateGauge(ackLeader, metrics, Gauges.ACK_LEADER_COMPRESSION_RATE);
+        registerCompressionRateGauge(ackAll, metrics, Gauges.ACK_ALL_COMPRESSION_RATE);
+        registerFailedBatchesGauge(ackAll, metrics, Gauges.ACK_ALL_FAILED_BATCHES_TOTAL);
+        registerFailedBatchesGauge(ackLeader, metrics, Gauges.ACK_LEADER_FAILED_BATCHES_TOTAL);
+        registerMetadataAgeGauge(ackAll, metrics, Gauges.ACK_ALL_CONFIRMS_METADATA_AGE);
+        registerMetadataAgeGauge(ackLeader, metrics, Gauges.ACK_LEADER_METADATA_AGE);
+        registerRecordQueueTimeMaxGauge(ackAll, metrics, Gauges.ACK_ALL_RECORD_QUEUE_TIME_MAX);
+        registerRecordQueueTimeMaxGauge(ackLeader, metrics, Gauges.ACK_LEADER_RECORD_QUEUE_TIME_MAX);
     }
 
     public void maybeRegisterNodeMetricsGauges(HermesMetrics metrics) {
@@ -58,11 +60,11 @@ public class Producers {
     }
 
     private void registerLatencyPerBrokerGauge(HermesMetrics metrics) {
-        List<Node> brokers = ProducerBrokerNodeReader.read(leaderConfirms);
-        registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-avg", "everyone-confirms", brokers);
-        registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-avg", "leader-confirms", brokers);
-        registerLatencyPerBrokerGauge(everyoneConfirms, metrics, "request-latency-max", "everyone-confirms", brokers);
-        registerLatencyPerBrokerGauge(leaderConfirms, metrics, "request-latency-max", "leader-confirms", brokers);
+        List<Node> brokers = ProducerBrokerNodeReader.read(ackLeader);
+        registerLatencyPerBrokerGauge(ackAll, metrics, "request-latency-avg", ACK_ALL, brokers);
+        registerLatencyPerBrokerGauge(ackLeader, metrics, "request-latency-avg", ACK_LEADER, brokers);
+        registerLatencyPerBrokerGauge(ackAll, metrics, "request-latency-max", ACK_ALL, brokers);
+        registerLatencyPerBrokerGauge(ackLeader, metrics, "request-latency-max", ACK_LEADER, brokers);
     }
 
     private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
@@ -81,7 +83,7 @@ public class Producers {
                                                String producerName,
                                                Node node) {
 
-        String gauge = Gauges.JMX_PREFIX + "." + producerName + "-" + metricName + "." + escapeDots(node.host());
+        String gauge = Gauges.KAFKA_PRODUCER + producerName + "." + metricName + "." + escapeDots(node.host());
         registerGauge(producer, metrics, gauge,
                 entry -> entry.getKey().group().equals("producer-node-metrics")
                         && entry.getKey().name().equals(metricName)
@@ -167,7 +169,7 @@ public class Producers {
     }
 
     public void close() {
-        everyoneConfirms.close();
-        leaderConfirms.close();
+        ackAll.close();
+        ackLeader.close();
     }
 }
