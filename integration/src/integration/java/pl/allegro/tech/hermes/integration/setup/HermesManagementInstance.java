@@ -100,9 +100,11 @@ public class HermesManagementInstance {
         private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {
             for (CuratorFramework zookeeper : zookeeperClusters) {
                 if (zookeeper.checkExists().forPath("/hermes/groups") == null) {
+                    logger.info("Structure for Zookeeper does not exist after 120 seconds");
                     return false;
                 }
             }
+            logger.info("Structure for Zookeepers exists in 120 seconds");
             return true;
         }
 

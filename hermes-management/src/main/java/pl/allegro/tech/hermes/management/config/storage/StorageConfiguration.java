@@ -184,7 +184,7 @@ public class StorageConfiguration {
     private void ensureInitPathExists() {
         ZookeeperClientManager clientManager = clientManager();
         for (ZookeeperClient client : clientManager.getClients()) {
-            logger.info("Ensuring that path exists for client: " + client);
+            logger.info("Ensuring that path exists for Zookeeper client: {}", client.getDatacenterName());
             client.ensurePathExists(zookeeperPaths().groupsPath());
         }
     }
