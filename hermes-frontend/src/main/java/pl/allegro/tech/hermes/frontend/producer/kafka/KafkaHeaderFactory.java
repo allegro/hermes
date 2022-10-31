@@ -6,6 +6,8 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import pl.allegro.tech.hermes.common.kafka.KafkaHeaderNameParameters;
 
+import java.nio.charset.StandardCharsets;
+
 public class KafkaHeaderFactory {
 
     private final KafkaHeaderNameParameters kafkaHeaderNameParameters;
@@ -28,5 +30,9 @@ public class KafkaHeaderFactory {
 
     Header schemaId(int schemaId) {
         return new RecordHeader(kafkaHeaderNameParameters.getSchemaId(), Ints.toByteArray(schemaId));
+    }
+
+    Header httpHeader(String name, String value) {
+        return new RecordHeader(name, value.getBytes(StandardCharsets.UTF_8));
     }
 }

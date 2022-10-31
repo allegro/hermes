@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,8 +41,6 @@ public class ChronicleMapMessageRepositoryTest {
 
         Message message = generateJsonMessage();
         String id = message.getId();
-        byte[] messageContent = message.getData();
-        long timestamp = message.getTimestamp();
 
         Topic topic = topic(qualifiedName).build();
 
@@ -49,8 +48,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(
-                new BackupMessage(id, messageContent, timestamp, qualifiedName, message.getPartitionKey(), null, null));
+        assertThat(messageRepository.findAll()).contains(backupMessage(message, qualifiedName));
 
         //when
         messageRepository.delete(id);
@@ -65,8 +63,6 @@ public class ChronicleMapMessageRepositoryTest {
         String messageContent = "hello world";
         Message message1 = generateJsonMessage(messageContent);
         Message message2 = generateJsonMessage(messageContent);
-        final String id1 = message1.getId();
-        final String id2 = message2.getId();
         String qualifiedName = "groupName.topic";
 
         Topic topic = topic(qualifiedName).build();
@@ -78,33 +74,14 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message2, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(
-            new BackupMessage(
-                id1,
-                messageContent.getBytes(),
-                message1.getTimestamp(),
-                qualifiedName,
-                message1.getPartitionKey(),
-                null,
-                null
-            )
-        );
+        assertThat(messageRepository.findAll()).contains(backupMessage(message1, qualifiedName));
 
         //when
-        messageRepository.delete(id1);
+        messageRepository.delete(message1.getId());
 
         //then
         assertThat(messageRepository.findAll()).hasSize(1);
-        assertThat(messageRepository.findAll()).contains(
-            new BackupMessage(
-                id2,
-                messageContent.getBytes(),
-                message2.getTimestamp(),
-                qualifiedName,
-                message2.getPartitionKey(),
-                null,
-                null)
-        );
+        assertThat(messageRepository.findAll()).contains(backupMessage(message2, qualifiedName));
     }
 
     @Test
@@ -142,8 +119,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
         //then
-        assertThat(messageRepository.findAll()).contains(new BackupMessage(
-                message.getId(), message.getData(), message.getTimestamp(), qualifiedName, message.getPartitionKey(), null, null));
+        assertThat(messageRepository.findAll()).contains(backupMessage(message, qualifiedName));
     }
 
     @Test
@@ -154,10 +130,7 @@ public class ChronicleMapMessageRepositoryTest {
         AvroUser avroUser = new AvroUser("Bob", 18, "blue");
         String id = MessageIdGenerator.generate();
         Message message = new AvroMessage(id, avroUser.asBytes(), System.currentTimeMillis(),
-                CompiledSchema.of(AvroUserSchemaLoader.load(), 1, 1), "partition-key");
-
-        byte[] messageContent = message.getData();
-        long timestamp = message.getTimestamp();
+                CompiledSchema.of(AvroUserSchemaLoader.load(), 1, 1), "partition-key", Collections.emptyMap());
 
         Topic topic = topic(qualifiedName).build();
 
@@ -165,8 +138,7 @@ public class ChronicleMapMessageRepositoryTest {
         messageRepository.save(message, topic);
 
         //then
-        assertThat(messageRepository.findAll()).contains(
-                new BackupMessage(id, messageContent, timestamp, qualifiedName, message.getPartitionKey(), 1, 1));
+        assertThat(messageRepository.findAll()).contains(backupMessage(message, qualifiedName));
 
         //when
         messageRepository.delete(id);
@@ -186,6 +158,13 @@ public class ChronicleMapMessageRepositoryTest {
     private Message generateJsonMessage(String content, long timestamp) {
         byte[] messageContent = content.getBytes();
         String id = MessageIdGenerator.generate();
-        return new JsonMessage(id, messageContent, timestamp, "partition-key");
+        return new JsonMessage(id, messageContent, timestamp, "partition-key", Collections.emptyMap());
+    }
+
+    private BackupMessage backupMessage(Message m, String qualifiedTopicName) {
+        return new BackupMessage(m.getId(), m.getData(), m.getTimestamp(), qualifiedTopicName, m.getPartitionKey(),
+                m.getCompiledSchema().map(cs -> cs.getVersion().value()).orElse(null),
+                m.getCompiledSchema().map(cs -> cs.getId().value()).orElse(null),
+                m.getHTTPHeaders());
     }
 }

@@ -47,7 +47,7 @@ public class KafkaConsumerRecordToMessageConverter {
                 clock.millis(),
                 new PartitionOffset(kafkaTopic.name(), record.offset(), record.partition()),
                 partitionAssignmentTerm,
-                unwrappedContent.getMessageMetadata().getExternalMetadata(),
+                kafkaHeaderExtractor.extractExternalMetadata(record.headers()),
                 subscription.getHeaders(),
                 subscription.getName(),
                 subscription.isSubscriptionIdentityHeadersEnabled()

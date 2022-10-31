@@ -5,7 +5,11 @@ import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import pl.allegro.tech.hermes.consumers.config.KafkaHeaderNameProperties;
 
+import java.util.Map;
+import java.util.stream.StreamSupport;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toMap;
 
 public class KafkaHeaderExtractor {
 
@@ -42,4 +46,9 @@ public class KafkaHeaderExtractor {
         return new String(header.value(), UTF_8);
     }
 
+    public Map<String, String> extractExternalMetadata(Headers headers) {
+        return StreamSupport.stream(headers.spliterator(), false)
+                .filter(h -> kafkaHeaderNameProperties.isNotInternal(h.key()))
+                .collect(toMap(Header::key, h -> new String(h.value(), UTF_8)));
+    }
 }

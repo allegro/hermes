@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import static java.time.LocalDateTime.now;
 import static java.time.ZoneOffset.UTC;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -238,7 +239,8 @@ public class BackupMessagesLoaderTest {
                 MessageIdGenerator.generate(),
                 "{'a':'b'}".getBytes(),
                 now().minusHours(ageHours).toInstant(UTC).toEpochMilli(),
-                "partition-key"
+                "partition-key",
+                emptyMap()
         );
     }
 }

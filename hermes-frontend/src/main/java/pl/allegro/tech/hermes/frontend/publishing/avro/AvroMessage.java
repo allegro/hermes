@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
+import java.util.Map;
 import java.util.Optional;
 
 public class AvroMessage implements Message {
@@ -14,17 +15,20 @@ public class AvroMessage implements Message {
     private final long timestamp;
     private final CompiledSchema<Schema> schema;
     private final String partitionKey;
+    private final Map<String, String> httpHeaders;
 
     public AvroMessage(String id,
                        byte[] data,
                        long timestamp,
                        CompiledSchema<Schema> schema,
-                       String partitionKey) {
+                       String partitionKey,
+                       Map<String, String> httpHeaders) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;
         this.schema = schema;
         this.partitionKey = partitionKey;
+        this.httpHeaders = httpHeaders;
     }
 
     @Override
@@ -58,7 +62,12 @@ public class AvroMessage implements Message {
         return Optional.of((CompiledSchema<T>) schema);
     }
 
+    @Override
+    public Map<String, String> getHTTPHeaders() {
+        return httpHeaders;
+    }
+
     public AvroMessage withDataReplaced(byte[] newData) {
-        return new AvroMessage(id, newData, timestamp, schema, partitionKey);
+        return new AvroMessage(id, newData, timestamp, schema, partitionKey, httpHeaders);
     }
 }
