@@ -12,8 +12,8 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.oauth.server.OAuthTestServer;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
+import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.clientCredentialsGrantOAuthPolicy;

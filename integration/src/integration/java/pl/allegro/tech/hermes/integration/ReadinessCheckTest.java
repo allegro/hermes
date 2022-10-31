@@ -6,9 +6,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.setup.HermesFrontendInstance;
 import pl.allegro.tech.hermes.test.helper.containers.BrokerId;
 
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.Response;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
