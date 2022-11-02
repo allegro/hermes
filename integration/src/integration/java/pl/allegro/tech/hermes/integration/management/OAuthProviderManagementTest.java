@@ -7,9 +7,8 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 
-import javax.ws.rs.core.Response;
-
 import java.util.List;
+import javax.ws.rs.core.Response;
 
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;

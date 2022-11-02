@@ -11,13 +11,7 @@ import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 public class Timers {
 
     public static final String ACK_ALL_BROKER_LATENCY = "ack-all.broker-latency";
-    public static final String ACK_ALL_BROKER_TOPIC_LATENCY = ACK_ALL_BROKER_LATENCY + "." + GROUP + "." + TOPIC;
-
     public static final String ACK_LEADER_BROKER_LATENCY = "ack-leader.broker-latency";
-    public static final String ACK_LEADER_BROKER_TOPIC_LATENCY = ACK_LEADER_BROKER_LATENCY + "." + GROUP + "." + TOPIC;
-
-    public static final String PARSING_REQUEST = "parsing-request";
-    public static final String TOPIC_PARSING_REQUEST = PARSING_REQUEST + "." + GROUP + "." + TOPIC;
 
     public static final String ACK_ALL_LATENCY = "ack-all.latency";
     public static final String ACK_ALL_TOPIC_LATENCY = ACK_ALL_LATENCY + "." + GROUP + "." + TOPIC;
@@ -25,13 +19,8 @@ public class Timers {
     public static final String ACK_LEADER_LATENCY = "ack-leader.latency";
     public static final String ACK_LEADER_TOPIC_LATENCY = ACK_LEADER_LATENCY + "." + GROUP + "." + TOPIC;
 
-    public static final String MESSAGE_CREATION_LATENCY = "message-creation-latency";
-    public static final String MESSAGE_CREATION_TOPIC_LATENCY = MESSAGE_CREATION_LATENCY + "." + TOPIC;
-
     public static final String LATENCY = "latency";
     public static final String SUBSCRIPTION_LATENCY = LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
-
-    public static final String READ_LATENCY = "read-latency";
 
     public static final String SCHEMA = "schema." + SCHEMA_REPO_TYPE;
     public static final String GET_SCHEMA_LATENCY = SCHEMA + ".get-schema";

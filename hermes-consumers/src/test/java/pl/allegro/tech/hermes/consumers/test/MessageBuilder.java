@@ -112,13 +112,13 @@ public final class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder withPartitionAssignmentTerm(long term) {
-        this.partitionAssignmentTerm = term;
+    public MessageBuilder withPartitionOffset(String kafkaTopic, int partition, long offset) {
+        this.partitionOffset = new PartitionOffset(KafkaTopicName.valueOf(kafkaTopic), offset, partition);
         return this;
     }
 
-    public MessageBuilder withPartitionOffset(String kafkaTopic, int partition, long offset) {
-        this.partitionOffset = new PartitionOffset(KafkaTopicName.valueOf(kafkaTopic), offset, partition);
+    public MessageBuilder withPartitionAssignmentTerm(long term) {
+        this.partitionAssignmentTerm = term;
         return this;
     }
 

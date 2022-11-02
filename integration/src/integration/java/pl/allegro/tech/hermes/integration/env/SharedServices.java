@@ -42,7 +42,7 @@ public final class SharedServices {
         WireMockStarter wireMockStarter = new WireMockStarter(wireMockConfig().dynamicPort().portNumber());
         try {
             wireMockStarter.start();
-        } catch(Exception exception) {
+        } catch (Exception exception) {
             logger.error("Error while starting wiremock server");
         }
         return wireMockStarter.instance();

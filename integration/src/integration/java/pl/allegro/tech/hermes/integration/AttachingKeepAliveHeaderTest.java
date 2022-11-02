@@ -8,12 +8,15 @@ import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import javax.ws.rs.core.Response;
 import java.util.function.Consumer;
+import javax.ws.rs.core.Response;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_KEEP_ALIVE_HEADER_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_BROKER_LIST;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING;
 
 public class AttachingKeepAliveHeaderTest extends IntegrationTest {
 
@@ -66,9 +69,9 @@ public class AttachingKeepAliveHeaderTest extends IntegrationTest {
 
     private FrontendStarter startFrontendWithConfig(Consumer<FrontendStarter> frontendConfigUpdater) throws Exception {
         FrontendStarter frontend = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT, false);
-        frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-        frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
-        frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        frontend.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontend.overrideProperty(ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+        frontend.overrideProperty(SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontendConfigUpdater.accept(frontend);
         frontend.start();
         return frontend;

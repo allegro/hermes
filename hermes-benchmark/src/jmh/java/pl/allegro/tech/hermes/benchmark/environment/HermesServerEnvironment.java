@@ -61,7 +61,8 @@ public class HermesServerEnvironment {
     }
 
     public static String loadMessageResource(String name) throws IOException {
-        return IOUtils.toString(Objects.requireNonNull(HermesServerEnvironment.class.getResourceAsStream(String.format("/message/%s.json", name))));
+        return IOUtils.toString(Objects.requireNonNull(HermesServerEnvironment.class
+            .getResourceAsStream(String.format("/message/%s.json", name))));
     }
 
     private void reportMetrics() {

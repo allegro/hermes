@@ -16,10 +16,9 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.Response;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static io.undertow.util.Protocols.HTTP_2_0;
@@ -30,7 +29,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopi
 
 public class ConsumingHttp2Test extends IntegrationTest {
 
-    private final static String MESSAGE_BODY = TestMessage.of("hello", "h2").body();
+    private static final String MESSAGE_BODY = TestMessage.of("hello", "h2").body();
 
     private final AtomicInteger incomingCounter = new AtomicInteger(0);
 

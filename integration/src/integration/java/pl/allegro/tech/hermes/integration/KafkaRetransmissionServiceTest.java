@@ -15,10 +15,10 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.ws.rs.core.Response;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
+import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -50,7 +50,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
 
         sendMessagesOnTopic(topic, 4);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
-        OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
+        final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
         Thread.sleep(1000);
         sendMessagesOnTopic(topic, 2);
         wait.untilConsumerCommitsOffset(topic, subscription);
@@ -106,7 +106,7 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         wait.untilConsumerCommitsOffset(topic, subscription.getName());
 
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
-        OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
+        final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
 
         sendMessagesOnTopic(topic, 1);
         wait.untilConsumerCommitsOffset(topic, subscription.getName());
@@ -125,7 +125,9 @@ public class KafkaRetransmissionServiceTest extends IntegrationTest {
         wait.untilConsumerCommitsOffset(topic, subscription.getName());
 
         // when
-        Response response = management.subscription().retransmit(topic.getQualifiedName(), subscription.getName(), true, retransmissionDate);
+        Response response = management.subscription().retransmit(
+                topic.getQualifiedName(), subscription.getName(), true, retransmissionDate
+        );
 
         // then
         assertThat(response).hasStatus(OK);

@@ -28,8 +28,8 @@ public class GraphiteEndpoint implements EnvironmentAware {
             + "[[DELIVERY, TIMESTAMP]]}"
             + "]";
 
-    private static final String TOPIC_URL_PATTERN = "/.*sumSeries%28stats.tech.hermes\\." +
-            "(consumer|producer)\\.%2A\\.meter\\.GROUP\\.TOPIC\\.m1_rate%29.*";
+    private static final String TOPIC_URL_PATTERN = "/.*sumSeries%28stats.tech.hermes\\."
+            + "(consumer|producer)\\.%2A\\.meter\\.GROUP\\.TOPIC\\.m1_rate%29.*";
 
     private final WireMock graphiteListener;
 

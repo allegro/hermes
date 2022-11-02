@@ -17,13 +17,13 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import java.time.Clock;
+import java.util.UUID;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.time.Clock;
-import java.util.UUID;
 
 import static java.util.Collections.singletonMap;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -203,10 +203,9 @@ public class PublishingAvroTest extends IntegrationTest {
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
         assertThat(response.readEntity(String.class)).isEqualTo(
-                "{" +
-                "\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\"," +
-                "\"code\":\"VALIDATION_ERROR\"" +
-                "}"
+                "{" + "\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\","
+                        + "\"code\":\"VALIDATION_ERROR\""
+                        + "}"
         );
     }
 
@@ -224,10 +223,9 @@ public class PublishingAvroTest extends IntegrationTest {
         // then
         assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
         assertThat(response.readEntity(String.class)).isEqualTo(
-                "{" +
-                "\"message\":\"Invalid message: Failed to convert JSON to Avro: Field age is expected to be type: java.lang.Number\"," +
-                "\"code\":\"VALIDATION_ERROR\"" +
-                "}"
+                "{" + "\"message\":\"Invalid message: Failed to convert JSON to Avro: Field age is expected to be type: java.lang.Number\","
+                        + "\"code\":\"VALIDATION_ERROR\""
+                        + "}"
         );
     }
 
@@ -342,7 +340,7 @@ public class PublishingAvroTest extends IntegrationTest {
     public void shouldPublishAvroAndConsumeJsonMessageWithTraceId() {
 
         // given
-        String traceId = UUID.randomUUID().toString();
+        final String traceId = UUID.randomUUID().toString();
 
         // and
         Topic topic = randomTopic("publishAvroConsumeJsonWithTraceId", "topic").withContentType(AVRO).build();

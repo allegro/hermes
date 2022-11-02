@@ -32,7 +32,7 @@ public class AuthConfiguration {
         return getAuthConfig(false);
     }
 
-    private AuthenticationConfiguration getAuthConfig (boolean isAuthenticationRequired) {
+    private AuthenticationConfiguration getAuthConfig(boolean isAuthenticationRequired) {
         return new AuthenticationConfiguration(
                 exchange -> isAuthenticationRequired,
                 Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
