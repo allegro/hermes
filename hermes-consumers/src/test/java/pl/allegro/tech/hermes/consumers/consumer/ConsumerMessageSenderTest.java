@@ -105,7 +105,7 @@ public class ConsumerMessageSenderTest {
     public void shouldHandleSuccessfulSending() {
         // given
         Message message = message();
-        when(messageSender.send(eq(message))).thenReturn(success());
+        when(messageSender.send(message)).thenReturn(success());
 
         // when
         sender.sendAsync(message);
@@ -122,7 +122,7 @@ public class ConsumerMessageSenderTest {
     public void shouldKeepTryingToSendMessageFailedSending() throws InterruptedException {
         // given
         Message message = message();
-        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(eq(message));
+        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
@@ -138,7 +138,7 @@ public class ConsumerMessageSenderTest {
     public void shouldDiscardMessageWhenTTLIsExceeded() {
         // given
         Message message = messageWithTimestamp(System.currentTimeMillis() - 11000);
-        doReturn(failure()).when(messageSender).send(eq(message));
+        doReturn(failure()).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
@@ -154,7 +154,7 @@ public class ConsumerMessageSenderTest {
     public void shouldNotKeepTryingToSendMessageFailedWithStatusCode4xx() throws InterruptedException {
         // given
         Message message = message();
-        doReturn(failure(403)).doReturn(success()).when(messageSender).send(eq(message));
+        doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
@@ -171,7 +171,7 @@ public class ConsumerMessageSenderTest {
         // given
         ConsumerMessageSender sender = consumerMessageSender(subscriptionWith4xxRetry);
         Message message = message();
-        doReturn(failure(403)).doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(eq(message));
+        doReturn(failure(403)).doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
@@ -193,7 +193,7 @@ public class ConsumerMessageSenderTest {
         setUpMetrics(subscription);
         ConsumerMessageSender sender = consumerMessageSender(subscription);
         Message message = message();
-        doReturn(failure(401)).doReturn(failure(401)).doReturn(success()).when(messageSender).send(eq(message));
+        doReturn(failure(401)).doReturn(failure(401)).doReturn(success()).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
@@ -213,7 +213,7 @@ public class ConsumerMessageSenderTest {
 
         sender = consumerMessageSender(subscriptionWithBackoff);
         Message message = message();
-        doReturn(failure(500)).when(messageSender).send(eq(message));
+        doReturn(failure(500)).when(messageSender).send(message);
 
         //when
         sender.sendAsync(message);
@@ -228,7 +228,7 @@ public class ConsumerMessageSenderTest {
         // given
         int retrySeconds = subscription.getSerialSubscriptionPolicy().getMessageTtl();
         Message message = message();
-        doReturn(backoff(retrySeconds)).when(messageSender).send(eq(message));
+        doReturn(backoff(retrySeconds)).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
@@ -246,14 +246,14 @@ public class ConsumerMessageSenderTest {
         MessageSender otherMessageSender = mock(MessageSender.class);
 
         when(messageSenderFactory.create(eq(subscriptionWithModfiedEndpoint), any(SendFutureProvider.class))).thenReturn(otherMessageSender);
-        when(otherMessageSender.send(eq(message))).thenReturn(success());
+        when(otherMessageSender.send(message)).thenReturn(success());
 
         // when
         sender.updateSubscription(subscriptionWithModfiedEndpoint);
         sender.sendAsync(message);
 
         // then
-        verify(otherMessageSender, timeout(1000)).send(eq(message));
+        verify(otherMessageSender, timeout(1000)).send(message);
     }
 
     @Test
@@ -264,14 +264,14 @@ public class ConsumerMessageSenderTest {
         MessageSender otherMessageSender = mock(MessageSender.class);
 
         when(messageSenderFactory.create(eq(subscriptionWithModifiedTimeout), any(SendFutureProvider.class))).thenReturn(otherMessageSender);
-        when(otherMessageSender.send(eq(message))).thenReturn(success());
+        when(otherMessageSender.send(message)).thenReturn(success());
 
         // when
         sender.updateSubscription(subscriptionWithModifiedTimeout);
         sender.sendAsync(message);
 
         // then
-        verify(otherMessageSender, timeout(1000)).send(eq(message));
+        verify(otherMessageSender, timeout(1000)).send(message);
     }
 
     @Test
@@ -285,7 +285,7 @@ public class ConsumerMessageSenderTest {
         setUpMetrics(subscription);
 
         Message message = message();
-        when(messageSender.send(eq(message))).thenReturn(success());
+        when(messageSender.send(message)).thenReturn(success());
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
@@ -309,7 +309,7 @@ public class ConsumerMessageSenderTest {
         setUpMetrics(subscription);
 
         Message message = messageWithTimestamp(System.currentTimeMillis() - 1800);
-        when(messageSender.send(eq(message))).thenReturn(success());
+        when(messageSender.send(message)).thenReturn(success());
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
@@ -330,7 +330,7 @@ public class ConsumerMessageSenderTest {
         Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier);
         setUpMetrics(subscription);
         Message message = message();
-        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(eq(message));
+        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
@@ -350,7 +350,7 @@ public class ConsumerMessageSenderTest {
         Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier);
         setUpMetrics(subscription);
         Message message = message();
-        doReturn(backoff(retrySeconds)).doReturn(backoff(retrySeconds)).doReturn(success()).when(messageSender).send(eq(message));
+        doReturn(backoff(retrySeconds)).doReturn(backoff(retrySeconds)).doReturn(success()).when(messageSender).send(message);
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
@@ -369,7 +369,7 @@ public class ConsumerMessageSenderTest {
         Subscription subscription = subscriptionWithExponentialRetryBackoff(backoff, multiplier, ttl);
         setUpMetrics(subscription);
         Message message = message();
-        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(eq(message));
+        doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
@@ -399,14 +399,6 @@ public class ConsumerMessageSenderTest {
         sender.initialize();
 
         return sender;
-    }
-
-    private void verifyRateLimiterSuccessfulSendingCountedTimes(int count) {
-        verify(rateLimiter, timeout(1000).times(count)).registerSuccessfulSending();
-    }
-
-    private void verifyRateLimiterFailedSendingCountedTimes(int count) {
-        verify(rateLimiter, timeout(1000).times(count)).registerFailedSending();
     }
 
     private void verifyErrorHandlerHandleFailed(Message message, Subscription subscription, int times) {
