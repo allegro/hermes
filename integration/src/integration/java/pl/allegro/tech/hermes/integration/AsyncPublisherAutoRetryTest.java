@@ -17,7 +17,12 @@ import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 import java.net.URI;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.commons.lang3.StringUtils.strip;
 
 @RunWith(MockitoJUnitRunner.class)

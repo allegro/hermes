@@ -21,15 +21,15 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.UUID;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.UUID;
 
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -55,7 +55,7 @@ public class PublishingTest extends IntegrationTest {
     public void shouldPublishAndConsumeMessage() {
         // given
         Topic topic = operations.buildTopic(randomTopic("publishAndConsumeGroup", "topic").build());
-        operations.createSubscription(topic, "subscription",remoteService.getUrl());
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
         TestMessage message = TestMessage.of("hello", "world");
         remoteService.expectMessages(message.body());

@@ -101,7 +101,7 @@ public class GraphiteMockServer {
     }
 
     private void handleMetric(Metric metric) {
-        for (String key: expectedMetrics.keySet()) {
+        for (String key : expectedMetrics.keySet()) {
             if (metric.getName().matches(key)) {
                 assertedMetrics.put(key, expectedMetrics.get(key).equals(Double.valueOf(metric.getValue())));
                 break;

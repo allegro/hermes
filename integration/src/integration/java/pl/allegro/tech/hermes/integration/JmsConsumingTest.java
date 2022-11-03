@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.integration.helper.RemoteJmsEndpoint;
 import pl.allegro.tech.hermes.integration.metadata.TraceContext;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import java.util.UUID;
 import javax.jms.Message;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -14,7 +15,6 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.UUID;
 
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -24,7 +24,7 @@ public class JmsConsumingTest extends IntegrationTest {
 
     private RemoteJmsEndpoint jmsEndpoint;
 
-    private final static String JMS_TOPIC_NAME = "hermes";
+    private static final String JMS_TOPIC_NAME = "hermes";
 
     @BeforeMethod
     public void initializeAlways() {

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class TraceHeadersPropagator implements HeadersPropagator {
 
-    private Set<String> HEADERS = ImmutableSet.of(
+    private static final Set<String> HEADERS = ImmutableSet.of(
             "Trace-Id", "Span-Id", "Parent-Span-Id", "Trace-Sampled", "Trace-Reported");
 
     @Override
