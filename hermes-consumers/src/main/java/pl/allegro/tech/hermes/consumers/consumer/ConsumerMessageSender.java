@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeo
 
 import java.net.URI;
 import java.time.Clock;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +24,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
@@ -47,7 +45,6 @@ public class ConsumerMessageSender {
 
     private MessageSender messageSender;
     private Subscription subscription;
-    private SendFutureProvider sendFutureProvider;
 
     private ScheduledExecutorService retrySingleThreadExecutor;
     private volatile boolean running = true;
@@ -74,8 +71,7 @@ public class ConsumerMessageSender {
         this.async = futureAsyncTimeout;
         this.rateLimiter = rateLimiter;
         this.asyncTimeoutMs = asyncTimeoutMs;
-        this.sendFutureProvider = provider(rateLimiter, futureAsyncTimeout, subscription, asyncTimeoutMs);
-        this.messageSender = messageSenderFactory.create(subscription);
+        this.messageSender = messageSender(subscription);
         this.subscription = subscription;
         this.inflight = inflight;
         this.consumerLatencyTimer = metrics.subscriptionLatencyTimer();
@@ -128,7 +124,7 @@ public class ConsumerMessageSender {
     private void sendMessage(final Message message) {
         loadRecorder.recordSingleOperation();
         Timer.Context timer = consumerLatencyTimer.time();
-        CompletableFuture<MessageSendingResult> response = messageSender.send(message, sendFutureProvider);
+        CompletableFuture<MessageSendingResult> response = messageSender.send(message);
 
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor)
                 .exceptionally(e -> {
@@ -137,6 +133,15 @@ public class ConsumerMessageSender {
                             subscription.getQualifiedName(), message.getPartition(), message.getOffset(), message.getId(), e);
                     return null;
                 });
+    }
+
+    private MessageSender messageSender(Subscription subscription) {
+        Integer requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
+        SendFutureProvider sendFutureProvider = new SendFutureProvider(this.rateLimiter, subscription, this.async, requestTimeoutMs, asyncTimeoutMs);
+
+        return this.messageSenderFactory.create(
+                subscription, sendFutureProvider
+        );
     }
 
     public void updateSubscription(Subscription newSubscription) {
@@ -154,31 +159,14 @@ public class ConsumerMessageSender {
         );
 
         this.subscription = newSubscription;
-        this.sendFutureProvider = provider(this.rateLimiter, this.async, this.subscription, this.asyncTimeoutMs);
 
         boolean httpClientChanged = this.subscription.isHttp2Enabled() != newSubscription.isHttp2Enabled();
 
         if (endpointUpdated || subscriptionPolicyUpdated || endpointAddressResolverMetadataChanged
                 || oAuthPolicyChanged || httpClientChanged) {
             this.messageSender.stop();
-            this.messageSender = messageSenderFactory.create(newSubscription);
+            this.messageSender = messageSender(newSubscription);
         }
-    }
-
-    private static SendFutureProvider provider(SerialConsumerRateLimiter serialConsumerRateLimiter,
-                                                       FutureAsyncTimeout asyncTimeout, Subscription subscription, int asyncTimeoutMs
-    ) {
-        Integer requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
-        List<Predicate<MessageSendingResult>> ignorableErrors = ignorableErrors(subscription);
-        return new SendFutureProvider(serialConsumerRateLimiter, ignorableErrors, asyncTimeout, requestTimeoutMs, asyncTimeoutMs);
-
-    }
-
-
-    private static List<Predicate<MessageSendingResult>> ignorableErrors(Subscription subscription) {
-        Predicate<MessageSendingResult> ignore = (MessageSendingResult result) -> result.ignoreInRateCalculation(subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
-                subscription.hasOAuthPolicy());
-        return Collections.singletonList(ignore);
     }
 
     private boolean willExceedTtl(Message message, long delay) {

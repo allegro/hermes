@@ -1,9 +1,14 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender;
+package pl.allegro.tech.hermes.consumers.consumer;
 
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -11,7 +16,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 // provides futures which are rate limited and completed exceptionally after given timeout
-public class SendFutureProvider{
+public class SendFutureProvider {
     private final ConsumerRateLimiter rateLimiter;
     private final List<Predicate<MessageSendingResult>> ignore;
     private final FutureAsyncTimeout async;
@@ -19,15 +24,21 @@ public class SendFutureProvider{
     private final int asyncTimeoutMs;
 
     public SendFutureProvider(ConsumerRateLimiter rateLimiter,
-                                        List<Predicate<MessageSendingResult>> ignore,
-                                        FutureAsyncTimeout async,
-                                        int requestTimeoutMs,
-                                        int asyncTimeoutMs) {
+                              Subscription subscription,
+                              FutureAsyncTimeout async,
+                              int requestTimeoutMs,
+                              int asyncTimeoutMs) {
         this.rateLimiter = rateLimiter;
-        this.ignore = ignore;
+        this.ignore = ignorableErrors(subscription);
         this.async = async;
         this.requestTimeoutMs = requestTimeoutMs;
         this.asyncTimeoutMs = asyncTimeoutMs;
+    }
+
+    private static List<Predicate<MessageSendingResult>> ignorableErrors(Subscription subscription) {
+        Predicate<MessageSendingResult> ignore = (MessageSendingResult result) -> result.ignoreInRateCalculation(subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
+                subscription.hasOAuthPolicy());
+        return Collections.singletonList(ignore);
     }
 
     public <T extends MessageSendingResult> CompletableFuture<T> provide(Consumer<CompletableFuture<T>> resultFutureConsumer, Function<Throwable, T> exceptionMapper) {

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSenderAdapter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
@@ -66,7 +67,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     @Override
-    public MessageSender create(Subscription subscription) {
+    public MessageSender create(Subscription subscription, SendFutureProvider sendFutureProvider) {
         EndpointAddress endpoint = subscription.getEndpoint();
         EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
         ResolvableEndpointAddress resolvableEndpoint =
@@ -79,14 +80,15 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
-                    sendingResultHandlers);
+                    sendingResultHandlers,
+                    sendFutureProvider);
         } else {
             JettyMessageSender jettyMessageSender =  new JettyMessageSender(
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers);
-            return new SingleMessageSenderAdapter(jettyMessageSender);
+            return new SingleMessageSenderAdapter(jettyMessageSender, sendFutureProvider);
         }
     }
 

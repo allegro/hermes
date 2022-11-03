@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface MessageSender {
 
-    CompletableFuture<MessageSendingResult> send(Message message, SendFutureProvider sendFutureProvider);
+    CompletableFuture<MessageSendingResult> send(Message message);
 
     void stop();
 }

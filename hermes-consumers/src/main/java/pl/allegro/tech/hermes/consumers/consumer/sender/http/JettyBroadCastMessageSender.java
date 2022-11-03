@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 import com.google.common.collect.ImmutableList;
 import org.eclipse.jetty.client.api.Request;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
+import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.*;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData.HttpRequestDataBuilder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class JettyBroadCastMessageSender implements MessageSender {
+public class JettyBroadCastMessageSender extends MultiMessageSender {
 
     private final HttpRequestFactory requestFactory;
     private final ResolvableEndpointAddress endpoint;
@@ -27,8 +28,10 @@ public class JettyBroadCastMessageSender implements MessageSender {
     public JettyBroadCastMessageSender(HttpRequestFactory requestFactory,
                                        ResolvableEndpointAddress endpoint,
                                        HttpHeadersProvider requestHeadersProvider,
-                                       SendingResultHandlers sendingResultHandlers
+                                       SendingResultHandlers sendingResultHandlers,
+                                       SendFutureProvider sendFutureProvider
     ) {
+        super(sendFutureProvider);
         this.requestFactory = requestFactory;
         this.endpoint = endpoint;
         this.requestHeadersProvider = requestHeadersProvider;
@@ -36,7 +39,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
     }
 
     @Override
-    public CompletableFuture<MessageSendingResult> send(Message message, SendFutureProvider sendFutureProvider) {
+    public CompletableFuture<MessageSendingResult> sendMany(Message message, SendFutureProvider sendFutureProvider) {
         try {
             return sendMessage(message, sendFutureProvider).thenApply(MultiMessageSendingResult::new);
         } catch (Exception exception) {
@@ -47,7 +50,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
     private CompletableFuture<List<SingleMessageSendingResult>> sendMessage(Message message, SendFutureProvider sendFutureProvider) {
         try {
             List<CompletableFuture<SingleMessageSendingResult>> results = collectResults(message, sendFutureProvider);
-            return mergeResults(results, sendFutureProvider);
+            return mergeResults(results);
         } catch (EndpointAddressResolutionException exception) {
             return CompletableFuture.completedFuture(Collections.singletonList(exceptionMapper.apply(exception)));
         }
@@ -68,7 +71,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
                 .collect(Collectors.toList());
     }
 
-    private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(List<CompletableFuture<SingleMessageSendingResult>> results, SendFutureProvider sendFutureProvider)  {
+    private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(List<CompletableFuture<SingleMessageSendingResult>> results)  {
         return CompletableFuture.allOf(results.toArray(new CompletableFuture[results.size()]))
                 .thenApply(v -> results.stream()
                         .map(CompletableFuture::join)

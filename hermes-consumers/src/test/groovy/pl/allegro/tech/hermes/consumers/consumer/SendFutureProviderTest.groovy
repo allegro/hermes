@@ -1,6 +1,10 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender
+package pl.allegro.tech.hermes.consumers.consumer
 
+import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout
 import spock.lang.Specification
 
@@ -8,7 +12,11 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.function.Predicate
+
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
 
 class SendFutureProviderTest extends Specification {
@@ -41,10 +49,17 @@ class SendFutureProviderTest extends Specification {
         return { cf -> throw e }
     }
 
+    Consumer<CompletableFuture<MessageSendingResult>> consumer(MessageSendingResult messageSendingResult) {
+        return {cf -> cf.complete(messageSendingResult)}
+    }
+
     FutureAsyncTimeout futureAsyncTimeout = new FutureAsyncTimeout(Executors.newSingleThreadScheduledExecutor())
     Function<Exception, SingleMessageSendingResult> exceptionMapper = { e -> MessageSendingResult.failedResult(e) }
 
-    def "should register successful send future in rate limiter"() {
+    Subscription subscription = subscription(SubscriptionName.fromString("group.topic\$subscription")).build()
+
+
+    def "should report successful sending"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
             1 * acquire()
@@ -52,7 +67,7 @@ class SendFutureProviderTest extends Specification {
         }
         SendFutureProvider futureProvider = new SendFutureProvider(
                 serialConsumerRateLimiter,
-                [],
+                subscription,
                 futureAsyncTimeout,
                 1000,
                 1000
@@ -60,12 +75,12 @@ class SendFutureProviderTest extends Specification {
 
         when:
         CompletableFuture future = futureProvider.provide(successfulConsumer(), exceptionMapper)
+
         then:
         future.get().succeeded()
-
     }
 
-    def "should asynchronously time out send future and register failed result in rate limiter"() {
+    def "should asynchronously time out send future and report failed sending"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
             1 * acquire()
@@ -73,7 +88,7 @@ class SendFutureProviderTest extends Specification {
         }
         SendFutureProvider futureProvider = new SendFutureProvider(
                 serialConsumerRateLimiter,
-                [],
+                subscription,
                 futureAsyncTimeout,
                 100,
                 100
@@ -86,37 +101,16 @@ class SendFutureProviderTest extends Specification {
         future.get().isTimeout()
     }
 
-    def "should report failure when send result is not successful"() {
-        given:
-        SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
-            1 * registerFailedSending()
-        }
-        SendFutureProvider futureProvider = new SendFutureProvider(
-                serialConsumerRateLimiter,
-                [],
-                futureAsyncTimeout,
-                100,
-                100
-        )
-
-        when:
-        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(500), exceptionMapper)
-
-        then:
-        !future.get().succeeded()
-    }
-
-    def "should not report failure when future fails with ignorable error"() {
+    def "should treat 4xx response for subscription with no 4xx retry as success"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
             1 * acquire()
             1 * registerSuccessfulSending()
         }
-        Predicate ignorable = {m -> m.getStatusCode() == 404}
+
         SendFutureProvider futureProvider = new SendFutureProvider(
                 serialConsumerRateLimiter,
-                [ignorable],
+                subscription,
                 futureAsyncTimeout,
                 100,
                 100
@@ -129,7 +123,122 @@ class SendFutureProviderTest extends Specification {
         !future.get().succeeded()
     }
 
-    def "should report failure when future completes exceptionally"() {
+    def "should report failed sending on error response other than 4xx for subscription with no 4xx retry"() {
+        given:
+        SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
+            1 * acquire()
+            1 * registerFailedSending()
+        }
+
+        SendFutureProvider futureProvider = new SendFutureProvider(
+                serialConsumerRateLimiter,
+                subscription,
+                futureAsyncTimeout,
+                100,
+                100
+        )
+
+        when:
+        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(500), exceptionMapper)
+
+        then:
+        !future.get().succeeded()
+    }
+
+    def "should report failed sending on 4xx response for subscription with 4xx retry"() {
+        given:
+        SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
+            1 * acquire()
+            1 * registerFailedSending()
+        }
+        def subscription = subscription(SubscriptionName.fromString("group.topic\$subscription"))
+                .withSubscriptionPolicy(subscriptionPolicy().applyDefaults()
+                        .withClientErrorRetry()
+                        .build()).build()
+
+        SendFutureProvider futureProvider = new SendFutureProvider(
+                serialConsumerRateLimiter,
+                subscription,
+                futureAsyncTimeout,
+                100,
+                100
+        )
+
+        when:
+        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(500), exceptionMapper)
+
+        then:
+        !future.get().succeeded()
+    }
+
+    def "should report successful sending on retry after"() {
+        given:
+        SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
+            1 * acquire()
+            1 * registerSuccessfulSending()
+        }
+
+        SendFutureProvider futureProvider = new SendFutureProvider(
+                serialConsumerRateLimiter,
+                subscription,
+                futureAsyncTimeout,
+                100,
+                100
+        )
+
+        when:
+        CompletableFuture future = futureProvider.provide(consumer(MessageSendingResult.retryAfter(100)), exceptionMapper)
+
+        then:
+        !future.get().succeeded()
+    }
+
+    def "should report successful sending on service unavailable without retry after"() {
+        given:
+        SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
+            1 * acquire()
+            1 * registerFailedSending()
+        }
+
+        SendFutureProvider futureProvider = new SendFutureProvider(
+                serialConsumerRateLimiter,
+                subscription,
+                futureAsyncTimeout,
+                100,
+                100
+        )
+
+        when:
+        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(SERVICE_UNAVAILABLE.code()), exceptionMapper)
+
+        then:
+        !future.get().succeeded()
+    }
+
+    //TODO: clarify requirements: https://github.com/allegro/hermes/blob/master/hermes-consumers/src/test/java/pl/allegro/tech/hermes/consumers/consumer/ConsumerMessageSenderTest.java#L322
+    def "should not report failed sending on too many requests without retry after"() {
+        given:
+        SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
+            1 * acquire()
+            1 * registerSuccessfulSending()
+        }
+
+        SendFutureProvider futureProvider = new SendFutureProvider(
+                serialConsumerRateLimiter,
+                subscription,
+                futureAsyncTimeout,
+                100,
+                100
+        )
+
+        when:
+        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(TOO_MANY_REQUESTS.code()), exceptionMapper)
+
+        then:
+        !future.get().succeeded()
+    }
+
+    def "should report failed sending when future completes exceptionally"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
             1 * acquire()
@@ -137,7 +246,7 @@ class SendFutureProviderTest extends Specification {
         }
         SendFutureProvider futureProvider = new SendFutureProvider(
                 serialConsumerRateLimiter,
-                [],
+                subscription,
                 futureAsyncTimeout,
                 100,
                 100
@@ -154,7 +263,7 @@ class SendFutureProviderTest extends Specification {
         }
     }
 
-    def "should report failure when consumer throws exception"() {
+    def "should report failed sending when consumer throws exception"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
             1 * acquire()
@@ -162,7 +271,7 @@ class SendFutureProviderTest extends Specification {
         }
         SendFutureProvider futureProvider = new SendFutureProvider(
                 serialConsumerRateLimiter,
-                [],
+                subscription,
                 futureAsyncTimeout,
                 100,
                 100
@@ -178,6 +287,4 @@ class SendFutureProviderTest extends Specification {
             getFailure() == failWith
         }
     }
-
-
 }
