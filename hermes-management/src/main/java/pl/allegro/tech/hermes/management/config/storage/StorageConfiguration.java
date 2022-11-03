@@ -44,7 +44,6 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import static java.util.stream.Collectors.toList;
-
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration
