@@ -4,12 +4,12 @@ import org.apache.commons.lang.NotImplementedException;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.SecurityContext;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.SecurityContext;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -22,7 +22,7 @@ public class TestSecurityProvider implements SecurityProvider {
         TestSecurityProvider.userIsAdmin = userIsAdmin;
     }
 
-    public static void setUserAsOwner(OwnerId ...ownerIds) {
+    public static void setUserAsOwner(OwnerId... ownerIds) {
         TestSecurityProvider.ownerIds.addAll(Arrays.stream(ownerIds).collect(toSet()));
     }
 

@@ -20,19 +20,19 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopi
 public class FilteringJsonTest extends IntegrationTest {
     private RemoteServiceEndpoint remoteService;
 
-    private final static MessageFilterSpecification MESSAGE_NAME_FILTER =
+    private static final MessageFilterSpecification MESSAGE_NAME_FILTER =
             new MessageFilterSpecification(of("type", "jsonpath", "path", ".name", "matcher", "^Bob.*"));
 
-    private final static MessageFilterSpecification MESSAGE_COLOR_FILTER =
+    private static final MessageFilterSpecification MESSAGE_COLOR_FILTER =
             new MessageFilterSpecification(of("type", "jsonpath", "path", ".favoriteColor", "matcher", "grey"));
 
 
-    final static AvroUser BOB = new AvroUser("Bob", 50, "blue");
-    final static AvroUser ALICE = new AvroUser("Alice", 20, "magenta");
-    final static AvroUser ALICE_GREY = new AvroUser("Alice", 20, "grey");
-    final static AvroUser BOB_GREY = new AvroUser("Bob", 50, "grey");
+    static final AvroUser BOB = new AvroUser("Bob", 50, "blue");
+    static final AvroUser ALICE = new AvroUser("Alice", 20, "magenta");
+    static final AvroUser ALICE_GREY = new AvroUser("Alice", 20, "grey");
+    static final AvroUser BOB_GREY = new AvroUser("Bob", 50, "grey");
 
-    private final static SubscriptionPolicy SUBSCRIPTION_POLICY = new SubscriptionPolicy(100, 2000, 1000, 1000, true, 100, 100, 0, 1, 600);
+    private static final SubscriptionPolicy SUBSCRIPTION_POLICY = new SubscriptionPolicy(100, 2000, 1000, 1000, true, 100, 100, 0, 1, 600);
 
     @BeforeMethod
     public void initializeAlways() {

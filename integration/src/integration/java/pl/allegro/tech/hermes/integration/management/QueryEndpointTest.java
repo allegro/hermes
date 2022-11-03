@@ -90,8 +90,8 @@ public class QueryEndpointTest extends IntegrationTest {
                 {"{\"query\": {\"name\": {\"like\": \".*testTopic1\"}}}", asList(1)},
                 {"{\"query\": {\"name\": {\"like\": \".*testTopic.*\"}}}", asList(1, 2, 3)},
                 {"{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}", asList(3)},
-                {"{\"query\": {\"and\"" +
-                        ": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(3)},
+                {"{\"query\": {\"and\""
+                        + ": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(3)},
                 {"{\"query\": {\"or\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(1, 3, 4)},
                 {"{\"query\": {\"owner.id\": \"Team Alpha\"}}", asList(4)},
                 {"{\"query\": {\"owner.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
@@ -103,7 +103,8 @@ public class QueryEndpointTest extends IntegrationTest {
         // given
         Topic topic1 = topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).build();
         operations.buildTopicWithSchema(topicWithSchema(topic1, SCHEMA));
-        Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build()).getTopic();
+        Topic topic2 = operations.buildTopic(topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build())
+                .getTopic();
         Topic topic3 = topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build();
         operations.buildTopicWithSchema(topicWithSchema(topic3, SCHEMA));
         Topic topic4 = operations.buildTopic(topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
@@ -139,9 +140,15 @@ public class QueryEndpointTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("NotWise", "NotUsed").build());
 
-        Subscription subscription1 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription1"), "http://endpoint1"));
-        Subscription subscription2 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription2"), "http://endpoint2"));
-        Subscription subscription3 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subTestScription3"), "http://endpoint1"));
+        Subscription subscription1 = operations.createSubscription(
+                topic, enrichSubscription(subscription(topic.getName(), "subscription1"), "http://endpoint1")
+        );
+        Subscription subscription2 = operations.createSubscription(
+                topic, enrichSubscription(subscription(topic.getName(), "subscription2"), "http://endpoint2")
+        );
+        Subscription subscription3 = operations.createSubscription(
+                topic, enrichSubscription(subscription(topic.getName(), "subTestScription3"), "http://endpoint1")
+        );
         Subscription subscription4 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription4")
                 .withOwner(new OwnerId("Plaintext", "Team Alpha")), "http://endpoint2")
         );
@@ -240,15 +247,15 @@ public class QueryEndpointTest extends IntegrationTest {
 
         wait.until(() -> {
             // when
-            List<SubscriptionNameWithMetrics> allSubscriptions = management.query()
+            final List<SubscriptionNameWithMetrics> allSubscriptions = management.query()
                     .querySubscriptionsMetrics(queryGetAllSubscriptionsMetrics);
-            List<SubscriptionNameWithMetrics> subscriptionsWithPositiveThroughput = management.query()
+            final List<SubscriptionNameWithMetrics> subscriptionsWithPositiveThroughput = management.query()
                     .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithPositiveThroughput);
-            List<SubscriptionNameWithMetrics> subscriptionsWithRateInRange = management.query()
+            final List<SubscriptionNameWithMetrics> subscriptionsWithRateInRange = management.query()
                     .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithRateInRange);
-            List<SubscriptionNameWithMetrics> subscriptionsWithNegativeLag = management.query()
+            final List<SubscriptionNameWithMetrics> subscriptionsWithNegativeLag = management.query()
                     .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithLagNegative);
-            List<SubscriptionNameWithMetrics> subscriptionsWithVolume = management.query()
+            final List<SubscriptionNameWithMetrics> subscriptionsWithVolume = management.query()
                     .querySubscriptionsMetrics(queryGetSubscriptionsMetricsWithVolume);
 
             // then
@@ -324,7 +331,7 @@ public class QueryEndpointTest extends IntegrationTest {
         Map<String, String> foundSubscriptionsAndTheirTopicNames = found.stream()
                 .collect(Collectors.toMap(SubscriptionNameWithMetrics::getName, SubscriptionNameWithMetrics::getTopicName));
 
-        for (Subscription subscription: expectedSubscriptions) {
+        for (Subscription subscription : expectedSubscriptions) {
             assertThat(foundSubscriptionsAndTheirTopicNames).containsKeys(subscription.getName());
             assertThat(foundSubscriptionsAndTheirTopicNames.get(subscription.getName())).isEqualTo(subscription.getQualifiedTopicName());
         }

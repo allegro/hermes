@@ -15,12 +15,17 @@ import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
+import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_BROKER_LIST;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING;
 import static pl.allegro.tech.hermes.integration.auth.SingleUserAwareIdentityManager.getHeadersWithAuthentication;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
@@ -45,11 +50,11 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         frontendStarter = new FrontendStarter(FRONTEND_PORT);
         frontendStarter.addSpringProfiles("authRequired");
         frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_PORT, FRONTEND_PORT);
-        frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_SSL_ENABLED, false);
-        frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED, true);
-        frontendStarter.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-        frontendStarter.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
-        frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        frontendStarter.overrideProperty(FRONTEND_SSL_ENABLED, false);
+        frontendStarter.overrideProperty(FRONTEND_AUTHENTICATION_ENABLED, true);
+        frontendStarter.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontendStarter.overrideProperty(ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+        frontendStarter.overrideProperty(SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
 
         frontendStarter.start();
 

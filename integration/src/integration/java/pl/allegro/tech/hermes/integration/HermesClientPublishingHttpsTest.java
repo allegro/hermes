@@ -17,8 +17,8 @@ import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import javax.net.ssl.X509TrustManager;
 import java.net.URI;
+import javax.net.ssl.X509TrustManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
@@ -26,6 +26,9 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FR
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_PORT;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_BROKER_LIST;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class HermesClientPublishingHttpsTest extends IntegrationTest {
@@ -89,9 +92,9 @@ public class HermesClientPublishingHttpsTest extends IntegrationTest {
         frontend.overrideProperty(FRONTEND_SSL_PORT, sslPort);
         frontend.overrideProperty(FRONTEND_SSL_KEYSTORE_SOURCE, "provided");
         frontend.overrideProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE, "provided");
-        frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-        frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
-        frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+        frontend.overrideProperty(KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
+        frontend.overrideProperty(ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+        frontend.overrideProperty(SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
 
         frontend.start();
 

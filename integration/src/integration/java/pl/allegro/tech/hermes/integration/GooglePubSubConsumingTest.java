@@ -9,8 +9,8 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.test.helper.endpoint.GooglePubSubEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
+import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
@@ -46,7 +46,9 @@ public class GooglePubSubConsumingTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(CREATED);
-        assertThat(googlePubSubEndpoint.messageReceived(ProjectSubscriptionName.format(GOOGLE_PUBSUB_PROJECT_ID, GOOGLE_PUBSUB_SUBSCRIPTION_ID)))
+        assertThat(googlePubSubEndpoint.messageReceived(
+                ProjectSubscriptionName.format(GOOGLE_PUBSUB_PROJECT_ID, GOOGLE_PUBSUB_SUBSCRIPTION_ID))
+        )
                 .hasAttribute("tn")
                 .hasAttribute("id")
                 .hasAttribute("ts")

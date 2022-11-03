@@ -114,10 +114,8 @@ public class HermesManagementInstance {
 
         private void startManagement() {
             List<String> args = new ArrayList<>();
-            args.add("-p");
-            args.add("" + port);
-            args.add("-e");
-            args.add("integration");
+            args.add("--server.port=" + port);
+            args.add("--spring.profiles.active=integration");
             int kafkaClusterIndex = 0;
             for (ClusterInfo kafkaCluster : kafkaClusters) {
                 args.add("--kafka.clusters[" + kafkaClusterIndex + "].datacenter=" + kafkaCluster.getDc());

@@ -29,12 +29,12 @@ public class ListClientsForTopicTest extends IntegrationTest {
     @Test
     public void shouldListClientsForTopicWithoutRepeating() {
         // given
-        Topic topic = operations.buildTopic("subscribeGroup", "topic");
-        List<String> expectedResponse = Arrays.asList("Team A", "Team B");
         createSubscriptionForTopic("ownedSubscription1", "Team A");
         createSubscriptionForTopic("ownedSubscription2", "Team A");
         createSubscriptionForTopic("ownedSubscription3", "Team B");
         createSubscriptionForTopic("ownedSubscription4", "Team B");
+        Topic topic = operations.buildTopic("subscribeGroup", "topic");
+        List<String> expectedResponse = Arrays.asList("Team A", "Team B");
 
         // then
         assertThat(listClientsForTopic(topic.getQualifiedName())).isEqualTo(expectedResponse);

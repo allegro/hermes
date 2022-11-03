@@ -24,7 +24,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Run check style
-        run: ./gradlew --continue clean checkstyleMain checkstyleTest checkstyleJmh -PmaxCheckstyleWarnings=0
+        run: ./gradlew --continue clean checkstyleMain checkstyleTest checkstyleIntegration checkstyleJmh -PmaxCheckstyleWarnings=0
       - name: Run reviewdog
         if: ${{ success() || failure() }}
         env:
