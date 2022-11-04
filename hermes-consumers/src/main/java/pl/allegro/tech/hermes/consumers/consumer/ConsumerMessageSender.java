@@ -140,7 +140,13 @@ public class ConsumerMessageSender {
 
     private MessageSender messageSender(Subscription subscription) {
         Integer requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
-        SendFutureProvider sendFutureProvider = new SendFutureProvider(this.rateLimiter, subscription, this.async, requestTimeoutMs, asyncTimeoutMs);
+        SendFutureProvider sendFutureProvider = new SendFutureProvider(
+                this.rateLimiter,
+                subscription,
+                this.async,
+                requestTimeoutMs,
+                this.asyncTimeoutMs
+        );
 
         return this.messageSenderFactory.create(
                 subscription, sendFutureProvider
