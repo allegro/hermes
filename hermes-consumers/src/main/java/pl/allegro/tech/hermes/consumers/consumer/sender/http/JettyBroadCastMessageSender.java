@@ -4,7 +4,10 @@ import com.google.common.collect.ImmutableList;
 import org.eclipse.jetty.client.api.Request;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.*;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData.HttpRequestDataBuilder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
@@ -56,7 +59,10 @@ public class JettyBroadCastMessageSender extends MultiMessageSender {
         }
     }
 
-    private List<CompletableFuture<SingleMessageSendingResult>> collectResults(Message message, SendFutureProvider sendFutureProvider) throws EndpointAddressResolutionException {
+    private List<CompletableFuture<SingleMessageSendingResult>> collectResults(
+            Message message,
+            SendFutureProvider sendFutureProvider
+    ) throws EndpointAddressResolutionException {
 
         final HttpRequestData requestData = new HttpRequestDataBuilder()
                 .withRawAddress(endpoint.getRawAddress())
@@ -71,7 +77,7 @@ public class JettyBroadCastMessageSender extends MultiMessageSender {
                 .collect(Collectors.toList());
     }
 
-    private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(List<CompletableFuture<SingleMessageSendingResult>> results)  {
+    private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(List<CompletableFuture<SingleMessageSendingResult>> results) {
         return CompletableFuture.allOf(results.toArray(new CompletableFuture[results.size()]))
                 .thenApply(v -> results.stream()
                         .map(CompletableFuture::join)

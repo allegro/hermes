@@ -7,10 +7,10 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.common.collect.ImmutableSet;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSenderAdapter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 
 import java.io.IOException;
 import java.util.Set;

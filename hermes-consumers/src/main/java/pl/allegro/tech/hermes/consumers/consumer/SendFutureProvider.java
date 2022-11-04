@@ -36,12 +36,18 @@ public class SendFutureProvider {
     }
 
     private static List<Predicate<MessageSendingResult>> ignorableErrors(Subscription subscription) {
-        Predicate<MessageSendingResult> ignore = (MessageSendingResult result) -> result.ignoreInRateCalculation(subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
-                subscription.hasOAuthPolicy());
+        Predicate<MessageSendingResult> ignore =
+                result -> result.ignoreInRateCalculation(
+                        subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
+                        subscription.hasOAuthPolicy()
+                );
         return Collections.singletonList(ignore);
     }
 
-    public <T extends MessageSendingResult> CompletableFuture<T> provide(Consumer<CompletableFuture<T>> resultFutureConsumer, Function<Throwable, T> exceptionMapper) {
+    public <T extends MessageSendingResult> CompletableFuture<T> provide(
+            Consumer<CompletableFuture<T>> resultFutureConsumer,
+            Function<Throwable, T> exceptionMapper
+    ) {
         try {
             rateLimiter.acquire();
             CompletableFuture<T> resultFuture = new CompletableFuture<>();
@@ -57,7 +63,10 @@ public class SendFutureProvider {
         }
     }
 
-    private <T extends MessageSendingResult> CompletableFuture<T> whenComplete(CompletableFuture<T> future, Function<Throwable, T> exceptionMapper) {
+    private <T extends MessageSendingResult> CompletableFuture<T> whenComplete(
+            CompletableFuture<T> future,
+            Function<Throwable, T> exceptionMapper
+    ) {
         return future.handle((result, throwable) -> {
             if (throwable != null) {
                 rateLimiter.registerFailedSending();
