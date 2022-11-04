@@ -117,8 +117,8 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldNotRedirectMessage() throws InterruptedException, ExecutionException, TimeoutException {
         // given
-        int numberOfExpectedMessages = 1;
-        int maximumWaitTimeInSeconds = 1;
+        final int numberOfExpectedMessages = 1;
+        final int maximumWaitTimeInSeconds = 1;
         remoteServiceEndpoint.redirectMessage(TEST_MESSAGE_CONTENT);
 
         // when

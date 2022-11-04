@@ -11,7 +11,10 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
-import pl.allegro.tech.hermes.consumers.consumer.sender.*;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.net.URI;

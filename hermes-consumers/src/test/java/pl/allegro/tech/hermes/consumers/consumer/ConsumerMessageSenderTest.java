@@ -28,6 +28,7 @@ import java.time.Clock;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -245,7 +246,8 @@ public class ConsumerMessageSenderTest {
         Subscription subscriptionWithModfiedEndpoint = subscriptionWithEndpoint("http://somewhere:9876");
         MessageSender otherMessageSender = mock(MessageSender.class);
 
-        when(messageSenderFactory.create(eq(subscriptionWithModfiedEndpoint), any(SendFutureProvider.class))).thenReturn(otherMessageSender);
+        when(messageSenderFactory.create(eq(subscriptionWithModfiedEndpoint), any(SendFutureProvider.class)))
+                .thenReturn(otherMessageSender);
         when(otherMessageSender.send(message)).thenReturn(success());
 
         // when
@@ -263,7 +265,8 @@ public class ConsumerMessageSenderTest {
         Subscription subscriptionWithModifiedTimeout = subscriptionWithRequestTimeout(2000);
         MessageSender otherMessageSender = mock(MessageSender.class);
 
-        when(messageSenderFactory.create(eq(subscriptionWithModifiedTimeout), any(SendFutureProvider.class))).thenReturn(otherMessageSender);
+        when(messageSenderFactory.create(eq(subscriptionWithModifiedTimeout), any(SendFutureProvider.class)))
+                .thenReturn(otherMessageSender);
         when(otherMessageSender.send(message)).thenReturn(success());
 
         // when
