@@ -7,7 +7,7 @@ frontend:
   kafka:
     clusters:
       - datacenter: "dc"
-        brokerList: "kafka:9092"
+        brokerList: "kafka:29092"
   graphite:
     host: "graphite"
   metrics:

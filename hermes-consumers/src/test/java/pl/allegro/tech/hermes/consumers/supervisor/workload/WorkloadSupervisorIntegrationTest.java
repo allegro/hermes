@@ -150,7 +150,7 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
     }
 
     private void shutdown(List<WorkloadSupervisor> workloadSupervisors) throws Exception {
-        for (WorkloadSupervisor s: workloadSupervisors) {
+        for (WorkloadSupervisor s : workloadSupervisors) {
             s.shutdown();
         }
     }

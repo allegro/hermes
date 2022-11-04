@@ -1,4 +1,6 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.http;/*
+package pl.allegro.tech.hermes.consumers.consumer.sender.http;
+
+/*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -62,7 +64,7 @@ public class ByteBufferEntityTest {
     }
 
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testIllegalConstructorNullByteArray() throws Exception {
         new ByteBufferEntity(null);
     }

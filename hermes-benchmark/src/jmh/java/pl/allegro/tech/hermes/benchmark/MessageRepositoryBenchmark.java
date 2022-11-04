@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.benchmark;
 
-import com.google.common.io.Files;
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -26,6 +25,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +52,7 @@ public class MessageRepositoryBenchmark {
         Topic topic;
 
         @Setup
-        public void setup() {
+        public void setup() throws IOException {
             message = generateMessage();
             topic = topic("groupName.topic").build();
 
@@ -66,8 +66,9 @@ public class MessageRepositoryBenchmark {
             return new JsonMessage(id, messageContent, System.currentTimeMillis(), "partition-key");
         }
 
-        private File prepareFile() {
-            String baseDir = Files.createTempDir().getAbsolutePath();
+        private File prepareFile() throws IOException {
+
+            String baseDir = Files.createTempDirectory(null).toFile().getAbsolutePath();
             return new File(baseDir, "messages.dat");
         }
     }

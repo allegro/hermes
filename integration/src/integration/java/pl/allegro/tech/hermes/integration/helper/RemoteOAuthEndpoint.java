@@ -10,7 +10,10 @@ import com.github.tomakehurst.wiremock.http.Response;
 import com.google.common.collect.ImmutableMap;
 import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 import static java.lang.String.format;
 

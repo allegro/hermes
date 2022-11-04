@@ -12,10 +12,10 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static java.util.stream.IntStream.range;
@@ -45,7 +45,9 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "topic").withAck(ALL).build());
         operations.createSubscription(topic, "subscription", remoteService.getUrl());
 
-        List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
+        List<String> messages = new ArrayList<String>() {{
+            range(0, 3).forEach(i -> add(TestMessage.random().body()));
+        }};
 
         remoteService.expectMessages(messages);
 
@@ -114,7 +116,9 @@ public class KafkaSingleMessageReaderTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("kafkaPreviewTestGroup", "offsetTestTopic").withAck(ALL).build());
         operations.createSubscription(topic, "subscription", remoteService.getUrl());
-        List<String> messages = new ArrayList<String>() {{ range(0, 3).forEach(i -> add(TestMessage.random().body())); }};
+        List<String> messages = new ArrayList<String>() {{
+            range(0, 3).forEach(i -> add(TestMessage.random().body()));
+        }};
 
         remoteService.expectMessages(messages);
         messages.forEach(message -> publisher.publish(topic.getQualifiedName(), message));
