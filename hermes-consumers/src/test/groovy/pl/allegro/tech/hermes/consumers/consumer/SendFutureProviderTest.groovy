@@ -193,7 +193,7 @@ class SendFutureProviderTest extends Specification {
         !future.get().succeeded()
     }
 
-    def "should report successful sending on service unavailable without retry after"() {
+    def "should report failed sending on service unavailable without retry after"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
             1 * acquire()

@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSenderAdapter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
@@ -88,7 +88,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers);
-            return new SingleMessageSenderAdapter(jettyMessageSender, sendFutureProvider);
+            return new SingleRecipientMessageSenderAdapter(jettyMessageSender, sendFutureProvider);
         }
     }
 

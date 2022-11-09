@@ -14,7 +14,7 @@ import java.util.concurrent.Executors
 
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage
 
-class SingleMessageSenderAdapterTest extends Specification {
+class SingleRecipientMessageSenderAdapterTest extends Specification {
 
     FutureAsyncTimeout futureAsyncTimeout = new FutureAsyncTimeout(Executors.newSingleThreadScheduledExecutor())
 
@@ -53,7 +53,7 @@ class SingleMessageSenderAdapterTest extends Specification {
             1 * registerSuccessfulSending()
         }
         SendFutureProvider futureProvider = futureProvider(consumerRateLimiter)
-        SingleMessageSenderAdapter adapter = new SingleMessageSenderAdapter(successfulMessageSender, futureProvider)
+        SingleRecipientMessageSenderAdapter adapter = new SingleRecipientMessageSenderAdapter(successfulMessageSender, futureProvider)
 
         when:
         CompletableFuture<MessageSendingResult> future = adapter.send(testMessage())
@@ -70,7 +70,7 @@ class SingleMessageSenderAdapterTest extends Specification {
         }
         SendFutureProvider futureProvider = futureProvider(consumerRateLimiter)
 
-        SingleMessageSenderAdapter adapter = new SingleMessageSenderAdapter(failingMessageSender, futureProvider)
+        SingleRecipientMessageSenderAdapter adapter = new SingleRecipientMessageSenderAdapter(failingMessageSender, futureProvider)
 
         when:
         CompletableFuture<MessageSendingResult> future = adapter.send(testMessage())

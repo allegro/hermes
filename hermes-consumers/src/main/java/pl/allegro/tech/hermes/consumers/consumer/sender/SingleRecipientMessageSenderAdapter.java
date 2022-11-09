@@ -6,13 +6,13 @@ import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public class SingleMessageSenderAdapter implements MessageSender {
+public class SingleRecipientMessageSenderAdapter implements MessageSender {
     private final CompletableFutureAwareMessageSender adaptee;
     private final Function<Throwable, MessageSendingResult> exceptionMapper = MessageSendingResult::failedResult;
 
     private final SendFutureProvider sendFutureProvider;
 
-    public SingleMessageSenderAdapter(CompletableFutureAwareMessageSender adaptee, SendFutureProvider sendFutureProvider) {
+    public SingleRecipientMessageSenderAdapter(CompletableFutureAwareMessageSender adaptee, SendFutureProvider sendFutureProvider) {
         this.sendFutureProvider = sendFutureProvider;
         this.adaptee = adaptee;
     }
