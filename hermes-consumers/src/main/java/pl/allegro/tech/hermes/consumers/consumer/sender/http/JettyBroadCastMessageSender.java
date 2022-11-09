@@ -44,10 +44,6 @@ public class JettyBroadCastMessageSender implements MessageSender {
 
     @Override
     public CompletableFuture<MessageSendingResult> send(Message message) {
-        return sendMany(message);
-    }
-
-    public CompletableFuture<MessageSendingResult> sendMany(Message message) {
         try {
             return sendMessage(message).thenApply(MultiMessageSendingResult::new);
         } catch (Exception exception) {
