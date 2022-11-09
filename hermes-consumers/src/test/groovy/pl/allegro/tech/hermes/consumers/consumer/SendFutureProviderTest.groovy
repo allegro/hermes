@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer
 
+import com.google.common.base.Throwables
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter
@@ -215,7 +216,6 @@ class SendFutureProviderTest extends Specification {
         !future.get().succeeded()
     }
 
-    //TODO: clarify requirements: https://github.com/allegro/hermes/blob/master/hermes-consumers/src/test/java/pl/allegro/tech/hermes/consumers/consumer/ConsumerMessageSenderTest.java#L322
     def "should not report failed sending on too many requests without retry after"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
@@ -259,7 +259,7 @@ class SendFutureProviderTest extends Specification {
         then:
         with(future.get()) {
             !succeeded()
-            getFailure() == failWith
+            Throwables.getRootCause(getFailure()) == failWith
         }
     }
 
@@ -284,7 +284,7 @@ class SendFutureProviderTest extends Specification {
         then:
         with(future.get()) {
             !succeeded()
-            getFailure() == failWith
+            Throwables.getRootCause(getFailure()) == failWith
         }
     }
 }

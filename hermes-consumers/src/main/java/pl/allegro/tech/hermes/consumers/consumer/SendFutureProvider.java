@@ -6,8 +6,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -51,19 +49,19 @@ public class SendFutureProvider {
         try {
             rateLimiter.acquire();
             CompletableFuture<T> resultFuture = new CompletableFuture<>();
-            CompletableFuture<T> withTimeout = async.within(
+            resultFutureConsumer.accept(resultFuture);
+            CompletableFuture<T> timeoutGuardedResultFuture = async.within(
                     resultFuture,
                     Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs),
                     exceptionMapper);
-            resultFutureConsumer.accept(withTimeout);
-            return whenComplete(withTimeout, exceptionMapper);
+            return withCompletionHandle(timeoutGuardedResultFuture, exceptionMapper);
         } catch (Exception e) {
             rateLimiter.registerFailedSending();
             return CompletableFuture.completedFuture(exceptionMapper.apply(e));
         }
     }
 
-    private <T extends MessageSendingResult> CompletableFuture<T> whenComplete(
+    private <T extends MessageSendingResult> CompletableFuture<T> withCompletionHandle(
             CompletableFuture<T> future,
             Function<Throwable, T> exceptionMapper
     ) {
