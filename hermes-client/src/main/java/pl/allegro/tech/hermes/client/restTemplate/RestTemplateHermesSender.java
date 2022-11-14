@@ -19,7 +19,9 @@ import static java.util.stream.Collectors.toMap;
 import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
 /**
- * @deprecated as of Hermes 2.1.7, in favor of {@link pl.allegro.tech.hermes.client.webclient.WebClientHermesSender}
+ * RestTemplateHermesSender.
+ *
+ * @deprecated as of Hermes 2.2.1, in favor of {@link pl.allegro.tech.hermes.client.webclient.WebClientHermesSender}
  */
 @Deprecated
 public class RestTemplateHermesSender implements HermesSender {
