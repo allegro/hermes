@@ -161,6 +161,11 @@ public class ConsumerConfiguration {
         return httpClientsFactory.createClientForHttp1("jetty-http-client");
     }
 
+    @Bean(name = "http-batch-client")
+    public HttpClient httpBatchClient(HttpClientsFactory httpClientsFactory, BatchProperties batchProperties) {
+        return httpClientsFactory.createClientForHttp1("jetty-http-batch-client", batchProperties.getHttpClient());
+    }
+
     @Bean(name = "oauth-http-client")
     public HttpClient oauthHttpClient(HttpClientsFactory httpClientsFactory) {
         return httpClientsFactory.createClientForHttp1("jetty-http-oauthclient");

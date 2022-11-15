@@ -26,6 +26,10 @@ public class HttpClientsFactory {
     }
 
     public HttpClient createClientForHttp1(String name) {
+        return createClientForHttp1(name, this.httpClientParameters);
+    }
+
+    public HttpClient createClientForHttp1(String name, HttpClientParameters httpClientParameters) {
         ExecutorService executor = executorFactory.getExecutorService(
                 name,
                 httpClientParameters.getThreadPoolSize(),

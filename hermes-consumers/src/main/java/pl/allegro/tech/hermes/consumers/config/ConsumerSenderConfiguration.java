@@ -21,7 +21,7 @@ import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorService
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
-import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -66,11 +66,14 @@ import javax.jms.Message;
 })
 public class ConsumerSenderConfiguration {
 
-    @Bean
+    @Bean(destroyMethod = "close")
     public MessageBatchSenderFactory httpMessageBatchSenderFactory(SendingResultHandlers resultHandlers,
-                                                                   BatchProperties batchProperties) {
-        return new HttpMessageBatchSenderFactory(resultHandlers, batchProperties.getConnectionTimeout(),
-                batchProperties.getConnectionRequestTimeout());
+                                                                   BatchProperties batchProperties,
+                                                                   @Named("http-batch-client") HttpClient httpClient
+                                                                   ) {
+        return new HttpMessageBatchSenderFactory(
+                resultHandlers,
+                httpClient);
     }
 
     @Bean(destroyMethod = "closeProviders")
