@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
-import java.util.Map;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -31,6 +30,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.ONE_MINUTE;
@@ -95,7 +95,8 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
         consumersLogRepository.logDiscarded(secondDiscarded, secondTimestamp, REASON_MESSAGE);
 
         // then
-        assertThat(fetchLastUndelivered(topic, subscription)).containsExactly(sentMessageTrace(secondDiscarded, secondTimestamp, DISCARDED));
+        assertThat(fetchLastUndelivered(topic, subscription))
+            .containsExactly(sentMessageTrace(secondDiscarded, secondTimestamp, DISCARDED));
     }
 
     @Test

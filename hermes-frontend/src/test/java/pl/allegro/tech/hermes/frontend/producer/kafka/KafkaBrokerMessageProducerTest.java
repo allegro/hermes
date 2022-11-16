@@ -44,7 +44,8 @@ public class KafkaBrokerMessageProducerTest {
     private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
     private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
     private final KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties();
-    private final Producers producers = new Producers(leaderConfirmsProducer, everyoneConfirmProducer, kafkaProducerProperties.isReportNodeMetricsEnabled());
+    private final Producers producers =
+        new Producers(leaderConfirmsProducer, everyoneConfirmProducer, kafkaProducerProperties.isReportNodeMetricsEnabled());
 
     private KafkaBrokerMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
@@ -63,7 +64,8 @@ public class KafkaBrokerMessageProducerTest {
     @Before
     public void before() {
         cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
-        MessageToKafkaProducerRecordConverter messageConverter = new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
+        MessageToKafkaProducerRecordConverter messageConverter =
+            new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
         producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, messageConverter);
     }
 

@@ -7,9 +7,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.config.HermesServerProperties;
 import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
 import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
+import pl.allegro.tech.hermes.frontend.config.HermesServerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.config.SslProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
@@ -17,9 +17,9 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.DefaultTrackingHeaderExtractor;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersExtractor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersExtractor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
@@ -55,7 +55,8 @@ class HermesServerFactory {
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
         Trackers trackers = new Trackers(Collections.emptyList());
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
-        HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache, brokerMessageProducer, rawSchemaClient, trackers, avroMessageContentWrapper);
+        HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache,
+            brokerMessageProducer, rawSchemaClient, trackers, avroMessageContentWrapper);
         SslProperties sslProperties = new SslProperties();
         HermesServerProperties hermesServerProperties = new HermesServerProperties();
         hermesServerProperties.setGracefulShutdownEnabled(false);
@@ -74,7 +75,9 @@ class HermesServerFactory {
         );
     }
 
-    private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter, TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer, RawSchemaClient rawSchemaClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
+    private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,
+        TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
+        RawSchemaClient rawSchemaClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
         HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();

@@ -9,12 +9,12 @@ import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
-
-import java.io.File;
-import java.util.UUID;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
+
+import java.io.File;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -65,8 +65,8 @@ public class ChronicleMapMessageRepositoryTest {
         String messageContent = "hello world";
         Message message1 = generateJsonMessage(messageContent);
         Message message2 = generateJsonMessage(messageContent);
-        String id1 = message1.getId();
-        String id2 = message2.getId();
+        final String id1 = message1.getId();
+        final String id2 = message2.getId();
         String qualifiedName = "groupName.topic";
 
         Topic topic = topic(qualifiedName).build();
@@ -79,7 +79,16 @@ public class ChronicleMapMessageRepositoryTest {
 
         //then
         assertThat(messageRepository.findAll()).contains(
-                new BackupMessage(id1, messageContent.getBytes(), message1.getTimestamp(), qualifiedName, message1.getPartitionKey(), null, null));
+            new BackupMessage(
+                id1,
+                messageContent.getBytes(),
+                message1.getTimestamp(),
+                qualifiedName,
+                message1.getPartitionKey(),
+                null,
+                null
+            )
+        );
 
         //when
         messageRepository.delete(id1);
@@ -87,7 +96,15 @@ public class ChronicleMapMessageRepositoryTest {
         //then
         assertThat(messageRepository.findAll()).hasSize(1);
         assertThat(messageRepository.findAll()).contains(
-                new BackupMessage(id2, messageContent.getBytes(), message2.getTimestamp(), qualifiedName, message2.getPartitionKey(), null, null));
+            new BackupMessage(
+                id2,
+                messageContent.getBytes(),
+                message2.getTimestamp(),
+                qualifiedName,
+                message2.getPartitionKey(),
+                null,
+                null)
+        );
     }
 
     @Test

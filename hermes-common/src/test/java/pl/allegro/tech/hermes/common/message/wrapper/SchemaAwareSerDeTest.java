@@ -20,7 +20,7 @@ public class SchemaAwareSerDeTest {
         byte[] serialized = SchemaAwareSerDe.serialize(id, avro.asBytes());
 
         // then
-        assertThat(serialized).startsWith((byte)0);
+        assertThat(serialized).startsWith((byte) 0);
     }
 
     @Test
@@ -39,7 +39,7 @@ public class SchemaAwareSerDeTest {
     @Test(expectedExceptions = { DeserializationException.class })
     public void shouldThrowExceptionWhenDeserializingWithoutMagicByte() throws IOException {
         // when
-        SchemaAwareSerDe.deserialize(new byte[]{1,2,3});
+        SchemaAwareSerDe.deserialize(new byte[]{1, 2, 3});
 
         // then exception is thrown
     }

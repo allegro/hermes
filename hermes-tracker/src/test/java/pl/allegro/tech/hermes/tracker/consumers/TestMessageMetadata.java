@@ -10,7 +10,7 @@ public class TestMessageMetadata {
         return new MessageMetadata(messageId, offset, partition, 123L, topic, subscription, topic, 123456L, 123456L);
     }
 
-    public static MessageMetadata of(String messageId,String batchId, String topic, String subscription) {
+    public static MessageMetadata of(String messageId, String batchId, String topic, String subscription) {
         return of(messageId, batchId, topic, subscription, 1L, 1);
     }
 

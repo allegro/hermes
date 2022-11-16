@@ -15,7 +15,7 @@ kafka:
       datacenter: dc
       clusterName: primary
       connectionTimeout: 3000
-      bootstrapKafkaServer: kafka:9092
+      bootstrapKafkaServer: kafka:29092
 
 metrics:
   graphiteHttpUri: graphite:8082

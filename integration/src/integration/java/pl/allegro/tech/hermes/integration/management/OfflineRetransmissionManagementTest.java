@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.integration.management;
 
-import java.time.Instant;
-import java.util.List;
-import javax.ws.rs.core.Response;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -13,10 +10,14 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
+import java.time.Instant;
+import java.util.List;
+import javax.ws.rs.core.Response;
+
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class OfflineRetransmissionManagementTest extends IntegrationTest {
-    private final static String GROUP = "pl.allegro.retransmission";
+    private static final String GROUP = "pl.allegro.retransmission";
 
     @BeforeClass
     public void setupClass() {

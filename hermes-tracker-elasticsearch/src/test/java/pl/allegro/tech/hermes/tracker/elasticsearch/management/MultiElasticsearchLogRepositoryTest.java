@@ -1,11 +1,6 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
 import com.codahale.metrics.MetricRegistry;
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.ONE_MINUTE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
-
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -37,6 +32,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Duration.ONE_MINUTE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
+
 
 public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
 
