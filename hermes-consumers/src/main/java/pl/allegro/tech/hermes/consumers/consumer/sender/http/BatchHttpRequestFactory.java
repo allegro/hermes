@@ -8,4 +8,6 @@ import java.net.URI;
 
 public interface BatchHttpRequestFactory {
     Request buildRequest(MessageBatch message, URI uri, HttpRequestHeaders headers, int requestTimeout);
+
+    void stop();
 }

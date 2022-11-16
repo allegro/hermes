@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import org.eclipse.jetty.client.HttpClient;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.DefaultBatchHeadersProvider;
@@ -13,13 +11,13 @@ import static com.google.common.base.Preconditions.checkState;
 public class HttpMessageBatchSenderFactory implements MessageBatchSenderFactory {
 
     private final SendingResultHandlers resultHandlers;
-    private final HttpClient httpClient;
+    private final BatchHttpRequestFactory batchHttpRequestFactory;
 
     public HttpMessageBatchSenderFactory(SendingResultHandlers resultHandlers,
-                                         HttpClient httpClient
+                                         BatchHttpRequestFactory batchHttpRequestFactory
     ) {
         this.resultHandlers = resultHandlers;
-        this.httpClient = started(httpClient);
+        this.batchHttpRequestFactory = batchHttpRequestFactory;
     }
 
 
@@ -29,28 +27,9 @@ public class HttpMessageBatchSenderFactory implements MessageBatchSenderFactory 
 
 
         return new JettyMessageBatchSender(
-                new DefaultBatchHttpRequestFactory(httpClient),
+                batchHttpRequestFactory,
                 new SimpleEndpointAddressResolver(),
                 resultHandlers,
                 new DefaultBatchHeadersProvider());
-    }
-
-    private static HttpClient started(HttpClient httpClient) {
-        try {
-            httpClient.start();
-            return httpClient;
-        } catch (Exception e) {
-            throw new InternalProcessingException("Failed to start http batch sender", e);
-        }
-    }
-
-
-    @Override
-    public void close() {
-        try {
-            httpClient.stop();
-        } catch (Exception e) {
-            throw new InternalProcessingException("Failed to stop http batch sender", e);
-        }
     }
 }

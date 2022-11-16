@@ -21,7 +21,6 @@ import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorService
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -29,6 +28,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderPro
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.BatchHttpRequestFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultBatchHttpRequestFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
@@ -37,6 +38,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlers;
@@ -66,14 +68,19 @@ import javax.jms.Message;
 })
 public class ConsumerSenderConfiguration {
 
-    @Bean(destroyMethod = "close")
+
+    @Bean(destroyMethod = "stop")
+    public BatchHttpRequestFactory batchHttpRequestFactory(@Named("http-batch-client") HttpClient httpClient) {
+        return new DefaultBatchHttpRequestFactory(httpClient);
+    }
+
+    @Bean
     public MessageBatchSenderFactory httpMessageBatchSenderFactory(SendingResultHandlers resultHandlers,
-                                                                   BatchProperties batchProperties,
-                                                                   @Named("http-batch-client") HttpClient httpClient
+                                                                   BatchHttpRequestFactory batchHttpRequestFactory
                                                                    ) {
         return new HttpMessageBatchSenderFactory(
                 resultHandlers,
-                httpClient);
+                batchHttpRequestFactory);
     }
 
     @Bean(destroyMethod = "closeProviders")

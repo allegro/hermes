@@ -27,14 +27,14 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_CO
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SUBSCRIPTION_NAME;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
 
-class JettyMessageBatchSender implements MessageBatchSender {
+public class JettyMessageBatchSender implements MessageBatchSender {
 
     private final BatchHttpRequestFactory requestFactory;
     private final EndpointAddressResolver resolver;
     private final SendingResultHandlers resultHandlers;
     private final BatchHttpHeadersProvider headersProvider;
 
-    JettyMessageBatchSender(BatchHttpRequestFactory requestFactory,
+    public JettyMessageBatchSender(BatchHttpRequestFactory requestFactory,
                                    EndpointAddressResolver resolver,
                                    SendingResultHandlers resultHandlers,
                                    BatchHttpHeadersProvider headersProvider) {
