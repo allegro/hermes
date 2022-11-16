@@ -1,16 +1,15 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression.CompressionCodec;
 
 import java.util.Map;
 
-public class GooglePubSubMetadataCompressionAppender extends GooglePubSubMetadataAppender {
+class GooglePubSubMetadataCompressionAppender extends GooglePubSubMetadataAppender {
 
     public static final String HEADER_NAME_CODEC_NAME = "cn";
     private final String codecHeader;
 
-    public GooglePubSubMetadataCompressionAppender(CompressionCodec codec) {
+    GooglePubSubMetadataCompressionAppender(CompressionCodec codec) {
         this.codecHeader = codec.getHeader();
     }
 

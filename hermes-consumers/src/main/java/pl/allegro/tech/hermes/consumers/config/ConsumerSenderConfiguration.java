@@ -28,7 +28,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageTransformers;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
@@ -177,7 +177,7 @@ public class ConsumerSenderConfiguration {
                                                                      ExecutorProvider executorProvider,
                                                                      RetrySettings retrySettings,
                                                                      BatchingSettings batchingSettings,
-                                                                     GooglePubSubMessageTransformers googlePubSubMessageTransformers,
+                                                                     GooglePubSubMessageTransformerProvider googlePubSubMessageTransformerProvider,
                                                                      TransportChannelProvider transportChannelProvider) {
         return new GooglePubSubMessageSenderProvider(
                 targetResolver,
@@ -186,7 +186,7 @@ public class ConsumerSenderConfiguration {
                 retrySettings,
                 batchingSettings,
                 transportChannelProvider,
-                googlePubSubMessageTransformers
+                googlePubSubMessageTransformerProvider
         );
     }
 

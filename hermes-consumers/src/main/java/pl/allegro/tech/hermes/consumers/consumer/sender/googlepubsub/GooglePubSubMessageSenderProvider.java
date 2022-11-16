@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableSet;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageTransformers;
 
 import java.io.IOException;
 import java.util.Set;
@@ -27,7 +26,7 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
                                              RetrySettings retrySettings,
                                              BatchingSettings batchingSettings,
                                              TransportChannelProvider transportChannelProvider,
-                                             GooglePubSubMessageTransformers messageTransformers) {
+                                             GooglePubSubMessageTransformerProvider messageTransformerProvider) {
 
         this.resolver = resolver;
         this.clientsPool = new GooglePubSubClientsPool(
@@ -35,7 +34,7 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
                 executorProvider,
                 retrySettings,
                 batchingSettings,
-                messageTransformers,
+                messageTransformerProvider,
                 transportChannelProvider
         );
     }

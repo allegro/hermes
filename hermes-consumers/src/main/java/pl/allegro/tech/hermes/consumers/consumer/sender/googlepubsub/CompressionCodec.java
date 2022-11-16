@@ -1,6 +1,6 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
-public enum CompressionCodec {
+enum CompressionCodec {
     DEFLATE("df"),
     BZIP2("bz2"),
     ZSTANDARD("zstd"),
@@ -15,7 +15,7 @@ public enum CompressionCodec {
     CompressionCodec() {
     }
 
-    public String getHeader() {
+    String getHeader() {
         return header;
     }
 }

@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub
 
 import com.google.pubsub.v1.TopicName
 import pl.allegro.tech.hermes.api.EndpointAddress
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression.CompressionCodec
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll

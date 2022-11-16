@@ -8,8 +8,6 @@ import com.google.pubsub.v1.PubsubMessage
 import com.google.pubsub.v1.TopicName
 import io.grpc.Status
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageTransformer
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMetadataAppender
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import spock.lang.Specification
 import spock.lang.Subject
@@ -26,7 +24,7 @@ class GooglePubSubMessageSenderTest extends Specification {
 
     GooglePubSubClientsPool clientsPool = Mock(GooglePubSubClientsPool)
 
-    GooglePubSubClient client = new GooglePubSubClient(publisher, new GooglePubSubMessageTransformer(
+    GooglePubSubClient client = new GooglePubSubClient(publisher, new GooglePubSubMessageTransformerRaw(
             new GooglePubSubMetadataAppender()))
 
     @Subject

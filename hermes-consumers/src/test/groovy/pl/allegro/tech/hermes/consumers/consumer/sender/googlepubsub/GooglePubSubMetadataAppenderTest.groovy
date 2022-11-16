@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub
 
 import com.google.protobuf.ByteString
 import com.google.pubsub.v1.PubsubMessage

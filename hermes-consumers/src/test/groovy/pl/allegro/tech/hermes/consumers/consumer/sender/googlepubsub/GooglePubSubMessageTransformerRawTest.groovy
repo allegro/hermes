@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub
 
 import com.google.protobuf.ByteString
 import com.google.pubsub.v1.PubsubMessage
@@ -10,12 +10,12 @@ import spock.lang.Subject
 
 import java.nio.charset.StandardCharsets
 
-class GooglePubSubMessageTransformerTest extends Specification {
+class GooglePubSubMessageTransformerRawTest extends Specification {
 
     GooglePubSubMetadataAppender metadataAppender = new GooglePubSubMetadataAppender()
 
     @Subject
-    GooglePubSubMessageTransformer pubSubMessages = new GooglePubSubMessageTransformer(metadataAppender)
+    GooglePubSubMessageTransformer pubSubMessages = new GooglePubSubMessageTransformerRaw(metadataAppender)
 
     def 'should convert standard message'() {
         given:

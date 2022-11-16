@@ -11,9 +11,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.threeten.bp.Duration;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageTransformers;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMetadataAppender;
+
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,14 +32,14 @@ public class GooglePubSubConfiguration {
     }
 
     @Bean
-    public GooglePubSubMessageTransformers pubSubMessageTransformers(GooglePubSubMetadataAppender googlePubSubMetadataAppender,
-                                                                     GooglePubSubCompressorProperties compressorProperties) {
-        return new GooglePubSubMessageTransformers(googlePubSubMetadataAppender, compressorProperties);
-    }
+    public GooglePubSubMessageTransformerProvider pubSubMessageTransformers(GooglePubSubCompressorProperties compressorProperties) {
+        GooglePubSubMessageTransformerCreator googlePubSubMessageTransformerCreator =
+                GooglePubSubMessageTransformerCreator.creator()
+                        .withCompressionEnabled(compressorProperties.isEnabled())
+                        .withCompressionLevel(compressorProperties.getCompressionLevel())
+                        .withCompressionThresholdBytes(compressorProperties.getCompressionThresholdBytes());
 
-    @Bean
-    public GooglePubSubMetadataAppender pubSubMetadataAppender() {
-        return new GooglePubSubMetadataAppender();
+        return new GooglePubSubMessageTransformerProvider(googlePubSubMessageTransformerCreator);
     }
 
     @Bean

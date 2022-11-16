@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 import com.google.common.base.Preconditions;
 import com.google.pubsub.v1.TopicName;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.compression.CompressionCodec;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -15,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class GooglePubSubSenderTargetResolver {
 
-    public GooglePubSubSenderTarget resolve(EndpointAddress address) {
+    GooglePubSubSenderTarget resolve(EndpointAddress address) {
         try {
             final URI uri = URI.create(address.getRawEndpoint());
             Preconditions.checkArgument(uri.getScheme().equals("googlepubsub"));

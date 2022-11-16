@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.transformer.GooglePubSubMessageTransformer;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
