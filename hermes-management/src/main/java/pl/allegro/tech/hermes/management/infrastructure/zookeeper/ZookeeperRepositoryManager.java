@@ -61,20 +61,17 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<String, ReadinessRepository> readinessRepositoriesByDc = new HashMap<>();
     private final Map<String, OfflineRetransmissionRepository> offlineRetransmissionRepositoriesByDc = new HashMap<>();
     private final ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
-    private final Integer adminReaperInterval;
 
     public ZookeeperRepositoryManager(ZookeeperClientManager clientManager,
                                       DatacenterNameProvider datacenterNameProvider,
                                       ObjectMapper mapper,
                                       ZookeeperPaths paths,
-                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory,
-                                      Integer adminReaperInterval) {
+                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
         this.datacenterNameProvider = datacenterNameProvider;
         this.mapper = mapper;
         this.paths = paths;
         this.clientManager = clientManager;
         this.zookeeperGroupRepositoryFactory = zookeeperGroupRepositoryFactory;
-        this.adminReaperInterval = adminReaperInterval;
         initRepositoryTypeMap();
     }
 
@@ -115,7 +112,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             UndeliveredMessageLog undeliveredMessageLog = new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
             undeliveredMessageLogsByDc.put(dcName, undeliveredMessageLog);
 
-            AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(), mapper, adminReaperInterval);
+            AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(), mapper);
             adminToolByDc.put(dcName, adminTool);
 
             ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
@@ -124,8 +121,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             ZookeeperOfflineRetransmissionRepository offlineRetransmissionRepository =
                     new ZookeeperOfflineRetransmissionRepository(zookeeper, mapper, paths);
             offlineRetransmissionRepositoriesByDc.put(dcName, offlineRetransmissionRepository);
-
-            adminTool.start();
         }
     }
 
