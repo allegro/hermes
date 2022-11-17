@@ -25,7 +25,7 @@ class HermesMockExtensionTest {
     }
 
     @Test
-    void should_publish_message() {
+    void shouldPublishMessage() {
         // given
         String topic = "first-sample-topic";
         hermes.define().jsonTopic(topic);
@@ -38,7 +38,7 @@ class HermesMockExtensionTest {
     }
 
     @Test
-    void should_inject_hermes_mock(HermesMock hermesMock) {
+    void shouldInjectHermesMock(HermesMock hermesMock) {
         // given
         String topic = "second-sample-topic";
         hermes.define().jsonTopic(topic);

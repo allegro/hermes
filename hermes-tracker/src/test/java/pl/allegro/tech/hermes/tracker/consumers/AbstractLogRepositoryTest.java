@@ -88,7 +88,20 @@ public abstract class AbstractLogRepositoryTest {
         awaitUntilBatchMessageIsPersisted(topic, SUBSCRIPTION, messageId, batchId, SUCCESS);
     }
 
-    protected abstract void awaitUntilMessageIsPersisted(String topic, String subscription, String id, SentMessageTraceStatus status) throws Exception;
+    protected abstract void awaitUntilMessageIsPersisted(
+        String topic,
+        String subscription,
+        String id,
+        SentMessageTraceStatus status
+    )
+        throws Exception;
 
-    protected abstract void awaitUntilBatchMessageIsPersisted(String topic, String subscription, String messageId, String batchId, SentMessageTraceStatus status) throws Exception;
+    protected abstract void awaitUntilBatchMessageIsPersisted(
+        String topic,
+        String subscription,
+        String messageId,
+        String batchId,
+        SentMessageTraceStatus status
+    )
+        throws Exception;
 }

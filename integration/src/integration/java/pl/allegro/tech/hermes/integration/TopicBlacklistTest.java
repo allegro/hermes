@@ -4,8 +4,8 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.ws.rs.core.Response;
 import java.util.Arrays;
+import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -38,9 +38,9 @@ public class TopicBlacklistTest extends IntegrationTest {
     public void shouldAcceptMessageOnUnblacklistedTopic() {
         // given
         Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
-        TestMessage message = TestMessage.of("hello", "world");
         management.blacklist().blacklistTopics(Arrays.asList(topic.getQualifiedName()));
         wait.untilTopicBlacklisted(topic.getQualifiedName());
+        TestMessage message = TestMessage.of("hello", "world");
 
         // when
         management.blacklist().unblacklistTopic(topic.getQualifiedName());

@@ -214,7 +214,9 @@ public class BatchRetryPolicyTest extends IntegrationTest {
     }
 
     private void createSingleMessageBatchSubscription(Topic topic, int messageTtl, int messageBackoff) {
-        operations.createBatchSubscription(topic, subscriptionEndpoint(topic.getName().getName()), messageTtl, messageBackoff, 1, 1, 200, false);
+        operations.createBatchSubscription(
+                topic, subscriptionEndpoint(topic.getName().getName()), messageTtl, messageBackoff, 1, 1, 200, false
+        );
     }
 
     private void createSingleMessageBatchSubscription(Topic topic, boolean retryOnClientErrors) {
@@ -227,7 +229,7 @@ public class BatchRetryPolicyTest extends IntegrationTest {
 
     private String readMessage(String body) {
         try {
-            return mapper.writeValueAsString(((Map)mapper.readValue(body, List.class).get(0)).get("message"));
+            return mapper.writeValueAsString(((Map) mapper.readValue(body, List.class).get(0)).get("message"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

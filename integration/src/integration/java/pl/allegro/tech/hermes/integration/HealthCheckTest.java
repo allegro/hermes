@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.integration;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 
-import javax.ws.rs.client.WebTarget;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.client.WebTarget;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;

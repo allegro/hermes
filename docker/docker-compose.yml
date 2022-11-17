@@ -17,15 +17,14 @@ services:
     image: "confluentinc/cp-kafka:${CONFLUENT_IMAGES_TAG}"
     ports:
       - '9092:9092'
-      - '29092:29092'
     depends_on:
       - zk
     user: root
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zk:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: DOCKER_INTERNAL_LISTENER://kafka:29092,DOCKER_EXTERNAL_LISTENER://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER_INTERNAL_LISTENER:PLAINTEXT,DOCKER_EXTERNAL_LISTENER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER_INTERNAL_LISTENER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     volumes:
       - kafka_data:/var/lib/kafka/data
@@ -45,7 +44,9 @@ services:
       - statsd_data:/opt/statsd
 
   frontend:
-    image: allegro/hermes-frontend
+    build:
+      context: ../
+      dockerfile: ./docker/latest/frontend/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
@@ -54,14 +55,18 @@ services:
       - graphite
 
   consumers:
-    image: allegro/hermes-consumers
+    build:
+      context: ../
+      dockerfile: ./docker/latest/consumers/Dockerfile
     depends_on:
       - zk
       - kafka
       - graphite
 
   management:
-    image: allegro/hermes-management
+    build:
+      context: ../
+      dockerfile: ./docker/latest/management/Dockerfile
     ports:
       - "8090:8090"
     depends_on:

@@ -11,8 +11,8 @@ import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PatchTest {

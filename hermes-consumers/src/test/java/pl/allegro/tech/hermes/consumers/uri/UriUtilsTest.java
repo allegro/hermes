@@ -1,17 +1,18 @@
 package pl.allegro.tech.hermes.consumers.uri;
 
 import org.junit.Test;
+
 import java.net.URI;
 
 import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.appendContext;
+import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractAddressFromUri;
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractContextFromUri;
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractHostFromUri;
-import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractPortFromUri;
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractPasswordFromUri;
+import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractPortFromUri;
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractUserNameFromUri;
-import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractAddressFromUri;
 
 public class UriUtilsTest {
 

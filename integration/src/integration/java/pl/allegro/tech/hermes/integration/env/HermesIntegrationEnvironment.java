@@ -57,7 +57,10 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     static {
         // set properties before any other test initialization
         System.setProperty("zookeeper.sasl.client", "false");
-        System.setProperty("java.security.auth.login.config", HermesIntegrationEnvironment.class.getClassLoader().getResource("kafka_server_jaas.conf").getPath());
+        System.setProperty(
+                "java.security.auth.login.config",
+                HermesIntegrationEnvironment.class.getClassLoader().getResource("kafka_server_jaas.conf").getPath()
+        );
     }
 
     static {
@@ -96,15 +99,23 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             ConsumersStarter consumersStarter = new ConsumersStarter();
             consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED, false);
             consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_CLUSTER_NAME, PRIMARY_KAFKA_CLUSTER_NAME);
-            consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-            consumersStarter.overrideProperty(ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+            consumersStarter.overrideProperty(
+                    ConsumerConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients()
+            );
+            consumersStarter.overrideProperty(
+                    ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString()
+            );
             consumersStarter.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             consumersStarter.overrideProperty(GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEmulator.getEmulatorEndpoint());
             consumersStarter.start();
 
             FrontendStarter frontendStarter = FrontendStarter.withCommonIntegrationTestConfig(FRONTEND_PORT);
-            frontendStarter.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients());
-            frontendStarter.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString());
+            frontendStarter.overrideProperty(
+                    FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterOne.getBootstrapServersForExternalClients()
+            );
+            frontendStarter.overrideProperty(
+                    FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperOne.getConnectionString()
+            );
             frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             frontendStarter.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, true);
             frontendStarter.overrideProperty(FrontendConfigurationProperties.GRAPHITE_PORT, 18023);

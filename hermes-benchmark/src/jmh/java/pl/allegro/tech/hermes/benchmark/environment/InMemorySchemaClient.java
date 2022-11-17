@@ -24,19 +24,19 @@ public class InMemorySchemaClient implements RawSchemaClient {
 
     @Override
     public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version) {
-        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getVersion(), version.value()) ?
-            Optional.of(rawSchemaWithMetadata) : Optional.empty();
+        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getVersion(), version.value())
+                   ? Optional.of(rawSchemaWithMetadata) : Optional.empty();
+    }
+
+    @Override
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
+        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getId(), schemaId.value())
+                   ? Optional.of(rawSchemaWithMetadata) : Optional.empty();
     }
 
     @Override
     public Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic) {
         return schemaTopicName.equals(topic) ? Optional.of(rawSchemaWithMetadata) : Optional.empty();
-    }
-
-    @Override
-    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
-        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getId(), schemaId.value()) ?
-            Optional.of(rawSchemaWithMetadata) : Optional.empty();
     }
 
     @Override

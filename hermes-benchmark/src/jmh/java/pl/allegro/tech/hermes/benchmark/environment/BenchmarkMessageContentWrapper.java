@@ -29,7 +29,8 @@ public class BenchmarkMessageContentWrapper implements MessageContentWrapper {
     }
 
     @Override
-    public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema, Map<String, String> externalMetadata) {
+    public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema,
+        Map<String, String> externalMetadata) {
         byte[] wrapped = avroMessageContentWrapper.wrapContent(data, id, timestamp, schema.getSchema(), externalMetadata);
         return topic.isSchemaIdAwareSerializationEnabled() ? SchemaAwareSerDe.serialize(schema.getId(), wrapped) : wrapped;
     }

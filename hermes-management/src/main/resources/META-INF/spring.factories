@@ -1,3 +1,0 @@
-# Application Listeners
-org.springframework.context.ApplicationListener=\
-pl.allegro.tech.hermes.management.spring.CommandLinePropertiesApplicationListener

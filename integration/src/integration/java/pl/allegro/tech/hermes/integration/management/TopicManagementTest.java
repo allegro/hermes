@@ -18,11 +18,11 @@ import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -158,7 +158,9 @@ public class TopicManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.OK);
         Assertions.assertThat(management.topic().list("removeTopicGroup", false)).isEmpty();
-        Assertions.assertThat(management.blacklist().isTopicBlacklisted("removeTopicGroup.blacklistedTopic")).isEqualTo(BlacklistStatus.NOT_BLACKLISTED);
+        Assertions.assertThat(
+                management.blacklist().isTopicBlacklisted("removeTopicGroup.blacklistedTopic")).isEqualTo(BlacklistStatus.NOT_BLACKLISTED
+        );
     }
 
     @Test
