@@ -105,6 +105,7 @@ public class KafkaContainerCluster implements Startable {
                     .get(CLUSTER_START_TIMEOUT.getSeconds(), SECONDS);
             String readinessScript = readFileFromClasspath("testcontainers/kafka_readiness_check.sh");
             for (KafkaContainer kafkaContainer : brokers) {
+                System.out.printf("Kafka container %s exposed ports: %s%n", kafkaContainer.getContainerId(), kafkaContainer.getAddressForExternalClients());
                 copyScriptToContainer(readinessScript, kafkaContainer, READINESS_CHECK_SCRIPT);
             }
             waitForClusterFormation();
