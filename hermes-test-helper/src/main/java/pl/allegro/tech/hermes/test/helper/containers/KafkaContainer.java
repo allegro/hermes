@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     KafkaContainer(DockerImageName dockerImageName, Network network, int brokerNum) {
         super(dockerImageName);
+        setWaitStrategy(Wait.defaultWaitStrategy().withStartupTimeout(Duration.ofMinutes(5)));
         withNetwork(network);
         withExposedPorts(KAFKA_PORT);
         this.brokerId = new BrokerId(brokerNum);
