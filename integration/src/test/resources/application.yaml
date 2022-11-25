@@ -1,7 +1,7 @@
 owner:
   crowd:
     enabled: true
-    path: http://localhost:18222/crowd
+    path: "http://localhost:${CROWD_SERVICE_PORT}/crowd"
     connect-timeout: 2000
     socket-timeout: 2000
 
@@ -43,10 +43,10 @@ storage:
       connectionString: localhost:14192
 
 auth:
-  oauthServerUrl: http://localhost:19999
+  oauthServerUrl: "http://localhost:${OAUTH_SERVER_PORT}"
 
 metrics:
-  graphiteHttpUri: http://localhost:18089/
+  graphiteHttpUri: "http://localhost:${GRAPHITE_HTTP_SERVER_PORT}/"
 
 graphite:
   client:
@@ -85,7 +85,7 @@ subscription-health:
 audit:
   isLoggingAuditEnabled: false
   isEventAuditEnabled: true
-  eventUrl: "http://localhost:19998/audit-events"
+  eventUrl: "http://localhost:${AUDIT_EVENT_PORT}/audit-events"
 
 group:
   nonAdminCreationEnabled: true

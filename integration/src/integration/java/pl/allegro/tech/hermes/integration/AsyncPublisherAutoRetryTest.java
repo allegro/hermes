@@ -23,7 +23,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.commons.lang3.StringUtils.strip;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AsyncPublisherAutoRetryTest implements EnvironmentAware {
+public class AsyncPublisherAutoRetryTest extends EnvironmentAware {
     static final String TOPICS_ROOT = "/topics/";
     static final String EXISTING_TOPIC = "existing";
     static final String EXISTING_TOPIC_URL = TOPICS_ROOT + EXISTING_TOPIC;

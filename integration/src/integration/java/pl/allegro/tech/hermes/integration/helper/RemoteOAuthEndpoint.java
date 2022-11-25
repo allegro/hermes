@@ -8,7 +8,6 @@ import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.Response;
 import com.google.common.collect.ImmutableMap;
-import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
@@ -17,7 +16,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.google.common.net.UrlEscapers.urlFormParameterEscaper;
 import static java.lang.String.format;
 
-public class RemoteOAuthEndpoint implements EnvironmentAware {
+public class RemoteOAuthEndpoint {
 
     public static final String AUTHORIZATION_PATH = "/authorization/ad";
 

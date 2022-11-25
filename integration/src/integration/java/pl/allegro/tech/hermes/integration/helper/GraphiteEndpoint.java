@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
-public class GraphiteEndpoint implements EnvironmentAware {
+public class GraphiteEndpoint {
 
     private static final String TIMESTAMP = "1396860420";
 

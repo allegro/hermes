@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.common.collect.Iterables;
-import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +13,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
-public class AuditEventEndpoint implements EnvironmentAware {
+public class AuditEventEndpoint {
 
     private static final String AUDIT_EVENT_URL = "/audit-events";
 

@@ -25,8 +25,6 @@ import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertTha
 
 public class CrowdOwnerSourceIntegrationTest extends IntegrationTest {
 
-    private static final int SERVICE_PORT = 18222;
-
     private static final String BASE_API_PATH = "/crowd/rest/usermanagement/1/search";
 
     private String firstTeam = "Scrum A";
@@ -39,8 +37,8 @@ public class CrowdOwnerSourceIntegrationTest extends IntegrationTest {
 
     @BeforeClass
     public void initialize() {
-        wireMock = new WireMock("localhost", SERVICE_PORT);
-        server = new WireMockServer(SERVICE_PORT);
+        wireMock = new WireMock("localhost", CROWD_SERVICE_PORT);
+        server = new WireMockServer(CROWD_SERVICE_PORT);
         server.start();
     }
 

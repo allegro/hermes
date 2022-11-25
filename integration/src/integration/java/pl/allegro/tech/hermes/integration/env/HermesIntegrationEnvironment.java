@@ -34,8 +34,7 @@ import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.G
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 @Listeners({RetryListener.class})
-public class HermesIntegrationEnvironment implements EnvironmentAware {
-
+public class HermesIntegrationEnvironment extends EnvironmentAware{
     private static final Logger logger = LoggerFactory.getLogger(HermesIntegrationEnvironment.class);
 
     private static final Map<Class<?>, Starter<?>> STARTERS = new LinkedHashMap<>();
@@ -56,6 +55,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     static {
         // set properties before any other test initialization
+        System.out.println("Gradle test worker " + System.getProperty("org.gradle.test.worker"));
         System.setProperty("zookeeper.sasl.client", "false");
         System.setProperty(
                 "java.security.auth.login.config",
@@ -118,7 +118,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             );
             frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             frontendStarter.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, true);
-            frontendStarter.overrideProperty(FrontendConfigurationProperties.GRAPHITE_PORT, 18023);
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.GRAPHITE_PORT, GRAPHITE_SERVER_PORT);
             frontendStarter.start();
 
             for (ITestNGMethod method : context.getAllTestMethods()) {

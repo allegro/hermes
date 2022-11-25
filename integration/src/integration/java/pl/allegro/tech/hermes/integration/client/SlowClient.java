@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integration.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -13,10 +14,10 @@ import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class SlowClient {
+public class SlowClient extends EnvironmentAware {
 
     public static final String HOST = "localhost";
-    public static final int PORT = 18080;
+    public static final int PORT = FRONTEND_PORT;
     public static final String MSG_BODY = "{\"field\": \"value\"}";
 
     public static String msgHeadWithContentLenght(String topicName) {

@@ -21,7 +21,7 @@ frontend:
     graphiteReporterEnabled: true
     reportPeriod: 1s
   graphite:
-    port: 18023
+    port: "${GRAPHITE_SERVER_PORT}"
   zookeeper:
     clusters:
       -
