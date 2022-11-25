@@ -92,10 +92,10 @@ task integrationTest(type: Test) {
     int availableProcessors = Runtime.getRuntime().availableProcessors()
 
     if (availableProcessors < 2) {
-        logger.info("Cores detected: 1, will run e2e tests with maxParallelForks=1")
+        println "Cores detected: 1, will run e2e tests with maxParallelForks=1"
         maxParallelForks = 1
     } else {
-        logger.info("Cores dected: {}, will run e2e tests with maxParallelForks=2", availableProcessors)
+        println "Cores dected: ${availableProcessors}, will run e2e tests with maxParallelForks=2"
         maxParallelForks = 2
     }
 
