@@ -11,18 +11,23 @@ import java.nio.charset.StandardCharsets
 
 class GooglePubSubMessageTransformerCompressionTest extends Specification {
 
+    def rawTransformer = new GooglePubSubMessageTransformerRaw(new GooglePubSubMetadataAppender())
+
     @Unroll
     def 'should compress PubSub message'() {
         given:
+        def alwaysCompressThresholdBytes = 1
         def compressor = new MessageCompressor(CompressionCodecFactory.of(codec, compressionLevel))
-
-        def pubSubMessagesWithCompression = new GooglePubSubMessageTransformerCompression(
-                new GooglePubSubMetadataCompressionAppender(codec), compressor)
-
+        def transformerUnderTest = new GooglePubSubMessageTransformerCompression(
+                alwaysCompressThresholdBytes,
+                rawTransformer,
+                new GooglePubSubMetadataCompressionAppender(codec),
+                compressor
+        )
         def msg = MessageBuilder.testMessage()
 
         when:
-        PubsubMessage pubsubMessage = pubSubMessagesWithCompression.fromHermesMessage(msg)
+        PubsubMessage pubsubMessage = transformerUnderTest.fromHermesMessage(msg)
         Map<String, String> attributes = pubsubMessage.getAttributesMap()
 
         then:
@@ -44,17 +49,48 @@ class GooglePubSubMessageTransformerCompressionTest extends Specification {
 
     def 'should throw exception on compression error'() {
         given:
-        def compressorStub = Stub(MessageCompressor)
-        compressorStub.compress(_ as byte[]) >> {
+        def failingCompressorStub = Stub(MessageCompressor)
+        failingCompressorStub.compress(_ as byte[]) >> {
             throw new IOException("compressor test exception")
         }
+        def alwaysCompressThresholdBytes = 1
         def pubSubMessagesWithCompression = new GooglePubSubMessageTransformerCompression(
-                new GooglePubSubMetadataCompressionAppender(CompressionCodec.EMPTY), compressorStub)
+                alwaysCompressThresholdBytes,
+                rawTransformer,
+                new GooglePubSubMetadataCompressionAppender(CompressionCodec.BZIP2),
+                failingCompressorStub
+        )
 
         when:
         pubSubMessagesWithCompression.fromHermesMessage(MessageBuilder.testMessage())
 
         then:
         thrown(GooglePubSubMessageCompressionException)
+    }
+
+    @Unroll
+    def 'should compress or not according to message size'() {
+        given:
+        def compressor = new MessageCompressor(CompressionCodecFactory
+                .of(CompressionCodec.BZIP2, CompressionCodecFactory.CompressionLevel.MEDIUM))
+        def transformerUnderTest = new GooglePubSubMessageTransformerCompression(
+                compressionThresholdBytes,
+                rawTransformer,
+                new GooglePubSubMetadataCompressionAppender(CompressionCodec.BZIP2),
+                compressor
+        )
+        def msg = MessageBuilder.testMessage()
+
+        when:
+        PubsubMessage pubsubMessage = transformerUnderTest.fromHermesMessage(msg)
+        Map<String, String> attributes = pubsubMessage.getAttributesMap()
+
+        then:
+        assert (attributes["cn"] != null) == shouldCompress
+
+        where:
+        compressionThresholdBytes || shouldCompress
+        1                         || true
+        1000                      || false
     }
 }

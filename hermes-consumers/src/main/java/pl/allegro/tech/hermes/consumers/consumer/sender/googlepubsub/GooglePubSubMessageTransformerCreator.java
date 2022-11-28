@@ -45,24 +45,27 @@ public class GooglePubSubMessageTransformerCreator {
         return this;
     }
 
-    GooglePubSubMessageTransformer rawTransformer() {
+    GooglePubSubMessageTransformer getTransformerForTargetEndpoint(GooglePubSubSenderTarget pubSubTarget) {
+        if (this.compressionEnabled && pubSubTarget.isCompressionRequested()) {
+            Optional<GooglePubSubMessageTransformer> compressingTransformer =
+                    transformerForCodec(pubSubTarget.getCompressionCodec());
+            if (compressingTransformer.isPresent()) {
+                return compressingTransformer.get();
+            } else {
+                logger.warn("Unsupported codec, switching to raw transfer for {}.", pubSubTarget.getTopicName());
+            }
+        }
         return this.messageRawTransformer;
     }
 
-    Optional<GooglePubSubMessageTransformer> transformerForCodec(CompressionCodec codec) {
-        if (this.compressionEnabled) {
-            return Optional.ofNullable(CompressionCodecFactory.of(codec, compressionLevel))
-                    .map(codecFactory ->
-                            new GooglePubSubMessageTransformerCompression(
-                                    new GooglePubSubMetadataCompressionAppender(codec),
-                                    new MessageCompressor(codecFactory)))
-                    .map(compressionTransformer ->
-                            new GooglePubSubMessageTransformerOptionalCompression(
-                                    compressionThresholdBytes,
-                                    messageRawTransformer,
-                                    compressionTransformer));
-        } else {
-            return Optional.empty();
-        }
+    private Optional<GooglePubSubMessageTransformer> transformerForCodec(CompressionCodec codec) {
+        return Optional.ofNullable(codec)
+                .map(it -> CompressionCodecFactory.of(it, compressionLevel))
+                .map(codecFactory ->
+                        new GooglePubSubMessageTransformerCompression(
+                                this.compressionThresholdBytes,
+                                this.messageRawTransformer,
+                                new GooglePubSubMetadataCompressionAppender(codec),
+                                new MessageCompressor(codecFactory)));
     }
 }

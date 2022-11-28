@@ -27,7 +27,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
@@ -178,7 +178,7 @@ public class ConsumerSenderConfiguration {
             ExecutorProvider executorProvider,
             RetrySettings retrySettings,
             BatchingSettings batchingSettings,
-            GooglePubSubMessageTransformerProvider googlePubSubMessageTransformerProvider,
+            GooglePubSubMessageTransformerCreator googlePubSubMessageTransformerCreator,
             TransportChannelProvider transportChannelProvider) {
         return new GooglePubSubMessageSenderProvider(
                 targetResolver,
@@ -187,7 +187,7 @@ public class ConsumerSenderConfiguration {
                 retrySettings,
                 batchingSettings,
                 transportChannelProvider,
-                googlePubSubMessageTransformerProvider
+                googlePubSubMessageTransformerCreator
         );
     }
 

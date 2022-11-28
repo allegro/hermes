@@ -20,12 +20,12 @@ class GooglePubSubClientsPoolTest extends Specification {
                                          ExecutorProvider publishingExecutorProvider,
                                          RetrySettings retrySettings,
                                          BatchingSettings batchingSettings,
-                                         GooglePubSubMessageTransformerProvider messageTransformerProvider,
+                                         GooglePubSubMessageTransformerCreator messageTransformerCreator,
                                          TransportChannelProvider transportChannelProvider,
                                          Publisher publisher,
                                          GooglePubSubMessageTransformer messageTransformer) {
             super(credentialsProvider, publishingExecutorProvider, retrySettings, batchingSettings,
-                    messageTransformerProvider, transportChannelProvider)
+                    messageTransformerCreator, transportChannelProvider)
             this.publisher = publisher
             this.messageTransformer = messageTransformer
         }
@@ -42,7 +42,7 @@ class GooglePubSubClientsPoolTest extends Specification {
         def pubSubEndpoint = "https://pubsub.endpoint"
 
         def poolUnderTest = new GooglePubSubClientsPoolUnderTest(Stub(CredentialsProvider), Stub(ExecutorProvider),
-                Stub(RetrySettings), Stub(BatchingSettings), Stub(GooglePubSubMessageTransformerProvider),
+                Stub(RetrySettings), Stub(BatchingSettings), Stub(GooglePubSubMessageTransformerCreator),
                 Stub(TransportChannelProvider), Stub(Publisher), Stub(GooglePubSubMessageTransformer))
 
         def targetWithCodec = GooglePubSubSenderTarget.builder()

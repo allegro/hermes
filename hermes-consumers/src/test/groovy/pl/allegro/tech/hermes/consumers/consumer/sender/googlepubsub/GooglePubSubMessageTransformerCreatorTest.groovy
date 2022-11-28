@@ -4,7 +4,7 @@ import com.google.pubsub.v1.TopicName
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class GooglePubSubMessageTransformerProviderTest extends Specification {
+class GooglePubSubMessageTransformerCreatorTest extends Specification {
 
     @Unroll
     def 'should create message transformer according to Hermes and subscription settings'() {
@@ -18,22 +18,21 @@ class GooglePubSubMessageTransformerProviderTest extends Specification {
                 .withTopicName(TopicName.newBuilder().setProject("project").setTopic("topic").build())
                 .withPubSubEndpoint("pubsub.endpoint")
                 .withCompressionCodec(codec)
-                .build();
-
-        def transformers = new GooglePubSubMessageTransformerProvider(creator)
+                .build()
 
         when:
-        def transformer = transformers.getTransformerForTargetEndpoint(target)
+        def transformer = creator.getTransformerForTargetEndpoint(target)
 
         then:
-        transformer instanceof GooglePubSubMessageTransformerOptionalCompression == shouldCompress
+        transformer instanceof GooglePubSubMessageTransformerCompression == shouldCompress
         transformer instanceof GooglePubSubMessageTransformerRaw != shouldCompress
 
         where:
-        codec                  | compressionEnabled | shouldCompress
-        CompressionCodec.BZIP2 | true               | true
-        CompressionCodec.EMPTY | true               | false
-        CompressionCodec.BZIP2 | false              | false
-        CompressionCodec.EMPTY | false              | false
+        codec                  | compressionEnabled || shouldCompress
+        CompressionCodec.BZIP2 | true               || true
+        CompressionCodec.EMPTY | true               || false
+        CompressionCodec.BZIP2 | false              || false
+        CompressionCodec.EMPTY | false              || false
+        null                   | true               || false
     }
 }

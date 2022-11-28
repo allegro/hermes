@@ -9,17 +9,33 @@ import java.io.IOException;
 
 class GooglePubSubMessageTransformerCompression implements GooglePubSubMessageTransformer {
 
-    private final MetadataAppender<PubsubMessage> metadataAppender;
     private final MessageCompressor compressor;
+    private final Long compressionThresholdBytes;
+    private final GooglePubSubMessageTransformerRaw rawTransformer;
+    private final MetadataAppender<PubsubMessage> metadataAppender;
 
-    GooglePubSubMessageTransformerCompression(GooglePubSubMetadataCompressionAppender metadataAppender,
-                                              MessageCompressor compressor) {
-        this.metadataAppender = metadataAppender;
+    GooglePubSubMessageTransformerCompression(
+            Long compressionThresholdBytes,
+            GooglePubSubMessageTransformerRaw rawTransformer,
+            MetadataAppender<PubsubMessage> metadataAppender,
+            MessageCompressor compressor) {
         this.compressor = compressor;
+        this.compressionThresholdBytes = compressionThresholdBytes;
+        this.rawTransformer = rawTransformer;
+        this.metadataAppender = metadataAppender;
     }
 
     @Override
     public PubsubMessage fromHermesMessage(Message message) {
+        byte[] data = message.getData();
+        if (data.length > compressionThresholdBytes) {
+            return compressHermesMessage(message);
+        } else {
+            return rawTransformer.fromHermesMessage(message);
+        }
+    }
+
+    private PubsubMessage compressHermesMessage(Message message) {
         try {
             final PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
                     .setData(ByteString.copyFrom(

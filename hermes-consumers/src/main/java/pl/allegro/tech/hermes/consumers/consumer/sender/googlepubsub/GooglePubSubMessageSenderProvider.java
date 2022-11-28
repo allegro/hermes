@@ -26,7 +26,7 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
                                              RetrySettings retrySettings,
                                              BatchingSettings batchingSettings,
                                              TransportChannelProvider transportChannelProvider,
-                                             GooglePubSubMessageTransformerProvider messageTransformerProvider) {
+                                             GooglePubSubMessageTransformerCreator messageTransformerCreator) {
 
         this.resolver = resolver;
         this.clientsPool = new GooglePubSubClientsPool(
@@ -34,7 +34,7 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
                 executorProvider,
                 retrySettings,
                 batchingSettings,
-                messageTransformerProvider,
+                messageTransformerCreator,
                 transportChannelProvider
         );
     }
