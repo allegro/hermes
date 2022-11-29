@@ -40,4 +40,9 @@ public class Meters {
 
     public static final String OAUTH_SUBSCRIPTION_TOKEN_REQUEST = "oauth.subscription." + GROUP + "." + TOPIC + "." + SUBSCRIPTION
             + ".token-request." + OAUTH_PROVIDER_NAME;
+
+    public static final String PERSISTED_UNDELIVERED_MESSAGES_METER = "undelivered-messages.persisted";
+    public static final String SHARED_COUNTERS_INCREMENTS = "shared-counters.increments";
+    public static final String SHARED_COUNTERS_OPTIMISTIC_INCREMENT_METER = SHARED_COUNTERS_INCREMENTS + ".optimistic";
+    public static final String SHARED_COUNTERS_PESSIMISTIC_INCREMENT_METER = SHARED_COUNTERS_INCREMENTS + ".pessimistic";
 }

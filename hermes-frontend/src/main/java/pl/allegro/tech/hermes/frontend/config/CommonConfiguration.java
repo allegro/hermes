@@ -157,8 +157,9 @@ public class CommonConfiguration {
     @Bean
     public UndeliveredMessageLog undeliveredMessageLog(CuratorFramework zookeeper,
                                                        ZookeeperPaths paths,
-                                                       ObjectMapper mapper) {
-        return new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
+                                                       ObjectMapper mapper,
+                                                       HermesMetrics hermesMetrics) {
+        return new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper, hermesMetrics);
     }
 
     @Bean
@@ -309,12 +310,14 @@ public class CommonConfiguration {
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
                                        ZookeeperClustersProperties zookeeperClustersProperties,
                                        MetricsProperties metricsProperties,
-                                       DatacenterNameProvider datacenterNameProvider) {
+                                       DatacenterNameProvider datacenterNameProvider,
+                                       HermesMetrics metrics) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new SharedCounter(zookeeper,
                 metricsProperties.getCounterExpireAfterAccess(),
                 zookeeperProperties.getBaseSleepTime(),
-                zookeeperProperties.getMaxRetries()
+                zookeeperProperties.getMaxRetries(),
+                metrics
         );
     }
 
