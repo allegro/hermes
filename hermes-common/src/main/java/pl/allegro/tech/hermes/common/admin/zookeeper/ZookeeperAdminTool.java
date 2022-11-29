@@ -2,11 +2,9 @@ package pl.allegro.tech.hermes.common.admin.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.locks.Reaper;
 import org.apache.zookeeper.CreateMode;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.AdminTool;
-import pl.allegro.tech.hermes.common.admin.AdminToolStartupException;
 import pl.allegro.tech.hermes.common.exception.RetransmissionException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
@@ -17,22 +15,12 @@ public class ZookeeperAdminTool implements AdminTool {
     private final ZookeeperPaths zookeeperPaths;
     private final CuratorFramework curatorFramework;
     private final ObjectMapper objectMapper;
-    private final Reaper reaper;
 
     public ZookeeperAdminTool(ZookeeperPaths zookeeperPaths, CuratorFramework curatorFramework,
-                              ObjectMapper objectMapper, int reapingInterval) {
+                              ObjectMapper objectMapper) {
         this.zookeeperPaths = zookeeperPaths;
         this.curatorFramework = curatorFramework;
         this.objectMapper = objectMapper;
-        this.reaper = new Reaper(curatorFramework, reapingInterval);
-    }
-
-    public void start() throws AdminToolStartupException {
-        try {
-            this.reaper.start();
-        } catch (Exception ex) {
-            throw new AdminToolStartupException(ex);
-        }
     }
 
     @Override
@@ -47,10 +35,8 @@ public class ZookeeperAdminTool implements AdminTool {
     private void executeAdminOperation(SubscriptionName subscriptionName, String name) throws Exception {
         String path = zookeeperPaths.adminOperationPath(name);
 
-        String createdPath = curatorFramework.create()
+        curatorFramework.create()
                 .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
                 .forPath(path, objectMapper.writeValueAsBytes(subscriptionName));
-
-        reaper.addPath(createdPath);
     }
 }
