@@ -24,7 +24,7 @@ class GooglePubSubMessageSenderTest extends Specification {
 
     GooglePubSubClientsPool clientsPool = Mock(GooglePubSubClientsPool)
 
-    GooglePubSubClient client = new GooglePubSubClient(publisher, new GooglePubSubMessages(
+    GooglePubSubClient client = new GooglePubSubClient(publisher, new GooglePubSubMessageTransformerRaw(
             new GooglePubSubMetadataAppender()))
 
     @Subject

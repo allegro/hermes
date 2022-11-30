@@ -11,8 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.threeten.bp.Duration;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMetadataAppender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
 
 import java.util.concurrent.Executors;
@@ -21,7 +20,7 @@ import javax.inject.Named;
 
 @Configuration
 @EnableConfigurationProperties({
-        GooglePubSubSenderProperties.class
+        GooglePubSubSenderProperties.class, GooglePubSubCompressorProperties.class
 })
 public class GooglePubSubConfiguration {
 
@@ -31,13 +30,11 @@ public class GooglePubSubConfiguration {
     }
 
     @Bean
-    public GooglePubSubMessages pubSubMessages(GooglePubSubMetadataAppender googlePubSubMetadataAppender) {
-        return new GooglePubSubMessages(googlePubSubMetadataAppender);
-    }
-
-    @Bean
-    public GooglePubSubMetadataAppender pubSubMetadataAppender() {
-        return new GooglePubSubMetadataAppender();
+    public GooglePubSubMessageTransformerCreator messageTransformerCreator(GooglePubSubCompressorProperties compressorProperties) {
+        return GooglePubSubMessageTransformerCreator.creator()
+                .withCompressionEnabled(compressorProperties.isEnabled())
+                .withCompressionLevel(compressorProperties.getCompressionLevel())
+                .withCompressionThresholdBytes(compressorProperties.getCompressionThresholdBytes());
     }
 
     @Bean

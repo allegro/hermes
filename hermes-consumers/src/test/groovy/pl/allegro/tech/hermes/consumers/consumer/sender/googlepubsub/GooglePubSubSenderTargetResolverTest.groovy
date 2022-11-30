@@ -11,9 +11,10 @@ class GooglePubSubSenderTargetResolverTest extends Specification {
     @Subject
     GooglePubSubSenderTargetResolver resolver = new GooglePubSubSenderTargetResolver()
 
+    @Unroll
     def 'should resolve endpoint address'() {
         given:
-        EndpointAddress endpointAddress = new EndpointAddress("googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic")
+        EndpointAddress endpointAddress = new EndpointAddress(endpointAddressUri)
 
         when:
         GooglePubSubSenderTarget senderTarget = resolver.resolve(endpointAddress)
@@ -21,6 +22,17 @@ class GooglePubSubSenderTargetResolverTest extends Specification {
         then:
         senderTarget.pubSubEndpoint == "pubsub.googleapis.com:443"
         senderTarget.topicName == TopicName.of("test-project", "test-topic")
+        senderTarget.getCompressionCodec() == expectedCodec
+
+        where:
+        endpointAddressUri                                                                                       | expectedCodec
+        "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic"                       | CompressionCodec.EMPTY
+        "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic?"                      | CompressionCodec.EMPTY
+        "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic?compression"           | CompressionCodec.EMPTY
+        "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic?compression="          | CompressionCodec.EMPTY
+        "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic?compression=bzip2"     | CompressionCodec.BZIP2
+        "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic?compression=deflate"   | CompressionCodec.DEFLATE
+        "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic?compression=zstandard" | CompressionCodec.ZSTANDARD
     }
 
     @Unroll
@@ -43,7 +55,8 @@ class GooglePubSubSenderTargetResolverTest extends Specification {
                 "projects/test-project/topics/test-topic",
                 "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topic/test-topic",
                 "googlepubsub://pubsub.googleapis.com:443/project/test-project/topics/test-topic",
-                "test-topic"
+                "test-topic",
+                "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic?compression=unsupported"
         ]
     }
 }
