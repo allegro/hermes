@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
-import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
+import pl.allegro.tech.hermes.consumers.consumer.RateLimitingMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter;
@@ -67,7 +67,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     @Override
-    public MessageSender create(Subscription subscription, SendFutureProvider sendFutureProvider) {
+    public MessageSender create(Subscription subscription, RateLimitingMessageSender rateLimitingMessageSender) {
         EndpointAddress endpoint = subscription.getEndpoint();
         EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
         ResolvableEndpointAddress resolvableEndpoint =
@@ -81,14 +81,14 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers,
-                    sendFutureProvider);
+                    rateLimitingMessageSender);
         } else {
             JettyMessageSender jettyMessageSender =  new JettyMessageSender(
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers);
-            return new SingleRecipientMessageSenderAdapter(jettyMessageSender, sendFutureProvider);
+            return new SingleRecipientMessageSenderAdapter(jettyMessageSender, rateLimitingMessageSender);
         }
     }
 

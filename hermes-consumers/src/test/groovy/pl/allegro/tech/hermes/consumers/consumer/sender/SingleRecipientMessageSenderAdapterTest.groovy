@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.consumers.consumer.Message
-import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider
+import pl.allegro.tech.hermes.consumers.consumer.RateLimitingMessageSender
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout
 import spock.lang.Specification
@@ -34,10 +34,10 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
         void stop() {}
     }
 
-    SendFutureProvider futureProvider(ConsumerRateLimiter consumerRateLimiter) {
+    RateLimitingMessageSender rateLimitingMessageSender(ConsumerRateLimiter consumerRateLimiter) {
         Subscription subscription = subscription(SubscriptionName.fromString("group.topic\$subscription")).build()
 
-        return new SendFutureProvider(
+        return new RateLimitingMessageSender(
                 consumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -52,8 +52,8 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
             1 * acquire()
             1 * registerSuccessfulSending()
         }
-        SendFutureProvider futureProvider = futureProvider(consumerRateLimiter)
-        SingleRecipientMessageSenderAdapter adapter = new SingleRecipientMessageSenderAdapter(successfulMessageSender, futureProvider)
+        RateLimitingMessageSender rateLimitingMessageSender = rateLimitingMessageSender(consumerRateLimiter)
+        SingleRecipientMessageSenderAdapter adapter = new SingleRecipientMessageSenderAdapter(successfulMessageSender, rateLimitingMessageSender)
 
         when:
         CompletableFuture<MessageSendingResult> future = adapter.send(testMessage())
@@ -68,9 +68,9 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
             1 * acquire()
             1 * registerFailedSending()
         }
-        SendFutureProvider futureProvider = futureProvider(consumerRateLimiter)
+        RateLimitingMessageSender rateLimitingMessageSender = rateLimitingMessageSender(consumerRateLimiter)
 
-        SingleRecipientMessageSenderAdapter adapter = new SingleRecipientMessageSenderAdapter(failingMessageSender, futureProvider)
+        SingleRecipientMessageSenderAdapter adapter = new SingleRecipientMessageSenderAdapter(failingMessageSender, rateLimitingMessageSender)
 
         when:
         CompletableFuture<MessageSendingResult> future = adapter.send(testMessage())

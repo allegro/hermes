@@ -13,19 +13,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-// provides futures which are rate limited and completed exceptionally after given timeout
-public class SendFutureProvider {
+public class RateLimitingMessageSender {
     private final ConsumerRateLimiter rateLimiter;
     private final List<Predicate<MessageSendingResult>> ignore;
     private final FutureAsyncTimeout async;
     private final int requestTimeoutMs;
     private final int asyncTimeoutMs;
 
-    public SendFutureProvider(ConsumerRateLimiter rateLimiter,
-                              Subscription subscription,
-                              FutureAsyncTimeout async,
-                              int requestTimeoutMs,
-                              int asyncTimeoutMs) {
+    public RateLimitingMessageSender(ConsumerRateLimiter rateLimiter,
+                                     Subscription subscription,
+                                     FutureAsyncTimeout async,
+                                     int requestTimeoutMs,
+                                     int asyncTimeoutMs) {
         this.rateLimiter = rateLimiter;
         this.ignore = ignorableErrors(subscription);
         this.async = async;
@@ -42,7 +41,7 @@ public class SendFutureProvider {
         return Collections.singletonList(ignore);
     }
 
-    public <T extends MessageSendingResult> CompletableFuture<T> provide(
+    public <T extends MessageSendingResult> CompletableFuture<T> send(
             Consumer<CompletableFuture<T>> resultFutureConsumer,
             Function<Throwable, T> exceptionMapper
     ) {
@@ -87,6 +86,5 @@ public class SendFutureProvider {
             rateLimiter.registerFailedSending();
         }
     }
-
 
 }

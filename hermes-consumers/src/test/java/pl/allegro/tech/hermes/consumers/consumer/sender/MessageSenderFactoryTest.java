@@ -8,7 +8,7 @@ import org.mockito.Mockito;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
-import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
+import pl.allegro.tech.hermes.consumers.consumer.RateLimitingMessageSender;
 
 import java.util.Set;
 
@@ -19,7 +19,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 public class MessageSenderFactoryTest {
 
     private final MessageSender referenceMessageSender = Mockito.mock(MessageSender.class);
-    private final SendFutureProvider sendFutureProvider = Mockito.mock(SendFutureProvider.class);
+    private final RateLimitingMessageSender rateLimitingMessageSender = Mockito.mock(RateLimitingMessageSender.class);
 
     @Test
     public void shouldCreateCustomProtocolMessageSender() {
@@ -31,7 +31,7 @@ public class MessageSenderFactoryTest {
         );
 
         // when
-        MessageSender sender = factory.create(subscription, sendFutureProvider);
+        MessageSender sender = factory.create(subscription, rateLimitingMessageSender);
 
         // then
         assertThat(sender).isEqualTo(referenceMessageSender);
@@ -44,7 +44,7 @@ public class MessageSenderFactoryTest {
         Subscription subscription = subscription("group.topic", "subscription", "unknown://localhost:8080/test").build();
 
         // when
-        catchException(factory).create(subscription, sendFutureProvider);
+        catchException(factory).create(subscription, rateLimitingMessageSender);
 
         // then
         assertThat(CatchException.<EndpointProtocolNotSupportedException>caughtException())
@@ -54,7 +54,7 @@ public class MessageSenderFactoryTest {
     private ProtocolMessageSenderProvider protocolMessageSenderProviderReturning(Object createdMessageSender, String protocol) {
         return new ProtocolMessageSenderProvider() {
             @Override
-            public MessageSender create(Subscription endpoint, SendFutureProvider sendFutureProvider) {
+            public MessageSender create(Subscription endpoint, RateLimitingMessageSender rateLimitingMessageSender) {
                 return (MessageSender) createdMessageSender;
             }
 

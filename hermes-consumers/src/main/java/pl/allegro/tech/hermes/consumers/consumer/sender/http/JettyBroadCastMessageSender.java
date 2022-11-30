@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 import com.google.common.collect.ImmutableList;
 import org.eclipse.jetty.client.api.Request;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
+import pl.allegro.tech.hermes.consumers.consumer.RateLimitingMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult;
@@ -27,19 +27,19 @@ public class JettyBroadCastMessageSender implements MessageSender {
     private final HttpHeadersProvider requestHeadersProvider;
     private final SendingResultHandlers sendingResultHandlers;
     private final Function<Throwable, SingleMessageSendingResult> exceptionMapper = MessageSendingResult::failedResult;
-    private final SendFutureProvider sendFutureProvider;
+    private final RateLimitingMessageSender rateLimitingMessageSender;
 
     public JettyBroadCastMessageSender(HttpRequestFactory requestFactory,
                                        ResolvableEndpointAddress endpoint,
                                        HttpHeadersProvider requestHeadersProvider,
                                        SendingResultHandlers sendingResultHandlers,
-                                       SendFutureProvider sendFutureProvider
+                                       RateLimitingMessageSender rateLimitingMessageSender
     ) {
         this.requestFactory = requestFactory;
         this.endpoint = endpoint;
         this.requestHeadersProvider = requestHeadersProvider;
         this.sendingResultHandlers = sendingResultHandlers;
-        this.sendFutureProvider = sendFutureProvider;
+        this.rateLimitingMessageSender = rateLimitingMessageSender;
     }
 
     @Override
@@ -89,7 +89,7 @@ public class JettyBroadCastMessageSender implements MessageSender {
     }
 
     private CompletableFuture<SingleMessageSendingResult> processResponse(Request request) {
-        return sendFutureProvider.provide(
+        return rateLimitingMessageSender.send(
                 resultFuture -> request.send(sendingResultHandlers.handleSendingResultForBroadcast(resultFuture)),
                 exceptionMapper);
 

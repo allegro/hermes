@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.consumers.consumer.SendFutureProvider;
+import pl.allegro.tech.hermes.consumers.consumer.RateLimitingMessageSender;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,14 +22,14 @@ public class MessageSenderFactory {
         }
     }
 
-    public MessageSender create(Subscription subscription, SendFutureProvider sendFutureProvider) {
+    public MessageSender create(Subscription subscription, RateLimitingMessageSender rateLimitingMessageSender) {
         EndpointAddress endpoint = subscription.getEndpoint();
 
         ProtocolMessageSenderProvider provider = protocolProviders.get(endpoint.getProtocol());
         if (provider == null) {
             throw new EndpointProtocolNotSupportedException(endpoint);
         }
-        return provider.create(subscription, sendFutureProvider);
+        return provider.create(subscription, rateLimitingMessageSender);
     }
 
     private void addSupportedProtocol(String protocol, ProtocolMessageSenderProvider provider) {

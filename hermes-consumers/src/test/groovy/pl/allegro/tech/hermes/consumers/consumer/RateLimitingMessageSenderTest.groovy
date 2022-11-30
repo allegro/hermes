@@ -20,7 +20,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
 
-class SendFutureProviderTest extends Specification {
+class RateLimitingMessageSenderTest extends Specification {
 
     Consumer<CompletableFuture<MessageSendingResult>> successfulConsumer() {
         return { cf -> return cf.complete(MessageSendingResult.succeededResult())
@@ -66,7 +66,7 @@ class SendFutureProviderTest extends Specification {
             1 * acquire()
             1 * registerSuccessfulSending()
         }
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -75,7 +75,7 @@ class SendFutureProviderTest extends Specification {
         )
 
         when:
-        CompletableFuture future = futureProvider.provide(successfulConsumer(), exceptionMapper)
+        CompletableFuture future = rateLimitingMessageSender.send(successfulConsumer(), exceptionMapper)
 
         then:
         future.get().succeeded()
@@ -87,7 +87,7 @@ class SendFutureProviderTest extends Specification {
             1 * acquire()
             1 * registerFailedSending()
         }
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -96,7 +96,7 @@ class SendFutureProviderTest extends Specification {
         )
 
         when:
-        CompletableFuture future = futureProvider.provide(slowConsumer(5_000), exceptionMapper)
+        CompletableFuture future = rateLimitingMessageSender.send(slowConsumer(5_000), exceptionMapper)
 
         then:
         future.get().isTimeout()
@@ -109,7 +109,7 @@ class SendFutureProviderTest extends Specification {
             1 * registerSuccessfulSending()
         }
 
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -118,7 +118,7 @@ class SendFutureProviderTest extends Specification {
         )
 
         when:
-        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(404), exceptionMapper)
+        CompletableFuture future = rateLimitingMessageSender.send(ordinarilyFailingConsumer(404), exceptionMapper)
 
         then:
         !future.get().succeeded()
@@ -131,7 +131,7 @@ class SendFutureProviderTest extends Specification {
             1 * registerFailedSending()
         }
 
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -140,7 +140,7 @@ class SendFutureProviderTest extends Specification {
         )
 
         when:
-        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(500), exceptionMapper)
+        CompletableFuture future = rateLimitingMessageSender.send(ordinarilyFailingConsumer(500), exceptionMapper)
 
         then:
         !future.get().succeeded()
@@ -157,7 +157,7 @@ class SendFutureProviderTest extends Specification {
                         .withClientErrorRetry()
                         .build()).build()
 
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -166,7 +166,7 @@ class SendFutureProviderTest extends Specification {
         )
 
         when:
-        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(500), exceptionMapper)
+        CompletableFuture future = rateLimitingMessageSender.send(ordinarilyFailingConsumer(500), exceptionMapper)
 
         then:
         !future.get().succeeded()
@@ -179,7 +179,7 @@ class SendFutureProviderTest extends Specification {
             1 * registerSuccessfulSending()
         }
 
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -188,7 +188,7 @@ class SendFutureProviderTest extends Specification {
         )
 
         when:
-        CompletableFuture future = futureProvider.provide(consumer(MessageSendingResult.retryAfter(100)), exceptionMapper)
+        CompletableFuture future = rateLimitingMessageSender.send(consumer(MessageSendingResult.retryAfter(100)), exceptionMapper)
 
         then:
         !future.get().succeeded()
@@ -201,7 +201,7 @@ class SendFutureProviderTest extends Specification {
             1 * registerFailedSending()
         }
 
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -210,7 +210,7 @@ class SendFutureProviderTest extends Specification {
         )
 
         when:
-        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(SERVICE_UNAVAILABLE.code()), exceptionMapper)
+        CompletableFuture future = rateLimitingMessageSender.send(ordinarilyFailingConsumer(SERVICE_UNAVAILABLE.code()), exceptionMapper)
 
         then:
         !future.get().succeeded()
@@ -223,7 +223,7 @@ class SendFutureProviderTest extends Specification {
             1 * registerSuccessfulSending()
         }
 
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -232,7 +232,7 @@ class SendFutureProviderTest extends Specification {
         )
 
         when:
-        CompletableFuture future = futureProvider.provide(ordinarilyFailingConsumer(TOO_MANY_REQUESTS.code()), exceptionMapper)
+        CompletableFuture future = rateLimitingMessageSender.send(ordinarilyFailingConsumer(TOO_MANY_REQUESTS.code()), exceptionMapper)
 
         then:
         !future.get().succeeded()
@@ -244,7 +244,7 @@ class SendFutureProviderTest extends Specification {
             1 * acquire()
             1 * registerFailedSending()
         }
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -254,7 +254,7 @@ class SendFutureProviderTest extends Specification {
 
         when:
         def failWith = new IOException()
-        def future = futureProvider.provide(abnormallyFailingConsumer(failWith), exceptionMapper)
+        def future = rateLimitingMessageSender.send(abnormallyFailingConsumer(failWith), exceptionMapper)
 
         then:
         with(future.get()) {
@@ -269,7 +269,7 @@ class SendFutureProviderTest extends Specification {
             1 * acquire()
             1 * registerFailedSending()
         }
-        SendFutureProvider futureProvider = new SendFutureProvider(
+        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -279,7 +279,7 @@ class SendFutureProviderTest extends Specification {
 
         when:
         def failWith = new IllegalStateException()
-        def future = futureProvider.provide(abruptlyFailingConsumer(failWith), exceptionMapper)
+        def future = rateLimitingMessageSender.send(abruptlyFailingConsumer(failWith), exceptionMapper)
 
         then:
         with(future.get()) {
