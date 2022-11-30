@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import java.time.Duration;
+import java.util.List;
 
 public interface KafkaConsumerParameters {
 
@@ -41,4 +42,6 @@ public interface KafkaConsumerParameters {
     int getMaxPartitionFetchMin();
 
     int getMaxPartitionFetchMax();
+
+    List<PartitionAssignmentStrategy> getPartitionAssignmentStrategies();
 }
