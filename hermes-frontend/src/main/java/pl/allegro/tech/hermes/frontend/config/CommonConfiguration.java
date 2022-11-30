@@ -157,8 +157,9 @@ public class CommonConfiguration {
     @Bean
     public UndeliveredMessageLog undeliveredMessageLog(CuratorFramework zookeeper,
                                                        ZookeeperPaths paths,
-                                                       ObjectMapper mapper) {
-        return new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
+                                                       ObjectMapper mapper,
+                                                       HermesMetrics hermesMetrics) {
+        return new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper, hermesMetrics);
     }
 
     @Bean
