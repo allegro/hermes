@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
+import org.apache.kafka.clients.consumer.ConsumerPartitionAssignor;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
@@ -22,8 +23,10 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.ThrottlingMessageRecei
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
+import java.util.List;
 import java.util.Properties;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
@@ -41,6 +44,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_
 import static org.apache.kafka.clients.consumer.ConsumerConfig.METADATA_MAX_AGE_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.METRICS_NUM_SAMPLES_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.METRICS_SAMPLE_WINDOW_MS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RECEIVE_BUFFER_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG;
@@ -192,6 +196,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         props.put(CONNECTIONS_MAX_IDLE_MS_CONFIG, (int) kafkaConsumerParameters.getConnectionsMaxIdle().toMillis());
         props.put(MAX_POLL_RECORDS_CONFIG, kafkaConsumerParameters.getMaxPollRecords());
         props.put(MAX_POLL_INTERVAL_MS_CONFIG, (int) kafkaConsumerParameters.getMaxPollInterval().toMillis());
+        props.put(PARTITION_ASSIGNMENT_STRATEGY_CONFIG, getPartitionAssignmentStrategies());
     }
 
     private int getMaxPartitionFetch(Topic topic) {
@@ -203,5 +208,12 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         } else {
             return kafkaConsumerParameters.getMaxPartitionFetchMax();
         }
+    }
+
+    private List<String> getPartitionAssignmentStrategies() {
+        return kafkaConsumerParameters.getPartitionAssignmentStrategies().stream()
+                .map(PartitionAssignmentStrategy::getAssignorClass)
+                .map(Class::getName)
+                .collect(toList());
     }
 }
