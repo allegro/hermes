@@ -76,6 +76,10 @@ public class HermesMetrics {
                 pathContext().withHttpCode(statusCode).withGroup(topicName.getGroupName()).withTopic(topicName.getName()).build()));
     }
 
+    public Histogram histogram(String metric) {
+        return metricRegistry.histogram(metricRegistryName(metric));
+    }
+
     public Counter counter(String metric) {
         return metricRegistry.counter(metricRegistryName(metric));
     }
