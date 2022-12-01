@@ -27,7 +27,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
@@ -172,13 +172,14 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
-    public ProtocolMessageSenderProvider pubSubMessageSenderProvider(GooglePubSubSenderTargetResolver targetResolver,
-                                                                     CredentialsProvider credentialsProvider,
-                                                                     ExecutorProvider executorProvider,
-                                                                     RetrySettings retrySettings,
-                                                                     BatchingSettings batchingSettings,
-                                                                     GooglePubSubMessages googlePubSubMessages,
-                                                                     TransportChannelProvider transportChannelProvider) {
+    public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
+            GooglePubSubSenderTargetResolver targetResolver,
+            CredentialsProvider credentialsProvider,
+            ExecutorProvider executorProvider,
+            RetrySettings retrySettings,
+            BatchingSettings batchingSettings,
+            GooglePubSubMessageTransformerCreator googlePubSubMessageTransformerCreator,
+            TransportChannelProvider transportChannelProvider) {
         return new GooglePubSubMessageSenderProvider(
                 targetResolver,
                 credentialsProvider,
@@ -186,7 +187,7 @@ public class ConsumerSenderConfiguration {
                 retrySettings,
                 batchingSettings,
                 transportChannelProvider,
-                googlePubSubMessages
+                googlePubSubMessageTransformerCreator
         );
     }
 
