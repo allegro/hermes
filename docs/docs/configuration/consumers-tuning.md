@@ -4,8 +4,8 @@
 
 Option                                               | Description                                                 | Default value
 ---------------------------------------------------- | ----------------------------------------------------------- | -------------
-consumer.http.client.threadPoolSize                  | size of thread pool for sender threads (global)             | 30
-consumer.http.client.maxConnectionsPerDestination    | max connections per remote host                             | 100
+consumer.http-client.serial.http1.threadPoolSize                  | size of thread pool for sender threads (global)             | 30
+consumer.http-client.serial.http1.maxConnectionsPerDestination    | max connections per remote host                             | 100
 
 ## Consumers core
 

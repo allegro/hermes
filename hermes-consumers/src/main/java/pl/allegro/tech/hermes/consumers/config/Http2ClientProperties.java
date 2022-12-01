@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientParameters;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "consumer.http2.client")
 public class Http2ClientProperties implements Http2ClientParameters {
 
     private boolean enabled = true;
@@ -17,6 +15,8 @@ public class Http2ClientProperties implements Http2ClientParameters {
     private Duration idleTimeout = Duration.ofMillis(0);
 
     private int maxRequestsQueuedPerDestination = 100;
+
+    private boolean followRedirectsEnabled = false;
 
     public boolean isEnabled() {
         return enabled;
@@ -60,5 +60,14 @@ public class Http2ClientProperties implements Http2ClientParameters {
 
     public void setMaxRequestsQueuedPerDestination(int maxRequestsQueuedPerDestination) {
         this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
+    }
+
+    @Override
+    public boolean isFollowRedirectsEnabled() {
+        return followRedirectsEnabled;
+    }
+
+    public void setFollowRedirectsEnabled(boolean followRedirectsEnabled) {
+        this.followRedirectsEnabled = followRedirectsEnabled;
     }
 }

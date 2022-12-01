@@ -12,8 +12,6 @@ consumer:
     maxPoolSize: 67108864 # 64 x 1024 x 1024
     connectionTimeout: 500ms
     connectionRequestTimeout: 500ms
-    httpClient:
-      connectionPoolMonitoringEnabled: true
   commit:
     offset:
       period: 60s
@@ -46,23 +44,33 @@ consumer:
     truststoreLocation: classpath:client.truststore
     truststorePassword: password
     truststoreFormat: JKS
-  http2:
-    client:
-      enabled: true
-      threadPoolSize: 10
-      threadPoolMonitoringEnabled: false
-      idleTimeout: 0ms
-      maxRequestsQueuedPerDestination: 100
-  http:
-    client:
+  http-client:
+    monitoring:
       connectionPoolMonitoringEnabled: false
       requestQueueMonitoringEnabled: true
-      threadPoolSize: 30
-      threadPoolMonitoringEnabled: false
-      followRedirectsEnabled: false
-      maxConnectionsPerDestination: 100
-      idleTimeout: 0ms
-      maxRequestsQueuedPerDestination: 100
+    serial:
+      http1:
+        threadPoolSize: 30
+        threadPoolMonitoringEnabled: false
+        followRedirectsEnabled: false
+        maxConnectionsPerDestination: 100
+        idleTimeout: 0ms
+        maxRequestsQueuedPerDestination: 100
+      http2:
+        enabled: true
+        threadPoolSize: 10
+        threadPoolMonitoringEnabled: false
+        idleTimeout: 0ms
+        followRedirectsEnabled: false
+        maxRequestsQueuedPerDestination: 100
+    batch:
+      http1:
+        threadPoolSize: 30
+        threadPoolMonitoringEnabled: false
+        followRedirectsEnabled: false
+        maxConnectionsPerDestination: 100
+        idleTimeout: 0ms
+        maxRequestsQueuedPerDestination: 100
   workload:
     rebalanceInterval: 1s
     consumerPerSubscription: 1
