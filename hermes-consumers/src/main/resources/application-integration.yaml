@@ -10,8 +10,6 @@ consumer:
   batch:
     poolableSize: 1024
     maxPoolSize: 67108864 # 64 x 1024 x 1024
-    connectionTimeout: 500ms
-    connectionRequestTimeout: 500ms
   commit:
     offset:
       period: 60s
@@ -71,6 +69,7 @@ consumer:
         maxConnectionsPerDestination: 100
         idleTimeout: 0ms
         maxRequestsQueuedPerDestination: 100
+        connectionTimeout: 500ms
   workload:
     rebalanceInterval: 1s
     consumerPerSubscription: 1

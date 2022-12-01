@@ -35,6 +35,7 @@ public class HttpClientsFactory {
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(http1ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(http1ClientParameters.isFollowRedirectsEnabled());
+        client.setConnectTimeout(http1ClientParameters.getConnectionTimeout().toMillis());
         return client;
     }
 
@@ -55,6 +56,7 @@ public class HttpClientsFactory {
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(http2ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(http2ClientParameters.isFollowRedirectsEnabled());
+        client.setConnectTimeout(http2ClientParameters.getConnectionTimeout().toMillis());
         return client;
     }
 }

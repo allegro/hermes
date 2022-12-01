@@ -13,4 +13,6 @@ public interface HttpClientParameters {
         Duration getIdleTimeout();
 
         int getMaxRequestsQueuedPerDestination();
+
+        Duration getConnectionTimeout();
 }

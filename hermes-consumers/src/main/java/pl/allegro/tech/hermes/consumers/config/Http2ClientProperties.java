@@ -18,6 +18,8 @@ public class Http2ClientProperties implements Http2ClientParameters {
 
     private boolean followRedirectsEnabled = false;
 
+    private Duration connectionTimeout = Duration.ofSeconds(15);
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -69,5 +71,14 @@ public class Http2ClientProperties implements Http2ClientParameters {
 
     public void setFollowRedirectsEnabled(boolean followRedirectsEnabled) {
         this.followRedirectsEnabled = followRedirectsEnabled;
+    }
+
+    @Override
+    public Duration getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(Duration connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
     }
 }

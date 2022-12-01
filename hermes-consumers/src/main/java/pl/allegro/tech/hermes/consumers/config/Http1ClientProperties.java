@@ -18,6 +18,8 @@ public class Http1ClientProperties implements Http1ClientParameters {
 
     private int maxRequestsQueuedPerDestination = 100;
 
+    private Duration connectionTimeout = Duration.ofSeconds(15);
+
 
     @Override
     public int getThreadPoolSize() {
@@ -71,5 +73,14 @@ public class Http1ClientProperties implements Http1ClientParameters {
 
     public void setMaxRequestsQueuedPerDestination(int maxRequestsQueuedPerDestination) {
         this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
+    }
+
+    @Override
+    public Duration getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(Duration connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
     }
 }
