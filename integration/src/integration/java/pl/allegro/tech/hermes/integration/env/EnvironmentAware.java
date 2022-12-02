@@ -15,6 +15,8 @@ public abstract class EnvironmentAware {
     private static final String OAUTH_SERVER_PORT_NAME = "OAUTH_SERVER_PORT";
     private static final String AUDIT_EVENT_PORT_NAME = "AUDIT_EVENT_PORT";
     private static final String CROWD_SERVICE_PORT_NAME = "CROWD_SERVICE_PORT";
+    private static final String HORNET_MQ_SUBDIR = "HORNET_MQ_SUBDIR";
+    private static final String HORNET_MQ_NETTY_PORT_NAME = "HORNET_MQ_NETTY_PORT";
 
 
     static {
@@ -30,12 +32,14 @@ public abstract class EnvironmentAware {
                 new PortMapping(GRAPHITE_SERVER_PORT_NAME, 60),
                 new PortMapping(OAUTH_SERVER_PORT_NAME, 70),
                 new PortMapping(AUDIT_EVENT_PORT_NAME, 80),
-                new PortMapping(CROWD_SERVICE_PORT_NAME, 90)
+                new PortMapping(CROWD_SERVICE_PORT_NAME, 90),
+                new PortMapping(HORNET_MQ_NETTY_PORT_NAME, 95)
         ).map(portMapping -> portMapping.shift(basePort)).collect(Collectors.toList());
 
 
         portMappings.forEach(portMapping -> System.setProperty(portMapping.envVariableName, String.valueOf(portMapping.port)));
 
+        System.setProperty(HORNET_MQ_SUBDIR, String.valueOf(basePort));
     }
 
     private static int portOf(String name) {
@@ -84,6 +88,8 @@ public abstract class EnvironmentAware {
 
     public static int CROWD_SERVICE_PORT = portOf(CROWD_SERVICE_PORT_NAME);
 
+    public static int HORNET_MQ_NETTY_PORT = portOf(HORNET_MQ_NETTY_PORT_NAME);
+
     private static class PortMapping {
         private final String envVariableName;
         private final int port;
@@ -99,4 +105,6 @@ public abstract class EnvironmentAware {
 
 
     }
+
+
 }

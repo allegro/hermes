@@ -28,7 +28,7 @@ public class JmsConsumingTest extends IntegrationTest {
 
     @BeforeMethod
     public void initializeAlways() {
-        this.jmsEndpoint = new RemoteJmsEndpoint(JMS_TOPIC_NAME);
+        this.jmsEndpoint = new RemoteJmsEndpoint(JMS_TOPIC_NAME, HORNET_MQ_NETTY_PORT);
     }
 
     @Test
@@ -96,6 +96,6 @@ public class JmsConsumingTest extends IntegrationTest {
     }
 
     private String jmsEndpointAddress(String topicName) {
-        return "jms://guest:guest@localhost:5445/" + topicName;
+        return "jms://guest:guest@localhost:" + HORNET_MQ_NETTY_PORT + "/" + topicName;
     }
 }

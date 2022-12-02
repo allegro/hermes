@@ -55,7 +55,6 @@ public class HermesIntegrationEnvironment extends EnvironmentAware{
 
     static {
         // set properties before any other test initialization
-        System.out.println("Gradle test worker " + System.getProperty("org.gradle.test.worker"));
         System.setProperty("zookeeper.sasl.client", "false");
         System.setProperty(
                 "java.security.auth.login.config",

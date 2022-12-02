@@ -2,15 +2,15 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
-   <paging-directory>${data.dir:../data}/paging</paging-directory>
-   
-   <bindings-directory>${data.dir:../data}/bindings</bindings-directory>
-   
-   <journal-directory>${data.dir:../data}/journal</journal-directory>
-   
+   <paging-directory>${data.dir:../data}/${HORNET_MQ_SUBDIR}/paging</paging-directory>
+
+   <bindings-directory>${data.dir:../data}/${HORNET_MQ_SUBDIR}/bindings</bindings-directory>
+
+   <journal-directory>${data.dir:../data}/${HORNET_MQ_SUBDIR}/journal</journal-directory>
+
    <journal-min-files>10</journal-min-files>
-   
-   <large-messages-directory>${data.dir:../data}/large-messages</large-messages-directory>
+
+   <large-messages-directory>${data.dir:../data}/${HORNET_MQ_SUBDIR}/large-messages</large-messages-directory>
 
    <security-enabled>false</security-enabled>
 
@@ -18,7 +18,7 @@
       <connector name="netty-connector">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
          <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
-         <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
+         <param key="port"  value="${hornetq.remoting.netty.port:${HORNET_MQ_NETTY_PORT}}"/>
       </connector>
    </connectors>
 
@@ -26,7 +26,7 @@
       <acceptor name="netty-acceptor">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
          <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
-         <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
+         <param key="port"  value="${hornetq.remoting.netty.port:${HORNET_MQ_NETTY_PORT}}"/>
       </acceptor>
    </acceptors>
 
