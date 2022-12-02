@@ -69,14 +69,6 @@ project.sourceSets {
 
 task integrationTest(type: Test) {
 
-//    testLogging {
-//        info {
-//            events "started", "passed", "skipped", "failed"
-//            displayGranularity 1
-//            minGranularity 1
-//        }
-//    }
-
     logging.captureStandardOutput LogLevel.INFO
 
     def args = []

@@ -6,6 +6,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.ArrayList;
@@ -23,12 +24,14 @@ public class RemoteJmsEndpoint {
 
     private int expectedMessagesCount = 0;
 
-    public RemoteJmsEndpoint(String topicName) {
-        initializeContext(topicName);
+    public RemoteJmsEndpoint(String topicName, int jmsNettyPort) {
+        initializeContext(topicName, jmsNettyPort);
     }
 
-    private JMSContext initializeContext(String topicName) {
+    private JMSContext initializeContext(String topicName, int jmsNettyPort) {
         TransportConfiguration transportConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName());
+        transportConfiguration.getParams().put(TransportConstants.PORT_PROP_NAME, jmsNettyPort);
+
         ConnectionFactory connectionFactory = HornetQJMSClient.createConnectionFactoryWithHA(
                 JMSFactoryType.TOPIC_CF,
                 transportConfiguration);
