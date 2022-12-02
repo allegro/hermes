@@ -1,14 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import java.time.Duration;
 
-public interface Http2ClientParameters {
+public interface Http2ClientParameters extends HttpClientParameters {
 
-    int getThreadPoolSize();
-
-    boolean isThreadPoolMonitoringEnabled();
-
-    Duration getIdleTimeout();
-
-    int getMaxRequestsQueuedPerDestination();
 }

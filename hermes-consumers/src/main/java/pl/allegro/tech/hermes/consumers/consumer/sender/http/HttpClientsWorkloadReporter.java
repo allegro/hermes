@@ -15,20 +15,23 @@ import java.util.stream.Stream;
 public class HttpClientsWorkloadReporter {
 
     private final HermesMetrics metrics;
-    private final HttpClient httpClient;
+    private final HttpClient http1SerialClient;
+    private final HttpClient http1BatchClient;
     private final Http2ClientHolder http2ClientHolder;
     private final boolean isRequestQueueMonitoringEnabled;
     private final boolean isConnectionPoolMonitoringEnabled;
 
     public HttpClientsWorkloadReporter(
             HermesMetrics metrics,
-            HttpClient httpClient,
+            HttpClient http1SerialClient,
+            HttpClient http1BatchClient,
             Http2ClientHolder http2ClientHolder,
             boolean isRequestQueueMonitoringEnabled,
             boolean isConnectionPoolMonitoringEnabled
     ) {
         this.metrics = metrics;
-        this.httpClient = httpClient;
+        this.http1SerialClient = http1SerialClient;
+        this.http1BatchClient = http1BatchClient;
         this.http2ClientHolder = http2ClientHolder;
         this.isRequestQueueMonitoringEnabled = isRequestQueueMonitoringEnabled;
         this.isConnectionPoolMonitoringEnabled = isConnectionPoolMonitoringEnabled;
@@ -45,34 +48,47 @@ public class HttpClientsWorkloadReporter {
 
     private void registerRequestQueueSizeGauges() {
         metrics.registerConsumerSenderRequestQueueSize(this::getQueuesSize);
-        metrics.registerConsumerSenderHttp1RequestQueueSize(this::getHttp1QueueSize);
-        metrics.registerConsumerSenderHttp2RequestQueueSize(this::getHttp2QueueSize);
+        metrics.registerConsumerSenderHttp1SerialClientRequestQueueSize(this::getHttp1SerialClientQueueSize);
+        metrics.registerConsumerSenderHttp1BatchClientRequestQueueSize(this::getHttp1BatchClientQueueSize);
+        metrics.registerConsumerSenderHttp2RequestQueueSize(this::getHttp2SerialClientQueueSize);
     }
 
     private void registerConnectionGauges() {
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_ACTIVE_CONNECTIONS, () ->
-                getHttp1ActiveConnectionsCount.apply(httpClient));
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_IDLE_CONNECTIONS, () ->
-                getHttp1IdleConnectionsCount.apply(httpClient));
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_2_CONNECTIONS, () ->
+        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_ACTIVE_CONNECTIONS, () ->
+                getHttp1ActiveConnectionsCount.apply(http1SerialClient));
+        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_IDLE_CONNECTIONS, () ->
+                getHttp1IdleConnectionsCount.apply(http1SerialClient));
+
+        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_ACTIVE_CONNECTIONS, () ->
+                getHttp1ActiveConnectionsCount.apply(http1BatchClient));
+        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_IDLE_CONNECTIONS, () ->
+                getHttp1IdleConnectionsCount.apply(http1BatchClient));
+
+
+        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_CONNECTIONS, () ->
                 http2ClientHolder.getHttp2Client()
                         .map(getHttp2ConnectionsCount)
                         .orElse(0));
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_2_PENDING_CONNECTIONS, () ->
+        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_PENDING_CONNECTIONS, () ->
                 http2ClientHolder.getHttp2Client()
                         .map(getHttp2PendingConnectionsCount)
                         .orElse(0));
     }
 
     int getQueuesSize() {
-        return getHttp1QueueSize() + getHttp2QueueSize();
+        return getHttp1SerialClientQueueSize() + getHttp1BatchClientQueueSize() + getHttp2SerialClientQueueSize();
     }
 
-    int getHttp1QueueSize() {
-        return getQueueSize.apply(httpClient);
+    int getHttp1SerialClientQueueSize() {
+        return getQueueSize.apply(http1SerialClient);
     }
 
-    int getHttp2QueueSize() {
+    int getHttp1BatchClientQueueSize() {
+        return getQueueSize.apply(http1BatchClient);
+    }
+
+
+    int getHttp2SerialClientQueueSize() {
         return http2ClientHolder.getHttp2Client()
                 .map(getQueueSize)
                 .orElse(0);

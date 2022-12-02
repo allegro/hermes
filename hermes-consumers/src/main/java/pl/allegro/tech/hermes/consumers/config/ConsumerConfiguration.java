@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.apache.curator.framework.CuratorFramework;
-import org.eclipse.jetty.client.HttpClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +27,6 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -156,15 +154,7 @@ public class ConsumerConfiguration {
         return new DefaultMessageConverterResolver(avroToJsonMessageConverter, noOperationMessageConverter);
     }
 
-    @Bean(name = "http-1-client")
-    public HttpClient http1Client(HttpClientsFactory httpClientsFactory) {
-        return httpClientsFactory.createClientForHttp1("jetty-http-client");
-    }
 
-    @Bean(name = "oauth-http-client")
-    public HttpClient oauthHttpClient(HttpClientsFactory httpClientsFactory) {
-        return httpClientsFactory.createClientForHttp1("jetty-http-oauthclient");
-    }
 
     @Bean
     public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaClustersProperties kafkaClustersProperties,

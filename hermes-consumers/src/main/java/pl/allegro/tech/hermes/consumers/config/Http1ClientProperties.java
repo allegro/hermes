@@ -1,16 +1,10 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientParameters;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http1ClientParameters;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "consumer.http.client")
-public class HttpClientProperties implements HttpClientParameters {
-
-    private boolean connectionPoolMonitoringEnabled = false;
-
-    private boolean requestQueueMonitoringEnabled = true;
+public class Http1ClientProperties implements Http1ClientParameters {
 
     private int threadPoolSize = 30;
 
@@ -24,21 +18,8 @@ public class HttpClientProperties implements HttpClientParameters {
 
     private int maxRequestsQueuedPerDestination = 100;
 
-    public boolean isConnectionPoolMonitoringEnabled() {
-        return connectionPoolMonitoringEnabled;
-    }
+    private Duration connectionTimeout = Duration.ofSeconds(15);
 
-    public void setConnectionPoolMonitoringEnabled(boolean connectionPoolMonitoringEnabled) {
-        this.connectionPoolMonitoringEnabled = connectionPoolMonitoringEnabled;
-    }
-
-    public boolean isRequestQueueMonitoringEnabled() {
-        return requestQueueMonitoringEnabled;
-    }
-
-    public void setRequestQueueMonitoringEnabled(boolean requestQueueMonitoringEnabled) {
-        this.requestQueueMonitoringEnabled = requestQueueMonitoringEnabled;
-    }
 
     @Override
     public int getThreadPoolSize() {
@@ -92,5 +73,14 @@ public class HttpClientProperties implements HttpClientParameters {
 
     public void setMaxRequestsQueuedPerDestination(int maxRequestsQueuedPerDestination) {
         this.maxRequestsQueuedPerDestination = maxRequestsQueuedPerDestination;
+    }
+
+    @Override
+    public Duration getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(Duration connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
     }
 }
