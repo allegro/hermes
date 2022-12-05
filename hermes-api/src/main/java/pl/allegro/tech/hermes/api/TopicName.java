@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
 import java.util.Objects;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
