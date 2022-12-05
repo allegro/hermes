@@ -15,7 +15,7 @@ Core functionality is provided by `HermesClient` class, which in turn uses `Herm
 At the moment there are four implementations of `HermesSender`:
 
 * **RestTemplateHermesSender** - recommended for services built on [Spring framework](https://spring.io/projects/spring-framework);
-  uses [AsyncRestTemplate](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/client/AsyncRestTemplate.html)
+  uses [AsyncRestTemplate](https://docs.spring.io/spring-framework/docs/5.3.9/javadoc-api/org/springframework/web/client/AsyncRestTemplate.html)
   for asynchronous transmission
 * **WebClientHermesSender** - for services using [Spring WebFlux](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html); 
   uses [WebClient](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html)

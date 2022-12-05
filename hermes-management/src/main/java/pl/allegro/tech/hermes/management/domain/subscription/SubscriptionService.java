@@ -19,7 +19,7 @@ import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.api.helpers.Patch;
-import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.message.undelivered.LastUndeliveredMessageReader;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
@@ -249,10 +249,10 @@ public class SubscriptionService {
     }
 
     public Optional<SentMessageTrace> getLatestUndeliveredMessage(TopicName topicName, String subscriptionName) {
-        List<DatacenterBoundRepositoryHolder<UndeliveredMessageLog>> holders =
-                repositoryManager.getRepositories(UndeliveredMessageLog.class);
+        List<DatacenterBoundRepositoryHolder<LastUndeliveredMessageReader>> holders =
+                repositoryManager.getRepositories(LastUndeliveredMessageReader.class);
         List<SentMessageTrace> traces = new ArrayList<>();
-        for (DatacenterBoundRepositoryHolder<UndeliveredMessageLog> holder : holders) {
+        for (DatacenterBoundRepositoryHolder<LastUndeliveredMessageReader> holder : holders) {
             try {
                 holder.getRepository().last(topicName, subscriptionName).ifPresent(traces::add);
             } catch (Exception e) {

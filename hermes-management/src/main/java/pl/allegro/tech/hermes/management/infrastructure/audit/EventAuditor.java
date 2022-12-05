@@ -32,7 +32,7 @@ public class EventAuditor implements Auditor {
     }
 
     @Override
-    public void beforeObjectCreation(String username, Anonymizable createdObject) {
+    public void beforeObjectCreation(String username, Object createdObject) {
         ignoringExceptions(() -> {
             String createdObjectToString = objectMapper.writeValueAsString(createdObject);
             AuditEvent event = new AuditEvent(AuditEventType.BEFORE_CREATION,

@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -21,22 +22,25 @@ import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorService
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
-import pl.allegro.tech.hermes.consumers.consumer.sender.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessages;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.BatchHttpRequestFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultBatchHttpRequestFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultSendingResultHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.EmptyHttpHeadersProvidersFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http1ClientParameters;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlers;
@@ -59,18 +63,89 @@ import javax.jms.Message;
 @Configuration
 @EnableConfigurationProperties({
         SslContextProperties.class,
-        HttpClientProperties.class,
-        Http2ClientProperties.class,
+        HttpClientsMonitoringProperties.class,
         SenderAsyncTimeoutProperties.class,
         BatchProperties.class
 })
 public class ConsumerSenderConfiguration {
 
+    @Bean(name = "http1-serial-client-parameters")
+    @ConfigurationProperties(prefix = "consumer.http-client.serial.http1")
+    public Http1ClientProperties http1SerialClientProperties() {
+        return new Http1ClientProperties();
+    }
+
+    @Bean(name = "http1-serial-client")
+    public HttpClient http1SerialClient(
+            HttpClientsFactory httpClientsFactory,
+            @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters) {
+        return httpClientsFactory.createClientForHttp1("jetty-http1-serial-client", http1ClientParameters);
+    }
+
+    @Bean(name = "http2-serial-client-parameters")
+    @ConfigurationProperties(prefix = "consumer.http-client.serial.http2")
+    public Http2ClientProperties http2SerialClientProperties() {
+        return new Http2ClientProperties();
+    }
+
+    @Bean
+    public Http2ClientHolder http2ClientHolder(
+            HttpClientsFactory httpClientsFactory,
+            @Named("http2-serial-client-parameters") Http2ClientProperties http2ClientProperties) {
+        if (!http2ClientProperties.isEnabled()) {
+            return new Http2ClientHolder(null);
+        } else {
+            return new Http2ClientHolder(httpClientsFactory.createClientForHttp2("jetty-http2-serial-client", http2ClientProperties));
+        }
+    }
+
+    @Bean(name = "http1-batch-client-parameters")
+    @ConfigurationProperties(prefix = "consumer.http-client.batch.http1")
+    public Http1ClientProperties http1BatchClientProperties() {
+        return new Http1ClientProperties();
+    }
+
+    @Bean(name = "http1-batch-client")
+    public HttpClient http1BatchClient(
+            HttpClientsFactory httpClientsFactory,
+            @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters) {
+        return httpClientsFactory.createClientForHttp1("jetty-http1-batch-client", http1ClientParameters);
+    }
+
+    @Bean(name = "oauth-http-client")
+    public HttpClient oauthHttpClient(HttpClientsFactory httpClientsFactory,
+                                      @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters) {
+        return httpClientsFactory.createClientForHttp1("jetty-http-oauthclient", http1ClientParameters);
+    }
+
+
+    @Bean(destroyMethod = "stop")
+    public BatchHttpRequestFactory batchHttpRequestFactory(@Named("http1-batch-client") HttpClient httpClient) {
+        return new DefaultBatchHttpRequestFactory(httpClient);
+    }
+
     @Bean
     public MessageBatchSenderFactory httpMessageBatchSenderFactory(SendingResultHandlers resultHandlers,
-                                                                   BatchProperties batchProperties) {
-        return new HttpMessageBatchSenderFactory(resultHandlers, batchProperties.getConnectionTimeout(),
-                batchProperties.getConnectionRequestTimeout());
+                                                                   BatchHttpRequestFactory batchHttpRequestFactory
+    ) {
+        return new HttpMessageBatchSenderFactory(
+                resultHandlers,
+                batchHttpRequestFactory);
+    }
+
+    @Bean(initMethod = "start")
+    public HttpClientsWorkloadReporter httpClientsWorkloadReporter(HermesMetrics metrics,
+                                                                   @Named("http1-serial-client") HttpClient http1SerialClient,
+                                                                   @Named("http1-batch-client") HttpClient http1BatchClient,
+                                                                   Http2ClientHolder http2ClientHolder,
+                                                                   HttpClientsMonitoringProperties monitoringProperties) {
+        return new HttpClientsWorkloadReporter(
+                metrics,
+                http1SerialClient,
+                http1BatchClient,
+                http2ClientHolder,
+                monitoringProperties.isRequestQueueMonitoringEnabled(),
+                monitoringProperties.isConnectionPoolMonitoringEnabled());
     }
 
     @Bean(destroyMethod = "closeProviders")
@@ -79,7 +154,7 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultHttpMessageSenderProvider")
-    public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(@Named("http-1-client") HttpClient httpClient,
+    public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(@Named("http1-serial-client") HttpClient httpClient,
                                                                         Http2ClientHolder http2ClientHolder,
                                                                         EndpointAddressResolver endpointAddressResolver,
                                                                         MetadataAppender<Request> metadataAppender,
@@ -120,34 +195,11 @@ public class ConsumerSenderConfiguration {
         return new EmptyHttpHeadersProvidersFactory();
     }
 
-    @Bean
-    public Http2ClientHolder http2ClientHolder(HttpClientsFactory httpClientsFactory, Http2ClientProperties http2ClientProperties) {
-        if (!http2ClientProperties.isEnabled()) {
-            return new Http2ClientHolder(null);
-        } else {
-            return new Http2ClientHolder(httpClientsFactory.createClientForHttp2());
-        }
-    }
 
     @Bean
-    public HttpClientsFactory httpClientsFactory(HttpClientProperties httpClientProperties,
-                                                 Http2ClientProperties http2ClientProperties,
-                                                 InstrumentedExecutorServiceFactory executorFactory,
+    public HttpClientsFactory httpClientsFactory(InstrumentedExecutorServiceFactory executorFactory,
                                                  SslContextFactoryProvider sslContextFactoryProvider) {
-        return new HttpClientsFactory(httpClientProperties, http2ClientProperties, executorFactory, sslContextFactoryProvider);
-    }
-
-    @Bean(initMethod = "start")
-    public HttpClientsWorkloadReporter httpClientsWorkloadReporter(HermesMetrics metrics,
-                                                                   @Named("http-1-client") HttpClient httpClient,
-                                                                   Http2ClientHolder http2ClientHolder,
-                                                                   HttpClientProperties httpClientProperties) {
-        return new HttpClientsWorkloadReporter(
-                metrics,
-                httpClient,
-                http2ClientHolder,
-                httpClientProperties.isRequestQueueMonitoringEnabled(),
-                httpClientProperties.isConnectionPoolMonitoringEnabled());
+        return new HttpClientsFactory(executorFactory, sslContextFactoryProvider);
     }
 
     @Bean
@@ -172,13 +224,14 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
-    public ProtocolMessageSenderProvider pubSubMessageSenderProvider(GooglePubSubSenderTargetResolver targetResolver,
-                                                                     CredentialsProvider credentialsProvider,
-                                                                     ExecutorProvider executorProvider,
-                                                                     RetrySettings retrySettings,
-                                                                     BatchingSettings batchingSettings,
-                                                                     GooglePubSubMessages googlePubSubMessages,
-                                                                     TransportChannelProvider transportChannelProvider) {
+    public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
+            GooglePubSubSenderTargetResolver targetResolver,
+            CredentialsProvider credentialsProvider,
+            ExecutorProvider executorProvider,
+            RetrySettings retrySettings,
+            BatchingSettings batchingSettings,
+            GooglePubSubMessageTransformerCreator googlePubSubMessageTransformerCreator,
+            TransportChannelProvider transportChannelProvider) {
         return new GooglePubSubMessageSenderProvider(
                 targetResolver,
                 credentialsProvider,
@@ -186,7 +239,7 @@ public class ConsumerSenderConfiguration {
                 retrySettings,
                 batchingSettings,
                 transportChannelProvider,
-                googlePubSubMessages
+                googlePubSubMessageTransformerCreator
         );
     }
 

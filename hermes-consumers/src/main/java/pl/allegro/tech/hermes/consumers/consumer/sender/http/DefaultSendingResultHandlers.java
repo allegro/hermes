@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Response;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult;
@@ -19,7 +19,7 @@ public class DefaultSendingResultHandlers implements SendingResultHandlers {
     }
 
     @Override
-    public MessageSendingResult handleSendingResultForBatch(CloseableHttpResponse response) {
-        return MessageSendingResult.ofStatusCode(response.getStatusLine().getStatusCode());
+    public MessageSendingResult handleSendingResultForBatch(ContentResponse response) {
+        return MessageSendingResult.ofStatusCode(response.getStatus());
     }
 }

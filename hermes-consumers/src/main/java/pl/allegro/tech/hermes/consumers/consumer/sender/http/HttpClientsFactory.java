@@ -10,42 +10,38 @@ import java.util.concurrent.ExecutorService;
 
 public class HttpClientsFactory {
 
-    private final HttpClientParameters httpClientParameters;
-    private final Http2ClientParameters http2ClientParameters;
     private final InstrumentedExecutorServiceFactory executorFactory;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
-    public HttpClientsFactory(HttpClientParameters httpClientParameters,
-                              Http2ClientParameters http2ClientParameters,
-                              InstrumentedExecutorServiceFactory executorFactory,
-                              SslContextFactoryProvider sslContextFactoryProvider) {
-        this.httpClientParameters = httpClientParameters;
-        this.http2ClientParameters = http2ClientParameters;
+    public HttpClientsFactory(
+            InstrumentedExecutorServiceFactory executorFactory,
+            SslContextFactoryProvider sslContextFactoryProvider) {
         this.executorFactory = executorFactory;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
     }
 
-    public HttpClient createClientForHttp1(String name) {
+    public HttpClient createClientForHttp1(String name, Http1ClientParameters http1ClientParameters) {
         ExecutorService executor = executorFactory.getExecutorService(
                 name,
-                httpClientParameters.getThreadPoolSize(),
-                httpClientParameters.isThreadPoolMonitoringEnabled());
+                http1ClientParameters.getThreadPoolSize(),
+                http1ClientParameters.isThreadPoolMonitoringEnabled());
 
         HttpClient client = sslContextFactoryProvider.provideSslContextFactory()
                 .map(HttpClient::new)
                 .orElseGet(HttpClient::new);
-        client.setMaxConnectionsPerDestination(httpClientParameters.getMaxConnectionsPerDestination());
-        client.setMaxRequestsQueuedPerDestination(httpClientParameters.getMaxRequestsQueuedPerDestination());
+        client.setMaxConnectionsPerDestination(http1ClientParameters.getMaxConnectionsPerDestination());
+        client.setMaxRequestsQueuedPerDestination(http1ClientParameters.getMaxRequestsQueuedPerDestination());
         client.setExecutor(executor);
         client.setCookieStore(new HttpCookieStore.Empty());
-        client.setIdleTimeout(httpClientParameters.getIdleTimeout().toMillis());
-        client.setFollowRedirects(httpClientParameters.isFollowRedirectsEnabled());
+        client.setIdleTimeout(http1ClientParameters.getIdleTimeout().toMillis());
+        client.setFollowRedirects(http1ClientParameters.isFollowRedirectsEnabled());
+        client.setConnectTimeout(http1ClientParameters.getConnectionTimeout().toMillis());
         return client;
     }
 
-    public HttpClient createClientForHttp2() {
+    public HttpClient createClientForHttp2(String name, Http2ClientParameters http2ClientParameters) {
         ExecutorService executor = executorFactory.getExecutorService(
-                "jetty-http2-client",
+                name,
                 http2ClientParameters.getThreadPoolSize(),
                 http2ClientParameters.isThreadPoolMonitoringEnabled());
 
@@ -59,7 +55,8 @@ public class HttpClientsFactory {
         client.setMaxRequestsQueuedPerDestination(http2ClientParameters.getMaxRequestsQueuedPerDestination());
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(http2ClientParameters.getIdleTimeout().toMillis());
-        client.setFollowRedirects(httpClientParameters.isFollowRedirectsEnabled());
+        client.setFollowRedirects(http2ClientParameters.isFollowRedirectsEnabled());
+        client.setConnectTimeout(http2ClientParameters.getConnectionTimeout().toMillis());
         return client;
     }
 }
