@@ -6,8 +6,8 @@ import pl.allegro.tech.hermes.common.admin.AdminTool;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminTool;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
-import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.message.undelivered.LastUndeliveredMessageReader;
+import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperLastUndeliveredMessageReader;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
@@ -56,25 +56,22 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<String, MessagePreviewRepository> messagePreviewRepositoriesByDc = new HashMap<>();
     private final Map<String, TopicBlacklistRepository> topicBlacklistRepositoriesByDc = new HashMap<>();
     private final Map<String, WorkloadConstraintsRepository> workloadConstraintsRepositoriesByDc = new HashMap<>();
-    private final Map<String, UndeliveredMessageLog> undeliveredMessageLogsByDc = new HashMap<>();
+    private final Map<String, LastUndeliveredMessageReader> lastUndeliveredMessageReaderByDc = new HashMap<>();
     private final Map<String, AdminTool> adminToolByDc = new HashMap<>();
     private final Map<String, ReadinessRepository> readinessRepositoriesByDc = new HashMap<>();
     private final Map<String, OfflineRetransmissionRepository> offlineRetransmissionRepositoriesByDc = new HashMap<>();
     private final ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
-    private final Integer adminReaperInterval;
 
     public ZookeeperRepositoryManager(ZookeeperClientManager clientManager,
                                       DatacenterNameProvider datacenterNameProvider,
                                       ObjectMapper mapper,
                                       ZookeeperPaths paths,
-                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory,
-                                      Integer adminReaperInterval) {
+                                      ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
         this.datacenterNameProvider = datacenterNameProvider;
         this.mapper = mapper;
         this.paths = paths;
         this.clientManager = clientManager;
         this.zookeeperGroupRepositoryFactory = zookeeperGroupRepositoryFactory;
-        this.adminReaperInterval = adminReaperInterval;
         initRepositoryTypeMap();
     }
 
@@ -112,10 +109,10 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
                     new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths);
             workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
 
-            UndeliveredMessageLog undeliveredMessageLog = new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper);
-            undeliveredMessageLogsByDc.put(dcName, undeliveredMessageLog);
+            LastUndeliveredMessageReader lastUndeliveredMessageReader = new ZookeeperLastUndeliveredMessageReader(zookeeper, paths, mapper);
+            lastUndeliveredMessageReaderByDc.put(dcName, lastUndeliveredMessageReader);
 
-            AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(), mapper, adminReaperInterval);
+            AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(), mapper);
             adminToolByDc.put(dcName, adminTool);
 
             ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
@@ -124,8 +121,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             ZookeeperOfflineRetransmissionRepository offlineRetransmissionRepository =
                     new ZookeeperOfflineRetransmissionRepository(zookeeper, mapper, paths);
             offlineRetransmissionRepositoriesByDc.put(dcName, offlineRetransmissionRepository);
-
-            adminTool.start();
         }
     }
 
@@ -169,7 +164,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         repositoryByType.put(MessagePreviewRepository.class, messagePreviewRepositoriesByDc);
         repositoryByType.put(TopicBlacklistRepository.class, topicBlacklistRepositoriesByDc);
         repositoryByType.put(WorkloadConstraintsRepository.class, workloadConstraintsRepositoriesByDc);
-        repositoryByType.put(UndeliveredMessageLog.class, undeliveredMessageLogsByDc);
+        repositoryByType.put(LastUndeliveredMessageReader.class, lastUndeliveredMessageReaderByDc);
         repositoryByType.put(AdminTool.class, adminToolByDc);
         repositoryByType.put(ReadinessRepository.class, readinessRepositoriesByDc);
         repositoryByType.put(OfflineRetransmissionRepository.class, offlineRetransmissionRepositoriesByDc);

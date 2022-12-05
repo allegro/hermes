@@ -5,7 +5,6 @@ import com.google.pubsub.v1.PubsubMessage
 import org.apache.avro.Schema
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Header
-import pl.allegro.tech.hermes.consumers.config.GooglePubSubSenderProperties
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import spock.lang.Specification

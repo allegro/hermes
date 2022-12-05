@@ -5,9 +5,8 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import org.eclipse.jetty.client.HttpClient
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
-import pl.allegro.tech.hermes.consumers.config.ConsumerConfiguration
-import pl.allegro.tech.hermes.consumers.config.Http2ClientProperties
-import pl.allegro.tech.hermes.consumers.config.HttpClientProperties
+import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration
+import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -23,6 +22,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
     @Shared WireMockServer wireMock
 
     HttpClient client
+    HttpClient batchClient
     MetricRegistry metricRegistry = new MetricRegistry()
     HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
 
@@ -35,26 +35,26 @@ class HttpClientConnectionMonitoringTest extends Specification {
 
     def setup() {
         SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties())
-        ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration()
-        client = consumerConfiguration.http1Client(new HttpClientsFactory(
-                new HttpClientProperties(),
-                new Http2ClientProperties(),
+        ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
+        client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
                 new InstrumentedExecutorServiceFactory(hermesMetrics),
-                sslContextFactoryProvider))
+                sslContextFactoryProvider), new Http1ClientProperties()
+        )
+        batchClient = Mock(HttpClient)
         client.start()
     }
 
     def "should measure http client connections"() {
         given:
-        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, new Http2ClientHolder(null), false, true)
+        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, batchClient, new Http2ClientHolder(null), false, true)
         reporter.start()
 
         when:
         client.POST("http://localhost:${port}/hello").send()
 
         and:
-        def idle = metricRegistry.gauges['http-clients.http1.idle-connections'].value
-        def active = metricRegistry.gauges['http-clients.http1.active-connections'].value
+        def idle = metricRegistry.gauges['http-clients.serial.http1.idle-connections'].value
+        def active = metricRegistry.gauges['http-clients.serial.http1.active-connections'].value
 
         then:
         idle + active > 0
@@ -62,7 +62,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
 
     def "should not register connection gauges for disabled http connection monitoring"() {
         given:
-        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, new Http2ClientHolder(null), false, false)
+        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, batchClient, new Http2ClientHolder(null), false, false)
 
         when:
         reporter.start()

@@ -10,12 +10,12 @@ import spock.lang.Subject
 
 import java.nio.charset.StandardCharsets
 
-class GooglePubSubMessagesTest extends Specification {
+class GooglePubSubMessageTransformerRawTest extends Specification {
 
     GooglePubSubMetadataAppender metadataAppender = new GooglePubSubMetadataAppender()
 
     @Subject
-    GooglePubSubMessages pubSubMessages = new GooglePubSubMessages(metadataAppender)
+    GooglePubSubMessageTransformer pubSubMessages = new GooglePubSubMessageTransformerRaw(metadataAppender)
 
     def 'should convert standard message'() {
         given:

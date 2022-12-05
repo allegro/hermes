@@ -3,8 +3,12 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerParameters;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.PartitionAssignmentStrategy;
 
 import java.time.Duration;
+import java.util.List;
+
+import static pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.PartitionAssignmentStrategy.RANGE;
 
 @ConfigurationProperties(prefix = "consumer.kafka.consumer")
 public class KafkaConsumerProperties implements KafkaConsumerParameters {
@@ -46,6 +50,8 @@ public class KafkaConsumerProperties implements KafkaConsumerParameters {
     private int maxPartitionFetchMin = Topic.MIN_MESSAGE_SIZE;
 
     private int maxPartitionFetchMax = Topic.MAX_MESSAGE_SIZE;
+
+    private List<PartitionAssignmentStrategy> partitionAssignmentStrategies = List.of(RANGE);
 
     @Override
     public int getSendBufferBytes() {
@@ -216,5 +222,14 @@ public class KafkaConsumerProperties implements KafkaConsumerParameters {
 
     public void setMaxPartitionFetchMax(int maxPartitionFetchMax) {
         this.maxPartitionFetchMax = maxPartitionFetchMax;
+    }
+
+    @Override
+    public List<PartitionAssignmentStrategy> getPartitionAssignmentStrategies() {
+        return partitionAssignmentStrategies;
+    }
+
+    public void setPartitionAssignmentStrategies(List<PartitionAssignmentStrategy> partitionAssignmentStrategies) {
+        this.partitionAssignmentStrategies = partitionAssignmentStrategies;
     }
 }
