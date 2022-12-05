@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
 
 import java.time.Instant;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
