@@ -20,7 +20,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
 
-class RateLimitingMessageSenderTest extends Specification {
+class ResilientMessageSenderTest extends Specification {
 
     Consumer<CompletableFuture<MessageSendingResult>> successfulConsumer() {
         return { cf -> return cf.complete(MessageSendingResult.succeededResult())
@@ -66,7 +66,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * acquire()
             1 * registerSuccessfulSending()
         }
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -87,7 +87,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * acquire()
             1 * registerFailedSending()
         }
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -109,7 +109,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * registerSuccessfulSending()
         }
 
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -131,7 +131,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * registerFailedSending()
         }
 
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -157,7 +157,7 @@ class RateLimitingMessageSenderTest extends Specification {
                         .withClientErrorRetry()
                         .build()).build()
 
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -179,7 +179,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * registerSuccessfulSending()
         }
 
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -201,7 +201,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * registerFailedSending()
         }
 
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -223,7 +223,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * registerSuccessfulSending()
         }
 
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -244,7 +244,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * acquire()
             1 * registerFailedSending()
         }
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -269,7 +269,7 @@ class RateLimitingMessageSenderTest extends Specification {
             1 * acquire()
             1 * registerFailedSending()
         }
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
                 serialConsumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,

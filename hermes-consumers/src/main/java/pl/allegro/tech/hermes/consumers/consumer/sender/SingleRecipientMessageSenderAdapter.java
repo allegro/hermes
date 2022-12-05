@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.RateLimitingMessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -10,16 +10,16 @@ public class SingleRecipientMessageSenderAdapter implements MessageSender {
     private final CompletableFutureAwareMessageSender adaptee;
     private final Function<Throwable, MessageSendingResult> exceptionMapper = MessageSendingResult::failedResult;
 
-    private final RateLimitingMessageSender rateLimitingMessageSender;
+    private final ResilientMessageSender resilientMessageSender;
 
-    public SingleRecipientMessageSenderAdapter(CompletableFutureAwareMessageSender adaptee, RateLimitingMessageSender rateLimitingMessageSender) {
-        this.rateLimitingMessageSender = rateLimitingMessageSender;
+    public SingleRecipientMessageSenderAdapter(CompletableFutureAwareMessageSender adaptee, ResilientMessageSender resilientMessageSender) {
+        this.resilientMessageSender = resilientMessageSender;
         this.adaptee = adaptee;
     }
 
     @Override
     public CompletableFuture<MessageSendingResult> send(Message message) {
-        return rateLimitingMessageSender.send(
+        return resilientMessageSender.send(
                 resultFuture -> adaptee.send(message, resultFuture),
                 exceptionMapper
         );

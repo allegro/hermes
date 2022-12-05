@@ -246,7 +246,7 @@ public class ConsumerMessageSenderTest {
         Subscription subscriptionWithModfiedEndpoint = subscriptionWithEndpoint("http://somewhere:9876");
         MessageSender otherMessageSender = mock(MessageSender.class);
 
-        when(messageSenderFactory.create(eq(subscriptionWithModfiedEndpoint), any(RateLimitingMessageSender.class)))
+        when(messageSenderFactory.create(eq(subscriptionWithModfiedEndpoint), any(ResilientMessageSender.class)))
                 .thenReturn(otherMessageSender);
         when(otherMessageSender.send(message)).thenReturn(success());
 
@@ -265,7 +265,7 @@ public class ConsumerMessageSenderTest {
         Subscription subscriptionWithModifiedTimeout = subscriptionWithRequestTimeout(2000);
         MessageSender otherMessageSender = mock(MessageSender.class);
 
-        when(messageSenderFactory.create(eq(subscriptionWithModifiedTimeout), any(RateLimitingMessageSender.class)))
+        when(messageSenderFactory.create(eq(subscriptionWithModifiedTimeout), any(ResilientMessageSender.class)))
                 .thenReturn(otherMessageSender);
         when(otherMessageSender.send(message)).thenReturn(success());
 
@@ -384,7 +384,7 @@ public class ConsumerMessageSenderTest {
     }
 
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
-        when(messageSenderFactory.create(eq(subscription), any(RateLimitingMessageSender.class))).thenReturn(messageSender);
+        when(messageSenderFactory.create(eq(subscription), any(ResilientMessageSender.class))).thenReturn(messageSender);
         ConsumerMessageSender sender = new ConsumerMessageSender(
                 subscription,
                 messageSenderFactory,

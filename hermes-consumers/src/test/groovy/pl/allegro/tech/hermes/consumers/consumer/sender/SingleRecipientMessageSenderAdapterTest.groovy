@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.consumers.consumer.Message
-import pl.allegro.tech.hermes.consumers.consumer.RateLimitingMessageSender
+import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout
 import spock.lang.Specification
@@ -34,10 +34,10 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
         void stop() {}
     }
 
-    RateLimitingMessageSender rateLimitingMessageSender(ConsumerRateLimiter consumerRateLimiter) {
+    ResilientMessageSender rateLimitingMessageSender(ConsumerRateLimiter consumerRateLimiter) {
         Subscription subscription = subscription(SubscriptionName.fromString("group.topic\$subscription")).build()
 
-        return new RateLimitingMessageSender(
+        return new ResilientMessageSender(
                 consumerRateLimiter,
                 subscription,
                 futureAsyncTimeout,
@@ -52,7 +52,7 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
             1 * acquire()
             1 * registerSuccessfulSending()
         }
-        RateLimitingMessageSender rateLimitingMessageSender = rateLimitingMessageSender(consumerRateLimiter)
+        ResilientMessageSender rateLimitingMessageSender = rateLimitingMessageSender(consumerRateLimiter)
         SingleRecipientMessageSenderAdapter adapter = new SingleRecipientMessageSenderAdapter(successfulMessageSender, rateLimitingMessageSender)
 
         when:
@@ -68,7 +68,7 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
             1 * acquire()
             1 * registerFailedSending()
         }
-        RateLimitingMessageSender rateLimitingMessageSender = rateLimitingMessageSender(consumerRateLimiter)
+        ResilientMessageSender rateLimitingMessageSender = rateLimitingMessageSender(consumerRateLimiter)
 
         SingleRecipientMessageSenderAdapter adapter = new SingleRecipientMessageSenderAdapter(failingMessageSender, rateLimitingMessageSender)
 

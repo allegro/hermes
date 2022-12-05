@@ -13,18 +13,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class RateLimitingMessageSender {
+public class ResilientMessageSender {
     private final ConsumerRateLimiter rateLimiter;
     private final List<Predicate<MessageSendingResult>> ignore;
     private final FutureAsyncTimeout async;
     private final int requestTimeoutMs;
     private final int asyncTimeoutMs;
 
-    public RateLimitingMessageSender(ConsumerRateLimiter rateLimiter,
-                                     Subscription subscription,
-                                     FutureAsyncTimeout async,
-                                     int requestTimeoutMs,
-                                     int asyncTimeoutMs) {
+    public ResilientMessageSender(ConsumerRateLimiter rateLimiter,
+                                  Subscription subscription,
+                                  FutureAsyncTimeout async,
+                                  int requestTimeoutMs,
+                                  int asyncTimeoutMs) {
         this.rateLimiter = rateLimiter;
         this.ignore = ignorableErrors(subscription);
         this.async = async;

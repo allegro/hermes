@@ -140,7 +140,7 @@ public class ConsumerMessageSender {
 
     private MessageSender messageSender(Subscription subscription) {
         Integer requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
-        RateLimitingMessageSender rateLimitingMessageSender = new RateLimitingMessageSender(
+        ResilientMessageSender resilientMessageSender = new ResilientMessageSender(
                 this.rateLimiter,
                 subscription,
                 this.async,
@@ -149,7 +149,7 @@ public class ConsumerMessageSender {
         );
 
         return this.messageSenderFactory.create(
-                subscription, rateLimitingMessageSender
+                subscription, resilientMessageSender
         );
     }
 

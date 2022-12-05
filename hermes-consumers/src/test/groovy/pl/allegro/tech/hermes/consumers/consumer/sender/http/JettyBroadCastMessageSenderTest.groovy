@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult
-import pl.allegro.tech.hermes.consumers.consumer.RateLimitingMessageSender
+import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HermesHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1HeadersProvider
@@ -76,7 +76,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
 
         Subscription subscription = subscription(SubscriptionName.fromString("group.topic\$subscription")).build()
 
-        RateLimitingMessageSender sendFutureProvider = new RateLimitingMessageSender(
+        ResilientMessageSender sendFutureProvider = new ResilientMessageSender(
                 rateLimiter, subscription, futureAsyncTimeout, 10000, 1000
         )
 
@@ -163,7 +163,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
 
         def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
         MessageSender messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
-                requestHeadersProvider, resultHandlersProvider, Mock(RateLimitingMessageSender))
+                requestHeadersProvider, resultHandlersProvider, Mock(ResilientMessageSender))
 
         when:
         def future =  messageSender.send(testMessage())
