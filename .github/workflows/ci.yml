@@ -38,3 +38,10 @@ jobs:
         run: ./gradlew assemble
       - name: Run tests with Gradle
         run: ./gradlew ${{ matrix.tests }}
+      - name: Archive test results
+        uses: actions/upload-artifact@v3
+        if: (success() || failure()) && !contains(matrix.tests, 'jmh')
+        with:
+          name: ${{ matrix.tests }}-test-report
+          path: '**/build/test-results/**/TEST-*.xml'
+          retention-days: 90
