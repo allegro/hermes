@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
+import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration;
 import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties;
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties;
@@ -65,7 +66,14 @@ public class JettyMessageSenderTest {
         ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
         client = consumerConfiguration.http1SerialClient(
                 new HttpClientsFactory(
-                        new InstrumentedExecutorServiceFactory(new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
+                        new InstrumentedExecutorServiceFactory(
+                                new ThreadPoolMetrics(
+                                    new HermesMetrics(
+                                            new MetricRegistry(),
+                                            new PathsCompiler("localhost")
+                                    )
+                                )
+                        ),
                         sslContextFactoryProvider),
                 new Http1ClientProperties()
         );

@@ -24,6 +24,7 @@ public class ThreadPoolMetrics {
         hermesMetrics.registerThreadPoolTaskQueueCapacity(threadPoolName,
                 () -> {
                     int qCapacity = queue.size() + queue.remainingCapacity();
+                    // overflow in case of unbounded queue, set queueCapacity to Integer.MAX_VALUE
                     return qCapacity < 0 ? Integer.MAX_VALUE : qCapacity;
                 });
         hermesMetrics.registerThreadPoolTaskQueued(threadPoolName, queue::size);
