@@ -28,6 +28,7 @@ public class InstrumentedExecutorServiceFactory {
     public ExecutorService getExecutorService(String name, int size, boolean monitoringEnabled) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-executor-%d").build();
         ThreadPoolExecutor executor = newFixedThreadPool(name, size, threadFactory);
+        executor.prestartAllCoreThreads();
 
         if (monitoringEnabled) {
             monitor(name, executor);
@@ -37,14 +38,14 @@ public class InstrumentedExecutorServiceFactory {
     }
 
     public ScheduledExecutorService getScheduledExecutorService(
-            String name, int size, boolean monitoringEnable
+            String name, int size, boolean monitoringEnabled
     ) {
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-scheduled-executor-%d").build();
 
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(size, threadFactory);
 
-        if (monitoringEnable) {
+        if (monitoringEnabled) {
             monitor(name, executor);
         }
 
