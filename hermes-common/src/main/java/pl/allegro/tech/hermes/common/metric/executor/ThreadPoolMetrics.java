@@ -20,7 +20,9 @@ public class ThreadPoolMetrics {
 
         hermesMetrics.registerThreadPoolCapacity(threadPoolName, executor::getPoolSize);
         hermesMetrics.registerThreadPoolActiveThreads(threadPoolName, executor::getActiveCount);
-        hermesMetrics.registerThreadPoolUtilization(threadPoolName, () -> (double) executor.getActiveCount() / (double) executor.getPoolSize());
+        hermesMetrics.registerThreadPoolUtilization(threadPoolName,
+                () -> (double) executor.getActiveCount() / (double) executor.getPoolSize()
+        );
         hermesMetrics.registerThreadPoolTaskQueueCapacity(threadPoolName,
                 () -> {
                     int qCapacity = queue.size() + queue.remainingCapacity();
