@@ -108,7 +108,7 @@ public class HermesManagementInstance {
                 logger.info("{} zookeeper clusters are ready, need: {}", clustersReady, zookeeperClusters.size());
                 return false;
             } else {
-                logger.info("All {} zookeeper clusters are ready", zookeeperClusters);
+                logger.info("All {} zookeeper clusters are ready", zookeeperClusters.size());
                 return true;
             }
         }
