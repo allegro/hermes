@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.setup;
 
 import com.google.common.collect.ImmutableMap;
+import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
@@ -94,17 +95,22 @@ public class HermesManagementInstance {
 
         private void waitUntilStructureInZookeeperIsCreated(List<CuratorFramework> zookeeperClusters) {
             logger.info("Waiting for zookeeper structure to be created");
-            waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
+            try {
+                waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
+            } catch (ConditionTimeoutException ex) {
+                logger.error("Structure for Zookeeper does not exist in 240 seconds");
+                throw ex;
+            }
         }
 
         private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {
             for (CuratorFramework zookeeper : zookeeperClusters) {
                 if (zookeeper.checkExists().forPath("/hermes/groups") == null) {
-                    logger.info("Structure for Zookeeper does not exist after 120 seconds");
+                    logger.info("Structure for Zookeeper does not exist yet");
                     return false;
                 }
             }
-            logger.info("Structure for Zookeepers exists in 120 seconds");
+            logger.info("Structure for Zookeepers exists in 240 seconds");
             return true;
         }
 
