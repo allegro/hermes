@@ -75,7 +75,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     @BeforeSuite
     public void prepareEnvironment(ITestContext context) {
         try {
-            Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne, hermesZookeeperTwo, googlePubSubEmulator)
+            Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne, googlePubSubEmulator)
                     .parallel()
                     .forEach(Startable::start);
 

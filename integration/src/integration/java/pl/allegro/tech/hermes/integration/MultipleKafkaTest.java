@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
@@ -24,6 +25,7 @@ import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.C
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
+@Ignore
 public class MultipleKafkaTest extends IntegrationTest {
 
     private static final int FRONTEND_PORT = Ports.nextAvailable();
