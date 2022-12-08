@@ -98,19 +98,18 @@ public class HermesManagementInstance {
         }
 
         private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {
-            int clustersReady = 0;
+            int notReady = 0;
             for (CuratorFramework zookeeper : zookeeperClusters) {
-                if (zookeeper.checkExists().forPath("/hermes/groups") != null) {
-                    clustersReady++;
+                if (zookeeper.checkExists().forPath("/hermes/groups") == null) {
+                    notReady++;
                 }
             }
-            if (clustersReady == zookeeperClusters.size()) {
-                logger.info("All zookeeper clusters are ready");
+            if (notReady == 0) {
+                logger.info("{} zookeeper clusters are not ready", notReady);
                 return true;
-            } else {
-                logger.info("{} zookeeper clusters are ready, need: {}", clustersReady, zookeeperClusters.size());
-                return false;
             }
+
+            return false;
         }
 
         private void closeZookeeperClustersConnections(List<CuratorFramework> zookeeperClusters) {
