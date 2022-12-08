@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import org.eclipse.jetty.client.HttpClient
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
+import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration
 import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties
@@ -25,6 +26,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
     HttpClient batchClient
     MetricRegistry metricRegistry = new MetricRegistry()
     HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
+    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(threadPoolMetrics)
 
     def setupSpec() {
         port = Ports.nextAvailable()
@@ -37,7 +39,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
         SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties())
         ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
         client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
-                new InstrumentedExecutorServiceFactory(hermesMetrics),
+                new InstrumentedExecutorServiceFactory(threadPoolMetrics),
                 sslContextFactoryProvider), new Http1ClientProperties()
         )
         batchClient = Mock(HttpClient)
