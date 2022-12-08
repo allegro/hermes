@@ -8,7 +8,7 @@ PAST_BUILDS="$TMPDIR/$BUILDS_FILE"
 UNIT_TEST_ARTIFACT="check-test-report"
 E2E_REPORT_ARTIFACT="integrationTest-test-report"
 
-gh run list --repo $REPO --workflow ci --json "status,databaseId" --limit 20 >> $PAST_BUILDS
+gh run list --repo $REPO --branch master --workflow ci --json "status,databaseId" --limit 20 >> $PAST_BUILDS
 
 cd $TMPDIR
 
