@@ -22,7 +22,7 @@ public abstract class ZookeeperBaseTest {
 
     @BeforeClass
     public static void beforeZookeeperClass() throws Exception {
-        zookeeperServer = new TestingServer(45678);
+        zookeeperServer = new TestingServer();
         zookeeperClient = CuratorFrameworkFactory.builder()
                 .connectString(zookeeperServer.getConnectString())
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))

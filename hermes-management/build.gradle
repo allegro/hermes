@@ -43,22 +43,29 @@ dependencies {
     testCompile group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
 }
 
+def consoleDir = "${buildDir}/generated/console"
+
 task buildHermesConsole(type: Exec) {
-    workingDir '../hermes-console'
+    def dir = '../hermes-console'
+    workingDir dir
+    outputs.dir(dir + "/dist")
+    inputs.dir(dir + "/static")
     commandLine './package.sh'
 }
 
-task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
-    from '../hermes-console/dist/static'
-    into(sourceSets.main.output.resourcesDir.path + '/static')
-}
-
-tasks.register('prepareIndexTemplate') {
+task attachHermesConsole(type: Copy) {
+    def targetDir = consoleDir
+    from tasks.named('buildHermesConsole')
+    into targetDir
+    include("static/**")
     doLast {
-        def indexPath = sourceSets.main.output.resourcesDir.path + '/static/index.html'
-        ant.move file: indexPath,
-                tofile: indexPath + '.ftl'
+        ant.move file: targetDir + '/static/index.html',
+            tofile: targetDir + '/static/index.html.ftl'
     }
 }
 
-jar.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+sourceSets {
+    main {
+        resources.srcDir consoleDir
+    }
+}

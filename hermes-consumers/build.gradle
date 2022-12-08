@@ -48,28 +48,37 @@ dependencies {
     sbeClasspath group: 'uk.co.real-logic', name: 'sbe-all', version: '1.12.8'
 }
 
-def generatedPath = "${buildDir}/generated/java/"
+def generatedPathMaxRate = "${buildDir}/generated/maxrate/java/"
+def generatedPathWorkload = "${buildDir}/generated/workload/java/"
 
 task generateMaxRateSbeStubs(type: JavaExec) {
+    def input = 'src/main/resources/sbe/max-rate.xml'
+    inputs.file input
+    outputs.dir generatedPathMaxRate
+    outputs.cacheIf { true }
     description = "Generate SBE stubs for max-rate"
     classpath configurations.sbeClasspath
     main = 'uk.co.real_logic.sbe.SbeTool'
     systemProperties(
-            'sbe.output.dir': generatedPath,
+            'sbe.output.dir': generatedPathMaxRate,
             'sbe.xinclude.aware': 'true'
     )
-    args = ['src/main/resources/sbe/max-rate.xml']
+    args = [input]
 }
 
 task generateWorkloadSbeStubs(type: JavaExec) {
+    def input = 'src/main/resources/sbe/workload.xml'
+    inputs.file input
+    outputs.dir generatedPathWorkload
+    outputs.cacheIf { true }
     description = "Generate SBE stubs for workload"
     classpath configurations.sbeClasspath
     main = 'uk.co.real_logic.sbe.SbeTool'
     systemProperties(
-            'sbe.output.dir': generatedPath,
+            'sbe.output.dir': generatedPathWorkload,
             'sbe.xinclude.aware': 'true'
     )
-    args = ['src/main/resources/sbe/workload.xml']
+    args = [input]
 }
 
 task generateSbeStubs(type: DefaultTask) {
@@ -79,7 +88,7 @@ task generateSbeStubs(type: DefaultTask) {
 
 sourceSets {
     main {
-        java.srcDir generatedPath
+        java.srcDirs([generatedPathMaxRate, generatedPathWorkload])
     }
 }
 

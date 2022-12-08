@@ -22,13 +22,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import static com.github.tomakehurst.wiremock.client.WireMock.post
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage
 
 class HermesSenderTest extends Specification {
 
     @ClassRule
     @Shared
-    WireMockClassRule service = new WireMockClassRule(14523)
+    WireMockClassRule service = new WireMockClassRule(wireMockConfig().dynamicPort().dynamicHttpsPort())
 
     void setup() {
         WireMock.reset()
