@@ -76,7 +76,7 @@ def report(type: str, runs: List[TestResults]) -> str:
     for run in runs:
         for fail in run.failed:
             failed[fail] = failed.get(fail, 0) + 1
-    markdown += f"## {type}"
+    markdown += f"## {type} \n"
     markdown += "| Test name | Fail count |\n"
     markdown += "|--|--|\n"
     for k, v in sorted(failed.items(), key=lambda item: -item[1]):
