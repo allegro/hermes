@@ -27,7 +27,7 @@ def get_test_files(dir: str) -> List[str]:
     return files
 
 
-def parse_test_file(file: str) -> TestResults:
+def parse_test_file(file: str, run_id: str) -> TestResults:
     root = ET.parse(file).getroot()
     result = TestResults(
         skipped_cnt=int(root.get("skipped")),
@@ -35,7 +35,8 @@ def parse_test_file(file: str) -> TestResults:
         failed_cnt=int(root.get("failures")),
         error_cnt=int(root.get("errors")),
         failed=set(),
-        passed=set()
+        passed=set(),
+        run_id=run_id
     )
     name = root.get("name")
     name = '.'.join(name.split('.')[4:])  # remove common prefix
@@ -54,7 +55,7 @@ def aggregate_results(test_dir: str, run_id: str) -> TestResults:
     test_files = get_test_files(test_dir)
     results = []
     for test_file in test_files:
-        result = parse_test_file(test_file)
+        result = parse_test_file(test_file, run_id)
         results.append(result)
 
     agg = TestResults(set(), set(), run_id)
