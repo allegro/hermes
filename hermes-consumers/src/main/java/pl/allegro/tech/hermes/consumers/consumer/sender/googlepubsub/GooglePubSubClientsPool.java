@@ -20,7 +20,7 @@ class GooglePubSubClientsPool {
     private final ExecutorProvider publishingExecutorProvider;
     private final RetrySettings retrySettings;
     private final BatchingSettings batchingSettings;
-    private final GooglePubSubMessages pubSubMessages;
+    private final GooglePubSubMessageTransformerCreator messageTransformerCreator;
     private final Map<GooglePubSubSenderTarget, GooglePubSubClient> clients = new HashMap<>();
     private final Map<GooglePubSubSenderTarget, Integer> counters = new HashMap<>();
 
@@ -30,13 +30,13 @@ class GooglePubSubClientsPool {
                             ExecutorProvider publishingExecutorProvider,
                             RetrySettings retrySettings,
                             BatchingSettings batchingSettings,
-                            GooglePubSubMessages pubSubMessages,
+                            GooglePubSubMessageTransformerCreator messageTransformerCreator,
                             TransportChannelProvider transportChannelProvider) {
         this.credentialsProvider = credentialsProvider;
         this.publishingExecutorProvider = publishingExecutorProvider;
         this.retrySettings = retrySettings;
         this.batchingSettings = batchingSettings;
-        this.pubSubMessages = pubSubMessages;
+        this.messageTransformerCreator = messageTransformerCreator;
         this.transportChannelProvider = transportChannelProvider;
     }
 
@@ -70,7 +70,7 @@ class GooglePubSubClientsPool {
         counters.clear();
     }
 
-    private GooglePubSubClient createClient(GooglePubSubSenderTarget resolvedTarget) throws IOException {
+    protected GooglePubSubClient createClient(GooglePubSubSenderTarget resolvedTarget) throws IOException {
         final Publisher.Builder builder = Publisher.newBuilder(resolvedTarget.getTopicName())
                 .setEndpoint(resolvedTarget.getPubSubEndpoint())
                 .setCredentialsProvider(credentialsProvider)
@@ -84,6 +84,6 @@ class GooglePubSubClientsPool {
         } else {
             publisher = builder.setChannelProvider(transportChannelProvider).build();
         }
-        return new GooglePubSubClient(publisher, pubSubMessages);
+        return new GooglePubSubClient(publisher, messageTransformerCreator.getTransformerForTargetEndpoint(resolvedTarget));
     }
 }

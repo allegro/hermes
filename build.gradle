@@ -53,7 +53,7 @@ allprojects {
             jackson           : '2.11.4',
             jersey            : '2.35',
             jetty             : '9.4.19.v20190610',
-            curator           : '2.12.0',
+            curator           : '5.4.0',
             dropwizard_metrics: '4.1.0',
             micrometer_metrics: '1.2.1',
             wiremock          : '2.27.2',
@@ -87,6 +87,8 @@ allprojects {
         testCompile group: 'org.assertj', name: 'assertj-core', version: versions.assertj
         testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
         testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+
+        annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: versions.spring
     }
 
     test {

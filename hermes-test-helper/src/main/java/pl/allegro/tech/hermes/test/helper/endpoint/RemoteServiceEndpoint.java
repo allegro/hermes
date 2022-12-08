@@ -114,6 +114,35 @@ public class RemoteServiceEndpoint {
                         .willReturn(aResponse().withStatus(returnedStatusCode).withFixedDelay(delay)));
     }
 
+    public void slowThenFastMessage(String message, int chunks, int delayMs) {
+        receivedRequests.clear();
+        expectedMessages = Arrays.asList(message, message);
+
+        listener.register(
+                post(urlEqualTo(path))
+                        .inScenario("slowAndFast")
+                        .whenScenarioStateIs(STARTED)
+                        .willSetStateTo("slow")
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(returnedStatusCode)
+                                        .withBody("I am very slow!")
+                                        .withChunkedDribbleDelay(chunks, delayMs)
+                        )
+        );
+
+        listener.register(
+                post(urlEqualTo(path))
+                        .inScenario("slowAndFast")
+                        .whenScenarioStateIs("slow")
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(returnedStatusCode)
+                                        .withFixedDelay(0)
+                        )
+        );
+    }
+
     public void setReturnedStatusCode(int statusCode) {
         returnedStatusCode = statusCode;
     }
@@ -221,4 +250,5 @@ public class RemoteServiceEndpoint {
         listener.shutdown();
         service.shutdown();
     }
+
 }

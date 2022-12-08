@@ -94,7 +94,7 @@ public class HermesManagementInstance {
 
         private void waitUntilStructureInZookeeperIsCreated(List<CuratorFramework> zookeeperClusters) {
             logger.info("Waiting for zookeeper structure to be created");
-            waitAtMost(adjust(120), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
+            waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
         }
 
         private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {

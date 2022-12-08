@@ -76,6 +76,10 @@ public class HermesMetrics {
                 pathContext().withHttpCode(statusCode).withGroup(topicName.getGroupName()).withTopic(topicName.getName()).build()));
     }
 
+    public Histogram histogram(String metric) {
+        return metricRegistry.histogram(metricRegistryName(metric));
+    }
+
     public Counter counter(String metric) {
         return metricRegistry.counter(metricRegistryName(metric));
     }
@@ -104,12 +108,16 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_REQUEST_QUEUE_SIZE), gauge);
     }
 
-    public void registerConsumerSenderHttp1RequestQueueSize(Gauge<Integer> gauge) {
-        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_1_REQUEST_QUEUE_SIZE), gauge);
+    public void registerConsumerSenderHttp1SerialClientRequestQueueSize(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_REQUEST_QUEUE_SIZE), gauge);
+    }
+
+    public void registerConsumerSenderHttp1BatchClientRequestQueueSize(Gauge<Integer> gauge) {
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_REQUEST_QUEUE_SIZE), gauge);
     }
 
     public void registerConsumerSenderHttp2RequestQueueSize(Gauge<Integer> gauge) {
-        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_2_REQUEST_QUEUE_SIZE), gauge);
+        metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_REQUEST_QUEUE_SIZE), gauge);
     }
 
     public void incrementInflightCounter(SubscriptionName subscription) {

@@ -5,14 +5,15 @@ import com.google.pubsub.v1.PubsubMessage;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
-public class GooglePubSubMessages {
+class GooglePubSubMessageTransformerRaw implements GooglePubSubMessageTransformer {
 
     private final MetadataAppender<PubsubMessage> metadataAppender;
 
-    public GooglePubSubMessages(MetadataAppender<PubsubMessage> metadataAppender) {
+    GooglePubSubMessageTransformerRaw(MetadataAppender<PubsubMessage> metadataAppender) {
         this.metadataAppender = metadataAppender;
     }
 
+    @Override
     public PubsubMessage fromHermesMessage(Message message) {
         final PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
                 .setData(ByteString.copyFrom(message.getData()))

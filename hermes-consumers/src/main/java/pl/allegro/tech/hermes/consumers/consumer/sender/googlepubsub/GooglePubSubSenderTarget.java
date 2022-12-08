@@ -8,10 +8,12 @@ class GooglePubSubSenderTarget {
 
     private final TopicName topicName;
     private final String pubSubEndpoint;
+    private final CompressionCodec compressionCodec;
 
-    private GooglePubSubSenderTarget(TopicName topicName, String pubSubEndpoint) {
+    private GooglePubSubSenderTarget(TopicName topicName, String pubSubEndpoint, CompressionCodec compressionCodec) {
         this.topicName = topicName;
         this.pubSubEndpoint = pubSubEndpoint;
+        this.compressionCodec = compressionCodec;
     }
 
     TopicName getTopicName() {
@@ -22,6 +24,14 @@ class GooglePubSubSenderTarget {
         return pubSubEndpoint;
     }
 
+    CompressionCodec getCompressionCodec() {
+        return compressionCodec;
+    }
+
+    boolean isCompressionRequested() {
+        return compressionCodec != CompressionCodec.EMPTY;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -30,13 +40,20 @@ class GooglePubSubSenderTarget {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        GooglePubSubSenderTarget that = (GooglePubSubSenderTarget) o;
-        return Objects.equals(topicName, that.topicName)
-                && Objects.equals(pubSubEndpoint, that.pubSubEndpoint);
+        return skipCompressionCodecEquals((GooglePubSubSenderTarget) o);
     }
 
     @Override
     public int hashCode() {
+        return skipCompressionCodecHashCode();
+    }
+
+    private boolean skipCompressionCodecEquals(GooglePubSubSenderTarget that) {
+        return Objects.equals(topicName, that.topicName)
+                && Objects.equals(pubSubEndpoint, that.pubSubEndpoint);
+    }
+
+    private int skipCompressionCodecHashCode() {
         return Objects.hash(topicName, pubSubEndpoint);
     }
 
@@ -47,6 +64,7 @@ class GooglePubSubSenderTarget {
     static final class PubSubTargetBuilder {
         private TopicName topicName;
         private String pubSubEndpoint;
+        private CompressionCodec compressionCodec;
 
         private PubSubTargetBuilder() {
         }
@@ -61,8 +79,13 @@ class GooglePubSubSenderTarget {
             return this;
         }
 
+        PubSubTargetBuilder withCompressionCodec(CompressionCodec compressionCodec) {
+            this.compressionCodec = compressionCodec;
+            return this;
+        }
+
         GooglePubSubSenderTarget build() {
-            return new GooglePubSubSenderTarget(topicName, pubSubEndpoint);
+            return new GooglePubSubSenderTarget(topicName, pubSubEndpoint, compressionCodec);
         }
     }
 }

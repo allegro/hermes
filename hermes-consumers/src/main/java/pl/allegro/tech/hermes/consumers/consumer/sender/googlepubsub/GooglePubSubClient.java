@@ -20,16 +20,16 @@ class GooglePubSubClient {
     private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClient.class);
 
     private final Publisher publisher;
-    private final GooglePubSubMessages messageCreator;
+    private final GooglePubSubMessageTransformer messageTransformer;
 
-    GooglePubSubClient(Publisher publisher, GooglePubSubMessages messageCreator) {
+    GooglePubSubClient(Publisher publisher, GooglePubSubMessageTransformer messageTransformer) {
         this.publisher = publisher;
-        this.messageCreator = messageCreator;
+        this.messageTransformer = messageTransformer;
     }
 
     void publish(Message message, CompletableFuture<MessageSendingResult> resultFuture)
             throws IOException, ExecutionException, InterruptedException {
-        PubsubMessage pubsubMessage = messageCreator.fromHermesMessage(message);
+        PubsubMessage pubsubMessage = messageTransformer.fromHermesMessage(message);
         ApiFuture<String> future = publisher.publish(pubsubMessage);
         ApiFutures.addCallback(future, new GooglePubSubMessageSentCallback(resultFuture), MoreExecutors.directExecutor());
     }

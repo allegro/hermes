@@ -10,25 +10,24 @@ import java.util.function.Function;
 /**
  * see http://www.nurkiewicz.com/2014/12/asynchronous-timeouts-with.html
  */
-public class FutureAsyncTimeout<T> {
+public class FutureAsyncTimeout {
 
     private final ScheduledExecutorService executor;
-    private final Function<TimeoutException, T> failure;
 
-    public FutureAsyncTimeout(Function<TimeoutException, T> failure, ScheduledExecutorService scheduledExecutorService) {
+
+    public FutureAsyncTimeout(ScheduledExecutorService scheduledExecutorService) {
         this.executor = scheduledExecutorService;
-        this.failure = failure;
     }
 
-    public CompletableFuture<T> within(CompletableFuture<T> future, Duration duration) {
-        return future.applyToEither(failAfter(duration), Function.identity());
+    public <T> CompletableFuture<T> within(CompletableFuture<T> future, Duration duration, Function<Throwable, T> exceptionMapper) {
+        return future.applyToEither(failAfter(duration, exceptionMapper), Function.identity());
     }
 
-    private CompletableFuture<T> failAfter(Duration duration) {
+    private <T> CompletableFuture<T> failAfter(Duration duration, Function<Throwable, T> exceptionMapper) {
         final CompletableFuture<T> promise = new CompletableFuture<>();
         executor.schedule(() -> {
             TimeoutException ex = new TimeoutException("Timeout after " + duration);
-            return promise.complete(failure.apply(ex));
+            return promise.complete(exceptionMapper.apply(ex));
         }, duration.toMillis(), TimeUnit.MILLISECONDS);
         return promise;
     }
