@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 class TestResults:
     failed: Set[str]
     passed: Set[str]
+    run_id: str
     test_cnt: int = 0
     skipped_cnt: int = 0
     failed_cnt: int = 0
@@ -49,14 +50,14 @@ def parse_test_file(file: str) -> TestResults:
     return result
 
 
-def aggregate_results(test_dir: str) -> TestResults:
+def aggregate_results(test_dir: str, run_id: str) -> TestResults:
     test_files = get_test_files(test_dir)
     results = []
     for test_file in test_files:
         result = parse_test_file(test_file)
         results.append(result)
 
-    agg = TestResults(set(), set())
+    agg = TestResults(set(), set(), run_id)
 
     for result in results:
         agg.test_cnt += result.test_cnt
@@ -75,12 +76,16 @@ def report(type: str, runs: List[TestResults]) -> str:
     markdown = ""
     for run in runs:
         for fail in run.failed:
-            failed[fail] = failed.get(fail, 0) + 1
+            if fail in failed:
+                failed[fail]["count"] += 1
+                failed[fail]["runs"].append(run.run_id)
+            else:
+                failed[fail] = {"count": 1, "runs": [run.run_id]}
     markdown += f"## {type} \n"
-    markdown += "| Test name | Fail count |\n"
-    markdown += "|--|--|\n"
-    for k, v in sorted(failed.items(), key=lambda item: -item[1]):
-        markdown += f"| {k} | {v} |\n"
+    markdown += "| Test name | Fail count | Failed in runs |\n"
+    markdown += "|--|--|--|\n"
+    for k, v in sorted(failed.items(), key=lambda item: -item[1]["count"]):
+        markdown += f"| {k} | {v['count']} | {v['runs']} |\n"
     markdown += "\n"
     return markdown
 
@@ -94,12 +99,13 @@ if __name__ == '__main__':
     e2e_runs = []
 
     for run in run_dirs:
+        run_id = os.path.basename(os.path.normpath(run))
         unit_test_dir = os.path.join(run, "check-test-report")
-        unit_test_results = aggregate_results(unit_test_dir)
+        unit_test_results = aggregate_results(unit_test_dir, run_id)
         unittest_runs.append(unit_test_results)
 
         e2e_test_dir = os.path.join(run, "integrationTest-test-report")
-        e2e_test_results = aggregate_results(e2e_test_dir)
+        e2e_test_results = aggregate_results(e2e_test_dir, run_id)
         e2e_runs.append(e2e_test_results)
 
     step_summary = "# Failing tests report\n"
