@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -158,7 +159,7 @@ public class ChronicleMapMessageRepositoryTest {
     private Message generateJsonMessage(String content, long timestamp) {
         byte[] messageContent = content.getBytes();
         String id = MessageIdGenerator.generate();
-        return new JsonMessage(id, messageContent, timestamp, "partition-key", Collections.emptyMap());
+        return new JsonMessage(id, messageContent, timestamp, "partition-key", Map.of("propagated-http-header", "value"));
     }
 
     private BackupMessage backupMessage(Message m, String qualifiedTopicName) {

@@ -14,6 +14,7 @@ public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
 
     private String messageId = "id";
 
+    // compatibility header, can be removed when all messages on Kafka don't have the header
     private String timestamp = "ts";
 
     private Set<String> internalHeaders = Set.of(messageId, timestamp, schemaId, schemaVersion);
@@ -24,8 +25,8 @@ public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
     }
 
     public void setSchemaVersion(String schemaVersion) {
-        updateInternalHeaders(this.schemaVersion, schemaVersion);
         this.schemaVersion = schemaVersion;
+        updateInternalHeaders();
     }
 
     @Override
@@ -34,8 +35,8 @@ public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
     }
 
     public void setSchemaId(String schemaId) {
-        updateInternalHeaders(this.schemaId, schemaId);
         this.schemaId = schemaId;
+        updateInternalHeaders();
     }
 
     @Override
@@ -44,26 +45,20 @@ public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
     }
 
     public void setMessageId(String messageId) {
-        updateInternalHeaders(this.messageId, messageId);
         this.messageId = messageId;
-    }
-
-    @Override
-    public String getTimestamp() {
-        return timestamp;
+        updateInternalHeaders();
     }
 
     public void setTimestamp(String timestamp) {
-        updateInternalHeaders(this.timestamp, timestamp);
         this.timestamp = timestamp;
+        updateInternalHeaders();
     }
 
     public boolean isNotInternal(String name) {
         return !internalHeaders.contains(name);
     }
 
-    private void updateInternalHeaders(String oldHeader, String newHeader) {
-        internalHeaders.remove(oldHeader);
-        internalHeaders.add(newHeader);
+    private void updateInternalHeaders() {
+        internalHeaders = Set.of(messageId, schemaId, schemaVersion, timestamp);
     }
 }

@@ -15,20 +15,20 @@ public class AvroMessage implements Message {
     private final long timestamp;
     private final CompiledSchema<Schema> schema;
     private final String partitionKey;
-    private final Map<String, String> httpHeaders;
+    private final Map<String, String> propagatedHTTPHeaders;
 
     public AvroMessage(String id,
                        byte[] data,
                        long timestamp,
                        CompiledSchema<Schema> schema,
                        String partitionKey,
-                       Map<String, String> httpHeaders) {
+                       Map<String, String> propagatedHTTPHeaders) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;
         this.schema = schema;
         this.partitionKey = partitionKey;
-        this.httpHeaders = httpHeaders;
+        this.propagatedHTTPHeaders = propagatedHTTPHeaders;
     }
 
     @Override
@@ -64,10 +64,10 @@ public class AvroMessage implements Message {
 
     @Override
     public Map<String, String> getHTTPHeaders() {
-        return httpHeaders;
+        return propagatedHTTPHeaders;
     }
 
     public AvroMessage withDataReplaced(byte[] newData) {
-        return new AvroMessage(id, newData, timestamp, schema, partitionKey, httpHeaders);
+        return new AvroMessage(id, newData, timestamp, schema, partitionKey, propagatedHTTPHeaders);
     }
 }
