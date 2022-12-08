@@ -59,7 +59,7 @@ public class InstrumentedExecutorServiceFactory {
 
 
     /**
-     * copy of {@link java.util.concurrent.Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)
+     * Copy of {@link java.util.concurrent.Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)}.
      */
     private ThreadPoolExecutor newFixedThreadPool(String executorName, int size, ThreadFactory threadFactory) {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
