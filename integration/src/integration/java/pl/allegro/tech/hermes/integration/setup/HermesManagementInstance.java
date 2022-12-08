@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.slf4j.Logger;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
@@ -17,10 +18,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesManagementInstance {
     private final HermesAPIOperations operations;
+
+    private static final Logger logger = getLogger(HermesManagementInstance.class);
 
     private HermesManagementInstance(HermesAPIOperations operations) {
         this.operations = operations;
@@ -94,12 +98,19 @@ public class HermesManagementInstance {
         }
 
         private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {
+            int clustersReady = 0;
             for (CuratorFramework zookeeper : zookeeperClusters) {
-                if (zookeeper.checkExists().forPath("/hermes/groups") == null) {
-                    return false;
+                if (zookeeper.checkExists().forPath("/hermes/groups") != null) {
+                    clustersReady++;
                 }
             }
-            return true;
+            if (clustersReady == zookeeperClusters.size()) {
+                logger.info("All zookeeper clusters are ready");
+                return true;
+            } else {
+                logger.info("{} zookeeper clusters are ready, need: {}", clustersReady, zookeeperClusters.size());
+                return false;
+            }
         }
 
         private void closeZookeeperClustersConnections(List<CuratorFramework> zookeeperClusters) {
@@ -130,6 +141,7 @@ public class HermesManagementInstance {
             args.add("--topic.avroContentTypeMetadataRequired=" + avroContentTypeMetadataRequired);
             args.add("--schema.repository.serverUrl=" + schemaRegistry);
             HermesManagement.main(args.toArray(new String[0]));
+            logger.info("Started hermes management");
         }
 
         private HermesAPIOperations setupOperations(CuratorFramework zookeeper) {
@@ -153,6 +165,7 @@ public class HermesManagementInstance {
                             .map(this::buildCuratorFramework)
                             .collect(Collectors.toList());
             zookeeperClients.forEach(CuratorFramework::start);
+            logger.info("Created zookeeper clients for each cluster");
             return zookeeperClients;
         }
 
