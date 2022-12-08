@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.metric;
 
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.EXECUTOR_NAME;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
@@ -51,4 +52,13 @@ public class Gauges {
     public static final String CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_REQUEST_QUEUE_SIZE = "http-clients.serial.http2.request-queue-size";
     public static final String CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_CONNECTIONS = "http-clients.serial.http2.connections";
     public static final String CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_PENDING_CONNECTIONS = "http-clients.serial.http2.pending-connections";
+
+    public static final String EXECUTORS = "executors.";
+    public static final String EXECUTOR_ACTIVE_THREADS = EXECUTORS + EXECUTOR_NAME +  ".active-threads";
+    public static final String EXECUTOR_CAPACITY =   EXECUTORS + EXECUTOR_NAME + ".capacity";
+    public static final String UTILIZATION = EXECUTORS + EXECUTOR_NAME + ".utilization";
+    public static final String TASK_QUEUE_CAPACITY = EXECUTORS + EXECUTOR_NAME + ".task-queue-capacity";
+    public static final String TASK_QUEUED = EXECUTORS + EXECUTOR_NAME + ".task-queue-size";
+    public static final String TASKS_QUEUE_UTILIZATION = EXECUTORS + EXECUTOR_NAME + ".task-queue-utilization";
+    public static final String TASKS_REJECTED_COUNT = EXECUTORS + EXECUTOR_NAME + "task-rejected";
 }
