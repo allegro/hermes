@@ -46,7 +46,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
 
     public static final KafkaContainerCluster kafkaClusterOne = new KafkaContainerCluster(NUMBER_OF_BROKERS_PER_CLUSTER);
     public static final KafkaContainerCluster kafkaClusterTwo = new KafkaContainerCluster(NUMBER_OF_BROKERS_PER_CLUSTER);
-    public static final ZookeeperContainer hermesZookeeperOne = new ZookeeperContainer();
+    public static final ZookeeperContainer hermesZookeeperOne = new ZookeeperContainer("ZookeeperContainerOne");
     public static final ZookeeperContainer hermesZookeeperTwo = new ZookeeperContainer();
     public static final GooglePubSubContainer googlePubSubEmulator = new GooglePubSubContainer();
     public static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
