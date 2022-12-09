@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpo
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
-public class JettyMessageSender extends CompletableFutureAwareMessageSender {
+public class JettyMessageSender implements CompletableFutureAwareMessageSender {
 
     private final HttpRequestFactory requestFactory;
     private final ResolvableEndpointAddress addressResolver;
@@ -31,7 +31,7 @@ public class JettyMessageSender extends CompletableFutureAwareMessageSender {
     }
 
     @Override
-    protected void sendMessage(Message message, final CompletableFuture<MessageSendingResult> resultFuture) {
+    public void send(Message message, final CompletableFuture<MessageSendingResult> resultFuture) {
         try {
             final HttpRequestData requestData = new HttpRequestDataBuilder()
                     .withRawAddress(addressResolver.getRawAddress())

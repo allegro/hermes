@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.EXECUTOR_NAME;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.KAFKA_CLUSTER;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.OAUTH_PROVIDER_NAME;
@@ -30,7 +29,4 @@ public class Timers {
     public static final String CONSUMER_IDLE_TIME = "idle-time." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
 
     public static final String OAUTH_PROVIDER_TOKEN_REQUEST_LATENCY = "oauth.provider." + OAUTH_PROVIDER_NAME + ".token-request-latency";
-
-    public static final String EXECUTOR_DURATION = "executors." + EXECUTOR_NAME + ".duration";
-    public static final String EXECUTOR_WAITING = "executors." + EXECUTOR_NAME + ".waiting";
 }

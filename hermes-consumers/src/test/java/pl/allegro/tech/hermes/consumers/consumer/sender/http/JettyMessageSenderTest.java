@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
+import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration;
 import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties;
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties;
@@ -65,7 +66,14 @@ public class JettyMessageSenderTest {
         ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
         client = consumerConfiguration.http1SerialClient(
                 new HttpClientsFactory(
-                        new InstrumentedExecutorServiceFactory(new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
+                        new InstrumentedExecutorServiceFactory(
+                                new ThreadPoolMetrics(
+                                    new HermesMetrics(
+                                            new MetricRegistry(),
+                                            new PathsCompiler("localhost")
+                                    )
+                                )
+                        ),
                         sslContextFactoryProvider),
                 new Http1ClientProperties()
         );
@@ -92,7 +100,8 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        CompletableFuture<MessageSendingResult> future = messageSender.send(testMessage());
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(testMessage(), future);
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
@@ -106,7 +115,8 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        CompletableFuture<MessageSendingResult> future = messageSender.send(testMessage());
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(testMessage(), future);
 
         // then
         assertThat(future.get(1, TimeUnit.SECONDS).succeeded()).isTrue();
@@ -115,12 +125,13 @@ public class JettyMessageSenderTest {
     @Test
     public void shouldNotRedirectMessage() throws InterruptedException, ExecutionException, TimeoutException {
         // given
-        int numberOfExpectedMessages = 1;
-        int maximumWaitTimeInSeconds = 1;
+        final int numberOfExpectedMessages = 1;
+        final int maximumWaitTimeInSeconds = 1;
         remoteServiceEndpoint.redirectMessage(TEST_MESSAGE_CONTENT);
 
         // when
-        CompletableFuture<MessageSendingResult> future = messageSender.send(testMessage());
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(testMessage(), future);
 
         // then
         assertThat(future.get(maximumWaitTimeInSeconds, TimeUnit.SECONDS).succeeded()).isFalse();
@@ -134,7 +145,8 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        CompletableFuture<MessageSendingResult> future = messageSender.send(testMessage());
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(testMessage(), future);
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
@@ -147,7 +159,8 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        messageSender.send(testMessage());
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(testMessage(), future);
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
@@ -160,7 +173,8 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        messageSender.send(testMessage());
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(testMessage(), future);
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
@@ -173,10 +187,11 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        CompletableFuture<MessageSendingResult> result = messageSender.send(testMessage());
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(testMessage(), future);
 
         // then
-        assertThat(result.get(1000, TimeUnit.MILLISECONDS).getStatusCode()).isEqualTo(200);
+        assertThat(future.get(1000, TimeUnit.MILLISECONDS).getStatusCode()).isEqualTo(200);
         remoteServiceEndpoint.waitUntilReceived();
         assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Hermes-Retry-Count")).isEqualTo("0");
     }
@@ -197,7 +212,8 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        messageSender.send(message);
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(message, future);
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
@@ -218,7 +234,9 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        MessageSendingResult messageSendingResult = messageSender.send(message).get(1000, TimeUnit.MILLISECONDS);
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(message, future);
+        MessageSendingResult messageSendingResult = future.get(1000, TimeUnit.MILLISECONDS);
 
         // then
         assertThat(messageSendingResult.isTimeout()).isTrue();
@@ -238,7 +256,9 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
         // when
-        MessageSendingResult messageSendingResult = messageSender.send(message).get(1000, TimeUnit.MILLISECONDS);
+        CompletableFuture<MessageSendingResult> future = new CompletableFuture<>();
+        messageSender.send(message, future);
+        MessageSendingResult messageSendingResult = future.get(1000, TimeUnit.MILLISECONDS);
 
         // then
         assertThat(messageSendingResult.isTimeout()).isTrue();

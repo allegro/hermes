@@ -9,8 +9,10 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
+import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider;
@@ -65,7 +67,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     @Override
-    public MessageSender create(Subscription subscription) {
+    public MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender) {
         EndpointAddress endpoint = subscription.getEndpoint();
         EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
         ResolvableEndpointAddress resolvableEndpoint =
@@ -78,13 +80,15 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
-                    sendingResultHandlers);
+                    sendingResultHandlers,
+                    resilientMessageSender);
         } else {
-            return new JettyMessageSender(
+            JettyMessageSender jettyMessageSender =  new JettyMessageSender(
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers);
+            return new SingleRecipientMessageSenderAdapter(jettyMessageSender, resilientMessageSender);
         }
     }
 

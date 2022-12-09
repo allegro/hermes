@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.EXECUTOR_NAME;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.HTTP_CODE;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.HTTP_CODE_FAMILY;
@@ -34,9 +33,6 @@ public class Meters {
 
     public static final String DELAYED_PROCESSING = "delayed-processing";
     public static final String TOPIC_DELAYED_PROCESSING = DELAYED_PROCESSING + "." + GROUP + "." + TOPIC;
-
-    public static final String EXECUTOR_SUBMITTED = "executors." + EXECUTOR_NAME + ".submitted";
-    public static final String EXECUTOR_COMPLETED = "executors." + EXECUTOR_NAME + ".completed";
 
     public static final String OAUTH_SUBSCRIPTION_TOKEN_REQUEST = "oauth.subscription." + GROUP + "." + TOPIC + "." + SUBSCRIPTION
             + ".token-request." + OAUTH_PROVIDER_NAME;

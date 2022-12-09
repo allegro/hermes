@@ -30,6 +30,7 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
+import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
@@ -163,8 +164,13 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory(HermesMetrics hermesMetrics) {
-        return new InstrumentedExecutorServiceFactory(hermesMetrics);
+    public ThreadPoolMetrics threadPoolMetrics(HermesMetrics hermesMetrics) {
+        return new ThreadPoolMetrics(hermesMetrics);
+    }
+
+    @Bean
+    public InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory(ThreadPoolMetrics threadPoolMetrics) {
+        return new InstrumentedExecutorServiceFactory(threadPoolMetrics);
     }
 
     @Bean

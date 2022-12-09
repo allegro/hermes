@@ -6,7 +6,9 @@ import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 
@@ -27,7 +29,7 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
     }
 
     @Override
-    public MessageSender create(Subscription subscription) {
+    public MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender) {
         EndpointAddress endpoint = subscription.getEndpoint();
         URI uri = endpoint.getUri();
         ConnectionFactory connectionFactory = getConnectionFactory(uri);
@@ -36,7 +38,8 @@ public abstract class AbstractJmsMessageSenderProvider implements JmsMessageSend
                 endpoint.getPassword()
         );
 
-        return new JmsMessageSender(jmsContext, extractTopicName(uri), metadataAppender);
+        JmsMessageSender jmsMessageSender = new JmsMessageSender(jmsContext, extractTopicName(uri), metadataAppender);
+        return new SingleRecipientMessageSenderAdapter(jmsMessageSender, resilientMessageSender);
     }
 
     @Override

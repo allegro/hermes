@@ -5,26 +5,33 @@ import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.util.HttpCookieStore
 import pl.allegro.tech.hermes.api.EndpointAddress
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata
+import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.consumers.consumer.Message
+import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter
+import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult
+import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HermesHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1HeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress
+import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout
 import pl.allegro.tech.hermes.test.helper.endpoint.MultiUrlEndpointAddressResolver
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
-import spock.lang.Subject
 
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 import static java.util.Collections.singleton
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.TEST_MESSAGE_CONTENT
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
 class JettyBroadCastMessageSenderTest extends Specification {
 
@@ -32,7 +39,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
     List<Integer> ports = (1..4).collect { Ports.nextAvailable() }
 
     @Shared
-    EndpointAddress endpoint = EndpointAddress.of(ports.collect {"http://localhost:${it}/"}.join(";"))
+    EndpointAddress endpoint = EndpointAddress.of(ports.collect { "http://localhost:${it}/" }.join(";"))
 
     @Shared
     HttpClient client
@@ -43,13 +50,12 @@ class JettyBroadCastMessageSenderTest extends Specification {
     @Shared
     List<RemoteServiceEndpoint> serviceEndpoints
 
-    @Subject
-    JettyBroadCastMessageSender messageSender
-
     HttpHeadersProvider requestHeadersProvider = new HermesHeadersProvider(
             singleton(new AuthHeadersProvider(new Http1HeadersProvider(), { Optional.empty() })))
 
     SendingResultHandlers resultHandlersProvider = new DefaultSendingResultHandlers()
+
+    FutureAsyncTimeout futureAsyncTimeout = new FutureAsyncTimeout(Executors.newSingleThreadScheduledExecutor())
 
     def setupSpec() throws Exception {
         wireMockServers.forEach { it.start() }
@@ -63,23 +69,36 @@ class JettyBroadCastMessageSenderTest extends Specification {
         serviceEndpoints = wireMockServers.collect { new RemoteServiceEndpoint(it) }
     }
 
-    def setup() {
+    MessageSender getSender(ConsumerRateLimiter rateLimiter) {
         def address = new ResolvableEndpointAddress(endpoint, new MultiUrlEndpointAddressResolver(),
                 EndpointAddressResolverMetadata.empty());
         def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
-        messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
-                requestHeadersProvider, resultHandlersProvider);
+
+        Subscription subscription = subscription(SubscriptionName.fromString("group.topic\$subscription")).build()
+
+        ResilientMessageSender sendFutureProvider = new ResilientMessageSender(
+                rateLimiter, subscription, futureAsyncTimeout, 10000, 1000
+        )
+
+        return new JettyBroadCastMessageSender(httpRequestFactory, address,
+                requestHeadersProvider, resultHandlersProvider, sendFutureProvider)
     }
 
     def "should send message successfully in parallel to all urls"() {
         given:
-        serviceEndpoints.forEach { endpoint -> endpoint.setDelay(300).expectMessages(TEST_MESSAGE_CONTENT)}
+        ConsumerRateLimiter rateLimiter = Mock(ConsumerRateLimiter) {
+            4 * acquire()
+            4 * registerSuccessfulSending()
+        }
+
+        serviceEndpoints.forEach { endpoint -> endpoint.setDelay(300).expectMessages(TEST_MESSAGE_CONTENT) }
 
         when:
-        def future = messageSender.send(testMessage());
+        def future = getSender(rateLimiter).send(testMessage());
 
         then:
-        future.get(1, TimeUnit.SECONDS).succeeded()
+        future.get(10, TimeUnit.SECONDS).succeeded()
+
 
         and:
         serviceEndpoints.forEach { it.waitUntilReceived() }
@@ -87,12 +106,18 @@ class JettyBroadCastMessageSenderTest extends Specification {
 
     def "should return not succeeded when sending to one of urls fails"() {
         given:
+        ConsumerRateLimiter rateLimiter = Mock(ConsumerRateLimiter) {
+            4 * acquire()
+            3 * registerSuccessfulSending()
+            1 * registerFailedSending()
+        }
+
         def failedServiceEndpoint = serviceEndpoints[0]
         failedServiceEndpoint.setReturnedStatusCode(500)
-        serviceEndpoints.forEach { endpoint -> endpoint.expectMessages(TEST_MESSAGE_CONTENT)}
+        serviceEndpoints.forEach { endpoint -> endpoint.expectMessages(TEST_MESSAGE_CONTENT) }
 
         when:
-        def future = messageSender.send(testMessage())
+        def future = getSender(rateLimiter).send(testMessage())
 
         then:
         serviceEndpoints.forEach { it.waitUntilReceived() }
@@ -107,6 +132,11 @@ class JettyBroadCastMessageSenderTest extends Specification {
 
     def "should not send to already sent url on retry"() {
         given:
+        ConsumerRateLimiter rateLimiter = Mock(ConsumerRateLimiter) {
+            3 * acquire()
+            3 * registerSuccessfulSending()
+        }
+
         serviceEndpoints.forEach { endpoint -> endpoint.expectMessages(TEST_MESSAGE_CONTENT) }
         def alreadySentServiceEndpoint = serviceEndpoints[0]
 
@@ -114,7 +144,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
         message.incrementRetryCounter([alreadySentServiceEndpoint.url]);
 
         when:
-        def future = messageSender.send(message)
+        def future = getSender(rateLimiter).send(message)
 
         then:
         alreadySentServiceEndpoint.makeSureNoneReceived()
@@ -132,11 +162,11 @@ class JettyBroadCastMessageSenderTest extends Specification {
         }
 
         def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
-        messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
-                requestHeadersProvider, resultHandlersProvider)
+        MessageSender messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
+                requestHeadersProvider, resultHandlersProvider, Mock(ResilientMessageSender))
 
         when:
-        def future = messageSender.send(testMessage())
+        def future =  messageSender.send(testMessage())
 
         then:
         MessageSendingResult messageSendingResult = future.get(1, TimeUnit.SECONDS)
@@ -144,11 +174,10 @@ class JettyBroadCastMessageSenderTest extends Specification {
         !messageSendingResult.succeeded()
         !messageSendingResult.isClientError()
         messageSendingResult.isRetryLater()
-
     }
 
     def cleanupSpec() {
-        wireMockServers.forEach{ it.stop() }
+        wireMockServers.forEach { it.stop() }
         client.stop()
     }
 

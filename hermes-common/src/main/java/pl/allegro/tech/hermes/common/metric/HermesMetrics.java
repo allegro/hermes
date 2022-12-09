@@ -120,6 +120,34 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_REQUEST_QUEUE_SIZE), gauge);
     }
 
+    public void registerThreadPoolActiveThreads(String executorName, Gauge<Integer> gauge) {
+        registerExecutorGauge(Gauges.EXECUTOR_ACTIVE_THREADS, executorName, gauge);
+    }
+
+    public void registerThreadPoolCapacity(String executorName, Gauge<Integer> gauge) {
+        registerExecutorGauge(Gauges.EXECUTOR_CAPACITY, executorName, gauge);
+    }
+
+    public void registerThreadPoolUtilization(String executorName, Gauge<Double> gauge) {
+        registerExecutorGauge(Gauges.UTILIZATION, executorName, gauge);
+    }
+
+    public void registerThreadPoolTaskQueueCapacity(String executorName, Gauge<Integer> gauge) {
+        registerExecutorGauge(Gauges.TASK_QUEUE_CAPACITY, executorName, gauge);
+    }
+
+    public void registerThreadPoolTaskQueued(String executorName, Gauge<Integer> gauge) {
+        registerExecutorGauge(Gauges.TASK_QUEUED, executorName, gauge);
+    }
+
+    public void registerThreadPoolTaskQueueUtilization(String executorName, Gauge<Double> gauge) {
+        registerExecutorGauge(Gauges.TASKS_QUEUE_UTILIZATION, executorName, gauge);
+    }
+
+    public void incrementThreadPoolTaskRejectedCount(String executorName) {
+        executorCounter(Gauges.TASKS_REJECTED_COUNT, executorName).inc();
+    }
+
     public void incrementInflightCounter(SubscriptionName subscription) {
         getInflightCounter(subscription).inc();
     }
@@ -210,31 +238,14 @@ public class HermesMetrics {
         return metricRegistry.timer(pathCompiler.compile(schemaMetric, pathContext().withSchemaRepoType("schema-registry").build()));
     }
 
-    public Timer executorDurationTimer(String executorName) {
-        return metricRegistry.timer(pathCompiler.compile(Timers.EXECUTOR_DURATION, pathContext().withExecutorName(executorName).build()));
+    private <T> Gauge<T> registerExecutorGauge(String path, String executorName, Gauge<T> gauge) {
+        return metricRegistry.register(pathCompiler.compile(path, pathContext().withExecutorName(executorName).build()), gauge);
     }
 
-    public Timer executorWaitingTimer(String executorName) {
-        return metricRegistry.timer(pathCompiler.compile(Timers.EXECUTOR_WAITING, pathContext().withExecutorName(executorName).build()));
+    private <T> Counter executorCounter(String path, String executorName) {
+        return metricRegistry.counter(pathCompiler.compile(path, pathContext().withExecutorName(executorName).build()));
     }
 
-    public Meter executorCompletedMeter(String executorName) {
-        return metricRegistry.meter(pathCompiler.compile(Meters.EXECUTOR_COMPLETED, pathContext().withExecutorName(executorName).build()));
-    }
-
-    public Meter executorSubmittedMeter(String executorName) {
-        return metricRegistry.meter(pathCompiler.compile(Meters.EXECUTOR_SUBMITTED, pathContext().withExecutorName(executorName).build()));
-    }
-
-    public Counter executorRunningCounter(String executorName) {
-        return metricRegistry.counter(
-                pathCompiler.compile(Counters.EXECUTOR_RUNNING, pathContext().withExecutorName(executorName).build()));
-    }
-
-    public Counter scheduledExecutorOverrun(String executorName) {
-        return metricRegistry.counter(
-                pathCompiler.compile(Counters.SCHEDULED_EXECUTOR_OVERRUN, pathContext().withExecutorName(executorName).build()));
-    }
 
     public Histogram messageContentSizeHistogram() {
         return metricRegistry.histogram(pathCompiler.compile(Histograms.GLOBAL_MESSAGE_SIZE));

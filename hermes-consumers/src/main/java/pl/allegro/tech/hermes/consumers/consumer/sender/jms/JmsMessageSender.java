@@ -19,7 +19,7 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NA
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
 import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
-public class JmsMessageSender extends CompletableFutureAwareMessageSender {
+public class JmsMessageSender implements CompletableFutureAwareMessageSender {
 
     private static final Logger logger = LoggerFactory.getLogger(JmsMessageSender.class);
 
@@ -39,7 +39,7 @@ public class JmsMessageSender extends CompletableFutureAwareMessageSender {
     }
 
     @Override
-    protected void sendMessage(Message msg, final CompletableFuture<MessageSendingResult> resultFuture) {
+    public void send(Message msg, final CompletableFuture<MessageSendingResult> resultFuture) {
         try {
             BytesMessage message = jmsContext.createBytesMessage();
             message.writeBytes(msg.getData());

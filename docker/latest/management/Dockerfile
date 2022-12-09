@@ -1,14 +1,14 @@
-FROM gradle:5.6.2-jdk11 AS builder
+FROM gradle:6.9.3-jdk11 AS builder
 
 COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src/
-RUN ./gradlew clean distZip -Pdistribution
+RUN gradle clean distZip -Pdistribution
 
-FROM adoptopenjdk/openjdk11:alpine-jre
+FROM adoptopenjdk/openjdk11:jre
 
-RUN apk update \
-  && apk add unzip wget bash \
-  && rm -rf /var/cache/apk/*
+RUN apt-get update \
+  && apt-get -y install unzip wget bash \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /app
 
