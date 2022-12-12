@@ -13,22 +13,68 @@ services:
       - zk_data:/var/lib/zookeeper/data/version-2
       - zk_log:/var/lib/zookeeper/log/version-2
 
+#  kafka:
+#    image: "confluentinc/cp-kafka:${CONFLUENT_IMAGES_TAG}"
+#    ports:
+#      - '9092:9092'
+#    depends_on:
+#      - zk
+#    user: root
+#    environment:
+#      KAFKA_ZOOKEEPER_CONNECT: zk:2181
+#      KAFKA_ADVERTISED_LISTENERS: DOCKER_INTERNAL_LISTENER://kafka:29092,DOCKER_EXTERNAL_LISTENER://localhost:9092
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER_INTERNAL_LISTENER:PLAINTEXT,DOCKER_EXTERNAL_LISTENER:PLAINTEXT
+#      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER_INTERNAL_LISTENER
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#    volumes:
+#      - kafka_data:/var/lib/kafka/data
+#      - kafka_secrets:/etc/kafka/secrets
+
   kafka:
-    image: "confluentinc/cp-kafka:${CONFLUENT_IMAGES_TAG}"
-    ports:
-      - '9092:9092'
+    image: "docker.redpanda.com/vectorized/redpanda:v22.2.2"
     depends_on:
       - zk
-    user: root
+    ports:
+      - "18081:18081"
+      - "18082:18082"
+      - "9092:9092"
+      - "9644:9644"
+      - "29092:29092"
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --node-id 0
+      - --kafka-addr PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr PLAINTEXT://kafka:29092,OUTSIDE://localhost:9092
+      - --pandaproxy-addr 0.0.0.0:18082
+      - --advertise-pandaproxy-addr localhost:18082
+
+  console:
+    image: docker.redpanda.com/vectorized/console:latest
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zk:2181
-      KAFKA_ADVERTISED_LISTENERS: DOCKER_INTERNAL_LISTENER://kafka:29092,DOCKER_EXTERNAL_LISTENER://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER_INTERNAL_LISTENER:PLAINTEXT,DOCKER_EXTERNAL_LISTENER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER_INTERNAL_LISTENER
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    volumes:
-      - kafka_data:/var/lib/kafka/data
-      - kafka_secrets:/etc/kafka/secrets
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["kafka:29092"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://kafka:8081"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://kafka:9644"]
+        connect:
+          enabled: true
+          clusters:
+            - name: local-connect-cluster
+              url: http://connect:8083
+    ports:
+      - "18080:8080"
+    depends_on:
+      - kafka
 
   graphite:
     image: graphiteapp/graphite-statsd:1.1.3
