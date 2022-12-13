@@ -28,8 +28,7 @@ import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.
 public class KafkaContainerCluster implements Startable {
     private static final DockerImageName ZOOKEEPER_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-zookeeper")
             .withTag(ImageTags.confluentImagesTag());
-    private static final DockerImageName KAFKA_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka")
-            .withTag(ImageTags.confluentImagesTag());
+    private static final DockerImageName REDPANDA_IMAGE_NAME = DockerImageName.parse("docker.redpanda.com/vectorized/redpanda:v22.2.2");
     private static final DockerImageName TOXIPROXY_IMAGE_NAME = DockerImageName.parse("ghcr.io/shopify/toxiproxy")
             .withTag("2.4.0");
 
@@ -54,7 +53,7 @@ public class KafkaContainerCluster implements Startable {
                 .withNetwork(zookeeper.getNetwork());
         int internalTopicsRf = Math.max(brokersNum - 1, 1);
         for (int brokerId = 0; brokerId < brokersNum; brokerId++) {
-            KafkaContainer container = new KafkaContainer(KAFKA_IMAGE_NAME, zookeeper.getNetwork(), brokerId)
+            KafkaContainer container = new KafkaContainer(REDPANDA_IMAGE_NAME, zookeeper.getNetwork(), brokerId)
                     .dependsOn(zookeeper)
                     .withExternalZookeeper(ZOOKEEPER_NETWORK_ALIAS + ":" + ZOOKEEPER_PORT)
                     .withEnv("KAFKA_BROKER_ID", brokerId + "")
