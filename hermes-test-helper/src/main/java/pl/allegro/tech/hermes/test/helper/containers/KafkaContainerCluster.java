@@ -7,6 +7,7 @@ import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.lifecycle.Startables;
+import org.testcontainers.redpanda.RedpandaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class KafkaContainerCluster implements Startable {
     private final int minInSyncReplicas;
     private final ZookeeperContainer zookeeper;
     private final ToxiproxyContainer toxiproxy;
-    private final List<KafkaContainer> brokers = new ArrayList<>();
+    private final List<RedpandaHermesContainer> brokers = new ArrayList<>();
 
     public KafkaContainerCluster(int brokersNum) {
         checkArgument(brokersNum > 0, "brokersNum '" + brokersNum + "' must be greater than 0");
@@ -53,15 +54,15 @@ public class KafkaContainerCluster implements Startable {
                 .withNetwork(zookeeper.getNetwork());
         int internalTopicsRf = Math.max(brokersNum - 1, 1);
         for (int brokerId = 0; brokerId < brokersNum; brokerId++) {
-            KafkaContainer container = new KafkaContainer(REDPANDA_IMAGE_NAME, zookeeper.getNetwork(), brokerId)
-                    .dependsOn(zookeeper)
-                    .withExternalZookeeper(ZOOKEEPER_NETWORK_ALIAS + ":" + ZOOKEEPER_PORT)
-                    .withEnv("KAFKA_BROKER_ID", brokerId + "")
-                    .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", internalTopicsRf + "")
-                    .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", internalTopicsRf + "")
-                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", internalTopicsRf + "")
-                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", internalTopicsRf + "")
-                    .withEnv("KAFKA_MIN_INSYNC_REPLICAS", minInSyncReplicas + "");
+            RedpandaHermesContainer container = new RedpandaHermesContainer(REDPANDA_IMAGE_NAME, zookeeper.getNetwork(), brokerId);
+//                    .dependsOn(zookeeper);
+//                    .withExternalZookeeper(ZOOKEEPER_NETWORK_ALIAS + ":" + ZOOKEEPER_PORT)
+//                    .withEnv("KAFKA_BROKER_ID", brokerId + "")
+//                    .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", internalTopicsRf + "")
+//                    .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", internalTopicsRf + "")
+//                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", internalTopicsRf + "")
+//                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", internalTopicsRf + "")
+//                    .withEnv("KAFKA_MIN_INSYNC_REPLICAS", minInSyncReplicas + "");
             brokers.add(container);
         }
     }
@@ -73,7 +74,7 @@ public class KafkaContainerCluster implements Startable {
     }
 
     public List<BrokerId> getAllBrokers() {
-        return brokers.stream().map(KafkaContainer::getBrokerId).collect(toList());
+        return brokers.stream().map(RedpandaHermesContainer::getBrokerId).collect(toList());
     }
 
     public int getMinInSyncReplicas() {
@@ -82,13 +83,13 @@ public class KafkaContainerCluster implements Startable {
 
     public String getBootstrapServersForExternalClients() {
         return brokers.stream()
-                .map(KafkaContainer::getAddressForExternalClients)
+                .map(RedpandaHermesContainer::getAddressForExternalClients)
                 .collect(Collectors.joining(","));
     }
 
     public String getBootstrapServersForInternalClients() {
         return brokers.stream()
-                .map(KafkaContainer::getAddressForInternalClients)
+                .map(RedpandaHermesContainer::getAddressForInternalClients)
                 .collect(Collectors.joining(","));
     }
 
@@ -103,7 +104,7 @@ public class KafkaContainerCluster implements Startable {
             Startables.deepStart(brokers)
                     .get(CLUSTER_START_TIMEOUT.getSeconds(), SECONDS);
             String readinessScript = readFileFromClasspath("testcontainers/kafka_readiness_check.sh");
-            for (KafkaContainer kafkaContainer : brokers) {
+            for (RedpandaHermesContainer kafkaContainer : brokers) {
                 copyScriptToContainer(readinessScript, kafkaContainer, READINESS_CHECK_SCRIPT);
             }
             waitForClusterFormation();
@@ -114,7 +115,7 @@ public class KafkaContainerCluster implements Startable {
 
     private void startToxiproxy() {
         toxiproxy.start();
-        for (KafkaContainer kafkaContainer : brokers) {
+        for (RedpandaHermesContainer kafkaContainer : brokers) {
             ContainerProxy proxy = toxiproxy.getProxy(kafkaContainer, kafkaContainer.getExposedPorts().get(0));
             proxies.add(proxy);
             kafkaContainer.withAdvertisedPort(proxy.getProxyPort());
@@ -124,16 +125,16 @@ public class KafkaContainerCluster implements Startable {
     public void stop(List<BrokerId> brokerIds) {
         select(brokerIds).stream()
                 .parallel()
-                .forEach(KafkaContainer::stopKafka);
+                .forEach(RedpandaHermesContainer::stopKafka);
     }
 
     public void start(List<BrokerId> brokerIds) {
         select(brokerIds).stream()
                 .parallel()
-                .forEach(KafkaContainer::startKafka);
+                .forEach(RedpandaHermesContainer::startKafka);
     }
 
-    private Set<KafkaContainer> select(List<BrokerId> brokerIds) {
+    private Set<RedpandaHermesContainer> select(List<BrokerId> brokerIds) {
         return brokers.stream()
                 .filter(b -> brokerIds.contains(b.getBrokerId()))
                 .collect(Collectors.toSet());
@@ -158,7 +159,7 @@ public class KafkaContainerCluster implements Startable {
         brokers.stream()
                 .filter(broker -> !broker.isKafkaRunning())
                 .parallel()
-                .forEach(KafkaContainer::startKafka);
+                .forEach(RedpandaHermesContainer::startKafka);
         waitForClusterFormation();
     }
 
@@ -178,7 +179,7 @@ public class KafkaContainerCluster implements Startable {
     }
 
     private boolean isKafkaReady() throws IOException, InterruptedException {
-        KafkaContainer firstBroker = selectFirstRunningBroker();
+        RedpandaHermesContainer firstBroker = selectFirstRunningBroker();
         ExecResult result = firstBroker.execInContainer(
                 "sh",
                 "-c",
@@ -196,7 +197,7 @@ public class KafkaContainerCluster implements Startable {
     }
 
     private int countPartitions(String option) throws IOException, InterruptedException {
-        KafkaContainer firstBroker = selectFirstRunningBroker();
+        RedpandaHermesContainer firstBroker = selectFirstRunningBroker();
         ExecResult result = firstBroker.execInContainer(
                 "sh",
                 "-c",
@@ -208,9 +209,9 @@ public class KafkaContainerCluster implements Startable {
         return Integer.parseInt(sanitizedOutput);
     }
 
-    private KafkaContainer selectFirstRunningBroker() {
+    private RedpandaHermesContainer selectFirstRunningBroker() {
         return brokers.stream()
-                .filter(KafkaContainer::isKafkaRunning)
+                .filter(RedpandaHermesContainer::isKafkaRunning)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("There is no running broker"));
     }
