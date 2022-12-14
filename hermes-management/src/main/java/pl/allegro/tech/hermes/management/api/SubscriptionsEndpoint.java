@@ -119,6 +119,7 @@ public class SubscriptionsEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @Path("/{subscriptionName}/undelivered/last")
     @ApiOperation(value = "Get latest undelivered message", response = SentMessageTrace.class, httpMethod = HttpMethod.GET)
     public Response getLatestUndeliveredMessage(@PathParam("topicName") String qualifiedTopicName,
@@ -132,6 +133,7 @@ public class SubscriptionsEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
+    @RolesAllowed({Roles.ADMIN, Roles.TOPIC_OWNER, Roles.SUBSCRIPTION_OWNER})
     @Path("/{subscriptionName}/undelivered")
     @ApiOperation(value = "Get latest undelivered messages", response = List.class, httpMethod = HttpMethod.GET)
     public Response getLatestUndeliveredMessages(@PathParam("topicName") String qualifiedTopicName,
