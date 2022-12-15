@@ -21,6 +21,29 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
         $scope.config = config;
 
+        function getUndelivered() {
+            console.log("get Undelivered");
+            subscriptionRepository.undelivered(topicName, subscriptionName).$promise
+                .then(function (undelivered) {
+                    $scope.undelivered = undelivered;
+                })
+                .catch(function () {
+                    $scope.undelivered = [];
+                });
+        }
+
+        function getLastUndelivered() {
+            console.log("get Last Undelivered");
+            subscriptionRepository.lastUndelivered(topicName, subscriptionName).$promise
+                .then(function (lastUndelivered) {
+                    $scope.lastUndelivered = lastUndelivered;
+                })
+                .catch(function () {
+                    $scope.lastUndelivered = null;
+                });
+        }
+
+
         subscriptionRepository.get(topicName, subscriptionName).$promise
                 .then(function(subscription) {
                     $scope.subscription = subscription;
@@ -57,21 +80,16 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
             $scope.health = health;
         });
 
-        subscriptionRepository.lastUndelivered(topicName, subscriptionName).$promise
-                .then(function (lastUndelivered) {
-                    $scope.lastUndelivered = lastUndelivered;
-                })
-                .catch(function () {
-                    $scope.lastUndelivered = null;
-                });
+        $scope.$watch('userHasSufficientPrivileges', function(currentValue, oldValue) {
+            console.log("currentValue: " + currentValue + " oldValue: " + oldValue);
+            if (currentValue === true && oldValue === false) {
+                getUndelivered();
+                getLastUndelivered();
+            }
+        });
 
-        subscriptionRepository.undelivered(topicName, subscriptionName).$promise
-            .then(function (undelivered) {
-                $scope.undelivered = undelivered;
-            })
-            .catch(function () {
-                $scope.undelivered = [];
-            });
+        getUndelivered();
+        getLastUndelivered();
 
         $scope.notSupportedEndpointAddressResolverMetadataEntries = function(metadataEntries) {
           var filtered = {};
