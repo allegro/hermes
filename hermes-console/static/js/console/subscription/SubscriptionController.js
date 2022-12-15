@@ -22,7 +22,6 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         $scope.config = config;
 
         function getUndelivered() {
-            console.log("get Undelivered");
             subscriptionRepository.undelivered(topicName, subscriptionName).$promise
                 .then(function (undelivered) {
                     $scope.undelivered = undelivered;
@@ -33,7 +32,6 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         }
 
         function getLastUndelivered() {
-            console.log("get Last Undelivered");
             subscriptionRepository.lastUndelivered(topicName, subscriptionName).$promise
                 .then(function (lastUndelivered) {
                     $scope.lastUndelivered = lastUndelivered;
@@ -81,7 +79,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         });
 
         $scope.$watch('userHasSufficientPrivileges', function(currentValue, oldValue) {
-            console.log("currentValue: " + currentValue + " oldValue: " + oldValue);
+            // user login + has privileges
             if (currentValue === true && oldValue === false) {
                 getUndelivered();
                 getLastUndelivered();
