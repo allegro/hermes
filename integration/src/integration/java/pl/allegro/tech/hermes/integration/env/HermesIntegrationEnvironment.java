@@ -34,7 +34,7 @@ import static pl.allegro.tech.hermes.consumers.ConsumerConfigurationProperties.G
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 @Listeners({RetryListener.class})
-public class HermesIntegrationEnvironment extends EnvironmentAware{
+public class HermesIntegrationEnvironment extends EnvironmentAware {
     private static final Logger logger = LoggerFactory.getLogger(HermesIntegrationEnvironment.class);
 
     private static final Map<Class<?>, Starter<?>> STARTERS = new LinkedHashMap<>();
