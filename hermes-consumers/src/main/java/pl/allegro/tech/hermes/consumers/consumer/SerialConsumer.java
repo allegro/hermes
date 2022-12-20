@@ -88,10 +88,8 @@ public class SerialConsumer implements Consumer {
     }
 
     private int calculateInflightSize(Subscription subscription) {
-        return Math.min(
-                subscription.getSerialSubscriptionPolicy().getInflightSize(),
-                defaultInflight
-        );
+        Optional<Integer> subscriptionInflight = Optional.ofNullable(subscription.getSerialSubscriptionPolicy().getInflightSize());
+        return subscriptionInflight.orElse(defaultInflight);
     }
 
     @Override
