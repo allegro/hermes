@@ -31,7 +31,7 @@ public class KafkaContainerCluster implements Startable {
     private static final DockerImageName KAFKA_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka")
             .withTag(ImageTags.confluentImagesTag());
     private static final DockerImageName TOXIPROXY_IMAGE_NAME = DockerImageName.parse("ghcr.io/shopify/toxiproxy")
-            .withTag("2.4.0");
+            .withTag("2.4.0").asCompatibleSubstituteFor("shopify/toxiproxy");;
 
     private static final Duration CLUSTER_START_TIMEOUT = Duration.ofMinutes(360);
     private static final String ZOOKEEPER_NETWORK_ALIAS = "zookeeper";
