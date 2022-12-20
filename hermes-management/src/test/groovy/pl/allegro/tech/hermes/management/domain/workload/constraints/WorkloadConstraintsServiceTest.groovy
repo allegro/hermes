@@ -45,7 +45,7 @@ class WorkloadConstraintsServiceTest extends MultiZookeeperIntegrationTest {
         repository = new ZookeeperWorkloadConstraintsRepository(manager.localClient.curatorFramework, objectMapper, paths)
         repositoryManager = new ZookeeperRepositoryManager(
                 manager, new TestDatacenterNameProvider(DC_1_NAME), objectMapper,
-                paths, new DefaultZookeeperGroupRepositoryFactory(), 180000)
+                paths, new DefaultZookeeperGroupRepositoryFactory())
         repositoryManager.start()
         modeService = new ModeService()
         executor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, true, modeService)

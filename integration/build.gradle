@@ -89,7 +89,9 @@ task integrationTest(type: Test) {
     testClassesDirs = project.sourceSets.integration.output.classesDirs
     classpath = project.sourceSets.integration.runtimeClasspath
 
-    useTestNG()
+    useTestNG {
+        preserveOrder true
+    }
 
     testLogging {
         exceptionFormat = 'full'
