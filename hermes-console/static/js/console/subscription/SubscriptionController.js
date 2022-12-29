@@ -78,7 +78,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
             $scope.health = health;
         });
 
-        $scope.$watch('userHasSufficientPrivileges', function(currentValue, oldValue) {
+        $scope.$watch('userHasSufficientPrivileges', function (currentValue) {
             // user has privileges to see undelivered messages
             if (currentValue === true) {
                 getUndelivered();
