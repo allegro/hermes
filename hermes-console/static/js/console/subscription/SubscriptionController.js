@@ -80,6 +80,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
 
         $scope.$watch('userHasSufficientPrivileges', function(currentValue, oldValue) {
             // user login + has privileges
+            console.log("current value: " + currentValue + ", old value: " + oldValue);
             if (currentValue === true && oldValue === false) {
                 getUndelivered();
                 getLastUndelivered();
