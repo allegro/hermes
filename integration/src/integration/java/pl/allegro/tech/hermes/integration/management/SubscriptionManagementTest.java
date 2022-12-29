@@ -690,6 +690,89 @@ public class SubscriptionManagementTest extends IntegrationTest {
                 );
     }
 
+    @Test
+    public void shouldSetInflightSizeToNullByDefault() {
+        // given
+        Topic topic = createTopic();
+        Subscription subscription = operations.createSubscription(topic, "subscription", "http://localhost:8081/topics/test-topic");
+        TestSecurityProvider.setUserIsAdmin(false);
+
+        // when
+        Subscription response = management.subscription().get(
+                topic.getQualifiedName(),
+                subscription.getName()
+        );
+
+        // then
+        assertThat(response.getSerialSubscriptionPolicy().getInflightSize()).isNull();
+    }
+
+    @Test
+    public void shouldReturnInflightSizeWhenSetToNonNullValue() {
+        // given
+        Topic topic = createTopic();
+        Subscription subscription = operations.createSubscription(topic,
+                subscriptionWithInflight(topic, "subscription", 42)
+        );
+        TestSecurityProvider.setUserIsAdmin(false);
+
+        // when
+        Subscription response = management.subscription().get(
+                topic.getQualifiedName(),
+                subscription.getName()
+        );
+
+        // then
+        assertThat(response.getSerialSubscriptionPolicy().getInflightSize()).isEqualTo(42);
+    }
+
+    @Test
+    public void shouldNotAllowNonAdminUserToSetInflightSize() {
+        // given
+        Topic topic = createTopic();
+        Subscription subscription = operations.createSubscription(topic, "subscription", "http://localhost:8081/topics/test-topic");
+        TestSecurityProvider.setUserIsAdmin(false);
+
+        PatchData patchData = patchData().set("subscriptionPolicy", ImmutableMap.builder()
+                .put("inflightSize", 100)
+                .build()
+        ).build();
+
+        // when
+        Response response = management.subscription().update(
+                topic.getQualifiedName(),
+                subscription.getName(),
+                patchData
+        );
+
+        //then
+        assertThat(response).hasStatus(BAD_REQUEST).containsMessage("Subscription.serialSubscriptionPolicy.inflightSize must be null");
+    }
+
+    @Test
+    public void shouldAllowAdminUserToSetInflightSize() {
+        // given
+        Topic topic = createTopic();
+        Subscription subscription = operations.createSubscription(topic, "subscription", "http://localhost:8081/topics/test-topic");
+        TestSecurityProvider.setUserIsAdmin(true);
+
+        PatchData patchData = patchData().set("subscriptionPolicy", ImmutableMap.builder()
+                .put("inflightSize", 100)
+                .build()
+        ).build();
+
+        // when
+        Response response = management.subscription().update(
+                topic.getQualifiedName(),
+                subscription.getName(),
+                patchData
+        );
+
+        //then
+        assertThat(response).hasStatus(OK);
+    }
+
+
     private Topic createTopic() {
         return operations.buildTopic(
                 randomTopic("group", "topic")
@@ -705,6 +788,15 @@ public class SubscriptionManagementTest extends IntegrationTest {
                         .withOwner(new OwnerId("Plaintext", "topicOwner"))
                         .build()
         );
+    }
+
+    private static Subscription subscriptionWithInflight(Topic topic, String subscriptionName,  Integer inflightSize) {
+        return subscription(topic, subscriptionName)
+                .withSubscriptionPolicy(
+                        SubscriptionPolicy.Builder.subscriptionPolicy()
+                                .withInflightSize(inflightSize)
+                                .build()
+                ).build();
     }
 
     private List<Map<String, String>> getMessageTrace(String topic, String subscription, String messageId) {
