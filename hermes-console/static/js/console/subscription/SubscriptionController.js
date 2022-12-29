@@ -79,15 +79,12 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
         });
 
         $scope.$watch('userHasSufficientPrivileges', function(currentValue, oldValue) {
-            // user login + has privileges
-            if (currentValue === true && oldValue === false) {
+            // user has privileges to see undelivered messages
+            if (currentValue === true) {
                 getUndelivered();
                 getLastUndelivered();
             }
         });
-
-        getUndelivered();
-        getLastUndelivered();
 
         $scope.notSupportedEndpointAddressResolverMetadataEntries = function(metadataEntries) {
           var filtered = {};
