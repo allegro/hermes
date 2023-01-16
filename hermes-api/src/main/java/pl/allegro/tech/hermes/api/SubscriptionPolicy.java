@@ -2,12 +2,15 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
+import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Null;
 
 public class SubscriptionPolicy {
 
@@ -16,7 +19,6 @@ public class SubscriptionPolicy {
     private static final int DEFAULT_MESSAGE_BACKOFF = 100;
     private static final int DEFAULT_REQUEST_TIMEOUT = 1000;
     private static final int DEFAULT_SOCKET_TIMEOUT = 0;
-    private static final int DEFAULT_INFLIGHT_SIZE = 100;
     private static final int DEFAULT_SENDING_DELAY = 0;
     private static final double DEFAULT_BACKOFF_MULTIPLIER = 1;
     private static final int DEFAULT_BACKOFF_MAX_INTERVAL = 600;
@@ -40,7 +42,8 @@ public class SubscriptionPolicy {
     private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
 
     @Min(1)
-    private int inflightSize = DEFAULT_INFLIGHT_SIZE;
+    @Null(groups = AdminPermitted.class)
+    private Integer inflightSize;
 
     @Min(0)
     @Max(5000)
@@ -90,7 +93,7 @@ public class SubscriptionPolicy {
                 (Integer) properties.getOrDefault("socketTimeout", DEFAULT_SOCKET_TIMEOUT),
                 (Boolean) properties.getOrDefault("retryClientErrors", false),
                 (Integer) properties.getOrDefault("messageBackoff", DEFAULT_MESSAGE_BACKOFF),
-                (Integer) properties.getOrDefault("inflightSize", DEFAULT_INFLIGHT_SIZE),
+                (Integer) properties.getOrDefault("inflightSize", null),
                 (Integer) properties.getOrDefault("sendingDelay", DEFAULT_SENDING_DELAY),
                 ((Number) properties.getOrDefault("backoffMultiplier", DEFAULT_BACKOFF_MULTIPLIER)).doubleValue(),
                 (Integer) properties.getOrDefault("backoffMaxIntervalInSec", DEFAULT_BACKOFF_MAX_INTERVAL)
@@ -169,6 +172,7 @@ public class SubscriptionPolicy {
         return socketTimeout;
     }
 
+    @Nullable
     public Integer getInflightSize() {
         return inflightSize;
     }
