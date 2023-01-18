@@ -6,10 +6,16 @@ class TestRequestUser implements RequestUser {
 
     private final String username
     private final boolean admin
+    private final boolean isOwner
 
     TestRequestUser(String username, boolean admin) {
+        this(username, admin, false)
+    }
+
+    TestRequestUser(String username, boolean admin, boolean isOwner) {
         this.username = username
         this.admin = admin
+        this.isOwner = isOwner
     }
 
     @Override
@@ -24,6 +30,6 @@ class TestRequestUser implements RequestUser {
 
     @Override
     boolean isOwner(OwnerId ownerId) {
-        return false
+        return isOwner
     }
 }
