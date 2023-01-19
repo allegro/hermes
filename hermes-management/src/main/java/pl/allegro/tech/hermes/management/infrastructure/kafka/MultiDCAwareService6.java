@@ -1,5 +1,15 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
@@ -14,32 +24,21 @@ import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.UnableToMoveOffsetsException;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import static java.util.stream.Collectors.toList;
 
-public class MultiDCAwareService {
+public class MultiDCAwareService6 {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultiDCAwareService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MultiDCAwareService6.class);
 
-    private final ClustersProvider clustersProvider;
+    private final ClustersProvider6 clustersProvider;
     private final Clock clock;
     private final Duration intervalBetweenCheckingIfOffsetsMoved;
     private final Duration offsetsMovedTimeout;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-    public MultiDCAwareService(ClustersProvider clustersProvider, Clock clock,
-                               Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
-                               MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
+    public MultiDCAwareService6(ClustersProvider6 clustersProvider, Clock clock,
+                                Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
+                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.clustersProvider = clustersProvider;
         this.clock = clock;
         this.intervalBetweenCheckingIfOffsetsMoved = intervalBetweenCheckingIfOffsetsMoved;
@@ -59,7 +58,7 @@ public class MultiDCAwareService {
                 .readMessageFromPrimary(topic, partition, offset);
     }
 
-    public MultiDCOffsetChangeSummary retransmit(Topic topic,
+    public MultiDCOffsetChangeSummary moveOffset(Topic topic,
                                                  String subscriptionName,
                                                  Long timestamp,
                                                  boolean dryRun,
@@ -144,9 +143,5 @@ public class MultiDCAwareService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());
-    }
-
-    public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-        clusters.forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
     }
 }

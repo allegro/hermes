@@ -19,7 +19,18 @@ import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHold
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.ClustersProvider;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.ClustersProvider2;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.ClustersProvider3;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.ClustersProvider4;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.ClustersProvider5;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.ClustersProvider6;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService2;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService3;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService4;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService5;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService6;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerGroupManager;
@@ -72,8 +83,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     @Bean
-    MultiDCAwareService multiDCAwareService(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
-                                            Clock clock, JsonAvroConverter jsonAvroConverter) {
+    ClustersProvider clustersProvider(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
+                                      JsonAvroConverter jsonAvroConverter) {
         List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
                 zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
 
@@ -102,8 +113,227 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     createKafkaConsumerManager(kafkaProperties, kafkaNamesMapper));
         }).collect(toList());
 
+        return new ClustersProvider(clusters);
+    }
+
+    @Bean
+    ClustersProvider2 clustersProvider2(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
+                                      JsonAvroConverter jsonAvroConverter) {
+        List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
+                zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
+
+        List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
+            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
+            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
+            BrokerStorage storage = brokersStorage(brokerAdminClient);
+            BrokerTopicManagement brokerTopicManagement =
+                    new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
+            KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBootstrapKafkaServer());
+            KafkaRawMessageReader kafkaRawMessageReader =
+                    new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
+            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
+            KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
+                    storage,
+                    subscriptionOffsetChangeIndicator,
+                    consumerPool,
+                    kafkaNamesMapper
+            );
+            KafkaSingleMessageReader messageReader =
+                    new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
+            return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper,
+                    new OffsetsAvailableChecker(consumerPool, storage),
+                    new LogEndOffsetChecker(consumerPool),
+                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
+        }).collect(toList());
+
+        return new ClustersProvider2(clusters);
+    }
+
+    @Bean
+    ClustersProvider3 clustersProvider3(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
+                                        JsonAvroConverter jsonAvroConverter) {
+        List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
+                zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
+
+        List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
+            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
+            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
+            BrokerStorage storage = brokersStorage(brokerAdminClient);
+            BrokerTopicManagement brokerTopicManagement =
+                    new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
+            KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBootstrapKafkaServer());
+            KafkaRawMessageReader kafkaRawMessageReader =
+                    new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
+            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
+            KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
+                    storage,
+                    subscriptionOffsetChangeIndicator,
+                    consumerPool,
+                    kafkaNamesMapper
+            );
+            KafkaSingleMessageReader messageReader =
+                    new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
+            return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper,
+                    new OffsetsAvailableChecker(consumerPool, storage),
+                    new LogEndOffsetChecker(consumerPool),
+                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
+        }).collect(toList());
+
+        return new ClustersProvider3(clusters);
+    }
+    @Bean
+    ClustersProvider4 clustersProvider4(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
+                                        JsonAvroConverter jsonAvroConverter) {
+        List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
+                zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
+
+        List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
+            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
+            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
+            BrokerStorage storage = brokersStorage(brokerAdminClient);
+            BrokerTopicManagement brokerTopicManagement =
+                    new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
+            KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBootstrapKafkaServer());
+            KafkaRawMessageReader kafkaRawMessageReader =
+                    new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
+            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
+            KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
+                    storage,
+                    subscriptionOffsetChangeIndicator,
+                    consumerPool,
+                    kafkaNamesMapper
+            );
+            KafkaSingleMessageReader messageReader =
+                    new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
+            return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper,
+                    new OffsetsAvailableChecker(consumerPool, storage),
+                    new LogEndOffsetChecker(consumerPool),
+                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
+        }).collect(toList());
+
+        return new ClustersProvider4(clusters);
+    }
+    @Bean
+    ClustersProvider5 clustersProvider5(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
+                                        JsonAvroConverter jsonAvroConverter) {
+        List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
+                zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
+
+        List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
+            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
+            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
+            BrokerStorage storage = brokersStorage(brokerAdminClient);
+            BrokerTopicManagement brokerTopicManagement =
+                    new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
+            KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBootstrapKafkaServer());
+            KafkaRawMessageReader kafkaRawMessageReader =
+                    new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
+            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
+            KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
+                    storage,
+                    subscriptionOffsetChangeIndicator,
+                    consumerPool,
+                    kafkaNamesMapper
+            );
+            KafkaSingleMessageReader messageReader =
+                    new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
+            return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper,
+                    new OffsetsAvailableChecker(consumerPool, storage),
+                    new LogEndOffsetChecker(consumerPool),
+                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
+        }).collect(toList());
+
+        return new ClustersProvider5(clusters);
+    }
+    @Bean
+    ClustersProvider6 clustersProvider6(KafkaNamesMappers kafkaNamesMappers, SchemaRepository schemaRepository,
+                                        JsonAvroConverter jsonAvroConverter) {
+        List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
+                zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
+
+        List<BrokersClusterService> clusters = kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
+            KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
+            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
+            BrokerStorage storage = brokersStorage(brokerAdminClient);
+            BrokerTopicManagement brokerTopicManagement =
+                    new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
+            KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBootstrapKafkaServer());
+            KafkaRawMessageReader kafkaRawMessageReader =
+                    new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
+            SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
+            KafkaRetransmissionService retransmissionService = new KafkaRetransmissionService(
+                    storage,
+                    subscriptionOffsetChangeIndicator,
+                    consumerPool,
+                    kafkaNamesMapper
+            );
+            KafkaSingleMessageReader messageReader =
+                    new KafkaSingleMessageReader(kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
+            return new BrokersClusterService(kafkaProperties.getQualifiedClusterName(), messageReader,
+                    retransmissionService, brokerTopicManagement, kafkaNamesMapper,
+                    new OffsetsAvailableChecker(consumerPool, storage),
+                    new LogEndOffsetChecker(consumerPool),
+                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
+        }).collect(toList());
+
+        return new ClustersProvider6(clusters);
+    }
+
+    @Bean
+    MultiDCAwareService multiDCAwareService(ClustersProvider clustersProvider, Clock clock) {
         return new MultiDCAwareService(
-                clusters,
+                clustersProvider,
+                clock,
+                ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
+                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
+                multiDcExecutor);
+    }
+
+    @Bean
+    MultiDCAwareService2 multiDCAwareService2(ClustersProvider2 clustersProvider, Clock clock) {
+        return new MultiDCAwareService2(
+                clustersProvider,
+                clock,
+                ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
+                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
+                multiDcExecutor);
+    }
+
+    @Bean
+    MultiDCAwareService3 multiDCAwareService3(ClustersProvider3 clustersProvider, Clock clock) {
+        return new MultiDCAwareService3(
+                clustersProvider,
+                clock,
+                ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
+                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
+                multiDcExecutor);
+    }
+    @Bean
+    MultiDCAwareService4 multiDCAwareService4(ClustersProvider4 clustersProvider, Clock clock) {
+        return new MultiDCAwareService4(
+                clustersProvider,
+                clock,
+                ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
+                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
+                multiDcExecutor);
+    }
+    @Bean
+    MultiDCAwareService5 multiDCAwareService5(ClustersProvider5 clustersProvider, Clock clock) {
+        return new MultiDCAwareService5(
+                clustersProvider,
+                clock,
+                ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
+                ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
+                multiDcExecutor);
+    }
+    @Bean
+    MultiDCAwareService6 multiDCAwareService6(ClustersProvider6 clustersProvider, Clock clock) {
+        return new MultiDCAwareService6(
+                clustersProvider,
                 clock,
                 ofMillis(subscriptionProperties.getIntervalBetweenCheckinIfOffsetsMovedInMillis()),
                 ofSeconds(subscriptionProperties.getOffsetsMovedTimeoutInSeconds()),
