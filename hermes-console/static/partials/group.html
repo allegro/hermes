@@ -8,7 +8,7 @@
 
     <div class="pull-right">
         <button class="btn btn-primary" ng-disabled="userWithoutAccess" ng-show="admin" ng-click="edit()">Edit</button>
-        <button class="btn btn-danger" ng-disabled="userWithoutAccess" ng-show="admin" ng-click="remove()">Remove</button>
+        <button class="btn btn-danger" ng-disabled="userWithoutAccess || disableRemoveButton" ng-show="admin" ng-click="remove()">Remove</button>
     </div>
 
     <h1><small>Group:</small> {{group.groupName}}</h1>

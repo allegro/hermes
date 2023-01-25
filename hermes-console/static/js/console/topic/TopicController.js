@@ -163,6 +163,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                 passwordLabel: 'Root password',
                 passwordHint: 'root password'
             }).result.then(function (result) {
+                    $scope.disableRemoveButton = true;
                     passwordService.setRoot(result.password);
                     var topic = $scope.topic;
                     topicRepository.remove($scope.topic)
@@ -181,6 +182,7 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                         })
                         .finally(function () {
                             passwordService.reset();
+                            $scope.disableRemoveButton = false;
                         });
                 });
         };
