@@ -75,3 +75,8 @@ console:
   subscription:
     showHeadersFilter: false
     showFixedHeaders: false
+
+monitoringPartitionsInSubscriptionConsumerGroup:
+  enabled: true
+  numberOfThreads: 6
+  secondsBetweenScans: 180

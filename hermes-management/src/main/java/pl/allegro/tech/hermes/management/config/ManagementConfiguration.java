@@ -24,7 +24,8 @@ import java.time.Clock;
         TopicProperties.class,
         MetricsProperties.class,
         HttpClientProperties.class,
-        ConsistencyCheckerProperties.class})
+        ConsistencyCheckerProperties.class,
+        MonitoringProperties.class})
 public class ManagementConfiguration {
 
     @Autowired

@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
-class ConsumerGroupsDescriber {
+public class ConsumerGroupsDescriber {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerGroupsDescriber.class);
 
@@ -40,7 +40,7 @@ class ConsumerGroupsDescriber {
     private final LogEndOffsetChecker logEndOffsetChecker;
     private final String clusterName;
 
-    ConsumerGroupsDescriber(KafkaNamesMapper kafkaNamesMapper, AdminClient adminClient,
+    public ConsumerGroupsDescriber(KafkaNamesMapper kafkaNamesMapper, AdminClient adminClient,
                             LogEndOffsetChecker logEndOffsetChecker, String clusterName) {
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.adminClient = adminClient;
@@ -48,7 +48,7 @@ class ConsumerGroupsDescriber {
         this.clusterName = clusterName;
     }
 
-    Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {
+    public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {
         ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(new SubscriptionName(subscriptionName, topic.getName()));
         KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
         try {
