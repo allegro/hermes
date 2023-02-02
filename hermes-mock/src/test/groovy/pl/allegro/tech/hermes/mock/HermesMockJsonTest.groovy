@@ -112,7 +112,7 @@ class HermesMockJsonTest extends Specification {
         def keyPattern1 = "test-key-pattern-1"
         def keyPattern2 = "test-key-pattern-2"
         def value = "test-key-value"
-        def avroTopicStubMapping1 = hermes.define().jsonTopic(topicName,
+        def jsonTopicStubMapping1 = hermes.define().jsonTopic(topicName,
                 aResponse().withStatusCode(HttpStatus.SC_CREATED).build(),
                 TestMessage,
                 { it -> it.key == keyPattern1 })
@@ -131,7 +131,7 @@ class HermesMockJsonTest extends Specification {
         response2.status == HttpStatus.SC_CREATED
 
         when: "first stub mapping is removed and two messages are sent again"
-        hermes.define().removeStubMapping(avroTopicStubMapping1)
+        hermes.define().removeStubMapping(jsonTopicStubMapping1)
         response1 = publishJson(topicName, value, keyPattern1)
         response2 = publishJson(topicName, value, keyPattern2)
 

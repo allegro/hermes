@@ -41,9 +41,6 @@ Avro topic with predicate to match request by field in schema
 - `jsonTopic(String topicName, Response response, Class<T> clazz, Predicate<T> predicate)` - defines a
  Json topic with predicate to match request by field
 
-- `jsonTopic(String topicName, Response response, Class<T> clazz, Predicate<T> predicate)` - defines a
- Json topic with predicate to match request by field
-
 - `removeStubMapping(StubMapping stubMapping)` - removes defined stub mapping 
 
 `Response` allows to define the following elements:
