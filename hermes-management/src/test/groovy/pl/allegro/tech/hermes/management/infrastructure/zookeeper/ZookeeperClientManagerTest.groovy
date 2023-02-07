@@ -53,6 +53,7 @@ class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {
         def manager = buildZookeeperClientManager()
         manager.start()
         def clients = manager.clients
+        assertZookeeperClientsConnected(clients)
 
         when:
         manager.stop()

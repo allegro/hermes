@@ -40,7 +40,6 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClien
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 
-import java.util.List;
 import javax.annotation.PostConstruct;
 
 import static java.util.stream.Collectors.toList;
@@ -109,10 +108,11 @@ public class StorageConfiguration {
     @Bean
     SummedSharedCounter summedSharedCounter(ZookeeperClientManager manager) {
         return new SummedSharedCounter(
-                getCuratorClients(manager),
+                manager.getClients(),
                 storageClustersProperties.getSharedCountersExpiration(),
                 storageClustersProperties.getRetrySleep(),
-                storageClustersProperties.getRetryTimes());
+                storageClustersProperties.getRetryTimes()
+        );
     }
 
     @Bean
@@ -182,15 +182,6 @@ public class StorageConfiguration {
 
     private void ensureInitPathExists() {
         ZookeeperClientManager clientManager = clientManager();
-        for (ZookeeperClient client : clientManager.getClients()) {
-            logger.info("Ensuring that path exists for Zookeeper client: {}", client.getDatacenterName());
-            client.ensurePathExists(zookeeperPaths().groupsPath());
-        }
-    }
-
-    private List<CuratorFramework> getCuratorClients(ZookeeperClientManager manager) {
-        return manager.getClients().stream()
-                .map(ZookeeperClient::getCuratorFramework)
-                .collect(toList());
+        clientManager.getLocalClient().ensurePathExists(zookeeperPaths().groupsPath());
     }
 }
