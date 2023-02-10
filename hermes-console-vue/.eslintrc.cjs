@@ -25,20 +25,19 @@ module.exports = {
     test: true,
     vi: true,
     vitest: true,
-  },  
+  },
   parserOptions: {
     ecmaVersion: 'latest',
   },
-  plugins: [
-    'prettier',
-    'vue',
-    'sort-imports-es6-autofix',
-  ],
+  plugins: ['prettier', 'vue', 'sort-imports-es6-autofix'],
   rules: {
-    'sort-imports-es6-autofix/sort-imports-es6': ['warn', {
-      'ignoreCase': true,
-      'ignoreMemberSort': false,
-      'memberSyntaxSortOrder': ['none', 'all', 'multiple', 'single'],
-    }],
+    'sort-imports-es6-autofix/sort-imports-es6': [
+      'warn',
+      {
+        ignoreCase: true,
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+      },
+    ],
   },
 };
