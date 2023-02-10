@@ -4,14 +4,18 @@ import { render } from '@testing-library/vue';
 import { VApp } from 'vuetify/components';
 import type { RenderOptions } from '@testing-library/vue';
 
-export const vuetifyRender = (TestComponent: any, options?: RenderOptions) => {
+export const vuetifyRender = (
+  TestComponent: any,
+  options?: Partial<RenderOptions>,
+  vuetify?: ReturnType<typeof createVuetify>,
+) => {
   return render(VApp, {
-    ...options,
     global: {
-      plugins: [createVuetify()],
+      plugins: [vuetify ?? createVuetify()],
     },
     slots: {
-      default: h(TestComponent),
+      default: h(TestComponent, options?.props),
     },
+    ...options,
   });
 };

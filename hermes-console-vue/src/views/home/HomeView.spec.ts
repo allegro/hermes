@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import { vuetifyRender } from '@/utils/test-utils';
 import HomeView from '@/views/home/HomeView.vue';
 

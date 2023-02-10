@@ -17,6 +17,14 @@ const vuetify = createVuetify({
           error: '#ff5252',
         },
       },
+      dark: {
+        colors: {
+          primary: '#1c65a1',
+          secondary: '#144c71',
+          accent: '#0a3040',
+          error: '#ff5252',
+        },
+      },
     },
   },
   icons: {

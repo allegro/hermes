@@ -1,19 +1,19 @@
 <template>
   <v-app class="fill-height">
-    <hermes-header />
+    <console-header />
 
     <v-main>
       <RouterView />
     </v-main>
 
-    <hermes-footer />
+    <console-footer />
   </v-app>
 </template>
 
 <script setup lang="ts">
   import { RouterView } from 'vue-router';
-  import HermesFooter from '@/components/common/hermes-footer/HermesFooter.vue';
-  import HermesHeader from '@/components/common/hermes-header/HermesHeader.vue';
+  import ConsoleFooter from '@/components/common/console-footer/ConsoleFooter.vue';
+  import ConsoleHeader from '@/components/common/console-header/ConsoleHeader.vue';
 </script>
 
 <style scoped lang="scss"></style>

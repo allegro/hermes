@@ -1,15 +1,22 @@
-<script>
-  import { defineComponent } from 'vue';
+<script setup lang="ts">
+  import { useTheme } from 'vuetify';
 
-  export default defineComponent({
-    components: {},
-  });
+  const theme = useTheme();
 </script>
 
 <template>
   <v-container fill-height fluid class="mx-auto">
     <v-row class="home__logo" justify="center" cols="12">
-      <img src="@/assets/hermes-logo-full.png" alt="Hermes" />
+      <img
+        v-if="!theme.current.value.dark"
+        src="@/assets/hermes-logo-full.png"
+        alt="Hermes"
+      />
+      <img
+        v-if="theme.current.value.dark"
+        src="@/assets/hermes-logo-full-dark-theme.png"
+        alt="Hermes"
+      />
     </v-row>
 
     <v-row justify="center">

@@ -6,7 +6,7 @@
 </script>
 
 <template>
-  <v-footer app class="bg-grey-lighten-4">
+  <v-footer app>
     <v-row justify="center" no-gutters>
       <v-btn
         v-for="link in links"
@@ -19,7 +19,7 @@
         {{ link.label }}
       </v-btn>
       <v-col class="text-center text-caption my-1" cols="12">
-        2015–{{ new Date().getFullYear() }} Allegro Tech and contributors
+        2015–{{ new Date().getFullYear() }} &#10084; Allegro Tech & contributors
       </v-col>
     </v-row>
   </v-footer>

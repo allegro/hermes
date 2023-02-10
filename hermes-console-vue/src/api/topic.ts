@@ -2,6 +2,10 @@
 import type { ContentType } from '@/api/content-type';
 import type { OwnerId } from '@/api/owner-id';
 
+export interface TopicWithSchema extends Topic {
+  schema: string;
+}
+
 export interface Topic {
   name: TopicName;
   description: string;
