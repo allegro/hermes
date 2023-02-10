@@ -1,7 +1,7 @@
 import { createVuetify } from 'vuetify';
 import { fireEvent } from '@testing-library/vue';
 import { vuetifyRender } from '@/utils/test-utils';
-import ThemeSwitch from '@/components/common/theme-switch/ThemeSwitch.vue';
+import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
 describe('ThemeSwitch', () => {
   const vuetify = createVuetify();
@@ -14,6 +14,7 @@ describe('ThemeSwitch', () => {
   it('should render theme switch button', () => {
     // when
     const { getByRole } = vuetifyRender(ThemeSwitch, {}, vuetify);
+
     // then
     expect(getByRole('button')).toBeTruthy();
   });

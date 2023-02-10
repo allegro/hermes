@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useTheme } from 'vuetify';
-  import EnvironmentBadge from '@/components/common/environment-badge/EnviromentBadge.vue';
-  import ThemeSwitch from '@/components/common/theme-switch/ThemeSwitch.vue';
+  import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
+  import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const theme = useTheme();
 </script>

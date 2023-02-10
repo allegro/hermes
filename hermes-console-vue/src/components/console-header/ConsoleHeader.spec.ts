@@ -1,5 +1,5 @@
 import { vuetifyRender } from '@/utils/test-utils';
-import ConsoleHeader from '@/components/common/console-header/ConsoleHeader.vue';
+import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
 
 describe('ConsoleHeader', () => {
   it('renders properly', () => {

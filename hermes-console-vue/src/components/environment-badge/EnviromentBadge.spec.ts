@@ -1,5 +1,5 @@
 import { vuetifyRender } from '@/utils/test-utils';
-import EnvironmentBadge from '@/components/common/environment-badge/EnviromentBadge.vue';
+import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
 
 describe('EnvironmentBadge', () => {
   it('should render environment name badge', () => {

@@ -1,5 +1,5 @@
 import { vuetifyRender } from '@/utils/test-utils';
-import ConsoleFooter from '@/components/common/console-footer/ConsoleFooter.vue';
+import ConsoleFooter from '@/components/console-footer/ConsoleFooter.vue';
 
 describe('ConsoleFooter', () => {
   it('renders properly', () => {

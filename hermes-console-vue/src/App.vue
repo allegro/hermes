@@ -12,8 +12,8 @@
 
 <script setup lang="ts">
   import { RouterView } from 'vue-router';
-  import ConsoleFooter from '@/components/common/console-footer/ConsoleFooter.vue';
-  import ConsoleHeader from '@/components/common/console-header/ConsoleHeader.vue';
+  import ConsoleFooter from '@/components/console-footer/ConsoleFooter.vue';
+  import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
 </script>
 
 <style scoped lang="scss"></style>
