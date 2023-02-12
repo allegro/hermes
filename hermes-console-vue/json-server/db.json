@@ -52,5 +52,12 @@
       "subscriptions": 1,
       "throughput": "0.0"
     }
+  ],
+  "topicsOwners": [
+    {
+      "id": "15397",
+      "name": "your-super-service",
+      "url": "https://google.pl?q=your-super-service"
+    }
   ]
 }

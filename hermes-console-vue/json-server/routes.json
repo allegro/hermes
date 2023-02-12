@@ -1,3 +1,4 @@
 {
-  "/topics/:id/metrics": "/topicsMetrics/:id"
+  "/topics/:id/metrics": "/topicsMetrics/:id",
+  "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id"
 }

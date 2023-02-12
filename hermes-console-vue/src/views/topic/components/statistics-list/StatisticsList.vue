@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import StatisticsItem from "@/views/topic/components/statistics-list/statistics-item/StatisticsItem.vue";
-import { useTopicMetrics } from "@/composables/useTopicMetrics";
+import { useTopicMetrics } from "@/composables/topic/useTopicMetrics";
 
 interface Props {
   topic: string;

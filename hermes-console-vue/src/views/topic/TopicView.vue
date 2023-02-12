@@ -1,7 +1,7 @@
 <script async setup lang="ts">
 import StatisticsList from "@/views/topic/components/statistics-list/StatisticsList.vue";
 import PropertiesList from "@/views/topic/components/properties-list/PropertiesList.vue";
-import { useTopic } from "@/composables/useTopic";
+import { useTopic } from "@/composables/topic/useTopic";
 import SchemaPanel from "@/views/topic/components/schema-panel/SchemaPanel.vue";
 import MessagesPreview from "@/views/topic/components/messages-preview/MessagesPreview.vue";
 
@@ -22,9 +22,10 @@ const { topic, owner, ownerError } = useTopic(topicName);
     </div>
 
     <div>
-      {{ ownerError }}
-      <span v-if="owner">Owner: {{ owner }}</span>
-      <v-alert v-else-if="ownerError" text="Failed getting topic owner"></v-alert>
+      <span>Owner: </span>
+      <a v-if="owner" :href="owner.url" target="_blank">{{ owner.name }}</a>
+      <span v-else-if="ownerError">Failed fetching topic owner</span>
+      <span v-else>Loading...</span>
     </div>
 
     <div>
