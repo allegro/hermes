@@ -1,0 +1,3 @@
+{
+  "/topics/:id/metrics": "/topicsMetrics/:id"
+}

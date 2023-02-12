@@ -1,27 +1,31 @@
-import { isRef, ref, unref, watchEffect } from 'vue';
+import { isRef, ref, unref, watchEffect } from "vue";
 
-// https://vuejs.org/guide/reusability/composables.html#async-state-example
-export function useFetch(url: string) {
-  const data = ref(null);
-  const error = ref(null);
+export function useFetch<T>(url: string) {
+  const data = ref<T | null>(null);
+  const error = ref<any | null>(null);
 
   function doFetch() {
-    // reset state before fetching..
     data.value = null;
     error.value = null;
-    // unref() unwraps potential refs
     fetch(unref(url))
-      .then((res) => res.json())
-      .then((json) => (data.value = json))
-      .catch((err) => (error.value = err));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Request failed with status: ${res.status}`);
+        }
+        return res
+      })
+      .then(res => res.json())
+      .then(json => (data.value = json))
+      .catch(err => {
+        console.log('ERROR!')
+        console.log(err)
+        error.value = err
+      });
   }
 
   if (isRef(url)) {
-    // setup reactive re-fetch if input URL is a ref
     watchEffect(doFetch);
   } else {
-    // otherwise, just fetch once
-    // and avoid the overhead of a watcher
     doFetch();
   }
 
