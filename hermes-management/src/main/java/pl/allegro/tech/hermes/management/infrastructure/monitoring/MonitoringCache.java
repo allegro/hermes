@@ -1,15 +1,5 @@
-package pl.allegro.tech.hermes.management.infrastructure.kafka;
+package pl.allegro.tech.hermes.management.infrastructure.monitoring;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +16,17 @@ import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
-import static java.util.stream.Collectors.toList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL;
 import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG;
@@ -47,30 +46,30 @@ public class MonitoringCache {
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
 
-    private ScheduledExecutorService scheduledExecutorService;
     private volatile Integer usingCache = 1;
     private volatile List<List<TopicSubscription>> subscriptionsWithUnassignedPartitions1 = new ArrayList<>();
     private volatile List<List<TopicSubscription>> subscriptionsWithUnassignedPartitions2 = new ArrayList<>();
 
     @Autowired
-    public MonitoringCache(KafkaClustersProperties kafkaClustersProperties, KafkaNamesMappers kafkaNamesMappers, MonitoringProperties monitoringProperties,
-                           SubscriptionService subscriptionService, TopicService topicService) {
+    public MonitoringCache(KafkaClustersProperties kafkaClustersProperties, KafkaNamesMappers kafkaNamesMappers,
+                           MonitoringProperties monitoringProperties, SubscriptionService subscriptionService, TopicService topicService) {
         this.kafkaClustersProperties = kafkaClustersProperties;
         this.kafkaNamesMappers = kafkaNamesMappers;
         this.monitoringProperties = monitoringProperties;
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
-    if (monitoringProperties.isEnabled()) {
-            scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            scheduledExecutorService.scheduleAtFixedRate(this::checkSubscriptionsPartitions, 0, monitoringProperties.getSecondsBetweenScans(), TimeUnit.SECONDS);
+        if (monitoringProperties.isEnabled()) {
+            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+            scheduledExecutorService.scheduleAtFixedRate(this::checkSubscriptionsPartitions, 0,
+                    monitoringProperties.getSecondsBetweenScans(), TimeUnit.SECONDS);
         }
     }
 
-    public Integer getNumberOfUnassignedPartitions() {
+    public List<TopicSubscription> getSubscriptionsWithUnassignedPartitions() {
         if (usingCache == 1) {
-            return subscriptionsWithUnassignedPartitions2.stream().mapToInt(List::size).sum();
+            return subscriptionsWithUnassignedPartitions2.stream().flatMap(List::stream).collect(toList());
         } else {
-            return subscriptionsWithUnassignedPartitions1.stream().mapToInt(List::size).sum();
+            return subscriptionsWithUnassignedPartitions1.stream().flatMap(List::stream).collect(toList());
         }
     }
 
@@ -86,10 +85,8 @@ public class MonitoringCache {
     }
 
     private void monitorSubscriptionsPartitions() {
-        logger.info("Monitoring. Prepare subscriptions started");
         List<TopicSubscription> topicSubscriptions = getAllActiveSubscriptions();
         List<List<TopicSubscription>> splitSubscriptions = splitSubscriptions(topicSubscriptions);
-        logger.info("Monitoring. Prepare subscriptions ended");
 
         ExecutorService executorService = Executors.newFixedThreadPool(monitoringProperties.getNumberOfThreads());
 
@@ -103,10 +100,11 @@ public class MonitoringCache {
 
                     splitSubscriptions.get(part).forEach(topicSubscription ->
                             monitoringServices.forEach(monitoringService -> {
-                                    if (!monitoringService.checkIfAllPartitionsAreAssigned(topicSubscription.getTopic(), topicSubscription.getSubscription())) {
-                                        subscriptionsWithUnassignedPartitions.add(topicSubscription);
+                                        if (!monitoringService.checkIfAllPartitionsAreAssigned(topicSubscription.getTopic(),
+                                                topicSubscription.getSubscription())) {
+                                            subscriptionsWithUnassignedPartitions.add(topicSubscription);
+                                        }
                                     }
-                                }
                             ));
                     addSubscriptionsToCache(subscriptionsWithUnassignedPartitions);
                 } catch (Exception e) {
@@ -139,13 +137,12 @@ public class MonitoringCache {
 
     private List<TopicSubscription> getAllActiveSubscriptions() {
         List<TopicSubscription> subscriptions = new ArrayList<>();
-        AtomicInteger subscriptionsNumber = new AtomicInteger();
         topicService.listQualifiedTopicNames().forEach(topic -> {
             TopicName topicName = fromQualifiedName(topic);
             List<Subscription> topicSubscriptions = subscriptionService.listSubscriptions(topicName);
             subscriptions.addAll(createTopicSubscriptions(topicService.getTopicDetails(topicName),
-                    topicSubscriptions.stream().filter(subscription -> subscription.getState().equals(Subscription.State.ACTIVE)).map(Subscription::getName).collect(Collectors.toList())));
-            subscriptionsNumber.addAndGet(topicSubscriptions.size());
+                    topicSubscriptions.stream().filter(subscription -> subscription.getState().equals(Subscription.State.ACTIVE))
+                            .map(Subscription::getName).collect(Collectors.toList())));
         });
         return subscriptions;
     }
@@ -179,23 +176,5 @@ public class MonitoringCache {
             props.put(SASL_JAAS_CONFIG, kafkaProperties.getSasl().getJaasConfig());
         }
         return AdminClient.create(props);
-    }
-
-    private static class TopicSubscription {
-        private final Topic topic;
-        private final String subscription;
-
-        public TopicSubscription(Topic topic, String subscription) {
-            this.topic = topic;
-            this.subscription = subscription;
-        }
-
-        public Topic getTopic() {
-            return topic;
-        }
-
-        public String getSubscription() {
-            return subscription;
-        }
     }
 }

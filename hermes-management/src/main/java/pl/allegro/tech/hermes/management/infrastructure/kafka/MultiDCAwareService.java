@@ -140,7 +140,8 @@ public class MultiDCAwareService {
     }
 
     public List<ConsumerGroup> describeConsumerGroups(Topic topic, String subscriptionName) {
-        return clustersProvider.getClusters().stream().map(brokersClusterService -> brokersClusterService.describeConsumerGroup(topic, subscriptionName))
+        return clustersProvider.getClusters().stream()
+                .map(brokersClusterService -> brokersClusterService.describeConsumerGroup(topic, subscriptionName))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());

@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.management.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MonitoringCache;
+import pl.allegro.tech.hermes.management.infrastructure.monitoring.MonitoringCache;
+import pl.allegro.tech.hermes.management.infrastructure.monitoring.TopicSubscription;
 
+import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -22,8 +24,8 @@ public class MonitoringEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/consumergroup")
-    public Integer monitorSubscriptionsPartitions() {
-        return monitoringCache.getNumberOfUnassignedPartitions();
+    public List<TopicSubscription> monitorSubscriptionsPartitions() {
+        return monitoringCache.getSubscriptionsWithUnassignedPartitions();
     }
 
 

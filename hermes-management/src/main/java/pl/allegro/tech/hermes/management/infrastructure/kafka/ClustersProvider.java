@@ -1,7 +1,8 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka;
 
-import java.util.List;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
+
+import java.util.List;
 
 public class ClustersProvider {
     private final List<BrokersClusterService> clusters;

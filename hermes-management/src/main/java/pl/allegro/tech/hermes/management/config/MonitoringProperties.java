@@ -2,10 +2,10 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "monitoring-partitions-in-subscription-consumer-group")
+@ConfigurationProperties(prefix = "monitoring-consumer-groups")
 public class MonitoringProperties {
 
-    private Boolean enabled;
+    private Boolean enabled = false;
     private Integer numberOfThreads;
     private Integer secondsBetweenScans;
 
@@ -32,5 +32,4 @@ public class MonitoringProperties {
     public void setSecondsBetweenScans(Integer secondsBetweenScans) {
         this.secondsBetweenScans = secondsBetweenScans;
     }
-
 }
