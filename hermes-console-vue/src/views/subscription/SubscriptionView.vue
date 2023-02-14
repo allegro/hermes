@@ -23,7 +23,7 @@
 </script>
 
 <template>
-  <v-container class="d-flex flex-column subscription-view__container">
+  <v-container class="d-flex flex-column subscription-view">
     <subscription-breadcrumbs
       :group-id="groupId"
       :topic-id="topicId"
@@ -52,22 +52,28 @@
       icon="mdi-speedometer-slow"
     />
 
-    <v-row v-if="subscription" dense>
-      <v-col class="d-flex flex-column subscription-view__container">
+    <div v-if="subscription" class="d-flex flex-row subscription-view__row">
+      <div class="d-flex flex-column flex-grow-1 subscription-view__column">
         <subscription-metrics />
         <service-response-metrics />
         <subscription-messages-manager />
-      </v-col>
-      <v-col class="d-flex flex-column subscription-view__container">
+      </div>
+      <div class="d-flex flex-column flex-grow-1 subscription-view__column">
         <subscription-properties :subscription="subscription" />
-      </v-col>
-    </v-row>
+      </div>
+    </div>
   </v-container>
 </template>
 
 <style scoped lang="scss">
   .subscription-view {
-    &__container {
+    row-gap: 8px;
+
+    &__row {
+      column-gap: 8px;
+    }
+
+    &__column {
       row-gap: 8px;
     }
   }

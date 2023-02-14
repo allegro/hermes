@@ -6,6 +6,6 @@ describe('ConsoleFooter', () => {
     // when
     const { getByText } = vuetifyRender(ConsoleFooter);
     // then
-    expect(getByText(/allegro tech & contributors/i)).toBeTruthy();
+    expect(getByText(/allegro tech & contributors/i)).toBeInTheDocument();
   });
 });

@@ -7,6 +7,6 @@ describe('HomeView', () => {
     const { getByText } = vuetifyRender(HomeView);
 
     // then
-    expect(getByText(/console/i)).toBeTruthy();
+    expect(getByText(/console/i)).toBeInTheDocument();
   });
 });

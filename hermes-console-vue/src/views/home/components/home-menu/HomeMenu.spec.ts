@@ -6,6 +6,6 @@ describe('HomeMenu', () => {
     // when
     const { getByText } = vuetifyRender(HomeMenu);
     // then
-    expect(getByText(/menu/i)).toBeTruthy();
+    expect(getByText(/menu/i)).toBeInTheDocument();
   });
 });

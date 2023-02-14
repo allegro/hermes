@@ -1,12 +1,13 @@
-import { config } from '@vue/test-utils';
+import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
-const ResizeObserverMock = vi.fn(() => ({
+global.ResizeObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
 
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
-
-config.global.stubs = {};
+global.CSS = {
+  escape: vi.fn(),
+  supports: vi.fn(),
+};
