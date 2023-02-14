@@ -14,6 +14,7 @@
           v-bind="props"
           icon="mdi-help-circle-outline"
           color="grey-lighten-1"
+          size="18px"
         />
       </template>
     </v-tooltip>

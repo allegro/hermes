@@ -11,19 +11,20 @@
 </script>
 
 <template>
-  <v-card>
+  <v-card density="compact">
     <v-card-item>
       <p class="text-overline">Subscription</p>
       <p class="text-h4 font-weight-bold">
         {{ props.subscription.name }}
-        <v-chip color="green">ACTIVE</v-chip>
+        <v-chip color="green" size="small">ACTIVE</v-chip>
+        <!-- TODO: make dynamic;) -->
       </p>
-      <p class="text-h6">
+      <p class="text-subtitle-1">
         {{ props.subscription.endpoint }}
       </p>
     </v-card-item>
     <v-card-text>
-      <p class="text-subtitle-1">{{ props.subscription.description }}</p>
+      <p class="text-subtitle-2">{{ props.subscription.description }}</p>
     </v-card-text>
     <v-divider class="mx-4 mb-1"></v-divider>
     <v-card-actions class="float-end">

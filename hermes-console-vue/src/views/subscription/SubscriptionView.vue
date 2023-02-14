@@ -52,13 +52,13 @@
       icon="mdi-speedometer-slow"
     />
 
-    <v-row v-if="subscription">
+    <v-row v-if="subscription" dense>
       <v-col class="d-flex flex-column subscription-view__container">
         <subscription-metrics />
         <service-response-metrics />
         <subscription-messages-manager />
       </v-col>
-      <v-col>
+      <v-col class="d-flex flex-column subscription-view__container">
         <subscription-properties :subscription="subscription" />
       </v-col>
     </v-row>
@@ -68,7 +68,7 @@
 <style scoped lang="scss">
   .subscription-view {
     &__container {
-      row-gap: 16pt;
+      row-gap: 8px;
     }
   }
 </style>

@@ -33,7 +33,7 @@
     <v-table density="compact">
       <tbody>
         <tr v-for="entry in filteredEntries" :key="entry.name">
-          <th class="font-weight-light">
+          <th class="text-body-2 font-weight-light">
             <component
               :is="entry.nameHref ? 'a' : 'span'"
               :href="entry.nameHref"
@@ -41,7 +41,7 @@
               {{ entry.name }}
             </component>
           </th>
-          <td>
+          <td class="text-body-2">
             {{ entry.value }}
             <div class="float-end">
               <tooltip-icon v-if="entry.tooltip" :content="entry.tooltip" />

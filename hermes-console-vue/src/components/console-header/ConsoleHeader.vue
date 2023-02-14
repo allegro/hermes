@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <v-app-bar :elevation="2">
+  <v-app-bar :elevation="2" density="compact">
     <div class="header">
       <!-- TODO: navigate to home -->
       <div class="header-left">

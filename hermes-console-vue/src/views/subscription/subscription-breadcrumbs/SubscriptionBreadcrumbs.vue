@@ -31,7 +31,7 @@
 </script>
 
 <template>
-  <v-breadcrumbs :items="items" />
+  <v-breadcrumbs :items="items" density="compact" />
 </template>
 
 <style scoped lang="scss"></style>

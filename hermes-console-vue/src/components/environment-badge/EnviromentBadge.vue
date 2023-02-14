@@ -14,7 +14,7 @@
 </script>
 
 <template>
-  <v-chip :color="environmentBadgeColor()">
+  <v-chip :color="environmentBadgeColor()" size="small">
     {{ environmentName.toUpperCase() }}
   </v-chip>
 </template>
