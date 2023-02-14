@@ -53,7 +53,7 @@ public class MonitoringService {
         int partitionsInConsumerGroups = getPartitionsInConsumerGroups(consumerGroupDescription);
 
         if (topicPartitions != partitionsInConsumerGroups) {
-            logger.warn("Monitoring. Cluster {}. Topic and subscription partitions do not match: {}, partitions in consumer group: {}, "
+            logger.warn("Monitoring. Cluster {}. Topic and subscription partitions do not match: {}, partitions in consumer groups: {}, "
                             + "partitions in topic: {}", clusterName, consumerGroupId.asString(),
                     partitionsInConsumerGroups, topicPartitions);
             return false;

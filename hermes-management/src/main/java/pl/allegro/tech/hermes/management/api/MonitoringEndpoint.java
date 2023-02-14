@@ -24,7 +24,7 @@ public class MonitoringEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/consumergroup")
-    public List<TopicSubscription> monitorSubscriptionsPartitions() {
+    public List<TopicSubscription> monitorConsumerGroup() {
         return monitoringCache.getSubscriptionsWithUnassignedPartitions();
     }
 
