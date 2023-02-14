@@ -5,7 +5,8 @@ describe('ConsoleHeader', () => {
   it('renders properly', () => {
     // when
     const { getByRole } = vuetifyRender(ConsoleHeader);
+
     // then
-    expect(getByRole('img').getAttribute('alt')).toBe('Hermes');
+    expect(getByRole('img')).toHaveAttribute('alt', 'Hermes');
   });
 });

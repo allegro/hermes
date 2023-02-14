@@ -53,7 +53,7 @@
       "throughput": "0.0"
     }
   ],
-  "topicsSubscriptions": [
+  "subscriptions": [
     {
       "id": "foobar-service",
       "topicName": "pl.allegro.public.group.DummyEvent",
@@ -148,6 +148,76 @@
       "autoDeleteWithTopicEnabled": false,
       "createdAt": 1579507131.238,
       "modifiedAt": 1672140855.813
+    }
+  ],
+  "subscriptionsHealth": [
+    {
+      "id": "foobar-service",
+      "status": "UNHEALTHY",
+      "problems": [
+        {
+          "code": "LAGGING",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "barbaz-service",
+      "status": "UNHEALTHY",
+      "problems": [
+        {
+          "code": "LAGGING",
+          "description": ""
+        },
+        {
+          "code": "MALFUNCTIONING",
+          "description": ""
+        },
+        {
+          "code": "RECEIVING_MALFORMED_MESSAGES",
+          "description": ""
+        },
+        {
+          "code": "TIMING_OUT",
+          "description": ""
+        },
+        {
+          "code": "UNREACHABLE",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "subscriptionsMetrics": [
+    {
+      "id": "foobar-service",
+      "delivered": 39099,
+      "discarded": 2137086,
+      "volume": 1288032256,
+      "timeouts": "0.0",
+      "otherErrors": "0.0",
+      "codes2xx": "0",
+      "codes4xx": "0.0",
+      "codes5xx": "0.01",
+      "rate": "0",
+      "throughput": "8.31",
+      "batchRate": "0.0",
+      "lag": "9055513"
+    },
+    {
+      "id": "barbaz-service",
+      "delivered": 39042,
+      "discarded": 1371086,
+      "volume": 3038032125,
+      "timeouts": "0.0",
+      "otherErrors": "0.0",
+      "codes2xx": "0",
+      "codes4xx": "0.0",
+      "codes5xx": "0.01",
+      "rate": "0",
+      "throughput": "8.36",
+      "batchRate": "0.0",
+      "lag": "9060"
     }
   ]
 }

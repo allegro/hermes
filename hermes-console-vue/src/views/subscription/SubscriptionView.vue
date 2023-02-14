@@ -2,24 +2,28 @@
   import { useRoute } from 'vue-router';
   import { useSubscription } from '@/composables/useSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
+  import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
+  import HealthProblemsAlerts from '@/views/subscription/health-problems-alerts/HealthProblemsAlerts.vue';
+  import LastUndeliveredMessage from '@/views/subscription/last-undelivered-message/LastUndeliveredMessage.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
+  import ManageMessagesCard from '@/views/subscription/manage-messages-card/ManageMessagesCard.vue';
+  import MetricsCard from '@/views/subscription/metrics-card/MetricsCard.vue';
+  import PropertiesCard from '@/views/subscription/properties-card/PropertiesCard.vue';
   import ServiceResponseMetrics from '@/views/subscription/service-response-metrics/ServiceResponseMetrics.vue';
   import SubscriptionBreadcrumbs from '@/views/subscription/subscription-breadcrumbs/SubscriptionBreadcrumbs.vue';
   import SubscriptionHeader from '@/views/subscription/subscription-header/SubscriptionHeader.vue';
-  import SubscriptionMessagesManager from '@/views/subscription/subscription-messages-manager/SubscriptionMessagesManager.vue';
-  import SubscriptionMetrics from '@/views/subscription/subscription-metrics/SubscriptionMetrics.vue';
-  import SubscriptionProperties from '@/views/subscription/subscription-properties/SubscriptionProperties.vue';
+  import UndeliveredMessages from '@/views/subscription/undelivered-messages/UndeliveredMessages.vue';
 
   const route = useRoute();
   const params = route.params as Record<string, string>;
   const { groupId, subscriptionId, topicId } = params;
 
-  const { subscription, error, loading } = useSubscription(
+  const { subscription, metrics, health, error, loading } = useSubscription(
     topicId,
     subscriptionId,
   );
 
-  const authorized = false;
+  const authorized = true;
 </script>
 
 <template>
@@ -31,7 +35,6 @@
     />
 
     <loading-spinner v-if="loading" />
-
     <console-alert
       v-if="error"
       title="Connection error"
@@ -40,28 +43,27 @@
     />
 
     <subscription-header
-      v-if="subscription"
+      v-if="!loading"
       :subscription="subscription"
       :authorized="authorized"
     />
 
-    <console-alert
-      title="Subscription health problems"
-      text="Subscription lag is growing! Examine output rate and service response codes, looks like it is not consuming at full speed."
-      type="warning"
-      icon="mdi-speedometer-slow"
-    />
+    <health-problems-alerts v-if="health" :problems="health.problems" />
 
-    <div v-if="subscription" class="d-flex flex-row subscription-view__row">
+    <div v-if="!loading" class="d-flex flex-row subscription-view__row">
       <div class="d-flex flex-column flex-grow-1 subscription-view__column">
-        <subscription-metrics />
+        <metrics-card :metrics="metrics" />
         <service-response-metrics />
-        <subscription-messages-manager />
+        <manage-messages-card />
+        <last-undelivered-message />
       </div>
       <div class="d-flex flex-column flex-grow-1 subscription-view__column">
-        <subscription-properties :subscription="subscription" />
+        <properties-card :subscription="subscription" />
       </div>
     </div>
+
+    <filters-card />
+    <undelivered-messages />
   </v-container>
 </template>
 

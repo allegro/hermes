@@ -1,10 +1,10 @@
 <script setup lang="ts">
-  import { dateFromTimestamp } from '@/utils/dates-utils';
+  import { dateFromTimestamp } from '@/utils/date-formatter/date-formatter';
   import { DeliveryType } from '@/api/subscription';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import type { Subscription } from '@/api/subscription';
 
-  interface SubscriptionPropertiesProps {
+  interface PropertiesCardProps {
     subscription: Subscription;
   }
 
@@ -21,7 +21,7 @@
     }
   }
 
-  const props = defineProps<SubscriptionPropertiesProps>();
+  const props = defineProps<PropertiesCardProps>();
 
   const entries = [
     {
@@ -162,7 +162,7 @@
         'subscription automatically.',
     },
     /*
-     * subscription.html
+     * TODO: subscription.html
      *
      * <p ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">
      *     <strong>{{entry.title}}:</strong>

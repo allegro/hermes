@@ -1,4 +1,4 @@
-import { dateFromTimestamp } from '@/utils/dates-utils';
+import { dateFromTimestamp } from '@/utils/date-formatter/date-formatter';
 
 describe('dates-utils', () => {
   it.each([

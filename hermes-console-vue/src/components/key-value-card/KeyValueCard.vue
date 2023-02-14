@@ -42,9 +42,13 @@
             </component>
           </th>
           <td class="text-body-2">
-            {{ entry.value }}
-            <div class="float-end">
-              <tooltip-icon v-if="entry.tooltip" :content="entry.tooltip" />
+            <div class="d-flex">
+              {{ entry.value }}
+              <tooltip-icon
+                class="ml-auto"
+                v-if="entry.tooltip"
+                :content="entry.tooltip"
+              />
             </div>
           </td>
         </tr>
