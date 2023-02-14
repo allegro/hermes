@@ -23,49 +23,49 @@ export interface Subscription {
   http2Enabled: boolean;
   subscriptionIdentityHeadersEnabled: boolean;
   autoDeleteWithTopicEnabled: boolean;
-  createdAt: number; // java.time.Instant
-  modifiedAt: number; // java.time.Instant
+  createdAt: number;
+  modifiedAt: number;
 }
 
-type EndpointAddress = string;
+export type EndpointAddress = string;
 
-const enum State {
-  PENDING,
-  ACTIVE,
-  SUSPENDED,
+export const enum State {
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  SUSPENDED = 'SUSPENDED',
 }
 
-interface MonitoringDetails {
+export interface MonitoringDetails {
   severity: Severity;
   reaction: string;
 }
 
-const enum Severity {
-  CRITICAL,
-  IMPORTANT,
-  NON_IMPORTANT,
+export const enum Severity {
+  CRITICAL = 'CRITICAL',
+  IMPORTANT = 'IMPORTANT',
+  NON_IMPORTANT = 'NON_IMPORTANT',
 }
 
-const enum DeliveryType {
-  SERIAL,
-  BATCH,
+export const enum DeliveryType {
+  SERIAL = 'SERIAL',
+  BATCH = 'BATCH',
 }
 
-type MessageFilterSpecification = Record<string, any>;
+export type MessageFilterSpecification = Record<string, any>;
 
-const enum SubscriptionMode {
-  ANYCAST,
-  BROADCAST,
+export const enum SubscriptionMode {
+  ANYCAST = 'ANYCAST',
+  BROADCAST = 'BROADCAST',
 }
 
-interface Header {
+export interface Header {
   name: string;
   value: string;
 }
 
-type EndpointAddressResolverMetadata = Record<string, any>;
+export type EndpointAddressResolverMetadata = Record<string, any>;
 
-interface SubscriptionOAuthPolicy {
+export interface SubscriptionOAuthPolicy {
   grantType: GrantType;
   providerName: string;
   scope: string;
@@ -73,7 +73,7 @@ interface SubscriptionOAuthPolicy {
   password: string;
 }
 
-const enum GrantType {
-  CLIENT_CREDENTIALS,
-  USERNAME_PASSWORD,
+export const enum GrantType {
+  CLIENT_CREDENTIALS = 'CLIENT_CREDENTIALS',
+  USERNAME_PASSWORD = 'USERNAME_PASSWORD',
 }

@@ -6,7 +6,7 @@
 </script>
 
 <template>
-  <v-footer app>
+  <v-footer app absolute>
     <v-row justify="center" no-gutters>
       <v-btn
         v-for="link in links"

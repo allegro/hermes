@@ -1,0 +1,4 @@
+{
+  "/topics/:id/metrics": "/topicsMetrics/:id",
+  "/topics/:topicName/subscriptions/:name": "/topicsSubscriptions/:name"
+}
