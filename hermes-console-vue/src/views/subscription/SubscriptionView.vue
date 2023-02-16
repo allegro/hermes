@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
-  import { useSubscription } from '@/composables/useSubscription';
+  import { useSubscription } from '@/composables/use-subscription/useSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
   import HealthProblemsAlerts from '@/views/subscription/health-problems-alerts/HealthProblemsAlerts.vue';
@@ -18,10 +18,13 @@
   const params = route.params as Record<string, string>;
   const { groupId, subscriptionId, topicId } = params;
 
-  const { subscription, metrics, health, error, loading } = useSubscription(
-    topicId,
-    subscriptionId,
-  );
+  const {
+    subscription,
+    subscriptionMetrics,
+    subscriptionHealth,
+    error,
+    loading,
+  } = useSubscription(topicId, subscriptionId);
 
   const authorized = true;
 </script>
@@ -48,11 +51,14 @@
       :authorized="authorized"
     />
 
-    <health-problems-alerts v-if="health" :problems="health.problems" />
+    <health-problems-alerts
+      v-if="subscriptionHealth"
+      :problems="subscriptionHealth.problems"
+    />
 
     <div v-if="!loading" class="d-flex flex-row subscription-view__row">
       <div class="d-flex flex-column flex-grow-1 subscription-view__column">
-        <metrics-card :metrics="metrics" />
+        <metrics-card :subscriptionMetrics="subscriptionMetrics" />
         <service-response-metrics />
         <manage-messages-card />
         <last-undelivered-message />

@@ -107,7 +107,7 @@
       "topicName": "pl.allegro.public.group.DummyEvent",
       "name": "barbaz-service",
       "endpoint": "service://barbaz-service/events/dummy-event",
-      "state": "ACTIVE",
+      "state": "SUSPENDED",
       "description": "Another test Hermes endpoint",
       "subscriptionPolicy": {
         "messageTtl": 60,

@@ -4,7 +4,7 @@
   import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
   interface MetricsCardProps {
-    metrics: SubscriptionMetrics;
+    subscriptionMetrics: SubscriptionMetrics;
   }
 
   const props = defineProps<MetricsCardProps>();
@@ -12,7 +12,7 @@
   const entries = [
     {
       name: 'Delivery rate',
-      value: formatNumber(props.metrics.rate, 2),
+      value: formatNumber(props.subscriptionMetrics.rate, 2),
     },
     {
       name: 'Subscriber latency',
@@ -22,15 +22,15 @@
     },
     {
       name: 'Delivered',
-      value: formatNumber(props.metrics.delivered),
+      value: formatNumber(props.subscriptionMetrics.delivered),
     },
     {
       name: 'Discarded',
-      value: formatNumber(props.metrics.discarded),
+      value: formatNumber(props.subscriptionMetrics.discarded),
     },
     {
       name: 'Lag',
-      value: formatNumber(props.metrics.lag),
+      value: formatNumber(props.subscriptionMetrics.lag),
       tooltip:
         'Total number of events waiting to be delivered. Each subscription ' +
         'has a "natural" lag, which depends on production rate.',

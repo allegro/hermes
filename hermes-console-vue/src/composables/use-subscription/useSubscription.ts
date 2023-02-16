@@ -6,13 +6,17 @@ import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
 export function useSubscription(topicName: string, subscriptionName: string) {
   const subscription = ref<Subscription>();
-  const metrics = ref<SubscriptionMetrics>();
-  const health = ref<SubscriptionHealth>();
+  const subscriptionMetrics = ref<SubscriptionMetrics>();
+  const subscriptionHealth = ref<SubscriptionHealth>();
 
   const error = ref<boolean>(false);
 
   const loading = computed(
-    () => (!subscription.value || !metrics.value) && !error.value,
+    () =>
+      (!subscription.value ||
+        !subscriptionMetrics.value ||
+        !subscriptionHealth.value) &&
+      !error.value,
   );
 
   function fetchSubscription() {
@@ -29,7 +33,7 @@ export function useSubscription(topicName: string, subscriptionName: string) {
       .get<SubscriptionMetrics>(
         `/topics/${topicName}/subscriptions/${subscriptionName}/metrics`,
       )
-      .then((response) => (metrics.value = response.data))
+      .then((response) => (subscriptionMetrics.value = response.data))
       .catch(() => (error.value = true));
   }
 
@@ -38,7 +42,7 @@ export function useSubscription(topicName: string, subscriptionName: string) {
       .get<SubscriptionHealth>(
         `/topics/${topicName}/subscriptions/${subscriptionName}/health`,
       )
-      .then((response) => (health.value = response.data))
+      .then((response) => (subscriptionHealth.value = response.data))
       .catch(() => (error.value = true));
   }
 
@@ -48,8 +52,8 @@ export function useSubscription(topicName: string, subscriptionName: string) {
 
   return {
     subscription,
-    metrics,
-    health,
+    subscriptionMetrics,
+    subscriptionHealth,
     loading,
     error,
   };

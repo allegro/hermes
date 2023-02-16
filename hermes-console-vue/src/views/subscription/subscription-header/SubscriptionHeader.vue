@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { State } from '@/api/subscription';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Subscription } from '@/api/subscription';
 
@@ -16,8 +17,12 @@
       <p class="text-overline">Subscription</p>
       <p class="text-h4 font-weight-bold">
         {{ props.subscription.name }}
-        <v-chip color="green" size="small">ACTIVE</v-chip>
-        <!-- TODO: make dynamic;) -->
+        <v-chip
+          :color="props.subscription.state === State.ACTIVE ? 'green' : 'red'"
+          size="small"
+        >
+          {{ props.subscription.state }}
+        </v-chip>
       </p>
       <p class="text-subtitle-1">
         {{ props.subscription.endpoint }}
