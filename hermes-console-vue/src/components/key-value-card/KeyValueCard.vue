@@ -24,7 +24,7 @@
 </script>
 
 <template>
-  <v-card>
+  <v-card class="mb-2">
     <template #title>
       <p class="font-weight-bold">
         {{ props.cardTitle }}

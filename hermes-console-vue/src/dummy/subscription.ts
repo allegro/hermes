@@ -6,6 +6,8 @@ import {
   SubscriptionMode,
 } from '@/api/subscription';
 import { ProblemCode, Status } from '@/api/subscription-health';
+import { SentMessageTraceStatus } from '@/api/subscription-undelivered';
+import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Subscription } from '@/api/subscription';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
@@ -82,3 +84,19 @@ export const dummySubscriptionHealth: SubscriptionHealth = {
     },
   ],
 };
+
+export const dummyUndeliveredMessage: SentMessageTrace = {
+  timestamp: 1234567890,
+  subscription: 'foobar-service',
+  topicName: 'pl.allegro.public.group.DummyEvent',
+  status: SentMessageTraceStatus.DISCARDED,
+  reason: 'Message sending failed with status code: 500',
+  message: 'some message',
+  partition: 7,
+  offset: 217294378,
+  cluster: 'kafka-cluster',
+};
+
+export const dummyUndeliveredMessages: SentMessageTrace[] = [
+  dummyUndeliveredMessage,
+];

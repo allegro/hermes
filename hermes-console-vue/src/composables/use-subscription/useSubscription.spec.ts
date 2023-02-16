@@ -2,6 +2,8 @@ import {
   dummySubscription,
   dummySubscriptionHealth,
   dummySubscriptionMetrics,
+  dummyUndeliveredMessage,
+  dummyUndeliveredMessages,
 } from '@/dummy/subscription';
 import { useSubscription } from '@/composables/use-subscription/useSubscription';
 import { waitFor } from '@testing-library/vue';
@@ -17,6 +19,8 @@ describe('useSubscription', () => {
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscription });
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionMetrics });
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionHealth });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessages });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessage });
 
     // when
     useSubscription('topic', 'subscription');
@@ -32,6 +36,12 @@ describe('useSubscription', () => {
       expect(mockedAxios.get.mock.calls[2][0]).toBe(
         '/topics/topic/subscriptions/subscription/health',
       );
+      expect(mockedAxios.get.mock.calls[3][0]).toBe(
+        '/topics/topic/subscriptions/subscription/undelivered',
+      );
+      expect(mockedAxios.get.mock.calls[4][0]).toBe(
+        '/topics/topic/subscriptions/subscription/undelivered/last',
+      );
     });
   });
 
@@ -40,6 +50,8 @@ describe('useSubscription', () => {
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscription });
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionMetrics });
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionHealth });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessages });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessage });
 
     // when
     const {
@@ -67,12 +79,15 @@ describe('useSubscription', () => {
     mockedAxios.get.mockRejectedValueOnce({});
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionMetrics });
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionHealth });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessages });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessage });
 
     // when
-    const { error } = useSubscription('topic', 'subscription');
+    const { loading, error } = useSubscription('topic', 'subscription');
 
     // then
     await waitFor(() => {
+      expect(loading.value).toBe(false);
       expect(error.value).toBe(true);
     });
   });
@@ -82,12 +97,15 @@ describe('useSubscription', () => {
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscription });
     mockedAxios.get.mockRejectedValueOnce({});
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionHealth });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessages });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessage });
 
     // when
-    const { error } = useSubscription('topic', 'subscription');
+    const { loading, error } = useSubscription('topic', 'subscription');
 
     // then
     await waitFor(() => {
+      expect(loading.value).toBe(false);
       expect(error.value).toBe(true);
     });
   });
@@ -97,13 +115,58 @@ describe('useSubscription', () => {
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscription });
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionMetrics });
     mockedAxios.get.mockRejectedValueOnce({});
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessages });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessage });
 
     // when
-    const { error } = useSubscription('topic', 'subscription');
+    const { loading, error } = useSubscription('topic', 'subscription');
 
     // then
     await waitFor(() => {
+      expect(loading.value).toBe(false);
       expect(error.value).toBe(true);
+    });
+  });
+
+  it('should set last undelivered message to `null` on backend HTTP 404', async () => {
+    // given
+    mockedAxios.get.mockResolvedValueOnce({ data: dummySubscription });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionMetrics });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionHealth });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessages });
+    mockedAxios.get.mockRejectedValueOnce({});
+
+    // when
+    const { subscriptionLastUndeliveredMessage, loading, error } =
+      useSubscription('topic', 'subscription');
+
+    // then
+    await waitFor(() => {
+      expect(loading.value).toBe(false);
+      expect(error.value).toBe(false);
+      expect(subscriptionLastUndeliveredMessage.value).toBe(null);
+    });
+  });
+
+  it('should ignore undelivered endpoint failure and set empty list', async () => {
+    // given
+    mockedAxios.get.mockResolvedValueOnce({ data: dummySubscription });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionMetrics });
+    mockedAxios.get.mockResolvedValueOnce({ data: dummySubscriptionHealth });
+    mockedAxios.get.mockRejectedValueOnce({});
+    mockedAxios.get.mockResolvedValueOnce({ data: dummyUndeliveredMessage });
+
+    // when
+    const { subscriptionUndeliveredMessages, loading, error } = useSubscription(
+      'topic',
+      'subscription',
+    );
+
+    // then
+    await waitFor(() => {
+      expect(loading.value).toBe(false);
+      expect(error.value).toBe(false);
+      expect(subscriptionUndeliveredMessages.value).toEqual([]);
     });
   });
 });

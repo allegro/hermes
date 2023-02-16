@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { dateFromTimestamp } from '@/utils/date-formatter/date-formatter';
   import { DeliveryType } from '@/api/subscription';
+  import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import type { Subscription } from '@/api/subscription';
 
@@ -175,11 +175,11 @@
      */
     {
       name: 'Creation date',
-      value: dateFromTimestamp(props.subscription.createdAt),
+      value: formatTimestamp(props.subscription.createdAt),
     },
     {
       name: 'Modification date',
-      value: dateFromTimestamp(props.subscription.modifiedAt),
+      value: formatTimestamp(props.subscription.modifiedAt),
     },
   ];
 </script>

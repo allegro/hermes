@@ -41,6 +41,7 @@
     :text="PROBLEMS_MESSAGES[ProblemCode.LAGGING]"
     type="warning"
     icon="mdi-speedometer-slow"
+    class="mb-2"
   />
   <console-alert
     v-if="
@@ -50,6 +51,7 @@
     :text="PROBLEMS_MESSAGES[ProblemCode.MALFUNCTIONING]"
     type="warning"
     icon="mdi-alert"
+    class="mb-2"
   />
   <console-alert
     v-if="
@@ -61,6 +63,7 @@
     :text="PROBLEMS_MESSAGES[ProblemCode.RECEIVING_MALFORMED_MESSAGES]"
     type="warning"
     icon="mdi-alert"
+    class="mb-2"
   />
   <console-alert
     v-if="props.problems.some(({ code }) => code === ProblemCode.TIMING_OUT)"
@@ -68,6 +71,7 @@
     :text="PROBLEMS_MESSAGES[ProblemCode.TIMING_OUT]"
     type="warning"
     icon="mdi-clock-alert"
+    class="mb-2"
   />
   <console-alert
     v-if="props.problems.some(({ code }) => code === ProblemCode.UNREACHABLE)"
@@ -75,6 +79,7 @@
     :text="PROBLEMS_MESSAGES[ProblemCode.UNREACHABLE]"
     type="warning"
     icon="mdi-power-plug-off"
+    class="mb-2"
   />
 </template>
 

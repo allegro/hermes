@@ -2,5 +2,7 @@
   "/topics/:id/metrics": "/topicsMetrics/:id",
   "/topics/:topicName/subscriptions/:id": "/subscriptions/:id",
   "/topics/:topicName/subscriptions/:id/health": "/subscriptionsHealth/:id",
-  "/topics/:topicName/subscriptions/:id/metrics": "/subscriptionsMetrics/:id"
+  "/topics/:topicName/subscriptions/:id/metrics": "/subscriptionsMetrics/:id",
+  "/topics/:topicName/subscriptions/:id/undelivered": "/subscriptionUndeliveredMessages",
+  "/topics/:topicName/subscriptions/:id/undelivered/last": "/subscriptionUndeliveredMessages/:id"
 }

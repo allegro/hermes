@@ -94,7 +94,12 @@
         }
       ],
       "mode": "ANYCAST",
-      "headers": [],
+      "headers": [
+        {
+          "name": "X-My-Header",
+          "value": "1"
+        }
+      ],
       "endpointAddressResolverMetadata": {},
       "http2Enabled": false,
       "subscriptionIdentityHeadersEnabled": false,
@@ -218,6 +223,32 @@
       "throughput": "8.36",
       "batchRate": "0.0",
       "lag": "9060"
+    }
+  ],
+  "subscriptionUndeliveredMessages": [
+    {
+      "id": "foobar-service",
+      "timestamp": 1234567890,
+      "subscription": "foobar-service",
+      "topicName": "pl.allegro.public.group.DummyEvent",
+      "status": "DISCARDED",
+      "reason": "Message sending failed with status code: 500",
+      "message": "some message",
+      "partition": 7,
+      "offset": 217294378,
+      "cluster": "kafka-cluster"
+    },
+    {
+      "id": "foobar-service",
+      "timestamp": 9876543210,
+      "subscription": "foobar-service",
+      "topicName": "pl.allegro.public.group.DummyEvent",
+      "status": "DISCARDED",
+      "reason": "Message sending failed with status code: 500",
+      "message": "some message",
+      "partition": 8,
+      "offset": 217294395,
+      "cluster": "kafka-cluster"
     }
   ]
 }

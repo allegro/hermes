@@ -12,7 +12,7 @@
 </script>
 
 <template>
-  <v-card density="compact">
+  <v-card class="mb-2" density="compact">
     <v-card-item>
       <p class="text-overline">Subscription</p>
       <p class="text-h4 font-weight-bold">
@@ -35,7 +35,7 @@
     <v-card-actions class="d-flex subscription-header__actions">
       <div class="d-flex flex-row">
         <v-btn prepend-icon="mdi-account-supervisor">
-          Owners (Service Control)
+          Owners ({{ props.subscription.owner.source }})
         </v-btn>
       </div>
       <div class="d-flex flex-row">

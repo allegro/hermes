@@ -3,7 +3,7 @@
 <template>
   <v-card>
     <template #title>
-      <p class="font-weight-bold">Last 100 undelivered messages</p>
+      <p class="font-weight-bold">Show event trace</p>
     </template>
   </v-card>
 </template>

@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
 export interface SentMessageTrace {
+  messageId?: string;
+  batchId?: string;
   subscription: string;
   timestamp: number;
   status: SentMessageTraceStatus;

@@ -1,4 +1,4 @@
-import { dateFromTimestamp } from '@/utils/date-formatter/date-formatter';
+import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
 
 describe('dates-utils', () => {
   it.each([
@@ -9,7 +9,7 @@ describe('dates-utils', () => {
     'should format ISO date from provided timestamp (%s)',
     ({ timestamp, expectedDate }) => {
       // when
-      const formattedDate = dateFromTimestamp(timestamp);
+      const formattedDate = formatTimestamp(timestamp);
 
       // then
       expect(formattedDate).toBe(expectedDate);
