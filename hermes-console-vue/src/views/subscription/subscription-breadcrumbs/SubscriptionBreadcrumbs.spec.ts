@@ -2,15 +2,15 @@ import { render } from '@/utils/test-utils';
 import SubscriptionBreadcrumbs from '@/views/subscription/subscription-breadcrumbs/SubscriptionBreadcrumbs.vue';
 
 describe('SubscriptionBreadcrumbs', () => {
+  const props = {
+    groupId: 'pl.allegro.public.group',
+    topicId: 'pl.allegro.public.group.DummyEvent',
+    subscriptionId: 'foobar-service',
+  };
+
   it('should render `home` breadcrumb with an anchor to a home page', async () => {
     // given
-    const { getByText } = render(SubscriptionBreadcrumbs, {
-      props: {
-        groupId: 'pl.allegro.public.group',
-        topicId: 'pl.allegro.public.group.DummyEvent',
-        subscriptionId: 'foobar-service',
-      },
-    });
+    const { getByText } = render(SubscriptionBreadcrumbs, { props });
 
     // when
     const element = getByText('home') as HTMLAnchorElement;
@@ -21,13 +21,7 @@ describe('SubscriptionBreadcrumbs', () => {
 
   it('should render `groups` breadcrumb with an anchor to a group listing', () => {
     // given
-    const { getByText } = render(SubscriptionBreadcrumbs, {
-      props: {
-        groupId: 'pl.allegro.public.group',
-        topicId: 'pl.allegro.public.group.DummyEvent',
-        subscriptionId: 'foobar-service',
-      },
-    });
+    const { getByText } = render(SubscriptionBreadcrumbs, { props });
 
     // when
     const element = getByText('groups') as HTMLAnchorElement;
@@ -38,13 +32,7 @@ describe('SubscriptionBreadcrumbs', () => {
 
   it('should render a breadcrumb with an anchor to topics listing', () => {
     // given
-    const { getByText } = render(SubscriptionBreadcrumbs, {
-      props: {
-        groupId: 'pl.allegro.public.group',
-        topicId: 'pl.allegro.public.group.DummyEvent',
-        subscriptionId: 'foobar-service',
-      },
-    });
+    const { getByText } = render(SubscriptionBreadcrumbs, { props });
 
     // when
     const element = getByText('pl.allegro.public.group') as HTMLAnchorElement;
@@ -55,13 +43,7 @@ describe('SubscriptionBreadcrumbs', () => {
 
   it('should render a breadcrumb with an anchor to topic page', () => {
     // given
-    const { getByText } = render(SubscriptionBreadcrumbs, {
-      props: {
-        groupId: 'pl.allegro.public.group',
-        topicId: 'pl.allegro.public.group.DummyEvent',
-        subscriptionId: 'foobar-service',
-      },
-    });
+    const { getByText } = render(SubscriptionBreadcrumbs, { props });
 
     // when
     const element = getByText(

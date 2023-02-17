@@ -91,13 +91,23 @@
           "path": "foobar",
           "matcher": "^FOO_BAR$|^BAZ_BAR$",
           "matchingStrategy": "any"
+        },
+        {
+          "type": "avropath",
+          "path": ".foo.bar.baz",
+          "matcher": "true",
+          "matchingStrategy": "all"
         }
       ],
       "mode": "ANYCAST",
       "headers": [
         {
           "name": "X-My-Header",
-          "value": "1"
+          "value": "boobar"
+        },
+        {
+          "name": "X-Another-Header",
+          "value": "foobar"
         }
       ],
       "endpointAddressResolverMetadata": {},
