@@ -12,7 +12,7 @@
 </script>
 
 <template>
-  <v-card class="mb-2" density="compact">
+  <v-card density="compact">
     <v-card-item>
       <p class="text-overline">Subscription</p>
       <p class="text-h4 font-weight-bold">

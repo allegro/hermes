@@ -1,6 +1,6 @@
 import { createVuetify } from 'vuetify';
 import { fireEvent } from '@testing-library/vue';
-import { vuetifyRender } from '@/utils/test-utils';
+import { render } from '@/utils/test-utils';
 import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
 describe('ThemeSwitch', () => {
@@ -13,20 +13,20 @@ describe('ThemeSwitch', () => {
 
   it('should render theme switch button', () => {
     // when
-    const { getByRole } = vuetifyRender(ThemeSwitch, {}, vuetify);
+    const { getByRole } = render(ThemeSwitch, {}, vuetify);
 
     // then
     expect(getByRole('button')).toBeInTheDocument();
   });
 
   it.each([
-    { initialTheme: 'light', changedTheme: 'dark' },
-    { initialTheme: 'dark', changedTheme: 'light' },
+    ['light', 'dark'],
+    ['dark', 'light'],
   ])(
     'should change Vuetify theme on button click (initial theme: %s)',
-    ({ initialTheme, changedTheme }) => {
+    (initialTheme: string, changedTheme: string) => {
       // given
-      const { getByRole } = vuetifyRender(ThemeSwitch, {}, vuetify);
+      const { getByRole } = render(ThemeSwitch, {}, vuetify);
       vuetify.theme.global.name.value = initialTheme;
 
       // when
@@ -39,7 +39,7 @@ describe('ThemeSwitch', () => {
 
   it('should persist theme preference in local storage', () => {
     // given
-    const { getByRole } = vuetifyRender(ThemeSwitch, {}, vuetify);
+    const { getByRole } = render(ThemeSwitch, {}, vuetify);
     vuetify.theme.global.name.value = 'light';
 
     // when
@@ -50,16 +50,16 @@ describe('ThemeSwitch', () => {
   });
 
   it.each([
-    { persistedTheme: 'light', loadedTheme: 'light' },
-    { persistedTheme: 'dark', loadedTheme: 'dark' },
+    ['light', 'light'],
+    ['dark', 'dark'],
   ])(
     'should load user persisted "%s" theme preference from local storage',
-    ({ persistedTheme, loadedTheme }) => {
+    (persistedTheme: string, loadedTheme: string) => {
       // given
       localStorage.setItem('hermes-console-theme', persistedTheme);
 
       // when
-      vuetifyRender(ThemeSwitch, {}, vuetify);
+      render(ThemeSwitch, {}, vuetify);
 
       // then
       expect(vuetify.theme.global.name.value).toBe(loadedTheme);
@@ -68,7 +68,7 @@ describe('ThemeSwitch', () => {
 
   it('should set light theme if there is no entry in local storage', () => {
     // when
-    vuetifyRender(ThemeSwitch, {}, vuetify);
+    render(ThemeSwitch, {}, vuetify);
 
     // then
     expect(vuetify.theme.global.name.value).toBe('light');

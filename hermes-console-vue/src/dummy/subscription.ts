@@ -51,7 +51,7 @@ export const dummySubscription: Subscription = {
     },
   ],
   mode: SubscriptionMode.ANYCAST,
-  headers: [],
+  headers: [{ name: 'X-My-Header', value: '1' }],
   endpointAddressResolverMetadata: {},
   http2Enabled: false,
   subscriptionIdentityHeadersEnabled: false,

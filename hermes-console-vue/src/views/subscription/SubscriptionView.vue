@@ -55,11 +55,11 @@
     <template v-if="!loading && !error">
       <v-row dense>
         <v-col md="12">
+          <health-problems-alerts :problems="subscriptionHealth?.problems" />
           <subscription-metadata
             :subscription="subscription"
             :authorized="authorized"
           />
-          <health-problems-alerts :problems="subscriptionHealth?.problems" />
         </v-col>
       </v-row>
 

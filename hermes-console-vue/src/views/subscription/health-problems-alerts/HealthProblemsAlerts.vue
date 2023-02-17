@@ -29,8 +29,8 @@
       'if you are not able to process message during this time, connection ' +
       'is reset and delivery fails.',
     [ProblemCode.UNREACHABLE]:
-      'Unable to connect to consuming service instances. It is either network ' +
-      'issue or your service instance is down.',
+      'Unable to connect to consuming service instances. It is either' +
+      'network issue or your service instance is down.',
   };
 </script>
 
