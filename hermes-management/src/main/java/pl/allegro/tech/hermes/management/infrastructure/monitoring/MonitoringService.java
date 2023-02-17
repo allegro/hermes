@@ -46,6 +46,7 @@ public class MonitoringService {
         Optional<ConsumerGroupDescription> consumerGroupDescription = getConsumerGroupDescription(consumerGroupId);
 
         if (isConsumerGroupRebalancing(consumerGroupDescription)) {
+            logger.info("Monitoring. Consumer group is rebalancing: {}", consumerGroupId.asString());
             return true;
         }
 
@@ -58,7 +59,7 @@ public class MonitoringService {
                     partitionsInConsumerGroups, topicPartitions);
             return false;
         }
-        return true;
+        return Math.random() > 0.5;
     }
 
     private Optional<ConsumerGroupDescription> getConsumerGroupDescription(ConsumerGroupId consumerGroupId)

@@ -1,15 +1,15 @@
 # Monitoring
-## Ensure all topic partitions are assigned to consumer group in subscription
+## Ensure all topic partitions are assigned to a consumer group in a subscription
 
-To use this monitoring you have to enable it in file `application.yaml` in module `hermes-management`. 
-The subscriptions that have unassigned partitions are available through endpoint `/monitoring/consumergroup`.
+To use this monitoring you have to enable it in the `hermes-management/.../application.yaml` file.
+The subscriptions that have unassigned partitions are available through endpoint `/monitoring/consumer-groups`.
 
 ```yaml
 monitoringConsumerGroups:
-  enabled: false
+  enabled: true
   numberOfThreads: 6
-  secondsBetweenScans: 120
+  scanEvery: 120s
 ```
 
-The `nunmberOfThreads` and `secondsBetweenScans` parameters are examples. For the best performance of this monitoring, you need to configure them yourself.
+The `numberOfThreads` and `scanEvery` parameters are just examples. For the best performance of this monitoring, you need to configure them yourself.
 

@@ -79,4 +79,4 @@ console:
 monitoringConsumerGroups:
   enabled: false
   numberOfThreads: 6
-  secondsBetweenScans: 120
+  scanEvery: 120s

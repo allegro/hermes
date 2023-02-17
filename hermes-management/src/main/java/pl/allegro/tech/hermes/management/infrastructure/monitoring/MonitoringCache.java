@@ -1,10 +1,9 @@
 package pl.allegro.tech.hermes.management.infrastructure.monitoring;
 
+import com.google.common.collect.Lists;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -17,7 +16,6 @@ import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +33,6 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
-@Component
 public class MonitoringCache {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitoringCache.class);
@@ -46,11 +43,9 @@ public class MonitoringCache {
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
 
-    private volatile Integer usingCache = 1;
-    private volatile List<List<TopicSubscription>> subscriptionsWithUnassignedPartitions1 = new ArrayList<>();
-    private volatile List<List<TopicSubscription>> subscriptionsWithUnassignedPartitions2 = new ArrayList<>();
+    private volatile List<List<TopicAndSubscription>> readySubscriptionsWithUnassignedPartitionsCache = new ArrayList<>();
+    private volatile List<List<TopicAndSubscription>> unreadySubscriptionsWithUnassignedPartitionsCache = new ArrayList<>();
 
-    @Autowired
     public MonitoringCache(KafkaClustersProperties kafkaClustersProperties, KafkaNamesMappers kafkaNamesMappers,
                            MonitoringProperties monitoringProperties, SubscriptionService subscriptionService, TopicService topicService) {
         this.kafkaClustersProperties = kafkaClustersProperties;
@@ -61,32 +56,22 @@ public class MonitoringCache {
         if (monitoringProperties.isEnabled()) {
             ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
             scheduledExecutorService.scheduleAtFixedRate(this::checkSubscriptionsPartitions, 0,
-                    monitoringProperties.getSecondsBetweenScans(), TimeUnit.SECONDS);
+                    monitoringProperties.getScanEvery().getSeconds(), TimeUnit.SECONDS);
         }
     }
 
-    public List<TopicSubscription> getSubscriptionsWithUnassignedPartitions() {
-        if (usingCache == 1) {
-            return subscriptionsWithUnassignedPartitions2.stream().flatMap(List::stream).collect(toList());
-        } else {
-            return subscriptionsWithUnassignedPartitions1.stream().flatMap(List::stream).collect(toList());
-        }
+    public List<TopicAndSubscription> getSubscriptionsWithUnassignedPartitions() {
+        return readySubscriptionsWithUnassignedPartitionsCache.stream().flatMap(List::stream).collect(toList());
     }
 
     private void checkSubscriptionsPartitions() {
-        if (usingCache == 1) {
-            subscriptionsWithUnassignedPartitions2.clear();
-            usingCache = 2;
-        } else {
-            subscriptionsWithUnassignedPartitions1.clear();
-            usingCache = 1;
-        }
+        readySubscriptionsWithUnassignedPartitionsCache = unreadySubscriptionsWithUnassignedPartitionsCache;
+        unreadySubscriptionsWithUnassignedPartitionsCache.clear();
         monitorSubscriptionsPartitions();
     }
 
     private void monitorSubscriptionsPartitions() {
-        List<TopicSubscription> topicSubscriptions = getAllActiveSubscriptions();
-        List<List<TopicSubscription>> splitSubscriptions = splitSubscriptions(topicSubscriptions);
+        List<List<TopicAndSubscription>> splitSubscriptions = getSplitActiveSubscriptions();
 
         ExecutorService executorService = Executors.newFixedThreadPool(monitoringProperties.getNumberOfThreads());
 
@@ -95,18 +80,8 @@ public class MonitoringCache {
             executorService.submit(() -> {
                 try {
                     List<MonitoringService> monitoringServices = createMonitoringService();
-                    List<TopicSubscription> subscriptionsWithUnassignedPartitions = new ArrayList<>();
                     logger.info("Monitoring {} started for {} subscriptions", part, splitSubscriptions.get(part).size());
-
-                    splitSubscriptions.get(part).forEach(topicSubscription ->
-                            monitoringServices.forEach(monitoringService -> {
-                                        if (!monitoringService.checkIfAllPartitionsAreAssigned(topicSubscription.getTopic(),
-                                                topicSubscription.getSubscription())) {
-                                            subscriptionsWithUnassignedPartitions.add(topicSubscription);
-                                        }
-                                    }
-                            ));
-                    addSubscriptionsToCache(subscriptionsWithUnassignedPartitions);
+                    checkIfAllPartitionsAreAssignedToSubscriptions(splitSubscriptions.get(part), monitoringServices);
                 } catch (Exception e) {
                     logger.error("Error in monitoring: ", e);
                 } finally {
@@ -117,26 +92,35 @@ public class MonitoringCache {
         }
     }
 
-    private void addSubscriptionsToCache(List<TopicSubscription> subscriptionsWithUnassignedPartitions) {
-        if (usingCache == 1) {
-            subscriptionsWithUnassignedPartitions1.add(subscriptionsWithUnassignedPartitions);
-        } else {
-            subscriptionsWithUnassignedPartitions2.add(subscriptionsWithUnassignedPartitions);
-        }
+    private List<List<TopicAndSubscription>> getSplitActiveSubscriptions() {
+        return splitSubscriptions(getAllActiveSubscriptions());
     }
 
-    private List<List<TopicSubscription>> splitSubscriptions(List<TopicSubscription> topicSubscriptions) {
-        List<List<TopicSubscription>> splitSubscriptions = new ArrayList<>(Collections.emptyList());
-        splitSubscriptions.add(topicSubscriptions.subList(0, topicSubscriptions.size() / monitoringProperties.getNumberOfThreads()));
-        for (int i = 1; i < monitoringProperties.getNumberOfThreads(); i++) {
-            splitSubscriptions.add(topicSubscriptions.subList(topicSubscriptions.size() * i / monitoringProperties.getNumberOfThreads(),
-                    topicSubscriptions.size() * (i + 1) / monitoringProperties.getNumberOfThreads()));
-        }
-        return splitSubscriptions;
+    private void checkIfAllPartitionsAreAssignedToSubscriptions(List<TopicAndSubscription> subscriptions,
+                                                                List<MonitoringService> monitoringServices) {
+        List<TopicAndSubscription> subscriptionsWithUnassignedPartitions = new ArrayList<>();
+
+        subscriptions.forEach(topicSubscription ->
+            monitoringServices.forEach(monitoringService -> {
+                    if (!monitoringService.checkIfAllPartitionsAreAssigned(topicSubscription.getTopic(),
+                            topicSubscription.getSubscription())) {
+                        subscriptionsWithUnassignedPartitions.add(topicSubscription);
+                    }
+                }
+            ));
+        addSubscriptionsToCache(subscriptionsWithUnassignedPartitions);
     }
 
-    private List<TopicSubscription> getAllActiveSubscriptions() {
-        List<TopicSubscription> subscriptions = new ArrayList<>();
+    private void addSubscriptionsToCache(List<TopicAndSubscription> subscriptionsWithUnassignedPartitions) {
+        unreadySubscriptionsWithUnassignedPartitionsCache.add(subscriptionsWithUnassignedPartitions);
+    }
+
+    private List<List<TopicAndSubscription>> splitSubscriptions(List<TopicAndSubscription> topicAndSubscriptions) {
+        return Lists.partition(topicAndSubscriptions, (topicAndSubscriptions.size() / monitoringProperties.getNumberOfThreads()) + 1);
+    }
+
+    private List<TopicAndSubscription> getAllActiveSubscriptions() {
+        List<TopicAndSubscription> subscriptions = new ArrayList<>();
         topicService.listQualifiedTopicNames().forEach(topic -> {
             TopicName topicName = fromQualifiedName(topic);
             List<Subscription> topicSubscriptions = subscriptionService.listSubscriptions(topicName);
@@ -147,10 +131,10 @@ public class MonitoringCache {
         return subscriptions;
     }
 
-    private List<TopicSubscription> createTopicSubscriptions(Topic topic, List<String> subscriptions) {
-        List<TopicSubscription> topicSubscriptions = new ArrayList<>();
-        subscriptions.forEach(subscription -> topicSubscriptions.add(new TopicSubscription(topic, subscription)));
-        return topicSubscriptions;
+    private List<TopicAndSubscription> createTopicSubscriptions(Topic topic, List<String> subscriptions) {
+        List<TopicAndSubscription> topicAndSubscriptions = new ArrayList<>();
+        subscriptions.forEach(subscription -> topicAndSubscriptions.add(new TopicAndSubscription(topic, subscription)));
+        return topicAndSubscriptions;
     }
 
     public List<MonitoringService> createMonitoringService() {

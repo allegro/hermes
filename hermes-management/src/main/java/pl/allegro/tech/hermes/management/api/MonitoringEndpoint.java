@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.management.infrastructure.monitoring.MonitoringCache;
-import pl.allegro.tech.hermes.management.infrastructure.monitoring.TopicSubscription;
+import pl.allegro.tech.hermes.management.infrastructure.monitoring.TopicAndSubscription;
 
 import java.util.List;
 import javax.ws.rs.GET;
@@ -23,10 +23,8 @@ public class MonitoringEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
-    @Path("/consumergroup")
-    public List<TopicSubscription> monitorConsumerGroup() {
+    @Path("/consumer-groups")
+    public List<TopicAndSubscription> monitorConsumerGroups() {
         return monitoringCache.getSubscriptionsWithUnassignedPartitions();
     }
-
-
 }

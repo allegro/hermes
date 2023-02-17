@@ -1,14 +1,13 @@
-package pl.allegro.tech.hermes.management.infrastructure.monitoring;
+package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import pl.allegro.tech.hermes.api.Topic;
 
-public class TopicSubscription {
+public class TopicAndSubscription {
 
     private final Topic topic;
     private final String subscription;
 
-    public TopicSubscription(Topic topic, String subscription) {
+    public TopicAndSubscription(Topic topic, String subscription) {
         this.topic = topic;
         this.subscription = subscription;
     }
