@@ -3,7 +3,7 @@
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
 
   interface UndeliveredMessagesCardProps {
-    undelivered: SentMessageTrace[];
+    undeliveredMessages: SentMessageTrace[];
   }
 
   const props = defineProps<UndeliveredMessagesCardProps>();
@@ -26,7 +26,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(message, index) in props.undelivered" :key="index">
+        <tr
+          v-for="(message, index) in props.undeliveredMessages.slice(0, 100)"
+          :key="index"
+        >
           <td>{{ index + 1 }}</td>
           <td>{{ message.messageId }}</td>
           <td>{{ message.status }}</td>

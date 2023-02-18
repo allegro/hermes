@@ -123,7 +123,7 @@
     },
     {
       name: 'Retry backoff max interval',
-      value: props.subscription.subscriptionPolicy.backoffMaxIntervalInSec,
+      value: `${props.subscription.subscriptionPolicy.backoffMaxIntervalInSec} seconds`,
       displayIf:
         props.subscription.deliveryType === DeliveryType.SERIAL &&
         props.subscription.subscriptionPolicy.backoffMultiplier > 1,

@@ -23,7 +23,7 @@ describe('FiltersCard', () => {
     // then
     props.filters.forEach(
       ({ type, path, matcher, matchingStrategy }, index) => {
-        const row = getByText(index + 1).closest('tr') as HTMLTableRowElement;
+        const row = getByText(index + 1).closest('tr')!;
         expect(within(row).getByText(index + 1)).toBeInTheDocument();
         expect(within(row).getByText(type)).toBeInTheDocument();
         expect(within(row).getByText(path)).toBeInTheDocument();

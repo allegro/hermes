@@ -8,7 +8,7 @@ describe('SubscriptionBreadcrumbs', () => {
     subscriptionId: 'foobar-service',
   };
 
-  it('should render `home` breadcrumb with an anchor to a home page', async () => {
+  it('should render `home` breadcrumb with an anchor to a home page', () => {
     // given
     const { getByText } = render(SubscriptionBreadcrumbs, { props });
 

@@ -1,5 +1,5 @@
 import { render } from '@/utils/test-utils';
-import HomeMenu from '@/views/home/components/home-menu/HomeMenu.vue';
+import HomeMenu from '@/views/home/home-menu/HomeMenu.vue';
 
 describe('HomeMenu', () => {
   it('renders properly', () => {

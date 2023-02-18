@@ -100,7 +100,7 @@ export const dummyUndeliveredMessage: SentMessageTrace = {
   topicName: 'pl.allegro.public.group.DummyEvent',
   status: SentMessageTraceStatus.DISCARDED,
   reason: 'Message sending failed with status code: 500',
-  message: 'some message',
+  message: '{"id":"123","foo":[1,2,3],"bar":{"qaz":42}}',
   partition: 7,
   offset: 217294378,
   cluster: 'kafka-cluster',

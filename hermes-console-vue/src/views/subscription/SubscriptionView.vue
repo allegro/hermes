@@ -99,7 +99,7 @@
           />
           <undelivered-messages-card
             v-if="subscriptionUndeliveredMessages?.length > 0"
-            :undelivered="subscriptionUndeliveredMessages"
+            :undelivered-messages="subscriptionUndeliveredMessages"
           />
         </v-col>
       </v-row>

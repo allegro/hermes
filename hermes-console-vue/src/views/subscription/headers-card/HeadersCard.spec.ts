@@ -22,7 +22,7 @@ describe('HeadersCard', () => {
 
     // then
     props.headers.forEach(({ name, value }, index) => {
-      const row = getByText(index + 1).closest('tr') as HTMLTableRowElement;
+      const row = getByText(index + 1).closest('tr')!;
       expect(within(row).getByText(index + 1)).toBeInTheDocument();
       expect(within(row).getByText(name)).toBeInTheDocument();
       expect(within(row).getByText(value)).toBeInTheDocument();

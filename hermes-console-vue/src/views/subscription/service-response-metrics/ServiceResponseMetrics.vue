@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
 
+  // TODO: proper links to dashboards
   const entries = [
     { name: '2xx', nameHref: 'https://example.com/' },
     { name: '4xx', nameHref: 'https://example.com/' },

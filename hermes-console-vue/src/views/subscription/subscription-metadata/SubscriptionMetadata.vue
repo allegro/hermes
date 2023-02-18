@@ -44,11 +44,20 @@
           content="Sign in to edit the subscription"
         />
         <v-btn
+          v-if="props.subscription.state === State.ACTIVE"
           :disabled="!props.authorized"
           color="orange"
           prepend-icon="mdi-publish-off"
         >
           Suspend
+        </v-btn>
+        <v-btn
+          v-if="props.subscription.state === State.SUSPENDED"
+          :disabled="!props.authorized"
+          color="green"
+          prepend-icon="mdi-publish"
+        >
+          Activate
         </v-btn>
         <v-btn :disabled="!props.authorized" prepend-icon="mdi-pencil">
           Edit

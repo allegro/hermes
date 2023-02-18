@@ -3,7 +3,7 @@ import { h } from 'vue';
 import { render as renderTL } from '@testing-library/vue';
 import { VApp } from 'vuetify/components';
 import router from '@/router';
-import type { RenderOptions } from '@testing-library/vue';
+import type { RenderOptions, RenderResult } from '@testing-library/vue';
 import type { Router } from 'vue-router';
 
 export const render = (
@@ -11,7 +11,7 @@ export const render = (
   options?: Partial<RenderOptions>,
   testVuetify: ReturnType<typeof createVuetify> = createVuetify(),
   testRouter: Router = router,
-) => {
+): RenderResult => {
   return renderTL(VApp, {
     global: {
       plugins: [testVuetify, testRouter],
