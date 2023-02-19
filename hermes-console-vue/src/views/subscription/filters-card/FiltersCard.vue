@@ -1,11 +1,9 @@
 <script setup lang="ts">
   import type { MessageFilterSpecification } from '@/api/subscription';
 
-  interface FiltersCardProps {
+  const props = defineProps<{
     filters: MessageFilterSpecification[];
-  }
-
-  const props = defineProps<FiltersCardProps>();
+  }>();
 </script>
 
 <template>

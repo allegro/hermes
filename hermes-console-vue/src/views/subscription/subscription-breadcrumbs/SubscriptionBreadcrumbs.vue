@@ -1,11 +1,9 @@
 <script setup lang="ts">
-  interface SubscriptionBreadcrumbsProps {
+  const props = defineProps<{
     groupId: string;
     topicId: string;
     subscriptionId: string;
-  }
-
-  const props = defineProps<SubscriptionBreadcrumbsProps>();
+  }>();
 
   const items = [
     {

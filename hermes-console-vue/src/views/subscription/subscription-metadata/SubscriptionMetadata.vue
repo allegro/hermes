@@ -3,12 +3,10 @@
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Subscription } from '@/api/subscription';
 
-  interface SubscriptionHeaderProps {
+  const props = defineProps<{
     subscription: Subscription;
     authorized: boolean;
-  }
-
-  const props = defineProps<SubscriptionHeaderProps>();
+  }>();
 </script>
 
 <template>

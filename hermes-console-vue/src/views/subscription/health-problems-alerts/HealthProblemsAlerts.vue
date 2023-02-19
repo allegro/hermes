@@ -5,11 +5,9 @@
   } from '@/api/subscription-health';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
 
-  interface HealthProblemsAlertProps {
+  const props = defineProps<{
     problems: SubscriptionHealthProblem[];
-  }
-
-  const props = defineProps<HealthProblemsAlertProps>();
+  }>();
 
   const PROBLEMS_MESSAGES: Record<ProblemCode, string> = {
     [ProblemCode.LAGGING]:

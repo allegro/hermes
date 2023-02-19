@@ -1,11 +1,9 @@
 <script setup lang="ts">
   import type { Header } from '@/api/subscription';
 
-  interface HeadersCardProps {
+  const props = defineProps<{
     headers: Header[];
-  }
-
-  const props = defineProps<HeadersCardProps>();
+  }>();
 </script>
 
 <template>

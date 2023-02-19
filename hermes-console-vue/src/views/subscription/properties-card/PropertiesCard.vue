@@ -4,9 +4,9 @@
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import type { Subscription } from '@/api/subscription';
 
-  interface PropertiesCardProps {
+  const props = defineProps<{
     subscription: Subscription;
-  }
+  }>();
 
   function getTrackingModeName(trackingMode: string): string {
     switch (trackingMode) {
@@ -20,8 +20,6 @@
         return 'Unknown';
     }
   }
-
-  const props = defineProps<PropertiesCardProps>();
 
   const entries = [
     {

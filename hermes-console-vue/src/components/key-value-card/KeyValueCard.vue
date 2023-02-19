@@ -10,12 +10,10 @@
     tooltip?: string;
   }
 
-  interface KeyValueCardProps {
+  const props = defineProps<{
     cardTitle: string;
     entries: KeyValueEntry[];
-  }
-
-  const props = defineProps<KeyValueCardProps>();
+  }>();
 
   // TODO: test filtering
   const filteredEntries = computed(() =>

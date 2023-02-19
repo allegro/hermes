@@ -3,11 +3,9 @@
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
 
-  interface LastUndeliveredMessageProps {
+  const props = defineProps<{
     lastUndelivered: SentMessageTrace;
-  }
-
-  const props = defineProps<LastUndeliveredMessageProps>();
+  }>();
 
   const entries = [
     {

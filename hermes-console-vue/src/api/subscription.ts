@@ -5,7 +5,7 @@ import type { OwnerId } from '@/api/owner-id';
 export interface Subscription {
   topicName: string;
   name: string;
-  endpoint: EndpointAddress;
+  endpoint: string;
   state: State;
   description: string;
   subscriptionPolicy: Record<string, any>;
@@ -26,8 +26,6 @@ export interface Subscription {
   createdAt: number;
   modifiedAt: number;
 }
-
-export type EndpointAddress = string;
 
 export const enum State {
   PENDING = 'PENDING',

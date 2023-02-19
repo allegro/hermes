@@ -2,16 +2,13 @@ export interface SubscriptionMetrics {
   delivered: number;
   discarded: number;
   volume: number;
-  timeouts: MetricDecimalValue;
-  otherErrors: MetricDecimalValue;
-  codes2xx: MetricDecimalValue;
-  codes4xx: MetricDecimalValue;
-  codes5xx: MetricDecimalValue;
-  lag: MetricLongValue;
-  rate: MetricDecimalValue;
-  throughput: MetricDecimalValue;
-  batchRate: MetricDecimalValue;
+  timeouts: string;
+  otherErrors: string;
+  codes2xx: string;
+  codes4xx: string;
+  codes5xx: string;
+  lag: string;
+  rate: string;
+  throughput: string;
+  batchRate: string;
 }
-
-export type MetricDecimalValue = string;
-export type MetricLongValue = string;

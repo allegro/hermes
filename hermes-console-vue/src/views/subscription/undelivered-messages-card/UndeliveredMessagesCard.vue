@@ -2,11 +2,9 @@
   import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
 
-  interface UndeliveredMessagesCardProps {
+  const props = defineProps<{
     undeliveredMessages: SentMessageTrace[];
-  }
-
-  const props = defineProps<UndeliveredMessagesCardProps>();
+  }>();
 </script>
 
 <template>

@@ -1,12 +1,10 @@
 <script setup lang="ts">
-  interface ConsoleAlertProps {
+  const props = defineProps<{
     icon?: string;
     title?: string;
     text: string;
     type: 'error' | 'success' | 'warning' | 'info';
-  }
-
-  const props = defineProps<ConsoleAlertProps>();
+  }>();
 </script>
 
 <template>

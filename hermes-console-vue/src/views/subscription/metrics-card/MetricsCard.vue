@@ -3,11 +3,9 @@
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
-  interface MetricsCardProps {
+  const props = defineProps<{
     subscriptionMetrics: SubscriptionMetrics;
-  }
-
-  const props = defineProps<MetricsCardProps>();
+  }>();
 
   const entries = [
     {
