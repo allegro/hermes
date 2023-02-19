@@ -31,7 +31,7 @@
     <v-table density="compact">
       <tbody>
         <tr v-for="entry in filteredEntries" :key="entry.name">
-          <th class="text-body-2 font-weight-light">
+          <th class="text-body-2 text-medium-emphasis">
             <component
               :is="entry.nameHref ? 'a' : 'span'"
               :href="entry.nameHref"

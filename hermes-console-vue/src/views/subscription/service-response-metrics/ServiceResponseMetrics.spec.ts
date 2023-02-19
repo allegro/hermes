@@ -7,11 +7,23 @@ describe('ServiceResponseMetrics', () => {
     const { getByText } = render(ServiceResponseMetrics);
 
     // then
-    expect(getByText('Service response metrics')).toBeInTheDocument();
-    expect(getByText('2xx')).toBeInTheDocument();
-    expect(getByText('4xx')).toBeInTheDocument();
-    expect(getByText('5xx')).toBeInTheDocument();
-    expect(getByText('Network timeouts')).toBeInTheDocument();
-    expect(getByText('Other network errors')).toBeInTheDocument();
+    expect(
+      getByText('subscription.serviceResponseMetrics.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.serviceResponseMetrics.2xx'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.serviceResponseMetrics.4xx'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.serviceResponseMetrics.5xx'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.serviceResponseMetrics.networkTimeouts'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.serviceResponseMetrics.otherNetworkErrors'),
+    ).toBeInTheDocument();
   });
 });

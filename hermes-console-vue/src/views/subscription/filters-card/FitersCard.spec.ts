@@ -13,7 +13,7 @@ describe('FiltersCard', () => {
     const { getByText } = render(FiltersCard, { props });
 
     // then
-    expect(getByText('Subscription message filters')).toBeInTheDocument();
+    expect(getByText('subscription.filtersCard.title')).toBeInTheDocument();
   });
 
   it('should render filters table', () => {

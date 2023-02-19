@@ -13,7 +13,7 @@ describe('HeadersCard', () => {
     const { getByText } = render(HeadersCard, { props });
 
     // then
-    expect(getByText('Fixed HTTP headers')).toBeInTheDocument();
+    expect(getByText('subscription.headersCard.title')).toBeInTheDocument();
   });
 
   it('should render headers table', () => {

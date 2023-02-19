@@ -13,7 +13,9 @@ describe('LastUndeliveredMessage', () => {
     const { getByText } = render(LastUndeliveredMessage, { props });
 
     // then
-    expect(getByText('Last undelivered message')).toBeInTheDocument();
+    expect(
+      getByText('subscription.lastUndeliveredMessage.title'),
+    ).toBeInTheDocument();
   });
 
   it('should render last undelivered message formatted time', () => {
@@ -21,7 +23,9 @@ describe('LastUndeliveredMessage', () => {
     const { getByText } = render(LastUndeliveredMessage, { props });
 
     // then
-    const timeRow = getByText('Time').closest('tr')!;
+    const timeRow = getByText(
+      'subscription.lastUndeliveredMessage.time',
+    ).closest('tr')!;
     expect(
       within(timeRow).getByText('2009-02-13 23:31:30'),
     ).toBeInTheDocument();
@@ -32,7 +36,9 @@ describe('LastUndeliveredMessage', () => {
     const { getByText } = render(LastUndeliveredMessage, { props });
 
     // then
-    const reasonRow = getByText('Reason').closest('tr')!;
+    const reasonRow = getByText(
+      'subscription.lastUndeliveredMessage.reason',
+    ).closest('tr')!;
     expect(
       within(reasonRow).getByText(
         'Message sending failed with status code: 500',
@@ -45,7 +51,9 @@ describe('LastUndeliveredMessage', () => {
     const { getByText } = render(LastUndeliveredMessage, { props });
 
     // then
-    const messageRow = getByText('Message').closest('tr')!;
+    const messageRow = getByText(
+      'subscription.lastUndeliveredMessage.message',
+    ).closest('tr')!;
     expect(
       within(messageRow).getByText(
         '{"id":"123","foo":[1,2,3],"bar":{"qaz":42}}',

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { formatNumber } from '@/utils/number-formatter/number-formatter';
+  import { useI18n } from 'vue-i18n';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
@@ -7,44 +8,42 @@
     subscriptionMetrics: SubscriptionMetrics;
   }>();
 
+  const { t } = useI18n();
+
   const entries = [
     {
-      name: 'Delivery rate',
+      name: t('subscription.metricsCard.deliveryRate'),
       value: formatNumber(props.subscriptionMetrics.rate, 2),
     },
     {
-      name: 'Subscriber latency',
-      tooltip:
-        'Latency of acknowledging messages by subscribing service as ' +
-        'measured by Hermes.',
+      name: t('subscription.metricsCard.subscriberLatency'),
+      tooltip: t('subscription.metricsCard.tooltips.subscriberLatency'),
     },
     {
-      name: 'Delivered',
+      name: t('subscription.metricsCard.delivered'),
       value: formatNumber(props.subscriptionMetrics.delivered),
     },
     {
-      name: 'Discarded',
+      name: t('subscription.metricsCard.discarded'),
       value: formatNumber(props.subscriptionMetrics.discarded),
     },
     {
-      name: 'Lag',
+      name: t('subscription.metricsCard.lag'),
       value: formatNumber(props.subscriptionMetrics.lag),
-      tooltip:
-        'Total number of events waiting to be delivered. Each subscription ' +
-        'has a "natural" lag, which depends on production rate.',
+      tooltip: t('subscription.metricsCard.tooltips.lag'),
     },
     {
-      name: 'Output rate',
-      tooltip:
-        'Maximum sending rate calculated based on receiving service ' +
-        'performance. For well-performing service output rate should be ' +
-        'equal to rate limit.',
+      name: t('subscription.metricsCard.outputRate'),
+      tooltip: t('subscription.metricsCard.tooltips.outputRate'),
     },
   ];
 </script>
 
 <template>
-  <key-value-card :entries="entries" card-title="Subscription metrics" />
+  <key-value-card
+    :entries="entries"
+    :card-title="t('subscription.metricsCard.title')"
+  />
 </template>
 
 <style scoped lang="scss"></style>

@@ -4,14 +4,14 @@ import HealthProblemsAlerts from '@/views/subscription/health-problems-alerts/He
 
 describe('HealthProblemsAlerts', () => {
   it.each([
-    [ProblemCode.LAGGING, /subscription lag is growing/i],
-    [ProblemCode.MALFUNCTIONING, /a lot of 5xx codes/i],
-    [ProblemCode.RECEIVING_MALFORMED_MESSAGES, /a lot of 4xx codes/i],
-    [ProblemCode.TIMING_OUT, /times out a lot/i],
-    [ProblemCode.UNREACHABLE, /unable to connect/i],
+    [ProblemCode.LAGGING, 'lagging'],
+    [ProblemCode.MALFUNCTIONING, 'malfunctioning'],
+    [ProblemCode.RECEIVING_MALFORMED_MESSAGES, 'malformedMessages'],
+    [ProblemCode.TIMING_OUT, 'timingOut'],
+    [ProblemCode.UNREACHABLE, 'unreachable'],
   ])(
     'should show an appropriate health problem alert (%s)',
-    (problemCode: ProblemCode, warningMessage: RegExp) => {
+    (problemCode: ProblemCode, labelKey: string) => {
       // when
       const { getByText } = render(HealthProblemsAlerts, {
         props: {
@@ -20,7 +20,12 @@ describe('HealthProblemsAlerts', () => {
       });
 
       // then
-      expect(getByText(warningMessage)).toBeInTheDocument();
+      expect(
+        getByText(`subscription.healthProblemsAlerts.${labelKey}.title`),
+      ).toBeInTheDocument();
+      expect(
+        getByText(`subscription.healthProblemsAlerts.${labelKey}.text`),
+      ).toBeInTheDocument();
     },
   );
 });

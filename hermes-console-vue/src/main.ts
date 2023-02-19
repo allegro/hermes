@@ -3,9 +3,11 @@ import '@mdi/font/css/materialdesignicons.css';
 import 'vuetify/styles';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { createApp } from 'vue';
+import { createI18n } from 'vue-i18n';
 import { createVuetify } from 'vuetify';
 import App from './App.vue';
 import axios from 'axios';
+import messages from '@/i18n/messages';
 import router from './router';
 
 // TODO: should be fetched from Hermes console configuration
@@ -43,9 +45,17 @@ const vuetify = createVuetify({
   },
 });
 
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en-US',
+  fallbackLocale: 'en-US',
+  messages: messages,
+});
+
 const app = createApp(App);
 
 app.use(vuetify);
+app.use(i18n);
 app.use(router);
 
 app.mount('#app');

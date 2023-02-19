@@ -16,7 +16,7 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    expect(getByText('Properties')).toBeInTheDocument();
+    expect(getByText('subscription.propertiesCard.title')).toBeInTheDocument();
   });
 
   it.each([
@@ -34,7 +34,9 @@ describe('PropertiesCard', () => {
       const { getByText } = render(PropertiesCard, { props });
 
       // then
-      const contentTypeRow = getByText('Content type').closest('tr')!;
+      const contentTypeRow = getByText(
+        'subscription.propertiesCard.contentType',
+      ).closest('tr')!;
       expect(
         within(contentTypeRow).getByText(contentTypeText),
       ).toBeInTheDocument();
@@ -56,7 +58,9 @@ describe('PropertiesCard', () => {
       const { getByText } = render(PropertiesCard, { props });
 
       // then
-      const deliveryTypeRow = getByText('Delivery type').closest('tr')!;
+      const deliveryTypeRow = getByText(
+        'subscription.propertiesCard.deliveryType',
+      ).closest('tr')!;
       expect(
         within(deliveryTypeRow).getByText(deliveryTypeText),
       ).toBeInTheDocument();
@@ -76,7 +80,9 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const modeRow = getByText('Mode').closest('tr')!;
+    const modeRow = getByText('subscription.propertiesCard.mode').closest(
+      'tr',
+    )!;
     expect(within(modeRow).getByText(modeText)).toBeInTheDocument();
   });
 
@@ -97,7 +103,9 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const rateLimitRow = getByText('Rate limit').closest('tr')!;
+    const rateLimitRow = getByText(
+      'subscription.propertiesCard.rateLimit',
+    ).closest('tr')!;
     expect(within(rateLimitRow).getByText('15')).toBeInTheDocument();
   });
 
@@ -117,8 +125,10 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const batchSizeRow = getByText('Batch size').closest('tr')!;
-    expect(within(batchSizeRow).getByText('10 messages')).toBeInTheDocument();
+    const batchSizeRow = getByText(
+      'subscription.propertiesCard.batchSize',
+    ).closest('tr')!;
+    expect(within(batchSizeRow).getByText('10')).toBeInTheDocument();
   });
 
   it('should render subscription batch time window for BATCH delivery type', () => {
@@ -137,10 +147,10 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const batchTimeRow = getByText('Batch time window').closest('tr')!;
-    expect(
-      within(batchTimeRow).getByText('500 milliseconds'),
-    ).toBeInTheDocument();
+    const batchTimeRow = getByText(
+      'subscription.propertiesCard.batchTime',
+    ).closest('tr')!;
+    expect(within(batchTimeRow).getByText('500 ms')).toBeInTheDocument();
   });
 
   it('should render subscription batch volume for BATCH delivery type', () => {
@@ -159,8 +169,10 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const batchVolumeRow = getByText('Batch volume').closest('tr')!;
-    expect(within(batchVolumeRow).getByText('1024 bytes')).toBeInTheDocument();
+    const batchVolumeRow = getByText(
+      'subscription.propertiesCard.batchVolume',
+    ).closest('tr')!;
+    expect(within(batchVolumeRow).getByText('1024 B')).toBeInTheDocument();
   });
 
   it('should not render batch-specific data for SERIAL delivery type', () => {
@@ -176,9 +188,15 @@ describe('PropertiesCard', () => {
     const { queryByText } = render(PropertiesCard, { props });
 
     // then
-    expect(queryByText('Batch size')).not.toBeInTheDocument();
-    expect(queryByText('Batch time window')).not.toBeInTheDocument();
-    expect(queryByText('Batch volume')).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.propertiesCard.batchSize'),
+    ).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.propertiesCard.batchTime'),
+    ).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.propertiesCard.batchVolume'),
+    ).not.toBeInTheDocument();
   });
 
   it('should render subscription sending delay for SERIAL delivery type', () => {
@@ -197,10 +215,10 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const batchVolumeRow = getByText('Sending delay').closest('tr')!;
-    expect(
-      within(batchVolumeRow).getByText('200 milliseconds'),
-    ).toBeInTheDocument();
+    const batchVolumeRow = getByText(
+      'subscription.propertiesCard.sendingDelay',
+    ).closest('tr')!;
+    expect(within(batchVolumeRow).getByText('200 ms')).toBeInTheDocument();
   });
 
   it('should not render SERIAL delivery specific data for BATCH delivery type', () => {
@@ -216,10 +234,18 @@ describe('PropertiesCard', () => {
     const { queryByText } = render(PropertiesCard, { props });
 
     // then
-    expect(queryByText('Rate limit')).not.toBeInTheDocument();
-    expect(queryByText('Sending delay')).not.toBeInTheDocument();
-    expect(queryByText('Retry backoff multiplier')).not.toBeInTheDocument();
-    expect(queryByText('Retry backoff max interval')).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.propertiesCard.rateLimit'),
+    ).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.propertiesCard.sendingDelay'),
+    ).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.propertiesCard.backoffMultiplier'),
+    ).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.propertiesCard.backoffMaxInterval'),
+    ).not.toBeInTheDocument();
   });
 
   it('should render subscription message TTL', () => {
@@ -237,8 +263,10 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const batchVolumeRow = getByText('Message TTL').closest('tr')!;
-    expect(within(batchVolumeRow).getByText('60 seconds')).toBeInTheDocument();
+    const batchVolumeRow = getByText(
+      'subscription.propertiesCard.messageTtl',
+    ).closest('tr')!;
+    expect(within(batchVolumeRow).getByText('60 s')).toBeInTheDocument();
   });
 
   it('should render subscription request timeout', () => {
@@ -256,17 +284,17 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const batchVolumeRow = getByText('Request timeout').closest('tr')!;
-    expect(
-      within(batchVolumeRow).getByText('1000 milliseconds'),
-    ).toBeInTheDocument();
+    const batchVolumeRow = getByText(
+      'subscription.propertiesCard.requestTimeout',
+    ).closest('tr')!;
+    expect(within(batchVolumeRow).getByText('1000 ms')).toBeInTheDocument();
   });
 
   it.each([
-    ['trackingOff', 'No tracking'],
-    ['discardedOnly', 'Track message discarding only'],
-    ['trackingAll', 'Track everything'],
-    ['someUnknownValue', 'Unknown'],
+    ['trackingOff', 'subscription.propertiesCard.trackingOff'],
+    ['discardedOnly', 'subscription.propertiesCard.discardedOnly'],
+    ['trackingAll', 'subscription.propertiesCard.trackingAll'],
+    ['someUnknownValue', 'subscription.propertiesCard.unknown'],
   ])(
     'should render subscription message delivery tracking (%s)',
     (trackingMode, trackingModeName) => {
@@ -282,7 +310,9 @@ describe('PropertiesCard', () => {
       const { getByText } = render(PropertiesCard, { props });
 
       // then
-      const trackingRow = getByText('Message delivery tracking').closest('tr')!;
+      const trackingRow = getByText(
+        'subscription.propertiesCard.trackingMode',
+      ).closest('tr')!;
       expect(
         within(trackingRow).getByText(trackingModeName),
       ).toBeInTheDocument();
@@ -307,7 +337,9 @@ describe('PropertiesCard', () => {
       const { getByText } = render(PropertiesCard, { props });
 
       // then
-      const retry4xxRow = getByText('Retry on 4xx status').closest('tr')!;
+      const retry4xxRow = getByText(
+        'subscription.propertiesCard.retryClientErrors',
+      ).closest('tr')!;
       expect(
         within(retry4xxRow).getByText(retryClientErrors.toString()),
       ).toBeInTheDocument();
@@ -330,10 +362,10 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const retryBackoffRow = getByText('Retry backoff').closest('tr')!;
-    expect(
-      within(retryBackoffRow).getByText('150 milliseconds'),
-    ).toBeInTheDocument();
+    const retryBackoffRow = getByText(
+      'subscription.propertiesCard.retryBackoff',
+    ).closest('tr')!;
+    expect(within(retryBackoffRow).getByText('150 ms')).toBeInTheDocument();
   });
 
   it('should render subscription retry backoff multiplier for SERIAL delivery type', () => {
@@ -354,7 +386,7 @@ describe('PropertiesCard', () => {
 
     // then
     const retryBackoffMultiplierRow = getByText(
-      'Retry backoff multiplier',
+      'subscription.propertiesCard.backoffMultiplier',
     ).closest('tr')!;
     expect(
       within(retryBackoffMultiplierRow).getByText('1'),
@@ -380,9 +412,9 @@ describe('PropertiesCard', () => {
 
     // then
     const retryBackoffMaxIntervalRow = getByText(
-      'Retry backoff max interval',
+      'subscription.propertiesCard.backoffMaxInterval',
     ).closest('tr')!;
-    expect(within(retryBackoffMaxIntervalRow).getByText('400 seconds'));
+    expect(within(retryBackoffMaxIntervalRow).getByText('400 s'));
   });
 
   it.each([
@@ -407,7 +439,9 @@ describe('PropertiesCard', () => {
       const { getByText } = render(PropertiesCard, { props });
 
       // then
-      const severityRow = getByText('Monitoring severity').closest('tr')!;
+      const severityRow = getByText(
+        'subscription.propertiesCard.monitoringSeverity',
+      ).closest('tr')!;
       expect(within(severityRow).getByText(severityName)).toBeInTheDocument();
     },
   );
@@ -428,7 +462,9 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const reactionRow = getByText('Monitoring reaction').closest('tr')!;
+    const reactionRow = getByText(
+      'subscription.propertiesCard.monitoringReaction',
+    ).closest('tr')!;
     expect(within(reactionRow).getByText('foo')).toBeInTheDocument();
   });
 
@@ -447,7 +483,9 @@ describe('PropertiesCard', () => {
       const { getByText } = render(PropertiesCard, { props });
 
       // then
-      const http2Row = getByText('Deliver using http/2').closest('tr')!;
+      const http2Row = getByText('subscription.propertiesCard.http2').closest(
+        'tr',
+      )!;
       expect(
         within(http2Row).getByText(http2Enabled.toString()),
       ).toBeInTheDocument();
@@ -470,7 +508,7 @@ describe('PropertiesCard', () => {
 
       // then
       const subscriptionIdentityHeadersRow = getByText(
-        'Attach subscription identity headers',
+        'subscription.propertiesCard.subscriptionIdentityHeaders',
       ).closest('tr')!;
       expect(
         within(subscriptionIdentityHeadersRow).getByText(
@@ -495,7 +533,9 @@ describe('PropertiesCard', () => {
       const { getByText } = render(PropertiesCard, { props });
 
       // then
-      const autoDeleteRow = getByText('Automatically remove').closest('tr')!;
+      const autoDeleteRow = getByText(
+        'subscription.propertiesCard.autoDeleteWithTopic',
+      ).closest('tr')!;
       expect(
         within(autoDeleteRow).getByText(autoDeleteWithTopicEnabled.toString()),
       ).toBeInTheDocument();
@@ -515,7 +555,9 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const createdAtRow = getByText('Creation date').closest('tr')!;
+    const createdAtRow = getByText(
+      'subscription.propertiesCard.createdAt',
+    ).closest('tr')!;
     expect(
       within(createdAtRow).getByText('2023-02-18 15:54:41'),
     ).toBeInTheDocument();
@@ -534,7 +576,9 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    const modifiedAtRow = getByText('Modification date').closest('tr')!;
+    const modifiedAtRow = getByText(
+      'subscription.propertiesCard.modifiedAt',
+    ).closest('tr')!;
     expect(
       within(modifiedAtRow).getByText('2023-02-18 15:54:57'),
     ).toBeInTheDocument();

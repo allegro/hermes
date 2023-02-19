@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { DeliveryType } from '@/api/subscription';
   import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
+  import { useI18n } from 'vue-i18n';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import type { Subscription } from '@/api/subscription';
 
@@ -8,156 +9,138 @@
     subscription: Subscription;
   }>();
 
+  const { t } = useI18n();
+
   function getTrackingModeName(trackingMode: string): string {
     switch (trackingMode) {
       case 'trackingOff':
-        return 'No tracking';
+        return t('subscription.propertiesCard.trackingOff');
       case 'discardedOnly':
-        return 'Track message discarding only';
+        return t('subscription.propertiesCard.discardedOnly');
       case 'trackingAll':
-        return 'Track everything';
+        return t('subscription.propertiesCard.trackingAll');
       default:
-        return 'Unknown';
+        return t('subscription.propertiesCard.unknown');
     }
   }
 
   const entries = [
     {
-      name: 'Content type',
+      name: t('subscription.propertiesCard.contentType'),
       value: props.subscription.contentType,
     },
     {
-      name: 'Delivery type',
+      name: t('subscription.propertiesCard.deliveryType'),
       value: props.subscription.deliveryType,
-      tooltip:
-        'Hermes can deliver messages in SERIAL (one message at a time) or ' +
-        'in BATCH (group of messages at a time).',
+      tooltip: t('subscription.propertiesCard.tooltips.deliveryType'),
     },
     {
-      name: 'Mode',
+      name: t('subscription.propertiesCard.mode'),
       value: props.subscription.mode,
-      tooltip:
-        'Hermes can deliver messages in ANYCAST (to one of subscribed ' +
-        'hosts) or in BROADCAST (to all subscribed hosts) mode.',
+      tooltip: t('subscription.propertiesCard.tooltips.mode'),
     },
     {
-      name: 'Rate limit',
+      name: t('subscription.propertiesCard.rateLimit'),
       value: props.subscription.subscriptionPolicy.rate,
       displayIf: props.subscription.deliveryType === DeliveryType.SERIAL,
-      tooltip:
-        'Maximum rate defined by user (per data center). Maximum rate ' +
-        'calculated by algorithm can be observed in "Output rate" metric.',
+      tooltip: t('subscription.propertiesCard.tooltips.rateLimit'),
     },
     {
-      name: 'Batch size',
-      value: `${props.subscription.subscriptionPolicy.batchSize} messages`,
+      name: t('subscription.propertiesCard.batchSize'),
+      value: props.subscription.subscriptionPolicy.batchSize,
       displayIf: props.subscription.deliveryType === DeliveryType.BATCH,
-      tooltip: 'Desired number of messages in a single batch.',
+      tooltip: t('subscription.propertiesCard.tooltips.batchSize'),
     },
     {
-      name: 'Batch time window',
-      value: `${props.subscription.subscriptionPolicy.batchTime} milliseconds`,
+      name: t('subscription.propertiesCard.batchTime'),
+      value: `${props.subscription.subscriptionPolicy.batchTime} ms`,
       displayIf: props.subscription.deliveryType === DeliveryType.BATCH,
-      tooltip:
-        'Max time between arrival of first message to batch delivery attempt.',
+      tooltip: t('subscription.propertiesCard.tooltips.batchTime'),
     },
     {
-      name: 'Batch volume',
-      value: `${props.subscription.subscriptionPolicy.batchVolume} bytes`,
+      name: t('subscription.propertiesCard.batchVolume'),
+      value: `${props.subscription.subscriptionPolicy.batchVolume} B`,
       displayIf: props.subscription.deliveryType === DeliveryType.BATCH,
-      tooltip: 'Desired number of bytes in single batch.',
+      tooltip: t('subscription.propertiesCard.tooltips.batchVolume'),
     },
     {
-      name: 'Request timeout',
-      value: `${props.subscription.subscriptionPolicy.requestTimeout} milliseconds`,
+      name: t('subscription.propertiesCard.requestTimeout'),
+      value: `${props.subscription.subscriptionPolicy.requestTimeout} ms`,
       displayIf: props.subscription.deliveryType === DeliveryType.BATCH,
-      tooltip: 'Desired number of bytes in single batch.',
+      tooltip: t('subscription.propertiesCard.tooltips.requestTimeout'),
     },
     {
-      name: 'Sending delay',
-      value: `${props.subscription.subscriptionPolicy.sendingDelay} milliseconds`,
+      name: t('subscription.propertiesCard.sendingDelay'),
+      value: `${props.subscription.subscriptionPolicy.sendingDelay} ms`,
       displayIf: props.subscription.deliveryType === DeliveryType.SERIAL,
-      tooltip:
-        'Amount of time in ms after which an event will be send. Useful if ' +
-        'events from two topics are sent at the same time and you want to ' +
-        'increase chance that events from one topic will be deliver after ' +
-        'events from other topic.',
+      tooltip: t('subscription.propertiesCard.tooltips.sendingDelay'),
     },
     {
-      name: 'Message TTL',
-      value: `${props.subscription.subscriptionPolicy.messageTtl} seconds`,
-      tooltip:
-        'Amount of time a message can be held in sending queue and retried. ' +
-        'If message will not be delivered during this time, it will be ' +
-        'discarded.',
+      name: t('subscription.propertiesCard.messageTtl'),
+      value: `${props.subscription.subscriptionPolicy.messageTtl} s`,
+      tooltip: t('subscription.propertiesCard.tooltips.messageTtl'),
     },
     {
-      name: 'Request timeout',
-      value: `${props.subscription.subscriptionPolicy.requestTimeout} milliseconds`,
-      tooltip: 'Http client request timeout in milliseconds.',
+      name: t('subscription.propertiesCard.requestTimeout'),
+      value: `${props.subscription.subscriptionPolicy.requestTimeout} ms`,
+      tooltip: t('subscription.propertiesCard.tooltips.requestTimeout'),
     },
     {
-      name: 'Message delivery tracking',
+      name: t('subscription.propertiesCard.trackingMode'),
       value: getTrackingModeName(props.subscription.trackingMode),
     },
     {
-      name: 'Retry on 4xx status',
+      name: t('subscription.propertiesCard.retryClientErrors'),
       value: props.subscription.subscriptionPolicy.retryClientErrors,
-      tooltip:
-        'If false, message will not be retried when service responds with ' +
-        '4xx status (i.e. Bad Request).',
+      tooltip: t('subscription.propertiesCard.tooltips.retryClientErrors'),
     },
     {
-      name: 'Retry backoff',
-      value: `${props.subscription.subscriptionPolicy.messageBackoff} milliseconds`,
-      tooltip: 'Minimum amount of time between consecutive message retries.',
+      name: t('subscription.propertiesCard.retryBackoff'),
+      value: `${props.subscription.subscriptionPolicy.messageBackoff} ms`,
+      tooltip: t('subscription.propertiesCard.tooltips.retryBackoff'),
     },
     {
-      name: 'Retry backoff multiplier',
+      name: t('subscription.propertiesCard.backoffMultiplier'),
       value: props.subscription.subscriptionPolicy.backoffMultiplier,
       displayIf: props.subscription.deliveryType === DeliveryType.SERIAL,
-      tooltip:
-        'Delay multiplier between consecutive send attempts of failed requests',
+      tooltip: t('subscription.propertiesCard.tooltips.backoffMultiplier'),
     },
     {
-      name: 'Retry backoff max interval',
-      value: `${props.subscription.subscriptionPolicy.backoffMaxIntervalInSec} seconds`,
+      name: t('subscription.propertiesCard.backoffMaxInterval'),
+      value: `${props.subscription.subscriptionPolicy.backoffMaxIntervalInSec} s`,
       displayIf:
         props.subscription.deliveryType === DeliveryType.SERIAL &&
         props.subscription.subscriptionPolicy.backoffMultiplier > 1,
-      tooltip:
-        'Maximum value of delay backoff when using exponential calculation',
+      tooltip: t('subscription.propertiesCard.tooltips.backoffMaxInterval'),
     },
     {
-      name: 'Monitoring severity',
+      name: t('subscription.propertiesCard.monitoringSeverity'),
       value: props.subscription.monitoringDetails.severity,
-      tooltip:
-        "How important should be the subscription's health for the monitoring.",
+      tooltip: t('subscription.propertiesCard.tooltips.monitoringSeverity'),
     },
     {
-      name: 'Monitoring reaction',
+      name: t('subscription.propertiesCard.monitoringReaction'),
       value: props.subscription.monitoringDetails.reaction,
       tooltip:
         'Information for monitoring how to react when the subscription ' +
         'becomes unhealthy (e.g. team name or Pager Duty ID).',
     },
     {
-      name: 'Deliver using http/2',
+      name: t('subscription.propertiesCard.http2'),
       value: props.subscription.http2Enabled,
-      tooltip: 'If true Hermes will deliver messages using http/2 protocol.',
+      tooltip: t('subscription.propertiesCard.tooltips.http2'),
     },
     {
-      name: 'Attach subscription identity headers',
+      name: t('subscription.propertiesCard.subscriptionIdentityHeaders'),
       value: props.subscription.subscriptionIdentityHeadersEnabled,
-      tooltip:
-        'If true Hermes will attach HTTP headers with subscription identity.',
+      tooltip: t(
+        'subscription.propertiesCard.tooltips.subscriptionIdentityHeaders',
+      ),
     },
     {
-      name: 'Automatically remove',
+      name: t('subscription.propertiesCard.autoDeleteWithTopic'),
       value: props.subscription.autoDeleteWithTopicEnabled,
-      tooltip:
-        'When the associated topic is deleted, Hermes will delete the ' +
-        'subscription automatically.',
+      tooltip: t('subscription.propertiesCard.tooltips.autoDeleteWithTopic'),
     },
     /*
      * TODO: subscription.html
@@ -172,18 +155,21 @@
      * </p>
      */
     {
-      name: 'Creation date',
+      name: t('subscription.propertiesCard.createdAt'),
       value: formatTimestamp(props.subscription.createdAt),
     },
     {
-      name: 'Modification date',
+      name: t('subscription.propertiesCard.modifiedAt'),
       value: formatTimestamp(props.subscription.modifiedAt),
     },
   ];
 </script>
 
 <template>
-  <key-value-card :entries="entries" card-title="Properties" />
+  <key-value-card
+    :entries="entries"
+    :card-title="t('subscription.propertiesCard.title')"
+  />
 </template>
 
 <style scoped lang="scss"></style>

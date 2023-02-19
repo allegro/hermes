@@ -1,17 +1,21 @@
 <script setup lang="ts">
+  import { useI18n } from 'vue-i18n';
+
   const props = defineProps<{
     groupId: string;
     topicId: string;
     subscriptionId: string;
   }>();
 
+  const { t } = useI18n();
+
   const items = [
     {
-      title: 'home',
+      title: t('subscription.subscriptionBreadcrumbs.home'),
       href: '/',
     },
     {
-      title: 'groups',
+      title: t('subscription.subscriptionBreadcrumbs.groups'),
       href: '/groups',
     },
     {

@@ -12,8 +12,7 @@ import { useSubscription } from '@/composables/use-subscription/useSubscription'
 import router from '@/router';
 import SubscriptionView from '@/views/subscription/SubscriptionView.vue';
 
-vitest.mock('@/composables/use-subscription/useSubscription');
-const mockedUseSubscription = vitest.mocked(useSubscription);
+vi.mock('@/composables/use-subscription/useSubscription');
 
 const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscription: ref(dummySubscription),
@@ -36,37 +35,46 @@ describe('SubscriptionView', () => {
 
   it('should render data boxes if subscription data was successfully fetched', () => {
     // given
-    mockedUseSubscription.mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
 
     // when
     const { getByText } = render(SubscriptionView);
 
     // then
-    expect(getByText('Subscription metrics')).toBeInTheDocument();
-    expect(getByText('Service response metrics')).toBeInTheDocument();
-    expect(getByText('Manage subscription messages')).toBeInTheDocument();
-    expect(getByText('Properties')).toBeInTheDocument();
-    expect(getByText('Last undelivered message')).toBeInTheDocument();
-    expect(getByText('Subscription message filters')).toBeInTheDocument();
-    expect(getByText('Fixed HTTP headers')).toBeInTheDocument();
-    expect(getByText('Last 100 undelivered messages')).toBeInTheDocument();
+    const cardTitles = [
+      'subscription.metricsCard.title',
+      'subscription.serviceResponseMetrics.title',
+      'subscription.manageMessagesCard.title',
+      'subscription.propertiesCard.title',
+      'subscription.lastUndeliveredMessage.title',
+      'subscription.filtersCard.title',
+      'subscription.headersCard.title',
+      'subscription.undeliveredMessagesCard.title',
+    ];
+    cardTitles.forEach((boxTitle) => {
+      expect(getByText(boxTitle)).toBeInTheDocument();
+    });
   });
 
   it('should render subscription health alert', () => {
     // given
-    mockedUseSubscription.mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
 
     // when
     const { getByText } = render(SubscriptionView);
 
     // then
-    expect(getByText(/subscription lagging/i)).toBeInTheDocument();
-    expect(getByText(/subscription lag is growing/i)).toBeInTheDocument();
+    expect(
+      getByText('subscription.healthProblemsAlerts.lagging.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.healthProblemsAlerts.lagging.text'),
+    ).toBeInTheDocument();
   });
 
   it('should show loading spinner when fetching subscription data', () => {
     // given
-    mockedUseSubscription.mockReturnValueOnce({
+    vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       loading: computed(() => true),
     });
@@ -75,13 +83,13 @@ describe('SubscriptionView', () => {
     const { queryByTestId } = render(SubscriptionView);
 
     // then
-    expect(mockedUseSubscription).toHaveBeenCalledOnce();
+    expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
     expect(queryByTestId('loading-spinner')).toBeInTheDocument();
   });
 
   it('should hide loading spinner when data fetch is complete', () => {
     // given
-    mockedUseSubscription.mockReturnValueOnce({
+    vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       loading: computed(() => false),
     });
@@ -90,13 +98,13 @@ describe('SubscriptionView', () => {
     const { queryByTestId } = render(SubscriptionView);
 
     // then
-    expect(mockedUseSubscription).toHaveBeenCalledOnce();
+    expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
     expect(queryByTestId('loading-spinner')).not.toBeInTheDocument();
   });
 
   it('should show error message when fetching data failed', () => {
     // given
-    mockedUseSubscription.mockReturnValueOnce({
+    vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       loading: computed(() => false),
       error: ref(true),
@@ -106,16 +114,18 @@ describe('SubscriptionView', () => {
     const { queryByText } = render(SubscriptionView);
 
     // then
-    expect(mockedUseSubscription).toHaveBeenCalledOnce();
-    expect(queryByText(/connection error/i)).toBeInTheDocument();
+    expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
     expect(
-      queryByText(/could not fetch foobar-service subscription details/i),
+      queryByText('subscription.connectionError.title'),
+    ).toBeInTheDocument();
+    expect(
+      queryByText('subscription.connectionError.text'),
     ).toBeInTheDocument();
   });
 
   it('should not show error message when data was fetch successfully', () => {
     // given
-    mockedUseSubscription.mockReturnValueOnce({
+    vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       loading: computed(() => false),
       error: ref(false),
@@ -125,7 +135,9 @@ describe('SubscriptionView', () => {
     const { queryByText } = render(SubscriptionView);
 
     // then
-    expect(mockedUseSubscription).toHaveBeenCalledOnce();
-    expect(queryByText(/connection error/i)).not.toBeInTheDocument();
+    expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
+    expect(
+      queryByText('subscription.connectionError.title'),
+    ).not.toBeInTheDocument();
   });
 });

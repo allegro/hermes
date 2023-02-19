@@ -13,7 +13,9 @@ describe('SubscriptionBreadcrumbs', () => {
     const { getByText } = render(SubscriptionBreadcrumbs, { props });
 
     // when
-    const element = getByText('home') as HTMLAnchorElement;
+    const element = getByText(
+      'subscription.subscriptionBreadcrumbs.home',
+    ) as HTMLAnchorElement;
 
     // then
     expect(element).toHaveAttribute('href', '/');
@@ -24,7 +26,9 @@ describe('SubscriptionBreadcrumbs', () => {
     const { getByText } = render(SubscriptionBreadcrumbs, { props });
 
     // when
-    const element = getByText('groups') as HTMLAnchorElement;
+    const element = getByText(
+      'subscription.subscriptionBreadcrumbs.groups',
+    ) as HTMLAnchorElement;
 
     // then
     expect(element).toHaveAttribute('href', '/groups');

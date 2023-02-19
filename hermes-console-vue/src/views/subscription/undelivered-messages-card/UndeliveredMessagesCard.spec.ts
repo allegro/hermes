@@ -14,7 +14,9 @@ describe('UndeliveredMessagesCard', () => {
     const { getByText } = render(UndeliveredMessagesCard, { props });
 
     // then
-    expect(getByText('Last 100 undelivered messages')).toBeInTheDocument();
+    expect(
+      getByText('subscription.undeliveredMessagesCard.title'),
+    ).toBeInTheDocument();
   });
 
   it('should render undelivered messages table', () => {

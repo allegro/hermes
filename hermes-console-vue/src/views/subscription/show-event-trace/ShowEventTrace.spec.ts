@@ -7,6 +7,6 @@ describe('ShowEventTrace', () => {
     const { getByText } = render(ShowEventTrace);
 
     // then
-    expect(getByText('Show event trace')).toBeInTheDocument();
+    expect(getByText('subscription.showEventTrace.title')).toBeInTheDocument();
   });
 });

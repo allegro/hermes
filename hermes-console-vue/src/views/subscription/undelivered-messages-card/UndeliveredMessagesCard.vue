@@ -1,25 +1,40 @@
 <script setup lang="ts">
   import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
+  import { useI18n } from 'vue-i18n';
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
 
   const props = defineProps<{
     undeliveredMessages: SentMessageTrace[];
   }>();
+
+  const { t } = useI18n();
 </script>
 
 <template>
   <v-card class="mb-2">
     <template #title>
-      <p class="font-weight-bold">Last 100 undelivered messages</p>
+      <p class="font-weight-bold">
+        {{ t('subscription.undeliveredMessagesCard.title') }}
+      </p>
     </template>
     <v-table density="compact">
       <thead>
         <tr>
-          <th class="text-left">#</th>
-          <th class="text-left">MessageId</th>
-          <th class="text-left">Status</th>
-          <th class="text-left">Reason</th>
-          <th class="text-left">Timestamp</th>
+          <th class="text-left">
+            {{ t('subscription.undeliveredMessagesCard.index') }}
+          </th>
+          <th class="text-left">
+            {{ t('subscription.undeliveredMessagesCard.messageId') }}
+          </th>
+          <th class="text-left">
+            {{ t('subscription.undeliveredMessagesCard.status') }}
+          </th>
+          <th class="text-left">
+            {{ t('subscription.undeliveredMessagesCard.reason') }}
+          </th>
+          <th class="text-left">
+            {{ t('subscription.undeliveredMessagesCard.timestamp') }}
+          </th>
           <th class="text-left"></th>
         </tr>
       </thead>

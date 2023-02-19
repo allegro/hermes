@@ -1,22 +1,33 @@
 <script setup lang="ts">
+  import { useI18n } from 'vue-i18n';
   import type { Header } from '@/api/subscription';
 
   const props = defineProps<{
     headers: Header[];
   }>();
+
+  const { t } = useI18n();
 </script>
 
 <template>
   <v-card class="mb-2">
     <template #title>
-      <p class="font-weight-bold">Fixed HTTP headers</p>
+      <p class="font-weight-bold">
+        {{ t('subscription.headersCard.title') }}
+      </p>
     </template>
     <v-table density="compact">
       <thead>
         <tr>
-          <th class="text-left">#</th>
-          <th class="text-left">Name</th>
-          <th class="text-left">Value</th>
+          <th class="text-left">
+            {{ t('subscription.headersCard.index') }}
+          </th>
+          <th class="text-left">
+            {{ t('subscription.headersCard.name') }}
+          </th>
+          <th class="text-left">
+            {{ t('subscription.headersCard.value') }}
+          </th>
         </tr>
       </thead>
       <tbody>

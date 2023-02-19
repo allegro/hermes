@@ -20,7 +20,9 @@ describe('SubscriptionMetadata', () => {
     const { getByText } = render(SubscriptionMetadata, { props });
 
     // then
-    expect(getByText('Subscription')).toBeInTheDocument();
+    expect(
+      getByText('subscription.subscriptionMetadata.subscription'),
+    ).toBeInTheDocument();
     expect(getByText('subscription-name')).toBeInTheDocument();
     expect(getByText('service://subscription-name/dummy')).toBeInTheDocument();
     expect(getByText('some description')).toBeInTheDocument();
@@ -43,7 +45,9 @@ describe('SubscriptionMetadata', () => {
     const { getByText } = render(SubscriptionMetadata, { props });
 
     // then
-    expect(getByText('Owners (some source)')).toBeInTheDocument();
+    expect(
+      getByText('subscription.subscriptionMetadata.owners (some source)'),
+    ).toBeInTheDocument();
   });
 
   it('should render "activate" button and hide "suspend" if subscription is suspended', () => {
@@ -60,8 +64,12 @@ describe('SubscriptionMetadata', () => {
     const { queryByText } = render(SubscriptionMetadata, { props });
 
     // then
-    expect(queryByText('Activate')).toBeInTheDocument();
-    expect(queryByText('Suspend')).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.subscriptionMetadata.actions.activate'),
+    ).toBeInTheDocument();
+    expect(
+      queryByText('subscription.subscriptionMetadata.actions.suspend'),
+    ).not.toBeInTheDocument();
   });
 
   it('should render "suspend" button and hide "activate" if subscription is active', () => {
@@ -78,7 +86,11 @@ describe('SubscriptionMetadata', () => {
     const { queryByText } = render(SubscriptionMetadata, { props });
 
     // then
-    expect(queryByText('Activate')).not.toBeInTheDocument();
-    expect(queryByText('Suspend')).toBeInTheDocument();
+    expect(
+      queryByText('subscription.subscriptionMetadata.actions.activate'),
+    ).not.toBeInTheDocument();
+    expect(
+      queryByText('subscription.subscriptionMetadata.actions.suspend'),
+    ).toBeInTheDocument();
   });
 });

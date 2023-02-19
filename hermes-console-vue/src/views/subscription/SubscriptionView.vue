@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import { useSubscription } from '@/composables/use-subscription/useSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -19,6 +20,8 @@
   const route = useRoute();
   const params = route.params as Record<string, string>;
   const { groupId, subscriptionId, topicId } = params;
+
+  const { t } = useI18n();
 
   const {
     subscription,
@@ -45,8 +48,8 @@
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
-          title="Connection error"
-          :text="`Could not fetch ${subscriptionId} subscription details`"
+          :title="t('subscription.connectionError.title')"
+          :text="t('subscription.connectionError.text', { subscriptionId })"
           type="error"
         />
       </v-col>
@@ -82,8 +85,7 @@
           />
         </v-col>
         <v-col md="6">
-          <show-event-trace />
-          <!-- v-if="subscription?.trackingEnabled" -->
+          <show-event-trace /><!-- v-if="subscription?.trackingEnabled" -->
         </v-col>
       </v-row>
 
