@@ -1,12 +1,28 @@
-import { config } from '@vue/test-utils';
+import '@testing-library/jest-dom';
+import { useI18n } from 'vue-i18n';
 import { vi } from 'vitest';
 
-const ResizeObserverMock = vi.fn(() => ({
+/*
+ * Mock browser-specific elements.
+ */
+global.ResizeObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
 
-vi.stubGlobal('ResizeObserver', ResizeObserverMock);
+global.CSS = {
+  escape: vi.fn(),
+  supports: vi.fn(),
+};
 
-config.global.stubs = {};
+/*
+ * Mock vue-i18n.
+ */
+vi.mock('vue-i18n');
+vi.mocked(useI18n, {
+  partial: true,
+  deep: true,
+}).mockReturnValue({
+  t: (key) => key,
+});

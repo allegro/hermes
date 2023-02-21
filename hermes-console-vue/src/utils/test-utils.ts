@@ -1,17 +1,20 @@
 import { createVuetify } from 'vuetify';
 import { h } from 'vue';
-import { render } from '@testing-library/vue';
+import { render as renderTL } from '@testing-library/vue';
 import { VApp } from 'vuetify/components';
-import type { RenderOptions } from '@testing-library/vue';
+import router from '@/router';
+import type { RenderOptions, RenderResult } from '@testing-library/vue';
+import type { Router } from 'vue-router';
 
-export const vuetifyRender = (
+export const render = (
   TestComponent: any,
   options?: Partial<RenderOptions>,
-  vuetify?: ReturnType<typeof createVuetify>,
-) => {
-  return render(VApp, {
+  testVuetify: ReturnType<typeof createVuetify> = createVuetify(),
+  testRouter: Router = router,
+): RenderResult => {
+  return renderTL(VApp, {
     global: {
-      plugins: [vuetify ?? createVuetify()],
+      plugins: [testVuetify, testRouter],
     },
     slots: {
       default: h(TestComponent, options?.props),
