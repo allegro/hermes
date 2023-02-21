@@ -1,4 +1,14 @@
 const en_US = {
+  groups: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch topic groups',
+    },
+    groupBreadcrumbs: {
+      home: 'home',
+      groups: 'groups',
+    },
+  },
   subscription: {
     connectionError: {
       title: 'Connection error',

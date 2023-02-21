@@ -1,4 +1,6 @@
 {
+  "/groups": "/groups",
+  "/topics": "/topicNames",
   "/topics/:id/metrics": "/topicsMetrics/:id",
   "/topics/:topicName/subscriptions/:id": "/subscriptions/:id",
   "/topics/:topicName/subscriptions/:id/health": "/subscriptionsHealth/:id",
