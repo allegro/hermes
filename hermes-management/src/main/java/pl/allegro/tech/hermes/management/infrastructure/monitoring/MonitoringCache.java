@@ -9,28 +9,24 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.management.config.MonitoringProperties;
+import pl.allegro.tech.hermes.management.config.kafka.AdminClientFactory;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaNamesMappers;
-import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL;
-import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG;
-import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
-import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
-import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 public class MonitoringCache {
@@ -43,8 +39,7 @@ public class MonitoringCache {
     private final SubscriptionService subscriptionService;
     private final TopicService topicService;
 
-    private volatile List<List<TopicAndSubscription>> readySubscriptionsWithUnassignedPartitionsCache = new ArrayList<>();
-    private volatile List<List<TopicAndSubscription>> unreadySubscriptionsWithUnassignedPartitionsCache = new ArrayList<>();
+    private volatile List<TopicAndSubscription> readOnlySubscriptionsWithUnassignedPartitionsCache = new ArrayList<>();
 
     public MonitoringCache(KafkaClustersProperties kafkaClustersProperties, KafkaNamesMappers kafkaNamesMappers,
                            MonitoringProperties monitoringProperties, SubscriptionService subscriptionService, TopicService topicService) {
@@ -55,19 +50,13 @@ public class MonitoringCache {
         this.topicService = topicService;
         if (monitoringProperties.isEnabled()) {
             ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            scheduledExecutorService.scheduleAtFixedRate(this::checkSubscriptionsPartitions, 0,
+            scheduledExecutorService.scheduleAtFixedRate(this::monitorSubscriptionsPartitions, 0,
                     monitoringProperties.getScanEvery().getSeconds(), TimeUnit.SECONDS);
         }
     }
 
     public List<TopicAndSubscription> getSubscriptionsWithUnassignedPartitions() {
-        return readySubscriptionsWithUnassignedPartitionsCache.stream().flatMap(List::stream).collect(toList());
-    }
-
-    private void checkSubscriptionsPartitions() {
-        readySubscriptionsWithUnassignedPartitionsCache = unreadySubscriptionsWithUnassignedPartitionsCache;
-        unreadySubscriptionsWithUnassignedPartitionsCache.clear();
-        monitorSubscriptionsPartitions();
+        return readOnlySubscriptionsWithUnassignedPartitionsCache;
     }
 
     private void monitorSubscriptionsPartitions() {
@@ -75,20 +64,41 @@ public class MonitoringCache {
 
         ExecutorService executorService = Executors.newFixedThreadPool(monitoringProperties.getNumberOfThreads());
 
-        for (int thread = 0; thread < monitoringProperties.getNumberOfThreads(); thread++) {
-            int part = thread;
-            executorService.submit(() -> {
-                try {
-                    List<MonitoringService> monitoringServices = createMonitoringService();
-                    logger.info("Monitoring {} started for {} subscriptions", part, splitSubscriptions.get(part).size());
-                    checkIfAllPartitionsAreAssignedToSubscriptions(splitSubscriptions.get(part), monitoringServices);
-                } catch (Exception e) {
-                    logger.error("Error in monitoring: ", e);
-                } finally {
-                    logger.info("Monitoring {} ended", part);
-                    executorService.shutdown();
-                }
-            });
+        List<Future<List<TopicAndSubscription>>> futures = splitSubscriptions.stream().map(it -> executorService.submit(() -> {
+            try {
+                List<MonitoringService> monitoringServices = createMonitoringService();
+                logger.info("Monitoring started for {} subscriptions", it.size());
+                return checkIfAllPartitionsAreAssignedToSubscriptions(it, monitoringServices);
+            } catch (Exception e) {
+                logger.error("Error in monitoring: ", e);
+                return new ArrayList<TopicAndSubscription>();
+            } finally {
+                logger.info("Monitoring ended");
+                executorService.shutdown();
+            }
+        })).collect(toList());
+
+        waitForAllThreadsToEnd(futures);
+        updateSubscriptionsWithUnassignedPartitionsCache(futures);
+    }
+
+    private void updateSubscriptionsWithUnassignedPartitionsCache(List<Future<List<TopicAndSubscription>>> futures) {
+        readOnlySubscriptionsWithUnassignedPartitionsCache = futures.stream().map(future -> {
+            try {
+                return future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }).flatMap(List::stream).collect(toList());
+    }
+
+    private static void waitForAllThreadsToEnd(List<Future<List<TopicAndSubscription>>> futures) {
+        while (futures.stream().anyMatch(future -> !future.isDone())) {
+            try {
+                Thread.sleep(Duration.ofSeconds(1).toMillis());
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -96,7 +106,7 @@ public class MonitoringCache {
         return splitSubscriptions(getAllActiveSubscriptions());
     }
 
-    private void checkIfAllPartitionsAreAssignedToSubscriptions(List<TopicAndSubscription> subscriptions,
+    private List<TopicAndSubscription> checkIfAllPartitionsAreAssignedToSubscriptions(List<TopicAndSubscription> subscriptions,
                                                                 List<MonitoringService> monitoringServices) {
         List<TopicAndSubscription> subscriptionsWithUnassignedPartitions = new ArrayList<>();
 
@@ -108,11 +118,7 @@ public class MonitoringCache {
                     }
                 }
             ));
-        addSubscriptionsToCache(subscriptionsWithUnassignedPartitions);
-    }
-
-    private void addSubscriptionsToCache(List<TopicAndSubscription> subscriptionsWithUnassignedPartitions) {
-        unreadySubscriptionsWithUnassignedPartitionsCache.add(subscriptionsWithUnassignedPartitions);
+        return subscriptionsWithUnassignedPartitions;
     }
 
     private List<List<TopicAndSubscription>> splitSubscriptions(List<TopicAndSubscription> topicAndSubscriptions) {
@@ -140,25 +146,12 @@ public class MonitoringCache {
     public List<MonitoringService> createMonitoringService() {
         return kafkaClustersProperties.getClusters().stream().map(kafkaProperties -> {
             KafkaNamesMapper kafkaNamesMapper = kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
-            AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
+            AdminClient brokerAdminClient = AdminClientFactory.brokerAdminClient(kafkaProperties);
 
             return new MonitoringService(
                     kafkaNamesMapper,
                     brokerAdminClient,
                     kafkaProperties.getQualifiedClusterName());
         }).collect(toList());
-    }
-
-    private AdminClient brokerAdminClient(KafkaProperties kafkaProperties) {
-        Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapKafkaServer());
-        props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
-        props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
-        if (kafkaProperties.getSasl().isEnabled()) {
-            props.put(SASL_MECHANISM, kafkaProperties.getSasl().getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSasl().getProtocol());
-            props.put(SASL_JAAS_CONFIG, kafkaProperties.getSasl().getJaasConfig());
-        }
-        return AdminClient.create(props);
     }
 }

@@ -45,33 +45,37 @@ public class MonitoringService {
                                                        KafkaTopics kafkaTopics) throws ExecutionException, InterruptedException {
         Optional<ConsumerGroupDescription> consumerGroupDescription = getConsumerGroupDescription(consumerGroupId);
 
-        if (isConsumerGroupRebalancing(consumerGroupDescription)) {
+        if (consumerGroupDescription.isEmpty()) {
+            logger.info("Monitoring. Cannot get consumer group description about: {}", consumerGroupId.asString());
+            return true;
+        }
+        if (isConsumerGroupRebalancing(consumerGroupDescription.get())) {
             logger.info("Monitoring. Consumer group is rebalancing: {}", consumerGroupId.asString());
             return true;
         }
 
         int topicPartitions = getTopicPartitions(kafkaTopics);
-        int partitionsInConsumerGroups = getPartitionsInConsumerGroups(consumerGroupDescription);
+        int partitionsInConsumerGroups = getPartitionsInConsumerGroups(consumerGroupDescription.get());
 
         if (topicPartitions != partitionsInConsumerGroups) {
-            logger.warn("Monitoring. Cluster {}. Topic and subscription partitions do not match: {}, partitions in consumer groups: {}, "
-                            + "partitions in topic: {}", clusterName, consumerGroupId.asString(),
-                    partitionsInConsumerGroups, topicPartitions);
+            logger.error("Unassigned partitions in consumer groups for subscription {} in cluster {}. "
+                            + "Expected number of assigned partitions: {}, but was {}.",
+                            consumerGroupId.asString(), clusterName,
+                            topicPartitions, partitionsInConsumerGroups);
             return false;
         }
-        return Math.random() > 0.5;
+        return true;
     }
 
     private Optional<ConsumerGroupDescription> getConsumerGroupDescription(ConsumerGroupId consumerGroupId)
             throws InterruptedException, ExecutionException {
-        Optional<ConsumerGroupDescription> consumerGroupDescription = adminClient
+        return adminClient
                 .describeConsumerGroups(Collections.singletonList(consumerGroupId.asString()))
                 .all()
                 .get()
                 .values()
                 .stream()
                 .findFirst();
-        return consumerGroupDescription;
     }
 
     private int getTopicPartitions(KafkaTopics kafkaTopics) throws InterruptedException, ExecutionException {
@@ -83,14 +87,14 @@ public class MonitoringService {
         return topicPartitions;
     }
 
-    private static int getPartitionsInConsumerGroups(Optional<ConsumerGroupDescription> consumerGroupDescription) {
-        return consumerGroupDescription.get().members().stream()
+    private static int getPartitionsInConsumerGroups(ConsumerGroupDescription consumerGroupDescription) {
+        return consumerGroupDescription.members().stream()
                 .mapToInt(member -> member.assignment().topicPartitions().size()).sum();
     }
 
-    private boolean isConsumerGroupRebalancing(Optional<ConsumerGroupDescription> description) {
-        return description.get().state().equals(ConsumerGroupState.PREPARING_REBALANCE)
-                || description.get().state().equals(ConsumerGroupState.COMPLETING_REBALANCE);
+    private boolean isConsumerGroupRebalancing(ConsumerGroupDescription description) {
+        return description.state().equals(ConsumerGroupState.PREPARING_REBALANCE)
+                || description.state().equals(ConsumerGroupState.COMPLETING_REBALANCE);
     }
 
     private KafkaFuture<TopicDescription> describeTopic(String topic) {
