@@ -264,7 +264,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div ng-show="userHasSufficientPrivileges" class="row">
         <div class="col-md-6" ng-show="lastUndelivered.message">
             <div class="panel panel-warning">
                 <div class="panel-heading">
@@ -378,7 +378,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div ng-show="userHasSufficientPrivileges" class="row">
 
         <div class="col-md-12" ng-show="undelivered">
 
