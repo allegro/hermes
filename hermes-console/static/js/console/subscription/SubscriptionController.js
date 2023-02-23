@@ -172,6 +172,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 passwordLabel: 'Root password',
                 passwordHint: 'root password'
             }).result.then(function (result) {
+                $scope.disableRemoveButton = true;
                 passwordService.setRoot(result.password);
                 subscriptionRepository.remove(topicName, $scope.subscription.name).$promise
                         .then(function () {
@@ -183,6 +184,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                         })
                         .finally(function () {
                             passwordService.reset();
+                            $scope.disableRemoveButton = false;
                         });
             });
         };

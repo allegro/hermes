@@ -14,7 +14,7 @@
         <button ng-show="subscription.state === 'SUSPENDED'" class="btn btn-success" ng-disabled="userWithoutAccess" ng-click="activate()">Activate</button>
         <button class="btn btn-primary" ng-disabled="userWithoutAccess" ng-click="edit(subscription)">Edit</button>
         <button class="btn btn-primary" ng-disabled="userWithoutAccess" ng-click="clone()">Clone</button>
-        <button class="btn btn-danger" ng-disabled="userWithoutAccess" ng-click="remove()">Remove</button>
+        <button class="btn btn-danger" ng-disabled="userWithoutAccess || disableRemoveButton" ng-click="remove()">Remove</button>
     </div>
 
     <h2><small>Subscription:</small> {{subscription.name}}</h2>
