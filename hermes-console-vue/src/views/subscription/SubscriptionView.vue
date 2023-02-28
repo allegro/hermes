@@ -58,8 +58,12 @@
     <template v-if="!loading && !error">
       <v-row dense>
         <v-col md="12">
-          <health-problems-alerts :problems="subscriptionHealth?.problems" />
+          <health-problems-alerts
+            v-if="subscriptionHealth && subscriptionHealth.problems"
+            :problems="subscriptionHealth?.problems"
+          />
           <subscription-metadata
+            v-if="subscription"
             :subscription="subscription"
             :authorized="authorized"
           />
@@ -68,12 +72,15 @@
 
       <v-row dense>
         <v-col md="6">
-          <metrics-card :subscription-metrics="subscriptionMetrics" />
+          <metrics-card
+            v-if="subscriptionMetrics"
+            :subscription-metrics="subscriptionMetrics"
+          />
           <service-response-metrics />
           <manage-messages-card />
         </v-col>
         <v-col md="6">
-          <properties-card :subscription="subscription" />
+          <properties-card v-if="subscription" :subscription="subscription" />
         </v-col>
       </v-row>
 
@@ -92,15 +99,18 @@
       <v-row dense>
         <v-col md="12">
           <filters-card
-            v-if="subscription?.filters.length > 0"
+            v-if="subscription && subscription?.filters.length > 0"
             :filters="subscription?.filters"
           />
           <headers-card
-            v-if="subscription?.headers.length > 0"
+            v-if="!!subscription && subscription.headers.length > 0"
             :headers="subscription?.headers"
           />
           <undelivered-messages-card
-            v-if="subscriptionUndeliveredMessages?.length > 0"
+            v-if="
+              subscriptionUndeliveredMessages &&
+              subscriptionUndeliveredMessages?.length > 0
+            "
             :undelivered-messages="subscriptionUndeliveredMessages"
           />
         </v-col>

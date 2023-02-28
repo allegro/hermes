@@ -1,10 +1,8 @@
 <script setup lang="ts">
-  import {
-    ProblemCode,
-    SubscriptionHealthProblem,
-  } from '@/api/subscription-health';
+  import { ProblemCode } from '@/api/subscription-health';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
+  import type { SubscriptionHealthProblem } from '@/api/subscription-health';
 
   const props = defineProps<{
     problems: SubscriptionHealthProblem[];

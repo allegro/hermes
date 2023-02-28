@@ -16,15 +16,15 @@
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
-      href: '/groups',
+      href: '/groups/',
     },
     {
       title: props.groupId,
-      href: `/groups/${props.groupId}`,
+      href: `/groups/${props.groupId}/`,
     },
     {
       title: props.topicId,
-      href: `/groups/${props.groupId}/topics/${props.topicId}`,
+      href: `/groups/${props.groupId}/topics/${props.topicId}/`,
     },
     {
       title: props.subscriptionId,

@@ -1,7 +1,7 @@
 const en_US = {
   groups: {
     actions: {
-      create: 'Create',
+      create: 'New Group',
       search: 'search…',
     },
     connectionError: {
@@ -20,6 +20,12 @@ const en_US = {
       appliedFilter: '(applied filter: “{filter}”)',
     },
     heading: 'Groups',
+  },
+  groupTopics: {
+    groupTopicsBreadcrumbs: {
+      home: 'home',
+      groups: 'groups',
+    },
   },
   subscription: {
     connectionError: {

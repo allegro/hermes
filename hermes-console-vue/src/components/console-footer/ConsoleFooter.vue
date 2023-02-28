@@ -10,7 +10,7 @@
     <v-row justify="center" no-gutters>
       <v-btn
         v-for="link in links"
-        :key="link"
+        :key="link.href"
         variant="text"
         class="mx-2"
         rounded="xl"

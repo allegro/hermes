@@ -48,7 +48,7 @@ describe('PropertiesCard', () => {
     [DeliveryType.BATCH, 'BATCH'],
   ])(
     'should render subscription delivery type (%s)',
-    (deliveryType, deliveryTypeText) => {
+    (deliveryType: DeliveryType, deliveryTypeText: string) => {
       // given
       const props = {
         subscription: { ...dummySubscription, deliveryType },
@@ -70,21 +70,24 @@ describe('PropertiesCard', () => {
   it.each([
     [SubscriptionMode.ANYCAST, 'ANYCAST'],
     [SubscriptionMode.BROADCAST, 'BROADCAST'],
-  ])('should render subscription mode (%s)', (mode, modeText) => {
-    // given
-    const props = {
-      subscription: { ...dummySubscription, mode },
-    };
+  ])(
+    'should render subscription mode (%s)',
+    (mode: SubscriptionMode, modeText: string) => {
+      // given
+      const props = {
+        subscription: { ...dummySubscription, mode },
+      };
 
-    // when
-    const { getByText } = render(PropertiesCard, { props });
+      // when
+      const { getByText } = render(PropertiesCard, { props });
 
-    // then
-    const modeRow = getByText('subscription.propertiesCard.mode').closest(
-      'tr',
-    )!;
-    expect(within(modeRow).getByText(modeText)).toBeInTheDocument();
-  });
+      // then
+      const modeRow = getByText('subscription.propertiesCard.mode').closest(
+        'tr',
+      )!;
+      expect(within(modeRow).getByText(modeText)).toBeInTheDocument();
+    },
+  );
 
   it('should render subscription rate limit for SERIAL delivery type', () => {
     // given
@@ -423,7 +426,7 @@ describe('PropertiesCard', () => {
     [Severity.NON_IMPORTANT, 'NON_IMPORTANT'],
   ])(
     'should render subscription monitoring severity (%s)',
-    (severity, severityName) => {
+    (severity: Severity, severityName: string) => {
       // given
       const props = {
         subscription: {
@@ -470,7 +473,7 @@ describe('PropertiesCard', () => {
 
   it.each([true, false])(
     'should render subscription http/2 configuration flag (%s)',
-    (http2Enabled) => {
+    (http2Enabled: boolean) => {
       // given
       const props = {
         subscription: {
@@ -520,7 +523,7 @@ describe('PropertiesCard', () => {
 
   it.each([true, false])(
     'should render subscription auto remove flag',
-    (autoDeleteWithTopicEnabled) => {
+    (autoDeleteWithTopicEnabled: boolean) => {
       // given
       const props = {
         subscription: {

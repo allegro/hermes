@@ -19,7 +19,7 @@
   });
 
   function onGroupClick(groupName: string) {
-    router.push({ path: `/groups/${groupName}` });
+    router.push({ path: `/groups/${groupName}/` });
   }
 </script>
 
