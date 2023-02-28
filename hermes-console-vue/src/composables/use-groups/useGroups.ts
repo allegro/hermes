@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import axios from 'axios';
 
-interface Group {
+export interface Group {
   name: string;
   topics: string[];
 }

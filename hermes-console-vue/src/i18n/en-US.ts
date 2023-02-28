@@ -1,5 +1,9 @@
 const en_US = {
   groups: {
+    actions: {
+      create: 'Create',
+      search: 'search…',
+    },
     connectionError: {
       title: 'Connection error',
       text: 'Could not fetch topic groups',
@@ -8,6 +12,14 @@ const en_US = {
       home: 'home',
       groups: 'groups',
     },
+    groupListing: {
+      index: '#',
+      name: 'Group name',
+      noGroups: 'No groups found',
+      topicsChip: 'topics: {topicsAmount}',
+      appliedFilter: '(applied filter: “{filter}”)',
+    },
+    heading: 'Groups',
   },
   subscription: {
     connectionError: {
