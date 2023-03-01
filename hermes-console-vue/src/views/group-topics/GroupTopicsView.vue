@@ -12,12 +12,14 @@
     <v-row dense>
       <v-col md="12">
         <group-topics-breadcrumbs :group-id="groupId" />
-        <!--        <loading-spinner />
+        <!--
+        <loading-spinner />
         <console-alert
           :title="t('groups.connectionError.title')"
           :text="t('groups.connectionError.text')"
           type="error"
-        />-->
+        />
+        -->
       </v-col>
     </v-row>
     <v-row dense>

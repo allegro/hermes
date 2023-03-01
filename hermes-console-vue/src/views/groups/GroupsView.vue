@@ -4,6 +4,7 @@
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupBreadcrumbs from '@/views/groups/group-breadcrumbs/GroupBreadcrumbs.vue';
+  import GroupForm from '@/views/groups/group-form/GroupForm.vue';
   import GroupListing from '@/views/groups/group-listing/GroupListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
@@ -11,6 +12,7 @@
   const { t } = useI18n();
 
   const filter = ref<string>();
+  const createGroupDialogOpen = ref(false);
 </script>
 
 <template>
@@ -34,9 +36,18 @@
         </p>
       </v-col>
       <v-col md="2">
-        <v-btn prepend-icon="mdi-folder-plus-outline" color="secondary" block>
+        <v-btn
+          prepend-icon="mdi-folder-plus-outline"
+          color="secondary"
+          block
+          @click="createGroupDialogOpen = true"
+        >
           {{ t('groups.actions.create') }}
         </v-btn>
+        <group-form
+          operation="create"
+          v-model:dialog-open="createGroupDialogOpen"
+        />
       </v-col>
     </v-row>
     <v-row dense>
