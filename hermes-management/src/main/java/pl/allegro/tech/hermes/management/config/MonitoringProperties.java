@@ -7,9 +7,9 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "monitoring-consumer-groups")
 public class MonitoringProperties {
 
-    private boolean enabled = true;
-    private int numberOfThreads;
-    private Duration scanEvery;
+    private boolean enabled = false;
+    private int numberOfThreads = 6;
+    private Duration scanEvery = Duration.ofMinutes(2);
 
     public boolean isEnabled() {
         return enabled;

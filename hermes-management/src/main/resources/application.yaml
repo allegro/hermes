@@ -75,8 +75,3 @@ console:
   subscription:
     showHeadersFilter: false
     showFixedHeaders: false
-
-monitoringConsumerGroups:
-  enabled: false
-  numberOfThreads: 6
-  scanEvery: 120s
