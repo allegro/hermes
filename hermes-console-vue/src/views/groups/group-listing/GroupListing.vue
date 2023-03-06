@@ -53,11 +53,8 @@
               density="comfortable"
               variant="flat"
             >
-              {{
-                t('groups.groupListing.topicsChip', {
-                  topicsAmount: group.topics.length,
-                })
-              }}
+              {{ t('groups.groupListing.topicsChip') }}
+              {{ group.topics.length }}
             </v-chip>
             <v-icon icon="mdi-chevron-right"></v-icon>
           </td>

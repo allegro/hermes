@@ -24,26 +24,26 @@ describe('ThemeSwitch', () => {
     ['dark', 'light'],
   ])(
     'should change Vuetify theme on button click (initial theme: %s)',
-    (initialTheme: string, changedTheme: string) => {
+    async (initialTheme: string, changedTheme: string) => {
       // given
       const { getByRole } = render(ThemeSwitch, {}, vuetify);
       vuetify.theme.global.name.value = initialTheme;
 
       // when
-      fireEvent.click(getByRole('button'));
+      await fireEvent.click(getByRole('button'));
 
       // then
       expect(vuetify.theme.global.name.value).toBe(changedTheme);
     },
   );
 
-  it('should persist theme preference in local storage', () => {
+  it('should persist theme preference in local storage', async () => {
     // given
     const { getByRole } = render(ThemeSwitch, {}, vuetify);
     vuetify.theme.global.name.value = 'light';
 
     // when
-    fireEvent.click(getByRole('button'));
+    await fireEvent.click(getByRole('button'));
 
     // then
     expect(localStorage.getItem('hermes-console-theme')).toBe('dark');

@@ -14,11 +14,11 @@
     },
     {
       title: t('groupTopics.groupTopicsBreadcrumbs.groups'),
-      href: '/groups',
+      href: '/groups/',
     },
     {
       title: props.groupId,
-      href: `/groups/${props.groupId}`,
+      href: `/groups/${props.groupId}/`,
     },
   ];
 </script>

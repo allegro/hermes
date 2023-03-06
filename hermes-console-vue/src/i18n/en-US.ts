@@ -30,7 +30,7 @@ const en_US = {
       index: '#',
       name: 'Group name',
       noGroups: 'No groups found',
-      topicsChip: 'topics: {topicsAmount}',
+      topicsChip: 'topics: ',
       appliedFilter: '(applied filter: “{filter}”)',
     },
     heading: 'Groups',
