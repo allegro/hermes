@@ -28,6 +28,7 @@ class HermesMockAvroTest extends Specification {
     HermesMockRule hermes = new HermesMockRule(port)
 
     Schema schema = ReflectData.get().getSchema(TestMessage)
+    Schema differentSchema = ReflectData.get().getSchema(TestMessageWithDifferentSchema)
 
     JsonAvroConverter jsonAvroConverter = new JsonAvroConverter()
 
@@ -38,6 +39,39 @@ class HermesMockAvroTest extends Specification {
         hermes.resetMappings()
     }
 
+    def "should receive an Avro message matched by pattern different schema"() {
+        given: "define wiremock responses for 2 topics with different schemas"
+            def topicName = "my-test-avro-topic-1"
+            def topicName2 = "my-test-avro-topic-2"
+
+            hermes.define().avroTopic(topicName,
+                    aResponse().withStatusCode(201).build(),
+                    schema,
+                    TestMessage,
+                    { it -> it.key == "test-key-pattern" })
+
+            hermes.define().avroTopic(topicName2,
+                    aResponse().withStatusCode(201).build(),
+                    differentSchema,
+                    TestMessageWithDifferentSchema,
+                    { it -> it.value.contains(7) })
+
+        when: "messages with matching patterns are published on topics"
+            def message = new TestMessage("test-key-pattern", "test-key-value")
+            def message2 = new TestMessageWithDifferentSchema("test-key-name", 7)
+
+            def response = publish(topicName, message)
+            def response2 = publish(topicName2, message2)
+
+        then: "check for any single message on the topics and check for correct responses"
+            hermes.expect().singleMessageOnTopic(topicName)
+            hermes.expect().singleMessageOnTopic(topicName2)
+
+            response.status == HttpStatus.SC_CREATED
+            response2.status == HttpStatus.SC_CREATED
+    }
+
+
     def "should receive an Avro message matched by pattern"() {
         given: "define wiremock response for matching avro pattern"
             def topicName = "my-test-avro-topic"
@@ -45,7 +79,7 @@ class HermesMockAvroTest extends Specification {
                     aResponse().withStatusCode(201).build(),
                     schema,
                     TestMessage,
-                    {it -> it.key == "test-key-pattern"})
+                    { it -> it.key == "test-key-pattern" })
 
         when: "message with matching pattern is published on topic"
             def message = new TestMessage("test-key-pattern", "test-key-value")
@@ -55,6 +89,7 @@ class HermesMockAvroTest extends Specification {
             hermes.expect().singleMessageOnTopic(topicName)
             response.status == HttpStatus.SC_CREATED
     }
+
     def "should not match avro pattern"() {
         given: "define wiremock response for matching avro pattern"
             def topicName = "my-test-avro-topic"
@@ -62,7 +97,7 @@ class HermesMockAvroTest extends Specification {
                     aResponse().withStatusCode(201).build(),
                     schema,
                     TestMessage,
-                    {it -> it.key == "non-existing-key"})
+                    { it -> it.key == "non-existing-key" })
 
         when: "message with non-matching pattern is published on topic"
             def message = new TestMessage("test-key-pattern", "test-key-value")
@@ -88,34 +123,34 @@ class HermesMockAvroTest extends Specification {
 
     def "should respond with a delay"() {
         given:
-        def topicName = "my-test-avro-topic"
-        Duration fixedDelay = Duration.ofMillis(500)
-        hermes.define().avroTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
-        Instant start = now()
+            def topicName = "my-test-avro-topic"
+            Duration fixedDelay = Duration.ofMillis(500)
+            hermes.define().avroTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
+            Instant start = now()
 
         when:
-        publish(topicName)
+            publish(topicName)
 
         then:
-        hermes.expect().singleMessageOnTopic(topicName)
-        hermes.expect().singleAvroMessageOnTopic(topicName, schema)
-        Duration.between(start, now()) >= fixedDelay
+            hermes.expect().singleMessageOnTopic(topicName)
+            hermes.expect().singleAvroMessageOnTopic(topicName, schema)
+            Duration.between(start, now()) >= fixedDelay
     }
 
     def "should respond for a message send with delay"() {
         given:
-        def topicName = "my-test-avro-topic"
-        def delayInMillis = 2_000
-        hermes.define().avroTopic(topicName, aResponse().build())
+            def topicName = "my-test-avro-topic"
+            def delayInMillis = 2_000
+            hermes.define().avroTopic(topicName, aResponse().build())
 
         when:
-        Thread.start {
-            Thread.sleep(delayInMillis)
-            publish(topicName)
-        }
+            Thread.start {
+                Thread.sleep(delayInMillis)
+                publish(topicName)
+            }
 
         then:
-        hermes.expect().singleAvroMessageOnTopic(topicName, schema)
+            hermes.expect().singleAvroMessageOnTopic(topicName, schema)
     }
 
     def "should get all messages as avro"() {
@@ -328,11 +363,19 @@ class HermesMockAvroTest extends Specification {
         return jsonAvroConverter.convertToAvro(message.asJson().bytes, schema)
     }
 
+    def asAvro(TestMessageWithDifferentSchema message) {
+        return jsonAvroConverter.convertToAvro(message.asJson().bytes, differentSchema)
+    }
+
     def publish(String topic) {
         publish(topic, TestMessage.random())
     }
 
     def publish(String topic, TestMessage message) {
+        publish(topic, asAvro(message))
+    }
+
+    def publish(String topic, TestMessageWithDifferentSchema message) {
         publish(topic, asAvro(message))
     }
 
