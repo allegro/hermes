@@ -323,6 +323,42 @@ class HermesMockAvroTest extends Specification {
             1 == hermes.query().countMatchingAvroMessages(topicName, schema, TestMessage, filter)
     }
 
+    def "should remove stub mapping for an Avro topic matched by pattern"() {
+        given: "define wiremock response for two different matching avro patterns on the same topic"
+        def topicName = "my-test-avro-topic"
+        def pattern1 = "test-key-pattern-1"
+        def pattern2 = "test-key-pattern-2"
+        def value = "test-key-value"
+        def avroTopicStub1 = hermes.define().avroTopic(topicName,
+                aResponse().withStatusCode(HttpStatus.SC_CREATED).build(),
+                schema,
+                TestMessage,
+                { it -> it.key == pattern1 })
+
+        hermes.define().avroTopic(topicName,
+                aResponse().withStatusCode(HttpStatus.SC_CREATED).build(),
+                schema,
+                TestMessage,
+                { it -> it.key == pattern2 })
+
+        when: "two messages with matching patterns are published on topic"
+        def response1 = publish(topicName, new TestMessage(pattern1, value))
+        def response2 = publish(topicName, new TestMessage(pattern2, value))
+
+        then: "check for any single message on the topic and check for correct response"
+        response1.status == HttpStatus.SC_CREATED
+        response2.status == HttpStatus.SC_CREATED
+
+        when: "first stub mapping is removed and two messages are sent again"
+        hermes.define().removeStubMapping(avroTopicStub1)
+        response1 = publish(topicName, new TestMessage(pattern1, value))
+        response2 = publish(topicName, new TestMessage(pattern2, value))
+
+        then: "removed stub mapping should response with not found, second stub on same topic should return 201 status"
+        response1.status == HttpStatus.SC_NOT_FOUND
+        response2.status == HttpStatus.SC_CREATED
+    }
+
     def asAvro(TestMessage message) {
         return jsonAvroConverter.convertToAvro(message.asJson().bytes, schema)
     }
