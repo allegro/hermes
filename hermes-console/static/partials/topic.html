@@ -15,7 +15,7 @@
         <button class="btn btn-primary" ng-disabled="userWithoutAccess" ng-show="offlineRetransmissionEnabled" ng-click="retransmitOffline()">Offline retransmission</button>
         <button class="btn btn-warning" ng-disabled="userWithoutAccess" ng-show="admin && !isBlacklisted" ng-click="blacklist()" >Blacklist</button>
         <button class="btn btn-default" ng-disabled="userWithoutAccess" ng-show="admin && isBlacklisted"ng-click="unblacklist()" >Unblacklist</button>
-        <button class="btn btn-danger" ng-disabled="userWithoutAccess" ng-click="remove()">Remove</button>
+        <button class="btn btn-danger" ng-disabled="userWithoutAccess || disableRemoveButton" ng-click="remove()">Remove</button>
     </div>
 
     <h1><small>Topic:</small> {{topic.name}}</h1>

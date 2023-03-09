@@ -111,6 +111,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                 passwordLabel: 'Root password',
                 passwordHint: 'root password '
             }).result.then(function (result) {
+                    $scope.disableRemoveButton = true;
                     passwordService.setRoot(result.password);
                     groupRepository.remove($scope.group.groupName).$promise
                         .then(function () {
@@ -122,6 +123,7 @@ groups.controller('GroupController', ['GroupRepository', 'TopicFactory', '$scope
                         })
                         .finally(function () {
                             passwordService.reset();
+                            $scope.disableRemoveButton = false;
                         });
                 });
         };
