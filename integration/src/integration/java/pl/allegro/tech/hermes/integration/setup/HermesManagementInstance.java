@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.integration.setup;
 
 import com.google.common.collect.ImmutableMap;
+import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.slf4j.Logger;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
@@ -17,9 +19,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesManagementInstance {
+    private static final Logger logger = getLogger(HermesManagementInstance.class);
     private final HermesAPIOperations operations;
 
     private HermesManagementInstance(HermesAPIOperations operations) {
@@ -90,15 +94,23 @@ public class HermesManagementInstance {
         }
 
         private void waitUntilStructureInZookeeperIsCreated(List<CuratorFramework> zookeeperClusters) {
-            waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
+            logger.info("Waiting for zookeeper structure to be created");
+            try {
+                waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
+            } catch (ConditionTimeoutException ex) {
+                logger.error("Structure for Zookeeper does not exist in 240 seconds");
+                throw ex;
+            }
         }
 
         private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {
             for (CuratorFramework zookeeper : zookeeperClusters) {
                 if (zookeeper.checkExists().forPath("/hermes/groups") == null) {
+                    logger.info("Structure for Zookeeper does not exist yet");
                     return false;
                 }
             }
+            logger.info("Structure for Zookeepers exists in 240 seconds");
             return true;
         }
 

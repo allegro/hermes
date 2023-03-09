@@ -106,7 +106,45 @@ class HermesMockJsonTest extends Specification {
         hermes.expect().singleJsonMessageOnTopicAs(topicName, TestMessage)
     }
 
+    def "should remove stub mapping for a Json topic matched by pattern"() {
+        given: "define wiremock response for two different matching json patterns on the same topic"
+        def topicName = "my-test-json-topic"
+        def keyPattern1 = "test-key-pattern-1"
+        def keyPattern2 = "test-key-pattern-2"
+        def value = "test-key-value"
+        def jsonTopicStubMapping1 = hermes.define().jsonTopic(topicName,
+                aResponse().withStatusCode(HttpStatus.SC_CREATED).build(),
+                TestMessage,
+                { it -> it.key == keyPattern1 })
+
+        hermes.define().jsonTopic(topicName,
+                aResponse().withStatusCode(HttpStatus.SC_CREATED).build(),
+                TestMessage,
+                { it -> it.key == keyPattern2 })
+
+        when: "two messages with matching patterns are published on topic"
+        def response1 = publishJson(topicName, value, keyPattern1)
+        def response2 = publishJson(topicName, value, keyPattern2)
+
+        then: "check for any single message on the topic and check for correct response"
+        response1.status == HttpStatus.SC_CREATED
+        response2.status == HttpStatus.SC_CREATED
+
+        when: "first stub mapping is removed and two messages are sent again"
+        hermes.define().removeStubMapping(jsonTopicStubMapping1)
+        response1 = publishJson(topicName, value, keyPattern1)
+        response2 = publishJson(topicName, value, keyPattern2)
+
+        then: "removed stub mapping should response with not found, second stub on same topic should return 201 status"
+        response1.status == HttpStatus.SC_NOT_FOUND
+        response2.status == HttpStatus.SC_CREATED
+    }
+
     private def publishJson(String topic, String message) {
         publisher.publish(topic, message)
+    }
+
+    private def publishJson(String topicName, String value, String keyPattern) {
+        publishJson(topicName, new TestMessage(keyPattern, value).asJson())
     }
 }
