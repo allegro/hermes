@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.ValueMatcher;
+import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
@@ -85,8 +86,8 @@ public class HermesMockHelper {
         wireMockServer.verify(count, postRequestedFor(urlEqualTo("/topics/" + topicName)));
     }
 
-    public void addStub(String topicName, Response response, String contentType) {
-        wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
+    public StubMapping addStub(String topicName, Response response, String contentType) {
+        return wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
                 .withHeader("Content-Type", startsWith(contentType))
                 .willReturn(aResponse()
                         .withStatus(response.getStatusCode())
@@ -95,9 +96,9 @@ public class HermesMockHelper {
         );
     }
 
-    public void addStub(String topicName, Response response, String contentType,
+    public StubMapping addStub(String topicName, Response response, String contentType,
                         ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher) {
-        wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
+        return wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
                 .andMatching(valueMatcher)
                 .withHeader("Content-Type", startsWith(contentType))
                 .willReturn(aResponse()
@@ -107,4 +108,9 @@ public class HermesMockHelper {
                 )
         );
     }
+
+    public void removeStubMapping(StubMapping stubMapping) {
+        wireMockServer.removeStubMapping(stubMapping);
+    }
+
 }
