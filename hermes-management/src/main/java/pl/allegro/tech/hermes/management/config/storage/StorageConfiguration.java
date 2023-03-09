@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.config.storage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -43,10 +44,13 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import static java.util.stream.Collectors.toList;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration
 @EnableConfigurationProperties(StorageClustersProperties.class)
 public class StorageConfiguration {
+
+    private static final Logger logger = getLogger(StorageConfiguration.class);
 
     @Autowired
     StorageClustersProperties storageClustersProperties;
@@ -171,12 +175,15 @@ public class StorageConfiguration {
 
     @PostConstruct
     public void init() {
+        logger.info("Before ensuring init path exists");
         ensureInitPathExists();
+        logger.info("After ensuring init path exists");
     }
 
     private void ensureInitPathExists() {
         ZookeeperClientManager clientManager = clientManager();
         for (ZookeeperClient client : clientManager.getClients()) {
+            logger.info("Ensuring that path exists for Zookeeper client: {}", client.getDatacenterName());
             client.ensurePathExists(zookeeperPaths().groupsPath());
         }
     }
