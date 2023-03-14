@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.readiness;
 
 import pl.allegro.tech.hermes.api.DatacenterReadiness;
-import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
+import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
@@ -18,7 +18,18 @@ public class SetReadinessCommand extends RepositoryCommand<ReadinessRepository> 
     @Override
     public void execute(DatacenterBoundRepositoryHolder<ReadinessRepository> holder) {
         if (holder.getDatacenterName().equals(readiness.getDatacenter())) {
-            holder.getRepository().setReadiness(readiness.isReady());
+            holder.getRepository().setReadiness(isReady());
+        }
+    }
+
+    private boolean isReady() {
+        switch (readiness.getStatus()) {
+            case READY:
+                return true;
+            case NOT_READY:
+                return false;
+            default:
+                throw new InternalProcessingException("Invalid readiness status: " + readiness.getStatus());
         }
     }
 

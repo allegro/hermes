@@ -26,7 +26,7 @@ public class ModeService {
         }
     }
 
-    private volatile ManagementMode mode = ManagementMode.READ_WRITE;
+    private volatile ManagementMode mode = ManagementMode.READ_ONLY;
 
     public ManagementMode getMode() {
         return mode;

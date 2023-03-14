@@ -17,6 +17,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static pl.allegro.tech.hermes.api.DatacenterReadiness.ReadinessStatus.NOT_READY;
+import static pl.allegro.tech.hermes.api.DatacenterReadiness.ReadinessStatus.READY;
 
 @Path("readiness/datacenters")
 @Component
@@ -34,7 +36,7 @@ public class ReadinessEndpoint {
     @RolesAllowed(Roles.ADMIN)
     @Path("/{datacenter}")
     public Response setReadiness(@PathParam("datacenter") String datacenter, Readiness readiness) {
-        readinessService.setReady(new DatacenterReadiness(datacenter, readiness.isReady()));
+        readinessService.setReady(new DatacenterReadiness(datacenter, readiness.isReady() ? READY : NOT_READY));
         return Response.status(Response.Status.ACCEPTED).build();
     }
 

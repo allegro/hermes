@@ -14,15 +14,15 @@ readiness.controller('ReadinessController', ['$scope', 'ReadinessRepository', 'C
     }
 
     $scope.openModal = function openModal(datacenterInfo) {
-      var action = datacenterInfo.isReady ? "Turn off" : "Turn on";
+      var action = datacenterInfo.status === 'READY' ? "Turn off" : "Turn on";
       confirmationModal.open({
         actionSubject: 'Are you sure you want to ' + action.toLowerCase() + ' the ' + datacenterInfo.datacenter + ' datacenter ?',
         action: action
       }).result.then(function () {
         readinessRepository.setReadiness(datacenterInfo)
           .then(function () {
-            datacenterInfo.isReady = !datacenterInfo.isReady;
             clearError();
+            return loadDatacenters();
           })
           .catch(function (e) {
             displayError(e);

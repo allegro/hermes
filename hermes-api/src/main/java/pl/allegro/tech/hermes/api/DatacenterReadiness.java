@@ -7,28 +7,28 @@ import java.util.Objects;
 
 public class DatacenterReadiness {
     private final String datacenter;
-    private final boolean isReady;
+    private final ReadinessStatus status;
 
     @JsonCreator
-    public DatacenterReadiness(@JsonProperty("datacenter") String datacenter, @JsonProperty("isReady") boolean isReady) {
+    public DatacenterReadiness(@JsonProperty("datacenter") String datacenter,
+                               @JsonProperty("status") ReadinessStatus status) {
         this.datacenter = datacenter;
-        this.isReady = isReady;
+        this.status = status;
     }
 
     public String getDatacenter() {
         return datacenter;
     }
 
-    @JsonProperty("isReady")
-    public boolean isReady() {
-        return isReady;
+    public ReadinessStatus getStatus() {
+        return status;
     }
 
     @Override
     public String toString() {
         return "DatacenterReadiness{"
                 + "datacenter='" + datacenter + '\''
-                + ", isReady=" + isReady
+                + ", status=" + status
                 + '}';
     }
 
@@ -41,12 +41,18 @@ public class DatacenterReadiness {
             return false;
         }
         DatacenterReadiness that = (DatacenterReadiness) o;
-        return isReady == that.isReady
+        return status == that.status
                 && Objects.equals(datacenter, that.datacenter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(datacenter, isReady);
+        return Objects.hash(datacenter, status);
+    }
+
+    public enum ReadinessStatus {
+        READY,
+        NOT_READY,
+        UNDEFINED
     }
 }

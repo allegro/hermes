@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +8,6 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
-import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
@@ -21,7 +19,6 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -76,13 +73,6 @@ public class FrontendConfiguration {
     public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(CuratorFramework curator,
                                                                              ZookeeperPaths zookeeperPaths) {
         return new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
-    }
-
-    @Bean(destroyMethod = "close")
-    public ReadinessRepository zookeeperDatacenterReadinessRepository(CuratorFramework zookeeper,
-                                                                      ZookeeperPaths paths,
-                                                                      ObjectMapper mapper) {
-        return new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
     }
 
     @Bean(initMethod = "startup")
