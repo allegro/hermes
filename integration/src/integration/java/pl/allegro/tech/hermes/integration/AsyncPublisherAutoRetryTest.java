@@ -43,7 +43,7 @@ public class AsyncPublisherAutoRetryTest implements EnvironmentAware {
     }
 
     @Test
-    public void shouldRetryPublishingMessageEnoughTimesWhenServerReturns500UsingRestTemplate() {
+    public void shouldRetryPublishingMessageEnoughTimesWhenServerReturns500UsingAsyncRestTemplate() {
         //given
         HermesSender sender = new RestTemplateHermesSender(new AsyncRestTemplate());
         int retries = 5;
@@ -57,7 +57,7 @@ public class AsyncPublisherAutoRetryTest implements EnvironmentAware {
     }
 
     @Test
-    public void shouldNotRetryIfMessageWasPublishedUsingRestTemplate() {
+    public void shouldNotRetryIfMessageWasPublishedUsingAsyncRestTemplate() {
         HermesSender sender = new RestTemplateHermesSender(new AsyncRestTemplate());
         HermesClient hermesClient = retryingHermesClient(10, sender);
 
