@@ -79,8 +79,8 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
         assertThat(response).containsMessages(
-                "sourceTopic may not be empty",
-                "targetTopic may not be empty",
+                "sourceTopic must not be empty",
+                "targetTopic must not be empty",
                 "startTimestamp must not be null",
                 "endTimestamp must not be null");
     }

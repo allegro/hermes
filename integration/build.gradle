@@ -25,7 +25,7 @@ dependencies {
     testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     testCompile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
     testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
-    testCompile group: 'org.springframework', name: 'spring-web', version: versions.spring_web
+    testCompile group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     testCompile group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
 
     testCompile group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
