@@ -3,9 +3,9 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.Objects;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
