@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.mock;
 
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
+import com.google.common.collect.Lists;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.mock.exchange.Request;
-import wiremock.com.google.common.collect.Lists;
 
 import java.util.List;
 import java.util.Optional;

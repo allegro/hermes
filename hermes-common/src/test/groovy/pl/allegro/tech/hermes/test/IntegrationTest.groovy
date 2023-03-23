@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.apache.curator.framework.CuratorFramework
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
@@ -30,7 +31,7 @@ abstract class IntegrationTest extends Specification {
 
     protected RepositoryWaiter wait = new RepositoryWaiter(zookeeperResource.curator(), paths)
 
-    protected ObjectMapper mapper = new ObjectMapper()
+    protected ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
 
     protected ZookeeperGroupRepository groupRepository = new ZookeeperGroupRepository(zookeeper(), mapper, paths)
 
