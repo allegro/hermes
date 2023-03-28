@@ -23,7 +23,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesManagementInstance {
+
     private static final Logger logger = getLogger(HermesManagementInstance.class);
+
     private final HermesAPIOperations operations;
 
     private HermesManagementInstance(HermesAPIOperations operations) {
@@ -83,39 +85,16 @@ public class HermesManagementInstance {
         public HermesManagementInstance start() {
             try {
                 startManagement();
-                List<CuratorFramework> clusters = startSeparateZookeeperClientPerCluster();
-                waitUntilStructureInZookeeperIsCreated(clusters);
-                closeZookeeperClustersConnections(clusters);
                 HermesAPIOperations operations = setupOperations(startZookeeperClient());
+                waitUntilManagementIsInReadWriteMode(operations);
                 return new HermesManagementInstance(operations);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private void waitUntilStructureInZookeeperIsCreated(List<CuratorFramework> zookeeperClusters) {
-            logger.info("Waiting for zookeeper structure to be created");
-            try {
-                waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
-            } catch (ConditionTimeoutException ex) {
-                logger.error("Structure for Zookeeper does not exist in 240 seconds");
-                throw ex;
-            }
-        }
-
-        private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {
-            for (CuratorFramework zookeeper : zookeeperClusters) {
-                if (zookeeper.checkExists().forPath("/hermes/groups") == null) {
-                    logger.info("Structure for Zookeeper does not exist yet");
-                    return false;
-                }
-            }
-            logger.info("Structure for Zookeepers exists in 240 seconds");
-            return true;
-        }
-
-        private void closeZookeeperClustersConnections(List<CuratorFramework> zookeeperClusters) {
-            zookeeperClusters.forEach(CuratorFramework::close);
+        private void waitUntilManagementIsInReadWriteMode(HermesAPIOperations operations) {
+            waitAtMost(adjust(240), TimeUnit.SECONDS).until(operations::isInReadWriteMode);
         }
 
         private void startManagement() {

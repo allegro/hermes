@@ -93,8 +93,10 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
                     .replicationFactor(kafkaClusterOne.getAllBrokers().size())
                     .uncleanLeaderElectionEnabled(false)
                     .start();
+            // Since we don't start a management instance for DC2 we need to create the root path manually.
+            initializeRootPathInZookeeperTwo();
 
-            zookeeper = startZookeeperClient();
+            zookeeper = startZookeeperClient(hermesZookeeperOne.getConnectionString());
 
             ConsumersStarter consumersStarter = new ConsumersStarter();
             consumersStarter.overrideProperty(ConsumerConfigurationProperties.KAFKA_AUTHORIZATION_ENABLED, false);
@@ -132,13 +134,19 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
         }
     }
 
-    private CuratorFramework startZookeeperClient() {
+    private CuratorFramework startZookeeperClient(String connectString) {
         final CuratorFramework zookeeperClient = CuratorFrameworkFactory.builder()
-                .connectString(hermesZookeeperOne.getConnectionString())
+                .connectString(connectString)
                 .retryPolicy(new ExponentialBackoffRetry(1000, 3))
                 .build();
         zookeeperClient.start();
         return zookeeperClient;
+    }
+
+    private void initializeRootPathInZookeeperTwo() throws Exception {
+        try (CuratorFramework curatorFramework = startZookeeperClient(hermesZookeeperTwo.getConnectionString())) {
+            curatorFramework.create().creatingParentsIfNeeded().forPath("/hermes/groups");
+        }
     }
 
     @AfterSuite(alwaysRun = true)

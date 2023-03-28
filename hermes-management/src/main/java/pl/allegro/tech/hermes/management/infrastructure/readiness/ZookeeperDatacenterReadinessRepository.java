@@ -34,9 +34,7 @@ public class ZookeeperDatacenterReadinessRepository extends ZookeeperBasedReposi
         try {
             String path = paths.frontendReadinessPath();
             if (!pathExists(path)) {
-                zookeeper.create()
-                        .creatingParentsIfNeeded()
-                        .forPath(path, mapper.writeValueAsBytes(new Readiness(isReady)));
+                createRecursively(path, new Readiness(isReady));
             } else {
                 overwrite(path, new Readiness(isReady));
             }
