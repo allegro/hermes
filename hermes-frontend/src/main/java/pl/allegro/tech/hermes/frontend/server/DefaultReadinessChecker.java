@@ -52,7 +52,6 @@ public class DefaultReadinessChecker implements ReadinessChecker, NodeCacheListe
         } catch (Exception e) {
             throw new InternalProcessingException("Readiness cache cannot start.", e);
         }
-        refreshAdminReady();
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("ReadinessChecker-%d").build();
         this.scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
@@ -69,6 +68,7 @@ public class DefaultReadinessChecker implements ReadinessChecker, NodeCacheListe
     @Override
     public void start() {
         if (enabled) {
+            refreshAdminReady();
             ReadinessCheckerJob job = new ReadinessCheckerJob();
             job.run();
             scheduler.scheduleAtFixedRate(job, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
