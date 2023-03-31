@@ -39,7 +39,7 @@ public class HealthCheckScheduler {
                                 ObjectMapper objectMapper,
                                 ModeService modeService,
                                 MeterRegistry meterRegistry,
-                                @Value("${management.health.periodSeconds}") Long periodSeconds,
+                                @Value("${management.health.periodSeconds:30}") Long periodSeconds,
                                 @Value("${management.health.enabled:false}") boolean enabled) {
         this.zookeeperClientManager = zookeeperClientManager;
         this.zookeeperPaths = zookeeperPaths;

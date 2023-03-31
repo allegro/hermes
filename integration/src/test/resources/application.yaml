@@ -63,9 +63,6 @@ management:
   server:
     servlet:
       context-path: /
-  health:
-    periodSeconds: 10
-    enabled: true
 
 spring.groovy.template.check-template-location: false
 
