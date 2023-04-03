@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 
 import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +29,8 @@ public class ConsumerProcess implements Runnable {
 
     private final Retransmitter retransmitter;
 
+    private final Duration maxGracefulStopPeriod;
+
     private final java.util.function.Consumer<SubscriptionName> onConsumerStopped;
 
     private final Duration unhealthyAfter;
@@ -38,15 +41,19 @@ public class ConsumerProcess implements Runnable {
 
     private final Map<Signal.SignalType, Long> signalTimesheet = new ConcurrentHashMap<>();
 
+    private Instant stopTimestamp;
+
     public ConsumerProcess(
             Signal startSignal,
             Consumer consumer,
             Retransmitter retransmitter,
             Clock clock,
             Duration unhealthyAfter,
+            Duration maxGracefulStopPeriod,
             java.util.function.Consumer<SubscriptionName> onConsumerStopped) {
         this.consumer = consumer;
         this.retransmitter = retransmitter;
+        this.maxGracefulStopPeriod = maxGracefulStopPeriod;
         this.onConsumerStopped = onConsumerStopped;
         this.clock = clock;
         this.healthcheckRefreshTime = clock.millis();
@@ -62,6 +69,9 @@ public class ConsumerProcess implements Runnable {
 
             while (running && !Thread.currentThread().isInterrupted()) {
                 consumer.consume(this::processSignals);
+                if (consumer.isReadyToBeTornDown() || hasToBeStopped()) {
+                    running = false;
+                }
             }
         } catch (Throwable throwable) {
             logger.error("Consumer process of subscription {} failed", getSubscriptionName(), throwable);
@@ -114,8 +124,9 @@ public class ConsumerProcess implements Runnable {
                     start(signal);
                     break;
                 case STOP:
-                    logger.info("Stopping main loop for consumer {}. {}", signal.getTarget(), signal.getLogWithIdAndType());
-                    this.running = false;
+                    logger.info("Preparing to stop consumer {}. {}", signal.getTarget(), signal.getLogWithIdAndType());
+                    consumer.prepareToTearDown();
+                    stopTimestamp = clock.instant();
                     break;
                 case RETRANSMIT:
                     retransmit(signal);
@@ -215,5 +226,13 @@ public class ConsumerProcess implements Runnable {
         if (!this.signals.add(signal)) {
             logger.error("[Queue: consumerProcessSignals] Unable to add item: queue is full. Offered item: {}", signal);
         }
+    }
+
+    private boolean hasToBeStopped() {
+        if (stopTimestamp == null) {
+            return false;
+        }
+        Instant now = clock.instant();
+        return now.isAfter(stopTimestamp.plus(maxGracefulStopPeriod));
     }
 }

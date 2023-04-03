@@ -127,6 +127,8 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
 
         private Duration killAfter = Duration.ofMillis(300_000);
 
+        private Duration maxGracefulStopPeriod = Duration.ofSeconds(15);
+
         @Override
         public Duration getInterval() {
             return interval;
@@ -152,6 +154,15 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
 
         public void setKillAfter(Duration killAfter) {
             this.killAfter = killAfter;
+        }
+
+        @Override
+        public Duration getMaxGracefulStopPeriod() {
+            return maxGracefulStopPeriod;
+        }
+
+        public void setMaxGracefulStopPeriod(Duration maxGracefulStopPeriod) {
+            this.maxGracefulStopPeriod = maxGracefulStopPeriod;
         }
     }
 }

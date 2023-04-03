@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchingResult;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsTracker;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.BatchConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
@@ -51,12 +52,14 @@ public class BatchConsumer implements Consumer {
 
     private Topic topic;
     private final OffsetQueue offsetQueue;
+    private final OffsetsTracker offsetsTracker = new OffsetsTracker();
     private Subscription subscription;
 
     private volatile boolean consuming = true;
 
     private final SubscriptionMetrics metrics;
     private MessageBatchReceiver receiver;
+    private boolean preparingToTearDown = false;
 
     public BatchConsumer(ReceiverFactory messageReceiverFactory,
                          MessageBatchSender sender,
@@ -116,6 +119,7 @@ public class BatchConsumer implements Consumer {
     }
 
     private void offerInflightOffsets(MessageBatch batch) {
+        offsetsTracker.register(batch.getPartitionOffsets());
         batch.getPartitionOffsets().forEach(offsetQueue::offerInflightOffset);
     }
 
@@ -149,10 +153,26 @@ public class BatchConsumer implements Consumer {
     }
 
     @Override
-    public void tearDown() {
-        consuming = false;
+    public void prepareToTearDown() {
+        preparingToTearDown = true;
         if (receiver != null) {
             receiver.stop();
+        }
+    }
+
+    @Override
+    public boolean isReadyToBeTornDown() {
+        return preparingToTearDown && offsetsTracker.allCommitted();
+    }
+
+    @Override
+    public void tearDown() {
+        if (!offsetsTracker.allCommitted()) {
+            logger.info("Stopping consumer with uncommitted offsets");
+        }
+        consuming = false;
+        if (receiver != null) {
+            receiver.close();
         } else {
             logger.info("No batch receiver to stop [subscription={}].", subscription.getQualifiedName());
         }
@@ -184,13 +204,17 @@ public class BatchConsumer implements Consumer {
     public void commit(Set<SubscriptionPartitionOffset> offsetsToCommit) {
         if (receiver != null) {
             receiver.commit(offsetsToCommit);
+            offsetsTracker.unregister(offsetsToCommit);
         }
     }
 
     @Override
     public boolean moveOffset(PartitionOffset partitionOffset) {
         if (receiver != null) {
-            return receiver.moveOffset(partitionOffset);
+            if (receiver.moveOffset(partitionOffset)) {
+                offsetsTracker.remove(partitionOffset.getTopic(), partitionOffset.getPartition());
+                return true;
+            }
         }
         return false;
     }

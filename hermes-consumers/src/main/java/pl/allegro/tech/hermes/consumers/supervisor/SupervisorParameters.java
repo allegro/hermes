@@ -9,4 +9,6 @@ public interface SupervisorParameters {
     Duration getUnhealthyAfter();
 
     Duration getKillAfter();
+
+    Duration getMaxGracefulStopPeriod();
 }

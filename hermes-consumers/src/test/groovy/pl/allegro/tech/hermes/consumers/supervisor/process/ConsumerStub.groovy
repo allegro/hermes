@@ -24,6 +24,10 @@ class ConsumerStub implements Consumer {
 
     boolean blockOnTeardown = false
 
+    boolean preparingToTearDown = false
+
+    boolean readyToBeTornDown = true
+
     ConsumerStub(Subscription subscription) {
         this.subscription = subscription
     }
@@ -39,6 +43,16 @@ class ConsumerStub implements Consumer {
     @Override
     void initialize() {
         initializationCount++
+    }
+
+    @Override
+    void prepareToTearDown() {
+        preparingToTearDown = true
+    }
+
+    @Override
+    boolean isReadyToBeTornDown() {
+        return preparingToTearDown && readyToBeTornDown
     }
 
     @Override
@@ -105,5 +119,9 @@ class ConsumerStub implements Consumer {
         } finally {
             blockOnTeardown = false
         }
+    }
+
+    void markAsNeverReadyToBeTornDown() {
+        readyToBeTornDown = false
     }
 }

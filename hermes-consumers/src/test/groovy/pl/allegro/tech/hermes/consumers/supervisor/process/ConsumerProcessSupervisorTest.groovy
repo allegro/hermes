@@ -55,13 +55,22 @@ class ConsumerProcessSupervisorTest extends Specification {
 
     Duration unhealthyAfter = Duration.ofMillis(3000)
     Duration killAfter = Duration.ofMillis(100)
+    Duration maxGracefulStopPeriod = Duration.ofMillis(100)
 
     def setup() {
         clock = new CurrentTimeClock()
         consumer = new ConsumerStub(subscription1)
         ConsumerProcessSupplier processFactory = {
             Subscription subscription, Signal startSignal, Consumer<SubscriptionName> onConsumerStopped ->
-                return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
+                return new ConsumerProcess(
+                        startSignal,
+                        consumer,
+                        Stub(Retransmitter),
+                        clock,
+                        unhealthyAfter,
+                        maxGracefulStopPeriod,
+                        onConsumerStopped
+                )
         }
 
         metrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))

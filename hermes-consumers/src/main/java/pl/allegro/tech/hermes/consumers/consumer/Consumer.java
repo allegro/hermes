@@ -13,6 +13,10 @@ public interface Consumer {
 
     void initialize();
 
+    void prepareToTearDown();
+
+    boolean isReadyToBeTornDown();
+
     void tearDown();
 
     void updateSubscription(Subscription subscription);

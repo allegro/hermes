@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsTracker;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
@@ -37,6 +38,7 @@ public class SerialConsumer implements Consumer {
     private final ConsumerMessageSender sender;
     private final boolean useTopicMessageSizeEnabled;
     private final OffsetQueue offsetQueue;
+    private final OffsetsTracker offsetsTracker = new OffsetsTracker();
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
     private final AdjustableSemaphore inflightSemaphore;
     private final SubscriptionLoadRecorder loadRecorder;
@@ -48,6 +50,7 @@ public class SerialConsumer implements Consumer {
     private Subscription subscription;
 
     private MessageReceiver messageReceiver;
+    private boolean preparingToTearDown = false;
 
     public SerialConsumer(ReceiverFactory messageReceiverFactory,
                           SubscriptionMetrics metrics,
@@ -100,7 +103,7 @@ public class SerialConsumer implements Consumer {
                 signalsInterrupt.run();
             } while (!inflightSemaphore.tryAcquire(signalProcessingInterval.toMillis(), TimeUnit.MILLISECONDS));
 
-            Optional<Message> maybeMessage = messageReceiver.next();
+            Optional<Message> maybeMessage = receive();
 
             if (maybeMessage.isPresent()) {
                 Message message = maybeMessage.get();
@@ -122,7 +125,15 @@ public class SerialConsumer implements Consumer {
         }
     }
 
+    private Optional<Message> receive() {
+        if (preparingToTearDown) {
+            return Optional.empty();
+        }
+        return messageReceiver.next();
+    }
+
     private void sendMessage(Message message) {
+        offsetsTracker.register(message.getPartitionOffset());
         offsetQueue.offerInflightOffset(
                 subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(),
@@ -145,6 +156,16 @@ public class SerialConsumer implements Consumer {
         consumerAuthorizationHandler.createSubscriptionHandler(subscription.getQualifiedName());
     }
 
+    @Override
+    public void prepareToTearDown() {
+        preparingToTearDown = true;
+    }
+
+    @Override
+    public boolean isReadyToBeTornDown() {
+        return preparingToTearDown && offsetsTracker.allCommitted();
+    }
+
     private void initializeMessageReceiver() {
         this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter, loadRecorder, metrics);
     }
@@ -154,6 +175,9 @@ public class SerialConsumer implements Consumer {
      */
     @Override
     public void tearDown() {
+        if (!offsetsTracker.allCommitted()) {
+            logger.info("Stopping consumer with uncommitted offsets");
+        }
         messageReceiver.stop();
         sender.shutdown();
         rateLimiter.shutdown();
@@ -194,11 +218,16 @@ public class SerialConsumer implements Consumer {
     @Override
     public void commit(Set<SubscriptionPartitionOffset> offsets) {
         messageReceiver.commit(offsets);
+        offsetsTracker.unregister(offsets);
     }
 
     @Override
     public boolean moveOffset(PartitionOffset offset) {
-        return messageReceiver.moveOffset(offset);
+        if (messageReceiver.moveOffset(offset)) {
+            offsetsTracker.remove(offset.getTopic(), offset.getPartition());
+            return true;
+        }
+        return false;
     }
 
     @Override
