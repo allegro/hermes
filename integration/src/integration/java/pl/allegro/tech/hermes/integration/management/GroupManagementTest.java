@@ -59,11 +59,11 @@ public class GroupManagementTest extends IntegrationTest {
     @Test
     public void shouldCreateGroup() {
         // given when
-        Response response = management.group().create(group("testGroup").build());
+        Response response = management.group().create(group("groupToCreate").build());
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        Assertions.assertThat(management.group().list()).contains("testGroup");
+        Assertions.assertThat(management.group().list()).contains("groupToCreate");
     }
 
     @Test

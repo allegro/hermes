@@ -47,14 +47,13 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
 
     @Override
     public void createSubscription(Subscription subscription) {
-        ensureConnected();
         topicRepository.ensureTopicExists(subscription.getTopicName());
 
         String subscriptionPath = paths.subscriptionPath(subscription);
         logger.info("Creating subscription {}", subscription.getQualifiedName());
 
         try {
-            zookeeper.create().forPath(subscriptionPath, mapper.writeValueAsBytes(subscription));
+            create(subscriptionPath, subscription);
         } catch (KeeperException.NodeExistsException ex) {
             throw new SubscriptionAlreadyExistsException(subscription, ex);
         } catch (Exception ex) {
@@ -67,14 +66,22 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
         ensureSubscriptionExists(topicName, subscriptionName);
         logger.info("Removing subscription {}", new SubscriptionName(subscriptionName, topicName).getQualifiedName());
 
-        remove(paths.subscriptionPath(topicName, subscriptionName));
+        try {
+            remove(paths.subscriptionPath(topicName, subscriptionName));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     @Override
     public void updateSubscription(Subscription modifiedSubscription) {
         ensureSubscriptionExists(modifiedSubscription.getTopicName(), modifiedSubscription.getName());
         logger.info("Updating subscription {}", modifiedSubscription.getQualifiedName());
-        overwrite(paths.subscriptionPath(modifiedSubscription), modifiedSubscription);
+        try {
+            overwrite(paths.subscriptionPath(modifiedSubscription), modifiedSubscription);
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     @Override

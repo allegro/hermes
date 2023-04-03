@@ -17,7 +17,10 @@ repository.factory('ReadinessRepository', ['DiscoveryService', '$resource',
         });
       },
       setReadiness: function (datacenterInfo) {
-        return setReadinessEndpoint.save({datacenter: datacenterInfo.datacenter}, {isReady: !datacenterInfo.isReady}).$promise;
+        return setReadinessEndpoint.save(
+            {datacenter: datacenterInfo.datacenter},
+            {isReady: datacenterInfo.status === 'NOT_READY'}
+        ).$promise;
       }
     };
   }]);

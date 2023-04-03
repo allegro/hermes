@@ -245,4 +245,8 @@ public class HermesAPIOperations {
     public void setReadiness(String dcName, boolean isReady) {
         assertThat(endpoints.readiness().setReadiness(dcName, new Readiness(isReady)).getStatus()).isEqualTo(ACCEPTED.getStatusCode());
     }
+
+    public boolean isInReadWriteMode() {
+        return "readWrite".equals(endpoints.modeEndpoint().getMode());
+    }
 }

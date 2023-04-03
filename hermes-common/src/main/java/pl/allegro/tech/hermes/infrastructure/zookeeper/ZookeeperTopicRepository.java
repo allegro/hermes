@@ -69,11 +69,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         logger.info("Creating topic for path {}", topicPath);
 
         try {
-            zookeeper.inTransaction()
-                    .create().forPath(topicPath, mapper.writeValueAsBytes(topic))
-                    .and()
-                    .create().forPath(paths.subscriptionsPath(topic.getName()))
-                    .and().commit();
+            createInTransaction(topicPath, topic, paths.subscriptionsPath(topic.getName()));
         } catch (KeeperException.NodeExistsException ex) {
             throw new TopicAlreadyExistsException(topic.getName(), ex);
         } catch (Exception ex) {
@@ -85,7 +81,11 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     public void removeTopic(TopicName topicName) {
         ensureTopicExists(topicName);
         logger.info("Removing topic: " + topicName);
-        remove(paths.topicPath(topicName));
+        try {
+            remove(paths.topicPath(topicName));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     @Override
@@ -93,7 +93,11 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         ensureTopicExists(topic.getName());
 
         logger.info("Updating topic: " + topic.getName());
-        overwrite(paths.topicPath(topic.getName()), topic);
+        try {
+            overwrite(paths.topicPath(topic.getName()), topic);
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     @Override
@@ -101,7 +105,11 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         ensureTopicExists(topicName);
 
         logger.info("Touching topic: " + topicName.qualifiedName());
-        touch(paths.topicPath(topicName));
+        try {
+            touch(paths.topicPath(topicName));
+        } catch (Exception ex) {
+            throw new InternalProcessingException(ex);
+        }
     }
 
     @Override
