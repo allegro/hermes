@@ -1,8 +1,15 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
@@ -25,6 +32,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+
 public class BrokersClusterService {
 
     private static final Logger logger = LoggerFactory.getLogger(BrokersClusterService.class);
@@ -38,12 +48,14 @@ public class BrokersClusterService {
     private final ConsumerGroupsDescriber consumerGroupsDescriber;
     private final AdminClient adminClient;
     private final ConsumerGroupManager consumerGroupManager;
+    private final KafkaConsumerManager kafkaConsumerManager;
 
     public BrokersClusterService(String clusterName, SingleMessageReader singleMessageReader,
                                  RetransmissionService retransmissionService, BrokerTopicManagement brokerTopicManagement,
                                  KafkaNamesMapper kafkaNamesMapper, OffsetsAvailableChecker offsetsAvailableChecker,
                                  LogEndOffsetChecker logEndOffsetChecker, AdminClient adminClient,
-                                 ConsumerGroupManager consumerGroupManager) {
+                                 ConsumerGroupManager consumerGroupManager,
+                                 KafkaConsumerManager kafkaConsumerManager) {
         this.clusterName = clusterName;
         this.singleMessageReader = singleMessageReader;
         this.retransmissionService = retransmissionService;
@@ -58,6 +70,7 @@ public class BrokersClusterService {
         );
         this.adminClient = adminClient;
         this.consumerGroupManager = consumerGroupManager;
+        this.kafkaConsumerManager = kafkaConsumerManager;
     }
 
     public String getClusterName() {
@@ -121,6 +134,21 @@ public class BrokersClusterService {
 
     public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {
         return consumerGroupsDescriber.describeConsumerGroup(topic, subscriptionName);
+    }
+
+    public void moveOffsetsToTheEnd(Topic topic, Subscription subscription) {
+        KafkaConsumer<byte[], byte[]> consumer = kafkaConsumerManager.createConsumer(subscription);
+        String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
+        Set<TopicPartition> topicPartitions = consumer.partitionsFor(kafkaTopicName).stream()
+                .map(info -> new TopicPartition(info.topic(), info.partition()))
+                .collect(toSet());
+        consumer.assign(topicPartitions);
+        Map<TopicPartition, Long> endOffsets = consumer.endOffsets(topicPartitions);
+        Map<TopicPartition, OffsetAndMetadata> finalOffsets = endOffsets.entrySet().stream()
+                .map(entry -> ImmutablePair.of(entry.getKey(), new OffsetAndMetadata(entry.getValue())))
+                .collect(toMap(Pair::getKey, Pair::getValue));
+        consumer.commitSync(finalOffsets);
+        consumer.enforceRebalance();
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {

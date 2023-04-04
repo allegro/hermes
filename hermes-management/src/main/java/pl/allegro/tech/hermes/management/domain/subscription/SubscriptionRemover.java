@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.subscription;
 
+import java.time.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -7,6 +8,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException;
+import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
@@ -31,7 +33,6 @@ public class SubscriptionRemover {
         this.subscriptionOwnerCache = subscriptionOwnerCache;
         this.subscriptionRepository = subscriptionRepository;
     }
-
 
     public void removeSubscription(TopicName topicName, String subscriptionName, RequestUser removedBy) {
         auditor.beforeObjectRemoval(removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);

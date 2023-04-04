@@ -44,7 +44,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
                 ImmutableMap.of(
                         PRIMARY_KAFKA_CLUSTER_NAME, kafkaClusterOne.getBootstrapServersForExternalClients(),
                         SECONDARY_KAFKA_CLUSTER_NAME, kafkaClusterTwo.getBootstrapServersForExternalClients()
-                ));
+                ), "itTest");
         this.wait = new Waiter(management, services().zookeeper(), brokerOperations, PRIMARY_KAFKA_CLUSTER_NAME, KAFKA_NAMESPACE);
         this.operations = new HermesAPIOperations(management, wait);
         this.auditEvents = new AuditEventEndpoint(SharedServices.services().auditEventMock());

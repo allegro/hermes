@@ -24,6 +24,7 @@ import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
+import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations.ConsumerGroupOffset;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -281,6 +282,32 @@ public class SubscriptionManagementTest extends IntegrationTest {
         assertThat(response).hasStatus(Response.Status.OK);
         assertThat(management.subscription().list(topic.getQualifiedName(), false)).doesNotContain(
                 "subscription");
+    }
+
+    @Test
+    public void shouldMoveOffsetsToTheEndWhenRemovingSubscription() {
+        // given
+        Topic topic = operations.buildTopic(randomTopic("moveRemovedSubscriptionOffsets", "topic").build());
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription", remoteService.getUrl())
+                .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600)))
+                .build();
+        management.subscription().create(subscription.getQualifiedTopicName(), subscription);
+        List<String> messages = List.of(MESSAGE.body(), MESSAGE.body(), MESSAGE.body(), MESSAGE.body());
+
+        // prevents from moving offsets during messages sending
+        remoteService.setReturnedStatusCode(503);
+        remoteService.expectMessages(messages);
+        publishMessages(topic.getQualifiedName(), messages);
+        remoteService.waitUntilReceived();
+
+        assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isFalse();
+
+        // when
+        management.subscription().remove(topic.getQualifiedName(), subscription.getName());
+
+        // then
+        // eventually
+        assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue();
     }
 
     @Unreliable
@@ -790,7 +817,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         );
     }
 
-    private static Subscription subscriptionWithInflight(Topic topic, String subscriptionName,  Integer inflightSize) {
+    private static Subscription subscriptionWithInflight(Topic topic, String subscriptionName, Integer inflightSize) {
         return subscription(topic, subscriptionName)
                 .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy()
@@ -805,7 +832,17 @@ public class SubscriptionManagementTest extends IntegrationTest {
         });
     }
 
+    private void publishMessages(String topic, List<String> messages) {
+        messages.forEach(it -> publishMessage(topic, it));
+    }
+
     private String publishMessage(String topic, String body) {
         return client.publish(topic, body).join().getMessageId();
+    }
+
+    private boolean allConsumerGroupOffsetsMovedToTheEnd(Subscription subscription) {
+        return brokerOperations.getTopicPartitionsOffsets(subscription.getQualifiedName())
+                .stream()
+                .allMatch(ConsumerGroupOffset::movedToEnd);
     }
 }

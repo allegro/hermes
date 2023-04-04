@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
-import org.apache.kafka.clients.consumer.ConsumerPartitionAssignor;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;

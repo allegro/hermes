@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerGroupManager;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerManager;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
@@ -98,7 +99,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                     retransmissionService, brokerTopicManagement, kafkaNamesMapper,
                     new OffsetsAvailableChecker(consumerPool, storage),
                     new LogEndOffsetChecker(consumerPool),
-                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper));
+                    brokerAdminClient, createConsumerGroupManager(kafkaProperties, kafkaNamesMapper),
+                    createKafkaConsumerManager(kafkaProperties, kafkaNamesMapper));
         }).collect(toList());
 
         return new MultiDCAwareService(
@@ -114,6 +116,11 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 ? new KafkaConsumerGroupManager(kafkaNamesMapper, kafkaProperties.getQualifiedClusterName(),
                         kafkaProperties.getBootstrapKafkaServer(), kafkaProperties)
                 : new NoOpConsumerGroupManager();
+    }
+
+    private KafkaConsumerManager createKafkaConsumerManager(KafkaProperties kafkaProperties,
+                                                                 KafkaNamesMapper kafkaNamesMapper) {
+        return new KafkaConsumerManager(kafkaProperties, kafkaNamesMapper, kafkaProperties.getBootstrapKafkaServer());
     }
 
     private SubscriptionOffsetChangeIndicator getRepository(

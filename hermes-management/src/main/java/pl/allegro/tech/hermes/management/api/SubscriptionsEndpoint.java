@@ -235,7 +235,7 @@ public class SubscriptionsEndpoint {
                                @Valid OffsetRetransmissionDate offsetRetransmissionDate,
                                @Context ContainerRequestContext requestContext) {
 
-        MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
+        MultiDCOffsetChangeSummary summary = multiDCAwareService.retransmit(
                 topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 subscriptionName,
                 offsetRetransmissionDate.getRetransmissionDate().toInstant().toEpochMilli(),
