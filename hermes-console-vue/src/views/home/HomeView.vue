@@ -1,6 +1,12 @@
 <script setup lang="ts">
   import { useTheme } from 'vuetify';
 
+  const adminViews: { title: string; to: string }[] = [
+    { title: 'Consistency', to: '/consistency' },
+    { title: 'Constraints', to: '/constraints' },
+    { title: 'Readiness', to: '/readiness' },
+  ];
+
   const theme = useTheme();
 </script>
 
@@ -52,28 +58,28 @@
         </v-btn>
       </v-col>
     </v-row>
-  </v-container>
 
-  <!-- ADMIN TOOLS
-   <div class="row" ng-if="admin">
-    <div class="col-md-6 col-md-offset-3">
-      <div class="btn-group btn-block" dropdown>
-        <button class="btn btn-main btn-block dropdown-toggle" dropdown-toggle>
-          <i class="fa fa-wrench"></i> Admin Tools <span class="caret"></span>
-        </button>
-        <ul
-          class="dropdown-menu btn-block"
-          role="menu"
-          aria-labelledby="single-button"
-        >
-          <li role="menuitem"><a href="#/constraints">Constraints</a></li>
-          <li role="menuitem"><a href="#/consistency">Consistency</a></li>
-          <li role="menuitem"><a href="#/readiness">Readiness</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  ADMIN TOOLS -->
+    <v-row justify="center">
+      <v-col cols="6">
+        <v-btn color="secondary" block>
+          <v-icon left icon="mdi-security"></v-icon>&nbsp;Admin tools
+          &nbsp;<v-icon left icon="mdi-arrow-down"></v-icon>
+          <v-menu activator="parent">
+            <v-list>
+              <v-list-item
+                v-for="(item, index) in adminViews"
+                :key="index"
+                :value="index"
+                :to="item.to"
+              >
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <style lang="scss">

@@ -52,6 +52,14 @@
           :content="t('subscription.subscriptionMetadata.unauthorizedTooltip')"
         />
         <v-btn
+          v-if="props.authorized"
+          to="./diagnostics"
+          color="green"
+          prepend-icon="mdi-doctor"
+        >
+          {{ t('subscription.subscriptionMetadata.actions.diagnostics') }}
+        </v-btn>
+        <v-btn
           v-if="props.subscription.state === State.ACTIVE"
           :disabled="!props.authorized"
           color="orange"
