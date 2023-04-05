@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -31,7 +32,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MovingSubscriptionOffsetsValidationException;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
@@ -136,7 +139,8 @@ public class BrokersClusterService {
         return consumerGroupsDescriber.describeConsumerGroup(topic, subscriptionName);
     }
 
-    public void moveOffsetsToTheEnd(Topic topic, Subscription subscription) {
+    public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
+        validateIfOffsetsCanBeMoved(topic, subscription);
         KafkaConsumer<byte[], byte[]> consumer = kafkaConsumerManager.createConsumer(subscription);
         String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
         Set<TopicPartition> topicPartitions = consumer.partitionsFor(kafkaTopicName).stream()
@@ -148,7 +152,20 @@ public class BrokersClusterService {
                 .map(entry -> ImmutablePair.of(entry.getKey(), new OffsetAndMetadata(entry.getValue())))
                 .collect(toMap(Pair::getKey, Pair::getValue));
         consumer.commitSync(finalOffsets);
-        consumer.enforceRebalance();
+    }
+
+    private void validateIfOffsetsCanBeMoved(Topic topic, SubscriptionName subscription) {
+        describeConsumerGroup(topic, subscription.getName())
+                .ifPresentOrElse(group -> {
+                    if (!group.getMembers().isEmpty()) {
+                        String s = format("Consumer group %s for subscription %s has still active members.",
+                                group.getGroupId(), subscription.getQualifiedName());
+                        throw new MovingSubscriptionOffsetsValidationException(s);
+                    }
+                }, () -> {
+                    String s = format("No consumer group for subscription %s exists.", subscription.getQualifiedName());
+                    throw new MovingSubscriptionOffsetsValidationException(s);
+                });
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {

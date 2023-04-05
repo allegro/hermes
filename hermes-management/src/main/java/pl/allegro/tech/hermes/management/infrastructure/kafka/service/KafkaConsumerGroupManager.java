@@ -40,7 +40,7 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
     public void createConsumerGroup(Topic topic, Subscription subscription) {
         logger.info("Creating consumer group for subscription {}, cluster: {}", subscription.getQualifiedName(), clusterName);
 
-        KafkaConsumer<byte[], byte[]> kafkaConsumer = consumerManager.createConsumer(subscription);
+        KafkaConsumer<byte[], byte[]> kafkaConsumer = consumerManager.createConsumer(subscription.getQualifiedName());
         try {
             String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
             Set<TopicPartition> topicPartitions = kafkaConsumer.partitionsFor(kafkaTopicName).stream()

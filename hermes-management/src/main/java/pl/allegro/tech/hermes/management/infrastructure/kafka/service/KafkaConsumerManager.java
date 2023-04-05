@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 import java.util.Properties;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties;
@@ -30,8 +31,8 @@ public class KafkaConsumerManager {
         this.kafkaProperties = kafkaProperties;
     }
 
-    public KafkaConsumer<byte[], byte[]> createConsumer(Subscription subscription) {
-        ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
+    public KafkaConsumer<byte[], byte[]> createConsumer(SubscriptionName subscription) {
+        ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription);
         return new KafkaConsumer<>(properties(groupId));
     }
 

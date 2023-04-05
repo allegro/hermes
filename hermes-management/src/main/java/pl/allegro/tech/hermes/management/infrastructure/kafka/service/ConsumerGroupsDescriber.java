@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.BrokersClusterCommunicationException;
 
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -53,7 +54,7 @@ class ConsumerGroupsDescriber {
             return describeConsumerGroup(consumerGroupId, kafkaTopics);
         } catch (Exception e) {
             logger.error("Failed to describe group with id: {}", consumerGroupId.asString(), e);
-            return Optional.empty();
+            throw new BrokersClusterCommunicationException(e);
         }
     }
 

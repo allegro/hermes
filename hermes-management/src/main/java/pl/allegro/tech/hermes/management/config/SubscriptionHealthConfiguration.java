@@ -125,11 +125,8 @@ public class SubscriptionHealthConfiguration {
     public SubscriptionRemover subscriptionRemover(Auditor auditor,
                                                    MultiDatacenterRepositoryCommandExecutor multiDatacenterRepositoryCommandExecutor,
                                                    SubscriptionOwnerCache subscriptionOwnerCache,
-                                                   SubscriptionRepository subscriptionRepository,
-                                                   TopicRepository topicRepository,
-                                                   MultiDCAwareService multiDCAwareService,
-                                                   Clock clock) {
-        return new SubscriptionRemover(auditor, multiDatacenterRepositoryCommandExecutor, subscriptionOwnerCache,
-                subscriptionRepository, topicRepository, multiDCAwareService, clock);
+                                                   SubscriptionRepository subscriptionRepository) {
+        return new SubscriptionRemover(auditor, multiDatacenterRepositoryCommandExecutor,
+                subscriptionOwnerCache, subscriptionRepository);
     }
 }

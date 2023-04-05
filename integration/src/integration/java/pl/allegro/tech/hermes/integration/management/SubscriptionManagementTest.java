@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableMap;
+import com.jayway.awaitility.Duration;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -39,6 +40,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.net.URI.create;
 import static javax.ws.rs.client.ClientBuilder.newClient;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -285,7 +287,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldMoveOffsetsToTheEndWhenRemovingSubscription() {
+    public void shouldMoveOffsetsToTheEnd() {
         // given
         Topic topic = operations.buildTopic(randomTopic("moveRemovedSubscriptionOffsets", "topic").build());
         Subscription subscription = subscription(topic.getQualifiedName(), "subscription", remoteService.getUrl())
@@ -304,9 +306,10 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         // when
         management.subscription().remove(topic.getQualifiedName(), subscription.getName());
+        wait.awaitAtMost(Duration.TEN_SECONDS)
+                .until(() -> management.subscription().moveOffsetsToTheEnd(topic.getQualifiedName(), subscription.getName()).getStatus() == 200);
 
         // then
-        // eventually
         assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue();
     }
 
@@ -841,8 +844,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     private boolean allConsumerGroupOffsetsMovedToTheEnd(Subscription subscription) {
-        return brokerOperations.getTopicPartitionsOffsets(subscription.getQualifiedName())
-                .stream()
-                .allMatch(ConsumerGroupOffset::movedToEnd);
+        List<ConsumerGroupOffset> partitionsOffsets = brokerOperations.getTopicPartitionsOffsets(subscription.getQualifiedName());
+        return !partitionsOffsets.isEmpty() && partitionsOffsets.stream().allMatch(ConsumerGroupOffset::movedToEnd);
     }
 }
