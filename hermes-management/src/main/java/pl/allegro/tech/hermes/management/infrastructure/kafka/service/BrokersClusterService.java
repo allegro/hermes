@@ -141,31 +141,15 @@ public class BrokersClusterService {
 
     public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
         validateIfOffsetsCanBeMoved(topic, subscription);
+
         KafkaConsumer<byte[], byte[]> consumer = kafkaConsumerManager.createConsumer(subscription);
         String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
-        Set<TopicPartition> topicPartitions = consumer.partitionsFor(kafkaTopicName).stream()
-                .map(info -> new TopicPartition(info.topic(), info.partition()))
-                .collect(toSet());
+        Set<TopicPartition> topicPartitions = getTopicPartitions(consumer, kafkaTopicName);
         consumer.assign(topicPartitions);
-        Map<TopicPartition, Long> endOffsets = consumer.endOffsets(topicPartitions);
-        Map<TopicPartition, OffsetAndMetadata> finalOffsets = endOffsets.entrySet().stream()
-                .map(entry -> ImmutablePair.of(entry.getKey(), new OffsetAndMetadata(entry.getValue())))
-                .collect(toMap(Pair::getKey, Pair::getValue));
-        consumer.commitSync(finalOffsets);
-    }
 
-    private void validateIfOffsetsCanBeMoved(Topic topic, SubscriptionName subscription) {
-        describeConsumerGroup(topic, subscription.getName())
-                .ifPresentOrElse(group -> {
-                    if (!group.getMembers().isEmpty()) {
-                        String s = format("Consumer group %s for subscription %s has still active members.",
-                                group.getGroupId(), subscription.getQualifiedName());
-                        throw new MovingSubscriptionOffsetsValidationException(s);
-                    }
-                }, () -> {
-                    String s = format("No consumer group for subscription %s exists.", subscription.getQualifiedName());
-                    throw new MovingSubscriptionOffsetsValidationException(s);
-                });
+        Map<TopicPartition, Long> endOffsets = consumer.endOffsets(topicPartitions);
+        Map<TopicPartition, OffsetAndMetadata> endOffsetsMetadata = buildOffsetsMetadata(endOffsets);
+        consumer.commitSync(endOffsetsMetadata);
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {
@@ -176,6 +160,21 @@ public class BrokersClusterService {
                 .collect(Collectors.toList()).size();
     }
 
+    private void validateIfOffsetsCanBeMoved(Topic topic, SubscriptionName subscription) {
+        describeConsumerGroup(topic, subscription.getName())
+                .ifPresentOrElse(
+                        group -> {
+                            if (!group.getMembers().isEmpty()) {
+                                String s = format("Consumer group %s for subscription %s has still active members.",
+                                        group.getGroupId(), subscription.getQualifiedName());
+                                throw new MovingSubscriptionOffsetsValidationException(s);
+                            }
+                        }, () -> {
+                            String s = format("No consumer group for subscription %s exists.", subscription.getQualifiedName());
+                            throw new MovingSubscriptionOffsetsValidationException(s);
+                        });
+    }
+
     private int numberOfPartitionsForTopic(Topic topic) throws ExecutionException, InterruptedException {
         List<String> kafkaTopicsNames = kafkaNamesMapper.toKafkaTopics(topic).stream()
                 .map(kafkaTopic -> kafkaTopic.name().asString())
@@ -184,5 +183,17 @@ public class BrokersClusterService {
         return adminClient.describeTopics(kafkaTopicsNames).all().get().values().stream()
                 .map(v -> v.partitions().size())
                 .reduce(0, Integer::sum);
+    }
+
+    private Set<TopicPartition> getTopicPartitions(KafkaConsumer<byte[], byte[]> consumer, String kafkaTopicName) {
+        return consumer.partitionsFor(kafkaTopicName).stream()
+                .map(info -> new TopicPartition(info.topic(), info.partition()))
+                .collect(toSet());
+    }
+
+    private Map<TopicPartition, OffsetAndMetadata> buildOffsetsMetadata(Map<TopicPartition, Long> offsets) {
+        return offsets.entrySet().stream()
+                .map(entry -> ImmutablePair.of(entry.getKey(), new OffsetAndMetadata(entry.getValue())))
+                .collect(toMap(Pair::getKey, Pair::getValue));
     }
 }

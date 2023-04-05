@@ -253,7 +253,7 @@ public class SubscriptionsEndpoint {
     @RolesAllowed({Roles.ADMIN})
     @Path("/{subscriptionName}/moveOffsetsToTheEnd")
     public Response moveOffsetsToTheEnd(@PathParam("topicName") String qualifiedTopicName,
-                                     @PathParam("subscriptionName") String subscriptionName) {
+                                        @PathParam("subscriptionName") String subscriptionName) {
         TopicName topicName = fromQualifiedName(qualifiedTopicName);
         multiDCAwareService.moveOffsetsToTheEnd(
                 topicService.getTopicDetails(topicName),

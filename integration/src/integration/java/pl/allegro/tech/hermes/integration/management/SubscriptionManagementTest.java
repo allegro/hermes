@@ -289,9 +289,9 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldMoveOffsetsToTheEnd() {
         // given
-        Topic topic = operations.buildTopic(randomTopic("moveRemovedSubscriptionOffsets", "topic").build());
+        Topic topic = operations.buildTopic(randomTopic("moveSubscriptionOffsets", "topic").build());
         Subscription subscription = subscription(topic.getQualifiedName(), "subscription", remoteService.getUrl())
-                .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600)))
+                .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600))) // prevents discarding messages and moving offsets
                 .build();
         management.subscription().create(subscription.getQualifiedTopicName(), subscription);
         List<String> messages = List.of(MESSAGE.body(), MESSAGE.body(), MESSAGE.body(), MESSAGE.body());
@@ -304,8 +304,9 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
         assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isFalse();
 
-        // when
         management.subscription().remove(topic.getQualifiedName(), subscription.getName());
+
+        // when
         wait.awaitAtMost(Duration.TEN_SECONDS)
                 .until(() -> management.subscription().moveOffsetsToTheEnd(topic.getQualifiedName(), subscription.getName()).getStatus() == 200);
 

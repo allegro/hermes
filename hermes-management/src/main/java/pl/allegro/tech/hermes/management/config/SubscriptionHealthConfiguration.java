@@ -1,13 +1,11 @@
 package pl.allegro.tech.hermes.management.config;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import java.time.Clock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
-import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;

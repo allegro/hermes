@@ -63,12 +63,12 @@ public class BrokerOperations {
         return adminClients.values().stream()
                 .flatMap(client -> {
                     Map<TopicPartition, OffsetAndMetadata> currentOffsets = getTopicCurrentOffsets(consumerGroupId, client);
-                    Map<TopicPartition, ListOffsetsResultInfo> latestOffsets = getLatestOffsets(client, new ArrayList<>(currentOffsets.keySet()));
+                    Map<TopicPartition, ListOffsetsResultInfo> endOffsets = getEndOffsets(client, new ArrayList<>(currentOffsets.keySet()));
                     return currentOffsets.keySet()
                             .stream()
                             .map(partition -> new ConsumerGroupOffset(
                                     currentOffsets.get(partition).offset(),
-                                    latestOffsets.get(partition).offset())
+                                    endOffsets.get(partition).offset())
                             );
                 }).collect(Collectors.toList());
     }
@@ -81,7 +81,7 @@ public class BrokerOperations {
         }
     }
 
-    private Map<TopicPartition, ListOffsetsResultInfo> getLatestOffsets(AdminClient client, List<TopicPartition> partitions) {
+    private Map<TopicPartition, ListOffsetsResultInfo> getEndOffsets(AdminClient client, List<TopicPartition> partitions) {
         try {
             ListOffsetsResult listOffsetsResult = client.listOffsets(
                     partitions.stream().collect(toMap(Function.identity(), p -> OffsetSpec.latest())));
