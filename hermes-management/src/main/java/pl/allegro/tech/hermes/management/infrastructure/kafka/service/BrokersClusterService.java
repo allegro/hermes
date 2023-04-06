@@ -150,6 +150,7 @@ public class BrokersClusterService {
         Map<TopicPartition, Long> endOffsets = consumer.endOffsets(topicPartitions);
         Map<TopicPartition, OffsetAndMetadata> endOffsetsMetadata = buildOffsetsMetadata(endOffsets);
         consumer.commitSync(endOffsetsMetadata);
+        consumer.close();
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {

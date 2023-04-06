@@ -83,6 +83,10 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                   url: '/readiness',
                   templateUrl: 'partials/readiness.html'
                 })
+                .state('subscriptionOffsets', {
+                  url: '/subscription-offsets',
+                  templateUrl: 'partials/subscriptionOffsets.html'
+                })
                 .state('search', {
                     url: '/search?entity&property&operator&pattern',
                     templateUrl: 'partials/search.html'
