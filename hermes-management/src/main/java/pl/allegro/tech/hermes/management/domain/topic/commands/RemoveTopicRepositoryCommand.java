@@ -25,7 +25,7 @@ public class RemoveTopicRepositoryCommand extends RepositoryCommand<TopicReposit
     public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
         /*
         We don't want to do a rollback due to possible race conditions with creating a topic on Kafka.
-        It increases the possibility of discrepancies between Kafka and Zookeeper: topic exists in Kafka,
+        It increases the probability of discrepancies between Kafka and Zookeeper: topic exists in Kafka,
         but not in the Zookeeper and vice versa.
          */
     }
