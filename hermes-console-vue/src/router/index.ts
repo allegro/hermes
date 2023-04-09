@@ -13,6 +13,11 @@ const router = createRouter({
       name: 'topic',
       component: () => import('@/views/topic/TopicView.vue'),
     },
+    {
+      path: '/groups/:groupId/topics/:topicId/subscriptions/:subscriptionId',
+      name: 'subscription',
+      component: () => import('../views/subscription/SubscriptionView.vue'),
+    },
   ],
 });
 

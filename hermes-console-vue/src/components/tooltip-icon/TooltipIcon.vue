@@ -1,8 +1,7 @@
 <script setup lang="ts">
-  interface TooltipIconProps {
+  const props = defineProps<{
     content: string;
-  }
-  const props = defineProps<TooltipIconProps>();
+  }>();
 </script>
 
 <template>

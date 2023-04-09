@@ -7,24 +7,28 @@
 </script>
 
 <template>
-  <v-app-bar :elevation="2">
+  <v-app-bar :elevation="2" density="compact">
     <div class="header">
+      <!-- TODO: navigate to home -->
       <div class="header-left">
-        <img
-          v-if="!theme.current.value.dark"
-          class="header__logo"
-          src="@/assets/hermes-logo.png"
-          alt="Hermes"
-        />
-        <img
-          v-if="theme.current.value.dark"
-          class="header__logo"
-          src="@/assets/hermes-logo-dark-theme.png"
-          alt="Hermes"
-        />
-        <h1 class="header__name">Hermes console</h1>
+        <router-link to="/" custom v-slot="{ navigate }">
+          <img
+            @click="navigate"
+            v-if="!theme.current.value.dark"
+            class="header__logo"
+            src="@/assets/hermes-logo-header.png"
+            alt="Hermes"
+          />
+          <img
+            @click="navigate"
+            v-if="theme.current.value.dark"
+            class="header__logo"
+            src="@/assets/hermes-logo-header-dark-theme.png"
+            alt="Hermes"
+          />
+        </router-link>
         <!-- TODO: pass environment name from config -->
-        <environment-badge environment-name="prod" />
+        <environment-badge environment-name="dev" />
       </div>
       <theme-switch />
     </div>
@@ -42,11 +46,12 @@
       align-items: center;
       display: flex;
       flex-direction: row;
-      padding: 0 0.75rem;
       gap: 0.75rem;
+      padding: 0 0.75rem;
     }
 
     &__logo {
+      cursor: pointer;
       height: 30px;
     }
 

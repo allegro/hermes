@@ -7,7 +7,7 @@
       "description": "Events emitted when swipe-right notification is sent to a user.",
       "owner": {
         "source": "Service Catalog",
-        "id": "15397"
+        "id": "41"
       },
       "retentionTime": {
         "duration": 1,
@@ -38,17 +38,17 @@
           "value": "internal"
         }
       ],
-      "createdAt": 1634916162.877000000,
-      "modifiedAt": 1636451183.517000000
+      "createdAt": 1634916242.877000000,
+      "modifiedAt": 1636451113.517000000
     }
   ],
   "topicsMetrics": [
     {
       "id": "pl.allegro.public.group.DummyEvent",
-      "published": 1274,
-      "volume": 200116,
+      "published": 1984,
+      "volume": 200128,
       "rate": "100.00",
-      "deliveryRate": "99.1",
+      "deliveryRate": "95.1",
       "subscriptions": 1,
       "throughput": "0.0"
     }
