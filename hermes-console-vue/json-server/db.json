@@ -59,5 +59,229 @@
       "name": "your-super-service",
       "url": "https://google.pl?q=your-super-service"
     }
+  ],
+  "topicPreview": [
+    {
+      "content": "{\"__metadata\":{\"x-request-id\":\"65157233-0153-4256-91d6-12d5b60d47a2\",\"messageId\":\"32fdedf7-a425-4sad-ad85-dd3fec785ccd\",\"trace-sampled\":\"0\",\"timestamp\":\"1652257893073\"},\"waybillId\":{\"waybill\":\"1234567890000\",\"carrierId\":\"SAMPLE\"},\"notificationId\":\"142a3f4a-a56e-789c-b866-2a27b0d24cb1\",\"userId\":\"12345678\"}",
+      "truncated": false
+    },
+    {
+      "content": "{\"__metadata\":{\"x-request-id\":\"44a558de-5e12-456f-1d3c-vc55f7v3ffd7\",\"messageId\":\"b33fcc74-2016-24f9-3cb3-ebc4bg49e5e2\",\"trace-sampled\":\"0\",\"timestamp\":\"1652257893205\"},\"waybillId\":{\"waybill\":\"1234567890000\",\"carrierId\":\"SAMPLE\"},\"notificationId\":\"12a3456d-b78e-9efa-a150-28c2f9f2f747\",\"userId\":\"98765432\"}",
+      "truncated": false
+    }
+  ],
+  "topicSubscriptions": [
+    "service-a",
+    "service-b",
+    "service-c",
+    "service-d"
+  ],
+  "subscriptions": [
+    {
+      "id": "foobar-service",
+      "topicName": "pl.allegro.public.group.DummyEvent",
+      "name": "foobar-service",
+      "endpoint": "service://foobar-service/events/dummy-event",
+      "state": "ACTIVE",
+      "description": "Test Hermes endpoint",
+      "subscriptionPolicy": {
+        "rate": 10,
+        "messageTtl": 60,
+        "messageBackoff": 100,
+        "requestTimeout": 1000,
+        "socketTimeout": 0,
+        "sendingDelay": 0,
+        "backoffMultiplier": 1.0,
+        "backoffMaxIntervalInSec": 600,
+        "retryClientErrors": true,
+        "backoffMaxIntervalMillis": 600000
+      },
+      "trackingEnabled": false,
+      "trackingMode": "trackingOff",
+      "owner": {
+        "source": "Service Catalog",
+        "id": "42"
+      },
+      "monitoringDetails": {
+        "severity": "NON_IMPORTANT",
+        "reaction": ""
+      },
+      "contentType": "JSON",
+      "deliveryType": "SERIAL",
+      "filters": [
+        {
+          "type": "avropath",
+          "path": "foobar",
+          "matcher": "^FOO_BAR$|^BAZ_BAR$",
+          "matchingStrategy": "any"
+        },
+        {
+          "type": "avropath",
+          "path": ".foo.bar.baz",
+          "matcher": "true",
+          "matchingStrategy": "all"
+        }
+      ],
+      "mode": "ANYCAST",
+      "headers": [
+        {
+          "name": "X-My-Header",
+          "value": "boobar"
+        },
+        {
+          "name": "X-Another-Header",
+          "value": "foobar"
+        }
+      ],
+      "endpointAddressResolverMetadata": {},
+      "http2Enabled": false,
+      "subscriptionIdentityHeadersEnabled": false,
+      "autoDeleteWithTopicEnabled": false,
+      "createdAt": 1579507131.238,
+      "modifiedAt": 1672140855.813
+    },
+    {
+      "id": "barbaz-service",
+      "topicName": "pl.allegro.public.group.DummyEvent",
+      "name": "barbaz-service",
+      "endpoint": "service://barbaz-service/events/dummy-event",
+      "state": "SUSPENDED",
+      "description": "Another test Hermes endpoint",
+      "subscriptionPolicy": {
+        "messageTtl": 60,
+        "messageBackoff": 100,
+        "requestTimeout": 1000,
+        "socketTimeout": 0,
+        "retryClientErrors": true,
+        "backoffMaxIntervalMillis": 600000,
+        "batchSize": 42,
+        "batchTime": 500,
+        "batchVolume": 1024
+      },
+      "trackingEnabled": false,
+      "trackingMode": "trackingOff",
+      "owner": {
+        "source": "Service Catalog",
+        "id": "42"
+      },
+      "monitoringDetails": {
+        "severity": "NON_IMPORTANT",
+        "reaction": ""
+      },
+      "contentType": "JSON",
+      "deliveryType": "BATCH",
+      "filters": [
+        {
+          "type": "avropath",
+          "path": "foobar",
+          "matcher": "^FOO_BAR$|^BAZ_BAR$",
+          "matchingStrategy": "any"
+        }
+      ],
+      "mode": "ANYCAST",
+      "headers": [],
+      "endpointAddressResolverMetadata": {},
+      "http2Enabled": false,
+      "subscriptionIdentityHeadersEnabled": false,
+      "autoDeleteWithTopicEnabled": false,
+      "createdAt": 1579507131.238,
+      "modifiedAt": 1672140855.813
+    }
+  ],
+  "subscriptionsHealth": [
+    {
+      "id": "foobar-service",
+      "status": "UNHEALTHY",
+      "problems": [
+        {
+          "code": "LAGGING",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "id": "barbaz-service",
+      "status": "UNHEALTHY",
+      "problems": [
+        {
+          "code": "LAGGING",
+          "description": ""
+        },
+        {
+          "code": "MALFUNCTIONING",
+          "description": ""
+        },
+        {
+          "code": "RECEIVING_MALFORMED_MESSAGES",
+          "description": ""
+        },
+        {
+          "code": "TIMING_OUT",
+          "description": ""
+        },
+        {
+          "code": "UNREACHABLE",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "subscriptionsMetrics": [
+    {
+      "id": "foobar-service",
+      "delivered": 39099,
+      "discarded": 2137086,
+      "volume": 1288032256,
+      "timeouts": "0.0",
+      "otherErrors": "0.0",
+      "codes2xx": "0",
+      "codes4xx": "0.0",
+      "codes5xx": "0.01",
+      "rate": "0",
+      "throughput": "8.31",
+      "batchRate": "0.0",
+      "lag": "9055513"
+    },
+    {
+      "id": "barbaz-service",
+      "delivered": 39042,
+      "discarded": 1371086,
+      "volume": 3038032125,
+      "timeouts": "0.0",
+      "otherErrors": "0.0",
+      "codes2xx": "0",
+      "codes4xx": "0.0",
+      "codes5xx": "0.01",
+      "rate": "0",
+      "throughput": "8.36",
+      "batchRate": "0.0",
+      "lag": "9060"
+    }
+  ],
+  "subscriptionUndeliveredMessages": [
+    {
+      "id": "foobar-service",
+      "timestamp": 1234567890,
+      "subscription": "foobar-service",
+      "topicName": "pl.allegro.public.group.DummyEvent",
+      "status": "DISCARDED",
+      "reason": "Message sending failed with status code: 500",
+      "message": "some message",
+      "partition": 7,
+      "offset": 217294378,
+      "cluster": "kafka-cluster"
+    },
+    {
+      "id": "foobar-service",
+      "timestamp": 9876543210,
+      "subscription": "foobar-service",
+      "topicName": "pl.allegro.public.group.DummyEvent",
+      "status": "DISCARDED",
+      "reason": "Message sending failed with status code: 500",
+      "message": "some message",
+      "partition": 8,
+      "offset": 217294395,
+      "cluster": "kafka-cluster"
+    }
   ]
 }

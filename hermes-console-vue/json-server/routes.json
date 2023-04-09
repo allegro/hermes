@@ -1,4 +1,7 @@
 {
   "/topics/:id/metrics": "/topicsMetrics/:id",
-  "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id"
+  "/topics/:id/preview": "/topicPreview",
+  "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id",
+  "/topics/:id/subscriptions": "/topicSubscriptions",
+  "/topics/:topicName/subscriptions/:id": "/subscriptions/:id"
 }

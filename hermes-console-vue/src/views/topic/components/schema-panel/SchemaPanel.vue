@@ -1,12 +1,9 @@
 <script setup lang="ts">
-interface Props {
-  schema: string;
-}
+  const props = defineProps<{
+    schema: string;
+  }>();
 
-const { schema } = defineProps<Props>();
-
-type messageShowType = "raw" | "formatted";
-const niceJson = JSON.parse(schema);
+  const niceJson = JSON.parse(props.schema);
 </script>
 
 <template>
@@ -22,11 +19,11 @@ const niceJson = JSON.parse(schema);
 </template>
 
 <style scoped lang="scss">
-.raw-schema-snippet {
-  line-height: 1.4;
-  max-height: 500px;
-  overflow-y: scroll;
-  overflow-x: scroll;
-  border: #cccccc 1px solid;
-}
+  .raw-schema-snippet {
+    line-height: 1.4;
+    max-height: 500px;
+    overflow-y: scroll;
+    overflow-x: scroll;
+    border: #cccccc 1px solid;
+  }
 </style>

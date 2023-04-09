@@ -2,11 +2,11 @@ import '@mdi/font/css/materialdesignicons.css';
 import 'vuetify/styles';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { createApp } from 'vue';
+import { createI18n } from 'vue-i18n';
 import { createVuetify } from 'vuetify';
 import App from './App.vue';
+import messages from './i18n/messages';
 import router from './router';
-import { createI18n } from "vue-i18n";
-import messages from "./i18n/messages";
 
 const vuetify = createVuetify({
   theme: {
@@ -42,7 +42,7 @@ const i18n = createI18n({
   legacy: false,
   locale: 'en-US',
   fallbackLocale: 'en-US',
-  messages: messages
+  messages: messages,
 });
 
 const app = createApp(App);

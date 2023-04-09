@@ -1,23 +1,19 @@
 <script setup lang="ts">
-
-interface Props {
-  title: string;
-}
-
-const { title } = defineProps<Props>();
-
+  const props = defineProps<{
+    title: string;
+  }>();
 </script>
 
 <template>
   <v-card>
     <template #title>
       <p class="font-weight-bold">
-        {{ title }}
+        {{ props.title }}
       </p>
     </template>
     <v-table density="compact">
       <tbody>
-      <slot></slot>
+        <slot></slot>
       </tbody>
     </v-table>
   </v-card>

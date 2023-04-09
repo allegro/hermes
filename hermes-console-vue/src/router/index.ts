@@ -11,7 +11,7 @@ const router = createRouter({
     {
       path: '/groups/:groupId/topics/:topicId',
       name: 'topic',
-      component: () => import('@/views/topic/TopicView.vue')
+      component: () => import('@/views/topic/TopicView.vue'),
     },
   ],
 });

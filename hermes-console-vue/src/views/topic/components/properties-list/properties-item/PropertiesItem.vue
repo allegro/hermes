@@ -1,19 +1,15 @@
 <script setup lang="ts">
-interface Props {
-  name: string;
-  value: any;
-}
-
-const { name, value } = defineProps<Props>();
+  const props = defineProps<{
+    name: string;
+    value: any;
+  }>();
 </script>
 
 <template>
   <div>
-    <span class="font-weight-bold">{{ name }}: </span>
-    <span>{{ value }}</span>
+    <span class="font-weight-bold">{{ props.name }}: </span>
+    <span>{{ props.value }}</span>
   </div>
 </template>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

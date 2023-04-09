@@ -1,7 +1,7 @@
 export function sendRequest<T>(url: string): Promise<T> {
   return fetch(url)
     .then(catchNotSuccessfulResponse)
-    .then(res => res.json())
+    .then((res) => res.json());
 }
 
 function catchNotSuccessfulResponse(response: Response): Response {
@@ -9,5 +9,5 @@ function catchNotSuccessfulResponse(response: Response): Response {
     return response;
   }
 
-  throw new Error(`Request failed with status: ${response.status}`)
+  throw new Error(`Request failed with status: ${response.status}`);
 }

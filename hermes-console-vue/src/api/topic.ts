@@ -67,3 +67,8 @@ export interface TopicMetrics {
   subscriptions: number;
   throughput: string;
 }
+
+export interface MessagePreview {
+  content: string;
+  truncated: boolean;
+}

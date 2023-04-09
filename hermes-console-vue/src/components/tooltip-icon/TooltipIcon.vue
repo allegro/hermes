@@ -1,8 +1,8 @@
 <script setup lang="ts">
-interface TooltipIconProps {
-  content: string;
-}
-const props = defineProps<TooltipIconProps>();
+  interface TooltipIconProps {
+    content: string;
+  }
+  const props = defineProps<TooltipIconProps>();
 </script>
 
 <template>
@@ -21,9 +21,9 @@ const props = defineProps<TooltipIconProps>();
 </template>
 
 <style scoped lang="scss">
-.tooltip {
-  &__icon {
-    cursor: pointer;
+  .tooltip {
+    &__icon {
+      cursor: pointer;
+    }
   }
-}
 </style>

@@ -1,34 +1,43 @@
 <script setup lang="ts">
-import type { TopicWithSchema } from "@/api/topic";
-import { Ack } from "@/api/topic";
-import KeyValueCard from "@/components/key-value-card/KeyValueCard.vue";
-import KeyValueCardItem from "@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue";
-import { useI18n } from "vue-i18n";
+  import { useI18n } from 'vue-i18n';
+  import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
+  import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
+  import type { TopicWithSchema } from '@/api/topic';
 
-interface Props {
-  topic: TopicWithSchema;
-}
+  const props = defineProps<{
+    topic: TopicWithSchema;
+  }>();
 
-const { topic } = defineProps<Props>();
+  const { t } = useI18n();
 
-const { t } = useI18n();
-
-const ackTexts = new Map<Ack, String>([
-  [Ack.ALL, "All replicas"],
-  [Ack.LEADER, "Leader only"],
-  [Ack.NONE, "None"]
-]);
-const offlineRetentionText = topic.offlineStorage.retentionTime.infinite ? "infinite" : `${ topic.offlineStorage.retentionTime.duration } days`;
-const authorizedPublishers = topic.auth.publishers.length === 0 ? "Not set" : topic.auth.publishers.join(", ");
-const labels = topic.labels.map((label) => label.value).join(", ");
-const retentionTime = `${ topic.retentionTime.duration } ${ topic.retentionTime.retentionUnit.toLowerCase() }`;
-const ackText = ackTexts.get(topic.ack);
+  const offlineRetentionText = props.topic.offlineStorage.retentionTime.infinite
+    ? 'infinite'
+    : `${props.topic.offlineStorage.retentionTime.duration} days`;
+  const authorizedPublishers =
+    props.topic.auth.publishers.length === 0
+      ? 'Not set'
+      : props.topic.auth.publishers.join(', ');
+  const labels = props.topic.labels.map((label) => label.value).join(', ');
+  const retentionTime = `${
+    props.topic.retentionTime.duration
+  } ${props.topic.retentionTime.retentionUnit.toLowerCase()}`;
+  const ackText = t(
+    `topicView.properties.ackText.${props.topic.ack.toString().toLowerCase()}`,
+  );
+  const createdAt = new Date(props.topic.createdAt * 1000).toLocaleString();
+  const modifiedAt = new Date(props.topic.modifiedAt * 1000).toLocaleString();
 </script>
 
 <template>
   <key-value-card :title="t('topicView.properties.header')">
-    <key-value-card-item :name="t('topicView.properties.contentType')" :value="topic.contentType" />
-    <key-value-card-item :name="t('topicView.properties.labels')" :value="labels" />
+    <key-value-card-item
+      :name="t('topicView.properties.contentType')"
+      :value="topic.contentType"
+    />
+    <key-value-card-item
+      :name="t('topicView.properties.labels')"
+      :value="labels"
+    />
     <key-value-card-item
       :name="t('topicView.properties.acknowledgement')"
       :value="ackText"
@@ -39,13 +48,22 @@ const ackText = ackTexts.get(topic.ack);
       :value="retentionTime"
       :tooltip="t('topicView.properties.tooltips.retentionTime')"
     />
-    <key-value-card-item :name="t('topicView.properties.trackingEnabled')" :value="topic.trackingEnabled" />
-    <key-value-card-item :name="t('topicView.properties.maxMessageSize')" :value="topic.maxMessageSize" />
+    <key-value-card-item
+      :name="t('topicView.properties.trackingEnabled')"
+      :value="topic.trackingEnabled"
+    />
+    <key-value-card-item
+      :name="t('topicView.properties.maxMessageSize')"
+      :value="topic.maxMessageSize"
+    />
     <key-value-card-item
       :name="t('topicView.properties.schemaIdAwareSerializationEnabled')"
       :value="topic.schemaIdAwareSerializationEnabled"
     />
-    <key-value-card-item :name="t('topicView.properties.authorizationEnabled')" :value="topic.auth.enabled" />
+    <key-value-card-item
+      :name="t('topicView.properties.authorizationEnabled')"
+      :value="topic.auth.enabled"
+    />
     <key-value-card-item
       :name="t('topicView.properties.authorizedPublishers')"
       :value="authorizedPublishers"
@@ -71,8 +89,14 @@ const ackText = ackTexts.get(topic.ack);
       :value="offlineRetentionText"
       :tooltip="t('topicView.properties.tooltips.offlineRetention')"
     />
-    <key-value-card-item :name="t('topicView.properties.creationDate')" :value="topic.createdAt" />
-    <key-value-card-item :name="t('topicView.properties.modificationDate')" :value="topic.modifiedAt" />
+    <key-value-card-item
+      :name="t('topicView.properties.creationDate')"
+      :value="createdAt"
+    />
+    <key-value-card-item
+      :name="t('topicView.properties.modificationDate')"
+      :value="modifiedAt"
+    />
   </key-value-card>
 </template>
 
