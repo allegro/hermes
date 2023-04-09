@@ -3,16 +3,16 @@
 
   const props = defineProps<{
     name: string;
-    value: any;
+    nameHref?: string;
+    value?: any;
     tooltip?: string;
-    href?: string;
   }>();
 </script>
 
 <template>
   <tr>
     <th class="text-body-2 font-weight-light">
-      <a v-if="href" :href="href">{{ props.name }}</a>
+      <a v-if="nameHref" :href="nameHref">{{ props.name }}</a>
       <span v-else>{{ props.name }}</span>
     </th>
     <td class="text-body-2">
