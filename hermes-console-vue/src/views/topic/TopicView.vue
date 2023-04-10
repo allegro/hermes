@@ -6,22 +6,43 @@
   import StatisticsList from '@/views/topic/components/metrics-list/MetricsList.vue';
   import SubscriptionsList from './components/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/components/topic-header/TopicHeader.vue';
+  import { useRoute } from 'vue-router';
+  import { useI18n } from 'vue-i18n';
+  import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
 
-  const topicName = 'pl.allegro.public.group.DummyEvent';
+  const { t } = useI18n();
+  const route = useRoute();
+  const { groupId, topicName } = route.params as Record<string, string>;
   const { topic, owner, subscriptions } = useTopic(topicName);
+  const breadcrumbsItems = [
+    {
+      title: t('subscription.subscriptionBreadcrumbs.home'),
+      href: '/',
+    },
+    {
+      title: t('subscription.subscriptionBreadcrumbs.groups'),
+      href: '/groups',
+    },
+    {
+      title: groupId,
+      href: `/groups/${groupId}`,
+    },
+    {
+      title: topicName,
+      href: `/groups/${groupId}/topics/${topicName}`,
+    },
+  ];
 </script>
 
 <template>
   <v-container v-if="topic" class="d-flex flex-column topic-view__container">
     <div class="d-flex justify-space-between align-center">
-      <v-breadcrumbs
-        :items="['home', 'groups', 'pl.allegro.public.group', topicName]"
-      />
+      <header-breadcrumbs :items="breadcrumbsItems" />
     </div>
 
     <topic-header v-if="topic" :topic="topic" :owner="owner" />
 
-    <div class="topic__upper_panel">
+    <div class="topic-view__upper_panel">
       <statistics-list :topic="topicName" />
       <properties-list :topic="topic" />
     </div>
@@ -39,7 +60,7 @@
     row-gap: 8pt;
   }
 
-  .topic__upper_panel {
+  .topic-view__upper_panel {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     grid-gap: 8pt;

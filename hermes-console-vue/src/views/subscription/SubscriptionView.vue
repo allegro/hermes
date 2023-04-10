@@ -13,13 +13,15 @@
   import PropertiesCard from '@/views/subscription/properties-card/PropertiesCard.vue';
   import ServiceResponseMetrics from '@/views/subscription/service-response-metrics/ServiceResponseMetrics.vue';
   import ShowEventTrace from '@/views/subscription/show-event-trace/ShowEventTrace.vue';
-  import SubscriptionBreadcrumbs from '@/views/subscription/subscription-breadcrumbs/SubscriptionBreadcrumbs.vue';
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
+  import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
 
   const route = useRoute();
-  const params = route.params as Record<string, string>;
-  const { groupId, subscriptionId, topicId } = params;
+  const { groupId, subscriptionId, topicName } = route.params as Record<
+    string,
+    string
+  >;
 
   const { t } = useI18n();
 
@@ -31,20 +33,37 @@
     subscriptionLastUndeliveredMessage,
     error,
     loading,
-  } = useSubscription(topicId, subscriptionId);
+  } = useSubscription(topicName, subscriptionId);
 
   const authorized = true;
+  const breadcrumbsItems = [
+    {
+      title: t('subscription.subscriptionBreadcrumbs.home'),
+      href: '/',
+    },
+    {
+      title: t('subscription.subscriptionBreadcrumbs.groups'),
+      href: '/groups',
+    },
+    {
+      title: groupId,
+      href: `/groups/${groupId}`,
+    },
+    {
+      title: topicName,
+      href: `/groups/${groupId}/topics/${topicName}`,
+    },
+    {
+      title: subscriptionId,
+    },
+  ];
 </script>
 
 <template>
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <subscription-breadcrumbs
-          :group-id="groupId"
-          :topic-id="topicId"
-          :subscription-id="subscriptionId"
-        />
+        <header-breadcrumbs :items="breadcrumbsItems" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
@@ -67,7 +86,7 @@
       </v-row>
 
       <v-row dense>
-        <v-col md="6">
+        <v-col md="6" class="d-flex flex-column row-gap-2">
           <metrics-card :subscription-metrics="subscriptionMetrics" />
           <service-response-metrics />
           <manage-messages-card />

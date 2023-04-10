@@ -9,12 +9,12 @@ const router = createRouter({
       component: () => import('@/views/home/HomeView.vue'),
     },
     {
-      path: '/groups/:groupId/topics/:topicId',
+      path: '/groups/:groupId/topics/:topicName',
       name: 'topic',
       component: () => import('@/views/topic/TopicView.vue'),
     },
     {
-      path: '/groups/:groupId/topics/:topicId/subscriptions/:subscriptionId',
+      path: '/groups/:groupId/topics/:topicName/subscriptions/:subscriptionId',
       name: 'subscription',
       component: () => import('../views/subscription/SubscriptionView.vue'),
     },

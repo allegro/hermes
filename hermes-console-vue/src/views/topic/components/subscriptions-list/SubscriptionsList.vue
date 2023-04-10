@@ -7,11 +7,12 @@
 
   const subscriptionItems = computed(() =>
     props.subscriptions.map((subscription) => {
+      const currentUrl = window.location.href;
       return {
         name: subscription,
         color: 'green',
         statusText: 'active',
-        href: `a/subscriptions/${subscription}`,
+        href: `${currentUrl}/subscriptions/${subscription}`,
       };
     }),
   );
