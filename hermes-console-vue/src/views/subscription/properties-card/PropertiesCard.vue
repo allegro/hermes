@@ -3,8 +3,8 @@
   import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
   import { useI18n } from 'vue-i18n';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
-  import type { Subscription } from '@/api/subscription';
   import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
+  import type { Subscription } from '@/api/subscription';
 
   const props = defineProps<{
     subscription: Subscription;

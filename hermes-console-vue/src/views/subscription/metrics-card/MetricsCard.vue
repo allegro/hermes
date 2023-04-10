@@ -2,8 +2,8 @@
   import { formatNumber } from '@/utils/number-formatter/number-formatter';
   import { useI18n } from 'vue-i18n';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
-  import type { SubscriptionMetrics } from '@/api/subscription-metrics';
   import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
+  import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
   const props = defineProps<{
     subscriptionMetrics: SubscriptionMetrics;
