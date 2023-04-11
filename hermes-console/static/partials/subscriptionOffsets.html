@@ -17,12 +17,12 @@
                 <div class="row">
                     <div class="col-md-6 padding-lr-2">
                         <div class="form-group">
-                            <input name="subscrptionFullName" id="pattern" class="form-control" placeholder="topicName.subscriptionName"
-                                   ng-model="subscriptionFullName" required />
+                            <input name="subscriptionFullName" class="form-control" placeholder="topicName.subscriptionName"
+                                   ng-model="subscriptionFullName" required pattern="(.+)\.(.+)\.(.+)"/>
                         </div>
                     </div>
                     <div class="col-md-2 padding-lr-2">
-                        <button type="submit" class="btn btn-primary" ng-disabled="searchForm.$invalid" ng-click="moveOffsets()">Move</button>
+                        <button type="submit" class="btn btn-primary" ng-disabled="moveOffsetsForm.$invalid" ng-click="moveOffsets()">Move</button>
                     </div>
                 </div>
             </div>

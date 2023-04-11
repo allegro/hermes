@@ -151,6 +151,9 @@ public class BrokersClusterService {
         Map<TopicPartition, OffsetAndMetadata> endOffsetsMetadata = buildOffsetsMetadata(endOffsets);
         consumer.commitSync(endOffsetsMetadata);
         consumer.close();
+
+        logger.info("Successfully moved offset to the end position for subscription {} and consumer group {}",
+                subscription.getQualifiedName(), kafkaNamesMapper.toConsumerGroupId(subscription));
     }
 
     private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds) throws ExecutionException, InterruptedException {

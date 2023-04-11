@@ -2,7 +2,7 @@ var service = angular.module('hermes.subscriptionOffsets.service', ['hermes.disc
 
 repository.factory('SubscriptionService', ['DiscoveryService', '$resource',
     function (discovery, $resource) {
-        var subscriptionOffsetsEndpoint = $resource(discovery.resolve('/topic/:topic/subscriptions/:subscriptionName/moveOffsetsToTheEnd'), null, {
+        var subscriptionOffsetsEndpoint = $resource(discovery.resolve('/topics/:topicName/subscriptions/:subscriptionName/moveOffsetsToTheEnd'), null, {
             query: {
                 method: 'POST',
                 isArray: true
@@ -11,7 +11,7 @@ repository.factory('SubscriptionService', ['DiscoveryService', '$resource',
 
         return {
             moveOffsets: function (topicName, subscriptionName) {
-                return subscriptionOffsetsEndpoint.save({topicName: topicName, subscriptionName: subscriptionName}).$promise;
+                return subscriptionOffsetsEndpoint.save({topicName: topicName, subscriptionName: subscriptionName}, {}).$promise;
             }
         };
     }]);

@@ -4,6 +4,7 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
 import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.ConsumerGroupState;
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,9 @@ class ConsumerGroupsDescriber {
                 .stream()
                 .findFirst();
 
-        return description.map(d -> getKafkaConsumerGroup(topicPartitionOffsets, kafkaTopicContentTypes, d));
+        return description
+                .map(d -> d.state() != ConsumerGroupState.DEAD ? d : null)
+                .map(d -> getKafkaConsumerGroup(topicPartitionOffsets, kafkaTopicContentTypes, d));
     }
 
     private ConsumerGroup getKafkaConsumerGroup(Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsets,
