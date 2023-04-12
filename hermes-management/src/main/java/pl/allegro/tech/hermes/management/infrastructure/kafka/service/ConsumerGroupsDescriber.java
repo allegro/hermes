@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.BrokersClusterCommunicationException;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -26,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.BrokersClusterCommunicationException;
 
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
