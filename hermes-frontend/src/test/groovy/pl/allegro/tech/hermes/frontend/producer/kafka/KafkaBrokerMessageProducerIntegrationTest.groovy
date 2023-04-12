@@ -48,6 +48,8 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     static Integer NUMBER_OF_PARTITION = 3
+    static Integer MIN_IN_SYNC_REPLICAS_ACK_LEADER = 1
+    static Integer MIN_IN_SYNC_REPLICAS_ACK_ALL = 3
 
     @Shared
     KafkaContainer kafkaContainer = new KafkaContainer()
@@ -99,11 +101,12 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     def setup() {
         producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
-                new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties),
                         schemaProperties.isIdHeaderEnabled()
-                )
+                ),
+                MIN_IN_SYNC_REPLICAS_ACK_LEADER,
+                MIN_IN_SYNC_REPLICAS_ACK_ALL
         )
     }
 

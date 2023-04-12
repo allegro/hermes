@@ -20,16 +20,17 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
     private final Producers producers;
-    private final KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
+    private final TopicMinInSyncReplicasResolver topicMinInSyncReplicasResolver;
     private final HermesMetrics metrics;
     private final MessageToKafkaProducerRecordConverter messageConverter;
 
     public KafkaBrokerMessageProducer(Producers producers,
-                                      KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
                                       HermesMetrics metrics,
-                                      MessageToKafkaProducerRecordConverter messageConverter) {
+                                      MessageToKafkaProducerRecordConverter messageConverter,
+                                      int minInSyncReplicasAckLeader,
+                                      int minInSyncReplicasAckAll) {
         this.producers = producers;
-        this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
+        this.topicMinInSyncReplicasResolver = new TopicMinInSyncReplicasResolver(minInSyncReplicasAckLeader, minInSyncReplicasAckAll);
         this.metrics = metrics;
         this.messageConverter = messageConverter;
         producers.registerGauges(metrics);
@@ -58,7 +59,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
                 logger.warn("Topic {} has partitions without a leader.", kafkaTopicName);
                 return false;
             }
-            if (anyUnderReplicatedPartition(partitionInfos, kafkaTopicName)) {
+            if (anyUnderReplicatedPartition(partitionInfos, cachedTopic)) {
                 logger.warn("Topic {} has under replicated partitions.", kafkaTopicName);
                 return false;
             }
@@ -78,8 +79,8 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         return partitionInfos.stream().anyMatch(p -> p.leader() == null);
     }
 
-    private boolean anyUnderReplicatedPartition(List<PartitionInfo> partitionInfos, String kafkaTopicName) throws Exception {
-        int minInSyncReplicas = kafkaTopicMetadataFetcher.fetchMinInSyncReplicas(kafkaTopicName);
+    private boolean anyUnderReplicatedPartition(List<PartitionInfo> partitionInfos, CachedTopic cachedTopic) {
+        int minInSyncReplicas = topicMinInSyncReplicasResolver.resolveMinNumberReplicaForTopic(cachedTopic);
         return partitionInfos.stream().anyMatch(p -> p.inSyncReplicas().length < minInSyncReplicas);
     }
 

@@ -13,6 +13,10 @@ public class ReadinessCheckProperties {
 
     private Duration interval = Duration.ofSeconds(1);
 
+    private int minInSyncReplicasAckAll = 1;
+
+    private int minInSyncReplicasAckLeader = 1;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -35,5 +39,21 @@ public class ReadinessCheckProperties {
 
     public void setKafkaCheckEnabled(boolean kafkaCheckEnabled) {
         this.kafkaCheckEnabled = kafkaCheckEnabled;
+    }
+
+    public int getMinInSyncReplicasAckAll() {
+        return minInSyncReplicasAckAll;
+    }
+
+    public void setMinInSyncReplicasAckAll(int minInSyncReplicasAckAll) {
+        this.minInSyncReplicasAckAll = minInSyncReplicasAckAll;
+    }
+
+    public int getMinInSyncReplicasAckLeader() {
+        return minInSyncReplicasAckLeader;
+    }
+
+    public void setMinInSyncReplicasAckLeader(int minInSyncReplicasAckLeader) {
+        this.minInSyncReplicasAckLeader = minInSyncReplicasAckLeader;
     }
 }

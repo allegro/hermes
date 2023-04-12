@@ -31,7 +31,8 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KafkaBrokerMessageProducerTest {
-
+    private static final Integer MIN_IN_SYNC_REPLICAS_ACK_LEADER = 1;
+    private static final Integer MIN_IN_SYNC_REPLICAS_ACK_ALL = 3;
     private static final Long TIMESTAMP = 1L;
     private static final String PARTITION_KEY = "partition-key";
     private static final String MESSAGE_ID = "id";
@@ -54,9 +55,6 @@ public class KafkaBrokerMessageProducerTest {
     @Mock
     private HermesMetrics hermesMetrics;
 
-    @Mock
-    private KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
-
     private CachedTopic cachedTopic;
 
     private final SchemaProperties schemaProperties = new SchemaProperties();
@@ -65,8 +63,13 @@ public class KafkaBrokerMessageProducerTest {
     public void before() {
         cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
         MessageToKafkaProducerRecordConverter messageConverter =
-            new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
-        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, messageConverter);
+                new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
+        producer = new KafkaBrokerMessageProducer(
+                producers,
+                hermesMetrics,
+                messageConverter,
+                MIN_IN_SYNC_REPLICAS_ACK_LEADER,
+                MIN_IN_SYNC_REPLICAS_ACK_ALL);
     }
 
     @After
