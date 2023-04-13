@@ -13,6 +13,8 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FR
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_MIN_IN_SYNC_REPLICAS_ACK_ALL;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_MIN_IN_SYNC_REPLICAS_ACK_LEADER;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED;
 
@@ -94,6 +96,16 @@ public class HermesFrontendInstance {
 
         public Starter kafkaCheckDisabled() {
             frontend.overrideProperty(FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED, false);
+            return this;
+        }
+
+        public Starter minInSyncReplicasAckAll(Integer minInSyncReplicas) {
+            frontend.overrideProperty(FRONTEND_READINESS_MIN_IN_SYNC_REPLICAS_ACK_ALL, minInSyncReplicas);
+            return this;
+        }
+
+        public Starter minInSyncReplicasAckLeader(Integer minInSyncReplicas) {
+            frontend.overrideProperty(FRONTEND_READINESS_MIN_IN_SYNC_REPLICAS_ACK_LEADER, minInSyncReplicas);
             return this;
         }
 

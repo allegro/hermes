@@ -11,6 +11,8 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_READINESS_CHECK_ENABLED = "frontend.readiness.check.enabled";
     public static String FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED = "frontend.readiness.check.kafkaCheckEnabled";
     public static String FRONTEND_READINESS_CHECK_INTERVAL_SECONDS = "frontend.readiness.check.interval";
+    public static String FRONTEND_READINESS_MIN_IN_SYNC_REPLICAS_ACK_LEADER = "frontend.readiness.check.minInSyncReplicasAckLeader";
+    public static String FRONTEND_READINESS_MIN_IN_SYNC_REPLICAS_ACK_ALL = "frontend.readiness.check.minInSyncReplicasAckAll";
     public static String FRONTEND_AUTHENTICATION_MODE = "frontend.handlers.authentication.mode";
     public static String FRONTEND_AUTHENTICATION_ENABLED = "frontend.handlers.authentication.enabled";
     public static String FRONTEND_KEEP_ALIVE_HEADER_ENABLED = "frontend.handlers.keepAliveHeader.enabled";

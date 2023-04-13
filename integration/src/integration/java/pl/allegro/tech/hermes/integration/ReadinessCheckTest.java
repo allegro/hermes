@@ -95,6 +95,8 @@ public class ReadinessCheckTest extends IntegrationTest {
         HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
+                .minInSyncReplicasAckAll(3)
+                .minInSyncReplicasAckLeader(1)
                 .kafkaCheckEnabled()
                 .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
                 .kafkaConnectionString(kafkaClusterOne.getBootstrapServersForExternalClients())

@@ -121,6 +121,8 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
             frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
             frontendStarter.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, true);
             frontendStarter.overrideProperty(FrontendConfigurationProperties.GRAPHITE_PORT, 18023);
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_READINESS_MIN_IN_SYNC_REPLICAS_ACK_LEADER, 1);
+            frontendStarter.overrideProperty(FrontendConfigurationProperties.FRONTEND_READINESS_MIN_IN_SYNC_REPLICAS_ACK_ALL, 1);
             frontendStarter.start();
 
             for (ITestNGMethod method : context.getAllTestMethods()) {
