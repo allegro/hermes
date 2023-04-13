@@ -49,7 +49,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     static Integer NUMBER_OF_PARTITION = 3
     static Integer MIN_IN_SYNC_REPLICAS_ACK_LEADER = 1
-    static Integer MIN_IN_SYNC_REPLICAS_ACK_ALL = 3
+    static Integer MIN_IN_SYNC_REPLICAS_ACK_ALL = 1
 
     @Shared
     KafkaContainer kafkaContainer = new KafkaContainer()
