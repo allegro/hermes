@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
@@ -27,6 +28,11 @@ public class ReadinessCheckTest extends IntegrationTest {
                         .withAck(ALL)
                         .build()
         );
+    }
+
+    @AfterMethod
+    public void cleanUp() {
+        kafkaClusterOne.makeClusterOperational();
     }
 
     @Test
@@ -95,7 +101,7 @@ public class ReadinessCheckTest extends IntegrationTest {
         HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
-                .minInSyncReplicasAckAll(2)
+                .minInSyncReplicasAckAll(2) // If you increase this parameter, the Frontend will need more time to be ready
                 .minInSyncReplicasAckLeader(1)
                 .kafkaCheckEnabled()
                 .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
