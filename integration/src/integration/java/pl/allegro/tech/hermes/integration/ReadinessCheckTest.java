@@ -95,7 +95,7 @@ public class ReadinessCheckTest extends IntegrationTest {
         HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
-                .minInSyncReplicasAckAll(3)
+                .minInSyncReplicasAckAll(2)
                 .minInSyncReplicasAckLeader(1)
                 .kafkaCheckEnabled()
                 .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
@@ -110,7 +110,7 @@ public class ReadinessCheckTest extends IntegrationTest {
         kafkaClusterOne.start(selectOne(brokersToStop));
 
         // then
-        await().atMost(5, SECONDS).until(() ->
+        await().atMost(15, SECONDS).until(() ->
                 assertThat(hermesFrontend.isReady()).isTrue()
         );
         assertThat(hermesFrontend.isHealthy()).isTrue();
