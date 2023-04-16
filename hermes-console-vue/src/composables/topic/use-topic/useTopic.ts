@@ -34,7 +34,7 @@ export function useTopic(topicName: string) {
 }
 
 const fetchTopic = (topicName: string): ResponsePromise<TopicWithSchema> =>
-  axios.get(`http://localhost:3000/topics/${topicName}`);
+  axios.get(`/topics/${topicName}`);
 
 const fetchTopicOwner = (ownerId: string): ResponsePromise<Owner> =>
-  axios.get(`http://localhost:3000/owners/sources/Service Catalog/${ownerId}`);
+  axios.get(`/owners/sources/Service Catalog/${ownerId}`);

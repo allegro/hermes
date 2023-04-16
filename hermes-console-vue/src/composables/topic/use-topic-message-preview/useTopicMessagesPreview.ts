@@ -22,4 +22,4 @@ export function useTopicMessagesPreview(topicName: string) {
 const fetchTopicMessagesPreview = (
   topicName: string,
 ): ResponsePromise<Array<MessagePreview>> =>
-  axios.get(`http://localhost:3000/topics/${topicName}/preview`);
+  axios.get(`/topics/${topicName}/preview`);
