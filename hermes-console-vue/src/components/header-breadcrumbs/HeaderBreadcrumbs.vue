@@ -10,7 +10,7 @@
 </script>
 
 <template>
-  <v-breadcrumbs :items="items" density="compact" />
+  <v-breadcrumbs :items="props.items" density="compact" />
 </template>
 
 <style scoped lang="scss"></style>

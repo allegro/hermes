@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
-  import { useTopicMetrics } from '@/composables/topic/useTopicMetrics';
+  import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
 

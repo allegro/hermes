@@ -1,9 +1,10 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
-  import { useSubscription } from '@/composables/use-subscription/useSubscription';
+  import { useSubscription } from '@/composables/topic-subcriptions/use-subscription/useSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
+  import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
   import HeadersCard from '@/views/subscription/headers-card/HeadersCard.vue';
   import HealthProblemsAlerts from '@/views/subscription/health-problems-alerts/HealthProblemsAlerts.vue';
   import LastUndeliveredMessage from '@/views/subscription/last-undelivered-message/LastUndeliveredMessage.vue';
@@ -15,7 +16,6 @@
   import ShowEventTrace from '@/views/subscription/show-event-trace/ShowEventTrace.vue';
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
-  import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
 
   const route = useRoute();
   const { groupId, subscriptionId, topicName } = route.params as Record<

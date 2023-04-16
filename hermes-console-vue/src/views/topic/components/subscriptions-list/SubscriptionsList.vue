@@ -1,18 +1,26 @@
 <script setup lang="ts">
   import { computed } from 'vue';
+  import { State } from '@/api/subscription';
+  import type { Subscription } from '@/api/subscription';
 
   const props = defineProps<{
-    subscriptions: string[];
+    subscriptions: Subscription[];
   }>();
+
+  const statusTextColor: Record<State, String> = {
+    [State.ACTIVE]: 'green',
+    [State.PENDING]: 'orange',
+    [State.SUSPENDED]: 'red',
+  };
 
   const subscriptionItems = computed(() =>
     props.subscriptions.map((subscription) => {
       const currentUrl = window.location.href;
       return {
-        name: subscription,
-        color: 'green',
-        statusText: 'active',
-        href: `${currentUrl}/subscriptions/${subscription}`,
+        name: subscription.name,
+        color: statusTextColor[subscription.state],
+        statusText: subscription.state,
+        href: `${currentUrl}/subscriptions/${subscription.name}`,
       };
     }),
   );

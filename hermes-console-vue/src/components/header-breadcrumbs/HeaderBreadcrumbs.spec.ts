@@ -1,6 +1,6 @@
+import { expect } from 'vitest';
 import { render } from '@/utils/test-utils';
 import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
-import { expect } from 'vitest';
 
 describe('HeaderBreadcrumbs', () => {
   const props = {

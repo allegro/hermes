@@ -1,19 +1,22 @@
 <script async setup lang="ts">
-  import { useTopic } from '@/composables/topic/useTopic';
+  import { useI18n } from 'vue-i18n';
+  import { useRoute } from 'vue-router';
+  import { useSubscriptionsList } from '@/composables/topic-subcriptions/use-subscriptions-list/useSubscriptionsList';
+  import { useTopic } from '@/composables/topic/use-topic/useTopic';
+  import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
   import MessagesPreview from '@/views/topic/components/messages-preview/MessagesPreview.vue';
   import PropertiesList from '@/views/topic/components/properties-list/PropertiesList.vue';
   import SchemaPanel from '@/views/topic/components/schema-panel/SchemaPanel.vue';
   import StatisticsList from '@/views/topic/components/metrics-list/MetricsList.vue';
   import SubscriptionsList from './components/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/components/topic-header/TopicHeader.vue';
-  import { useRoute } from 'vue-router';
-  import { useI18n } from 'vue-i18n';
-  import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
 
   const { t } = useI18n();
   const route = useRoute();
   const { groupId, topicName } = route.params as Record<string, string>;
-  const { topic, owner, subscriptions } = useTopic(topicName);
+  const { topic, owner } = useTopic(topicName);
+  const { subscriptions } = useSubscriptionsList(topicName);
+
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
@@ -40,7 +43,7 @@
       <header-breadcrumbs :items="breadcrumbsItems" />
     </div>
 
-    <topic-header v-if="topic" :topic="topic" :owner="owner" />
+    <topic-header v-if="owner" :topic="topic" :owner="owner" />
 
     <div class="topic-view__upper_panel">
       <statistics-list :topic="topicName" />

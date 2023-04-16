@@ -5,7 +5,7 @@ import {
   dummyUndeliveredMessage,
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
-import { useSubscription } from '@/composables/use-subscription/useSubscription';
+import { useSubscription } from '@/composables/topic-subcriptions/use-subscription/useSubscription';
 import { waitFor } from '@testing-library/vue';
 import axios from 'axios';
 import type { Mocked } from 'vitest';
