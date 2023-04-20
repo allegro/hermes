@@ -9,7 +9,7 @@
 
 <template>
   <v-alert
-    :title="props.title"
+    :title="props.title ?? ''"
     :text="props.text"
     variant="elevated"
     :type="props.type"

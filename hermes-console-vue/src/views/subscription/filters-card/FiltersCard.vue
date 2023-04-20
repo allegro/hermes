@@ -3,7 +3,7 @@
   import type { MessageFilterSpecification } from '@/api/subscription';
 
   const props = defineProps<{
-    filters: MessageFilterSpecification[];
+    filters?: MessageFilterSpecification[];
   }>();
 
   const { t } = useI18n();
@@ -37,7 +37,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(filter, index) in props.filters" :key="index">
+        <tr v-for="(filter, index) in props.filters ?? []" :key="index">
           <td>{{ index + 1 }}</td>
           <td>{{ filter.type }}</td>
           <td>{{ filter.path }}{{ filter.header }}</td>

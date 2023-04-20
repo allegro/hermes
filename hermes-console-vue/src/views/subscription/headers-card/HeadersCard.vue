@@ -3,7 +3,7 @@
   import type { Header } from '@/api/subscription';
 
   const props = defineProps<{
-    headers: Header[];
+    headers?: Header[];
   }>();
 
   const { t } = useI18n();
@@ -31,7 +31,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(header, index) in props.headers" :key="index">
+        <tr v-for="(header, index) in props.headers ?? []" :key="index">
           <td>{{ index + 1 }}</td>
           <td>{{ header.name }}</td>
           <td>{{ header.value }}</td>

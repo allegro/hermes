@@ -4,8 +4,10 @@
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
 
   const props = defineProps<{
-    undeliveredMessages: SentMessageTrace[];
+    undeliveredMessages?: SentMessageTrace[];
   }>();
+
+  const undeliveredMessages = (props.undeliveredMessages ?? []).slice(0, 100);
 
   const { t } = useI18n();
 </script>
@@ -39,10 +41,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="(message, index) in props.undeliveredMessages.slice(0, 100)"
-          :key="index"
-        >
+        <tr v-for="(message, index) in undeliveredMessages" :key="index">
           <td>{{ index + 1 }}</td>
           <td>{{ message.messageId }}</td>
           <td>{{ message.status }}</td>

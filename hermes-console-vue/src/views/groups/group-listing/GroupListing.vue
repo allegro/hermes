@@ -8,13 +8,13 @@
   const { t } = useI18n();
 
   const props = defineProps<{
-    groups: Group[];
+    groups?: Group[];
     filter?: string;
   }>();
 
   const filteredGroups = computed(() => {
-    return props.groups.filter(
-      (group) => !props.filter || group.name.indexOf(props.filter) !== -1,
+    return (props.groups ?? []).filter(
+      (group) => !props.filter || group.name.includes(props.filter),
     );
   });
 
