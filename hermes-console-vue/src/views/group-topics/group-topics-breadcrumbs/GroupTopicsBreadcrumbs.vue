@@ -18,7 +18,7 @@
     },
     {
       title: props.groupId,
-      href: `/groups/${props.groupId}/`,
+      href: `/groups/${props.groupId}`,
     },
   ];
 </script>

@@ -1,9 +1,19 @@
+import { beforeEach } from 'vitest';
 import { dummySubscription } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
 import { State } from '@/api/subscription';
+import router from '@/router';
 import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
 
 describe('SubscriptionMetadata', () => {
+  beforeEach(async () => {
+    await router.push(
+      '/groups/pl.allegro.public.group' +
+        '/topics/pl.allegro.public.group.DummyEvent' +
+        '/subscriptions/foobar-service',
+    );
+  });
+
   it('should render subscription metadata box', () => {
     // given
     const props = {

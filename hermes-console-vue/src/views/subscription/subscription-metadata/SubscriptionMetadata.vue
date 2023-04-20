@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { State } from '@/api/subscription';
   import { useI18n } from 'vue-i18n';
+  import { useRoute } from 'vue-router';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Subscription } from '@/api/subscription';
 
@@ -9,6 +10,7 @@
     authorized: boolean;
   }>();
 
+  const route = useRoute();
   const { t } = useI18n();
 </script>
 
@@ -53,7 +55,7 @@
         />
         <v-btn
           v-if="props.authorized"
-          to="./diagnostics"
+          :to="`${route.path}/diagnostics`"
           color="green"
           prepend-icon="mdi-doctor"
         >

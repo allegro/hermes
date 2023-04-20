@@ -2,9 +2,13 @@ import { render } from '@/utils/test-utils';
 import GroupTopicsBreadcrumbs from '@/views/group-topics/group-topics-breadcrumbs/GroupTopicsBreadcrumbs.vue';
 
 describe('GroupTopicsBreadcrumbs', () => {
+  const props = {
+    groupId: 'pl.allegro.foo',
+  };
+
   it('should render `home` breadcrumb with an anchor to a home page', () => {
     // given
-    const { getByText } = render(GroupTopicsBreadcrumbs);
+    const { getByText } = render(GroupTopicsBreadcrumbs, { props });
 
     // when
     const element = getByText(
@@ -17,7 +21,7 @@ describe('GroupTopicsBreadcrumbs', () => {
 
   it('should render `group` breadcrumb with anchor to groups listing', () => {
     // given
-    const { getByText } = render(GroupTopicsBreadcrumbs);
+    const { getByText } = render(GroupTopicsBreadcrumbs, { props });
 
     // when
     const element = getByText(

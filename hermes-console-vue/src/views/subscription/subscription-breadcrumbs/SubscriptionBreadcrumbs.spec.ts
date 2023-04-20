@@ -42,7 +42,7 @@ describe('SubscriptionBreadcrumbs', () => {
     const element = getByText('pl.allegro.public.group') as HTMLAnchorElement;
 
     // then
-    expect(element).toHaveAttribute('href', '/groups/pl.allegro.public.group/');
+    expect(element).toHaveAttribute('href', '/groups/pl.allegro.public.group');
   });
 
   it('should render a breadcrumb with an anchor to topic page', () => {
@@ -57,7 +57,7 @@ describe('SubscriptionBreadcrumbs', () => {
     // then
     expect(element).toHaveAttribute(
       'href',
-      '/groups/pl.allegro.public.group/topics/pl.allegro.public.group.DummyEvent/',
+      '/groups/pl.allegro.public.group/topics/pl.allegro.public.group.DummyEvent',
     );
   });
 });
