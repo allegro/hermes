@@ -1,4 +1,103 @@
 const en_US = {
+  consistency: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about consistency',
+    },
+    breadcrumbs: {
+      home: 'home',
+      title: 'consistency',
+    },
+    inconsistentTopics: {
+      noTopics: 'No inconsistent topics found',
+      appliedFilter: '(applied filter: “{filter}”)',
+      heading: 'Topics existing on kafka cluster but not present in hermes',
+      actions: {
+        delete: 'Remove',
+        search: 'Search inconsistent topics...',
+      },
+      listing: {
+        index: '#',
+        name: 'Topic Name',
+      },
+    },
+  },
+  consumerGroups: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about consumerGroups',
+    },
+    title: 'Consumer Groups',
+    groupId: 'GroupId: ',
+    breadcrumbs: {
+      home: 'home',
+      groups: 'groups',
+      title: 'consumer groups',
+    },
+    listing: {
+      type: 'Type',
+      partition: 'Partition',
+      currentOffset: 'Current Offset',
+      endOffset: 'End Offset',
+      lag: 'Lag',
+      host: 'Host: ',
+    },
+  },
+  constraints: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about constraints',
+    },
+    topicConstraints: {
+      heading: 'Topic constraints',
+      actions: {
+        create: 'Add constraint',
+        search: 'Search topic constraints...',
+      },
+    },
+    subscriptionConstraints: {
+      heading: 'Subscription constraints',
+      actions: {
+        create: 'Add constraint',
+        search: 'Search subscription constraints...',
+      },
+    },
+    constraintsListing: {
+      index: '#',
+      name: 'Group name',
+      noGroups: 'No groups found',
+      topicsChip: 'topics: ',
+      appliedFilter: '(applied filter: “{filter}”)',
+    },
+    breadcrumbs: {
+      home: 'home',
+      title: 'constraints',
+    },
+    listing: {
+      index: '#',
+      name: 'Name',
+      noConstraints: 'No constraints found',
+      consumersNumberChip: 'consumers number: ',
+      appliedFilter: '(applied filter: “{filter}”)',
+    },
+  },
+  readiness: {
+    title: 'Datacenters Readiness',
+    turnOn: 'Turn on',
+    turnOff: 'Turn off',
+    index: '#',
+    datacenter: 'Datacenter',
+    isReady: 'Is ready',
+    control: 'Control',
+    breadcrumbs: {
+      home: 'home',
+      title: 'readiness',
+    },
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about datacenters readiness',
+    },
+  },
   groups: {
     actions: {
       create: 'New Group',
@@ -218,6 +317,7 @@ const en_US = {
       owners: 'Owners',
       unauthorizedTooltip: 'Sign in to edit the subscription',
       actions: {
+        diagnostics: 'Diagnostics',
         suspend: 'Suspend',
         activate: 'Activate',
         edit: 'Edit',
