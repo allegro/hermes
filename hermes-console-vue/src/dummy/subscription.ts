@@ -1,15 +1,15 @@
 import { ContentType } from '@/api/content-type';
+import type { Subscription } from '@/api/subscription';
 import {
   DeliveryType,
   Severity,
   State,
   SubscriptionMode,
 } from '@/api/subscription';
-import { ProblemCode, Status } from '@/api/subscription-health';
-import { SentMessageTraceStatus } from '@/api/subscription-undelivered';
-import type { SentMessageTrace } from '@/api/subscription-undelivered';
-import type { Subscription } from '@/api/subscription';
 import type { SubscriptionHealth } from '@/api/subscription-health';
+import { ProblemCode, Status } from '@/api/subscription-health';
+import type { SentMessageTrace } from '@/api/subscription-undelivered';
+import { SentMessageTraceStatus } from '@/api/subscription-undelivered';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
 export const dummySubscription: Subscription = {
@@ -69,6 +69,13 @@ export const dummySubscription: Subscription = {
   modifiedAt: 1672140855.813,
 };
 
+export const secondDummySubscription: Subscription = {
+  ...dummySubscription,
+  topicName: 'pl.allegro.public.group.DummyEventV2',
+  name: 'bazbar-service',
+  endpoint: 'service://bazbar-service/events/dummy-event',
+};
+
 export const dummySubscriptionMetrics: SubscriptionMetrics = {
   delivered: 39099,
   discarded: 2137086,
@@ -108,4 +115,9 @@ export const dummyUndeliveredMessage: SentMessageTrace = {
 
 export const dummyUndeliveredMessages: SentMessageTrace[] = [
   dummyUndeliveredMessage,
+];
+
+export const dummyTopicSubscriptionsList: string[] = [
+  'foobar-service',
+  'bazbar-service',
 ];

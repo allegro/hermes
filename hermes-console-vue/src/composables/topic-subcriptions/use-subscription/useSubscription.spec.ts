@@ -9,11 +9,16 @@ import { useSubscription } from '@/composables/topic-subcriptions/use-subscripti
 import { waitFor } from '@testing-library/vue';
 import axios from 'axios';
 import type { Mocked } from 'vitest';
+import { beforeEach } from 'vitest';
 
 vitest.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
 
 describe('useSubscription', () => {
+  beforeEach(() => {
+    vitest.resetAllMocks();
+  });
+
   it('should hit expected Hermes API endpoints', async () => {
     // given
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscription });

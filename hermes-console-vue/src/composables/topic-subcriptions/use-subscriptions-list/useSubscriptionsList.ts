@@ -5,26 +5,35 @@ import type { Subscription } from '@/api/subscription';
 
 export function useSubscriptionsList(topicName: string) {
   const subscriptions = ref<Subscription[]>();
-  const subscriptionsError = ref(false);
-  const subscriptionsAreLoading = computed(
-    () => !subscriptions.value && !subscriptionsError.value,
+  const error = ref(false);
+  const isLoading = computed(
+    () => subscriptions.value === undefined && error.value === false,
   );
 
   fetchTopicSubscriptions(topicName)
     .then((response) => {
       const detailedSubscriptionsPromises = response.data.map((subscription) =>
-        fetchTopicSubscriptionDetails(topicName, subscription),
+        fetchTopicSubscriptionDetails(topicName, subscription).catch(() => {
+          error.value = true;
+          return undefined;
+        }),
       );
-      Promise.all(detailedSubscriptionsPromises).then((responses) => {
-        subscriptions.value = responses.map((response) => response.data);
+
+      Promise.allSettled(detailedSubscriptionsPromises).then((responses) => {
+        subscriptions.value = responses
+          .filter(
+            (response) => response.status === 'fulfilled' && response.value,
+          )
+          .map((response) => response as { value: { data: Subscription } })
+          .map((response) => response.value.data);
       });
     })
-    .catch(() => (subscriptionsError.value = true));
+    .catch(() => (error.value = true));
 
   return {
     subscriptions,
-    subscriptionsError,
-    subscriptionsAreLoading,
+    error,
+    isLoading,
   };
 }
 

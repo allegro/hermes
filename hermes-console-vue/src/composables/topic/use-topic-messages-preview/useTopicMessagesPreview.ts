@@ -4,7 +4,7 @@ import type { MessagePreview } from '@/api/topic';
 import type { ResponsePromise } from '@/utils/axios-utils';
 
 export function useTopicMessagesPreview(topicName: string) {
-  const messages = ref<Array<MessagePreview>>();
+  const messages = ref<MessagePreview[]>();
   const error = ref(false);
   const isLoading = computed(() => !messages.value && !error.value);
 

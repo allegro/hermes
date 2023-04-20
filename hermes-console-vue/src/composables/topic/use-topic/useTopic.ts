@@ -1,8 +1,7 @@
 import { computed, ref } from 'vue';
-import axios from 'axios';
 import type { Owner } from '@/api/owner';
-import type { ResponsePromise } from '@/utils/axios-utils';
 import type { TopicWithSchema } from '@/api/topic';
+import { fetchTopic, fetchTopicOwner } from '@/api/hermes-client';
 
 export function useTopic(topicName: string) {
   const topic = ref<TopicWithSchema>();
@@ -32,9 +31,3 @@ export function useTopic(topicName: string) {
     ownerIsLoading,
   };
 }
-
-const fetchTopic = (topicName: string): ResponsePromise<TopicWithSchema> =>
-  axios.get(`/topics/${topicName}`);
-
-const fetchTopicOwner = (ownerId: string): ResponsePromise<Owner> =>
-  axios.get(`/owners/sources/Service Catalog/${ownerId}`);

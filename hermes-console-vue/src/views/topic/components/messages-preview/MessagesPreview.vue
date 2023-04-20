@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-message-preview/useTopicMessagesPreview';
+  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
   const props = defineProps<{
     topicName: string;
   }>();
