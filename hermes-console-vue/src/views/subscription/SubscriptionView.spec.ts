@@ -8,7 +8,7 @@ import {
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
-import { useSubscription } from '@/composables/topic-subcriptions/use-subscription/useSubscription';
+import { useSubscription } from '@/composables/use-subscription/useSubscription';
 import router from '@/router';
 import SubscriptionView from '@/views/subscription/SubscriptionView.vue';
 

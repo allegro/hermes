@@ -6,7 +6,12 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('@/views/home/HomeView.vue'),
+      component: () => import('../views/home/HomeView.vue'),
+    },
+    {
+      path: '/groups/:groupId/topics/:topicId/subscriptions/:subscriptionId',
+      name: 'subscription',
+      component: () => import('../views/subscription/SubscriptionView.vue'),
     },
     {
       path: '/groups/:groupId/topics/:topicName',
@@ -14,9 +19,25 @@ const router = createRouter({
       component: () => import('@/views/topic/TopicView.vue'),
     },
     {
-      path: '/groups/:groupId/topics/:topicName/subscriptions/:subscriptionId',
-      name: 'subscription',
-      component: () => import('../views/subscription/SubscriptionView.vue'),
+      path: '/readiness/',
+      name: 'readiness',
+      component: () => import('../views/admin/readiness/ReadinessView.vue'),
+    },
+    {
+      path: '/constraints/',
+      name: 'constraints',
+      component: () => import('../views/admin/constraints/ConstraintsView.vue'),
+    },
+    {
+      path: '/consistency/',
+      name: 'consistency',
+      component: () => import('../views/admin/consistency/ConsistencyView.vue'),
+    },
+    {
+      path: '/groups/:groupId/topics/:topicId/subscriptions/:subscriptionId/diagnostics/',
+      name: 'consumerGroups',
+      component: () =>
+        import('../views/admin/consumer-groups/ConsumerGroupsView.vue'),
     },
   ],
 });

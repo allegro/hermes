@@ -50,6 +50,28 @@ describe('SubscriptionMetadata', () => {
     ).toBeInTheDocument();
   });
 
+  it('should render diagnostics button', () => {
+    // given
+    const props = {
+      subscription: {
+        ...dummySubscription,
+        owner: {
+          ...dummySubscription.owner,
+          source: 'some source',
+        },
+      },
+      authorized: true,
+    };
+
+    // when
+    const { getByText } = render(SubscriptionMetadata, { props });
+
+    // then
+    expect(
+      getByText('subscription.subscriptionMetadata.actions.diagnostics'),
+    ).toBeInTheDocument();
+  });
+
   it('should render "activate" button and hide "suspend" if subscription is suspended', () => {
     // given
     const props = {

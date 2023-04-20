@@ -1,8 +1,12 @@
 {
+  "/readiness/datacenters": "/readinessDatacenters",
+  "/workload-constraints": "/constraints",
+  "/consistency/inconsistencies/topics": "/inconsistentTopics",
   "/topics/:id/metrics": "/topicsMetrics/:id",
   "/topics/:id/preview": "/topicPreview",
   "/topics/:id/subscriptions": "/topicSubscriptions",
   "/topics/:topicName/subscriptions/:id": "/subscriptions/:id",
+  "/topics/:topicName/subscriptions/:id/consumer-groups": "/consumerGroups",
   "/topics/:topicName/subscriptions/:id/health": "/subscriptionsHealth/:id",
   "/topics/:topicName/subscriptions/:id/metrics": "/subscriptionsMetrics/:id",
   "/topics/:topicName/subscriptions/:id/undelivered": "/subscriptionUndeliveredMessages",
