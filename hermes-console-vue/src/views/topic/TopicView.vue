@@ -7,15 +7,17 @@
   import MessagesPreview from '@/views/topic/components/messages-preview/MessagesPreview.vue';
   import PropertiesList from '@/views/topic/components/properties-list/PropertiesList.vue';
   import SchemaPanel from '@/views/topic/components/schema-panel/SchemaPanel.vue';
-  import StatisticsList from '@/views/topic/components/metrics-list/MetricsList.vue';
+  import MetricsList from '@/views/topic/components/metrics-list/MetricsList.vue';
   import SubscriptionsList from './components/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/components/topic-header/TopicHeader.vue';
+  import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
 
   const { t } = useI18n();
   const route = useRoute();
   const { groupId, topicName } = route.params as Record<string, string>;
   const { topic, owner } = useTopic(topicName);
   const { subscriptions } = useSubscriptionsList(topicName);
+  const { metrics } = useTopicMetrics(topicName);
 
   const breadcrumbsItems = [
     {
@@ -46,8 +48,8 @@
     <topic-header v-if="owner" :topic="topic" :owner="owner" />
 
     <div class="topic-view__upper_panel">
-      <statistics-list :topic="topicName" />
-      <properties-list :topic="topic" />
+      <metrics-list v-if="metrics" :metrics="metrics" />
+      <properties-list v-if="topic" :topic="topic" />
     </div>
 
     <schema-panel :schema="topic.schema" />

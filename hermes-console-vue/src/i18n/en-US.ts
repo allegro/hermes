@@ -159,6 +159,7 @@ const en_US = {
         leader: 'Leader only',
         none: 'None',
       },
+      authorizedPublishersNotSet: 'Not set',
     },
   },
   subscription: {

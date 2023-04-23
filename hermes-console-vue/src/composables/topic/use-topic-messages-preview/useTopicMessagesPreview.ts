@@ -1,7 +1,6 @@
 import { computed, ref } from 'vue';
-import axios from 'axios';
 import type { MessagePreview } from '@/api/topic';
-import type { ResponsePromise } from '@/utils/axios-utils';
+import { fetchTopicMessagesPreview } from '@/api/hermes-client';
 
 export function useTopicMessagesPreview(topicName: string) {
   const messages = ref<MessagePreview[]>();
@@ -18,8 +17,3 @@ export function useTopicMessagesPreview(topicName: string) {
     isLoading,
   };
 }
-
-const fetchTopicMessagesPreview = (
-  topicName: string,
-): ResponsePromise<Array<MessagePreview>> =>
-  axios.get(`/topics/${topicName}/preview`);

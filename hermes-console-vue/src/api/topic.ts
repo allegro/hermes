@@ -34,9 +34,9 @@ export interface RetentionTime {
 }
 
 export enum Ack {
-  NONE,
-  LEADER,
-  ALL,
+  NONE = 'NONE',
+  LEADER = 'LEADER',
+  ALL = 'ALL',
 }
 
 export interface PublishingAuth {

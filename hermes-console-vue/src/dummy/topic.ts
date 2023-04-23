@@ -44,6 +44,9 @@ export const dummyTopic: TopicWithSchema = {
     {
       value: 'internal',
     },
+    {
+      value: 'analytics',
+    },
   ],
   createdAt: 1634916242.877,
   modifiedAt: 1636451113.517,
@@ -67,7 +70,7 @@ export const dummyTopicMetrics: TopicMetrics = {
   published: 100,
   volume: 200,
   rate: '3.4',
-  deliveryRate: '3.4',
+  deliveryRate: '3.5',
   subscriptions: 2,
-  throughput: '3.4',
+  throughput: '3.6',
 };

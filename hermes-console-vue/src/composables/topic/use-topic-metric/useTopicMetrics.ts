@@ -1,7 +1,6 @@
 import { computed, ref } from 'vue';
-import axios from 'axios';
-import type { AxiosResponse } from 'axios';
 import type { TopicMetrics } from '@/api/topic';
+import { fetchTopicMetrics } from '@/api/hermes-client';
 
 export function useTopicMetrics(topic: string) {
   const metrics = ref<TopicMetrics>();
@@ -18,8 +17,3 @@ export function useTopicMetrics(topic: string) {
     isLoading,
   };
 }
-
-const fetchTopicMetrics = (
-  topic: String,
-): Promise<AxiosResponse<TopicMetrics>> =>
-  axios.get<TopicMetrics>(`/topics/${topic}/metrics`);

@@ -3,6 +3,7 @@
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
   import type { TopicWithSchema } from '@/api/topic';
+  import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
 
   const props = defineProps<{
     topic: TopicWithSchema;
@@ -15,7 +16,7 @@
     : `${props.topic.offlineStorage.retentionTime.duration} days`;
   const authorizedPublishers =
     props.topic.auth.publishers.length === 0
-      ? 'Not set'
+      ? t('topicView.properties.authorizedPublishersNotSet')
       : props.topic.auth.publishers.join(', ');
   const labels = props.topic.labels.map((label) => label.value).join(', ');
   const retentionTime = `${
@@ -24,8 +25,6 @@
   const ackText = t(
     `topicView.properties.ackText.${props.topic.ack.toString().toLowerCase()}`,
   );
-  const createdAt = new Date(props.topic.createdAt * 1000).toLocaleString();
-  const modifiedAt = new Date(props.topic.modifiedAt * 1000).toLocaleString();
 </script>
 
 <template>
@@ -91,11 +90,11 @@
     />
     <key-value-card-item
       :name="t('topicView.properties.creationDate')"
-      :value="createdAt"
+      :value="formatTimestamp(props.topic.createdAt)"
     />
     <key-value-card-item
       :name="t('topicView.properties.modificationDate')"
-      :value="modifiedAt"
+      :value="formatTimestamp(props.topic.modifiedAt)"
     />
   </key-value-card>
 </template>
