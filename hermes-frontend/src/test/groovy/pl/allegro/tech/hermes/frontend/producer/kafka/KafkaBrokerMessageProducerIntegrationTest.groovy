@@ -32,6 +32,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.time.Duration
 import java.util.stream.Collectors
@@ -49,7 +50,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     static Integer NUMBER_OF_PARTITION = 3
     static Integer MIN_IN_SYNC_REPLICAS_ACK_LEADER = 1
-    static Integer MIN_IN_SYNC_REPLICAS_ACK_ALL = 1
+    static Integer MIN_IN_SYNC_REPLICAS_ACK_ALL = 2
 
     @Shared
     KafkaContainer kafkaContainer = new KafkaContainer()
@@ -167,6 +168,26 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         partitionsWithMessagesData.size() == NUMBER_OF_PARTITION
     }
 
+    @Unroll
+    def "method isTopicAvailable should return #expectedResult"() {
+        // given
+        Topic topic = createAvroTopic(topicName, topicAck)
+        String kafkaTopicName = topic.getName().toString()
+        createTopicInKafka(kafkaTopicName, NUMBER_OF_PARTITION)
+        CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
+
+        when:
+        def result = brokerMessageProducer.isTopicAvailable(cachedTopic)
+
+        then:
+        result == expectedResult
+
+        where:
+        expectedResult | topicName                            | topicAck
+        false          | "pl.allegro.test.randomFooAckAll"    | Topic.Ack.ALL
+        true           | "pl.allegro.test.randomFooAckLeader" | Topic.Ack.LEADER
+    }
+
     private static AvroMessage generateAvroMessage(String partitionKey) {
         def avroUser = new AvroUser()
         return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema, partitionKey)
@@ -178,10 +199,11 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         )
     }
 
-    private static def createAvroTopic(String topicName) {
+    private static def createAvroTopic(String topicName, Topic.Ack ack = Topic.Ack.LEADER) {
         TopicBuilder.topic(topicName)
                 .migratedFromJsonType()
                 .withContentType(ContentType.AVRO)
+                .withAck(ack)
                 .build()
     }
 
