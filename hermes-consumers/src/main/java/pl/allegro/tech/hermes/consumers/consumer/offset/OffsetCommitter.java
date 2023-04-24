@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
-import com.codahale.metrics.Timer;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jctools.queues.MessagePassingQueue;
@@ -8,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +18,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
 
 /**
  * <p>Note on algorithm used to calculate offsets to actually commit.
@@ -104,7 +105,7 @@ public class OffsetCommitter implements Runnable {
 
     @Override
     public void run() {
-        try (Timer.Context c = metrics.timer("offset-committer.duration").time()) {
+        try (HermesTimerContext c = metrics.timer("offset-committer.duration").time()) {
             // committed offsets need to be drained first so that there is no possibility of new committed offsets
             // showing up after inflight queue is drained - this would lead to stall in committing offsets
             ReducingConsumer committedOffsetsReducer = processCommittedOffsets();

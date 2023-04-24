@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka
 
 import com.codahale.metrics.MetricRegistry
 import com.jayway.awaitility.Awaitility
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.NewTopic
@@ -100,7 +101,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
-                new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
+                new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler("localhost")),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties),
                         schemaProperties.isIdHeaderEnabled()
                 )

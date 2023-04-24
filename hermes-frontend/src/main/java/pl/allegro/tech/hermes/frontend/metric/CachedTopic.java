@@ -4,7 +4,6 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metered;
-import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
@@ -13,6 +12,8 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,10 +25,10 @@ public class CachedTopic {
     private final HermesMetrics hermesMetrics;
     private final boolean blacklisted;
 
-    private final Timer topicProducerLatencyTimer;
-    private final Timer globalProducerLatencyTimer;
+    private final HermesTimer topicProducerLatencyTimer;
+    private final HermesTimer globalProducerLatencyTimer;
 
-    private final Timer topicBrokerLatencyTimer;
+    private final HermesTimer topicBrokerLatencyTimer;
 
     private final Meter globalRequestMeter;
     private final Meter topicRequestMeter;
@@ -103,7 +104,7 @@ public class CachedTopic {
     }
 
     public StartedTimersPair startProducerLatencyTimers() {
-        return new StartedTimersPair(topicProducerLatencyTimer, globalProducerLatencyTimer);
+        return new StartedTimersPair(topicProducerLatencyTimer.time(), globalProducerLatencyTimer.time());
     }
 
     public void markStatusCodeMeter(int status) {
@@ -120,7 +121,7 @@ public class CachedTopic {
         topicRequestMeter.mark();
     }
 
-    public Timer.Context startBrokerLatencyTimer() {
+    public HermesTimerContext startBrokerLatencyTimer() {
         return topicBrokerLatencyTimer.time();
     }
 

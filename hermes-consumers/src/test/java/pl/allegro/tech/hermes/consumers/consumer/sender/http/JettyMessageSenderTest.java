@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import com.codahale.metrics.MetricRegistry;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -70,6 +71,7 @@ public class JettyMessageSenderTest {
                                 new ThreadPoolMetrics(
                                     new HermesMetrics(
                                             new MetricRegistry(),
+                                            new SimpleMeterRegistry(),
                                             new PathsCompiler("localhost")
                                     )
                                 )

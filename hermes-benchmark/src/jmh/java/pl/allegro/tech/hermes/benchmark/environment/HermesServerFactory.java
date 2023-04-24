@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.benchmark.environment;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.undertow.server.HttpHandler;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
@@ -49,7 +50,7 @@ class HermesServerFactory {
 
     static HermesServer provideHermesServer() throws IOException {
         ThroughputLimiter throughputLimiter = (exampleTopic, throughput) -> quotaConfirmed();
-        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
+        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler(""));
         TopicsCache topicsCache = new InMemoryTopicsCache(hermesMetrics, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);

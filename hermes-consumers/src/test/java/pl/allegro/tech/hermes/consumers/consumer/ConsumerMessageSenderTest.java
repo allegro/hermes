@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +20,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.NoOpConsumerNodeLoadRegistry;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.nio.charset.StandardCharsets;
@@ -70,10 +71,10 @@ public class ConsumerMessageSenderTest {
     private HermesMetrics hermesMetrics;
 
     @Mock
-    private Timer consumerLatencyTimer;
+    private HermesTimer consumerLatencyTimer;
 
     @Mock
-    private Timer.Context consumerLatencyTimerContext;
+    private HermesTimerContext consumerLatencyTimerContext;
 
     @Mock
     private Meter failedMeter;

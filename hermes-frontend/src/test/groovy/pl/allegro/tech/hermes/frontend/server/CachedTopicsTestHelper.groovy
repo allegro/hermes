@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.server
 
 import com.codahale.metrics.MetricRegistry
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic
@@ -13,7 +14,7 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 
 class CachedTopicsTestHelper {
 
-    static HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))
+    static HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler("localhost"))
 
     static CachedTopic cachedTopic(String name) {
         def kafkaTopics = new KafkaTopics(new KafkaTopic(KafkaTopicName.valueOf(name), ContentType.JSON))

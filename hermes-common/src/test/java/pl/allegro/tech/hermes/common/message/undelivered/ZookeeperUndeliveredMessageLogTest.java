@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.message.undelivered;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +28,7 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
 
     private final ZookeeperPaths paths = new ZookeeperPaths("/hermes");
 
-    private final HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"));
+    private final HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler("host"));
 
     private final ZookeeperUndeliveredMessageLog log = new ZookeeperUndeliveredMessageLog(
             zookeeperClient,

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted
 
 import com.codahale.metrics.MetricRegistry
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.Constraints
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
@@ -633,7 +634,7 @@ class WeightedWorkBalancerTest extends Specification {
                                                             SubscriptionProfiles subscriptionProfiles) {
         CurrentLoadProvider currentLoadProvider = new CurrentLoadProvider()
         currentLoadProvider.updateProfiles(subscriptionProfiles)
-        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
+        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler("host"))
         WeightedWorkloadMetrics workloadMetrics = new WeightedWorkloadMetrics(hermesMetrics)
         return new WeightedWorkBalancer(
                 clock,

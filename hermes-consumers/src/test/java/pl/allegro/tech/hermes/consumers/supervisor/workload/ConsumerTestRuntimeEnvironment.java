@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -105,7 +106,7 @@ class ConsumerTestRuntimeEnvironment {
 
         this.workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(curator, objectMapper, zookeeperPaths);
 
-        this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
+        this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler("localhost"));
         this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, kafkaProperties.getClusterName());
         this.zookeeperProperties = new ZookeeperProperties();
     }

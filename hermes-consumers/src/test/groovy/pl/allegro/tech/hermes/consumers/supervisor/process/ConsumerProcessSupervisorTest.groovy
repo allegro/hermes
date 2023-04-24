@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.process
 import com.codahale.metrics.MetricRegistry
 import com.jayway.awaitility.Awaitility
 import com.jayway.awaitility.core.ConditionFactory
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
@@ -64,7 +65,7 @@ class ConsumerProcessSupervisorTest extends Specification {
                 return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
         }
 
-        metrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))
+        metrics = new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler("localhost"))
 
         supervisor = new ConsumerProcessSupervisor(
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),

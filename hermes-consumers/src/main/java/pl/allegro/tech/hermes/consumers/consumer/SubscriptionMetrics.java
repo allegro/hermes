@@ -2,12 +2,12 @@ package pl.allegro.tech.hermes.consumers.consumer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
@@ -115,7 +115,7 @@ public class SubscriptionMetrics {
         metrics.decrementInflightCounter(subscription);
     }
 
-    public Timer subscriptionLatencyTimer() {
+    public HermesTimer subscriptionLatencyTimer() {
         return metrics.timer(SUBSCRIPTION_LATENCY, subscription.getTopicName(), subscription.getName());
     }
 
@@ -123,7 +123,7 @@ public class SubscriptionMetrics {
         metrics.meter(FILTERED_METER, subscription.getTopicName(), subscription.getName()).mark();
     }
 
-    public Timer consumerIdleTimer() {
+    public HermesTimer consumerIdleTimer() {
         return metrics.timer(CONSUMER_IDLE_TIME, subscription.getTopicName(), subscription.getName());
     }
 

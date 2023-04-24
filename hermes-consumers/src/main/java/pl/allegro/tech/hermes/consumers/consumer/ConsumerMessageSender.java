@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
@@ -16,6 +15,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.net.URI;
 import java.time.Clock;
@@ -41,7 +42,7 @@ public class ConsumerMessageSender {
     private final Clock clock;
     private final InflightsPool inflight;
     private final SubscriptionLoadRecorder loadRecorder;
-    private final Timer consumerLatencyTimer;
+    private final HermesTimer consumerLatencyTimer;
     private final SerialConsumerRateLimiter rateLimiter;
     private final FutureAsyncTimeout async;
     private final int asyncTimeoutMs;
@@ -126,7 +127,7 @@ public class ConsumerMessageSender {
      */
     private void sendMessage(final Message message) {
         loadRecorder.recordSingleOperation();
-        Timer.Context timer = consumerLatencyTimer.time();
+        HermesTimerContext timer = consumerLatencyTimer.time();
         CompletableFuture<MessageSendingResult> response = messageSender.send(message);
 
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor)
@@ -256,9 +257,9 @@ public class ConsumerMessageSender {
     class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
 
         private final Message message;
-        private final Timer.Context timer;
+        private final HermesTimerContext timer;
 
-        public ResponseHandlingListener(Message message, Timer.Context timer) {
+        public ResponseHandlingListener(Message message, HermesTimerContext timer) {
             this.message = message;
             this.timer = timer;
         }

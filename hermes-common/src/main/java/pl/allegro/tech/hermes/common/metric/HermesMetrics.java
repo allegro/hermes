@@ -7,9 +7,11 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import io.micrometer.core.instrument.MeterRegistry;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
@@ -30,12 +32,15 @@ public class HermesMetrics {
     public static final String REPLACEMENT_CHAR = "_";
 
     private final MetricRegistry metricRegistry;
+    private final MeterRegistry micrometerRegistry;
     private final PathsCompiler pathCompiler;
 
     public HermesMetrics(
             MetricRegistry metricRegistry,
+            MeterRegistry micrometerRegistry,
             PathsCompiler pathCompiler) {
         this.metricRegistry = metricRegistry;
+        this.micrometerRegistry = micrometerRegistry;
         this.pathCompiler = pathCompiler;
     }
 
@@ -43,16 +48,26 @@ public class HermesMetrics {
         return value.replaceAll("\\.", REPLACEMENT_CHAR);
     }
 
-    public Timer timer(String metric) {
-        return metricRegistry.timer(metricRegistryName(metric));
+    public HermesTimer timer(String metric) {
+        return HermesTimer.from(
+                micrometerRegistry.timer(metricRegistryName(metric)),
+                metricRegistry.timer(metricRegistryName(metric)));
     }
 
-    public Timer timer(String metric, TopicName topicName) {
-        return metricRegistry.timer(metricRegistryName(metric, topicName));
+    public HermesTimer timer(String metric, TopicName topicName) {
+        return HermesTimer.from(
+                micrometerRegistry.timer(metricRegistryName(metric),
+                        "group", escapeDots(topicName.getGroupName()), "topic", escapeDots(topicName.getName())),
+                metricRegistry.timer(metricRegistryName(metric, topicName)));
     }
 
-    public Timer timer(String metric, TopicName topicName, String name) {
-        return metricRegistry.timer(metricRegistryName(metric, topicName, name));
+    public HermesTimer timer(String metric, TopicName topicName, String subscriptionName) {
+        return HermesTimer.from(
+                micrometerRegistry.timer(metricRegistryName(metric),
+                        "group", escapeDots(topicName.getGroupName()), "topic", escapeDots(topicName.getName()),
+                        "subscription", escapeDots(subscriptionName)),
+                metricRegistry.timer(metricRegistryName(metric, topicName, subscriptionName))
+        );
     }
 
     public Meter meter(String metric) {

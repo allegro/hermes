@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
 import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class ZookeeperConsumerNodeLoadRegistryTest extends ZookeeperBaseTest {
             Duration.ofMillis(50),
             new TestExecutorServiceFactory(scheduledExecutorService),
             clock,
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler("host")),
             100_000
     );
 

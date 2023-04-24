@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
-import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -10,6 +9,8 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOff
 
 import java.util.Optional;
 import java.util.Set;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
+
 
 public class ThrottlingMessageReceiver implements MessageReceiver {
 
@@ -37,7 +38,7 @@ public class ThrottlingMessageReceiver implements MessageReceiver {
     }
 
     private void awaitUntilNextPoll() {
-        try (Timer.Context ctx = metrics.consumerIdleTimer().time()) {
+        try (HermesTimerContext ctx = metrics.consumerIdleTimer().time()) {
             Thread.sleep(idleTimeCalculator.increaseIdleTime());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();

@@ -2,15 +2,23 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.dropwizard.DropwizardConfig;
+import io.micrometer.core.instrument.dropwizard.DropwizardMeterRegistry;
+import io.micrometer.core.instrument.util.HierarchicalNameMapper;
+import io.micrometer.prometheus.PrometheusConfig;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
+import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -70,10 +78,14 @@ import java.time.Clock;
 import java.util.List;
 import javax.inject.Named;
 
+import static io.micrometer.core.instrument.Clock.SYSTEM;
+import static io.micrometer.core.instrument.util.HierarchicalNameMapper.DEFAULT;
+
 @Configuration
 @EnableConfigurationProperties({
         MetricsProperties.class,
         GraphiteProperties.class,
+        PrometheusProperties.class,
         SchemaProperties.class,
         ZookeeperClustersProperties.class,
         KafkaClustersProperties.class,
@@ -283,8 +295,9 @@ public class CommonConfiguration {
 
     @Bean
     public HermesMetrics hermesMetrics(MetricRegistry metricRegistry,
+                                       MeterRegistry micrometerRegistry,
                                        PathsCompiler pathCompiler) {
-        return new HermesMetrics(metricRegistry, pathCompiler);
+        return new HermesMetrics(metricRegistry, micrometerRegistry, pathCompiler);
     }
 
     @Bean
@@ -296,6 +309,38 @@ public class CommonConfiguration {
         return new MetricRegistryFactory(metricsProperties, graphiteProperties, counterStorage, instanceIdResolver, moduleName)
                 .provide();
     }
+
+    @Bean
+    PrometheusConfig prometheusConfig(PrometheusProperties properties) {
+        return new PrometheusConfigAdapter(properties);
+    }
+
+
+    @Bean
+    public MeterRegistry micrometerRegistry(MetricsProperties metricsProperties,
+                                            CounterStorage counterStorage,
+                                            InstanceIdResolver instanceIdResolver,
+                                            PrometheusConfig prometheusConfig,
+                                            @Named("moduleName") String moduleName) {
+        return new MicrometerRegistryFactory(
+                metricsProperties, counterStorage, instanceIdResolver, prometheusConfig, moduleName).provide();
+    }
+
+    //    @Bean
+    //    public DropwizardConfig dropwizardConfig() {
+    //        return new FrontendDropwizardConfig();
+    //    }
+
+    //    @Bean
+    //    public DropwizardMeterRegistry dropwizardMeterRegistry(DropwizardConfig config, MetricRegistry metricRegistry) {
+    //        return new FrontendDropwizardMeterRegistry(config, metricRegistry, DEFAULT, SYSTEM);
+    //    }
+    //
+    //    @Bean
+    //    @Primary
+    //    public MeterRegistry compositeMeterRegistry(List<MeterRegistry> registries) {
+    //        return new CompositeMeterRegistry(SYSTEM, registries);
+    //   }
 
     @Bean
     public PathsCompiler pathsCompiler(InstanceIdResolver instanceIdResolver) {

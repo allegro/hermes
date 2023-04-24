@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
@@ -21,7 +22,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 class DefaultErrorHandlerTest extends Specification {
 
     private OffsetQueue offsetQueue = new OffsetQueue(
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            new HermesMetrics(new MetricRegistry(), new SimpleMeterRegistry(), new PathsCompiler("host")),
             200_000
     )
 
