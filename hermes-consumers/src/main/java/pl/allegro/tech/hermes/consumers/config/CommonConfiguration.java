@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +16,7 @@ import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
-import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryFactory;
+import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -259,12 +260,12 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MeterRegistry micrometerRegistry(MetricsProperties metricsProperties,
-                                            CounterStorage counterStorage,
-                                            InstanceIdResolver instanceIdResolver,
-                                            PrometheusConfig prometheusConfig,
-                                            @Named("moduleName") String moduleName) {
-        return new MicrometerRegistryFactory(
+    public PrometheusMeterRegistry micrometerRegistry(MetricsProperties metricsProperties,
+                                                      CounterStorage counterStorage,
+                                                      InstanceIdResolver instanceIdResolver,
+                                                      PrometheusConfig prometheusConfig,
+                                                      @Named("moduleName") String moduleName) {
+        return new PrometheusMeterRegistryFactory(
                 metricsProperties, counterStorage, instanceIdResolver, prometheusConfig, moduleName).provide();
     }
 

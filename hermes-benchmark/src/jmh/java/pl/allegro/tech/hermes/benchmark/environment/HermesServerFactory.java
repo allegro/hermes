@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.benchmark.environment;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
@@ -72,8 +73,8 @@ class HermesServerFactory {
                 throughputLimiter,
                 null,
                 false,
-                null
-        );
+                null,
+                null);
     }
 
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,

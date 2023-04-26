@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
-import com.codahale.metrics.Timer;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import pl.allegro.tech.hermes.api.Topic;

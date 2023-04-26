@@ -3,22 +3,18 @@ package pl.allegro.tech.hermes.frontend.config;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.core.instrument.dropwizard.DropwizardConfig;
-import io.micrometer.core.instrument.dropwizard.DropwizardMeterRegistry;
-import io.micrometer.core.instrument.util.HierarchicalNameMapper;
 import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
-import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryFactory;
+import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -77,9 +73,6 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import java.time.Clock;
 import java.util.List;
 import javax.inject.Named;
-
-import static io.micrometer.core.instrument.Clock.SYSTEM;
-import static io.micrometer.core.instrument.util.HierarchicalNameMapper.DEFAULT;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -317,12 +310,12 @@ public class CommonConfiguration {
 
 
     @Bean
-    public MeterRegistry micrometerRegistry(MetricsProperties metricsProperties,
-                                            CounterStorage counterStorage,
-                                            InstanceIdResolver instanceIdResolver,
-                                            PrometheusConfig prometheusConfig,
-                                            @Named("moduleName") String moduleName) {
-        return new MicrometerRegistryFactory(
+    public PrometheusMeterRegistry micrometerRegistry(MetricsProperties metricsProperties,
+                                                      CounterStorage counterStorage,
+                                                      InstanceIdResolver instanceIdResolver,
+                                                      PrometheusConfig prometheusConfig,
+                                                      @Named("moduleName") String moduleName) {
+        return new PrometheusMeterRegistryFactory(
                 metricsProperties, counterStorage, instanceIdResolver, prometheusConfig, moduleName).provide();
     }
 

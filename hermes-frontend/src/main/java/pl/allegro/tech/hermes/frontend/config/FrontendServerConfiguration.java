@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -43,7 +44,8 @@ public class FrontendServerConfiguration {
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider,
-                                     TopicLoadingProperties topicLoadingProperties) {
+                                     TopicLoadingProperties topicLoadingProperties,
+                                     PrometheusMeterRegistry prometheusMeterRegistry) {
         return new HermesServer(
                 sslProperties,
                 hermesServerProperties,
@@ -54,7 +56,8 @@ public class FrontendServerConfiguration {
                 throughputLimiter,
                 topicMetadataLoadingJob,
                 topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
-                sslContextFactoryProvider);
+                sslContextFactoryProvider,
+                prometheusMeterRegistry);
     }
 
     @Bean
