@@ -7,7 +7,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import java.io.IOException;
@@ -20,16 +19,13 @@ class GooglePubSubClient {
     private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClient.class);
 
     private final Publisher publisher;
-    private final GooglePubSubMessageTransformer messageTransformer;
 
-    GooglePubSubClient(Publisher publisher, GooglePubSubMessageTransformer messageTransformer) {
+    GooglePubSubClient(Publisher publisher) {
         this.publisher = publisher;
-        this.messageTransformer = messageTransformer;
     }
 
-    void publish(Message message, CompletableFuture<MessageSendingResult> resultFuture)
+    void publish(PubsubMessage pubsubMessage, CompletableFuture<MessageSendingResult> resultFuture)
             throws IOException, ExecutionException, InterruptedException {
-        PubsubMessage pubsubMessage = messageTransformer.fromHermesMessage(message);
         ApiFuture<String> future = publisher.publish(pubsubMessage);
         ApiFutures.addCallback(future, new GooglePubSubMessageSentCallback(resultFuture), MoreExecutors.directExecutor());
     }
