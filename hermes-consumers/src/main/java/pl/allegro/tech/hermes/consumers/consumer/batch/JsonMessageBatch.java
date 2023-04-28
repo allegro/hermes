@@ -138,7 +138,7 @@ public class JsonMessageBatch implements MessageBatch {
     }
 
     @Override
-    public int size() {
+    public int getMessageCount() {
         return elements;
     }
 
@@ -165,6 +165,14 @@ public class JsonMessageBatch implements MessageBatch {
     @Override
     public int getCapacity() {
         return byteBuffer.capacity();
+    }
+
+    @Override
+    public int getSize() {
+        if (closed) {
+            return byteBuffer.limit();
+        }
+        return byteBuffer.position();
     }
 
     @Override
