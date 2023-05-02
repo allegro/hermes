@@ -46,14 +46,14 @@ public class SubscriptionMetrics {
     }
 
     public void markSuccess(MessageBatch batch, MessageSendingResult result) {
-        metrics.meter(METER).mark(batch.size());
-        metrics.meter(TOPIC_METER, subscription.getTopicName()).mark(batch.size());
-        metrics.meter(SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.size());
+        metrics.meter(METER).mark(batch.getMessageCount());
+        metrics.meter(TOPIC_METER, subscription.getTopicName()).mark(batch.getMessageCount());
+        metrics.meter(SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.getMessageCount());
         metrics.meter(SUBSCRIPTION_BATCH_METER, subscription.getTopicName(), subscription.getName()).mark();
-        metrics.meter(SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()).mark(batch.getCapacity());
+        metrics.meter(SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()).mark(batch.getSize());
         metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
-        metrics.counter(DELIVERED, subscription.getTopicName(), subscription.getName()).inc(batch.size());
-        metrics.decrementInflightCounter(subscription, batch.size());
+        metrics.counter(DELIVERED, subscription.getTopicName(), subscription.getName()).inc(batch.getMessageCount());
+        metrics.decrementInflightCounter(subscription, batch.getMessageCount());
         metrics.inflightTimeHistogram(subscription).update(batch.getLifetime());
     }
 
@@ -69,7 +69,7 @@ public class SubscriptionMetrics {
     }
 
     public void markFailure(MessageBatch batch, MessageSendingResult result) {
-        registerFailureMetrics(result, batch.getCapacity());
+        registerFailureMetrics(result, batch.getSize());
     }
 
     public void markFailure(Message message, MessageSendingResult result) {
@@ -98,11 +98,11 @@ public class SubscriptionMetrics {
     }
 
     public void markDiscarded(MessageBatch batch) {
-        metrics.meter(DISCARDED_METER).mark(batch.size());
-        metrics.meter(DISCARDED_TOPIC_METER, subscription.getTopicName()).mark(batch.size());
-        metrics.meter(DISCARDED_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.size());
-        metrics.counter(DISCARDED, subscription.getTopicName(), subscription.getName()).inc(batch.size());
-        metrics.decrementInflightCounter(subscription, batch.size());
+        metrics.meter(DISCARDED_METER).mark(batch.getMessageCount());
+        metrics.meter(DISCARDED_TOPIC_METER, subscription.getTopicName()).mark(batch.getMessageCount());
+        metrics.meter(DISCARDED_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.getMessageCount());
+        metrics.counter(DISCARDED, subscription.getTopicName(), subscription.getName()).inc(batch.getMessageCount());
+        metrics.decrementInflightCounter(subscription, batch.getMessageCount());
         metrics.inflightTimeHistogram(subscription).update(batch.getLifetime());
     }
 
