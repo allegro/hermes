@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
-import pl.allegro.tech.hermes.metrics.PathsCompiler
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
 import pl.allegro.tech.hermes.tracker.consumers.Trackers
 import spock.lang.Specification
 
@@ -21,7 +21,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 class DefaultErrorHandlerTest extends Specification {
 
     private OffsetQueue offsetQueue = new OffsetQueue(
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler("host")),
             200_000
     )
 

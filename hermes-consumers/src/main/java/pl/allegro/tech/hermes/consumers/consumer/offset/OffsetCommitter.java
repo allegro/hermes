@@ -1,13 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
-import com.codahale.metrics.Timer;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jctools.queues.MessagePassingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +84,8 @@ public class OffsetCommitter implements Runnable {
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
     private final MessageCommitter messageCommitter;
 
-    private final HermesMetrics metrics;
+    private final HermesMetrics oldMetrics;
+    private final MicrometerHermesMetrics micrometerMetrics;
 
     private final Set<SubscriptionPartitionOffset> inflightOffsets = new HashSet<>();
     private final Map<SubscriptionPartition, Long> maxCommittedOffsets = new HashMap<>();
@@ -93,18 +95,22 @@ public class OffsetCommitter implements Runnable {
             ConsumerPartitionAssignmentState partitionAssignmentState,
             MessageCommitter messageCommitter,
             int offsetCommitPeriodSeconds,
-            HermesMetrics metrics
+            HermesMetrics oldMetrics,
+            MicrometerHermesMetrics micrometerMetrics
     ) {
         this.offsetQueue = offsetQueue;
         this.partitionAssignmentState = partitionAssignmentState;
         this.messageCommitter = messageCommitter;
         this.offsetCommitPeriodSeconds = offsetCommitPeriodSeconds;
-        this.metrics = metrics;
+        this.oldMetrics = oldMetrics;
+        this.micrometerMetrics = micrometerMetrics;
     }
 
     @Override
     public void run() {
-        try (Timer.Context c = metrics.timer("offset-committer.duration").time()) {
+        try (HermesTimerContext c = HermesTimerContext.from(
+                micrometerMetrics.timer("offset_committer_duration"),
+                oldMetrics.timer("offset-committer.duration"))) {
             // committed offsets need to be drained first so that there is no possibility of new committed offsets
             // showing up after inflight queue is drained - this would lead to stall in committing offsets
             ReducingConsumer committedOffsetsReducer = processCommittedOffsets();
@@ -147,8 +153,8 @@ public class OffsetCommitter implements Runnable {
             committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
             messageCommitter.commitOffsets(offsetsToCommit);
 
-            metrics.counter("offset-committer.obsolete").inc(obsoleteCount);
-            metrics.counter("offset-committer.committed").inc(scheduledToCommitCount);
+            oldMetrics.counter("offset-committer.obsolete").inc(obsoleteCount);
+            oldMetrics.counter("offset-committer.committed").inc(scheduledToCommitCount);
 
             cleanupStoredOffsetsWithObsoleteTerms();
         } catch (Exception exception) {

@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties;
 import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
@@ -55,6 +56,9 @@ public class KafkaBrokerMessageProducerTest {
     private HermesMetrics hermesMetrics;
 
     @Mock
+    private MicrometerHermesMetrics micrometerHermesMetrics;
+
+    @Mock
     private KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
 
     private CachedTopic cachedTopic;
@@ -63,7 +67,7 @@ public class KafkaBrokerMessageProducerTest {
 
     @Before
     public void before() {
-        cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
+        cachedTopic = new CachedTopic(TOPIC, hermesMetrics, micrometerHermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
         MessageToKafkaProducerRecordConverter messageConverter =
             new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
         producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, messageConverter);
@@ -125,7 +129,8 @@ public class KafkaBrokerMessageProducerTest {
     public void shouldUseEveryoneConfirmProducerForTopicWithAckAll() {
         //given
         Topic topic = topic("group.all").withAck(Topic.Ack.ALL).build();
-        CachedTopic cachedTopic = new CachedTopic(topic, hermesMetrics, kafkaNamesMapper.toKafkaTopics(topic));
+        CachedTopic cachedTopic = new CachedTopic(topic, hermesMetrics, micrometerHermesMetrics,
+                kafkaNamesMapper.toKafkaTopics(topic));
 
         //when
         producer.send(MESSAGE, cachedTopic, new DoNothing());

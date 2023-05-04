@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.metrics;
 
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.HOSTNAME;
 
 public class Gauges {
     public static final String PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE =

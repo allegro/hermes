@@ -24,7 +24,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeaders
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
@@ -70,7 +70,7 @@ public class JettyMessageSenderTest {
                                 new ThreadPoolMetrics(
                                     new HermesMetrics(
                                             new MetricRegistry(),
-                                            new PathsCompiler("localhost")
+                                            new MetricRegistryPathsCompiler("localhost")
                                     )
                                 )
                         ),

@@ -14,7 +14,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -45,7 +45,7 @@ public class ZookeeperCounterReporterTest {
     public static final long COUNT = 100L;
     public static final String GRAPHITE_PREFIX = "tech.hermes";
 
-    private static final PathsCompiler pathsCompiler = new PathsCompiler("localhost.domain");
+    private static final MetricRegistryPathsCompiler pathsCompiler = new MetricRegistryPathsCompiler("localhost.domain");
 
     public static final String METRIC_NAME_FOR_PUBLISHED = pathsCompiler.compile(PUBLISHED, pathContext()
             .withGroup(GROUP_NAME_UNDERSCORE).withTopic(TOPIC_NAME_UNDERSCORE).build());

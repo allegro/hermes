@@ -10,8 +10,8 @@ import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 import pl.allegro.tech.hermes.metrics.PathContext;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_BUFFER_AVAILABLE_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_BUFFER_TOTAL_BYTES;
@@ -30,11 +30,11 @@ public class HermesMetrics {
     public static final String REPLACEMENT_CHAR = "_";
 
     private final MetricRegistry metricRegistry;
-    private final PathsCompiler pathCompiler;
+    private final MetricRegistryPathsCompiler pathCompiler;
 
     public HermesMetrics(
             MetricRegistry metricRegistry,
-            PathsCompiler pathCompiler) {
+            MetricRegistryPathsCompiler pathCompiler) {
         this.metricRegistry = metricRegistry;
         this.pathCompiler = pathCompiler;
     }

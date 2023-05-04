@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
 import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +12,7 @@ import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.TestSubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 import pl.allegro.tech.hermes.test.helper.concurrent.ManuallyTriggeredScheduledExecutorService;
 import pl.allegro.tech.hermes.test.helper.concurrent.TestExecutorServiceFactory;
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock;
@@ -44,7 +45,7 @@ public class ZookeeperConsumerNodeLoadRegistryTest extends ZookeeperBaseTest {
             Duration.ofMillis(50),
             new TestExecutorServiceFactory(scheduledExecutorService),
             clock,
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler("host")),
             100_000
     );
 

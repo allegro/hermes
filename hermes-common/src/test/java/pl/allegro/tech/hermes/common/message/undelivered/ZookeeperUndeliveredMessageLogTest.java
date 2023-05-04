@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
 import java.util.Optional;
@@ -27,7 +27,8 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
 
     private final ZookeeperPaths paths = new ZookeeperPaths("/hermes");
 
-    private final HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"));
+    private final HermesMetrics hermesMetrics = new HermesMetrics(
+            new MetricRegistry(), new MetricRegistryPathsCompiler("host"));
 
     private final ZookeeperUndeliveredMessageLog log = new ZookeeperUndeliveredMessageLog(
             zookeeperClient,

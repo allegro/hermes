@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.KAFKA_CLUSTER;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.OAUTH_PROVIDER_NAME;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.SCHEMA_REPO_TYPE;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.GROUP;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.KAFKA_CLUSTER;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.OAUTH_PROVIDER_NAME;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.SCHEMA_REPO_TYPE;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.SUBSCRIPTION;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.TOPIC;
 
 public class Timers {
 

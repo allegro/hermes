@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
-import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.GROUP;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.SUBSCRIPTION;
+import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.TOPIC;
 
 public class Counters {
 

@@ -5,7 +5,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchQueueCommitter;
@@ -42,7 +42,7 @@ public class FrontendElasticsearchLogRepository
                                                IndexFactory indexFactory,
                                                String typeName,
                                                MetricRegistry metricRegistry,
-                                               PathsCompiler pathsCompiler) {
+                                               MetricRegistryPathsCompiler pathsCompiler) {
         super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
 
         this.elasticClient = elasticClient;
@@ -145,9 +145,9 @@ public class FrontendElasticsearchLogRepository
         private String typeName = SchemaManager.PUBLISHED_TYPE;
 
         private final MetricRegistry metricRegistry;
-        private final PathsCompiler pathsCompiler;
+        private final MetricRegistryPathsCompiler pathsCompiler;
 
-        public Builder(Client elasticClient, PathsCompiler pathsCompiler, MetricRegistry metricRegistry) {
+        public Builder(Client elasticClient, MetricRegistryPathsCompiler pathsCompiler, MetricRegistry metricRegistry) {
             this.elasticClient = elasticClient;
             this.pathsCompiler = pathsCompiler;
             this.metricRegistry = metricRegistry;

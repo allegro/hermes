@@ -5,7 +5,7 @@ import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkDistributionChanges
-import pl.allegro.tech.hermes.metrics.PathsCompiler
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock
 import spock.lang.Specification
 import spock.lang.Subject
@@ -23,7 +23,8 @@ class WeightedWorkBalancingListenerTest extends Specification {
     def weightWindowSize = Duration.ofMinutes(1)
     def currentLoadProvider = new CurrentLoadProvider()
     def metricsRegistry = new MetricRegistry()
-    def metrics = new WeightedWorkloadMetrics(new HermesMetrics(metricsRegistry, new PathsCompiler("host")))
+    def metrics = new WeightedWorkloadMetrics(
+            new HermesMetrics(metricsRegistry, new MetricRegistryPathsCompiler("host")))
 
     @Subject
     def listener = new WeightedWorkBalancingListener(

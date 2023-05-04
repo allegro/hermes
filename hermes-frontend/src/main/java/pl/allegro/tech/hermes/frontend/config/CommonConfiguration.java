@@ -2,17 +2,24 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
+import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
+import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
@@ -31,6 +38,7 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
+import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
@@ -63,17 +71,21 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstrai
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.time.Clock;
 import java.util.List;
 import javax.inject.Named;
 
+import static io.micrometer.core.instrument.Clock.SYSTEM;
+
 @Configuration
 @EnableConfigurationProperties({
-        MetricsProperties.class,
+        MetricRegistryProperties.class,
+        MicrometerRegistryProperties.class,
         GraphiteProperties.class,
+        PrometheusProperties.class,
         SchemaProperties.class,
         ZookeeperClustersProperties.class,
         KafkaClustersProperties.class,
@@ -283,29 +295,52 @@ public class CommonConfiguration {
 
     @Bean
     public HermesMetrics hermesMetrics(MetricRegistry metricRegistry,
-                                       PathsCompiler pathCompiler) {
-        return new HermesMetrics(metricRegistry, pathCompiler);
+                                       MetricRegistryPathsCompiler metricRegistryPathsCompiler) {
+        return new HermesMetrics(metricRegistry, metricRegistryPathsCompiler);
     }
 
     @Bean
-    public MetricRegistry metricRegistry(MetricsProperties metricsProperties,
+    public MicrometerHermesMetrics micrometerHermesMetrics(MeterRegistry meterRegistry) {
+        return new MicrometerHermesMetrics(meterRegistry);
+    }
+
+    @Bean
+    public MetricRegistry metricRegistry(MetricRegistryProperties metricRegistryProperties,
                                          GraphiteProperties graphiteProperties,
                                          CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
                                          @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(metricsProperties, graphiteProperties, counterStorage, instanceIdResolver, moduleName)
-                .provide();
+        return new MetricRegistryFactory(metricRegistryProperties, graphiteProperties, counterStorage,
+                instanceIdResolver, moduleName).provide();
     }
 
     @Bean
-    public PathsCompiler pathsCompiler(InstanceIdResolver instanceIdResolver) {
-        return new PathsCompiler(instanceIdResolver.resolve());
+    PrometheusConfig prometheusConfig(PrometheusProperties properties) {
+        return new PrometheusConfigAdapter(properties);
+    }
+
+    @Bean
+    public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryParameters micrometerRegistryParameters,
+                                                      PrometheusConfig prometheusConfig,
+                                                      @Named("moduleName") String moduleName) {
+        return new PrometheusMeterRegistryFactory(micrometerRegistryParameters, prometheusConfig, moduleName).provide();
+    }
+
+    @Bean
+    @Primary
+    public MeterRegistry compositeMeterRegistry(List<MeterRegistry> registries) {
+        return new CompositeMeterRegistry(SYSTEM, registries);
+    }
+
+    @Bean
+    public MetricRegistryPathsCompiler metricRegistryPathsCompiler(InstanceIdResolver instanceIdResolver) {
+        return new MetricRegistryPathsCompiler(instanceIdResolver.resolve());
     }
 
     @Bean
     public CounterStorage zookeeperCounterStorage(SharedCounter sharedCounter,
                                                   SubscriptionRepository subscriptionRepository,
-                                                  PathsCompiler pathsCompiler,
+                                                  MetricRegistryPathsCompiler pathsCompiler,
                                                   ZookeeperClustersProperties zookeeperClustersProperties,
                                                   DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
@@ -315,11 +350,11 @@ public class CommonConfiguration {
     @Bean
     public SharedCounter sharedCounter(CuratorFramework zookeeper,
                                        ZookeeperClustersProperties zookeeperClustersProperties,
-                                       MetricsProperties metricsProperties,
+                                       MetricRegistryProperties metricRegistryProperties,
                                        DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
         return new SharedCounter(zookeeper,
-                metricsProperties.getCounterExpireAfterAccess(),
+                metricRegistryProperties.getCounterExpireAfterAccess(),
                 zookeeperProperties.getBaseSleepTime(),
                 zookeeperProperties.getMaxRetries()
         );

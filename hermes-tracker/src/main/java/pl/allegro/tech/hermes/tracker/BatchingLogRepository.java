@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.tracker;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class BatchingLogRepository<T> {
 
     protected final MetricRegistry metricRegistry;
-    protected final PathsCompiler pathsCompiler;
+    protected final MetricRegistryPathsCompiler pathsCompiler;
     protected final String clusterName;
     protected final String hostname;
     protected BlockingQueue<T> queue;
@@ -19,7 +19,7 @@ public class BatchingLogRepository<T> {
                                  String clusterName,
                                  String hostname,
                                  MetricRegistry metricRegistry,
-                                 PathsCompiler pathsCompiler) {
+                                 MetricRegistryPathsCompiler pathsCompiler) {
         this.queue = new LinkedBlockingQueue<>(queueSize);
         this.clusterName = clusterName;
         this.hostname = hostname;

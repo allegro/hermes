@@ -2,10 +2,9 @@ package pl.allegro.tech.hermes.metrics;
 
 import org.apache.commons.lang.text.StrBuilder;
 
-public class PathsCompiler {
+public class MetricRegistryPathsCompiler {
 
     public static final String REPLACEMENT_CHAR = "_";
-
     public static final String HOSTNAME = "$hostname";
     public static final String GROUP = "$group";
     public static final String TOPIC = "$topic";
@@ -18,10 +17,9 @@ public class PathsCompiler {
     public static final String EXECUTOR_NAME = "$executor_name";
     public static final String OAUTH_PROVIDER_NAME = "$oauth_provider_name";
     public static final String SCHEMA_REPO_TYPE = "$schema_repo_type";
-
     private final String hostname;
 
-    public PathsCompiler(String hostname) {
+    public MetricRegistryPathsCompiler(String hostname) {
         this.hostname = escapeDots(hostname);
     }
 
@@ -37,7 +35,7 @@ public class PathsCompiler {
         context.getSubscription().ifPresent(s -> pathBuilder.replaceAll(SUBSCRIPTION, s));
         context.getKafkaTopic().ifPresent(k -> pathBuilder.replaceAll(KAFKA_TOPIC, k));
         context.getPartition().ifPresent(p -> pathBuilder.replaceAll(PARTITION, p.toString()));
-        context.getKafkaCluster().ifPresent(c -> pathBuilder.replaceAll(KAFKA_CLUSTER, c.toString()));
+        context.getKafkaCluster().ifPresent(c -> pathBuilder.replaceAll(KAFKA_CLUSTER, c));
         context.getHttpCode().ifPresent(c -> pathBuilder.replaceAll(HTTP_CODE, c.toString()));
         context.getHttpCodeFamily().ifPresent(cf -> pathBuilder.replaceAll(HTTP_CODE_FAMILY, cf));
         context.getExecutorName().ifPresent(c -> pathBuilder.replaceAll(EXECUTOR_NAME, c));

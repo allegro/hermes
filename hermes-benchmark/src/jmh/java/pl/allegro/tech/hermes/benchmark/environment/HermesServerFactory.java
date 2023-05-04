@@ -25,7 +25,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectSchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
@@ -49,7 +49,7 @@ class HermesServerFactory {
 
     static HermesServer provideHermesServer() throws IOException {
         ThroughputLimiter throughputLimiter = (exampleTopic, throughput) -> quotaConfirmed();
-        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
+        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler(""));
         TopicsCache topicsCache = new InMemoryTopicsCache(hermesMetrics, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
@@ -71,8 +71,8 @@ class HermesServerFactory {
                 throughputLimiter,
                 null,
                 false,
-                null
-        );
+                null,
+                null);
     }
 
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,
