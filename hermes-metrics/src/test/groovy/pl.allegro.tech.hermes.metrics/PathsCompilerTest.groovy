@@ -4,6 +4,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.*
 
 class PathsCompilerTest extends Specification {
 
@@ -12,7 +13,7 @@ class PathsCompilerTest extends Specification {
 
     def "should compile path with hostname"() {
         expect:
-        pathsCompiler.compile(PathsCompiler.HOSTNAME + ".counter") == "localhost_localdomain.counter"
+        pathsCompiler.compile(HOSTNAME + ".counter") == "localhost_localdomain.counter"
     }
 
     def "should compile path with path context"() {
@@ -25,7 +26,7 @@ class PathsCompilerTest extends Specification {
                 .build()
 
         when:
-        def compiled = pathsCompiler.compile("hermes.$PathsCompiler.GROUP.$PathsCompiler.TOPIC.$PathsCompiler.SUBSCRIPTION.$PathsCompiler.PARTITION.$PathsCompiler.HTTP_CODE", pathContext)
+        def compiled = pathsCompiler.compile("hermes.$GROUP.$TOPIC.$SUBSCRIPTION.$PARTITION.$HTTP_CODE", pathContext)
 
         then:
         compiled == "hermes.group.topic.subscription.0.201"
