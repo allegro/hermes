@@ -5,6 +5,7 @@ import org.apache.commons.lang.text.StrBuilder;
 public class PathsCompiler {
 
     public static final String REPLACEMENT_CHAR = "_";
+
     public static final String HOSTNAME = "$hostname";
     public static final String GROUP = "$group";
     public static final String TOPIC = "$topic";
@@ -17,6 +18,7 @@ public class PathsCompiler {
     public static final String EXECUTOR_NAME = "$executor_name";
     public static final String OAUTH_PROVIDER_NAME = "$oauth_provider_name";
     public static final String SCHEMA_REPO_TYPE = "$schema_repo_type";
+
     private final String hostname;
 
     public PathsCompiler(String hostname) {

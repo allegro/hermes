@@ -19,7 +19,6 @@ public class PrometheusMetricsHandler implements HttpHandler {
         response(exchange, OK, meterRegistry.scrape());
     }
 
-
     private void response(HttpServerExchange exchange, int status, String data) {
         exchange.setStatusCode(status);
         exchange.getResponseSender().send(data);

@@ -7,17 +7,8 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "consumer.prometheus")
 public class PrometheusProperties {
 
-    private boolean enabled = false;
     private Duration step = Duration.ofMinutes(1);
     private boolean descriptions = true;
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 
     public Duration getStep() {
         return this.step;
