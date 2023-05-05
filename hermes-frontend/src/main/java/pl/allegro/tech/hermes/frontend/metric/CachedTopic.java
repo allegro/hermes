@@ -24,7 +24,6 @@ public class CachedTopic {
     private final Topic topic;
     private final KafkaTopics kafkaTopics;
     private final HermesMetrics hermesMetrics;
-    private final MicrometerHermesMetrics micrometerHermesMetrics;
     private final boolean blacklisted;
 
     private final HermesTimer topicProducerLatencyTimer;
@@ -58,7 +57,6 @@ public class CachedTopic {
         this.topic = topic;
         this.kafkaTopics = kafkaTopics;
         this.hermesMetrics = oldHermesMetrics;
-        this.micrometerHermesMetrics = micrometerHermesMetrics;
         this.blacklisted = blacklisted;
 
         globalRequestMeter = oldHermesMetrics.meter(Meters.METER);
@@ -76,20 +74,20 @@ public class CachedTopic {
         topicThroughputMeter = oldHermesMetrics.meter(Meters.TOPIC_THROUGHPUT_BYTES, topic.getName());
 
         if (Topic.Ack.ALL.equals(topic.getAck())) {
-            topicProducerLatencyTimer = HermesTimer.from(
+            globalProducerLatencyTimer = HermesTimer.from(
                     micrometerHermesMetrics.timer("ack-all.global-latency"),
                     oldHermesMetrics.timer(Timers.ACK_ALL_LATENCY));
-            globalProducerLatencyTimer = HermesTimer.from(
+            topicProducerLatencyTimer = HermesTimer.from(
                     micrometerHermesMetrics.timer("ack-all.topic-latency", topic.getName()),
                     oldHermesMetrics.timer(Timers.ACK_ALL_TOPIC_LATENCY, topic.getName()));
             topicBrokerLatencyTimer = HermesTimer.from(
                     micrometerHermesMetrics.timer("ack-all.broker-latency"),
                     oldHermesMetrics.timer(Timers.ACK_ALL_BROKER_LATENCY));
         } else {
-            topicProducerLatencyTimer = HermesTimer.from(
+            globalProducerLatencyTimer = HermesTimer.from(
                     micrometerHermesMetrics.timer("ack-leader.global-latency"),
                     oldHermesMetrics.timer(Timers.ACK_LEADER_LATENCY));
-            globalProducerLatencyTimer = HermesTimer.from(
+            topicProducerLatencyTimer = HermesTimer.from(
                     micrometerHermesMetrics.timer("ack-leader.topic-latency", topic.getName()),
                     oldHermesMetrics.timer(Timers.ACK_LEADER_TOPIC_LATENCY, topic.getName()));
             topicBrokerLatencyTimer = HermesTimer.from(
