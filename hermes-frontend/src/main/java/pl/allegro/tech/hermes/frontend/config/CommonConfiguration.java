@@ -323,7 +323,7 @@ public class CommonConfiguration {
     public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryParameters micrometerRegistryParameters,
                                                       PrometheusConfig prometheusConfig) {
         return new PrometheusMeterRegistryFactory(micrometerRegistryParameters,
-                prometheusConfig, "hermes_frontend").provide();
+                prometheusConfig, "hermes-frontend").provide();
     }
 
     @Bean
