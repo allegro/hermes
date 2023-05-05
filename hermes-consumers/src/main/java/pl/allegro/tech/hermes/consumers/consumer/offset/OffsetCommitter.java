@@ -109,7 +109,7 @@ public class OffsetCommitter implements Runnable {
     @Override
     public void run() {
         try (HermesTimerContext c = HermesTimerContext.from(
-                micrometerMetrics.timer("offset_committer_duration"),
+                micrometerMetrics.timer("offset-committer.duration"),
                 oldMetrics.timer("offset-committer.duration"))) {
             // committed offsets need to be drained first so that there is no possibility of new committed offsets
             // showing up after inflight queue is drained - this would lead to stall in committing offsets

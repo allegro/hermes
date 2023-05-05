@@ -16,7 +16,7 @@ public class PrometheusMeterRegistryFactory {
                                           String prefix) {
         this.parameters = parameters;
         this.prometheusConfig = prometheusConfig;
-        this.prefix = prefix + ".";
+        this.prefix = prefix + "_";
     }
 
     public PrometheusMeterRegistry provide() {

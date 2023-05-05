@@ -77,23 +77,23 @@ public class CachedTopic {
 
         if (Topic.Ack.ALL.equals(topic.getAck())) {
             topicProducerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack_all_global_latency"),
+                    micrometerHermesMetrics.timer("ack-all.global-latency"),
                     oldHermesMetrics.timer(Timers.ACK_ALL_LATENCY));
             globalProducerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack_all_topic_latency", topic.getName()),
+                    micrometerHermesMetrics.timer("ack-all.topic-latency", topic.getName()),
                     oldHermesMetrics.timer(Timers.ACK_ALL_TOPIC_LATENCY, topic.getName()));
             topicBrokerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack_all_broker_latency"),
+                    micrometerHermesMetrics.timer("ack-all.broker-latency"),
                     oldHermesMetrics.timer(Timers.ACK_ALL_BROKER_LATENCY));
         } else {
             topicProducerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack_leader_global_latency"),
+                    micrometerHermesMetrics.timer("ack-leader.global-latency"),
                     oldHermesMetrics.timer(Timers.ACK_LEADER_LATENCY));
             globalProducerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack_leader_topic_latency", topic.getName()),
+                    micrometerHermesMetrics.timer("ack-leader.topic-latency", topic.getName()),
                     oldHermesMetrics.timer(Timers.ACK_LEADER_TOPIC_LATENCY, topic.getName()));
             topicBrokerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack_leader_broker_latency"),
+                    micrometerHermesMetrics.timer("ack-leader.broker-latency"),
                     oldHermesMetrics.timer(Timers.ACK_LEADER_BROKER_LATENCY));
         }
     }
