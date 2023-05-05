@@ -17,7 +17,7 @@ public class MicrometerHermesMetrics {
     }
 
     public Timer timer(String metricName, TopicName topicName) {
-        return meterRegistry.timer(metricName, "topic", topicName.getName());
+        return meterRegistry.timer(metricName, "group", topicName.getGroupName(), "topic", topicName.getName());
     }
 }
 
