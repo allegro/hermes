@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.TestMessageMetadata;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
@@ -63,7 +63,7 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
         SchemaManager schemaManager = new SchemaManager(elasticsearch1.client(), frontendIndexFactory, consumersIndexFactory, false);
         logRepository = new MultiElasticsearchLogRepository(Arrays.asList(elasticsearch1.client(), elasticsearch2.client()));
 
-        MetricRegistryPathsCompiler pathsCompiler = new MetricRegistryPathsCompiler("localhost");
+        PathsCompiler pathsCompiler = new PathsCompiler("localhost");
         MetricRegistry metricRegistry = new MetricRegistry();
         frontendLogRepository = new FrontendElasticsearchLogRepository.Builder(
                 elasticsearch1.client(), pathsCompiler, metricRegistry)

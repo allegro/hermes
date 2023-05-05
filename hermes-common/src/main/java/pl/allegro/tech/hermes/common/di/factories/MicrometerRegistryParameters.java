@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
+import java.util.List;
+
 public interface MicrometerRegistryParameters {
-    String getDisabledAttributes();
+    List<Double> getPercentiles();
 }

@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.supervisor.workload.SubscriptionAssignmentViewBuilder
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadConstraints
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock
 import spock.lang.Specification
 
@@ -634,7 +634,7 @@ class WeightedWorkBalancerTest extends Specification {
         CurrentLoadProvider currentLoadProvider = new CurrentLoadProvider()
         currentLoadProvider.updateProfiles(subscriptionProfiles)
         HermesMetrics hermesMetrics = new HermesMetrics(
-                new MetricRegistry(), new MetricRegistryPathsCompiler("host"))
+                new MetricRegistry(), new PathsCompiler("host"))
         WeightedWorkloadMetrics workloadMetrics = new WeightedWorkloadMetrics(hermesMetrics)
         return new WeightedWorkBalancer(
                 clock,

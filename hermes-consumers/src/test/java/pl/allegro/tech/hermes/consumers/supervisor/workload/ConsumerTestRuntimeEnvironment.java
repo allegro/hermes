@@ -47,7 +47,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -108,7 +108,7 @@ class ConsumerTestRuntimeEnvironment {
 
         this.workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(curator, objectMapper, zookeeperPaths);
 
-        this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler("localhost"));
+        this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
         this.micrometerMetricsSupplier = () -> new MicrometerHermesMetrics(new SimpleMeterRegistry());
         this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, kafkaProperties.getClusterName());
         this.zookeeperProperties = new ZookeeperProperties();

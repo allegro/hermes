@@ -7,7 +7,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
 import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
@@ -54,7 +54,7 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     protected LogRepository createRepository() {
         schemaManager.ensureSchema();
 
-        return new FrontendElasticsearchLogRepository.Builder(elasticsearch.client(), new MetricRegistryPathsCompiler("localhost"), new MetricRegistry())
+        return new FrontendElasticsearchLogRepository.Builder(elasticsearch.client(), new PathsCompiler("localhost"), new MetricRegistry())
                 .withIndexFactory(frontendIndexFactory)
                 .build();
     }

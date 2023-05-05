@@ -71,7 +71,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstrai
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.time.Clock;
@@ -295,8 +295,8 @@ public class CommonConfiguration {
 
     @Bean
     public HermesMetrics hermesMetrics(MetricRegistry metricRegistry,
-                                       MetricRegistryPathsCompiler metricRegistryPathsCompiler) {
-        return new HermesMetrics(metricRegistry, metricRegistryPathsCompiler);
+                                       PathsCompiler pathsCompiler) {
+        return new HermesMetrics(metricRegistry, pathsCompiler);
     }
 
     @Bean
@@ -321,9 +321,9 @@ public class CommonConfiguration {
 
     @Bean
     public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryParameters micrometerRegistryParameters,
-                                                      PrometheusConfig prometheusConfig,
-                                                      @Named("moduleName") String moduleName) {
-        return new PrometheusMeterRegistryFactory(micrometerRegistryParameters, prometheusConfig, moduleName).provide();
+                                                      PrometheusConfig prometheusConfig) {
+        return new PrometheusMeterRegistryFactory(micrometerRegistryParameters,
+                prometheusConfig, "hermes_frontend").provide();
     }
 
     @Bean
@@ -333,14 +333,14 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MetricRegistryPathsCompiler metricRegistryPathsCompiler(InstanceIdResolver instanceIdResolver) {
-        return new MetricRegistryPathsCompiler(instanceIdResolver.resolve());
+    public PathsCompiler metricRegistryPathsCompiler(InstanceIdResolver instanceIdResolver) {
+        return new PathsCompiler(instanceIdResolver.resolve());
     }
 
     @Bean
     public CounterStorage zookeeperCounterStorage(SharedCounter sharedCounter,
                                                   SubscriptionRepository subscriptionRepository,
-                                                  MetricRegistryPathsCompiler pathsCompiler,
+                                                  PathsCompiler pathsCompiler,
                                                   ZookeeperClustersProperties zookeeperClustersProperties,
                                                   DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);

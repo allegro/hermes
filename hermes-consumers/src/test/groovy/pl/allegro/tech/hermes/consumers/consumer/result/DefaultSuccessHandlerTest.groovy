@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.result
 
 import com.codahale.metrics.MetricRegistry
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
@@ -10,7 +9,7 @@ import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.tracker.consumers.Trackers
 import spock.lang.Specification
 
@@ -19,7 +18,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 class DefaultSuccessHandlerTest extends Specification {
 
     private OffsetQueue offsetQueue = new OffsetQueue(
-            new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler("host")),
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
             200_000
     )
 

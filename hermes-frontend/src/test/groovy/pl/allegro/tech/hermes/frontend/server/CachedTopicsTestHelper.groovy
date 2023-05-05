@@ -10,13 +10,13 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopics
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 
 class CachedTopicsTestHelper {
 
     static HermesMetrics hermesMetrics = new HermesMetrics(
-            new MetricRegistry(), new MetricRegistryPathsCompiler("localhost"))
+            new MetricRegistry(), new PathsCompiler("localhost"))
 
     static MicrometerHermesMetrics micrometerHermesMetrics = new MicrometerHermesMetrics(new SimpleMeterRegistry())
 

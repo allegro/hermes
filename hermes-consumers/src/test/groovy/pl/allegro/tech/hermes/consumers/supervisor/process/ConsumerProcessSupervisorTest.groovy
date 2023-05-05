@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -64,7 +64,7 @@ class ConsumerProcessSupervisorTest extends Specification {
                 return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
         }
 
-        metrics = new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler("localhost"))
+        metrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))
 
         supervisor = new ConsumerProcessSupervisor(
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),

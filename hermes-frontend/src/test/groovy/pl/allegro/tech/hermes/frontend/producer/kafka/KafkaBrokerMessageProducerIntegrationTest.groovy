@@ -27,7 +27,7 @@ import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Shared
@@ -100,7 +100,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
-                new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler("localhost")),
+                new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties),
                         schemaProperties.isIdHeaderEnabled()
                 )

@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.metrics;
 
 import org.apache.commons.lang.text.StrBuilder;
 
-public class MetricRegistryPathsCompiler {
+public class PathsCompiler {
 
     public static final String REPLACEMENT_CHAR = "_";
     public static final String HOSTNAME = "$hostname";
@@ -19,7 +19,7 @@ public class MetricRegistryPathsCompiler {
     public static final String SCHEMA_REPO_TYPE = "$schema_repo_type";
     private final String hostname;
 
-    public MetricRegistryPathsCompiler(String hostname) {
+    public PathsCompiler(String hostname) {
         this.hostname = escapeDots(hostname);
     }
 

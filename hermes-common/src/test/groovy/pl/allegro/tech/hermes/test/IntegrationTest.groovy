@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperResource
 import spock.lang.Shared
 import spock.lang.Specification
@@ -40,7 +40,7 @@ abstract class IntegrationTest extends Specification {
 
     protected KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("", "_")
 
-    protected MetricRegistryPathsCompiler pathsCompiler = new MetricRegistryPathsCompiler("")
+    protected PathsCompiler pathsCompiler = new PathsCompiler("")
 
     protected ObjectMapper objectMapper = new ObjectMapper()
 

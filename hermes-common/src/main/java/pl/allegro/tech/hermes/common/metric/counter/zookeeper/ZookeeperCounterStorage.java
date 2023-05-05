@@ -9,12 +9,12 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
 import pl.allegro.tech.hermes.metrics.PathContext;
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
-import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.GROUP;
-import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.SUBSCRIPTION;
-import static pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler.TOPIC;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
+import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
 public class ZookeeperCounterStorage implements CounterStorage {
 
@@ -33,12 +33,12 @@ public class ZookeeperCounterStorage implements CounterStorage {
     private final SharedCounter sharedCounter;
 
     private final SubscriptionRepository subscriptionRepository;
-    private final MetricRegistryPathsCompiler pathsCompiler;
+    private final PathsCompiler pathsCompiler;
     private final String zookeeperRoot;
 
     public ZookeeperCounterStorage(SharedCounter sharedCounter,
                                    SubscriptionRepository subscriptionRepository,
-                                   MetricRegistryPathsCompiler pathsCompiler,
+                                   PathsCompiler pathsCompiler,
                                    String zookeeperRoot) {
         this.sharedCounter = sharedCounter;
         this.subscriptionRepository = subscriptionRepository;

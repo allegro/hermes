@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics
-import pl.allegro.tech.hermes.metrics.MetricRegistryPathsCompiler
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -19,7 +19,7 @@ class OffsetCommitterTest extends Specification {
     KafkaTopicName KAFKA_TOPIC_NAME = KafkaTopicName.valueOf("group_topic")
 
     private OffsetQueue queue = new OffsetQueue(
-            new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler("host")),
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
             200_000
     )
 
@@ -33,7 +33,7 @@ class OffsetCommitterTest extends Specification {
         state = new ConsumerPartitionAssignmentState()
         def commitInterval = 10
         committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval,
-                new HermesMetrics(new MetricRegistry(), new MetricRegistryPathsCompiler("host")),
+                new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
                 new MicrometerHermesMetrics(new SimpleMeterRegistry())
         )
     }
