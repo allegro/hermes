@@ -27,6 +27,6 @@ public class PrometheusConfigAdapter implements PrometheusConfig {
      */
     @Override
     public String get(String key) {
-        return null;  // Nothing to see here, move along. Just a shitty micrometer API.
+        return null;  // Nothing to see here, move along.
     }
 }

@@ -23,8 +23,7 @@ class WeightedWorkBalancingListenerTest extends Specification {
     def weightWindowSize = Duration.ofMinutes(1)
     def currentLoadProvider = new CurrentLoadProvider()
     def metricsRegistry = new MetricRegistry()
-    def metrics = new WeightedWorkloadMetrics(
-            new HermesMetrics(metricsRegistry, new PathsCompiler("host")))
+    def metrics = new WeightedWorkloadMetrics(new HermesMetrics(metricsRegistry, new PathsCompiler("host")))
 
     @Subject
     def listener = new WeightedWorkBalancingListener(

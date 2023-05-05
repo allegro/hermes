@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;

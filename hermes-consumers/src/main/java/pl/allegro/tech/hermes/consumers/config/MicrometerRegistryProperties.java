@@ -5,7 +5,6 @@ import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 
 import java.util.List;
 
-
 @ConfigurationProperties(prefix = "consumer.metrics.micrometer")
 public class MicrometerRegistryProperties implements MicrometerRegistryParameters {
 

@@ -633,8 +633,7 @@ class WeightedWorkBalancerTest extends Specification {
                                                             SubscriptionProfiles subscriptionProfiles) {
         CurrentLoadProvider currentLoadProvider = new CurrentLoadProvider()
         currentLoadProvider.updateProfiles(subscriptionProfiles)
-        HermesMetrics hermesMetrics = new HermesMetrics(
-                new MetricRegistry(), new PathsCompiler("host"))
+        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
         WeightedWorkloadMetrics workloadMetrics = new WeightedWorkloadMetrics(hermesMetrics)
         return new WeightedWorkBalancer(
                 clock,
