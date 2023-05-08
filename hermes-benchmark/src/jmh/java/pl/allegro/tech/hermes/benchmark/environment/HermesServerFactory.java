@@ -2,10 +2,12 @@ package pl.allegro.tech.hermes.benchmark.environment;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.undertow.server.HttpHandler;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
 import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
@@ -50,7 +52,8 @@ class HermesServerFactory {
     static HermesServer provideHermesServer() throws IOException {
         ThroughputLimiter throughputLimiter = (exampleTopic, throughput) -> quotaConfirmed();
         HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
-        TopicsCache topicsCache = new InMemoryTopicsCache(hermesMetrics, topic);
+        MicrometerHermesMetrics micrometerHermesMetrics = new MicrometerHermesMetrics(new SimpleMeterRegistry());
+        TopicsCache topicsCache = new InMemoryTopicsCache(hermesMetrics, micrometerHermesMetrics, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
         Trackers trackers = new Trackers(Collections.emptyList());
