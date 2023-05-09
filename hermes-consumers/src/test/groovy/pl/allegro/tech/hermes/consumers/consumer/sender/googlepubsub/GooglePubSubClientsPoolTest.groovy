@@ -14,25 +14,20 @@ class GooglePubSubClientsPoolTest extends Specification {
     class GooglePubSubClientsPoolUnderTest extends GooglePubSubClientsPool {
 
         private Publisher publisher
-        private GooglePubSubMessageTransformer messageTransformer
 
         GooglePubSubClientsPoolUnderTest(CredentialsProvider credentialsProvider,
                                          ExecutorProvider publishingExecutorProvider,
                                          RetrySettings retrySettings,
                                          BatchingSettings batchingSettings,
-                                         GooglePubSubMessageTransformerCreator messageTransformerCreator,
                                          TransportChannelProvider transportChannelProvider,
-                                         Publisher publisher,
-                                         GooglePubSubMessageTransformer messageTransformer) {
-            super(credentialsProvider, publishingExecutorProvider, retrySettings, batchingSettings,
-                    messageTransformerCreator, transportChannelProvider)
+                                         Publisher publisher) {
+            super(credentialsProvider, publishingExecutorProvider, retrySettings, batchingSettings, transportChannelProvider)
             this.publisher = publisher
-            this.messageTransformer = messageTransformer
         }
 
         @Override
         protected GooglePubSubClient createClient(GooglePubSubSenderTarget resolvedTarget) throws IOException {
-            return new GooglePubSubClient(this.publisher, this.messageTransformer)
+            return new GooglePubSubClient(this.publisher)
         }
     }
 
@@ -42,8 +37,7 @@ class GooglePubSubClientsPoolTest extends Specification {
         def pubSubEndpoint = "https://pubsub.endpoint"
 
         def poolUnderTest = new GooglePubSubClientsPoolUnderTest(Stub(CredentialsProvider), Stub(ExecutorProvider),
-                Stub(RetrySettings), Stub(BatchingSettings), Stub(GooglePubSubMessageTransformerCreator),
-                Stub(TransportChannelProvider), Stub(Publisher), Stub(GooglePubSubMessageTransformer))
+                Stub(RetrySettings), Stub(BatchingSettings), Stub(TransportChannelProvider), Stub(Publisher))
 
         def targetWithCodec = GooglePubSubSenderTarget.builder()
                 .withTopicName(topic)
