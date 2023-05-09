@@ -36,3 +36,8 @@ console:
         label: SERIAL
       - value: BATCH
         label: BATCH
+
+monitoringConsumerGroups:
+  enabled: false
+  numberOfThreads: 6
+  secondsBetweenScans: 30

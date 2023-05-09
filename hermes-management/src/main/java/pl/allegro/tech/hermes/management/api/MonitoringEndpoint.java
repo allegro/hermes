@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.management.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import pl.allegro.tech.hermes.api.TopicAndSubscription;
 import pl.allegro.tech.hermes.management.infrastructure.monitoring.MonitoringCache;
-import pl.allegro.tech.hermes.management.infrastructure.monitoring.TopicAndSubscription;
 
 import java.util.List;
 import javax.ws.rs.GET;
