@@ -20,7 +20,7 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
     public static final String SUPPORTED_PROTOCOL = "googlepubsub";
 
     private final GooglePubSubSenderTargetResolver resolver;
-    private GooglePubSubMessageTransformerCreator messageTransformerCreator;
+    private final GooglePubSubMessageTransformerCreator messageTransformerCreator;
     private final GooglePubSubClientsPool clientsPool;
 
     public GooglePubSubMessageSenderProvider(GooglePubSubSenderTargetResolver resolver,
