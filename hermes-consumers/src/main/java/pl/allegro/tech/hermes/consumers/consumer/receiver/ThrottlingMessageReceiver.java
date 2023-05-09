@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOff
 
 import java.util.Optional;
 import java.util.Set;
-import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 
 public class ThrottlingMessageReceiver implements MessageReceiver {
