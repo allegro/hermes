@@ -40,7 +40,7 @@ jobs:
         id: 'next-version'
         run: |
           NEW_HERMES_VERSION="`./gradlew -q cV -Prelease.quiet`"
-          echo "::set-output name=new_hermes_version::$NEW_HERMES_VERSION"
+          echo "new_hermes_version=$NEW_HERMES_VERSION" >> $GITHUB_OUTPUT
           echo "New Hermes version: ${NEW_HERMES_VERSION}"
       - name: Generate release notes and create release
         if: github.ref == 'refs/heads/master'
