@@ -20,6 +20,7 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
     public static final String SUPPORTED_PROTOCOL = "googlepubsub";
 
     private final GooglePubSubSenderTargetResolver resolver;
+    private final GooglePubSubMessageTransformerCreator messageTransformerCreator;
     private final GooglePubSubClientsPool clientsPool;
 
     public GooglePubSubMessageSenderProvider(GooglePubSubSenderTargetResolver resolver,
@@ -31,12 +32,12 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
                                              GooglePubSubMessageTransformerCreator messageTransformerCreator) {
 
         this.resolver = resolver;
+        this.messageTransformerCreator = messageTransformerCreator;
         this.clientsPool = new GooglePubSubClientsPool(
                 credentialsProvider,
                 executorProvider,
                 retrySettings,
                 batchingSettings,
-                messageTransformerCreator,
                 transportChannelProvider
         );
     }
@@ -45,7 +46,8 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
     public MessageSender create(final Subscription subscription, ResilientMessageSender resilientMessageSender) {
         final GooglePubSubSenderTarget resolvedTarget = resolver.resolve(subscription.getEndpoint());
         try {
-            GooglePubSubMessageSender sender = new GooglePubSubMessageSender(resolvedTarget, clientsPool);
+            GooglePubSubMessageTransformer messageTransformer = messageTransformerCreator.getTransformerForTargetEndpoint(resolvedTarget);
+            GooglePubSubMessageSender sender = new GooglePubSubMessageSender(resolvedTarget, clientsPool, messageTransformer);
             return new SingleRecipientMessageSenderAdapter(sender, resilientMessageSender);
         } catch (IOException e) {
             throw new RuntimeException("Cannot create Google PubSub publishers cache", e);
