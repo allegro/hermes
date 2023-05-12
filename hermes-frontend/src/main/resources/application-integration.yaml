@@ -18,8 +18,9 @@ frontend:
   handlers:
     idleTimeout: 2000ms
   metrics:
-    graphiteReporterEnabled: true
-    reportPeriod: 1s
+    meter-registry:
+      graphiteReporterEnabled: true
+      reportPeriod: 1s
   graphite:
     port: 18023
   zookeeper:
