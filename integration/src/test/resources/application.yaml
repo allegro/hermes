@@ -104,5 +104,5 @@ subscription:
 
 frontend:
   metrics:
-    meter-registry:
+    metric-registry:
       graphiteReporterEnabled: true

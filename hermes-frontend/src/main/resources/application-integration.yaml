@@ -18,7 +18,7 @@ frontend:
   handlers:
     idleTimeout: 2000ms
   metrics:
-    meter-registry:
+    metric-registry:
       graphiteReporterEnabled: true
       reportPeriod: 1s
   graphite:
