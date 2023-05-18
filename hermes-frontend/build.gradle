@@ -14,7 +14,7 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     api group: 'io.undertow', name: 'undertow-core', version: versions.undertow
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    api (group: 'net.openhft', name: 'chronicle-map', version: '3.21.86') {
+    api (group: 'net.openhft', name: 'chronicle-map', version: '3.22.9') {
         exclude group: 'net.openhft', module: 'chronicle-analytics'
     }
     implementation group: 'commons-io', name: 'commons-io', version: '2.4'
