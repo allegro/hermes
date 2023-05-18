@@ -21,31 +21,33 @@ dependencies {
     implementation project(':hermes-client')
     implementation project(':hermes-tracker')
 
-    testImplementation project(':hermes-test-helper')
-    testImplementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    testImplementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
-    testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
-    testImplementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
-    testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
+    implementation project(':hermes-test-helper')
+    //TODO: why testImplementations do not work?
+    implementation group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+    implementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
+    implementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
 
-    testImplementation group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
-    testImplementation group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
+    implementation group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
+    implementation group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
 
-    testImplementation files('./lib/schema-repo-server-0.1.3-jersey2.jar');
-    testImplementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-grizzly2-http', version: versions.jersey
-    testImplementation group: 'org.freemarker', name: 'freemarker', version: '2.3.21'
-    testImplementation group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
-    testImplementation group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.28.v20200408'
-    testImplementation group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: '9.4.30.v20200611'
-    testImplementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
-    testImplementation group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
-    testImplementation group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.23.2'
+    implementation files('./lib/schema-repo-server-0.1.3-jersey2.jar');
+    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-grizzly2-http', version: versions.jersey
+    implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.21'
+    implementation group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
+    implementation group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.28.v20200408'
+    implementation group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: '9.4.30.v20200611'
+    implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
+    implementation group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
+    implementation group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.23.2'
 
-    testImplementation(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
+    implementation(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
 
-    testImplementation group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+    implementation group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 }
 
 project.sourceSets {
@@ -66,6 +68,9 @@ project.sourceSets {
         runtimeClasspath = output + compileClasspath + project.configurations.runtimeClasspath
     }
 }
+
+//TODO: document or workaround
+tasks.getByName('processIntegrationResources').doFirst() { duplicatesStrategy(DuplicatesStrategy.EXCLUDE) }
 
 task integrationTest(type: Test) {
     logging.captureStandardOutput LogLevel.INFO

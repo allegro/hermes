@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableSet;
 import org.javers.common.collections.Lists;
-import org.jetbrains.annotations.NotNull;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.MonitoringDetails;
@@ -279,7 +278,6 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         return subscription;
     }
 
-    @NotNull
     private OwnerId ownerId(String ownerId) {
         return new OwnerId("Plaintext", ownerId);
     }
