@@ -3,8 +3,6 @@ dependencies {
 
     implementation group: 'org.apache.avro', name: 'avro', version: versions.avro
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
-    // TODO: fix version
-//    implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.0.2'
 
     testImplementation project(path: ":hermes-test-helper")
 

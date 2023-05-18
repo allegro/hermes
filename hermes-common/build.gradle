@@ -1,33 +1,36 @@
-apply plugin: 'groovy'
+plugins {
+    id 'java-library'
+    id 'groovy'
+}
 
 dependencies {
-    implementation project(':hermes-api')
+    api project(':hermes-api')
     implementation project(':hermes-metrics')
-    implementation project(':hermes-schema')
+    api project(':hermes-schema')
 
-    implementation (group: 'org.apache.curator', name: 'curator-client', version: versions.curator) {
+    api (group: 'org.apache.curator', name: 'curator-client', version: versions.curator) {
         exclude module: 'slf4j-log4j12'
         exclude module: 'log4j'
     }
-    implementation (group: 'org.apache.curator', name: 'curator-recipes', version: versions.curator) {
+    api (group: 'org.apache.curator', name: 'curator-recipes', version: versions.curator) {
         exclude module: 'slf4j-log4j12'
         exclude module: 'log4j'
     }
 
-    implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    api group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
-    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: versions.jersey
+    api group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: versions.jersey
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
-    implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
+    api group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
-    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+    api group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.9'
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
-    implementation group: 'org.apache.avro', name: 'avro', version: versions.avro
-    implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
+    api group: 'org.apache.avro', name: 'avro', version: versions.avro
+    api group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
 
     implementation group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.dropwizard_metrics
     implementation group: 'io.dropwizard.metrics', name: 'metrics-jvm', version: versions.dropwizard_metrics
@@ -38,7 +41,7 @@ dependencies {
     implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.10'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
-    implementation(group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka) {
+    api(group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka) {
         exclude group: 'net.sf.jopt-simple'
     }
 

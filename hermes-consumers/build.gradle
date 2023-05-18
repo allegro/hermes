@@ -1,4 +1,9 @@
-apply plugin: 'application'
+plugins {
+    id 'application'
+    id 'java-library'
+}
+
+
 mainClassName = 'pl.allegro.tech.hermes.consumers.HermesConsumers'
 
 configurations {
@@ -29,7 +34,7 @@ dependencies {
         exclude module: 'hornetq-native'
     }
 
-    implementation(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
+    api(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
 
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
