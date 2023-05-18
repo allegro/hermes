@@ -36,8 +36,9 @@ dependencies {
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.spring
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-spring', version: versions.spock
-    testImplementation group: 'org.codehaus.groovy', name: 'groovy-json', version: versions.groovy
+    testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
 
     testImplementation group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
     testImplementation group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers

@@ -13,7 +13,8 @@ dependencies {
 
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testImplementation group: 'org.codehaus.groovy', name: 'groovy-json', version: versions.groovy
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
+    testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
     testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     testImplementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     testImplementation group: 'org.eclipse.jetty', name: 'jetty-server', version: versions.jetty

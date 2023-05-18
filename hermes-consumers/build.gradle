@@ -49,6 +49,7 @@ dependencies {
     testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
 
     sbeClasspath group: 'uk.co.real-logic', name: 'sbe-all', version: '1.12.8'
 }

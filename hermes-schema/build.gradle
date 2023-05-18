@@ -7,5 +7,6 @@ dependencies {
     testImplementation project(path: ":hermes-test-helper")
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
 
 }

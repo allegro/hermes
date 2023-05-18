@@ -13,6 +13,7 @@ dependencies {
     implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.3.4.RELEASE'
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: versions.wiremock
     testImplementation group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
     testImplementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'

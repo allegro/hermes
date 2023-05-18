@@ -32,12 +32,15 @@ dependencies {
     jmh group: 'org.spf4j', name: 'spf4j-jmh', version: '8.0.3'
     jmh project(':hermes-frontend')
     jmh project(':hermes-test-helper')
+    jmh project(':hermes-common')
+    jmh project(':hermes-tracker')
 }
 
 // Workaround for duplicated `BenchmarkList` and `CompilerHints` files from META-INF directory in jmh jar.
 // Those duplications can prevent from running benchmark tests.
 // More info https://github.com/melix/jmh-gradle-plugin/issues/6
 tasks.getByName('jmhJar').doFirst() { duplicatesStrategy(DuplicatesStrategy.EXCLUDE) }
+tasks.getByName('processJmhResources').doFirst() { duplicatesStrategy(DuplicatesStrategy.EXCLUDE) }
 
 String stringProperty(String property, String defaultValue) {
     project.hasProperty(property) ? project.property(property) : defaultValue

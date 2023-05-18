@@ -7,6 +7,7 @@ dependencies {
     testImplementation project(path: ":hermes-tracker", configuration: "testArtifacts")
     testImplementation project(path: ":hermes-test-helper")
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testImplementation 'pl.allegro.tech:embedded-elasticsearch:2.10.0'
 }
 

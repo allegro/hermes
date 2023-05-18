@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api project(':hermes-api')
-    implementation project(':hermes-metrics')
+    api project(':hermes-metrics')
     api project(':hermes-schema')
 
     api (group: 'org.apache.curator', name: 'curator-client', version: versions.curator) {
@@ -20,7 +20,7 @@ dependencies {
     api group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     api group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: versions.jersey
-    implementation group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
+    api group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
     api group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
@@ -50,6 +50,7 @@ dependencies {
     testImplementation group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testImplementation (group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0') {
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
     }

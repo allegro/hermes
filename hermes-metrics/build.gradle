@@ -7,4 +7,5 @@ dependencies {
     api group: 'commons-lang', name: 'commons-lang', version: '2.6'
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
 }
