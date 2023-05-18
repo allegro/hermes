@@ -44,8 +44,8 @@ allprojects {
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
 
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     project.ext.versions = [
             kafka             : '2.8.2',
@@ -77,16 +77,16 @@ allprojects {
     }
 
     dependencies {
-        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
-        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
+        implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 
-        testCompile group: 'junit', name: 'junit', version: '4.11'
-        testCompile group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
-        testCompile group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
-        testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
-        testCompile group: 'org.assertj', name: 'assertj-core', version: versions.assertj
-        testCompile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
-        testCompile group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+        testImplementation group: 'junit', name: 'junit', version: '4.11'
+        testImplementation group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
+        testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
+        testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
+        testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
+        testImplementation group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
+        testImplementation group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
 
         annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: versions.spring
     }

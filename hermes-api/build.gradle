@@ -3,17 +3,17 @@ plugins {
 }
 
 dependencies {
-    compile group: 'org.hibernate.validator', name: 'hibernate-validator', version: '6.2.2.Final'
-    compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
-    compile group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: versions.jackson
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
-    compile group: 'com.google.guava', name: 'guava', version: versions.guava
-    compile group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.0.2'
-    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-    compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'
-    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.3'
+    implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '6.2.2.Final'
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
+    implementation group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: versions.jackson
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
+    implementation group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.0.2'
+    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.3'
 
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile project(':hermes-test-helper')
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation project(':hermes-test-helper')
 }

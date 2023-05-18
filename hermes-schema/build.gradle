@@ -1,11 +1,13 @@
 dependencies {
-    compile project(':hermes-api')
+    implementation project(':hermes-api')
 
-    compile group: 'org.apache.avro', name: 'avro', version: versions.avro
-    compile group: 'com.google.guava', name: 'guava', version: versions.guava
+    implementation group: 'org.apache.avro', name: 'avro', version: versions.avro
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
+    // TODO: fix version
+//    implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.0.2'
 
-    testCompile project(path: ":hermes-test-helper")
+    testImplementation project(path: ":hermes-test-helper")
 
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
 
 }

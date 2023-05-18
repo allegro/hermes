@@ -1,6 +1,6 @@
 dependencies {
-    compile group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.dropwizard_metrics
-    compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    implementation group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.dropwizard_metrics
+    implementation group: 'commons-lang', name: 'commons-lang', version: '2.6'
 
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
 }

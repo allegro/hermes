@@ -5,45 +5,45 @@ configurations {
     sbeClasspath
 }
 dependencies {
-    compile project(':hermes-common')
-    compile project(':hermes-tracker')
-    compile project(':hermes-metrics')
-    compile project(':hermes-schema')
+    implementation project(':hermes-common')
+    implementation project(':hermes-tracker')
+    implementation project(':hermes-metrics')
+    implementation project(':hermes-schema')
 
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
-    compile group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
-    compile group: 'org.eclipse.jetty.http2', name: 'http2-http-client-transport', version: versions.jetty
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
+    implementation group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
+    implementation group: 'org.eclipse.jetty.http2', name: 'http2-http-client-transport', version: versions.jetty
 
-    compile group: 'org.jctools', name: 'jctools-core', version: '1.2'
+    implementation group: 'org.jctools', name: 'jctools-core', version: '1.2'
 
-    compile group: 'javax.jms', name: 'javax.jms-api', version: '2.0'
-    compile group: 'joda-time', name: 'joda-time', version: '2.5'
+    implementation group: 'javax.jms', name: 'javax.jms-api', version: '2.0'
+    implementation group: 'joda-time', name: 'joda-time', version: '2.5'
 
-    compile(group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0') {
+    implementation(group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0') {
         exclude module: 'guava'
     }
 
-    compile group: 'org.agrona', name: 'agrona', version: '1.0.6'
+    implementation group: 'org.agrona', name: 'agrona', version: '1.0.6'
 
-    compile(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
+    implementation(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
 
-    compile(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
+    implementation(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
 
-    testCompile project(':hermes-test-helper')
-    testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
-    testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+    testImplementation project(':hermes-test-helper')
+    testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
+    testImplementation group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
 
-    testCompile project(':hermes-common')
+    testImplementation project(':hermes-common')
 
-    testCompile(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
+    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
         exclude group: 'com.jayway.jsonpath', module: 'json-path'
     }
 
-    testCompile group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
+    testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
 
     sbeClasspath group: 'uk.co.real-logic', name: 'sbe-all', version: '1.12.8'
 }
