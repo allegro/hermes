@@ -5,14 +5,14 @@ plugins {
 mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
 
 dependencies {
-    implementation project(':hermes-api')
-    implementation project(':hermes-common')
-    implementation project(':hermes-tracker')
+    api project(':hermes-api')
+    api project(':hermes-common')
+    api project(':hermes-tracker')
     implementation project(':hermes-schema')
 
     api group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.spring
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.spring
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jersey', version: versions.spring
+    api group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.spring
+    api group: 'org.springframework.boot', name: 'spring-boot-starter-jersey', version: versions.spring
     implementation group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.8'
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-mvc-freemarker', version: versions.jersey
 

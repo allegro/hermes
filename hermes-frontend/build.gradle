@@ -7,7 +7,7 @@ mainClassName = 'pl.allegro.tech.hermes.frontend.HermesFrontend'
 
 dependencies {
     implementation project(':hermes-common')
-    implementation project(':hermes-tracker')
+    api project(':hermes-tracker')
     implementation project(':hermes-metrics')
     implementation project(':hermes-schema')
 

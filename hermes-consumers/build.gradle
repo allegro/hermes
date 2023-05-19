@@ -11,7 +11,7 @@ configurations {
 }
 dependencies {
     implementation project(':hermes-common')
-    implementation project(':hermes-tracker')
+    api project(':hermes-tracker')
     implementation project(':hermes-metrics')
     implementation project(':hermes-schema')
 
