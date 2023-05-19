@@ -108,7 +108,6 @@ allprojects {
                   "--add-opens=java.base/java.io=ALL-UNNAMED",
                   "--add-opens=java.base/java.util=ALL-UNNAMED"]
         jvmArgs = args
-        ignoreFailures = true
     }
 }
 
