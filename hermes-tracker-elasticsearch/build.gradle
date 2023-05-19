@@ -9,6 +9,7 @@ dependencies {
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testImplementation 'pl.allegro.tech:embedded-elasticsearch:2.10.0'
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }
 
 test.useTestNG()

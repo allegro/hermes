@@ -18,4 +18,5 @@ dependencies {
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testImplementation project(':hermes-test-helper')
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }

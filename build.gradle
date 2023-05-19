@@ -92,6 +92,7 @@ allprojects {
     }
 
     test {
+        useJUnitPlatform()
         def args = []
         if (project.hasProperty('tests.timeout.multiplier')) {
             args = ["-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"]

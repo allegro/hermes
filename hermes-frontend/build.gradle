@@ -37,4 +37,5 @@ dependencies {
     }
     testImplementation group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
     testImplementation group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }

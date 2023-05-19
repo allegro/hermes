@@ -50,6 +50,7 @@ dependencies {
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 
     sbeClasspath group: 'uk.co.real-logic', name: 'sbe-all', version: '1.12.8'
 }
