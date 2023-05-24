@@ -69,7 +69,6 @@ project.sourceSets {
     }
 }
 
-//TODO: document or workaround
 tasks.getByName('processIntegrationResources').doFirst() { duplicatesStrategy(DuplicatesStrategy.EXCLUDE) }
 
 task integrationTest(type: Test) {

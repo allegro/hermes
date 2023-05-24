@@ -40,7 +40,6 @@ public class KafkaTopicMetadataFetcher {
     private class MinInSyncReplicasLoader extends CacheLoader<String, Integer> {
 
         @Override
-        //TODO: what about not null annotation?
         public Integer load(String kafkaTopicName) throws Exception {
             ConfigResource resource = new ConfigResource(TOPIC, kafkaTopicName);
             DescribeConfigsResult describeTopicsResult = adminClient.describeConfigs(ImmutableList.of(resource));
