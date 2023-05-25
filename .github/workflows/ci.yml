@@ -11,10 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tests: [ 'check', 'integrationTest', 'jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0' ]
+        tasks: [
+          {alias: "unitTests", name: "check"},
+          {alias: "integrationTests", name: "integrationTest"},
+          {alias: "benchmark", name: "jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0"}
+        ]
       fail-fast: false
-    name: gradle ${{ matrix.tests }}
-
+    name: ${{ matrix.tasks.alias }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -37,11 +40,11 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble
       - name: Run task with Gradle
-        run: ./gradlew ${{ matrix.tests }}
-      - name: Archive test results
+        run: ./gradlew ${{ matrix.tasks.name }}
+      - name: Archive task results
         uses: actions/upload-artifact@v3
-        if: (success() || failure()) && !contains(matrix.tests, 'jmh')
+        if: (success() || failure()) && matrix.tasks.alias != 'benchmark'
         with:
-          name: ${{ matrix.tests }}-test-report
+          name: ${{ matrix.tasks.name }}-test-report
           path: '**/build/test-results/**/TEST-*.xml'
           retention-days: 90
