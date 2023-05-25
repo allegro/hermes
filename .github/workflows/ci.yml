@@ -33,7 +33,9 @@ jobs:
           java-version: 11
           distribution: 'adopt'
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: |
+           chmod +x gradlew
+           java -version
       - name: Build with Gradle
         run: ./gradlew assemble
       - name: Run tests with Gradle
