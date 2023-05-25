@@ -13,7 +13,7 @@ jobs:
       matrix:
         tests: [ 'check', 'integrationTest', 'jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0' ]
       fail-fast: false
-    name: ${{ matrix.tests }}
+    name: gradle ${{ matrix.tests }}
 
     steps:
       - uses: actions/checkout@v2
@@ -36,7 +36,7 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew assemble
-      - name: Run tests with Gradle
+      - name: Run task with Gradle
         run: ./gradlew ${{ matrix.tests }}
       - name: Archive test results
         uses: actions/upload-artifact@v3
