@@ -23,10 +23,10 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.jayway.awaitility.Awaitility.await;
