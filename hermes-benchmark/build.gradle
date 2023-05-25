@@ -1,5 +1,5 @@
 plugins {
-    id 'me.champeau.gradle.jmh' version '0.5.2'
+    id 'me.champeau.jmh' version '0.6.8'
 }
 
 configurations {
@@ -7,9 +7,9 @@ configurations {
 }
 
 jmh {
-    include = ['pl\\.allegro\\.tech\\.hermes\\.benchmark\\..*']
+    includes = ['pl\\.allegro\\.tech\\.hermes\\.benchmark\\..*']
     humanOutputFile = null
-    jmhVersion = '1.12'
+    jmhVersion = '1.36'
     zip64 = true
     verbosity = 'NORMAL'
     iterations = intProperty('jmh.iterations', 4)
@@ -17,12 +17,12 @@ jmh {
     fork = intProperty('jmh.fork', 1)
     warmupIterations = intProperty('jmh.warmupIterations', 4)
     warmup = stringProperty('jmh.timeOnWarmupIteration', '80s')
-    jvmArgs = listProperty('jmh.jvmArgs', ['-Xmx1g', '-Xms1g', '-XX:+UseConcMarkSweepGC'])
+    jvmArgs = listProperty('jmh.jvmArgs', ['-Xmx1g', '-Xms1g', '-XX:+UseG1GC'] + chronicleMapJvmArgs)
     failOnError = booleanProperty('jmh.failOnError', true)
     threads = intProperty('jmh.threads', 4)
     synchronizeIterations = false
     forceGC =  false
-    duplicateClassesStrategy = 'exclude'
+    duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
