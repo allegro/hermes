@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -42,12 +42,12 @@ public class FrontendConfiguration {
                                                     GroupRepository groupRepository,
                                                     TopicRepository topicRepository,
                                                     HermesMetrics hermesMetrics,
-                                                    MicrometerHermesMetrics micrometerHermesMetrics,
+                                                    MetricsFacade metricsFacade,
                                                     KafkaNamesMapper kafkaNamesMapper,
                                                     BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
 
         return new NotificationBasedTopicsCache(internalNotificationsBus, blacklistZookeeperNotifyingCache,
-                groupRepository, topicRepository, hermesMetrics, micrometerHermesMetrics, kafkaNamesMapper);
+                groupRepository, topicRepository, hermesMetrics, metricsFacade, kafkaNamesMapper);
     }
 
     @Bean

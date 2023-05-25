@@ -6,7 +6,7 @@ import org.jctools.queues.MessagePassingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
@@ -85,7 +85,7 @@ public class OffsetCommitter implements Runnable {
     private final MessageCommitter messageCommitter;
 
     private final HermesMetrics oldMetrics;
-    private final MicrometerHermesMetrics micrometerMetrics;
+    private final MetricsFacade metricsFacade;
 
     private final Set<SubscriptionPartitionOffset> inflightOffsets = new HashSet<>();
     private final Map<SubscriptionPartition, Long> maxCommittedOffsets = new HashMap<>();
@@ -96,21 +96,19 @@ public class OffsetCommitter implements Runnable {
             MessageCommitter messageCommitter,
             int offsetCommitPeriodSeconds,
             HermesMetrics oldMetrics,
-            MicrometerHermesMetrics micrometerMetrics
+            MetricsFacade metricsFacade
     ) {
         this.offsetQueue = offsetQueue;
         this.partitionAssignmentState = partitionAssignmentState;
         this.messageCommitter = messageCommitter;
         this.offsetCommitPeriodSeconds = offsetCommitPeriodSeconds;
         this.oldMetrics = oldMetrics;
-        this.micrometerMetrics = micrometerMetrics;
+        this.metricsFacade = metricsFacade;
     }
 
     @Override
     public void run() {
-        try (HermesTimerContext c = HermesTimerContext.from(
-                micrometerMetrics.timer("offset-committer.duration"),
-                oldMetrics.timer("offset-committer.duration"))) {
+        try (HermesTimerContext c = metricsFacade.consumers().offsetCommitterDuration().time()) {
             // committed offsets need to be drained first so that there is no possibility of new committed offsets
             // showing up after inflight queue is drained - this would lead to stall in committing offsets
             ReducingConsumer committedOffsetsReducer = processCommittedOffsets();

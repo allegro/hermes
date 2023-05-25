@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
@@ -87,7 +87,7 @@ class ConsumerTestRuntimeEnvironment {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final Supplier<HermesMetrics> metricsSupplier;
-    private final Supplier<MicrometerHermesMetrics> micrometerMetricsSupplier;
+    private final Supplier<MetricsFacade> metricsFacadeSupplier;
     private final WorkloadConstraintsRepository workloadConstraintsRepository;
     private final CuratorFramework curator;
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
@@ -109,7 +109,7 @@ class ConsumerTestRuntimeEnvironment {
         this.workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(curator, objectMapper, zookeeperPaths);
 
         this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
-        this.micrometerMetricsSupplier = () -> new MicrometerHermesMetrics(new SimpleMeterRegistry());
+        this.metricsFacadeSupplier = () -> new MetricsFacade(new SimpleMeterRegistry(), this.metricsSupplier.get());
         this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, kafkaProperties.getClusterName());
         this.zookeeperProperties = new ZookeeperProperties();
     }
@@ -220,7 +220,7 @@ class ConsumerTestRuntimeEnvironment {
 
     ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory) {
         HermesMetrics metrics = metricsSupplier.get();
-        MicrometerHermesMetrics micrometerMetrics = micrometerMetricsSupplier.get();
+        MetricsFacade metricsFacade = metricsFacadeSupplier.get();
         CommonConsumerProperties commonConsumerProperties = new CommonConsumerProperties();
         CommonConsumerProperties.BackgroundSupervisor supervisorParameters = new CommonConsumerProperties.BackgroundSupervisor();
         supervisorParameters.setInterval(Duration.ofSeconds(1));
@@ -234,7 +234,7 @@ class ConsumerTestRuntimeEnvironment {
                 mock(UndeliveredMessageLogPersister.class),
                 subscriptionRepository,
                 metrics,
-                micrometerMetrics,
+                metricsFacade,
                 mock(ConsumerMonitor.class),
                 Clock.systemDefaultZone(),
                 Duration.ofSeconds(60));

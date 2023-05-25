@@ -10,8 +10,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.metric.Counters;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
-import pl.allegro.tech.hermes.common.metric.Timers;
-import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
@@ -47,12 +46,12 @@ public class CachedTopic {
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
-    public CachedTopic(Topic topic, HermesMetrics hermesMetrics, MicrometerHermesMetrics micrometerHermesMetrics,
+    public CachedTopic(Topic topic, HermesMetrics hermesMetrics, MetricsFacade metricsFacade,
                        KafkaTopics kafkaTopics) {
-        this(topic, hermesMetrics, micrometerHermesMetrics, kafkaTopics, false);
+        this(topic, hermesMetrics, metricsFacade, kafkaTopics, false);
     }
 
-    public CachedTopic(Topic topic, HermesMetrics oldHermesMetrics, MicrometerHermesMetrics micrometerHermesMetrics,
+    public CachedTopic(Topic topic, HermesMetrics oldHermesMetrics, MetricsFacade metricsFacade,
                        KafkaTopics kafkaTopics, boolean blacklisted) {
         this.topic = topic;
         this.kafkaTopics = kafkaTopics;
@@ -74,25 +73,13 @@ public class CachedTopic {
         topicThroughputMeter = oldHermesMetrics.meter(Meters.TOPIC_THROUGHPUT_BYTES, topic.getName());
 
         if (Topic.Ack.ALL.equals(topic.getAck())) {
-            globalProducerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack-all.global-latency"),
-                    oldHermesMetrics.timer(Timers.ACK_ALL_LATENCY));
-            topicProducerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack-all.topic-latency", topic.getName()),
-                    oldHermesMetrics.timer(Timers.ACK_ALL_TOPIC_LATENCY, topic.getName()));
-            topicBrokerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack-all.broker-latency"),
-                    oldHermesMetrics.timer(Timers.ACK_ALL_BROKER_LATENCY));
+            globalProducerLatencyTimer = metricsFacade.topics().ackAllGlobalLatency();
+            topicProducerLatencyTimer = metricsFacade.topics().ackAllTopicLatency(topic.getName());
+            topicBrokerLatencyTimer = metricsFacade.topics().ackAllBrokerLatency();
         } else {
-            globalProducerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack-leader.global-latency"),
-                    oldHermesMetrics.timer(Timers.ACK_LEADER_LATENCY));
-            topicProducerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack-leader.topic-latency", topic.getName()),
-                    oldHermesMetrics.timer(Timers.ACK_LEADER_TOPIC_LATENCY, topic.getName()));
-            topicBrokerLatencyTimer = HermesTimer.from(
-                    micrometerHermesMetrics.timer("ack-leader.broker-latency"),
-                    oldHermesMetrics.timer(Timers.ACK_LEADER_BROKER_LATENCY));
+            globalProducerLatencyTimer = metricsFacade.topics().ackLeaderGlobalLatency();
+            topicProducerLatencyTimer = metricsFacade.topics().ackLeaderTopicLatency(topic.getName());
+            topicBrokerLatencyTimer = metricsFacade.topics().ackLeaderBrokerLatency();
         }
     }
 

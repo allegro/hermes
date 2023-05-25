@@ -38,7 +38,7 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
-import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
@@ -300,8 +300,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MicrometerHermesMetrics micrometerHermesMetrics(MeterRegistry meterRegistry) {
-        return new MicrometerHermesMetrics(meterRegistry);
+    public MetricsFacade micrometerHermesMetrics(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+        return new MetricsFacade(meterRegistry, hermesMetrics);
     }
 
     @Bean

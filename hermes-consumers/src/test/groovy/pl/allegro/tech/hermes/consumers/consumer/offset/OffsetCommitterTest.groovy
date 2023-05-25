@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
-import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Shared
 import spock.lang.Specification
@@ -32,9 +32,11 @@ class OffsetCommitterTest extends Specification {
     def setup() {
         state = new ConsumerPartitionAssignmentState()
         def commitInterval = 10
+
+        def hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
         committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval,
-                new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
-                new MicrometerHermesMetrics(new SimpleMeterRegistry())
+                hermesMetrics,
+                new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics)
         )
     }
 

@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
@@ -30,7 +30,7 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
     private final GroupRepository groupRepository;
     private final TopicRepository topicRepository;
     private final HermesMetrics oldHermesMetrics;
-    private final MicrometerHermesMetrics micrometerHermesMetrics;
+    private final MetricsFacade metricsFacade;
     private final KafkaNamesMapper kafkaNamesMapper;
 
     public NotificationBasedTopicsCache(InternalNotificationsBus notificationsBus,
@@ -38,12 +38,12 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
                                         GroupRepository groupRepository,
                                         TopicRepository topicRepository,
                                         HermesMetrics oldHermesMetrics,
-                                        MicrometerHermesMetrics micrometerHermesMetrics,
+                                        MetricsFacade metricsFacade,
                                         KafkaNamesMapper kafkaNamesMapper) {
         this.groupRepository = groupRepository;
         this.topicRepository = topicRepository;
         this.oldHermesMetrics = oldHermesMetrics;
-        this.micrometerHermesMetrics = micrometerHermesMetrics;
+        this.metricsFacade = metricsFacade;
         this.kafkaNamesMapper = kafkaNamesMapper;
         notificationsBus.registerTopicCallback(this);
         blacklistZookeeperNotifyingCache.addCallback(this);
@@ -112,10 +112,10 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
     }
 
     private CachedTopic cachedTopic(Topic topic) {
-        return new CachedTopic(topic, oldHermesMetrics, micrometerHermesMetrics, kafkaNamesMapper.toKafkaTopics(topic));
+        return new CachedTopic(topic, oldHermesMetrics, metricsFacade, kafkaNamesMapper.toKafkaTopics(topic));
     }
 
     private CachedTopic bannedTopic(Topic topic) {
-        return new CachedTopic(topic, oldHermesMetrics, micrometerHermesMetrics, kafkaNamesMapper.toKafkaTopics(topic), true);
+        return new CachedTopic(topic, oldHermesMetrics, metricsFacade, kafkaNamesMapper.toKafkaTopics(topic), true);
     }
 }

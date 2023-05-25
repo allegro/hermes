@@ -11,7 +11,7 @@ import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.micrometer.MicrometerHermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.TargetWeightCalculationStrategy.UnknownTargetWeightCalculationStrategyException;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WeightedWorkBalancingProperties;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WorkBalancingStrategy.UnknownWorkBalancingStrategyException;
@@ -311,13 +311,13 @@ public class SupervisorConfiguration {
                                                               UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                                               SubscriptionRepository subscriptionRepository,
                                                               HermesMetrics metrics,
-                                                              MicrometerHermesMetrics micrometerMetrics,
+                                                              MetricsFacade metricsFacade,
                                                               ConsumerMonitor monitor,
                                                               Clock clock,
                                                               CommitOffsetProperties commitOffsetProperties) {
         return new NonblockingConsumersSupervisor(commonConsumerProperties, executor, consumerFactory, offsetQueue,
                 consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
-                subscriptionRepository, metrics, micrometerMetrics, monitor, clock, commitOffsetProperties.getPeriod());
+                subscriptionRepository, metrics, metricsFacade, monitor, clock, commitOffsetProperties.getPeriod());
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
