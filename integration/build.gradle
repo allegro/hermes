@@ -14,40 +14,39 @@ project.configurations {
 }
 
 dependencies {
-    implementation project(':hermes-common')
-    implementation project(':hermes-consumers')
-    implementation project(':hermes-frontend')
-    implementation project(':hermes-management')
-    implementation project(':hermes-client')
-    implementation project(':hermes-tracker')
+    integration project(':hermes-common')
+    integration project(':hermes-consumers')
+    integration project(':hermes-frontend')
+    integration project(':hermes-management')
+    integration project(':hermes-client')
+    integration project(':hermes-tracker')
 
-    implementation project(':hermes-test-helper')
-    //TODO: why testImplementations do not work?
-    implementation group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    implementation group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
-    implementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
-    implementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
+    integration project(':hermes-test-helper')
+    integration group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+    integration group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    integration group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+    integration group: 'org.apache.curator', name: 'curator-test', version: versions.curator
+    integration group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
+    integration group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
 
-    implementation group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
-    implementation group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
+    integration group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
+    integration group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
 
-    implementation files('./lib/schema-repo-server-0.1.3-jersey2.jar');
-    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-grizzly2-http', version: versions.jersey
-    implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.21'
-    implementation group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
-    implementation group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.28.v20200408'
-    implementation group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: '9.4.30.v20200611'
-    implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
-    implementation group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
-    implementation group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.23.2'
+    integration files('./lib/schema-repo-server-0.1.3-jersey2.jar');
+    integration group: 'org.glassfish.jersey.containers', name: 'jersey-container-grizzly2-http', version: versions.jersey
+    integration group: 'org.freemarker', name: 'freemarker', version: '2.3.21'
+    integration group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
+    integration group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.28.v20200408'
+    integration group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: '9.4.30.v20200611'
+    integration group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
+    integration group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
+    integration group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.23.2'
 
-    implementation(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
+    integration(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
 
-    implementation group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+    integration group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 }
 
 project.sourceSets {
