@@ -3,12 +3,12 @@ plugins {
     id 'java-library'
 }
 
-
 mainClassName = 'pl.allegro.tech.hermes.consumers.HermesConsumers'
 
 configurations {
     sbeClasspath
 }
+
 dependencies {
     implementation project(':hermes-common')
     api project(':hermes-tracker')
