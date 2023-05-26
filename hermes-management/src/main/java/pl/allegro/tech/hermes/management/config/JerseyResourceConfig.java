@@ -22,6 +22,7 @@ public class JerseyResourceConfig extends ResourceConfig {
             packages(true, packageToScan);
             logger.info("Scanning Jersey resources in: {}", packageToScan);
         }
+        logger.info("Applying jersey resource config");
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
         property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, jerseyProperties.getFilterStaticContentRegexp());
         register(RolesAllowedDynamicFeature.class);
