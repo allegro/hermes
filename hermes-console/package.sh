@@ -40,4 +40,6 @@ node_modules/.bin/bower install --allow-root -F
 printf "Creating directory: dist/static\n"
 
 # copy static contents
+ls -la static/
+
 cp -r static dist
