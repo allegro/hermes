@@ -1,4 +1,4 @@
 {
     "directory" : "static/components",
-    "registry": "https://registry.bower.io"
+    "registry": "https://bower.herokuapp.com"
 }
