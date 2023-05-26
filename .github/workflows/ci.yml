@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         tests: [ 'check', 'integrationTest', 'jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0' ]
