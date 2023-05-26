@@ -35,6 +35,8 @@ export PATH=$(pwd)/dist/node/bin:$PATH
 printf "Running NPM and bower\n"
 
 npm install --production --yes
+
+node_modules/.bin/bower cache clean
 node_modules/.bin/bower install --allow-root -F
 
 printf "Creating directory: dist/static\n"
