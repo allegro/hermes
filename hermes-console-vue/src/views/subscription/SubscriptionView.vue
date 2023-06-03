@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
-  import { useSubscription } from '@/composables/topic-subcriptions/use-subscription/useSubscription';
+  import { useSubscription } from '@/composables/topic-subscriptions/use-subscription/useSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
   import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';

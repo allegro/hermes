@@ -6,7 +6,7 @@ import {
   dummyTopicSubscriptionsList,
   secondDummySubscription,
 } from '@/dummy/subscription';
-import { useSubscriptionsList } from '@/composables/topic-subcriptions/use-subscriptions-list/useSubscriptionsList';
+import { useSubscriptionsList } from '@/composables/topic-subscriptions/use-subscriptions-list/useSubscriptionsList';
 import { waitFor } from '@testing-library/vue';
 
 vitest.mock('axios');

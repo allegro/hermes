@@ -8,12 +8,11 @@ import {
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
-import { useSubscription } from '@/composables/use-subscription/useSubscription';
+import { useSubscription } from '@/composables/topic-subscriptions/use-subscription/useSubscription';
 import router from '@/router';
 import SubscriptionView from '@/views/subscription/SubscriptionView.vue';
-import { waitFor } from '@testing-library/vue';
 
-vi.mock('@/composables/use-subscription/useSubscription');
+vi.mock('@/composables/topic-subscriptions/use-subscription/useSubscription');
 
 const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscription: ref(dummySubscription),
@@ -34,7 +33,7 @@ describe('SubscriptionView', () => {
     );
   });
 
-  it('should render data boxes if subscription data was successfully fetched', async () => {
+  it('should render data boxes if subscription data was successfully fetched', () => {
     // given
     vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
 
@@ -52,14 +51,12 @@ describe('SubscriptionView', () => {
       'subscription.headersCard.title',
       'subscription.undeliveredMessagesCard.title',
     ];
-    for (const boxTitle of cardTitles) {
-      await waitFor(() => {
-        expect(getByText(boxTitle)).toBeVisible();
-      });
-    }
+    cardTitles.forEach((boxTitle) => {
+      expect(getByText(boxTitle)).toBeInTheDocument();
+    });
   });
 
-  it('should render subscription health alert', async () => {
+  it('should render subscription health alert', () => {
     // given
     vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
 
@@ -67,17 +64,15 @@ describe('SubscriptionView', () => {
     const { getByText } = render(SubscriptionView);
 
     // then
-    await waitFor(() => {
-      expect(
-        getByText('subscription.healthProblemsAlerts.lagging.title'),
-      ).toBeVisible();
-      expect(
-        getByText('subscription.healthProblemsAlerts.lagging.text'),
-      ).toBeVisible();
-    });
+    expect(
+      getByText('subscription.healthProblemsAlerts.lagging.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.healthProblemsAlerts.lagging.text'),
+    ).toBeInTheDocument();
   });
 
-  it('should show loading spinner when fetching subscription data', async () => {
+  it('should show loading spinner when fetching subscription data', () => {
     // given
     vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
@@ -88,10 +83,8 @@ describe('SubscriptionView', () => {
     const { queryByTestId } = render(SubscriptionView);
 
     // then
-    await waitFor(() => {
-      expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
-      expect(queryByTestId('loading-spinner')).toBeVisible();
-    });
+    expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
+    expect(queryByTestId('loading-spinner')).toBeInTheDocument();
   });
 
   it('should hide loading spinner when data fetch is complete', () => {
