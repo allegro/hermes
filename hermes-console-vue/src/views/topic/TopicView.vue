@@ -3,15 +3,15 @@
   import { useRoute } from 'vue-router';
   import { useSubscriptionsList } from '@/composables/topic-subscriptions/use-subscriptions-list/useSubscriptionsList';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
+  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
+  import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
   import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
   import MessagesPreview from '@/views/topic/components/messages-preview/MessagesPreview.vue';
+  import MetricsList from '@/views/topic/components/metrics-list/MetricsList.vue';
   import PropertiesList from '@/views/topic/components/properties-list/PropertiesList.vue';
   import SchemaPanel from '@/views/topic/components/schema-panel/SchemaPanel.vue';
-  import MetricsList from '@/views/topic/components/metrics-list/MetricsList.vue';
   import SubscriptionsList from './components/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/components/topic-header/TopicHeader.vue';
-  import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
-  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
 
   const { t } = useI18n();
   const route = useRoute();

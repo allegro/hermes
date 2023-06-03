@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect } from 'vitest';
+import { dummyTopicMessagesPreview } from '@/dummy/topic';
+import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
+import { waitFor } from '@testing-library/vue';
 import axios from 'axios';
 import type { Mocked } from 'vitest';
-import { dummyTopicMessagesPreview } from '@/dummy/topic';
-import { waitFor } from '@testing-library/vue';
-import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
 
 vitest.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;

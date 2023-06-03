@@ -1,9 +1,9 @@
 <script setup lang="ts">
+  import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
   import { useI18n } from 'vue-i18n';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
   import type { TopicWithSchema } from '@/api/topic';
-  import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
 
   const props = defineProps<{
     topic: TopicWithSchema;

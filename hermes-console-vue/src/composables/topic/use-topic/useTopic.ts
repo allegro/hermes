@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
+import { fetchTopic, fetchTopicOwner } from '@/api/hermes-client';
 import type { Owner } from '@/api/owner';
 import type { TopicWithSchema } from '@/api/topic';
-import { fetchTopic, fetchTopicOwner } from '@/api/hermes-client';
 
 export function useTopic(topicName: string) {
   const topic = ref<TopicWithSchema>();

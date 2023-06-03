@@ -1,11 +1,11 @@
-import type { ResponsePromise } from '@/utils/axios-utils';
+import axios from 'axios';
 import type {
   MessagePreview,
-  TopicWithSchema,
   TopicMetrics,
+  TopicWithSchema,
 } from '@/api/topic';
-import axios from 'axios';
 import type { Owner } from '@/api/owner';
+import type { ResponsePromise } from '@/utils/axios-utils';
 
 export function fetchTopic(
   topicName: string,

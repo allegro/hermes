@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
-import type { TopicMetrics } from '@/api/topic';
 import { fetchTopicMetrics } from '@/api/hermes-client';
+import type { TopicMetrics } from '@/api/topic';
 
 export function useTopicMetrics(topic: string) {
   const metrics = ref<TopicMetrics>();

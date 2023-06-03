@@ -1,11 +1,11 @@
+import { Ack } from '@/api/topic';
+import { ContentType } from '@/api/content-type';
 import type {
   MessagePreview,
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';
-import { ContentType } from '@/api/content-type';
 import type { Owner } from '@/api/owner';
-import { Ack } from '@/api/topic';
 
 export const dummyTopic: TopicWithSchema = {
   schema:

@@ -1,7 +1,7 @@
 import { describe, expect } from 'vitest';
+import { h } from 'vue';
 import { render } from '@/utils/test-utils';
 import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
-import { h } from 'vue';
 
 describe('KeyValueCard', () => {
   const Component = h(KeyValueCard, { title: 'Sample title' }, () => [

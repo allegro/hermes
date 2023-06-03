@@ -1,15 +1,15 @@
 import { ContentType } from '@/api/content-type';
-import type { Subscription } from '@/api/subscription';
 import {
   DeliveryType,
   Severity,
   State,
   SubscriptionMode,
 } from '@/api/subscription';
-import type { SubscriptionHealth } from '@/api/subscription-health';
 import { ProblemCode, Status } from '@/api/subscription-health';
-import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import { SentMessageTraceStatus } from '@/api/subscription-undelivered';
+import type { SentMessageTrace } from '@/api/subscription-undelivered';
+import type { Subscription } from '@/api/subscription';
+import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
 export const dummySubscription: Subscription = {

@@ -1,8 +1,8 @@
 import { describe, expect } from 'vitest';
-import { render } from '@/utils/test-utils';
-import MetricsList from '@/views/topic/components/metrics-list/MetricsList.vue';
-import { within } from '@testing-library/vue';
 import { dummyTopicMetrics } from '@/dummy/topic';
+import { render } from '@/utils/test-utils';
+import { within } from '@testing-library/vue';
+import MetricsList from '@/views/topic/components/metrics-list/MetricsList.vue';
 
 describe('MetricsList', () => {
   it('should render proper heading', () => {

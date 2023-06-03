@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect } from 'vitest';
-import axios from 'axios';
-import type { Mocked } from 'vitest';
 import {
   dummySubscription,
   dummyTopicSubscriptionsList,
@@ -8,6 +6,8 @@ import {
 } from '@/dummy/subscription';
 import { useSubscriptionsList } from '@/composables/topic-subscriptions/use-subscriptions-list/useSubscriptionsList';
 import { waitFor } from '@testing-library/vue';
+import axios from 'axios';
+import type { Mocked } from 'vitest';
 
 vitest.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;

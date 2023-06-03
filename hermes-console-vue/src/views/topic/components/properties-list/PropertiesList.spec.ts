@@ -1,9 +1,9 @@
+import { Ack } from '@/api/topic';
 import { describe, expect } from 'vitest';
+import { dummyTopic } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
 import { within } from '@testing-library/vue';
-import { dummyTopic } from '@/dummy/topic';
 import PropertiesList from '@/views/topic/components/properties-list/PropertiesList.vue';
-import { Ack } from '@/api/topic';
 import userEvent from '@testing-library/user-event';
 
 describe('PropertiesList', () => {

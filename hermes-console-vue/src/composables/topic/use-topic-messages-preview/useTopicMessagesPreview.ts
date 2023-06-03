@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
-import type { MessagePreview } from '@/api/topic';
 import { fetchTopicMessagesPreview } from '@/api/hermes-client';
+import type { MessagePreview } from '@/api/topic';
 
 export function useTopicMessagesPreview(topicName: string) {
   const messages = ref<MessagePreview[]>();
