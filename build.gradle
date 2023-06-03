@@ -187,6 +187,10 @@ subprojects {
         }
     }
 
+    tasks.withType(Test) {
+        maxParallelForks = 2
+    }
+
     checkstyle {
         toolVersion '10.3.4'
         maxWarnings getIntProperty('maxCheckstyleWarnings', Integer.MAX_VALUE)

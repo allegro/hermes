@@ -39,7 +39,7 @@
 
     <!-- Build dirs -->
     <suppress checks="[a-zA-Z0-9]*"
-              files="[/\\]build[/\\]generated[/\\]java[/\\]" />
+              files="[/\\]build[/\\]generated[/\\]" />
 
     <!-- Classes repackaged from external libraries -->
     <suppress checks="[a-zA-Z0-9]*"
