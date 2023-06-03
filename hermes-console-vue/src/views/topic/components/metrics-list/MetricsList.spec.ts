@@ -14,7 +14,7 @@ describe('MetricsList', () => {
 
     // then
     const row = getByText('topicView.metrics.header')!;
-    expect(row).toBeInTheDocument();
+    expect(row).toBeVisible();
   });
 
   it.each([
@@ -33,6 +33,6 @@ describe('MetricsList', () => {
     // then
     const row = getByText(property).closest('tr')!;
     expect(row).toBeInTheDocument();
-    expect(within(row).getByText(value)).toBeInTheDocument();
+    expect(within(row).getByText(value)).toBeVisible();
   });
 });

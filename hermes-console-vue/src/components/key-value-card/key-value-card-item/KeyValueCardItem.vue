@@ -20,6 +20,7 @@
         {{ props.value }}
         <tooltip-icon
           class="ml-auto"
+          data-testid="tooltip-icon"
           v-if="props.tooltip"
           :content="props.tooltip"
         />

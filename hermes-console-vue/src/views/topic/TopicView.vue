@@ -11,6 +11,7 @@
   import SubscriptionsList from './components/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/components/topic-header/TopicHeader.vue';
   import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
+  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
 
   const { t } = useI18n();
   const route = useRoute();
@@ -18,6 +19,7 @@
   const { topic, owner } = useTopic(topicName);
   const { subscriptions } = useSubscriptionsList(topicName);
   const { metrics } = useTopicMetrics(topicName);
+  const { messages } = useTopicMessagesPreview(topicName);
 
   const breadcrumbsItems = [
     {
@@ -54,7 +56,7 @@
 
     <schema-panel :schema="topic.schema" />
 
-    <messages-preview :topic-name="topicName" />
+    <messages-preview v-if="messages" :messages="messages" />
 
     <subscriptions-list v-if="subscriptions" :subscriptions="subscriptions" />
   </v-container>

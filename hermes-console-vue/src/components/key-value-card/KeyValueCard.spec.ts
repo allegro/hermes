@@ -1,0 +1,30 @@
+import { describe, expect } from 'vitest';
+import { render } from '@/utils/test-utils';
+import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
+import { h } from 'vue';
+
+describe('KeyValueCard', () => {
+  const Component = h(KeyValueCard, { title: 'Sample title' }, () => [
+    h('span', 'Hello'),
+    h('span', 'World!'),
+  ]);
+
+  it('should render title properly', () => {
+    // given
+    const { getByText } = render(Component);
+
+    // expect
+    expect(getByText('Sample title')).toBeInTheDocument();
+  });
+
+  it('should render body', () => {
+    // given
+    const { getByText, getByRole } = render(Component);
+
+    // expect
+    const table = getByRole('table');
+    expect(table).to.exist;
+    expect(getByText('Hello')).toBeInTheDocument();
+    expect(getByText('World!')).toBeInTheDocument();
+  });
+});

@@ -4,6 +4,7 @@ import { within } from '@testing-library/vue';
 import { dummyTopic } from '@/dummy/topic';
 import PropertiesList from '@/views/topic/components/properties-list/PropertiesList.vue';
 import { Ack } from '@/api/topic';
+import userEvent from '@testing-library/user-event';
 
 describe('PropertiesList', () => {
   it('should render proper heading', () => {
@@ -109,7 +110,7 @@ describe('PropertiesList', () => {
       property: 'topicView.properties.modificationDate',
       value: '2021-11-09 09:45:13',
     },
-  ])('should render topic property', ({ topic, property, value }) => {
+  ])('should render topic property %s', ({ topic, property, value }) => {
     // given
     const props = { topic: topic };
 
@@ -119,7 +120,7 @@ describe('PropertiesList', () => {
     // then
     const row = getByText(property).closest('tr')!;
     expect(row).toBeInTheDocument();
-    expect(within(row).getByText(value)).toBeInTheDocument();
+    expect(within(row).getByText(value)).toBeVisible();
   });
 
   it.each([
@@ -127,16 +128,42 @@ describe('PropertiesList', () => {
       property: 'topicView.properties.acknowledgement',
       tooltip: 'topicView.properties.tooltips.acknowledgement',
     },
-  ])('should render property tooltip', ({ property, tooltip }) => {
+    {
+      property: 'topicView.properties.retentionTime',
+      tooltip: 'topicView.properties.tooltips.retentionTime',
+    },
+    {
+      property: 'topicView.properties.authorizedPublishers',
+      tooltip: 'topicView.properties.tooltips.authorizedPublishers',
+    },
+    {
+      property: 'topicView.properties.allowUnauthenticatedAccess',
+      tooltip: 'topicView.properties.tooltips.allowUnauthenticatedAccess',
+    },
+    {
+      property: 'topicView.properties.restrictSubscribing',
+      tooltip: 'topicView.properties.tooltips.restrictSubscribing',
+    },
+    {
+      property: 'topicView.properties.storeOffline',
+      tooltip: 'topicView.properties.tooltips.storeOffline',
+    },
+    {
+      property: 'topicView.properties.offlineRetention',
+      tooltip: 'topicView.properties.tooltips.offlineRetention',
+    },
+  ])('should render property tooltip %s', async ({ property, tooltip }) => {
     // given
     const props = { topic: dummyTopic };
 
     // when
     const { getByText } = render(PropertiesList, { props });
+    const row = getByText(property).closest('tr')!!;
+    const tooltipElement = getByText(tooltip);
+    await userEvent.hover(tooltipElement);
 
     // then
-    const row = getByText(property);
-    expect(row).toBeInTheDocument();
-    expect(within(row).getByText(tooltip)).toBeInTheDocument();
+    expect(tooltipElement).toBeVisible();
+    expect(within(row).getByTestId('tooltip-icon')).toBeVisible();
   });
 });

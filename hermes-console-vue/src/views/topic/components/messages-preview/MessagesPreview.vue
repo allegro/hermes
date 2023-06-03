@@ -1,10 +1,8 @@
 <script setup lang="ts">
-  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
+  import type { MessagePreview } from '@/api/topic';
   const props = defineProps<{
-    topicName: string;
+    messages: MessagePreview[];
   }>();
-
-  const { messages } = useTopicMessagesPreview(props.topicName);
 </script>
 
 <template>

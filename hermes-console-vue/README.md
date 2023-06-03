@@ -13,6 +13,12 @@ Hermes console migrated from AngularJS to Vue 3.
 yarn
 ```
 
+### Run mocked backend server
+
+```sh
+yarn dev-server
+```
+
 ### Compile and Hot-Reload for Development
 
 ```sh
