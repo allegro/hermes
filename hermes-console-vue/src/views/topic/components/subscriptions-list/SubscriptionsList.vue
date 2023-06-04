@@ -28,7 +28,7 @@
 
 <template>
   <v-expansion-panels>
-    <v-expansion-panel title="Subscriptions">
+    <v-expansion-panel :title="$t('topicView.subscriptions.title')">
       <v-expansion-panel-text class="expansion-panel__text">
         <v-list open-strategy="single">
           <v-list-item

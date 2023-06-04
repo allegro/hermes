@@ -12,7 +12,7 @@
 </script>
 
 <template>
-  <key-value-card :title="t('topicView.metrics.header')">
+  <key-value-card :title="t('topicView.metrics.title')">
     <key-value-card-item
       :name="t('topicView.metrics.rate')"
       :value="props.metrics.rate"

@@ -13,7 +13,7 @@ describe('MetricsList', () => {
     const { getByText } = render(MetricsList, { props });
 
     // then
-    const row = getByText('topicView.metrics.header')!;
+    const row = getByText('topicView.metrics.title')!;
     expect(row).toBeVisible();
   });
 

@@ -8,7 +8,7 @@
 
 <template>
   <v-expansion-panels>
-    <v-expansion-panel title="Message schema">
+    <v-expansion-panel :title="$t('topicView.schema.title')">
       <v-expansion-panel-text>
         <pre>
           <v-code class="raw-schema-snippet">{{ niceJson }}</v-code>

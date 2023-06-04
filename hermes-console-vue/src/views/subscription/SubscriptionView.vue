@@ -4,7 +4,6 @@
   import { useSubscription } from '@/composables/topic-subscriptions/use-subscription/useSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
-  import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
   import HeadersCard from '@/views/subscription/headers-card/HeadersCard.vue';
   import HealthProblemsAlerts from '@/views/subscription/health-problems-alerts/HealthProblemsAlerts.vue';
   import LastUndeliveredMessage from '@/views/subscription/last-undelivered-message/LastUndeliveredMessage.vue';
@@ -63,7 +62,7 @@
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <header-breadcrumbs :items="breadcrumbsItems" />
+        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"

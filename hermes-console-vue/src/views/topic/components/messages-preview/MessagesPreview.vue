@@ -7,7 +7,7 @@
 
 <template>
   <v-expansion-panels>
-    <v-expansion-panel title="Topic messages preview">
+    <v-expansion-panel :title="$t('topicView.messagesPreview.title')">
       <v-expansion-panel-text>
         <pre v-for="(message, index) in props.messages" :key="index">
           <v-code class="raw-schema-snippet">{{ JSON.parse(message.content) }}</v-code>

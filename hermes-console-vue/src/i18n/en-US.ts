@@ -110,7 +110,7 @@ const en_US = {
       },
     },
     metrics: {
-      header: 'Metrics',
+      title: 'Metrics',
       rate: 'Rate',
       deliveryRate: 'Delivery rate',
       published: 'Published',
@@ -118,7 +118,7 @@ const en_US = {
       messageSize: 'Message size',
     },
     properties: {
-      header: 'Properties',
+      title: 'Properties',
       contentType: 'Content type',
       labels: 'Labels',
       acknowledgement: 'Acknowledgement',
@@ -160,6 +160,18 @@ const en_US = {
         none: 'None',
       },
       authorizedPublishersNotSet: 'Not set',
+    },
+    messagesPreview: {
+      title: 'Topic messages preview',
+    },
+    schema: {
+      title: 'Message schema',
+    },
+    subscriptions: {
+      title: 'Subscriptions',
+    },
+    errorMessage: {
+      topicFetchFailed: 'Could not fetch {topicName} topic details',
     },
   },
   subscription: {

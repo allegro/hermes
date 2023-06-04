@@ -5,7 +5,8 @@
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
   import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
-  import HeaderBreadcrumbs from '@/components/header-breadcrumbs/HeaderBreadcrumbs.vue';
+  import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
+  import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import MessagesPreview from '@/views/topic/components/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/components/metrics-list/MetricsList.vue';
   import PropertiesList from '@/views/topic/components/properties-list/PropertiesList.vue';
@@ -16,7 +17,8 @@
   const { t } = useI18n();
   const route = useRoute();
   const { groupId, topicName } = route.params as Record<string, string>;
-  const { topic, owner } = useTopic(topicName);
+  const { topic, owner, topicIsLoading, ownerIsLoading, topicError } =
+    useTopic(topicName);
   const { subscriptions } = useSubscriptionsList(topicName);
   const { metrics } = useTopicMetrics(topicName);
   const { messages } = useTopicMessagesPreview(topicName);
@@ -42,19 +44,27 @@
 </script>
 
 <template>
-  <v-container v-if="topic" class="d-flex flex-column topic-view__container">
+  <v-container class="d-flex flex-column topic-view__container">
     <div class="d-flex justify-space-between align-center">
-      <header-breadcrumbs :items="breadcrumbsItems" />
+      <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
     </div>
+    <loading-spinner v-if="topicIsLoading || ownerIsLoading" />
+    <console-alert
+      v-if="topicError"
+      :text="
+        t('topicView.errorMessage.topicFetchFailed', { topicName: topicName })
+      "
+      type="error"
+    />
 
-    <topic-header v-if="owner" :topic="topic" :owner="owner" />
+    <topic-header v-if="topic && owner" :topic="topic" :owner="owner" />
 
     <div class="topic-view__upper_panel">
       <metrics-list v-if="metrics" :metrics="metrics" />
       <properties-list v-if="topic" :topic="topic" />
     </div>
 
-    <schema-panel :schema="topic.schema" />
+    <schema-panel v-if="topic" :schema="topic.schema" />
 
     <messages-preview v-if="messages" :messages="messages" />
 

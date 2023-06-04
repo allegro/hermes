@@ -12,7 +12,7 @@ describe('MessagesPreview', () => {
     const { getByText } = render(MessagesPreview, { props });
 
     // expect
-    expect(getByText('Topic messages preview')).toBeVisible();
+    expect(getByText('topicView.messagesPreview.title')).toBeVisible();
   });
 
   it('should render all messages', async () => {
@@ -21,7 +21,7 @@ describe('MessagesPreview', () => {
     const { getByText, container } = render(MessagesPreview, { props });
 
     // when
-    await user.click(getByText('Topic messages preview'));
+    await user.click(getByText('topicView.messagesPreview.title'));
 
     dummyTopicMessagesPreview.forEach((message, index) => {
       const codeBlock = container.querySelectorAll('.v-code')[index];

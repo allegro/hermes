@@ -15,7 +15,7 @@ describe('PropertiesList', () => {
     const { getByText } = render(PropertiesList, { props });
 
     // then
-    const row = getByText('topicView.properties.header')!;
+    const row = getByText('topicView.properties.title')!;
     expect(row).toBeInTheDocument();
   });
 
