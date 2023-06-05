@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.metric;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.Metered;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
@@ -12,6 +11,8 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
@@ -39,8 +40,8 @@ public class CachedTopic {
     private final Histogram topicMessageContentSize;
     private final Histogram globalMessageContentSize;
 
-    private final Meter topicThroughputMeter;
-    private final Meter globalThroughputMeter;
+    private final HermesCounter topicThroughputMeter;
+    private final HermesCounter globalThroughputMeter;
 
     private final Counter published;
 
@@ -69,8 +70,8 @@ public class CachedTopic {
 
         published = oldHermesMetrics.counter(Counters.PUBLISHED, topic.getName());
 
-        globalThroughputMeter = oldHermesMetrics.meter(Meters.THROUGHPUT_BYTES);
-        topicThroughputMeter = oldHermesMetrics.meter(Meters.TOPIC_THROUGHPUT_BYTES, topic.getName());
+        globalThroughputMeter = metricsFacade.topics().topicGlobalThroughputBytes();
+        topicThroughputMeter = metricsFacade.topics().topicThroughputBytes(topic.getName());
 
         if (Topic.Ack.ALL.equals(topic.getAck())) {
             globalProducerLatencyTimer = metricsFacade.topics().ackAllGlobalLatency();
@@ -132,8 +133,8 @@ public class CachedTopic {
     public void reportMessageContentSize(int size) {
         topicMessageContentSize.update(size);
         globalMessageContentSize.update(size);
-        topicThroughputMeter.mark(size);
-        globalThroughputMeter.mark(size);
+        topicThroughputMeter.increment(size);
+        globalThroughputMeter.increment(size);
     }
 
     public void markDelayedProcessing() {
@@ -141,7 +142,7 @@ public class CachedTopic {
         globalDelayedProcessingMeter.mark();
     }
 
-    public Metered getThroughput() {
+    public HermesRateMeter getThroughput() {
         return topicThroughputMeter;
     }
 }
