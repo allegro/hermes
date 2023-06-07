@@ -1,6 +1,6 @@
-import type { ResponsePromise } from '@/utils/axios-utils';
-import type { ComputedRef, Ref } from 'vue';
 import { computed, ref } from 'vue';
+import type { ComputedRef, Ref } from 'vue';
+import type { ResponsePromise } from '@/utils/axios-utils';
 
 type ReturnType<RESPONSE> = {
   data: Ref<RESPONSE | undefined>;

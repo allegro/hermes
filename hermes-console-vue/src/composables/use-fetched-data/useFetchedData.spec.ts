@@ -1,15 +1,13 @@
 import { beforeEach, describe, expect } from 'vitest';
+import { useFetchedData } from '@/composables/use-fetched-data/useFetchedData';
 import { waitFor } from '@testing-library/vue';
 import axios from 'axios';
 import type { Mocked } from 'vitest';
-import { useFetchedData } from '@/composables/use-fetched-data/useFetchedData';
 
 vitest.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
 
 describe('useFetchedData', () => {
-  const topicName = 'pl.allegro.public.group.DummyEvent';
-
   beforeEach(() => {
     vitest.resetAllMocks();
   });

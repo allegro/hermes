@@ -3,6 +3,7 @@
   import { useRoute } from 'vue-router';
   import { useSubscriptionsList } from '@/composables/topic-subscriptions/use-subscriptions-list/useSubscriptionsList';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
+  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
   import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
@@ -12,7 +13,6 @@
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
-  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
 
   const { t } = useI18n();
   const route = useRoute();
