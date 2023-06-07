@@ -16,7 +16,7 @@ describe('PropertiesCard', () => {
     const { getByText } = render(PropertiesCard, { props });
 
     // then
-    expect(getByText('subscription.propertiesCard.title')).toBeInTheDocument();
+    expect(getByText('subscription.propertiesCard.title')).toBeVisible();
   });
 
   it.each([
@@ -37,9 +37,7 @@ describe('PropertiesCard', () => {
       const contentTypeRow = getByText(
         'subscription.propertiesCard.contentType',
       ).closest('tr')!;
-      expect(
-        within(contentTypeRow).getByText(contentTypeText),
-      ).toBeInTheDocument();
+      expect(within(contentTypeRow).getByText(contentTypeText)).toBeVisible();
     },
   );
 
@@ -61,9 +59,7 @@ describe('PropertiesCard', () => {
       const deliveryTypeRow = getByText(
         'subscription.propertiesCard.deliveryType',
       ).closest('tr')!;
-      expect(
-        within(deliveryTypeRow).getByText(deliveryTypeText),
-      ).toBeInTheDocument();
+      expect(within(deliveryTypeRow).getByText(deliveryTypeText)).toBeVisible();
     },
   );
 
@@ -83,7 +79,7 @@ describe('PropertiesCard', () => {
     const modeRow = getByText('subscription.propertiesCard.mode').closest(
       'tr',
     )!;
-    expect(within(modeRow).getByText(modeText)).toBeInTheDocument();
+    expect(within(modeRow).getByText(modeText)).toBeVisible();
   });
 
   it('should render subscription rate limit for SERIAL delivery type', () => {
@@ -106,7 +102,7 @@ describe('PropertiesCard', () => {
     const rateLimitRow = getByText(
       'subscription.propertiesCard.rateLimit',
     ).closest('tr')!;
-    expect(within(rateLimitRow).getByText('15')).toBeInTheDocument();
+    expect(within(rateLimitRow).getByText('15')).toBeVisible();
   });
 
   it('should render subscription batch size for BATCH delivery type', () => {
@@ -128,7 +124,7 @@ describe('PropertiesCard', () => {
     const batchSizeRow = getByText(
       'subscription.propertiesCard.batchSize',
     ).closest('tr')!;
-    expect(within(batchSizeRow).getByText('10')).toBeInTheDocument();
+    expect(within(batchSizeRow).getByText('10')).toBeVisible();
   });
 
   it('should render subscription batch time window for BATCH delivery type', () => {
@@ -150,7 +146,7 @@ describe('PropertiesCard', () => {
     const batchTimeRow = getByText(
       'subscription.propertiesCard.batchTime',
     ).closest('tr')!;
-    expect(within(batchTimeRow).getByText('500 ms')).toBeInTheDocument();
+    expect(within(batchTimeRow).getByText('500 ms')).toBeVisible();
   });
 
   it('should render subscription batch volume for BATCH delivery type', () => {
@@ -172,7 +168,7 @@ describe('PropertiesCard', () => {
     const batchVolumeRow = getByText(
       'subscription.propertiesCard.batchVolume',
     ).closest('tr')!;
-    expect(within(batchVolumeRow).getByText('1024 B')).toBeInTheDocument();
+    expect(within(batchVolumeRow).getByText('1024 B')).toBeVisible();
   });
 
   it('should not render batch-specific data for SERIAL delivery type', () => {
@@ -218,7 +214,7 @@ describe('PropertiesCard', () => {
     const batchVolumeRow = getByText(
       'subscription.propertiesCard.sendingDelay',
     ).closest('tr')!;
-    expect(within(batchVolumeRow).getByText('200 ms')).toBeInTheDocument();
+    expect(within(batchVolumeRow).getByText('200 ms')).toBeVisible();
   });
 
   it('should not render SERIAL delivery specific data for BATCH delivery type', () => {
@@ -266,7 +262,7 @@ describe('PropertiesCard', () => {
     const batchVolumeRow = getByText(
       'subscription.propertiesCard.messageTtl',
     ).closest('tr')!;
-    expect(within(batchVolumeRow).getByText('60 s')).toBeInTheDocument();
+    expect(within(batchVolumeRow).getByText('60 s')).toBeVisible();
   });
 
   it('should render subscription request timeout', () => {
@@ -287,7 +283,7 @@ describe('PropertiesCard', () => {
     const batchVolumeRow = getByText(
       'subscription.propertiesCard.requestTimeout',
     ).closest('tr')!;
-    expect(within(batchVolumeRow).getByText('1000 ms')).toBeInTheDocument();
+    expect(within(batchVolumeRow).getByText('1000 ms')).toBeVisible();
   });
 
   it.each([
@@ -313,9 +309,7 @@ describe('PropertiesCard', () => {
       const trackingRow = getByText(
         'subscription.propertiesCard.trackingMode',
       ).closest('tr')!;
-      expect(
-        within(trackingRow).getByText(trackingModeName),
-      ).toBeInTheDocument();
+      expect(within(trackingRow).getByText(trackingModeName)).toBeVisible();
     },
   );
 
@@ -342,7 +336,7 @@ describe('PropertiesCard', () => {
       ).closest('tr')!;
       expect(
         within(retry4xxRow).getByText(retryClientErrors.toString()),
-      ).toBeInTheDocument();
+      ).toBeVisible();
     },
   );
 
@@ -365,7 +359,7 @@ describe('PropertiesCard', () => {
     const retryBackoffRow = getByText(
       'subscription.propertiesCard.retryBackoff',
     ).closest('tr')!;
-    expect(within(retryBackoffRow).getByText('150 ms')).toBeInTheDocument();
+    expect(within(retryBackoffRow).getByText('150 ms')).toBeVisible();
   });
 
   it('should render subscription retry backoff multiplier for SERIAL delivery type', () => {
@@ -388,9 +382,7 @@ describe('PropertiesCard', () => {
     const retryBackoffMultiplierRow = getByText(
       'subscription.propertiesCard.backoffMultiplier',
     ).closest('tr')!;
-    expect(
-      within(retryBackoffMultiplierRow).getByText('1'),
-    ).toBeInTheDocument();
+    expect(within(retryBackoffMultiplierRow).getByText('1')).toBeVisible();
   });
 
   it('should retry backoff max interval', () => {
@@ -442,7 +434,7 @@ describe('PropertiesCard', () => {
       const severityRow = getByText(
         'subscription.propertiesCard.monitoringSeverity',
       ).closest('tr')!;
-      expect(within(severityRow).getByText(severityName)).toBeInTheDocument();
+      expect(within(severityRow).getByText(severityName)).toBeVisible();
     },
   );
 
@@ -465,7 +457,7 @@ describe('PropertiesCard', () => {
     const reactionRow = getByText(
       'subscription.propertiesCard.monitoringReaction',
     ).closest('tr')!;
-    expect(within(reactionRow).getByText('foo')).toBeInTheDocument();
+    expect(within(reactionRow).getByText('foo')).toBeVisible();
   });
 
   it.each([true, false])(
@@ -486,9 +478,7 @@ describe('PropertiesCard', () => {
       const http2Row = getByText('subscription.propertiesCard.http2').closest(
         'tr',
       )!;
-      expect(
-        within(http2Row).getByText(http2Enabled.toString()),
-      ).toBeInTheDocument();
+      expect(within(http2Row).getByText(http2Enabled.toString())).toBeVisible();
     },
   );
 
@@ -514,7 +504,7 @@ describe('PropertiesCard', () => {
         within(subscriptionIdentityHeadersRow).getByText(
           subscriptionIdentityHeadersEnabled.toString(),
         ),
-      ).toBeInTheDocument();
+      ).toBeVisible();
     },
   );
 
@@ -538,7 +528,7 @@ describe('PropertiesCard', () => {
       ).closest('tr')!;
       expect(
         within(autoDeleteRow).getByText(autoDeleteWithTopicEnabled.toString()),
-      ).toBeInTheDocument();
+      ).toBeVisible();
     },
   );
 
@@ -558,9 +548,7 @@ describe('PropertiesCard', () => {
     const createdAtRow = getByText(
       'subscription.propertiesCard.createdAt',
     ).closest('tr')!;
-    expect(
-      within(createdAtRow).getByText('2023-02-18 15:54:41'),
-    ).toBeInTheDocument();
+    expect(within(createdAtRow).getByText('2023-02-18 15:54:41')).toBeVisible();
   });
 
   it('should render subscription modification date', () => {
@@ -581,6 +569,6 @@ describe('PropertiesCard', () => {
     ).closest('tr')!;
     expect(
       within(modifiedAtRow).getByText('2023-02-18 15:54:57'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 });

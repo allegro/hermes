@@ -32,7 +32,7 @@ describe('MetricsList', () => {
 
     // then
     const row = getByText(property).closest('tr')!;
-    expect(row).toBeInTheDocument();
+    expect(row).toBeVisible();
     expect(within(row).getByText(value)).toBeVisible();
   });
 });

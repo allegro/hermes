@@ -7,6 +7,6 @@ describe('HomeView', () => {
     const { getByText } = render(HomeView);
 
     // then
-    expect(getByText(/console/i)).toBeInTheDocument();
+    expect(getByText(/console/i)).toBeVisible();
   });
 });

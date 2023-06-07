@@ -24,9 +24,7 @@ describe('ConsistencyView', () => {
 
     // then
     expect(vi.mocked(useInconsistentTopics)).toHaveBeenCalledOnce();
-    expect(
-      getByText('consistency.inconsistentTopics.heading'),
-    ).toBeInTheDocument();
+    expect(getByText('consistency.inconsistentTopics.heading')).toBeVisible();
   });
 
   it('should show loading spinner when fetching Consistency data', () => {
@@ -41,7 +39,7 @@ describe('ConsistencyView', () => {
 
     // then
     expect(vi.mocked(useInconsistentTopics)).toHaveBeenCalledOnce();
-    expect(queryByTestId('loading-spinner')).toBeInTheDocument();
+    expect(queryByTestId('loading-spinner')).toBeVisible();
   });
 
   it('should hide loading spinner when data fetch is complete', () => {
@@ -72,10 +70,8 @@ describe('ConsistencyView', () => {
 
     // then
     expect(vi.mocked(useInconsistentTopics)).toHaveBeenCalledOnce();
-    expect(
-      queryByText('consistency.connectionError.title'),
-    ).toBeInTheDocument();
-    expect(queryByText('consistency.connectionError.text')).toBeInTheDocument();
+    expect(queryByText('consistency.connectionError.title')).toBeVisible();
+    expect(queryByText('consistency.connectionError.text')).toBeVisible();
   });
 
   it('should not show error message when data was fetch successfully', () => {

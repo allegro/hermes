@@ -32,8 +32,8 @@ describe('ConsumerGroupsView', () => {
 
     // then
     expect(vi.mocked(useConsumerGroups)).toHaveBeenCalledOnce();
-    expect(getByText('consumerGroups.title')).toBeInTheDocument();
-    expect(getByText('consumerGroups.groupId')).toBeInTheDocument();
+    expect(getByText('consumerGroups.title')).toBeVisible();
+    expect(getByText('consumerGroups.groupId')).toBeVisible();
   });
 
   it('should show loading spinner when fetching consumerGroups data', () => {
@@ -48,7 +48,7 @@ describe('ConsumerGroupsView', () => {
 
     // then
     expect(vi.mocked(useConsumerGroups)).toHaveBeenCalledOnce();
-    expect(queryByTestId('loading-spinner')).toBeInTheDocument();
+    expect(queryByTestId('loading-spinner')).toBeVisible();
   });
 
   it('should hide loading spinner when data fetch is complete', () => {
@@ -79,12 +79,8 @@ describe('ConsumerGroupsView', () => {
 
     // then
     expect(vi.mocked(useConsumerGroups)).toHaveBeenCalledOnce();
-    expect(
-      queryByText('consumerGroups.connectionError.title'),
-    ).toBeInTheDocument();
-    expect(
-      queryByText('consumerGroups.connectionError.text'),
-    ).toBeInTheDocument();
+    expect(queryByText('consumerGroups.connectionError.title')).toBeVisible();
+    expect(queryByText('consumerGroups.connectionError.text')).toBeVisible();
   });
 
   it('should not show error message when data was fetch successfully', () => {

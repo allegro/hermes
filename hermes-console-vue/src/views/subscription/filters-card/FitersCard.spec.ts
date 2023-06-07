@@ -13,7 +13,7 @@ describe('FiltersCard', () => {
     const { getByText } = render(FiltersCard, { props });
 
     // then
-    expect(getByText('subscription.filtersCard.title')).toBeInTheDocument();
+    expect(getByText('subscription.filtersCard.title')).toBeVisible();
   });
 
   it('should render filters table', () => {
@@ -24,11 +24,11 @@ describe('FiltersCard', () => {
     props.filters.forEach(
       ({ type, path, matcher, matchingStrategy }, index) => {
         const row = getByText(index + 1).closest('tr')!;
-        expect(within(row).getByText(index + 1)).toBeInTheDocument();
-        expect(within(row).getByText(type)).toBeInTheDocument();
-        expect(within(row).getByText(path)).toBeInTheDocument();
-        expect(within(row).getByText(matcher)).toBeInTheDocument();
-        expect(within(row).getByText(matchingStrategy)).toBeInTheDocument();
+        expect(within(row).getByText(index + 1)).toBeVisible();
+        expect(within(row).getByText(type)).toBeVisible();
+        expect(within(row).getByText(path)).toBeVisible();
+        expect(within(row).getByText(matcher)).toBeVisible();
+        expect(within(row).getByText(matchingStrategy)).toBeVisible();
       },
     );
   });

@@ -16,7 +16,7 @@ describe('PropertiesList', () => {
 
     // then
     const row = getByText('topicView.properties.title')!;
-    expect(row).toBeInTheDocument();
+    expect(row).toBeVisible();
   });
 
   it.each([
@@ -119,7 +119,7 @@ describe('PropertiesList', () => {
 
     // then
     const row = getByText(property).closest('tr')!;
-    expect(row).toBeInTheDocument();
+    expect(row).toBeVisible();
     expect(within(row).getByText(value)).toBeVisible();
   });
 

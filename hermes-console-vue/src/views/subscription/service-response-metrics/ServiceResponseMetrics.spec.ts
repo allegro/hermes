@@ -9,21 +9,15 @@ describe('ServiceResponseMetrics', () => {
     // then
     expect(
       getByText('subscription.serviceResponseMetrics.title'),
-    ).toBeInTheDocument();
-    expect(
-      getByText('subscription.serviceResponseMetrics.2xx'),
-    ).toBeInTheDocument();
-    expect(
-      getByText('subscription.serviceResponseMetrics.4xx'),
-    ).toBeInTheDocument();
-    expect(
-      getByText('subscription.serviceResponseMetrics.5xx'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
+    expect(getByText('subscription.serviceResponseMetrics.2xx')).toBeVisible();
+    expect(getByText('subscription.serviceResponseMetrics.4xx')).toBeVisible();
+    expect(getByText('subscription.serviceResponseMetrics.5xx')).toBeVisible();
     expect(
       getByText('subscription.serviceResponseMetrics.networkTimeouts'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
     expect(
       getByText('subscription.serviceResponseMetrics.otherNetworkErrors'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 });
