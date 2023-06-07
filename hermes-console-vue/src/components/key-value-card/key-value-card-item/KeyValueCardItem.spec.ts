@@ -16,12 +16,12 @@ describe('KeyValueCardItem', () => {
 
     // then
     const keyElement = getByText('Sample key');
-    expect(keyElement).toBeInTheDocument();
+    expect(keyElement).toBeVisible();
     expect(keyElement).not.toHaveAttribute('href');
 
     // and
     const valueElement = getByText('Sample value');
-    expect(valueElement).toBeInTheDocument();
+    expect(valueElement).toBeVisible();
   });
 
   it('should render component with url', () => {
@@ -37,12 +37,12 @@ describe('KeyValueCardItem', () => {
 
     // then
     const keyElement = getByText('Sample key');
-    expect(keyElement).toBeInTheDocument();
+    expect(keyElement).toBeVisible();
     expect(keyElement).toHaveAttribute('href', 'https://allegro.pl');
 
     // and
     const valueElement = getByText('Sample value');
-    expect(valueElement).toBeInTheDocument();
+    expect(valueElement).toBeVisible();
   });
 
   it('should render component with hidden tooltip', () => {
@@ -58,11 +58,11 @@ describe('KeyValueCardItem', () => {
 
     // then
     const keyElement = getByText('Sample key');
-    expect(keyElement).toBeInTheDocument();
+    expect(keyElement).toBeVisible();
 
     // and
     const valueElement = getByText('Sample value');
-    expect(valueElement).toBeInTheDocument();
+    expect(valueElement).toBeVisible();
 
     // and
     const tooltipElement = getByText('Sample tooltip text');

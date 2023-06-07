@@ -39,14 +39,14 @@ const useSubscriptionsListMock: ReturnType<typeof useSubscriptionsList> = {
 };
 
 const useTopicMetricsMock: ReturnType<typeof useTopicMetrics> = {
-  metrics: ref(dummyTopicMetrics),
+  data: ref(dummyTopicMetrics),
   error: ref(false),
   isLoading: computed(() => false),
 };
 
 const useTopicMessagesPreviewMock: ReturnType<typeof useTopicMessagesPreview> =
   {
-    messages: ref(dummyTopicMessagesPreview),
+    data: ref(dummyTopicMessagesPreview),
     error: ref(false),
     isLoading: computed(() => false),
   };

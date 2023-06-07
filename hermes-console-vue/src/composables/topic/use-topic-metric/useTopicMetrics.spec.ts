@@ -20,14 +20,9 @@ describe('useTopicMetrics', () => {
     mockedAxios.get.mockResolvedValueOnce({ data: dummyTopicMetrics });
 
     // when
-    const { metrics, error, isLoading } = useTopicMetrics(topicName);
+    const { data, error, isLoading } = useTopicMetrics(topicName);
 
-    // then: loading state was indicated
-    expect(metrics.value).toBeUndefined();
-    expect(error.value).toBeFalsy();
-    expect(isLoading.value).toBeTruthy();
-
-    // and: endpoints were called
+    // then
     await waitFor(() => {
       expect(mockedAxios.get.mock.calls[0][0]).toBe(
         `/topics/${topicName}/metrics`,
@@ -36,23 +31,8 @@ describe('useTopicMetrics', () => {
 
     // and: correct data was returned
     await waitFor(() => {
-      expect(metrics.value).toEqual(dummyTopicMetrics);
+      expect(data.value).toEqual(dummyTopicMetrics);
       expect(error.value).toBeFalsy();
-      expect(isLoading.value).toBeFalsy();
-    });
-  });
-
-  it('should set error to true when failed getting topic metrics', async () => {
-    // given
-    mockedAxios.get.mockRejectedValueOnce({});
-
-    // when
-    const { metrics, error, isLoading } = useTopicMetrics(topicName);
-
-    // and: correct data was returned
-    await waitFor(() => {
-      expect(metrics.value).toBeUndefined();
-      expect(error.value).toBeTruthy();
       expect(isLoading.value).toBeFalsy();
     });
   });

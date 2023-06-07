@@ -14,7 +14,7 @@ describe('KeyValueCard', () => {
     const { getByText } = render(Component);
 
     // expect
-    expect(getByText('Sample title')).toBeInTheDocument();
+    expect(getByText('Sample title')).toBeVisible();
   });
 
   it('should render body', () => {
@@ -24,7 +24,7 @@ describe('KeyValueCard', () => {
     // expect
     const table = getByRole('table');
     expect(table).to.exist;
-    expect(getByText('Hello')).toBeInTheDocument();
-    expect(getByText('World!')).toBeInTheDocument();
+    expect(getByText('Hello')).toBeVisible();
+    expect(getByText('World!')).toBeVisible();
   });
 });
