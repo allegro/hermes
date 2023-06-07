@@ -1,7 +1,7 @@
 import { describe, expect } from 'vitest';
 import { dummyTopic, dummyTopicOwner } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
-import TopicHeader from '@/views/topic/components/topic-header/TopicHeader.vue';
+import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
 
 describe('TopicHeader', () => {
   const props = { topic: dummyTopic, owner: dummyTopicOwner };

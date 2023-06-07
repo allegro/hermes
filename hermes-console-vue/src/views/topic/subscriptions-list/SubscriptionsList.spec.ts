@@ -4,7 +4,7 @@ import {
   secondDummySubscription,
 } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
-import SubscriptionsList from '@/views/topic/components/subscriptions-list/SubscriptionsList.vue';
+import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
 import userEvent from '@testing-library/user-event';
 
 describe('SubscriptionsList', () => {

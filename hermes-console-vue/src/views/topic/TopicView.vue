@@ -6,12 +6,12 @@
   import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
-  import MessagesPreview from '@/views/topic/components/messages-preview/MessagesPreview.vue';
-  import MetricsList from '@/views/topic/components/metrics-list/MetricsList.vue';
-  import PropertiesList from '@/views/topic/components/properties-list/PropertiesList.vue';
-  import SchemaPanel from '@/views/topic/components/schema-panel/SchemaPanel.vue';
-  import SubscriptionsList from './components/subscriptions-list/SubscriptionsList.vue';
-  import TopicHeader from '@/views/topic/components/topic-header/TopicHeader.vue';
+  import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
+  import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
+  import PropertiesList from '@/views/topic/properties-list/PropertiesList.vue';
+  import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
+  import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
+  import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
   import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
 
   const { t } = useI18n();

@@ -3,7 +3,7 @@ import { describe, expect } from 'vitest';
 import { dummyTopic } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
 import { within } from '@testing-library/vue';
-import PropertiesList from '@/views/topic/components/properties-list/PropertiesList.vue';
+import PropertiesList from '@/views/topic/properties-list/PropertiesList.vue';
 import userEvent from '@testing-library/user-event';
 
 describe('PropertiesList', () => {

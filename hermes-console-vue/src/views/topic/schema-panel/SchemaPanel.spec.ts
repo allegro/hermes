@@ -1,7 +1,7 @@
 import { describe, expect } from 'vitest';
 import { dummyTopic } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
-import SchemaPanel from '@/views/topic/components/schema-panel/SchemaPanel.vue';
+import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
 import userEvent from '@testing-library/user-event';
 
 describe('SchemaPanel', () => {

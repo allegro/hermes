@@ -1,7 +1,7 @@
 import { describe, expect } from 'vitest';
 import { dummyTopicMessagesPreview } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
-import MessagesPreview from '@/views/topic/components/messages-preview/MessagesPreview.vue';
+import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
 import userEvent from '@testing-library/user-event';
 
 describe('MessagesPreview', () => {
