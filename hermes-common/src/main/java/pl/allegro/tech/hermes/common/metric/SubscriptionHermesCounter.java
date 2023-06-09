@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.metric;
 import com.codahale.metrics.Meter;
 import io.micrometer.core.instrument.Counter;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 
 public class SubscriptionHermesCounter extends HermesCounter {
 

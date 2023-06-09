@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.metric.HermesRateMeter;
+import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;

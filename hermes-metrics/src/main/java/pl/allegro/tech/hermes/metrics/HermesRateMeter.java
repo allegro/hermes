@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.common.metric;
+package pl.allegro.tech.hermes.metrics;
 
 public interface HermesRateMeter {
     double getOneMinuteRate();
