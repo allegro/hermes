@@ -11,8 +11,8 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
-import pl.allegro.tech.hermes.metrics.HermesCounter;
-import pl.allegro.tech.hermes.metrics.HermesRateMeter;
+import pl.allegro.tech.hermes.common.metric.HermesCounter;
+import pl.allegro.tech.hermes.common.metric.HermesRateMeter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 

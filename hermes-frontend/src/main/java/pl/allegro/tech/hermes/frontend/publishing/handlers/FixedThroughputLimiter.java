@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.metrics.HermesRateMeter;
+import pl.allegro.tech.hermes.common.metric.HermesRateMeter;
 
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaViolation;

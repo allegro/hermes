@@ -6,8 +6,11 @@ import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.common.metric.SubscriptionHermesCounter;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.common.metric.HermesCounter;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
@@ -26,7 +29,6 @@ import static pl.allegro.tech.hermes.common.metric.Meters.FILTERED_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_BATCH_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_METER;
-import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_THROUGHPUT_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_METER;
 import static pl.allegro.tech.hermes.common.metric.Timers.CONSUMER_IDLE_TIME;
 import static pl.allegro.tech.hermes.common.metric.Timers.SUBSCRIPTION_LATENCY;
@@ -35,10 +37,17 @@ public class SubscriptionMetrics {
 
     private final HermesMetrics metrics;
     private final SubscriptionName subscription;
+    private final MetricsFacade metricsFacade;
 
-    public SubscriptionMetrics(HermesMetrics metrics, SubscriptionName subscription) {
+    private final SubscriptionHermesCounter subscriptionThroughputCounter;
+
+    public SubscriptionMetrics(HermesMetrics metrics, SubscriptionName subscription,
+                               MetricsFacade metricsFacade) {
         this.metrics = metrics;
         this.subscription = subscription;
+        this.metricsFacade = metricsFacade;
+        this.subscriptionThroughputCounter = metricsFacade.subscriptionMetrics()
+                .subscriptionThroughputBytes(subscription);
     }
 
     public void markAttempt() {
@@ -50,7 +59,7 @@ public class SubscriptionMetrics {
         metrics.meter(TOPIC_METER, subscription.getTopicName()).mark(batch.getMessageCount());
         metrics.meter(SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(batch.getMessageCount());
         metrics.meter(SUBSCRIPTION_BATCH_METER, subscription.getTopicName(), subscription.getName()).mark();
-        metrics.meter(SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()).mark(batch.getSize());
+        subscriptionThroughputCounter.increment(batch.getSize());
         metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
         metrics.counter(DELIVERED, subscription.getTopicName(), subscription.getName()).inc(batch.getMessageCount());
         metrics.decrementInflightCounter(subscription, batch.getMessageCount());
@@ -61,7 +70,7 @@ public class SubscriptionMetrics {
         metrics.meter(METER).mark();
         metrics.meter(TOPIC_METER, subscription.getTopicName()).mark();
         metrics.meter(SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark();
-        metrics.meter(SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()).mark(message.getSize());
+        subscriptionThroughputCounter.increment(message.getSize());
         metrics.registerConsumerHttpAnswer(subscription, result.getStatusCode());
         metrics.counter(DELIVERED, subscription.getTopicName(), subscription.getName()).inc();
         metrics.decrementInflightCounter(subscription);
@@ -85,7 +94,7 @@ public class SubscriptionMetrics {
         } else {
             metrics.consumerErrorsOtherMeter(subscription).mark();
         }
-        metrics.meter(SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()).mark(messageSize);
+        subscriptionThroughputCounter.increment(messageSize);
     }
 
     public void markDiscarded(Message message) {
@@ -167,6 +176,6 @@ public class SubscriptionMetrics {
         metrics.unregister(CONSUMER_IDLE_TIME, subscription);
         metrics.unregister(FILTERED_METER, subscription);
         metrics.unregister(SUBSCRIPTION_LATENCY, subscription);
-        metrics.unregister(SUBSCRIPTION_THROUGHPUT_BYTES, subscription);
+        metricsFacade.subscriptionMetrics().unregister(subscriptionThroughputCounter);
     }
 }

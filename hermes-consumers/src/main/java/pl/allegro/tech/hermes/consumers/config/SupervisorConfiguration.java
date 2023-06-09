@@ -261,6 +261,7 @@ public class SupervisorConfiguration {
     @Bean
     public ConsumerFactory consumerFactory(ReceiverFactory messageReceiverFactory,
                                            HermesMetrics hermesMetrics,
+                                           MetricsFacade metricsFacade,
                                            CommonConsumerProperties commonConsumerProperties,
                                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                                            OutputRateCalculatorFactory outputRateCalculatorFactory,
@@ -278,6 +279,7 @@ public class SupervisorConfiguration {
         return new ConsumerFactory(
                 messageReceiverFactory,
                 hermesMetrics,
+                metricsFacade,
                 commonConsumerProperties,
                 consumerRateLimitSupervisor,
                 outputRateCalculatorFactory,

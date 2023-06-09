@@ -1,11 +1,11 @@
-package pl.allegro.tech.hermes.metrics;
+package pl.allegro.tech.hermes.common.metric;
 
 
 public class HermesCounter implements HermesRateMeter {
-    private final io.micrometer.core.instrument.Counter micrometerCounter;
-    private final com.codahale.metrics.Meter graphiteMeter;
+    protected final io.micrometer.core.instrument.Counter micrometerCounter;
+    protected final com.codahale.metrics.Meter graphiteMeter;
 
-    private HermesCounter(io.micrometer.core.instrument.Counter micrometerCounter,
+    protected HermesCounter(io.micrometer.core.instrument.Counter micrometerCounter,
                           com.codahale.metrics.Meter graphiteMeter) {
         this.micrometerCounter = micrometerCounter;
         this.graphiteMeter = graphiteMeter;

@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 import java.util.List;
@@ -31,7 +30,7 @@ public class TopicMetrics {
 
     public HermesTimer ackAllTopicLatency(TopicName topic) {
         return HermesTimer.from(
-                timer("ack-all.topic-latency", topic),
+                micrometerTimer("ack-all.topic-latency", topic),
                 hermesMetrics.timer(Timers.ACK_ALL_TOPIC_LATENCY, topic));
     }
 
@@ -49,7 +48,7 @@ public class TopicMetrics {
 
     public HermesTimer ackLeaderTopicLatency(TopicName topic) {
         return HermesTimer.from(
-                timer("ack-leader.topic-latency", topic),
+                micrometerTimer("ack-leader.topic-latency", topic),
                 hermesMetrics.timer(Timers.ACK_LEADER_TOPIC_LATENCY, topic));
     }
 
@@ -61,7 +60,7 @@ public class TopicMetrics {
 
     public HermesCounter topicThroughputBytes(TopicName topicName) {
         return HermesCounter.from(
-                counter("topic-throughput", topicName),
+                micrometerCounter("topic-throughput", topicName),
                 hermesMetrics.meter(TOPIC_THROUGHPUT_BYTES, topicName)
         );
     }
@@ -73,11 +72,11 @@ public class TopicMetrics {
         );
     }
 
-    private Timer timer(String metricName, TopicName topicName) {
+    private Timer micrometerTimer(String metricName, TopicName topicName) {
         return meterRegistry.timer(metricName, topicTags(topicName));
     }
 
-    private Counter counter(String metricName, TopicName topicName) {
+    private Counter micrometerCounter(String metricName, TopicName topicName) {
         return meterRegistry.counter(metricName, topicTags(topicName));
     }
 

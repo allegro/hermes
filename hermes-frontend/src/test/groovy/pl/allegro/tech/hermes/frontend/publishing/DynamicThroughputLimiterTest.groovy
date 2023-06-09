@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.publishing
 
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.frontend.publishing.handlers.DynamicThroughputLimiter
-import pl.allegro.tech.hermes.metrics.HermesRateMeter
+import pl.allegro.tech.hermes.common.metric.HermesRateMeter
 import spock.lang.Specification
 
 import java.time.Duration
