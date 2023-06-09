@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.metric;
 
-
 import com.codahale.metrics.Meter;
 import io.micrometer.core.instrument.Counter;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -18,8 +17,7 @@ public class SubscriptionHermesCounter extends HermesCounter {
         this.subscription = subscription;
     }
 
-    public static SubscriptionHermesCounter from(Counter micrometerCounter,
-                                                 Meter graphiteMeter,
+    public static SubscriptionHermesCounter from(Counter micrometerCounter, Meter graphiteMeter,
                                                  String graphiteName, SubscriptionName subscription) {
         return new SubscriptionHermesCounter(micrometerCounter, graphiteMeter, graphiteName, subscription);
     }
