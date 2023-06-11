@@ -4,6 +4,7 @@
   import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
 
   const { t } = useI18n();
+  // TODO: proper links to dashboards
 </script>
 
 <template>

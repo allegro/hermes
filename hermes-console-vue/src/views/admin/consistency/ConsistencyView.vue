@@ -2,7 +2,6 @@
   import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { useInconsistentTopics } from '@/composables/use-inconsistent-topics/useInconsistentTopics';
-  import ConsistencyBreadcrumbs from '@/views/admin/consistency/consistency-breadcrumbs/ConsistencyBreadcrumbs.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import InconsistentTopicsListing from '@/views/admin/consistency/inconsistent-topics-listing/InconsistentTopicsListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
@@ -11,13 +10,23 @@
   const topicFilter = ref<string>();
 
   const { topics, loading, error } = useInconsistentTopics();
+
+  const breadcrumbsItems = [
+    {
+      title: t('consistency.breadcrumbs.home'),
+      href: '/',
+    },
+    {
+      title: t('consistency.breadcrumbs.title'),
+    },
+  ];
 </script>
 
 <template>
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <consistency-breadcrumbs />
+        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"

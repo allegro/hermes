@@ -3,7 +3,6 @@
   import { useConstraints } from '@/composables/use-constraints/useConstraints';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
-  import ConstraintsBreadcrumbs from '@/views/admin/constraints/constraints-breadcrumbs/ConstraintsBreadcrumbs.vue';
   import ConstraintsListing from '@/views/admin/constraints/constraints-listing/ConstraintsListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
@@ -13,13 +12,23 @@
 
   const { topicConstraints, subscriptionConstraints, loading, error } =
     useConstraints();
+
+  const breadcrumbsItems = [
+    {
+      title: t('constraints.breadcrumbs.home'),
+      href: '/',
+    },
+    {
+      title: t('constraints.breadcrumbs.title'),
+    },
+  ];
 </script>
 
 <template>
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <constraints-breadcrumbs />
+        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"

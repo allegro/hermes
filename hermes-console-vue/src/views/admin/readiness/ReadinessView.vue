@@ -3,18 +3,27 @@
   import { useReadiness } from '@/composables/use-readiness/useReadiness';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
-  import ReadinessBreadcrumbs from '@/views/admin/readiness/readiness-breadcrumbs/ReadinessBreadcrumbs.vue';
 
   const { t } = useI18n();
 
   const { datacentersReadiness, loading, error } = useReadiness();
+
+  const breadcrumbsItems = [
+    {
+      title: t('readiness.breadcrumbs.home'),
+      href: '/',
+    },
+    {
+      title: t('readiness.breadcrumbs.title'),
+    },
+  ];
 </script>
 
 <template>
   <v-container fill-height fluid class="mx-auto">
     <v-row dense>
       <v-col md="12">
-        <readiness-breadcrumbs />
+        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"

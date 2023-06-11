@@ -101,12 +101,13 @@ const en_US = {
   topicView: {
     header: {
       topic: 'TOPIC',
-      owner: 'Owner:',
+      owner: 'OWNER:',
       actions: {
         edit: 'Edit',
         clone: 'Clone',
         offlineRetransmission: 'Offline retransmission',
         remove: 'Remove',
+        copyName: 'Copy topic name',
       },
     },
     metrics: {
