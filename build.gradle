@@ -64,11 +64,11 @@ allprojects {
             json2avro         : '0.2.14',
             okhttp            : '3.9.1',
             undertow          : '2.0.29.Final',
-            spring_web        : '5.1.5.RELEASE',
+            spring_web        : '5.3.24',
             failsafe          : '2.3.1',
             junit_jupiter     : '5.8.2',
             testcontainers    : '1.18.1',
-            spring            : '2.4.2',
+            spring            : '2.7.7',
             assertj           : '3.22.0'
     ]
 

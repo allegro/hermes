@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -107,5 +108,12 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
         String path = paths.groupPath(groupName);
         return readFrom(path, Group.class, quiet);
+    }
+
+    @PostConstruct
+    public void init() {
+        logger.info("Before ensuring init path exists");
+        ensurePathExists(paths.groupsPath());
+        logger.info("After ensuring init path exists");
     }
 }
