@@ -12,10 +12,10 @@ import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 
 public class ZookeeperGroupRepository extends ZookeeperBasedRepository implements GroupRepository {
 
@@ -91,7 +91,8 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     @Override
     public List<Group> listGroups() {
-        return listGroupNames().stream()
+        return listGroupNames()
+                .stream()
                 .map(n -> getGroupDetails(n, true))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
