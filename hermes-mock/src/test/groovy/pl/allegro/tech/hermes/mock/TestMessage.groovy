@@ -42,7 +42,7 @@ class TestMessageWithDifferentSchema {
     }
 }
 
-class TestMessageWithNullableSchema extends TestMessageWithDifferentSchema{
+class TestMessageWithNullableSchema extends TestMessageWithDifferentSchema {
     TestMessageWithNullableSchema() {}
 
     TestMessageWithNullableSchema(String key, Integer value) {
