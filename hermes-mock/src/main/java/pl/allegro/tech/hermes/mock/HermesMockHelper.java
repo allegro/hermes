@@ -7,7 +7,6 @@ import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.ValueMatcher;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.BinaryDecoder;
@@ -64,7 +63,7 @@ public class HermesMockHelper {
         try {
             byte[] json = new JsonAvroConverter().convertToJson(raw, schema);
             return deserializeJson(json, clazz);
-        } catch (AvroRuntimeException ex) {
+        } catch (RuntimeException ex) {
             throw new HermesMockException("Cannot decode body " + raw + " to " + clazz.getSimpleName(), ex);
         }
     }
