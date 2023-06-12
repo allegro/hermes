@@ -1,19 +1,22 @@
 plugins {
     id 'groovy'
+    id 'java-library'
 }
 
 dependencies {
-    compile group: 'org.hibernate.validator', name: 'hibernate-validator', version: '6.2.2.Final'
-    compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
-    compile group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: versions.jackson
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
-    compile group: 'com.google.guava', name: 'guava', version: versions.guava
-    compile group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.0.2'
-    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-    compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'
-    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.3'
+    api group: 'org.hibernate.validator', name: 'hibernate-validator', version: '6.2.2.Final'
+    api group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
+    api group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-json-provider', version: versions.jackson
+    api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
+    implementation group: 'com.google.guava', name: 'guava', version: versions.guava
+    api group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.0.2'
+    api group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.3'
 
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile project(':hermes-test-helper')
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
+    testImplementation project(':hermes-test-helper')
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }

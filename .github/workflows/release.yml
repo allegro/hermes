@@ -22,10 +22,10 @@ jobs:
           fetch-depth: 0
       - uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: '17'
+          distribution: 'temurin'
       - name: 'Previous version'
         if: github.ref == 'refs/heads/master'
         id: 'previous-version'

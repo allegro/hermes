@@ -15,16 +15,21 @@ class DirectBufferUtils {
     static {
         DirectBufferCleaner cleaner;
         try {
-            cleaner = new Java11DirectBufferCleaner();
+            cleaner = new DirectBufferCleaner();
         } catch (ReflectiveOperationException e) {
             cleaner = null;
         }
         CLEANER = cleaner;
     }
 
+    static boolean supportsReleasing() {
+        return CLEANER != null;
+    }
+
+
     static void release(ByteBuffer buffer) {
         try {
-            if (CLEANER != null && buffer.isDirect()) {
+            if (supportsReleasing() && buffer.isDirect()) {
                 CLEANER.clean(buffer);
             }
         } catch (ReflectiveOperationException e) {
@@ -32,15 +37,11 @@ class DirectBufferUtils {
         }
     }
 
-    private interface DirectBufferCleaner {
-        void clean(ByteBuffer buffer) throws ReflectiveOperationException;
-    }
-
-    static class Java11DirectBufferCleaner implements DirectBufferCleaner {
+    static class DirectBufferCleaner {
         private final Object unsafe;
         private final Method invokeCleaner;
 
-        Java11DirectBufferCleaner() throws ReflectiveOperationException {
+        DirectBufferCleaner() throws ReflectiveOperationException {
             Class<?> clazz = Class.forName("sun.misc.Unsafe");
             Field field = clazz.getDeclaredField("theUnsafe");
             field.setAccessible(true);
@@ -48,7 +49,6 @@ class DirectBufferUtils {
             invokeCleaner = clazz.getMethod("invokeCleaner", ByteBuffer.class);
         }
 
-        @Override
         public void clean(ByteBuffer buffer) throws ReflectiveOperationException {
             invokeCleaner.invoke(unsafe, buffer);
         }
