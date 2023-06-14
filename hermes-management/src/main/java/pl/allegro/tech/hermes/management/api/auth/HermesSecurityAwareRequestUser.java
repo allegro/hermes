@@ -4,8 +4,8 @@ import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.management.api.auth.SecurityProvider.OwnershipResolver;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.SecurityContext;
 
 public class HermesSecurityAwareRequestUser implements RequestUser {
     private final String username;

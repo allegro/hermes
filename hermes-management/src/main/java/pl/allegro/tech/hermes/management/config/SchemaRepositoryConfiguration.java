@@ -27,8 +27,8 @@ import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceRes
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
 import java.net.URI;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 
 import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName;
 

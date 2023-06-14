@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;

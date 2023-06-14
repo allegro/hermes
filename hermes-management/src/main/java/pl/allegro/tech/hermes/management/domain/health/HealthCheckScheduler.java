@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClien
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class HealthCheckScheduler {

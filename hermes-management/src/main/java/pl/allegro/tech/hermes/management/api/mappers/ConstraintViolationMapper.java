@@ -8,9 +8,9 @@ import org.glassfish.jersey.server.validation.internal.ValidationHelper;
 import pl.allegro.tech.hermes.api.ErrorCode;
 
 import java.util.List;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 
 @Provider
 public class ConstraintViolationMapper extends AbstractExceptionMapper<ConstraintViolationException> {

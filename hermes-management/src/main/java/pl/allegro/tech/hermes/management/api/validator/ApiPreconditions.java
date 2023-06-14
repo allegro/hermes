@@ -4,11 +4,11 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 
 import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.groups.Default;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.groups.Default;
 
 @Component
 public class ApiPreconditions {

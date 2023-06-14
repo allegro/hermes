@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.management.api.mappers;
 import com.fasterxml.jackson.core.JsonParseException;
 import pl.allegro.tech.hermes.api.ErrorCode;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 
 @Provider
 public class JsonParseExceptionMapper extends AbstractExceptionMapper<JsonParseException> {

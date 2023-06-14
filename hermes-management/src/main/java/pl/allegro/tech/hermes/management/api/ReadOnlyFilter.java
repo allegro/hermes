@@ -7,11 +7,11 @@ import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 
 import java.io.IOException;
-import javax.annotation.Priority;
-import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.ext.Provider;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.ServiceUnavailableException;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.ext.Provider;
 
 @Provider
 @Priority(AuthorizationFilter.AUTHORIZATION_FILTER_PRIORITY + 2)

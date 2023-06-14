@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.api.MetricDecimalValue;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.List;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;

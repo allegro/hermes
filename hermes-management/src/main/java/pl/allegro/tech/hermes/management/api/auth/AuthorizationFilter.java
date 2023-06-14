@@ -3,10 +3,10 @@ package pl.allegro.tech.hermes.management.api.auth;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
-import javax.annotation.Priority;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.ext.Provider;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.ext.Provider;
 
 @Provider
 @Priority(AuthorizationFilter.AUTHORIZATION_FILTER_PRIORITY)

@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.config.GroupProperties;
 
-import javax.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestContext;
 
 /**
  * Make sure these implementations conform to what is configured via RolesAllowed annotations in endpoints.

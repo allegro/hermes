@@ -5,10 +5,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.domain.console.ConsoleService;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 
 @Component
 @Path("/")
