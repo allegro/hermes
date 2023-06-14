@@ -16,7 +16,7 @@ import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
 
-import javax.validation.ConstraintViolationException
+import jakarta.validation.ConstraintViolationException
 
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 

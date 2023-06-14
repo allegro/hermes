@@ -11,7 +11,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
 
-import javax.validation.ConstraintViolationException
+import jakarta.validation.ConstraintViolationException
 
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 

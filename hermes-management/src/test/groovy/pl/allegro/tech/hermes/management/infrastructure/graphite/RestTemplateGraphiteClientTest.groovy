@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
 
-import javax.ws.rs.core.MediaType
+import jakarta.ws.rs.core.MediaType
 
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 
