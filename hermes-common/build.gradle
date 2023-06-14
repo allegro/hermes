@@ -42,10 +42,11 @@ dependencies {
 
     implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.10'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
-
     api(group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka) {
         exclude group: 'net.sf.jopt-simple'
     }
+
+    api group: 'jakarta.inject', name: 'jakarta.inject-api', version: '2.0.1'
 
     testImplementation project(':hermes-test-helper')
 
