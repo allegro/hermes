@@ -11,9 +11,9 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.management.domain.owner.CrowdOwnerSource;
 
 import java.util.List;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;

@@ -14,8 +14,8 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static java.util.stream.IntStream.range;

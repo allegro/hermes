@@ -4,10 +4,10 @@ import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.WebTarget;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 
 public class HealthCheckTest extends AbstractFrontendShutdownTest {

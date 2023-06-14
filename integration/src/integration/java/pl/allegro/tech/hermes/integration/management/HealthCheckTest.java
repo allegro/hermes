@@ -5,8 +5,8 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;

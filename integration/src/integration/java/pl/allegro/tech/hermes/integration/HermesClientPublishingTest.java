@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
 import okhttp3.OkHttpClient;
-import org.springframework.web.client.AsyncRestTemplate;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
@@ -10,13 +9,12 @@ import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
-import pl.allegro.tech.hermes.client.restTemplate.RestTemplateHermesSender;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.net.URI;
 
 import static java.net.URI.create;
-import static javax.ws.rs.client.ClientBuilder.newClient;
+import static jakarta.ws.rs.client.ClientBuilder.newClient;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
@@ -39,15 +37,6 @@ public class HermesClientPublishingTest extends IntegrationTest {
     public void shouldPublishUsingJerseyClient() {
         // given
         HermesClient client = hermesClient(new JerseyHermesSender(newClient())).withURI(topicURI).build();
-
-        // when & then
-        runTestSuiteForHermesClient(client);
-    }
-
-    @Test
-    public void shouldPublishUsingRestTemplate() {
-        // given
-        HermesClient client = hermesClient(new RestTemplateHermesSender(new AsyncRestTemplate())).withURI(topicURI).build();
 
         // when & then
         runTestSuiteForHermesClient(client);

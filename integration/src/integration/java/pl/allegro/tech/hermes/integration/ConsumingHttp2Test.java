@@ -18,11 +18,11 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.net.ssl.SSLContext;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static io.undertow.util.Protocols.HTTP_2_0;
-import static javax.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.fail;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;

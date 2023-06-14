@@ -5,7 +5,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.assertj.core.api.Assertions;
 
 import javax.jms.Message;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 public final class HermesAssertions extends Assertions {
 
