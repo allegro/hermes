@@ -105,6 +105,13 @@ public interface SubscriptionEndpoint {
                         @DefaultValue("false") @QueryParam("dryRun") boolean dryRun,
                         OffsetRetransmissionDate offsetRetransmissionDate);
 
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @Path("/{subscriptionName}/moveOffsetsToTheEnd")
+    Response moveOffsetsToTheEnd(@PathParam("topicName") String qualifiedTopicName,
+                        @PathParam("subscriptionName") String subscriptionName);
+
     @GET
     @Produces(APPLICATION_JSON)
     @Path("/{subscriptionName}/events/{messageId}/trace")

@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
@@ -235,7 +236,7 @@ public class SubscriptionsEndpoint {
                                @Valid OffsetRetransmissionDate offsetRetransmissionDate,
                                @Context ContainerRequestContext requestContext) {
 
-        MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
+        MultiDCOffsetChangeSummary summary = multiDCAwareService.retransmit(
                 topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 subscriptionName,
                 offsetRetransmissionDate.getRetransmissionDate().toInstant().toEpochMilli(),
@@ -244,6 +245,20 @@ public class SubscriptionsEndpoint {
         );
 
         return Response.status(OK).entity(summary).build();
+    }
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed({Roles.ADMIN})
+    @Path("/{subscriptionName}/moveOffsetsToTheEnd")
+    public Response moveOffsetsToTheEnd(@PathParam("topicName") String qualifiedTopicName,
+                                        @PathParam("subscriptionName") String subscriptionName) {
+        TopicName topicName = fromQualifiedName(qualifiedTopicName);
+        multiDCAwareService.moveOffsetsToTheEnd(
+                topicService.getTopicDetails(topicName),
+                new SubscriptionName(subscriptionName, topicName));
+        return responseStatus(OK);
     }
 
     @GET
