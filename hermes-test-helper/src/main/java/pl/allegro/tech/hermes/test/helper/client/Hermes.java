@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.test.helper.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
@@ -70,9 +70,9 @@ public class Hermes {
 
     private static ClientBuilder getClientBuilder(ClientConfig clientConfig) {
         return ClientBuilder.newBuilder().withConfig(clientConfig).register(
-                new JacksonJaxbJsonProvider(
+                new JacksonXmlBindJsonProvider(
                         new ObjectMapper().registerModule(new JavaTimeModule()),
-                        JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS
+                        JacksonXmlBindJsonProvider.DEFAULT_ANNOTATIONS
                 )
         );
     }
