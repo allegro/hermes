@@ -26,11 +26,11 @@ import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Function;
-import javax.ws.rs.Path;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.client.WebTarget;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.client.WebTarget;
 
 public class Hermes {
 
