@@ -106,3 +106,8 @@ frontend:
   metrics:
     metric-registry:
       graphiteReporterEnabled: true
+
+consumer:
+  metrics:
+    metric-registry:
+      graphiteReporterEnabled: true
