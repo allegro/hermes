@@ -172,16 +172,4 @@ public class StorageConfiguration {
         ZookeeperClient localClient = clientManager().getLocalClient();
         return new ZookeeperOfflineRetransmissionRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
-
-    @PostConstruct
-    public void init() {
-        logger.info("Before ensuring init path exists");
-        ensureInitPathExists();
-        logger.info("After ensuring init path exists");
-    }
-
-    private void ensureInitPathExists() {
-        ZookeeperClientManager clientManager = clientManager();
-        clientManager.getLocalClient().ensurePathExists(zookeeperPaths().groupsPath());
-    }
 }

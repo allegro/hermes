@@ -10,7 +10,7 @@ dependencies {
     compileOnly group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
     implementation group: 'net.jodah', name: 'failsafe', version: versions.failsafe
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.3.4.RELEASE'
+    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.4.25'
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
@@ -26,7 +26,7 @@ dependencies {
     testImplementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testImplementation group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
-    testImplementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '0.8.10.RELEASE'
-    testImplementation group: 'io.projectreactor', name: 'reactor-test', version: '3.3.4.RELEASE'
+    testImplementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '1.0.25'
+    testImplementation group: 'io.projectreactor', name: 'reactor-test', version: '3.4.25'
 
 }
