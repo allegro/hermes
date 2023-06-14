@@ -40,8 +40,8 @@ dependencies {
     api group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
     api group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: versions.micrometer_metrics
 
-    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.10'
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '2.0.4'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.7'
     api(group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka) {
         exclude group: 'net.sf.jopt-simple'
     }
