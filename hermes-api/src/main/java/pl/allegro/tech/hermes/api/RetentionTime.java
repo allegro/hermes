@@ -6,8 +6,8 @@ import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 public class RetentionTime {
     private static final TimeUnit DEFAULT_UNIT = TimeUnit.DAYS;

@@ -7,10 +7,10 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Null;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Null;
 
 public class SubscriptionPolicy {
 

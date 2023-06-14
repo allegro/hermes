@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.util.Map;
 import java.util.Objects;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 public class BatchSubscriptionPolicy {
 
