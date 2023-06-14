@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Specification
 
-import javax.ws.rs.core.Response
+import jakarta.ws.rs.core.Response
 import java.time.Duration
 
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic

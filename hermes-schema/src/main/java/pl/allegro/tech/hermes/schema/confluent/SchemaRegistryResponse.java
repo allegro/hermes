@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 
 import java.util.Objects;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 class SchemaRegistryResponse {
 
