@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSu
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 @Configuration
 @EnableConfigurationProperties({

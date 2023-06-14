@@ -75,7 +75,7 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import static io.micrometer.core.instrument.Clock.SYSTEM;
 import static java.util.Collections.emptyList;

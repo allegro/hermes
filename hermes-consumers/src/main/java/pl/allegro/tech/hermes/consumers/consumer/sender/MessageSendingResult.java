@@ -11,8 +11,8 @@ import java.util.function.Predicate;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
 import static java.util.stream.Collectors.joining;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
 public interface MessageSendingResult {
     String CAUSE_UNKNOWN = "unknown";

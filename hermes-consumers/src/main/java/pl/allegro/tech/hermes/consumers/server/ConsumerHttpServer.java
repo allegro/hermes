@@ -11,7 +11,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS;
 import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS_COUNT;
 

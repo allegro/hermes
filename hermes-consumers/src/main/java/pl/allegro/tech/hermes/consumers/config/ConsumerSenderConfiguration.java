@@ -24,7 +24,6 @@ import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
@@ -57,7 +56,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
-import javax.inject.Named;
+import jakarta.inject.Named;
 import javax.jms.Message;
 
 @Configuration

@@ -36,6 +36,9 @@ dependencies {
 
     api(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
 
+    implementation group: 'jakarta.inject', name: 'jakarta.inject-api', version: '2.0.1'
+
+
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testImplementation group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
