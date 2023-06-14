@@ -1,8 +1,11 @@
 package pl.allegro.tech.hermes.management.config;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -31,15 +34,18 @@ public class CrowdConfiguration {
 
     @Bean(name = "crowdRestTemplate")
     public RestTemplate restTemplate(CrowdProperties properties) {
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(properties.getConnectionTimeoutMillis())
-                .setSocketTimeout(properties.getSocketTimeoutMillis())
+        PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setMaxConnTotal(properties.getMaxConnections())
+                .setMaxConnPerRoute(properties.getMaxConnectionsPerRoute())
+                .setDefaultConnectionConfig(
+                        ConnectionConfig.custom()
+                                .setSocketTimeout(Timeout.ofMilliseconds(properties.getSocketTimeoutMillis()))
+                                .setConnectTimeout(Timeout.ofMilliseconds(properties.getConnectionTimeoutMillis()))
+                                .build())
                 .build();
 
         HttpClient client = HttpClientBuilder.create()
-                .setMaxConnTotal(properties.getMaxConnections())
-                .setMaxConnPerRoute(properties.getMaxConnectionsPerRoute())
-                .setDefaultRequestConfig(requestConfig)
+                .setConnectionManager(connectionManager)
                 .build();
 
         ClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
