@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import pl.allegro.tech.hermes.api.Topic;
-
 import jakarta.annotation.Nullable;
+import pl.allegro.tech.hermes.api.Topic;
 
 interface AvroMessageContentUnwrapper {
 

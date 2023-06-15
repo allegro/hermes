@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
@@ -15,7 +16,6 @@ import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import jakarta.annotation.PostConstruct;
 
 public class ZookeeperGroupRepository extends ZookeeperBasedRepository implements GroupRepository {
 
