@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
@@ -8,11 +9,10 @@ import pl.allegro.tech.hermes.test.helper.containers.BrokerId;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import jakarta.ws.rs.core.Response;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static pl.allegro.tech.hermes.api.Topic.Ack.ALL;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;

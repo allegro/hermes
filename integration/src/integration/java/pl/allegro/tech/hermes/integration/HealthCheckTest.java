@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.client.WebTarget;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 
 import java.util.concurrent.TimeUnit;
-import jakarta.ws.rs.client.WebTarget;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;

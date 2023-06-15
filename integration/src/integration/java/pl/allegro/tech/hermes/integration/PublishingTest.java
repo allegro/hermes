@@ -1,5 +1,11 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.testng.annotations.BeforeMethod;
@@ -24,12 +30,6 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.UUID;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.client.ClientBuilder.newClient;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;

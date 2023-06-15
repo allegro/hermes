@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration.auth;
 
 import io.undertow.util.StatusCodes;
+import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -18,7 +19,6 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
-import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;

@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.googlecode.catchexception.CatchException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 import net.javacrumbs.jsonunit.core.Option;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -14,8 +16,6 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.Response;
 
 import static com.googlecode.catchexception.CatchException.catchException;
 import static java.util.stream.IntStream.range;

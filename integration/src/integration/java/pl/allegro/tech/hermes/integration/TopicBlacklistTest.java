@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.Arrays;
-import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;

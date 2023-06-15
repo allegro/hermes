@@ -27,11 +27,11 @@ import java.time.Clock;
 import java.util.Collections;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.time.Instant.now;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.MESSAGES_LOCAL_STORAGE_DIRECTORY;

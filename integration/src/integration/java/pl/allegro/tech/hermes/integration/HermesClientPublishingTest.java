@@ -13,8 +13,8 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.net.URI;
 
-import static java.net.URI.create;
 import static jakarta.ws.rs.client.ClientBuilder.newClient;
+import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;

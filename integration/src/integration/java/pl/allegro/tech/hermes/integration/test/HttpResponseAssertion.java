@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.integration.test;
 
+import jakarta.ws.rs.core.Response;
 import org.assertj.core.api.AbstractAssert;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 
 import java.util.Arrays;
-import jakarta.ws.rs.core.Response;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

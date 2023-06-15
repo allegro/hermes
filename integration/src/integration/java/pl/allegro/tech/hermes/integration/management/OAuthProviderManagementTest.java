@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import jakarta.ws.rs.core.Response;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
@@ -8,7 +9,6 @@ import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 
 import java.util.List;
-import jakarta.ws.rs.core.Response;
 
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;

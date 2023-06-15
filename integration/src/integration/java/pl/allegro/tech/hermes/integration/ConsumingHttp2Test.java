@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integration;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.util.HttpString;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -16,9 +17,8 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.net.ssl.SSLContext;
-import jakarta.ws.rs.core.Response;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static io.undertow.util.Protocols.HTTP_2_0;

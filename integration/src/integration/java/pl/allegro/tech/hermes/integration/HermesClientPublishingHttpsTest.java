@@ -12,13 +12,12 @@ import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
-import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import java.net.URI;
 import javax.net.ssl.X509TrustManager;
+import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;

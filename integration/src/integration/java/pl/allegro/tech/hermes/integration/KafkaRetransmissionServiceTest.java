@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integration;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ContentType;
@@ -18,7 +19,6 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
-import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static jakarta.ws.rs.core.Response.Status.OK;

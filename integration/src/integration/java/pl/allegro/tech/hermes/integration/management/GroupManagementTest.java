@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import jakarta.ws.rs.core.Response;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.ErrorCode;
@@ -8,7 +9,6 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
 
 import java.util.stream.Stream;
-import jakarta.ws.rs.core.Response;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NAME_IS_INVALID;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;

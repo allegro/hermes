@@ -1,5 +1,10 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import net.javacrumbs.jsonunit.core.Option;
 import org.apache.avro.Schema;
 import org.testng.annotations.BeforeClass;
@@ -19,17 +24,12 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.time.Clock;
 import java.util.UUID;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
-import static java.util.Collections.singletonMap;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static jakarta.ws.rs.core.Response.Status.OK;
+import static java.util.Collections.singletonMap;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_JSON;

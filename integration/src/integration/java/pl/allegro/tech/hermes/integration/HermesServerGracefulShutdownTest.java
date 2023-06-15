@@ -1,9 +1,8 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
-
-import jakarta.ws.rs.core.Response;
 
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 

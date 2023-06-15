@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -7,8 +8,6 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
-
-import jakarta.ws.rs.core.Response;
 
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group;

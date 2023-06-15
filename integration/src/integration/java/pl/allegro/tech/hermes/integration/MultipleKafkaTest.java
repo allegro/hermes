@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -15,8 +16,6 @@ import pl.allegro.tech.hermes.integration.setup.HermesManagementInstance;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
-
-import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;

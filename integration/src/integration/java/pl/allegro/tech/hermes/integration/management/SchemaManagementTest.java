@@ -1,11 +1,10 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
-
-import jakarta.ws.rs.core.Response;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;

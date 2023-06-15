@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
@@ -15,7 +16,6 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import jakarta.ws.rs.core.Response;
 
 import static java.util.Arrays.stream;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;

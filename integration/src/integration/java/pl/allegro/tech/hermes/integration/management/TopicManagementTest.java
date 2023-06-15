@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
@@ -21,8 +23,6 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;

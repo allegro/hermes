@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.integration.setup;
 
+import jakarta.ws.rs.core.Response;
 import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
-
-import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
