@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
+import jakarta.ws.rs.ApplicationPath;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -7,8 +8,6 @@ import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.servlet.ServletProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.ws.rs.ApplicationPath;
 
 @ApplicationPath("/")
 public class JerseyResourceConfig extends ResourceConfig {

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.health;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,6 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClien
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import jakarta.annotation.PostConstruct;
 
 @Component
 public class HealthCheckScheduler {

@@ -2,12 +2,11 @@ package pl.allegro.tech.hermes.management.infrastructure.graphite
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
+import jakarta.ws.rs.core.MediaType
 import org.junit.Rule
 import org.springframework.web.client.RestTemplate
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
-
-import jakarta.ws.rs.core.MediaType
 
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 

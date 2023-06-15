@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.management.utils
 
 import org.apache.curator.test.TestingServer
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider
 import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties
 import pl.allegro.tech.hermes.management.config.storage.StorageProperties
-import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
 import pl.allegro.tech.hermes.test.helper.util.Ports

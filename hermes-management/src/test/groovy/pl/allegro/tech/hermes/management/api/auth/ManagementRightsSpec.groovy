@@ -1,11 +1,5 @@
 package pl.allegro.tech.hermes.management.api.auth
 
-import pl.allegro.tech.hermes.api.Group
-import pl.allegro.tech.hermes.management.config.GroupProperties
-import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
-import spock.lang.Specification
-import spock.lang.Unroll
-
 import jakarta.ws.rs.container.ContainerRequestContext
 import jakarta.ws.rs.core.Cookie
 import jakarta.ws.rs.core.MediaType
@@ -14,6 +8,12 @@ import jakarta.ws.rs.core.Request
 import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.core.SecurityContext
 import jakarta.ws.rs.core.UriInfo
+import pl.allegro.tech.hermes.api.Group
+import pl.allegro.tech.hermes.management.config.GroupProperties
+import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
+import spock.lang.Specification
+import spock.lang.Unroll
+
 import java.security.Principal
 
 class ManagementRightsSpec extends Specification {

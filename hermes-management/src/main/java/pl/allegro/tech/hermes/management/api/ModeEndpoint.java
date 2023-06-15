@@ -2,10 +2,6 @@ package pl.allegro.tech.hermes.management.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.mode.ModeService;
-
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HttpMethod;
@@ -14,6 +10,9 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;

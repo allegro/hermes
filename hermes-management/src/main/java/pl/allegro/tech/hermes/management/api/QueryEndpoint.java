@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.management.api;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
@@ -13,10 +17,6 @@ import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import java.util.List;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 

@@ -1,9 +1,8 @@
 package pl.allegro.tech.hermes.management.api.auth;
 
-import pl.allegro.tech.hermes.api.OwnerId;
-
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.SecurityContext;
+import pl.allegro.tech.hermes.api.OwnerId;
 
 public interface SecurityProvider {
 

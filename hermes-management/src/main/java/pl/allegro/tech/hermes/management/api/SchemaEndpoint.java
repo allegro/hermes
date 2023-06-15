@@ -1,18 +1,6 @@
 package pl.allegro.tech.hermes.management.api;
 
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import pl.allegro.tech.hermes.api.RawSchema;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
-import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
-import pl.allegro.tech.hermes.schema.SchemaId;
-import pl.allegro.tech.hermes.schema.SchemaVersion;
-
-import java.util.Optional;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -27,6 +15,18 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import org.springframework.beans.factory.annotation.Autowired;
+import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
+import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
+import pl.allegro.tech.hermes.schema.SchemaId;
+import pl.allegro.tech.hermes.schema.SchemaVersion;
+
+import java.util.Optional;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;

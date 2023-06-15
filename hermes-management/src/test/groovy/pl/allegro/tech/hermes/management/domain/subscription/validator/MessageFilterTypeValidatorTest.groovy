@@ -4,7 +4,6 @@ import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.MessageFilterSpecification
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.management.domain.subscription.validator.MessageFilterTypeValidator;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification

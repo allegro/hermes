@@ -1,12 +1,5 @@
 package pl.allegro.tech.hermes.management.api;
 
-import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.DatacenterReadiness;
-import pl.allegro.tech.hermes.api.Readiness;
-import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.readiness.ReadinessService;
-
-import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -15,6 +8,13 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
+import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.DatacenterReadiness;
+import pl.allegro.tech.hermes.api.Readiness;
+import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.readiness.ReadinessService;
+
+import java.util.List;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.DatacenterReadiness.ReadinessStatus.NOT_READY;

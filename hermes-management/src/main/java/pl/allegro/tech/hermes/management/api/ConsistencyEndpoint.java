@@ -1,15 +1,5 @@
 package pl.allegro.tech.hermes.management.api;
 
-import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.InconsistentGroup;
-import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
-import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.consistency.DcConsistencyService;
-import pl.allegro.tech.hermes.management.domain.consistency.KafkaHermesConsistencyService;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -20,6 +10,16 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
+import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.InconsistentGroup;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
+import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.consistency.DcConsistencyService;
+import pl.allegro.tech.hermes.management.domain.consistency.KafkaHermesConsistencyService;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 

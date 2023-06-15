@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator
 
+import jakarta.validation.ConstraintViolationException
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicLabel
@@ -15,8 +16,6 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
-
-import jakarta.validation.ConstraintViolationException
 
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 

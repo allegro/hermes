@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.subscription.validator
 
+import jakarta.validation.ConstraintViolationException
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionPolicy
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository
@@ -11,10 +12,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
 
-import jakarta.validation.ConstraintViolationException
-
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
-
 
 class InflightSizeValidatorTest extends Specification {
 

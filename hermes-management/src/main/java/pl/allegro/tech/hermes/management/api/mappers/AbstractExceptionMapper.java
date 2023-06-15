@@ -1,11 +1,10 @@
 package pl.allegro.tech.hermes.management.api.mappers;
 
-import pl.allegro.tech.hermes.api.ErrorCode;
-import pl.allegro.tech.hermes.api.ErrorDescription;
-
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
+import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.api.ErrorDescription;
 
 abstract class AbstractExceptionMapper<T extends Throwable> implements ExceptionMapper<T> {
 

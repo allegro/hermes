@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.graphite;
 
 import com.google.common.base.Strings;
+import jakarta.ws.rs.core.UriBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -13,7 +14,6 @@ import pl.allegro.tech.hermes.api.MetricDecimalValue;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.List;
-import jakarta.ws.rs.core.UriBuilder;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;

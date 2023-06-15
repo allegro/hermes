@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.management.infrastructure.zookeeper
 
+import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider
 import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties
 import pl.allegro.tech.hermes.management.config.storage.StorageProperties
-import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider
 import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
 
 class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {

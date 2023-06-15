@@ -2,18 +2,6 @@ package pl.allegro.tech.hermes.management.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.SubscriptionConstraints;
-import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.api.TopicConstraints;
-import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
-import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
-import pl.allegro.tech.hermes.management.api.auth.Roles;
-import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
-import pl.allegro.tech.hermes.management.domain.workload.constraints.WorkloadConstraintsService;
-
-import java.util.List;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -27,6 +15,18 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.SubscriptionConstraints;
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.TopicConstraints;
+import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
+import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
+import pl.allegro.tech.hermes.management.api.auth.Roles;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
+import pl.allegro.tech.hermes.management.domain.workload.constraints.WorkloadConstraintsService;
+
+import java.util.List;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.Response.Status.CREATED;

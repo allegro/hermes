@@ -1,13 +1,12 @@
 package pl.allegro.tech.hermes.management.api;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import pl.allegro.tech.hermes.management.config.CorsProperties;
-
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.ext.Provider;
+import org.springframework.beans.factory.annotation.Autowired;
+import pl.allegro.tech.hermes.management.config.CorsProperties;
 
 @Provider
 public class CorsFilter implements ContainerResponseFilter {
