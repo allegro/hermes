@@ -9,6 +9,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.collect.ImmutableSet;
+import jakarta.inject.Named;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -56,7 +57,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
-import jakarta.inject.Named;
 import javax.jms.Message;
 
 @Configuration

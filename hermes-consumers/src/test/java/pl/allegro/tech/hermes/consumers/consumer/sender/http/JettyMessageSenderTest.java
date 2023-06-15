@@ -35,9 +35,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static java.lang.String.format;
 import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.TEST_MESSAGE_CONTENT;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage;

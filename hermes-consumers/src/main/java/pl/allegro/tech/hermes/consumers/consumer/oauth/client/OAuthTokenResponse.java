@@ -2,9 +2,8 @@ package pl.allegro.tech.hermes.consumers.consumer.oauth.client;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessToken;
-
 import jakarta.validation.constraints.NotEmpty;
+import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessToken;
 
 public class OAuthTokenResponse {
 
