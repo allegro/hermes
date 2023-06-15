@@ -17,8 +17,8 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import javax.net.ssl.SSLContext;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.net.ssl.SSLContext;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static io.undertow.util.Protocols.HTTP_2_0;

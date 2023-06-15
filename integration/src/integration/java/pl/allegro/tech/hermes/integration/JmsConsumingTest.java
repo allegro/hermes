@@ -13,8 +13,8 @@ import pl.allegro.tech.hermes.integration.helper.RemoteJmsEndpoint;
 import pl.allegro.tech.hermes.integration.metadata.TraceContext;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.jms.Message;
 import java.util.UUID;
+import javax.jms.Message;
 
 import static pl.allegro.tech.hermes.integration.helper.ClientBuilderHelper.createRequestWithTraceHeaders;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
