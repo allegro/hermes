@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
+import jakarta.ws.rs.core.MediaType;
 import org.apache.avro.Schema;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.ContentType;
@@ -9,8 +10,6 @@ import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
-
-import jakarta.ws.rs.core.MediaType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

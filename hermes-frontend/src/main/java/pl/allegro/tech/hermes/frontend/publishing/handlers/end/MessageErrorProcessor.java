@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
+import jakarta.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ErrorDescription;
@@ -14,7 +15,6 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import jakarta.ws.rs.core.MediaType;
 
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;

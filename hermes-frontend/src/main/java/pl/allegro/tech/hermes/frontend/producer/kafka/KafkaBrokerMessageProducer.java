@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import jakarta.inject.Singleton;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.PartitionInfo;
@@ -13,7 +14,6 @@ import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 import java.util.List;
-import jakarta.inject.Singleton;
 
 @Singleton
 public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
