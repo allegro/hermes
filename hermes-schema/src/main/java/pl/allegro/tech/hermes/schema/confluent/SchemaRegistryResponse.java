@@ -2,10 +2,10 @@ package pl.allegro.tech.hermes.schema.confluent;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 
 import java.util.Objects;
-import jakarta.validation.constraints.NotNull;
 
 class SchemaRegistryResponse {
 

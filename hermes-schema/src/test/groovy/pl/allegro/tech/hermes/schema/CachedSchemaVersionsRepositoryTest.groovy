@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.schema
 
 import com.google.common.util.concurrent.MoreExecutors
+import jakarta.ws.rs.core.Response
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Specification
 
-import jakarta.ws.rs.core.Response
 import java.time.Duration
 
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
