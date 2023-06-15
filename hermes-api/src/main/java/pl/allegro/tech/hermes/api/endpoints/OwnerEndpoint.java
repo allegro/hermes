@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
-import pl.allegro.tech.hermes.api.Owner;
-
-import java.util.List;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import pl.allegro.tech.hermes.api.Owner;
+
+import java.util.List;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 

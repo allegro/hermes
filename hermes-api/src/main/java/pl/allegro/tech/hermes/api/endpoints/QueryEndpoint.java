@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
@@ -7,10 +11,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 
 import java.util.List;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 

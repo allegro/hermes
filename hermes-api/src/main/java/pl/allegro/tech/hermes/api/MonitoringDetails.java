@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
-import jakarta.validation.constraints.NotNull;
 
 public final class MonitoringDetails {
     public static final MonitoringDetails EMPTY = new MonitoringDetails(Severity.NON_IMPORTANT, "");

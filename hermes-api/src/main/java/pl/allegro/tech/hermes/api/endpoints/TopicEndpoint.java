@@ -1,12 +1,5 @@
 package pl.allegro.tech.hermes.api.endpoints;
 
-import pl.allegro.tech.hermes.api.MessageTextPreview;
-import pl.allegro.tech.hermes.api.PatchData;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicMetrics;
-import pl.allegro.tech.hermes.api.TopicWithSchema;
-
-import java.util.List;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -18,6 +11,13 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+import pl.allegro.tech.hermes.api.MessageTextPreview;
+import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicMetrics;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
+
+import java.util.List;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;

@@ -2,11 +2,11 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
+import jakarta.validation.constraints.Min;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.util.Map;
 import java.util.Objects;
-import jakarta.validation.constraints.Min;
 
 public class BatchSubscriptionPolicy {
 

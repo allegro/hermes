@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.ImmutableMap;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -13,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import jakarta.validation.constraints.NotNull;
 
 @JsonSerialize(using = EndpointAddressResolverMetadata.EndpointAddressResolverMetadataSerializer.class)
 public class EndpointAddressResolverMetadata {
