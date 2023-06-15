@@ -116,7 +116,7 @@ public class CrowdOwnerSourceIntegrationTest extends IntegrationTest {
                         .withStatus(200)
                         .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                         .withBody("{ \"expand\": \"group\", \"groups\": []}")
-                        .withFixedDelay(3000)));
+                        .withFixedDelay(3500)));
 
 
         //when
