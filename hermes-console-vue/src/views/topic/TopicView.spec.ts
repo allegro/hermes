@@ -1,5 +1,5 @@
+import { beforeEach, describe, expect } from 'vitest';
 import { computed, ref } from 'vue';
-import { describe, expect } from 'vitest';
 import { dummySubscription } from '@/dummy/subscription';
 import {
   dummyTopic,
@@ -12,6 +12,7 @@ import { useSubscriptionsList } from '@/composables/topic-subscriptions/use-subs
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
 import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
 import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
+import router from '@/router';
 import TopicView from '@/views/topic/TopicView.vue';
 
 vi.mock('@/composables/topic/use-topic/useTopic');
@@ -52,6 +53,12 @@ const useTopicMessagesPreviewMock: ReturnType<typeof useTopicMessagesPreview> =
   };
 
 describe('TopicView', () => {
+  beforeEach(async () => {
+    await router.push(
+      `/groups/pl.allegro.public.group` + `/topics/${dummyTopic.name}`,
+    );
+  });
+
   it('should render all view boxes', () => {
     // given
     mockApi({});
@@ -61,7 +68,7 @@ describe('TopicView', () => {
       'topicView.properties.title',
       'topicView.messagesPreview.title',
       'topicView.schema.title',
-      'topicView.subscriptions.title',
+      'topicView.subscriptions.title (1)',
     ];
 
     // when

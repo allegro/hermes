@@ -68,7 +68,12 @@
 
     <messages-preview v-if="messages" :messages="messages" />
 
-    <subscriptions-list v-if="subscriptions" :subscriptions="subscriptions" />
+    <subscriptions-list
+      v-if="subscriptions"
+      :groupId="groupId"
+      :topic-name="topicName"
+      :subscriptions="subscriptions"
+    />
   </v-container>
 </template>
 

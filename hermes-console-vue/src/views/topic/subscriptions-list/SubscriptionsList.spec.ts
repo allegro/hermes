@@ -9,6 +9,8 @@ import userEvent from '@testing-library/user-event';
 
 describe('SubscriptionsList', () => {
   const props = {
+    groupId: 'pl.allegro',
+    topicName: 'pl.allegro.DummyTopic',
     subscriptions: [dummySubscription, secondDummySubscription],
   };
 
@@ -17,7 +19,7 @@ describe('SubscriptionsList', () => {
     const { getByText } = render(SubscriptionsList, { props });
 
     // then
-    expect(getByText('topicView.subscriptions.title')).toBeVisible();
+    expect(getByText('topicView.subscriptions.title (2)')).toBeVisible();
   });
 
   it.each(props.subscriptions)(
@@ -25,7 +27,7 @@ describe('SubscriptionsList', () => {
     async (subscription) => {
       // when
       const { getByText } = render(SubscriptionsList, { props });
-      await userEvent.click(getByText('topicView.subscriptions.title'));
+      await userEvent.click(getByText('topicView.subscriptions.title (2)'));
 
       // then
       expect(getByText(subscription.name)).toBeVisible();

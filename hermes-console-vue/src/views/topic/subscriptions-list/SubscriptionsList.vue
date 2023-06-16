@@ -4,6 +4,8 @@
   import type { Subscription } from '@/api/subscription';
 
   const props = defineProps<{
+    groupId: string;
+    topicName: string;
     subscriptions: Subscription[];
   }>();
 
@@ -17,6 +19,8 @@
     props.subscriptions.map((subscription) => {
       const currentUrl = window.location.href;
       return {
+        title: subscription.name,
+        value: subscription.name,
         name: subscription.name,
         color: statusTextColor[subscription.state],
         statusText: subscription.state,
@@ -28,8 +32,12 @@
 
 <template>
   <v-expansion-panels>
-    <v-expansion-panel :title="$t('topicView.subscriptions.title')">
-      <v-expansion-panel-text class="expansion-panel__text">
+    <v-expansion-panel
+      :title="`${$t('topicView.subscriptions.title')} (${
+        props.subscriptions.length
+      })`"
+    >
+      <v-expansion-panel-text style="margin: 0 -16px 0">
         <v-list open-strategy="single">
           <v-list-item
             v-for="subscription in subscriptionItems"
@@ -49,4 +57,11 @@
   </v-expansion-panels>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+  @use '@/settings';
+
+  .v-list-item:not(:last-child) {
+    border-bottom: settings.$list-item-border-thin-width
+      settings.$list-item-border-style settings.$list-item-border-color;
+  }
+</style>
