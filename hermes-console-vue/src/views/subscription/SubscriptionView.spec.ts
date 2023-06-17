@@ -8,11 +8,11 @@ import {
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
-import { useSubscription } from '@/composables/topic-subscriptions/use-subscription/useSubscription';
+import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import router from '@/router';
 import SubscriptionView from '@/views/subscription/SubscriptionView.vue';
 
-vi.mock('@/composables/topic-subscriptions/use-subscription/useSubscription');
+vi.mock('@/composables/subscription/use-subscription/useSubscription');
 
 const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscription: ref(dummySubscription),

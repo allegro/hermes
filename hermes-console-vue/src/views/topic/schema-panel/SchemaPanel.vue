@@ -2,8 +2,6 @@
   const props = defineProps<{
     schema: string;
   }>();
-
-  const niceJson = JSON.parse(props.schema);
 </script>
 
 <template>
@@ -11,7 +9,7 @@
     <v-expansion-panel :title="$t('topicView.schema.title')">
       <v-expansion-panel-text>
         <pre>
-          <v-code class="raw-schema-snippet">{{ niceJson }}</v-code>
+          <v-code class="raw-schema-snippet">{{ JSON.parse(props.schema) }}</v-code>
         </pre>
       </v-expansion-panel-text>
     </v-expansion-panel>
@@ -22,8 +20,7 @@
   .raw-schema-snippet {
     line-height: 1.4;
     max-height: 500px;
-    overflow-y: scroll;
-    overflow-x: scroll;
+    overflow: scroll;
     border: #cccccc 1px solid;
   }
 </style>

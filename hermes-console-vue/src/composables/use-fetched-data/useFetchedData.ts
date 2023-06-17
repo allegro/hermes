@@ -2,18 +2,18 @@ import { computed, ref } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 import type { ResponsePromise } from '@/utils/axios-utils';
 
-type ReturnType<RESPONSE> = {
-  data: Ref<RESPONSE | undefined>;
+type ReturnType<Response> = {
+  data: Ref<Response | undefined>;
   error: Ref<boolean>;
   isLoading: ComputedRef<boolean>;
 };
 
-export function useFetchedData<RESPONSE>({
+export function useFetchedData<Response>({
   request,
 }: {
-  request: () => ResponsePromise<RESPONSE>;
-}): ReturnType<RESPONSE> {
-  const data = ref<RESPONSE>();
+  request: () => ResponsePromise<Response>;
+}): ReturnType<Response> {
+  const data = ref<Response>();
   const error = ref(false);
   const isLoading = computed(() => !error.value && !data.value);
 

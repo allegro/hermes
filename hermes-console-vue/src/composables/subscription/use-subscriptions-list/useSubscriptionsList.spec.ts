@@ -4,7 +4,7 @@ import {
   dummyTopicSubscriptionsList,
   secondDummySubscription,
 } from '@/dummy/subscription';
-import { useSubscriptionsList } from '@/composables/topic-subscriptions/use-subscriptions-list/useSubscriptionsList';
+import { useSubscriptionsList } from '@/composables/subscription/use-subscriptions-list/useSubscriptionsList';
 import { waitFor } from '@testing-library/vue';
 import axios from 'axios';
 import type { Mocked } from 'vitest';

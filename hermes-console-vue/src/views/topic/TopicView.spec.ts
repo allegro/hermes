@@ -8,7 +8,7 @@ import {
   dummyTopicOwner,
 } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
-import { useSubscriptionsList } from '@/composables/topic-subscriptions/use-subscriptions-list/useSubscriptionsList';
+import { useSubscriptionsList } from '@/composables/subscription/use-subscriptions-list/useSubscriptionsList';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
 import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
 import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
@@ -17,7 +17,7 @@ import TopicView from '@/views/topic/TopicView.vue';
 
 vi.mock('@/composables/topic/use-topic/useTopic');
 vi.mock(
-  '@/composables/topic-subscriptions/use-subscriptions-list/useSubscriptionsList',
+  '@/composables/subscription/use-subscriptions-list/useSubscriptionsList',
 );
 vi.mock('@/composables/topic/use-topic-metric/useTopicMetrics');
 vi.mock(

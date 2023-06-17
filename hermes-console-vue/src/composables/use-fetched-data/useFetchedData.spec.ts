@@ -46,7 +46,7 @@ describe('useFetchedData', () => {
     // when
     const { data, error, isLoading } = useFetchedData({ request });
 
-    // and: correct data was returned
+    // then: correct data was returned
     await waitFor(() => {
       expect(data.value).toBeUndefined();
       expect(error.value).toBeTruthy();

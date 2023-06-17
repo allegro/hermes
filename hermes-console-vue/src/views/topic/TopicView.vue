@@ -1,7 +1,7 @@
 <script async setup lang="ts">
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
-  import { useSubscriptionsList } from '@/composables/topic-subscriptions/use-subscriptions-list/useSubscriptionsList';
+  import { useSubscriptionsList } from '@/composables/subscription/use-subscriptions-list/useSubscriptionsList';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
   import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
