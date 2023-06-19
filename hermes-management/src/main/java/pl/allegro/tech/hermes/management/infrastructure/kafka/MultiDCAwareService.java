@@ -148,6 +148,6 @@ public class MultiDCAwareService {
     }
 
     public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-        clusters.forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
+        clustersProvider.getClusters().forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
     }
 }
