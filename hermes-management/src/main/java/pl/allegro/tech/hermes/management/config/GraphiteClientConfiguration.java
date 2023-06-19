@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
@@ -56,14 +56,15 @@ public class GraphiteClientConfiguration {
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setMaxConnTotal(properties.getMaxConnections())
                 .setMaxConnPerRoute(properties.getMaxConnectionsPerRoute())
-                .setDefaultConnectionConfig(
-                        ConnectionConfig.custom()
-                                .setSocketTimeout(Timeout.ofMilliseconds(properties.getSocketTimeoutMillis()))
-                                .setConnectTimeout(Timeout.ofMilliseconds(properties.getConnectionTimeoutMillis()))
-                                .build())
+                .build();
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(properties.getConnectionTimeoutMillis()))
+                .setResponseTimeout(Timeout.ofMilliseconds(properties.getSocketTimeoutMillis()))
                 .build();
 
         HttpClient client = HttpClientBuilder.create()
+                .setDefaultRequestConfig(requestConfig)
                 .setConnectionManager(connectionManager)
                 .build();
 
