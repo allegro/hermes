@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.mock
 
 import org.apache.avro.Schema
 import org.apache.avro.reflect.ReflectData
-import org.apache.http.HttpStatus
+import wiremock.org.apache.http.HttpStatus
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import pl.allegro.tech.hermes.test.helper.util.Ports
