@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     implementation group: 'junit', name: 'junit', version: '4.11'
-    api group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: versions.wiremock
+    api group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '3.0.0-beta-10'
     implementation group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
     api group: 'org.apache.avro', name: 'avro', version: versions.avro
     implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
@@ -18,9 +18,6 @@ dependencies {
     testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
     testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     testImplementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
-    testImplementation group: 'org.eclipse.jetty', name: 'jetty-server', version: versions.jetty
-    testImplementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
-    testImplementation group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
     testImplementation group: 'org.junit.jupiter', name :'junit-jupiter', version: versions.junit_jupiter
     testRuntimeOnly group: 'org.junit.vintage', name : 'junit-vintage-engine', version: versions.junit_jupiter
 }

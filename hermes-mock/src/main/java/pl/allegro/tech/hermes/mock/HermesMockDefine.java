@@ -6,7 +6,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.mock.exchange.Response;
 import pl.allegro.tech.hermes.mock.matching.ContentMatchers;
-import wiremock.org.apache.http.HttpStatus;
+import wiremock.org.apache.hc.core5.http.HttpStatus;
 
 import java.util.function.Predicate;
 
