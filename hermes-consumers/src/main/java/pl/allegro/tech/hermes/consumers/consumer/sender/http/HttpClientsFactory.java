@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
+import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.HttpCookieStore;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 
@@ -25,10 +27,11 @@ public class HttpClientsFactory {
                 name,
                 http1ClientParameters.getThreadPoolSize(),
                 http1ClientParameters.isThreadPoolMonitoringEnabled());
-
-        HttpClient client = sslContextFactoryProvider.provideSslContextFactory()
-                .map(HttpClient::new)
-                .orElseGet(HttpClient::new);
+        ClientConnector clientConnector = new ClientConnector();
+        sslContextFactoryProvider.provideSslContextFactory()
+                .ifPresent(clientConnector::setSslContextFactory);
+        HttpClientTransportOverHTTP transport = new HttpClientTransportOverHTTP(clientConnector);
+        HttpClient client = new HttpClient(transport);
         client.setMaxConnectionsPerDestination(http1ClientParameters.getMaxConnectionsPerDestination());
         client.setMaxRequestsQueuedPerDestination(http1ClientParameters.getMaxRequestsQueuedPerDestination());
         client.setExecutor(executor);
@@ -45,13 +48,17 @@ public class HttpClientsFactory {
                 http2ClientParameters.getThreadPoolSize(),
                 http2ClientParameters.isThreadPoolMonitoringEnabled());
 
-        HTTP2Client http2Client = new HTTP2Client();
+        ClientConnector clientConnector = new ClientConnector();
+        sslContextFactoryProvider.provideSslContextFactory()
+                .ifPresentOrElse(clientConnector::setSslContextFactory,
+                        () -> {
+                            throw new  IllegalStateException("Cannot create http/2 client due to lack of ssl context factory");
+                        });
+        HTTP2Client http2Client = new HTTP2Client(clientConnector);
         http2Client.setExecutor(executor);
         HttpClientTransportOverHTTP2 transport = new HttpClientTransportOverHTTP2(http2Client);
 
-        HttpClient client = sslContextFactoryProvider.provideSslContextFactory()
-                .map(sslContextFactory -> new HttpClient(transport, sslContextFactory))
-                .orElseThrow(() -> new IllegalStateException("Cannot create http/2 client due to lack of ssl context factory"));
+        HttpClient client = new HttpClient(transport);
         client.setMaxRequestsQueuedPerDestination(http2ClientParameters.getMaxRequestsQueuedPerDestination());
         client.setCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(http2ClientParameters.getIdleTimeout().toMillis());
