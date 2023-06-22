@@ -5,6 +5,7 @@ plugins {
 dependencies {
     api group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.dropwizard_metrics
     api group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    api group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock

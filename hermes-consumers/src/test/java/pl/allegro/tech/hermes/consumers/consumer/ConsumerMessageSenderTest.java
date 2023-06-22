@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +11,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.Meters;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.Timers;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
@@ -85,8 +87,11 @@ public class ConsumerMessageSenderTest {
 
     private ConsumerMessageSender sender;
 
+    private MetricsFacade metricsFacade;
+
     @Before
     public void setUp() {
+        metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
         setUpMetrics(subscription);
         setUpMetrics(subscriptionWith4xxRetry);
         inflightSemaphore = new AdjustableSemaphore(0);
@@ -393,7 +398,7 @@ public class ConsumerMessageSenderTest {
                 rateLimiter,
                 Executors.newSingleThreadExecutor(),
                 () -> inflightSemaphore.release(),
-                new SubscriptionMetrics(hermesMetrics, subscription.getQualifiedName()),
+                new SubscriptionMetrics(hermesMetrics, subscription.getQualifiedName(), metricsFacade),
                 ASYNC_TIMEOUT_MS,
                 new FutureAsyncTimeout(Executors.newSingleThreadScheduledExecutor()),
                 Clock.systemUTC(),

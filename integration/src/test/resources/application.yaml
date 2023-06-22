@@ -63,6 +63,10 @@ management:
   server:
     servlet:
       context-path: /
+  metrics:
+    export:
+      prometheus:
+        enabled: false
 
 spring.groovy.template.check-template-location: false
 
@@ -97,3 +101,13 @@ subscription:
       ownerId: 'subscriberAllowedToAccessAnyTopic'
       protocols:
         - http
+
+frontend:
+  metrics:
+    metric-registry:
+      graphiteReporterEnabled: true
+
+consumer:
+  metrics:
+    metric-registry:
+      graphiteReporterEnabled: true

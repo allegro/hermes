@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
-import com.codahale.metrics.Metered;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +17,7 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
     private final long threshold;
     private final long desired;
     private final double idleThreshold;
-    private final Metered globalThroughputMeter;
+    private final HermesRateMeter globalThroughputMeter;
 
     private final ScheduledExecutorService executor;
     private final Duration checkInterval;
@@ -29,7 +29,7 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
                                     long desired,
                                     double idleThreshold,
                                     Duration checkInterval,
-                                    Metered globalThroughput,
+                                    HermesRateMeter globalThroughput,
                                     ScheduledExecutorService executor) {
         this.max = max;
         this.threshold = threshold;
@@ -41,7 +41,7 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
     }
 
     @Override
-    public QuotaInsight checkQuota(TopicName topic, Metered rate) {
+    public QuotaInsight checkQuota(TopicName topic, HermesRateMeter rate) {
         Throughput throughput = users.computeIfAbsent(topic, name -> new Throughput(rate, max));
         long value = throughput.getRoundedOneMinuteRate();
         if (value > throughput.max) {
@@ -80,10 +80,10 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
     }
 
     private static class Throughput {
-        Metered current;
+        HermesRateMeter current;
         volatile long max;
 
-        Throughput(Metered current, long max) {
+        Throughput(HermesRateMeter current, long max) {
             this.current = current;
             this.max = max;
         }

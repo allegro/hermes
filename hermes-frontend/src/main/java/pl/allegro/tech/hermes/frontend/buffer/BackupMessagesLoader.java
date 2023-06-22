@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
-import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -16,6 +15,7 @@ import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaId;
@@ -246,7 +246,7 @@ public class BackupMessagesLoader {
     }
 
     private void sendMessage(Message message, CachedTopic cachedTopic) {
-        Timer.Context brokerTimer = cachedTopic.startBrokerLatencyTimer();
+        HermesTimerContext brokerTimer = cachedTopic.startBrokerLatencyTimer();
         brokerMessageProducer.send(message, cachedTopic, new PublishingCallback() {
             @Override
             public void onUnpublished(Message message, Topic topic, Exception exception) {

@@ -55,7 +55,7 @@ allprojects {
             jetty             : '9.4.19.v20190610',
             curator           : '5.4.0',
             dropwizard_metrics: '4.1.0',
-            micrometer_metrics: '1.2.1',
+            micrometer_metrics: '1.6.3',
             wiremock          : '2.27.2',
             spock             : '2.4-M1-groovy-4.0',
             groovy            : '4.0.12',

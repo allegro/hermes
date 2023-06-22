@@ -40,6 +40,10 @@ management:
   health:
     periodSeconds: 30
     enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: false
 
 audit:
   isLoggingAuditEnabled: false
