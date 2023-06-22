@@ -17,6 +17,7 @@ var hermes = angular.module('hermes', [
     'hermes.visibility',
     'hermes.mode',
     'hermes.readiness',
+    'hermes.subscriptionOffsets',
     'hermes.offlineRetransmission',
     'ui.ace',
 ]);
@@ -82,6 +83,10 @@ hermes.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', '$uibToo
                 .state('datacenterReadiness', {
                   url: '/readiness',
                   templateUrl: 'partials/readiness.html'
+                })
+                .state('subscriptionOffsets', {
+                  url: '/subscription-offsets',
+                  templateUrl: 'partials/subscriptionOffsets.html'
                 })
                 .state('search', {
                     url: '/search?entity&property&operator&pattern',

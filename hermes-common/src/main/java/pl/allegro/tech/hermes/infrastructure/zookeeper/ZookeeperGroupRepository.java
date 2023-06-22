@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 
 public class ZookeeperGroupRepository extends ZookeeperBasedRepository implements GroupRepository {
 
@@ -90,7 +91,8 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     @Override
     public List<Group> listGroups() {
-        return listGroupNames().stream()
+        return listGroupNames()
+                .stream()
                 .map(n -> getGroupDetails(n, true))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -107,5 +109,12 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
         String path = paths.groupPath(groupName);
         return readFrom(path, Group.class, quiet);
+    }
+
+    @PostConstruct
+    public void init() {
+        logger.info("Before ensuring init path exists");
+        ensurePathExists(paths.groupsPath());
+        logger.info("After ensuring init path exists");
     }
 }

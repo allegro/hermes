@@ -26,18 +26,6 @@ public class ZookeeperClient {
         return datacenterName;
     }
 
-    public void ensurePathExists(String path) {
-        try {
-            if (curatorFramework.checkExists().forPath(path) == null) {
-                logger.info("Creating path: {} in Zookeeper: {}", path, datacenterName);
-                curatorFramework.create().creatingParentsIfNeeded().forPath(path);
-            }
-        } catch (Exception e) {
-            logger.error("Error when creating path: {} in Zookeeper: {}", path, datacenterName, e);
-            throw new InternalProcessingException("Could not ensure existence of path: " + path);
-        }
-    }
-
     public void ensureEphemeralNodeExists(String path) {
         try {
             if (curatorFramework.checkExists().forPath(path) == null) {

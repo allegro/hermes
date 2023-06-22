@@ -1,7 +1,8 @@
 dependencies {
-    compile project(':hermes-api')
-    compile project(':hermes-metrics')
-    testCompile project(path: ":hermes-test-helper")
+    implementation project(':hermes-api')
+    implementation project(':hermes-metrics')
+    testImplementation project(path: ":hermes-test-helper")
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }
 
 configurations {

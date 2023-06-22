@@ -1,46 +1,51 @@
-apply plugin: 'application'
+plugins {
+    id 'java-library'
+    id 'application'
+}
+
 mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
 
 dependencies {
-    compile project(':hermes-api')
-    compile project(':hermes-common')
-    compile project(':hermes-tracker')
-    compile project(':hermes-schema')
+    api project(':hermes-api')
+    api project(':hermes-common')
+    api project(':hermes-tracker')
+    implementation project(':hermes-schema')
 
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.spring
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.spring
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jersey', version: versions.spring
-    compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.8'
-    compile group: 'org.glassfish.jersey.ext', name: 'jersey-mvc-freemarker', version: versions.jersey
+    api group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: versions.spring
+    api group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: versions.spring
+    api group: 'org.springframework.boot', name: 'spring-boot-starter-jersey', version: versions.spring
+    implementation group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.8'
+    implementation group: 'org.glassfish.jersey.ext', name: 'jersey-mvc-freemarker', version: versions.jersey
 
-    compile (group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.6.3') {
+    implementation (group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.6.3') {
         exclude group: 'javax.validation', module: 'validation-api'
     }
 
-    compile group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka
+    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka
 
-    compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
-    compile (group: 'com.github.fge', name: 'json-schema-validator', version: '2.2.6') {
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.9'
+    implementation (group: 'com.github.fge', name: 'json-schema-validator', version: '2.2.6') {
         exclude group: 'net.sf.jopt-simple'
     }
 
-    compile group: 'commons-jxpath', name: 'commons-jxpath', version: '1.3'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+    implementation group: 'commons-jxpath', name: 'commons-jxpath', version: '1.3'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
 
-    compile group: 'org.javers', name: 'javers-core', version: '5.2.5'
+    api group: 'org.javers', name: 'javers-core', version: '5.2.5'
 
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
 
-    testCompile project(':hermes-test-helper')
-    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.spring
+    testImplementation project(':hermes-test-helper')
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: versions.spring
 
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile group: 'org.spockframework', name: 'spock-spring', version: versions.spock
-    testCompile group: 'org.codehaus.groovy', name: 'groovy-json', version: versions.groovy
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-spring', version: versions.spock
+    testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
 
-    testCompile group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
-    testCompile group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
+    testImplementation group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
+    testImplementation group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
 }
 
 task buildHermesConsole(type: Exec) {

@@ -4,22 +4,23 @@ plugins {
 }
 
 dependencies {
-    compile group: 'junit', name: 'junit', version: '4.11'
-    compile group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock
-    compile group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
-    compile group: 'org.apache.avro', name: 'avro', version: versions.avro
-    compile group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
-    compile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit_jupiter
+    implementation group: 'junit', name: 'junit', version: '4.11'
+    implementation group: 'com.github.tomakehurst', name: 'wiremock', version: versions.wiremock
+    implementation group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
+    implementation group: 'org.apache.avro', name: 'avro', version: versions.avro
+    implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
+    implementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit_jupiter
 
-    testCompile project(':hermes-test-helper')
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile group: 'org.codehaus.groovy', name: 'groovy-json', version: versions.groovy
-    testCompile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
-    testCompile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-server', version: versions.jetty
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
-    testCompile group: 'org.junit.jupiter', name :'junit-jupiter', version: versions.junit_jupiter
+    testImplementation project(':hermes-test-helper')
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
+    testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
+    testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    testImplementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
+    testImplementation group: 'org.eclipse.jetty', name: 'jetty-server', version: versions.jetty
+    testImplementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
+    testImplementation group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
+    testImplementation group: 'org.junit.jupiter', name :'junit-jupiter', version: versions.junit_jupiter
     testRuntimeOnly group: 'org.junit.vintage', name : 'junit-vintage-engine', version: versions.junit_jupiter
 }
 

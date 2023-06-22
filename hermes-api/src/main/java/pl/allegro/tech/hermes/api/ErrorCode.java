@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.api;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -61,7 +62,8 @@ public enum ErrorCode {
     PERMISSION_DENIED(FORBIDDEN),
     UNKNOWN_MIGRATION(NOT_FOUND),
     INVALID_QUERY(BAD_REQUEST),
-    IMPLEMENTATION_ABSENT(NOT_FOUND);
+    IMPLEMENTATION_ABSENT(NOT_FOUND),
+    MOVING_SUBSCRIPTION_OFFSETS_VALIDATION_ERROR(BAD_REQUEST);
 
     private final int httpCode;
 

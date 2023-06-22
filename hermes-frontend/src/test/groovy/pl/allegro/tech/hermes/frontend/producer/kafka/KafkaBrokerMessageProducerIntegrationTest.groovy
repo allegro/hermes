@@ -21,7 +21,7 @@ import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
-import pl.allegro.tech.hermes.consumers.config.SchemaProperties
+import pl.allegro.tech.hermes.frontend.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic

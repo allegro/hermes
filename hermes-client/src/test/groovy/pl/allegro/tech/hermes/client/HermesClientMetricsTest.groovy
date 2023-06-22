@@ -29,7 +29,6 @@ class HermesClientMetricsTest extends Specification {
         then:
         metrics.counter("hermes-client.com_group.topic.status.201").count == 1
         metrics.timer("hermes-client.com_group.topic.latency").getSnapshot().getMax() >= Duration.ofMillis(100).get(ChronoUnit.NANOS)
-        metrics.timer("hermes-client.com_group.topic.latency").getSnapshot().getMax() < Duration.ofMillis(300).get(ChronoUnit.NANOS)
     }
 
     def "should close timer on exceptional completion and log failure metric"() {

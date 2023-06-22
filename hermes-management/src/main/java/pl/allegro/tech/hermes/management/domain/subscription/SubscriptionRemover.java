@@ -25,13 +25,13 @@ public class SubscriptionRemover {
 
     public SubscriptionRemover(Auditor auditor,
                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                               SubscriptionOwnerCache subscriptionOwnerCache, SubscriptionRepository subscriptionRepository) {
+                               SubscriptionOwnerCache subscriptionOwnerCache,
+                               SubscriptionRepository subscriptionRepository) {
         this.auditor = auditor;
         this.multiDcExecutor = multiDcExecutor;
         this.subscriptionOwnerCache = subscriptionOwnerCache;
         this.subscriptionRepository = subscriptionRepository;
     }
-
 
     public void removeSubscription(TopicName topicName, String subscriptionName, RequestUser removedBy) {
         auditor.beforeObjectRemoval(removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);

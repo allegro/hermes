@@ -59,7 +59,7 @@ public class TopicContentTypeMigrationService {
     }
 
     private void notifySingleSubscription(Topic topic, Instant beforeMigrationInstant, String subscriptionName, RequestUser requester) {
-        multiDCAwareService.moveOffset(topic, subscriptionName, beforeMigrationInstant.toEpochMilli(), false, requester);
+        multiDCAwareService.retransmit(topic, subscriptionName, beforeMigrationInstant.toEpochMilli(), false, requester);
     }
 
     private void waitUntilOffsetsAvailableOnAllKafkaTopics(Topic topic, Duration offsetsAvailableTimeout) {
