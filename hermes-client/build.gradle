@@ -1,16 +1,20 @@
-dependencies {
-    compileOnly group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.dropwizard_metrics
-    compileOnly group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
-    compileOnly group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
-    compileOnly group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
-    compileOnly group: 'org.springframework', name: 'spring-web', version: versions.spring_web
-    compileOnly group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
+plugins {
+    id 'java-library'
+}
 
-    compileOnly group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
+dependencies {
+    api group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.dropwizard_metrics
+    api group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
+    api group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
+    compileOnly group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
+    api group: 'org.springframework', name: 'spring-web', version: versions.spring_web
+    api group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
+
+    api group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     compileOnly group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 
     implementation group: 'net.jodah', name: 'failsafe', version: versions.failsafe
-    implementation group: 'io.projectreactor', name: 'reactor-core', version: '3.4.25'
+    api group: 'io.projectreactor', name: 'reactor-core', version: '3.4.25'
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock

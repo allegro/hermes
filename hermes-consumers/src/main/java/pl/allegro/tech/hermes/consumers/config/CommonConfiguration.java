@@ -2,10 +2,15 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.concurrent.DefaultExecutorServiceFactory;
@@ -13,8 +18,10 @@ import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
+import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
+import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
@@ -29,6 +36,7 @@ import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrap
 import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
@@ -69,12 +77,15 @@ import java.util.Arrays;
 import java.util.List;
 import javax.inject.Named;
 
+import static io.micrometer.core.instrument.Clock.SYSTEM;
 import static java.util.Collections.emptyList;
 
 @Configuration
 @EnableConfigurationProperties({
         MetricsProperties.class,
+        MicrometerRegistryProperties.class,
         GraphiteProperties.class,
+        PrometheusProperties.class,
         SchemaProperties.class,
         ZookeeperClustersProperties.class,
         ContentRootProperties.class,
@@ -234,8 +245,13 @@ public class CommonConfiguration {
 
     @Bean
     public HermesMetrics hermesMetrics(MetricRegistry metricRegistry,
-                                       PathsCompiler pathCompiler) {
-        return new HermesMetrics(metricRegistry, pathCompiler);
+                                       PathsCompiler pathsCompiler) {
+        return new HermesMetrics(metricRegistry, pathsCompiler);
+    }
+
+    @Bean
+    public MetricsFacade micrometerHermesMetrics(MeterRegistry metricRegistry, HermesMetrics hermesMetrics) {
+        return new MetricsFacade(metricRegistry, hermesMetrics);
     }
 
     @Bean
@@ -246,6 +262,24 @@ public class CommonConfiguration {
                                          @Named("moduleName") String moduleName) {
         return new MetricRegistryFactory(metricsProperties, graphiteProperties, counterStorage, instanceIdResolver, moduleName)
                 .provide();
+    }
+
+    @Bean
+    PrometheusConfig prometheusConfig(PrometheusProperties properties) {
+        return new PrometheusConfigAdapter(properties);
+    }
+
+    @Bean
+    public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryParameters micrometerRegistryParameters,
+                                                      PrometheusConfig prometheusConfig) {
+        return new PrometheusMeterRegistryFactory(micrometerRegistryParameters,
+                prometheusConfig, "hermes-consumers").provide();
+    }
+
+    @Bean
+    @Primary
+    public MeterRegistry compositeMeterRegistry(List<MeterRegistry> registries) {
+        return new CompositeMeterRegistry(SYSTEM, registries);
     }
 
     @Bean

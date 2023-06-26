@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
-import com.codahale.metrics.Metered;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 
 import static java.lang.String.format;
 
 public interface ThroughputLimiter {
-    QuotaInsight checkQuota(TopicName topic, Metered throughput);
+    QuotaInsight checkQuota(TopicName topic, HermesRateMeter throughput);
 
     default void start() {
     }
