@@ -50,7 +50,7 @@ allprojects {
     project.ext.versions = [
             kafka             : '2.8.2',
             guava             : '23.0',
-            jackson           : '2.11.4',
+            jackson           : '2.13.4',
             jersey            : '2.35',
             jetty             : '9.4.19.v20190610',
             curator           : '5.4.0',

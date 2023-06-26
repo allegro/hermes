@@ -1,10 +1,10 @@
-FROM gradle:6.9.3-jdk11 AS builder
+FROM gradle:7.6-jdk17 AS builder
 
 COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src/
 RUN gradle clean distZip -Pdistribution
 
-FROM adoptopenjdk/openjdk11:jre
+FROM eclipse-temurin:17.0.7_7-jre
 
 RUN apt-get update \
   && apt-get -y install unzip wget bash \
