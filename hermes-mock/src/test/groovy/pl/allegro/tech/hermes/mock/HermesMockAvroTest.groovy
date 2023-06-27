@@ -29,6 +29,7 @@ class HermesMockAvroTest extends Specification {
 
     Schema schema = ReflectData.get().getSchema(TestMessage)
     Schema differentSchema = ReflectData.get().getSchema(TestMessageWithDifferentSchema)
+    Schema differentNullableSchema = ReflectData.AllowNull.get().getSchema(TestMessageWithNullableSchema)
 
     JsonAvroConverter jsonAvroConverter = new JsonAvroConverter()
 
@@ -71,6 +72,36 @@ class HermesMockAvroTest extends Specification {
             response2.status == HttpStatus.SC_CREATED
     }
 
+    def "should receive an Avro message matched by pattern different nullable schema"() {
+        given: "define wiremock responses for 2 topics with different schemas"
+            def topicName = "my-test-avro-topic-1"
+            def topicName2 = "my-test-avro-topic-2"
+
+            hermes.define().avroTopic(topicName,
+                    aResponse().withStatusCode(201).build(),
+                    schema,
+                    TestMessage,
+                    { it -> it.key == "test-key-pattern1" })
+            hermes.define().avroTopic(topicName2,
+                    aResponse().withStatusCode(201).build(),
+                    differentNullableSchema,
+                    TestMessageWithNullableSchema,
+                    { it -> it.value.contains(7) })
+
+        when: "messages with matching patterns are published on topics"
+            def message = new TestMessage("test-key-pattern1", "test-key-value")
+            def message2 = new TestMessageWithNullableSchema("test-key-name", 7)
+
+            def response = publish(topicName, message)
+            def response2 = publish(topicName2, message2)
+
+        then: "check for any single message on the topics and check for correct responses"
+            hermes.expect().singleMessageOnTopic(topicName)
+            hermes.expect().singleMessageOnTopic(topicName2)
+
+            response.status == HttpStatus.SC_CREATED
+            response2.status == HttpStatus.SC_CREATED
+    }
 
     def "should receive an Avro message matched by pattern"() {
         given: "define wiremock response for matching avro pattern"
@@ -367,6 +398,10 @@ class HermesMockAvroTest extends Specification {
         return jsonAvroConverter.convertToAvro(message.asJson().bytes, differentSchema)
     }
 
+    def asNullableAvro(TestMessageWithNullableSchema message) {
+        return jsonAvroConverter.convertToAvro(message.asJson().bytes, differentNullableSchema)
+    }
+
     def publish(String topic) {
         publish(topic, TestMessage.random())
     }
@@ -377,6 +412,10 @@ class HermesMockAvroTest extends Specification {
 
     def publish(String topic, TestMessageWithDifferentSchema message) {
         publish(topic, asAvro(message))
+    }
+
+    def publish(String topic, TestMessageWithNullableSchema message) {
+        publish(topic, asNullableAvro(message))
     }
 
     def publish(String topic, byte[] avro) {

@@ -41,3 +41,11 @@ class TestMessageWithDifferentSchema {
         JsonOutput.toJson(this)
     }
 }
+
+class TestMessageWithNullableSchema extends TestMessageWithDifferentSchema {
+    TestMessageWithNullableSchema() {}
+
+    TestMessageWithNullableSchema(String key, Integer value) {
+        super(key, value)
+    }
+}
