@@ -47,6 +47,6 @@ jobs:
           GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
       - name: Generate GitHub release page
         if: github.ref == 'refs/heads/master'
-        run: gh release create "${{ steps.next-version.outputs.new_hermes_version }}" --generate-notes
+        run: gh release create "hermes-${{ steps.next-version.outputs.new_hermes_version }}" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
