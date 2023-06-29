@@ -83,7 +83,7 @@ public class TopicMetrics {
 
     private Iterable<Tag> topicTags(TopicName topicName) {
         return List.of(
-                Tag.of("group", topicName.getName()),
+                Tag.of("group", topicName.getGroupName()),
                 Tag.of("topic", topicName.getName())
         );
     }
