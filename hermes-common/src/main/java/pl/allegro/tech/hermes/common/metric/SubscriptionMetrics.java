@@ -36,7 +36,7 @@ public class SubscriptionMetrics {
 
     private Iterable<Tag> subscriptionTags(SubscriptionName subscriptionName) {
         return List.of(
-                Tag.of("group", subscriptionName.getTopicName().getName()),
+                Tag.of("group", subscriptionName.getTopicName().getGroupName()),
                 Tag.of("topic", subscriptionName.getTopicName().getName()),
                 Tag.of("subscription", subscriptionName.getName())
         );
