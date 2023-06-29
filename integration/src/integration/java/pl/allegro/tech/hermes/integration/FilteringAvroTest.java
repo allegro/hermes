@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import static com.google.common.collect.ImmutableMap.of;
-import static javax.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;

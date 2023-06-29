@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.management.infrastructure.query.parser.json
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.Query
+import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.ParseException
 import pl.allegro.tech.hermes.management.infrastructure.query.parser.QueryParser
 import spock.lang.Specification

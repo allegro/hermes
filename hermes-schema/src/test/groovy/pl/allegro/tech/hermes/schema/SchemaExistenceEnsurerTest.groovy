@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.schema
 
-import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
-
 
 class SchemaExistenceEnsurerTest extends Specification {
     SchemaRepository schemaRepository

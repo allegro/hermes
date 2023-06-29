@@ -1,5 +1,11 @@
 package pl.allegro.tech.hermes.management.api.writer;
 
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.ext.MessageBodyWriter;
+import jakarta.ws.rs.ext.Provider;
 import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
 
@@ -9,15 +15,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
 
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static java.util.stream.Collectors.joining;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 @Provider
 @Produces(TEXT_PLAIN)

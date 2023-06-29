@@ -1,10 +1,9 @@
 package pl.allegro.tech.hermes.integration.helper;
 
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
 import pl.allegro.tech.hermes.integration.metadata.TraceContext;
-
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
 
 public class ClientBuilderHelper {
 

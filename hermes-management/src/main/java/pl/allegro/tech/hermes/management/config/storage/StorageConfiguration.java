@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,9 +39,6 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClien
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 
-import javax.annotation.PostConstruct;
-
-import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration

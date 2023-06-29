@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.test.helper.client;
 
 import java.io.IOException;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
 
 public class PasswordAuthenticationFeature implements ClientRequestFilter {
 

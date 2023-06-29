@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+import jakarta.inject.Named;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -75,7 +76,6 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
-import javax.inject.Named;
 
 import static io.micrometer.core.instrument.Clock.SYSTEM;
 import static java.util.Collections.emptyList;

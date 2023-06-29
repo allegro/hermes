@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.mock
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.avro.Schema
 import org.apache.avro.reflect.ReflectData
-import org.apache.http.HttpStatus
+import wiremock.org.apache.hc.core5.http.HttpStatus;
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher

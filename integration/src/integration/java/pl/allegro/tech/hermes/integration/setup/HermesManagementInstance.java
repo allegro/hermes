@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integration.setup;
 
 import com.google.common.collect.ImmutableMap;
-import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;

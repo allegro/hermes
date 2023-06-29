@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 
 import static com.google.common.collect.ImmutableMap.of;
-import static javax.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;

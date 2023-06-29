@@ -1,14 +1,13 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.ws.rs.core.Response;
-
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;

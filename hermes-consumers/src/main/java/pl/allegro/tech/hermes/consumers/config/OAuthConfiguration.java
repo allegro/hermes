@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import jakarta.inject.Named;
 import org.apache.curator.framework.CuratorFramework;
 import org.eclipse.jetty.client.HttpClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,7 +26,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import javax.inject.Named;
 
 @Configuration
 @EnableConfigurationProperties(OAuthProperties.class)
