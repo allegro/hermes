@@ -1,10 +1,7 @@
 <script async setup lang="ts">
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
-  import { useSubscriptionsList } from '@/composables/subscription/use-subscriptions-list/useSubscriptionsList';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
-  import { useTopicMessagesPreview } from '@/composables/topic/use-topic-messages-preview/useTopicMessagesPreview';
-  import { useTopicMetrics } from '@/composables/topic/use-topic-metric/useTopicMetrics';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
@@ -17,12 +14,17 @@
   const { t } = useI18n();
   const route = useRoute();
   const { groupId, topicName } = route.params as Record<string, string>;
-  const { topic, owner, topicIsLoading, ownerIsLoading, topicError } =
-    useTopic(topicName);
-  const { subscriptions } = useSubscriptionsList(topicName);
-  const { data: metrics } = useTopicMetrics(topicName);
-  const { data: messages } = useTopicMessagesPreview(topicName);
-
+  const {
+    topic,
+    owner,
+    messages,
+    metrics,
+    loading,
+    error,
+    subscriptions,
+    fetchTopic,
+  } = useTopic(topicName);
+  fetchTopic();
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
@@ -48,9 +50,9 @@
     <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
     </div>
-    <loading-spinner v-if="topicIsLoading || ownerIsLoading" />
+    <loading-spinner v-if="loading" />
     <console-alert
-      v-if="topicError"
+      v-if="error.fetchTopic"
       :text="
         t('topicView.errorMessage.topicFetchFailed', { topicName: topicName })
       "

@@ -17,7 +17,7 @@
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
   const route = useRoute();
-  const { groupId, subscriptionId, topicName } = route.params as Record<
+  const { groupId, subscriptionId, topicId } = route.params as Record<
     string,
     string
   >;
@@ -32,7 +32,7 @@
     subscriptionLastUndeliveredMessage,
     error,
     loading,
-  } = useSubscription(topicName, subscriptionId);
+  } = useSubscription(topicId, subscriptionId);
 
   const authorized = true;
   const breadcrumbsItems = [
@@ -49,8 +49,8 @@
       href: `/groups/${groupId}`,
     },
     {
-      title: topicName,
-      href: `/groups/${groupId}/topics/${topicName}`,
+      title: topicId,
+      href: `/groups/${groupId}/topics/${topicId}`,
     },
     {
       title: subscriptionId,

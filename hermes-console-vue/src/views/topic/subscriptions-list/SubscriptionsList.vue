@@ -19,8 +19,6 @@
     props.subscriptions.map((subscription) => {
       const currentUrl = window.location.href;
       return {
-        title: subscription.name,
-        value: subscription.name,
         name: subscription.name,
         color: statusTextColor[subscription.state],
         statusText: subscription.state,

@@ -71,7 +71,6 @@ export const dummySubscription: Subscription = {
 
 export const secondDummySubscription: Subscription = {
   ...dummySubscription,
-  topicName: 'pl.allegro.public.group.DummyEventV2',
   name: 'bazbar-service',
   endpoint: 'service://bazbar-service/events/dummy-event',
 };

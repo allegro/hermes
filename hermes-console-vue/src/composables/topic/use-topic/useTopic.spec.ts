@@ -1,116 +1,203 @@
-import { beforeEach, describe, expect } from 'vitest';
-import { dummyTopic, dummyTopicOwner } from '@/dummy/topic';
+import { afterEach, describe, expect } from 'vitest';
+import {
+  dummySubscription,
+  secondDummySubscription,
+} from '@/dummy/subscription';
+import {
+  dummyTopic,
+  dummyTopicMessagesPreview,
+  dummyTopicMetrics,
+  dummyTopicOwner,
+} from '@/dummy/topic';
+import {
+  fetchTopicErrorHandler,
+  fetchTopicMessagesPreviewErrorHandler,
+  fetchTopicMetricsErrorHandler,
+  fetchTopicOwnerErrorHandler,
+  fetchTopicSubscriptionDetailsErrorHandler,
+  fetchTopicSubscriptionsErrorHandler,
+  successfulTopicHandlers,
+} from '@/mocks/handlers';
+import { setupServer } from 'msw/node';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
-import { waitFor } from '@testing-library/vue';
-import axios from 'axios';
-import type { Mocked } from 'vitest';
-
-vitest.mock('axios');
-const mockedAxios = axios as Mocked<typeof axios>;
+import type { UseTopicErrors } from '@/composables/types';
 
 describe('useTopic', () => {
-  const topicName = 'pl.allegro.public.group.DummyEvent';
-  const topicOwnerId = '41';
+  const server = setupServer(...successfulTopicHandlers);
 
-  beforeEach(() => {
-    vitest.resetAllMocks();
+  const topicName = dummyTopic.name;
+  const topicOwner = dummyTopicOwner.id;
+
+  afterEach(() => {
+    server.resetHandlers();
   });
 
   it('should fetch topic', async () => {
     // given
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyTopic });
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyTopicOwner });
+    server.listen();
 
     // when
     const {
       topic,
       owner,
-      topicError,
-      ownerError,
-      topicIsLoading,
-      ownerIsLoading,
+      metrics,
+      messages,
+      subscriptions,
+      loading,
+      error,
+      fetchTopic,
     } = useTopic(topicName);
+    const topicPromise = fetchTopic();
 
     // then: loading state was indicated
     expect(topic.value).toBeUndefined();
     expect(owner.value).toBeUndefined();
-    expect(topicError.value).toBeFalsy();
-
-    expect(ownerError.value).toBeFalsy();
-    expect(topicIsLoading.value).toBeTruthy();
-    expect(ownerIsLoading.value).toBeTruthy();
-
-    // and: endpoints were called
-    await waitFor(() => {
-      expect(mockedAxios.get.mock.calls[0][0]).toBe(`/topics/${topicName}`);
-      expect(mockedAxios.get.mock.calls[1][0]).toBe(
-        `/owners/sources/Service Catalog/${topicOwnerId}`,
-      );
-    });
+    expect(metrics.value).toBeUndefined();
+    expect(messages.value).toBeUndefined();
+    expect(subscriptions.value).toBeUndefined();
+    expectNoErrors(error.value);
+    expect(loading.value).toBeTruthy();
 
     // and: correct data was returned
-    await waitFor(() => {
-      expect(topic.value).toEqual(dummyTopic);
-      expect(topicError.value).toBeFalsy();
-      expect(topicIsLoading.value).toBeFalsy();
+    await topicPromise;
+    expect(topic.value).toEqual(dummyTopic);
+    expect(owner.value).toEqual(dummyTopicOwner);
+    expect(metrics.value).toEqual(dummyTopicMetrics);
+    expect(messages.value).toEqual(dummyTopicMessagesPreview);
+    expect(subscriptions.value).toEqual([
+      dummySubscription,
+      secondDummySubscription,
+    ]);
 
-      expect(owner.value).toEqual(dummyTopicOwner);
-      expect(ownerError.value).toBeFalsy();
-      expect(ownerIsLoading.value).toBeFalsy();
-    });
+    // and: correct loading and error states were indicated
+    expect(loading.value).toBeFalsy();
+    expectNoErrors(error.value);
   });
 
-  it('should indicate errors when fetching topic failed', async () => {
-    // given
-    mockedAxios.get.mockRejectedValueOnce({});
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyTopicOwner });
+  const expectedDataForErrorTest = {
+    expectedTopic: dummyTopic,
+    expectedOwner: dummyTopicOwner,
+    expectedMessages: dummyTopicMessagesPreview,
+    expectedMetrics: dummyTopicMetrics,
+    expectedSubscriptions: [dummySubscription, secondDummySubscription],
+  };
 
-    // when
-    const {
-      topic,
-      owner,
-      topicError,
-      ownerError,
-      topicIsLoading,
-      ownerIsLoading,
-    } = useTopic(topicName);
+  it.each([
+    {
+      mockHandler: fetchTopicErrorHandler({ topicName }),
+      expectedErrors: { fetchTopic: true },
+      expectedTopic: undefined,
+      expectedOwner: undefined,
+      expectedMessages: undefined,
+      expectedMetrics: undefined,
+      expectedSubscriptions: undefined,
+    },
+    {
+      mockHandler: fetchTopicOwnerErrorHandler({ topicOwner }),
+      expectedErrors: { fetchOwner: true },
+      ...expectedDataForErrorTest,
+      expectedOwner: undefined,
+    },
+    {
+      mockHandler: fetchTopicMessagesPreviewErrorHandler({ topicName }),
+      expectedErrors: { fetchTopicMessagesPreview: true },
+      ...expectedDataForErrorTest,
+      expectedMessages: undefined,
+    },
+    {
+      mockHandler: fetchTopicMetricsErrorHandler({ topicName }),
+      expectedErrors: { fetchTopicMetrics: true },
+      ...expectedDataForErrorTest,
+      expectedMetrics: undefined,
+    },
+    {
+      mockHandler: fetchTopicSubscriptionsErrorHandler({ topicName }),
+      expectedErrors: { fetchSubscriptions: true },
+      ...expectedDataForErrorTest,
+      expectedSubscriptions: undefined,
+    },
+    {
+      mockHandler: fetchTopicSubscriptionDetailsErrorHandler({
+        topicName,
+        subscriptionName: dummySubscription.name,
+      }),
+      expectedErrors: { fetchSubscriptions: true },
+      ...expectedDataForErrorTest,
+      expectedSubscriptions: [secondDummySubscription],
+    },
+    {
+      mockHandler: fetchTopicSubscriptionDetailsErrorHandler({
+        topicName,
+        subscriptionName: secondDummySubscription.name,
+      }),
+      expectedErrors: { fetchSubscriptions: true },
+      ...expectedDataForErrorTest,
+      expectedSubscriptions: [dummySubscription],
+    },
+  ])(
+    'should indicate appropriate error',
+    async ({
+      mockHandler,
+      expectedErrors,
+      expectedTopic,
+      expectedOwner,
+      expectedMessages,
+      expectedMetrics,
+      expectedSubscriptions,
+    }) => {
+      // given
+      server.use(mockHandler);
+      server.listen();
 
-    // then
-    await waitFor(() => {
-      expect(topic.value).toBeUndefined();
-      expect(topicError.value).toBeTruthy();
-      expect(topicIsLoading.value).toBeFalsy();
+      // when
+      const {
+        topic,
+        owner,
+        metrics,
+        messages,
+        subscriptions,
+        loading,
+        error,
+        fetchTopic,
+      } = useTopic(topicName);
+      const topicPromise = fetchTopic();
 
-      expect(owner.value).toBeUndefined();
-      expect(ownerError.value).toBeTruthy();
-      expect(ownerIsLoading.value).toBeFalsy();
-    });
-  });
-
-  it('should indicate error when failed getting topic owner', async () => {
-    // given
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyTopic });
-    mockedAxios.get.mockRejectedValueOnce({});
-
-    // when
-    const {
-      topic,
-      owner,
-      topicError,
-      ownerError,
-      topicIsLoading,
-      ownerIsLoading,
-    } = useTopic(topicName);
-
-    // then
-    await waitFor(() => {
-      expect(topic.value).toEqual(dummyTopic);
-      expect(topicError.value).toBeFalsy();
-      expect(topicIsLoading.value).toBeFalsy();
-
-      expect(owner.value).toBeUndefined();
-      expect(ownerError.value).toBeTruthy();
-      expect(ownerIsLoading.value).toBeFalsy();
-    });
-  });
+      // then
+      await topicPromise;
+      expect(topic.value).toEqual(expectedTopic);
+      expect(owner.value).toEqual(expectedOwner);
+      expect(messages.value).toEqual(expectedMessages);
+      expect(metrics.value).toEqual(expectedMetrics);
+      expect(subscriptions.value).toEqual(expectedSubscriptions);
+      expect(loading.value).toBeFalsy();
+      expectErrors(error.value, expectedErrors);
+    },
+  );
 });
+
+function expectErrors(
+  errors: UseTopicErrors,
+  {
+    fetchTopic = false,
+    fetchOwner = false,
+    fetchTopicMessagesPreview = false,
+    fetchTopicMetrics = false,
+    fetchSubscriptions = false,
+  },
+) {
+  (fetchTopic && expect(errors.fetchTopic).not.toBeNull()) ||
+    expect(errors.fetchTopic).toBeNull();
+  (fetchOwner && expect(errors.fetchOwner).not.toBeNull()) ||
+    expect(errors.fetchOwner).toBeNull();
+  (fetchTopicMessagesPreview &&
+    expect(errors.fetchTopicMessagesPreview).not.toBeNull()) ||
+    expect(errors.fetchTopicMessagesPreview).toBeNull();
+  (fetchTopicMetrics && expect(errors.fetchTopicMetrics).not.toBeNull()) ||
+    expect(errors.fetchTopicMetrics).toBeNull();
+  (fetchSubscriptions && expect(errors.fetchSubscriptions).not.toBeNull()) ||
+    expect(errors.fetchSubscriptions).toBeNull();
+}
+
+function expectNoErrors(errors: UseTopicErrors) {
+  expectErrors(errors, {});
+}
