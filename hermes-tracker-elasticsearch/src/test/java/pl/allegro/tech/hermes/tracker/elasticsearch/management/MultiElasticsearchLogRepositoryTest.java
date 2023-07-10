@@ -50,7 +50,10 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
-    private static final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("")));
+    private static final MetricsFacade metricsFacade = new MetricsFacade(
+            new SimpleMeterRegistry(),
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
+    );
 
     private static final ElasticsearchResource elasticsearch1 = new ElasticsearchResource();
     private static final ElasticsearchResource elasticsearch2 = new ElasticsearchResource();

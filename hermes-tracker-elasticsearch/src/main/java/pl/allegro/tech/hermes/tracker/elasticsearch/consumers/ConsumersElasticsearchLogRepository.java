@@ -116,7 +116,8 @@ public class ConsumersElasticsearchLogRepository
         trackerMetrics.registerConsumerTrackerElasticSearchQueueSizeGauge(this.queue);
         trackerMetrics.registerConsumerTrackerElasticSearchRemainingCapacity(this.queue);
 
-        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, indexFactory, typeName, elasticClient, trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, indexFactory, typeName, elasticClient,
+                trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
     }
 
     private long toSeconds(long millis) {

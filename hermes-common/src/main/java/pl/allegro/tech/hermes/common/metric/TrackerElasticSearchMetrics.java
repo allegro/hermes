@@ -18,19 +18,23 @@ public class TrackerElasticSearchMetrics {
     }
 
     public void registerProducerTrackerElasticSearchQueueSizeGauge(BlockingQueue<?> queue) {
-        registerQueueSizeGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE, Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, queue);
+        registerQueueSizeGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE,
+                Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, queue);
     }
 
     public void registerProducerTrackerElasticSearchRemainingCapacity(BlockingQueue<?> queue) {
-        registerRemainingCapacityGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, queue);
+        registerRemainingCapacityGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY,
+                Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, queue);
     }
 
     public void registerConsumerTrackerElasticSearchQueueSizeGauge(BlockingQueue<?> queue) {
-        registerQueueSizeGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE, Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, queue);
+        registerQueueSizeGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE,
+                Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, queue);
     }
 
     public void registerConsumerTrackerElasticSearchRemainingCapacity(BlockingQueue<?> queue) {
-        registerRemainingCapacityGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, queue);
+        registerRemainingCapacityGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY,
+                Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, queue);
     }
 
     public HermesTimer trackerElasticSearchCommitLatencyTimer() {
@@ -57,7 +61,8 @@ public class TrackerElasticSearchMetrics {
             public static final String PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY =
                     "producer." + HOSTNAME + ".tracker.elasticsearch.remaining-capacity";
 
-            public static final String CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE = "consumer." + HOSTNAME + ".tracker.elasticsearch.queue-size";
+            public static final String CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE =
+                    "consumer." + HOSTNAME + ".tracker.elasticsearch.queue-size";
             public static final String CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY =
                     "consumer." + HOSTNAME + ".tracker.elasticsearch.remaining-capacity";
         }

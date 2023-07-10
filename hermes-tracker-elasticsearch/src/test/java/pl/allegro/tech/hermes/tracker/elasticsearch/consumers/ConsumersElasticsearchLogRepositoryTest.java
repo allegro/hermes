@@ -36,7 +36,10 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory(clock);
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
-    private static final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("")));
+    private static final MetricsFacade metricsFacade = new MetricsFacade(
+            new SimpleMeterRegistry(),
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
+    );
 
 
     private static ElasticsearchResource elasticsearch = new ElasticsearchResource();
