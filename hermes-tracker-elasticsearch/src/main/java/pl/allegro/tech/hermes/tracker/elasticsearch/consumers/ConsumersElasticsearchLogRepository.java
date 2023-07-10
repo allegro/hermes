@@ -5,6 +5,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
+import pl.allegro.tech.hermes.common.metric.TrackerMetrics;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
@@ -14,8 +15,6 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchQueueCommitter;
 import pl.allegro.tech.hermes.tracker.elasticsearch.IndexFactory;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
 import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
-import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Gauges;
-import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 
 import java.io.IOException;
 
@@ -42,16 +41,14 @@ public class ConsumersElasticsearchLogRepository
                                                 int commitInterval,
                                                 IndexFactory indexFactory,
                                                 String typeName,
-                                                MetricRegistry metricRegistry,
-                                                PathsCompiler pathsCompiler) {
-        super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
+                                                TrackerMetrics trackerMetrics) {
+        super(queueSize, clusterName, hostname);
         this.elasticClient = elasticClient;
 
-        registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
-        registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
+        trackerMetrics.consumerTrackerElasticSearchQueueSizeGauge(this.queue);
+        trackerMetrics.consumerTrackerElasticSearchRemainingCapacity(this.queue);
 
-        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, indexFactory, typeName, elasticClient,
-                metricRegistry.timer(pathsCompiler.compile(Timers.CONSUMER_TRACKER_ELASTICSEARCH_COMMIT_LATENCY)), commitInterval);
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, indexFactory, typeName, elasticClient, trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
     }
 
     @Override
@@ -131,13 +128,11 @@ public class ConsumersElasticsearchLogRepository
         private ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory();
         private String typeName = SchemaManager.SENT_TYPE;
 
-        private final MetricRegistry metricRegistry;
-        private final PathsCompiler pathsCompiler;
+        private final TrackerMetrics trackerMetrics;
 
-        public Builder(Client elasticClient, PathsCompiler pathsCompiler, MetricRegistry metricRegistry) {
+        public Builder(Client elasticClient, TrackerMetrics trackerMetrics) {
             this.elasticClient = elasticClient;
-            this.pathsCompiler = pathsCompiler;
-            this.metricRegistry = metricRegistry;
+            this.trackerMetrics = trackerMetrics;
         }
 
         public Builder withElasticClient(Client elasticClient) {
@@ -183,8 +178,7 @@ public class ConsumersElasticsearchLogRepository
                     commitInterval,
                     indexFactory,
                     typeName,
-                    metricRegistry,
-                    pathsCompiler);
+                    trackerMetrics);
         }
     }
 }

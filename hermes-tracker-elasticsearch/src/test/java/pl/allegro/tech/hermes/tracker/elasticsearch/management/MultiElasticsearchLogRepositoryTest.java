@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -10,6 +11,8 @@ import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.TrackerMetrics;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.TestMessageMetadata;
@@ -47,6 +50,8 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
+    private static final HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
+    private static final TrackerMetrics trackerMetrics = new TrackerMetrics(new SimpleMeterRegistry(), hermesMetrics);
 
     private static final ElasticsearchResource elasticsearch1 = new ElasticsearchResource();
     private static final ElasticsearchResource elasticsearch2 = new ElasticsearchResource();
@@ -63,15 +68,13 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
         SchemaManager schemaManager = new SchemaManager(elasticsearch1.client(), frontendIndexFactory, consumersIndexFactory, false);
         logRepository = new MultiElasticsearchLogRepository(Arrays.asList(elasticsearch1.client(), elasticsearch2.client()));
 
-        PathsCompiler pathsCompiler = new PathsCompiler("localhost");
-        MetricRegistry metricRegistry = new MetricRegistry();
         frontendLogRepository = new FrontendElasticsearchLogRepository.Builder(
-                elasticsearch1.client(), pathsCompiler, metricRegistry)
+                elasticsearch1.client(), trackerMetrics)
                 .withIndexFactory(frontendIndexFactory)
                 .build();
 
         consumersLogRepository = new ConsumersElasticsearchLogRepository.Builder(
-                elasticsearch2.client(), pathsCompiler, metricRegistry)
+                elasticsearch2.client(), trackerMetrics)
                 .withIndexFactory(consumersIndexFactory)
                 .build();
     }

@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.tracker;
 import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +15,9 @@ public abstract class QueueCommitter<T> implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(QueueCommitter.class);
 
     private final BlockingQueue<T> queue;
-    private final Timer timer;
+    private final HermesTimer timer;
 
-    public QueueCommitter(BlockingQueue<T> queue, Timer timer) {
+    public QueueCommitter(BlockingQueue<T> queue, HermesTimer timer) {
         this.queue = queue;
         this.timer = timer;
     }
@@ -24,7 +26,7 @@ public abstract class QueueCommitter<T> implements Runnable {
     public void run() {
         try {
             if (!queue.isEmpty()) {
-                Timer.Context ctx = timer.time();
+                HermesTimerContext ctx = timer.time();
                 commit();
                 ctx.close();
             }
