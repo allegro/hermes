@@ -9,7 +9,7 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.TrackerMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
@@ -37,8 +37,7 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
-    private static final HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
-    private static final TrackerMetrics trackerMetrics = new TrackerMetrics(new SimpleMeterRegistry(), hermesMetrics);
+    private static final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("")));
 
     private static final ElasticsearchResource elasticsearch = new ElasticsearchResource();
 
@@ -59,7 +58,7 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     protected LogRepository createRepository() {
         schemaManager.ensureSchema();
 
-        return new FrontendElasticsearchLogRepository.Builder(elasticsearch.client(), trackerMetrics)
+        return new FrontendElasticsearchLogRepository.Builder(elasticsearch.client(), metricsFacade)
                 .withIndexFactory(frontendIndexFactory)
                 .build();
     }

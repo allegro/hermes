@@ -8,29 +8,29 @@ import java.util.concurrent.BlockingQueue;
 
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
 
-public class TrackerMetrics {
+public class TrackerElasticSearchMetrics {
     private final MeterRegistry meterRegistry;
     private final HermesMetrics hermesMetrics;
 
-    public TrackerMetrics(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+    public TrackerElasticSearchMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
         this.hermesMetrics = hermesMetrics;
     }
 
-    public void producerTrackerElasticSearchQueueSizeGauge(BlockingQueue<?> queue) {
-        registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE, "tracker.elasticsearch.queue-size", queue);
+    public void registerProducerTrackerElasticSearchQueueSizeGauge(BlockingQueue<?> queue) {
+        registerQueueSizeGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE, Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, queue);
     }
 
-    public void producerTrackerElasticSearchRemainingCapacity(BlockingQueue<?> queue) {
-        registerRemainingCapacityGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, "tracker.elasticsearch.remaining-capacity", queue);
+    public void registerProducerTrackerElasticSearchRemainingCapacity(BlockingQueue<?> queue) {
+        registerRemainingCapacityGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, queue);
     }
 
-    public void consumerTrackerElasticSearchQueueSizeGauge(BlockingQueue<?> queue) {
-        registerQueueSizeGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE, "tracker.elasticsearch.queue-size", queue);
+    public void registerConsumerTrackerElasticSearchQueueSizeGauge(BlockingQueue<?> queue) {
+        registerQueueSizeGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE, Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, queue);
     }
 
-    public void consumerTrackerElasticSearchRemainingCapacity(BlockingQueue<?> queue) {
-        registerRemainingCapacityGauge(Gauges.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, "tracker.elasticsearch.remaining-capacity", queue);
+    public void registerConsumerTrackerElasticSearchRemainingCapacity(BlockingQueue<?> queue) {
+        registerRemainingCapacityGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, queue);
     }
 
     public HermesTimer trackerElasticSearchCommitLatencyTimer() {
@@ -51,6 +51,7 @@ public class TrackerMetrics {
     }
 
     private static class Gauges {
+        private static class Graphite {
             public static final String PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE =
                     "producer." + HOSTNAME + ".tracker.elasticsearch.queue-size";
             public static final String PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY =
@@ -59,6 +60,12 @@ public class TrackerMetrics {
             public static final String CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE = "consumer." + HOSTNAME + ".tracker.elasticsearch.queue-size";
             public static final String CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY =
                     "consumer." + HOSTNAME + ".tracker.elasticsearch.remaining-capacity";
+        }
+
+        private static class Prometheus {
+            public static final String TRACKER_ELASTICSEARCH_QUEUE_SIZE = "tracker.elasticsearch.queue-size";
+            public static final String TRACKER_ELASTICSEARCH_REMAINING_CAPACITY = "tracker.elasticsearch.remaining-capacity";
+        }
     }
 
     private static class Timers {

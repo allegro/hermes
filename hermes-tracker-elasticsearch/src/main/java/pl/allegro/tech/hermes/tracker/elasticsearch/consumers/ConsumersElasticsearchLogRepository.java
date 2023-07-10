@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
-import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.common.metric.TrackerMetrics;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.common.metric.TrackerElasticSearchMetrics;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
@@ -41,14 +40,10 @@ public class ConsumersElasticsearchLogRepository
                                                 int commitInterval,
                                                 IndexFactory indexFactory,
                                                 String typeName,
-                                                TrackerMetrics trackerMetrics) {
+                                                MetricsFacade metricsFacade) {
         super(queueSize, clusterName, hostname);
         this.elasticClient = elasticClient;
-
-        trackerMetrics.consumerTrackerElasticSearchQueueSizeGauge(this.queue);
-        trackerMetrics.consumerTrackerElasticSearchRemainingCapacity(this.queue);
-
-        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, indexFactory, typeName, elasticClient, trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
+        registerMetrics(commitInterval, indexFactory, typeName, metricsFacade.trackerElasticSearchMetrics());
     }
 
     @Override
@@ -114,6 +109,16 @@ public class ConsumersElasticsearchLogRepository
                 .field(SOURCE_HOSTNAME, hostname);
     }
 
+    private void registerMetrics(int commitInterval,
+                                 IndexFactory indexFactory,
+                                 String typeName,
+                                 TrackerElasticSearchMetrics trackerMetrics) {
+        trackerMetrics.registerConsumerTrackerElasticSearchQueueSizeGauge(this.queue);
+        trackerMetrics.registerConsumerTrackerElasticSearchRemainingCapacity(this.queue);
+
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, indexFactory, typeName, elasticClient, trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
+    }
+
     private long toSeconds(long millis) {
         return millis / 1000;
     }
@@ -128,11 +133,11 @@ public class ConsumersElasticsearchLogRepository
         private ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory();
         private String typeName = SchemaManager.SENT_TYPE;
 
-        private final TrackerMetrics trackerMetrics;
+        private final MetricsFacade metricsFacade;
 
-        public Builder(Client elasticClient, TrackerMetrics trackerMetrics) {
+        public Builder(Client elasticClient, MetricsFacade metricsFacade) {
             this.elasticClient = elasticClient;
-            this.trackerMetrics = trackerMetrics;
+            this.metricsFacade = metricsFacade;
         }
 
         public Builder withElasticClient(Client elasticClient) {
@@ -178,7 +183,7 @@ public class ConsumersElasticsearchLogRepository
                     commitInterval,
                     indexFactory,
                     typeName,
-                    trackerMetrics);
+                    metricsFacade);
         }
     }
 }
