@@ -2,12 +2,18 @@ package pl.allegro.tech.hermes.common.message.undelivered;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.search.Search;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
@@ -18,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
 import static pl.allegro.tech.hermes.common.metric.Histograms.PERSISTED_UNDELIVERED_MESSAGE_SIZE;
 import static pl.allegro.tech.hermes.common.metric.Meters.PERSISTED_UNDELIVERED_MESSAGES_METER;
+import static pl.allegro.tech.hermes.test.helper.metrics.MicrometerUtils.metricValue;
 
 public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
 
@@ -29,12 +36,14 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
 
     private final HermesMetrics hermesMetrics = new HermesMetrics(
             new MetricRegistry(), new PathsCompiler("host"));
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+    private final MetricsFacade metricsFacade = new MetricsFacade(meterRegistry, hermesMetrics);
 
     private final ZookeeperUndeliveredMessageLog log = new ZookeeperUndeliveredMessageLog(
             zookeeperClient,
             paths,
             new ObjectMapper(),
-            hermesMetrics
+            metricsFacade
     );
 
     private final ZookeeperLastUndeliveredMessageReader reader = new ZookeeperLastUndeliveredMessageReader(
@@ -122,5 +131,7 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
     private void assertThatMetricsHaveBeenReported(int persistedMessageCount) {
         assertThat(hermesMetrics.meter(PERSISTED_UNDELIVERED_MESSAGES_METER).getCount()).isEqualTo(persistedMessageCount);
         assertThat(hermesMetrics.histogram(PERSISTED_UNDELIVERED_MESSAGE_SIZE).getCount()).isEqualTo(persistedMessageCount);
+        assertThat(metricValue(meterRegistry, PERSISTED_UNDELIVERED_MESSAGES_METER, Search::counter, Counter::count).orElse(0.0d)).isEqualTo(persistedMessageCount);
+        assertThat(metricValue(meterRegistry, PERSISTED_UNDELIVERED_MESSAGE_SIZE, Search::summary, DistributionSummary::count).orElse(0L)).isEqualTo(persistedMessageCount);
     }
 }

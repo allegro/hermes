@@ -18,8 +18,13 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
+import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.time.Clock;
 
@@ -72,6 +77,27 @@ public class ManagementConfiguration {
     @ConditionalOnMissingBean
     PrometheusConfig prometheusConfig(PrometheusProperties properties) {
         return new PrometheusConfigAdapter(properties);
+    }
+
+    @Bean
+    public InstanceIdResolver instanceIdResolver() {
+        return new InetAddressInstanceIdResolver();
+    }
+
+    @Bean
+    public PathsCompiler pathsCompiler(InstanceIdResolver instanceIdResolver) {
+        return new PathsCompiler(instanceIdResolver.resolve());
+    }
+
+    @Bean
+    public HermesMetrics hermesMetrics(MetricRegistry metricRegistry,
+                                       PathsCompiler pathsCompiler) {
+        return new HermesMetrics(metricRegistry, pathsCompiler);
+    }
+
+    @Bean
+    public MetricsFacade micrometerHermesMetrics(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+        return new MetricsFacade(meterRegistry, hermesMetrics);
     }
 
     @Bean

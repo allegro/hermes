@@ -32,7 +32,6 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVers
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -171,13 +170,13 @@ public class CommonConfiguration {
     public UndeliveredMessageLog undeliveredMessageLog(CuratorFramework zookeeper,
                                                        ZookeeperPaths paths,
                                                        ObjectMapper mapper,
-                                                       HermesMetrics hermesMetrics) {
-        return new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper, hermesMetrics);
+                                                       MetricsFacade metricsFacade) {
+        return new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper, metricsFacade);
     }
 
     @Bean
-    public ThreadPoolMetrics threadPoolMetrics(HermesMetrics hermesMetrics) {
-        return new ThreadPoolMetrics(hermesMetrics);
+    public ThreadPoolMetrics threadPoolMetrics(MetricsFacade metricsFacade) {
+        return new ThreadPoolMetrics(metricsFacade);
     }
 
     @Bean
@@ -230,43 +229,38 @@ public class CommonConfiguration {
     public AvroMessageSchemaVersionTruncationContentWrapper avroMessageSchemaVersionTruncationContentWrapper(
             SchemaRepository schemaRepository,
             AvroMessageContentWrapper avroMessageContentWrapper,
-            DeserializationMetrics deserializationMetrics,
+            MetricsFacade metricsFacade,
             SchemaProperties schemaProperties) {
         return new AvroMessageSchemaVersionTruncationContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics, schemaProperties.isVersionTruncationEnabled());
-    }
-
-    @Bean
-    public DeserializationMetrics deserializationMetrics(MetricRegistry metricRegistry) {
-        return new DeserializationMetrics(metricRegistry);
+                metricsFacade, schemaProperties.isVersionTruncationEnabled());
     }
 
     @Bean
     public AvroMessageHeaderSchemaIdContentWrapper avroMessageHeaderSchemaIdContentWrapper(
             SchemaRepository schemaRepository,
             AvroMessageContentWrapper avroMessageContentWrapper,
-            DeserializationMetrics deserializationMetrics,
+            MetricsFacade metricsFacade,
             SchemaProperties schemaProperties) {
         return new AvroMessageHeaderSchemaIdContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics, schemaProperties.isIdHeaderEnabled());
+                metricsFacade, schemaProperties.isIdHeaderEnabled());
     }
 
     @Bean
     public AvroMessageHeaderSchemaVersionContentWrapper avroMessageHeaderSchemaVersionContentWrapper(
             SchemaRepository schemaRepository,
             AvroMessageContentWrapper avroMessageContentWrapper,
-            DeserializationMetrics deserializationMetrics) {
+            MetricsFacade metricsFacade) {
         return new AvroMessageHeaderSchemaVersionContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics);
+                metricsFacade);
     }
 
     @Bean
     public AvroMessageSchemaIdAwareContentWrapper avroMessageSchemaIdAwareContentWrapper(
             SchemaRepository schemaRepository,
             AvroMessageContentWrapper avroMessageContentWrapper,
-            DeserializationMetrics deserializationMetrics) {
+            MetricsFacade metricsFacade) {
         return new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroMessageContentWrapper,
-                deserializationMetrics);
+                metricsFacade);
     }
 
     @Bean

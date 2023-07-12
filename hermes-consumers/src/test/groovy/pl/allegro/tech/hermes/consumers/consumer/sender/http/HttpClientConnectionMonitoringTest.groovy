@@ -2,8 +2,10 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http
 
 import com.codahale.metrics.MetricRegistry
 import com.github.tomakehurst.wiremock.WireMockServer
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.eclipse.jetty.client.HttpClient
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
 import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration
@@ -26,7 +28,8 @@ class HttpClientConnectionMonitoringTest extends Specification {
     HttpClient batchClient
     MetricRegistry metricRegistry = new MetricRegistry()
     HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
-    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(hermesMetrics)
+    MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics)
+    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(metricsFacade)
 
     def setupSpec() {
         port = Ports.nextAvailable()

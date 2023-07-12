@@ -53,8 +53,7 @@ public class InstrumentedExecutorServiceFactory {
     }
 
     private void monitor(String threadPoolName, ThreadPoolExecutor executor) {
-        BlockingQueue<Runnable> queue = executor.getQueue();
-        threadPoolMetrics.createGauges(threadPoolName, executor, queue);
+        threadPoolMetrics.createGauges(threadPoolName, executor);
     }
 
 
