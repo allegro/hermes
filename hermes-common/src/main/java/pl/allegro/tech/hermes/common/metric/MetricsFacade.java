@@ -8,6 +8,8 @@ public class MetricsFacade {
     private final SubscriptionMetrics subscriptionMetrics;
     private final ConsumerMetrics consumerMetrics;
     private final TrackerElasticSearchMetrics trackerElasticSearchMetrics;
+    private final PersistentBufferMetrics persistentBufferMetrics;
+    private final ProducerMetrics producerMetrics;
 
     public MetricsFacade(MeterRegistry meterRegistry,
                          HermesMetrics hermesMetrics) {
@@ -15,6 +17,8 @@ public class MetricsFacade {
         this.subscriptionMetrics = new SubscriptionMetrics(hermesMetrics, meterRegistry);
         this.consumerMetrics = new ConsumerMetrics(hermesMetrics, meterRegistry);
         this.trackerElasticSearchMetrics = new TrackerElasticSearchMetrics(hermesMetrics, meterRegistry);
+        this.persistentBufferMetrics = new PersistentBufferMetrics(hermesMetrics, meterRegistry);
+        this.producerMetrics = new ProducerMetrics(hermesMetrics, meterRegistry);
     }
 
     public TopicMetrics topics() {
@@ -31,6 +35,14 @@ public class MetricsFacade {
 
     public TrackerElasticSearchMetrics trackerElasticSearch() {
         return trackerElasticSearchMetrics;
+    }
+
+    public PersistentBufferMetrics persistentBufferMetrics() {
+        return persistentBufferMetrics;
+    }
+
+    public ProducerMetrics producerMetrics() {
+        return producerMetrics;
     }
 }
 

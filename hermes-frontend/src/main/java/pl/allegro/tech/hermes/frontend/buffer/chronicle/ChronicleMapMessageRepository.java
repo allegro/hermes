@@ -5,7 +5,7 @@ import net.openhft.chronicle.map.ChronicleMapBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessage;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -50,9 +51,9 @@ public class ChronicleMapMessageRepository implements MessageRepository {
         }
     }
 
-    public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize, HermesMetrics hermesMetrics) {
+    public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize, MetricsFacade metricsFacade) {
         this(file, entries, averageMessageSize);
-        hermesMetrics.registerMessageRepositorySizeGauge(map::size);
+        metricsFacade.persistentBufferMetrics().registerBackupStorageSizeGauge(map, Map::size);
     }
 
     @Override

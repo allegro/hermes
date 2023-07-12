@@ -14,14 +14,12 @@ import java.util.Optional;
 
 class InMemoryTopicsCache implements TopicsCache {
 
-    private final HermesMetrics oldMetrics;
     private final MetricsFacade metricsFacade;
     private final KafkaTopics kafkaTopics;
     private final Topic topic;
 
 
-    InMemoryTopicsCache(HermesMetrics oldMetrics, MetricsFacade metricsFacade, Topic topic) {
-        this.oldMetrics = oldMetrics;
+    InMemoryTopicsCache(MetricsFacade metricsFacade, Topic topic) {
         this.metricsFacade = metricsFacade;
         this.topic = topic;
         this.kafkaTopics = new KafkaTopics(new KafkaTopic(KafkaTopicName.valueOf(topic.getQualifiedName()), topic.getContentType()));
@@ -33,7 +31,6 @@ class InMemoryTopicsCache implements TopicsCache {
             return Optional.of(
                     new CachedTopic(
                             topic,
-                            oldMetrics,
                             metricsFacade,
                             kafkaTopics
                     )

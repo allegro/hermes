@@ -172,20 +172,6 @@ public class HermesMetrics {
         }
     }
 
-    public double getBufferTotalBytes() {
-        return getDoubleValue(ACK_LEADER_BUFFER_TOTAL_BYTES)
-                + getDoubleValue(ACK_ALL_BUFFER_TOTAL_BYTES);
-    }
-
-    public double getBufferAvailablesBytes() {
-        return getDoubleValue(ACK_LEADER_BUFFER_AVAILABLE_BYTES)
-                + getDoubleValue(ACK_ALL_BUFFER_AVAILABLE_BYTES);
-    }
-
-    private double getDoubleValue(String gauge) {
-        return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
-    }
-
     private Counter getInflightCounter(SubscriptionName subscription) {
         return counter(Counters.INFLIGHT, subscription.getTopicName(), subscription.getName());
     }
