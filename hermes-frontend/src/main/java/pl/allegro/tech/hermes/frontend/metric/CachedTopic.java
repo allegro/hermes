@@ -1,17 +1,12 @@
 package pl.allegro.tech.hermes.frontend.metric;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
-import pl.allegro.tech.hermes.common.metric.Counters;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
@@ -23,7 +18,7 @@ public class CachedTopic {
 
     private final Topic topic;
     private final KafkaTopics kafkaTopics;
-    private final HermesMetrics hermesMetrics;
+    private final MetricsFacade metricsFacade;
     private final boolean blacklisted;
 
     private final HermesTimer topicProducerLatencyTimer;
@@ -31,14 +26,14 @@ public class CachedTopic {
 
     private final HermesTimer topicBrokerLatencyTimer;
 
-    private final Meter globalRequestMeter;
-    private final Meter topicRequestMeter;
+    private final HermesCounter globalRequestMeter;
+    private final HermesCounter topicRequestMeter;
 
-    private final Meter globalDelayedProcessingMeter;
-    private final Meter topicDelayedProcessingMeter;
+    private final HermesCounter globalDelayedProcessingMeter;
+    private final HermesCounter topicDelayedProcessingMeter;
 
-    private final Histogram topicMessageContentSize;
-    private final Histogram globalMessageContentSize;
+    private final HermesHistogram topicMessageContentSize;
+    private final HermesHistogram globalMessageContentSize;
 
     private final HermesCounter topicThroughputMeter;
     private final HermesCounter globalThroughputMeter;
@@ -47,26 +42,26 @@ public class CachedTopic {
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
-    public CachedTopic(Topic topic, HermesMetrics hermesMetrics, MetricsFacade metricsFacade,
+    public CachedTopic(Topic topic, MetricsFacade metricsFacade,
                        KafkaTopics kafkaTopics) {
-        this(topic, hermesMetrics, metricsFacade, kafkaTopics, false);
+        this(topic, metricsFacade, kafkaTopics, false);
     }
 
-    public CachedTopic(Topic topic, HermesMetrics oldHermesMetrics, MetricsFacade metricsFacade,
+    public CachedTopic(Topic topic, MetricsFacade metricsFacade,
                        KafkaTopics kafkaTopics, boolean blacklisted) {
         this.topic = topic;
         this.kafkaTopics = kafkaTopics;
-        this.hermesMetrics = oldHermesMetrics;
+        this.metricsFacade = metricsFacade;
         this.blacklisted = blacklisted;
 
-        globalRequestMeter = oldHermesMetrics.meter(Meters.METER);
-        topicRequestMeter = oldHermesMetrics.meter(Meters.TOPIC_METER, topic.getName());
+        globalRequestMeter = metricsFacade.topics().topicGlobalRequestCounter();
+        topicRequestMeter = metricsFacade.topics().topicRequestCounter(topic.getName());
 
-        globalDelayedProcessingMeter = oldHermesMetrics.meter(Meters.DELAYED_PROCESSING);
-        topicDelayedProcessingMeter = oldHermesMetrics.meter(Meters.TOPIC_DELAYED_PROCESSING, topic.getName());
+        globalDelayedProcessingMeter = metricsFacade.topics().topicGlobalDelayedProcessingCounter();
+        topicDelayedProcessingMeter = metricsFacade.topics().topicDelayedProcessingCounter(topic.getName());
 
-        topicMessageContentSize = oldHermesMetrics.messageContentSizeHistogram(topic.getName());
-        globalMessageContentSize = oldHermesMetrics.messageContentSizeHistogram();
+        globalMessageContentSize = metricsFacade.topics().topicGlobalMessageContentSizeHistogram();
+        topicMessageContentSize = metricsFacade.topics().topicMessageContentSizeHistogram(topic.getName());
 
         published = metricsFacade.topics().topicPublished(topic.getName());
 
@@ -112,14 +107,14 @@ public class CachedTopic {
         httpStatusCodesMeters.computeIfAbsent(
                 status,
                 code -> new MetersPair(
-                    hermesMetrics.httpStatusCodeMeter(status),
-                    hermesMetrics.httpStatusCodeMeter(status, topic.getName()))
+                    metricsFacade.topics().topicGlobalHttpStatusCodeCounter(status),
+                    metricsFacade.topics().topicHttpStatusCodeCounter(topic.getName(), status))
         ).mark();
     }
 
     public void markRequestMeter() {
-        globalRequestMeter.mark();
-        topicRequestMeter.mark();
+        globalRequestMeter.increment(1L);
+        topicRequestMeter.increment(1L);
     }
 
     public HermesTimerContext startBrokerLatencyTimer() {
@@ -131,15 +126,15 @@ public class CachedTopic {
     }
 
     public void reportMessageContentSize(int size) {
-        topicMessageContentSize.update(size);
-        globalMessageContentSize.update(size);
+        topicMessageContentSize.record(size);
+        globalMessageContentSize.record(size);
         topicThroughputMeter.increment(size);
         globalThroughputMeter.increment(size);
     }
 
     public void markDelayedProcessing() {
-        topicDelayedProcessingMeter.mark();
-        globalDelayedProcessingMeter.mark();
+        topicDelayedProcessingMeter.increment(1L);
+        globalDelayedProcessingMeter.increment(1L);
     }
 
     public HermesRateMeter getThroughput() {

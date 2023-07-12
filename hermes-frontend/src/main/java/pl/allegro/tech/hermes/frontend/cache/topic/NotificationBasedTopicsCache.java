@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -29,7 +28,6 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
 
     private final GroupRepository groupRepository;
     private final TopicRepository topicRepository;
-    private final HermesMetrics oldHermesMetrics;
     private final MetricsFacade metricsFacade;
     private final KafkaNamesMapper kafkaNamesMapper;
 
@@ -37,12 +35,10 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
                                         BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache,
                                         GroupRepository groupRepository,
                                         TopicRepository topicRepository,
-                                        HermesMetrics oldHermesMetrics,
                                         MetricsFacade metricsFacade,
                                         KafkaNamesMapper kafkaNamesMapper) {
         this.groupRepository = groupRepository;
         this.topicRepository = topicRepository;
-        this.oldHermesMetrics = oldHermesMetrics;
         this.metricsFacade = metricsFacade;
         this.kafkaNamesMapper = kafkaNamesMapper;
         notificationsBus.registerTopicCallback(this);
@@ -112,10 +108,10 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
     }
 
     private CachedTopic cachedTopic(Topic topic) {
-        return new CachedTopic(topic, oldHermesMetrics, metricsFacade, kafkaNamesMapper.toKafkaTopics(topic));
+        return new CachedTopic(topic, metricsFacade, kafkaNamesMapper.toKafkaTopics(topic));
     }
 
     private CachedTopic bannedTopic(Topic topic) {
-        return new CachedTopic(topic, oldHermesMetrics, metricsFacade, kafkaNamesMapper.toKafkaTopics(topic), true);
+        return new CachedTopic(topic, metricsFacade, kafkaNamesMapper.toKafkaTopics(topic), true);
     }
 }

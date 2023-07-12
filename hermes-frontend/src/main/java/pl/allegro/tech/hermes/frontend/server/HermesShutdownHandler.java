@@ -6,7 +6,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,16 +19,16 @@ public class HermesShutdownHandler implements HttpHandler {
     private static final int TOLERANCE_BYTES = 5;
 
     private final HttpHandler next;
-    private final HermesMetrics metrics;
+    private final MetricsFacade metrics;
     private final ExchangeCompletionListener completionListener = new GracefulExchangeCompletionListener();
     private final AtomicInteger inflightRequests = new AtomicInteger();
     private volatile boolean shutdown = false;
 
 
-    public HermesShutdownHandler(HttpHandler next, HermesMetrics metrics) {
+    public HermesShutdownHandler(HttpHandler next, MetricsFacade metrics) {
         this.next = next;
         this.metrics = metrics;
-        metrics.registerProducerInflightRequest(inflightRequests::get);
+        metrics.producerMetrics().registerProducerInflightRequestGauge(inflightRequests);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class HermesShutdownHandler implements HttpHandler {
     }
 
     private boolean isBufferEmpty() {
-        long bufferUsedBytes = (long) (metrics.getBufferTotalBytes() - metrics.getBufferAvailablesBytes());
+        long bufferUsedBytes = (long) (metrics.producerMetrics().getBufferTotalBytes() - metrics.producerMetrics().getBufferAvailableBytes());
         logger.info("Buffer flush: {} bytes still in use", bufferUsedBytes);
         return  bufferUsedBytes < TOLERANCE_BYTES;
     }

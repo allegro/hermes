@@ -1,17 +1,27 @@
 package pl.allegro.tech.hermes.common.metric;
 
+import com.codahale.metrics.Meter;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.distribution.Histogram;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 import java.util.List;
 
+import static pl.allegro.tech.hermes.common.metric.Meters.DELAYED_PROCESSING;
+import static pl.allegro.tech.hermes.common.metric.Meters.METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.THROUGHPUT_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_DELAYED_PROCESSING;
+import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_THROUGHPUT_BYTES;
+import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 public class TopicMetrics {
     private final HermesMetrics hermesMetrics;
@@ -80,6 +90,68 @@ public class TopicMetrics {
         );
     }
 
+    public HermesCounter topicGlobalRequestCounter() {
+        return HermesCounter.from(
+                meterRegistry.counter("topic-global-requests"),
+                hermesMetrics.meter(METER)
+        );
+    }
+
+    // TODO: is requests appropriate
+    public HermesCounter topicRequestCounter(TopicName topicName) {
+        return HermesCounter.from(
+                micrometerCounter("topic-requests", topicName),
+                hermesMetrics.meter(TOPIC_METER)
+        );
+    }
+
+    public HermesCounter topicGlobalDelayedProcessingCounter() {
+        return HermesCounter.from(
+                meterRegistry.counter("topic-global-delayed-processing"),
+                hermesMetrics.meter(DELAYED_PROCESSING)
+        );
+    }
+
+    public HermesCounter topicDelayedProcessingCounter(TopicName topicName) {
+        return HermesCounter.from(
+                micrometerCounter("topic-delayed-processing", topicName),
+                hermesMetrics.meter(TOPIC_DELAYED_PROCESSING)
+        );
+    }
+
+    public HermesCounter topicGlobalHttpStatusCodeCounter(int statusCode) {
+        return HermesCounter.from(
+                meterRegistry.counter("topic-global-http-status-codes", Tags.of("status_code", String.valueOf(statusCode))),
+                hermesMetrics.httpStatusCodeMeter(statusCode)
+        );
+    }
+
+    public HermesCounter topicHttpStatusCodeCounter(TopicName topicName, int statusCode) {
+        return HermesCounter.from(
+                meterRegistry.counter("topic-http-status-codes", topicTags(topicName).and("status_code", String.valueOf(statusCode))),
+                hermesMetrics.httpStatusCodeMeter(statusCode, topicName)
+        );
+    }
+
+    public HermesHistogram topicGlobalMessageContentSizeHistogram() {
+        // TODO: configure properly
+        return HermesHistogram.of(
+                DistributionSummary.builder("topic-global-message-size")
+                        .register(meterRegistry),
+                hermesMetrics.messageContentSizeHistogram()
+        );
+    }
+
+    public HermesHistogram topicMessageContentSizeHistogram(TopicName topicName) {
+        // TODO: configure properly
+        return HermesHistogram.of(
+                DistributionSummary.builder("topic-message-size")
+                        .tags(topicTags(topicName))
+                        .register(meterRegistry),
+                hermesMetrics.messageContentSizeHistogram()
+        );
+    }
+
     private Timer micrometerTimer(String metricName, TopicName topicName) {
         return meterRegistry.timer(metricName, topicTags(topicName));
     }
@@ -88,8 +160,8 @@ public class TopicMetrics {
         return meterRegistry.counter(metricName, topicTags(topicName));
     }
 
-    private Iterable<Tag> topicTags(TopicName topicName) {
-        return List.of(
+    private Tags topicTags(TopicName topicName) {
+        return Tags.of(
                 Tag.of("group", topicName.getGroupName()),
                 Tag.of("topic", topicName.getName())
         );

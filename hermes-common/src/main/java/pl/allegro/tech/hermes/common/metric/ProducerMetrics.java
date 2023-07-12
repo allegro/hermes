@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL;
@@ -28,6 +29,7 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_COMPRESSION
 import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_FAILED_BATCHES_TOTAL;
 import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_METADATA_AGE;
 import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_RECORD_QUEUE_TIME_MAX;
+import static pl.allegro.tech.hermes.common.metric.Gauges.INFLIGHT_REQUESTS;
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 // exposes producer metrics, see: https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
@@ -154,6 +156,21 @@ public class ProducerMetrics {
                         Collections.emptyMap()),
                 gauge
         );
+    }
+
+    public double getBufferTotalBytes() {
+        return meterRegistry.get(ACK_ALL_BUFFER_TOTAL_BYTES).gauge().value()
+                + meterRegistry.get(ACK_LEADER_BUFFER_TOTAL_BYTES).gauge().value();
+    }
+
+    public double getBufferAvailableBytes() {
+        return meterRegistry.get(ACK_ALL_BUFFER_AVAILABLE_BYTES).gauge().value()
+                + meterRegistry.get(ACK_LEADER_BUFFER_AVAILABLE_BYTES).gauge().value();
+    }
+
+    public void registerProducerInflightRequestGauge(AtomicInteger atomicInteger) {
+        meterRegistry.gauge(INFLIGHT_REQUESTS, atomicInteger, AtomicInteger::get);
+        hermesMetrics.registerProducerInflightRequest(atomicInteger::get);
     }
 
     private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,

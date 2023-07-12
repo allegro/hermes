@@ -1,21 +1,12 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.common.Metric;
-import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.Node;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.Gauges;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
-
-import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 public class Producers {
     private final Producer<byte[], byte[]> ackLeader;
@@ -63,41 +54,6 @@ public class Producers {
         metricsFacade.producerMetrics().registerAckLeaderAvgLatencyPerBrokerGauge(ackLeader, brokers);
         metricsFacade.producerMetrics().registerAckAllMaxLatencyPerBrokerGauge(ackAll, brokers);
         metricsFacade.producerMetrics().registerAckLeaderMaxLatencyPerBrokerGauge(ackLeader, brokers);
-    }
-
-    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
-                                               HermesMetrics metrics,
-                                               String metricName,
-                                               String producerName,
-                                               List<Node> brokers) {
-        for (Node broker : brokers) {
-            registerLatencyPerBrokerGauge(producer, metrics, metricName, producerName, broker);
-        }
-    }
-
-    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
-                                               HermesMetrics metrics,
-                                               String metricName,
-                                               String producerName,
-                                               Node node) {
-
-        String gauge = Gauges.KAFKA_PRODUCER + producerName + "." + metricName + "." + escapeDots(node.host());
-        registerGauge(producer, metrics, gauge,
-                entry -> entry.getKey().group().equals("producer-node-metrics")
-                        && entry.getKey().name().equals(metricName)
-                        && entry.getKey().tags().containsValue("node-" + node.id()));
-
-    }
-
-
-    private void registerGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge,
-                               Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
-        metrics.registerGauge(gauge, () -> {
-            Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
-                    producer.metrics().entrySet().stream().filter(predicate).findFirst();
-            double value = first.map(metricNameEntry -> metricNameEntry.getValue().value()).orElse(0.0);
-            return value < 0 ? 0.0 : value;
-        });
     }
 
     public void close() {
