@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
@@ -27,9 +28,9 @@ public class FrontendProducerConfiguration {
     @Bean
     public BrokerMessageProducer kafkaBrokerMessageProducer(Producers producers,
                                                             KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
-                                                            HermesMetrics hermesMetrics,
+                                                            MetricsFacade metricsFacade,
                                                             MessageToKafkaProducerRecordConverter messageConverter) {
-        return new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, messageConverter);
+        return new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
     }
 
     @Bean

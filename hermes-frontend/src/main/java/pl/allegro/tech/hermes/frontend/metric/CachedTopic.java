@@ -43,7 +43,7 @@ public class CachedTopic {
     private final HermesCounter topicThroughputMeter;
     private final HermesCounter globalThroughputMeter;
 
-    private final Counter published;
+    private final HermesCounter published;
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
@@ -68,7 +68,7 @@ public class CachedTopic {
         topicMessageContentSize = oldHermesMetrics.messageContentSizeHistogram(topic.getName());
         globalMessageContentSize = oldHermesMetrics.messageContentSizeHistogram();
 
-        published = oldHermesMetrics.counter(Counters.PUBLISHED, topic.getName());
+        published = metricsFacade.topics().topicPublished(topic.getName());
 
         globalThroughputMeter = metricsFacade.topics().topicGlobalThroughputBytes();
         topicThroughputMeter = metricsFacade.topics().topicThroughputBytes(topic.getName());
@@ -127,7 +127,7 @@ public class CachedTopic {
     }
 
     public void incrementPublished() {
-        published.inc();
+        published.increment(1L);
     }
 
     public void reportMessageContentSize(int size) {

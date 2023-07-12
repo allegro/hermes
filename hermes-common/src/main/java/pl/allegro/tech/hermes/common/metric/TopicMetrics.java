@@ -73,6 +73,13 @@ public class TopicMetrics {
         );
     }
 
+    public HermesCounter topicPublished(TopicName topicName) {
+        return HermesCounter.from(
+                micrometerCounter("published", topicName),
+                hermesMetrics.meter(Counters.PUBLISHED, topicName)
+        );
+    }
+
     private Timer micrometerTimer(String metricName, TopicName topicName) {
         return meterRegistry.timer(metricName, topicTags(topicName));
     }
