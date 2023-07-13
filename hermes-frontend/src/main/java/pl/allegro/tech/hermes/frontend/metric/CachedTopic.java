@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
+import pl.allegro.tech.hermes.metrics.HermesCounterWithRate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,8 +36,8 @@ public class CachedTopic {
     private final HermesHistogram topicMessageContentSize;
     private final HermesHistogram globalMessageContentSize;
 
-    private final HermesCounter topicThroughputMeter;
-    private final HermesCounter globalThroughputMeter;
+    private final HermesCounterWithRate topicThroughputMeter;
+    private final HermesCounterWithRate globalThroughputMeter;
 
     private final HermesCounter published;
 

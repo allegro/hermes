@@ -10,6 +10,8 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesCounterWithRate;
+import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
 import static pl.allegro.tech.hermes.common.metric.Meters.DELAYED_PROCESSING;
 import static pl.allegro.tech.hermes.common.metric.Meters.METER;
@@ -64,64 +66,64 @@ public class TopicMetrics {
                 hermesMetrics.timer(Timers.ACK_LEADER_BROKER_LATENCY));
     }
 
-    public HermesCounter topicThroughputBytes(TopicName topicName) {
-        return HermesCounter.from(
+    public HermesCounterWithRate topicThroughputBytes(TopicName topicName) {
+        return HermesCounters.from(
                 micrometerCounter("topic-throughput", topicName),
                 hermesMetrics.meter(TOPIC_THROUGHPUT_BYTES, topicName)
         );
     }
 
-    public HermesCounter topicGlobalThroughputBytes() {
-        return HermesCounter.from(
+    public HermesCounterWithRate topicGlobalThroughputBytes() {
+        return HermesCounters.from(
                 meterRegistry.counter("topic-global-throughput"),
                 hermesMetrics.meter(THROUGHPUT_BYTES)
         );
     }
 
     public HermesCounter topicPublished(TopicName topicName) {
-        return HermesCounter.from(
+        return HermesCounters.from(
                 micrometerCounter("published", topicName),
-                hermesMetrics.meter(Counters.PUBLISHED, topicName)
+                hermesMetrics.counter(Counters.PUBLISHED, topicName)
         );
     }
 
     public HermesCounter topicGlobalRequestCounter() {
-        return HermesCounter.from(
+        return HermesCounters.from(
                 meterRegistry.counter("topic-global-requests"),
                 hermesMetrics.meter(METER)
         );
     }
 
     public HermesCounter topicRequestCounter(TopicName topicName) {
-        return HermesCounter.from(
+        return HermesCounters.from(
                 micrometerCounter("topic-requests", topicName),
                 hermesMetrics.meter(TOPIC_METER)
         );
     }
 
     public HermesCounter topicGlobalDelayedProcessingCounter() {
-        return HermesCounter.from(
+        return HermesCounters.from(
                 meterRegistry.counter("topic-global-delayed-processing"),
                 hermesMetrics.meter(DELAYED_PROCESSING)
         );
     }
 
     public HermesCounter topicDelayedProcessingCounter(TopicName topicName) {
-        return HermesCounter.from(
+        return HermesCounters.from(
                 micrometerCounter("topic-delayed-processing", topicName),
                 hermesMetrics.meter(TOPIC_DELAYED_PROCESSING)
         );
     }
 
     public HermesCounter topicGlobalHttpStatusCodeCounter(int statusCode) {
-        return HermesCounter.from(
+        return HermesCounters.from(
                 meterRegistry.counter("topic-global-http-status-codes", Tags.of("status_code", String.valueOf(statusCode))),
                 hermesMetrics.httpStatusCodeMeter(statusCode)
         );
     }
 
     public HermesCounter topicHttpStatusCodeCounter(TopicName topicName, int statusCode) {
-        return HermesCounter.from(
+        return HermesCounters.from(
                 meterRegistry.counter("topic-http-status-codes", topicTags(topicName).and("status_code", String.valueOf(statusCode))),
                 hermesMetrics.httpStatusCodeMeter(statusCode, topicName)
         );
