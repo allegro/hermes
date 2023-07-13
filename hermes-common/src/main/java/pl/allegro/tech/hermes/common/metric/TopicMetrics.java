@@ -11,7 +11,6 @@ import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 
-
 import static pl.allegro.tech.hermes.common.metric.Meters.DELAYED_PROCESSING;
 import static pl.allegro.tech.hermes.common.metric.Meters.METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.THROUGHPUT_BYTES;

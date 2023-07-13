@@ -106,6 +106,21 @@ public class ProducerMetrics {
         registerLatencyPerBrokerGauge(producer, "request-latency-avg", ACK_LEADER, brokers);
     }
 
+    public double getBufferTotalBytes() {
+        return meterRegistry.get(ACK_ALL_BUFFER_TOTAL_BYTES).gauge().value()
+                + meterRegistry.get(ACK_LEADER_BUFFER_TOTAL_BYTES).gauge().value();
+    }
+
+    public double getBufferAvailableBytes() {
+        return meterRegistry.get(ACK_ALL_BUFFER_AVAILABLE_BYTES).gauge().value()
+                + meterRegistry.get(ACK_LEADER_BUFFER_AVAILABLE_BYTES).gauge().value();
+    }
+
+    public void registerProducerInflightRequestGauge(AtomicInteger atomicInteger) {
+        meterRegistry.gauge(INFLIGHT_REQUESTS, atomicInteger, AtomicInteger::get);
+        hermesMetrics.registerProducerInflightRequest(atomicInteger::get);
+    }
+
     private void registerTotalBytesGauge(Producer<byte[], byte[]> producer, String gauge) {
         registerProducerGauge(
                 producer,
@@ -146,7 +161,7 @@ public class ProducerMetrics {
         );
     }
 
-    public void registerRecordQueueTimeMaxGauge(Producer<byte[], byte[]> producer, String gauge) {
+    private void registerRecordQueueTimeMaxGauge(Producer<byte[], byte[]> producer, String gauge) {
         registerProducerGauge(
                 producer,
                 new MetricName(
@@ -156,21 +171,6 @@ public class ProducerMetrics {
                         Collections.emptyMap()),
                 gauge
         );
-    }
-
-    public double getBufferTotalBytes() {
-        return meterRegistry.get(ACK_ALL_BUFFER_TOTAL_BYTES).gauge().value()
-                + meterRegistry.get(ACK_LEADER_BUFFER_TOTAL_BYTES).gauge().value();
-    }
-
-    public double getBufferAvailableBytes() {
-        return meterRegistry.get(ACK_ALL_BUFFER_AVAILABLE_BYTES).gauge().value()
-                + meterRegistry.get(ACK_LEADER_BUFFER_AVAILABLE_BYTES).gauge().value();
-    }
-
-    public void registerProducerInflightRequestGauge(AtomicInteger atomicInteger) {
-        meterRegistry.gauge(INFLIGHT_REQUESTS, atomicInteger, AtomicInteger::get);
-        hermesMetrics.registerProducerInflightRequest(atomicInteger::get);
     }
 
     private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
@@ -186,39 +186,55 @@ public class ProducerMetrics {
                                                String metricName,
                                                String producerName,
                                                Node node) {
-        String gauge = Gauges.KAFKA_PRODUCER + producerName + "." + metricName + "." + escapeDots(node.host());
+        String baseMetricName = Gauges.KAFKA_PRODUCER + producerName + "." + metricName;
+        String graphiteMetricName = baseMetricName + "." + escapeDots(node.host());
+
         Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals("producer-node-metrics")
                 && entry.getKey().name().equals(metricName)
                 && entry.getKey().tags().containsValue("node-" + node.id());
-        registerProducerGaugeGraphite(producer, gauge, predicate);
-        registerProducerGaugePrometheus(producer, gauge, predicate, Tags.of("broker", node.host()));
+
+        registerProducerGauge(producer, baseMetricName, graphiteMetricName, predicate, Tags.of("broker", node.host()));
     }
 
 
     private void registerProducerGauge(final Producer<byte[], byte[]> producer,
                                        final MetricName producerMetricName,
                                        final String gauge) {
-        Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group()) && entry.getKey().name().equals(producerMetricName.name());
-        registerProducerGaugeGraphite(producer, gauge, predicate);
-        registerProducerGaugePrometheus(producer, gauge, predicate, Tags.empty());
+        Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group())
+                && entry.getKey().name().equals(producerMetricName.name());
+        registerProducerGauge(producer, gauge, gauge, predicate, Tags.empty());
     }
 
-    private double findProducerMetricByName(Producer<byte[], byte[]> producer, Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
+    private void registerProducerGauge(Producer<byte[], byte[]> producer,
+                                       String prometheusMetricName,
+                                       String graphiteMetricName,
+                                       Predicate<Map.Entry<MetricName, ? extends Metric>> predicate,
+                                       Tags tags) {
+        registerProducerGaugePrometheus(producer, prometheusMetricName, predicate, tags);
+        registerProducerGaugeGraphite(producer, graphiteMetricName, predicate);
+    }
+
+    private double findProducerMetric(Producer<byte[], byte[]> producer,
+                                      Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
         Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                 producer.metrics().entrySet().stream().filter(predicate).findFirst();
         double value = first.map(metricNameEntry -> metricNameEntry.getValue().value()).orElse(0.0);
         return value < 0 ? 0.0 : value;
     }
 
-    private void registerProducerGaugePrometheus(Producer<byte[], byte[]> producer, String gauge, Predicate<Map.Entry<MetricName, ? extends Metric>> predicate, Tags tags) {
-        Gauge.builder(gauge, producer, p -> findProducerMetricByName(p, predicate))
+    private void registerProducerGaugePrometheus(Producer<byte[], byte[]> producer,
+                                                 String gauge,
+                                                 Predicate<Map.Entry<MetricName, ? extends Metric>> predicate,
+                                                 Tags tags) {
+        Gauge.builder(gauge, producer, p -> findProducerMetric(p, predicate))
                 .tags(tags)
                 .register(meterRegistry);
     }
 
-    private void registerProducerGaugeGraphite(Producer<byte[], byte[]> producer, String gauge, Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
-        hermesMetrics.registerGauge(gauge, () -> findProducerMetricByName(producer, predicate));
+    private void registerProducerGaugeGraphite(Producer<byte[], byte[]> producer,
+                                               String gauge,
+                                               Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
+        hermesMetrics.registerGauge(gauge, () -> findProducerMetric(producer, predicate));
     }
-
 
 }

@@ -1,13 +1,11 @@
 package pl.allegro.tech.hermes.metrics;
 
-
-import io.micrometer.core.instrument.distribution.Histogram;
-
 public class HermesHistogram {
     private final io.micrometer.core.instrument.DistributionSummary micrometerHistogram;
     private final com.codahale.metrics.Histogram graphiteHistogram;
 
-    private HermesHistogram(io.micrometer.core.instrument.DistributionSummary micrometerHistogram, com.codahale.metrics.Histogram graphiteHistogram) {
+    private HermesHistogram(io.micrometer.core.instrument.DistributionSummary micrometerHistogram,
+                            com.codahale.metrics.Histogram graphiteHistogram) {
         this.micrometerHistogram = micrometerHistogram;
         this.graphiteHistogram = graphiteHistogram;
     }
