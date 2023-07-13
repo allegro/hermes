@@ -8,9 +8,9 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesCounterWithRate;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
-import pl.allegro.tech.hermes.metrics.HermesCounterWithRate;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
 import static pl.allegro.tech.hermes.common.metric.Meters.DELAYED_PROCESSING;
