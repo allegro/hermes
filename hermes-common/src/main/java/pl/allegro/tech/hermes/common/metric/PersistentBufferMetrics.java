@@ -3,18 +3,18 @@ package pl.allegro.tech.hermes.common.metric;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
-public class BufferMetrics {
+public class PersistentBufferMetrics {
     private final MeterRegistry meterRegistry;
     private final HermesMetrics hermesMetrics;
 
-    public BufferMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
+    public PersistentBufferMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
         this.hermesMetrics = hermesMetrics;
     }
 
-    public void registerBackupStorageSizeGauge(ConcurrentMap<?, ?> map) {
+    public void registerBackupStorageSizeGauge(Map<?, ?> map) {
         this.hermesMetrics.registerMessageRepositorySizeGauge(map::size);
         this.meterRegistry.gaugeMapSize("backup-storage.size", Tags.empty(), map);
     }

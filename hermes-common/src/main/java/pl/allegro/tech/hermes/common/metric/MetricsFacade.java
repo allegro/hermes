@@ -7,7 +7,7 @@ public class MetricsFacade {
     private final TopicMetrics topicMetrics;
     private final SubscriptionMetrics subscriptionMetrics;
     private final ConsumerMetrics consumerMetrics;
-    private final BufferMetrics bufferMetrics;
+    private final PersistentBufferMetrics persistentBufferMetrics;
     private final ProducerMetrics producerMetrics;
 
     public MetricsFacade(MeterRegistry meterRegistry,
@@ -15,7 +15,7 @@ public class MetricsFacade {
         this.topicMetrics = new TopicMetrics(hermesMetrics, meterRegistry);
         this.subscriptionMetrics = new SubscriptionMetrics(hermesMetrics, meterRegistry);
         this.consumerMetrics = new ConsumerMetrics(hermesMetrics, meterRegistry);
-        this.bufferMetrics = new BufferMetrics(hermesMetrics, meterRegistry);
+        this.persistentBufferMetrics = new PersistentBufferMetrics(hermesMetrics, meterRegistry);
         this.producerMetrics = new ProducerMetrics(hermesMetrics, meterRegistry);
     }
 
@@ -31,8 +31,8 @@ public class MetricsFacade {
         return consumerMetrics;
     }
 
-    public BufferMetrics bufferMetrics() {
-        return bufferMetrics;
+    public PersistentBufferMetrics persistentBufferMetrics() {
+        return persistentBufferMetrics;
     }
 
     public ProducerMetrics producerMetrics() {

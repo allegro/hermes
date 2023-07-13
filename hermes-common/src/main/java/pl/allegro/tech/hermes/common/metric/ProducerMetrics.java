@@ -32,7 +32,7 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_RECORD_QUEU
 import static pl.allegro.tech.hermes.common.metric.Gauges.INFLIGHT_REQUESTS;
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
-// exposes producer metrics, see: https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
+// exposes kafka producer metrics, see: https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
 public class ProducerMetrics {
     private final HermesMetrics hermesMetrics;
     private final MeterRegistry meterRegistry;
