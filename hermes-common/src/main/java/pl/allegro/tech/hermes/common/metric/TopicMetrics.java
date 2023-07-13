@@ -1,19 +1,16 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import com.codahale.metrics.Meter;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.distribution.Histogram;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 
-import java.util.List;
 
 import static pl.allegro.tech.hermes.common.metric.Meters.DELAYED_PROCESSING;
 import static pl.allegro.tech.hermes.common.metric.Meters.METER;
@@ -21,7 +18,6 @@ import static pl.allegro.tech.hermes.common.metric.Meters.THROUGHPUT_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_DELAYED_PROCESSING;
 import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_THROUGHPUT_BYTES;
-import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 
 public class TopicMetrics {
     private final HermesMetrics hermesMetrics;
@@ -97,7 +93,6 @@ public class TopicMetrics {
         );
     }
 
-    // TODO: is requests appropriate
     public HermesCounter topicRequestCounter(TopicName topicName) {
         return HermesCounter.from(
                 micrometerCounter("topic-requests", topicName),
@@ -134,7 +129,6 @@ public class TopicMetrics {
     }
 
     public HermesHistogram topicGlobalMessageContentSizeHistogram() {
-        // TODO: configure properly
         return HermesHistogram.of(
                 DistributionSummary.builder("topic-global-message-size")
                         .register(meterRegistry),
@@ -143,12 +137,11 @@ public class TopicMetrics {
     }
 
     public HermesHistogram topicMessageContentSizeHistogram(TopicName topicName) {
-        // TODO: configure properly
         return HermesHistogram.of(
                 DistributionSummary.builder("topic-message-size")
                         .tags(topicTags(topicName))
                         .register(meterRegistry),
-                hermesMetrics.messageContentSizeHistogram()
+                hermesMetrics.messageContentSizeHistogram(topicName)
         );
     }
 

@@ -22,11 +22,11 @@ class CachedTopicsTestHelper {
 
     static CachedTopic cachedTopic(String name) {
         def kafkaTopics = new KafkaTopics(new KafkaTopic(KafkaTopicName.valueOf(name), ContentType.JSON))
-        return new CachedTopic(TopicBuilder.topic(name).build(), hermesMetrics, micrometerHermesMetrics, kafkaTopics)
+        return new CachedTopic(TopicBuilder.topic(name).build(), micrometerHermesMetrics, kafkaTopics)
     }
 
     static CachedTopic cachedTopic(Topic topic) {
         def kafkaTopics = new KafkaTopics(new KafkaTopic(KafkaTopicName.valueOf(topic.qualifiedName), ContentType.JSON))
-        return new CachedTopic(topic, hermesMetrics, micrometerHermesMetrics, kafkaTopics)
+        return new CachedTopic(topic, micrometerHermesMetrics, kafkaTopics)
     }
 }
