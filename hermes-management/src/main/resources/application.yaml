@@ -34,16 +34,9 @@ management:
   rest-template:
     connect-timeout: 2000
     read-timeout: 2000
-  server:
-    servlet:
-      context-path: /
   health:
     periodSeconds: 30
     enabled: true
-  metrics:
-    export:
-      prometheus:
-        enabled: false
 
 audit:
   isLoggingAuditEnabled: false
