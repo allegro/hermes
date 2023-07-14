@@ -30,7 +30,9 @@ server:
 management:
   endpoints:
     web:
-      base-path: /
+      base-path: /status
+      exposure:
+        include: health, prometheus
   rest-template:
     connect-timeout: 2000
     read-timeout: 2000

@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.management.config;
 
-import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
+
+import java.util.List;
 
 @ConfigurationProperties(prefix = "metrics.micrometer")
 public class MicrometerRegistryProperties implements MicrometerRegistryParameters {

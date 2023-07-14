@@ -1,7 +1,8 @@
 package pl.allegro.tech.hermes.management.config;
 
-import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.time.Duration;
 
 @ConfigurationProperties(prefix = "metrics.prometheus")
 public class PrometheusProperties {
