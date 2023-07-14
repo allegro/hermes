@@ -28,7 +28,7 @@ public class HermesShutdownHandler implements HttpHandler {
     public HermesShutdownHandler(HttpHandler next, MetricsFacade metrics) {
         this.next = next;
         this.metrics = metrics;
-        metrics.producerMetrics().registerProducerInflightRequestGauge(inflightRequests);
+        metrics.producerMetrics().registerProducerInflightRequestGauge(inflightRequests, AtomicInteger::get);
     }
 
     @Override

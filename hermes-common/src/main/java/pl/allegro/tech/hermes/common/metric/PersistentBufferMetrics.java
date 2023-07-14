@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 
-import java.util.Map;
+import java.util.function.ToDoubleFunction;
+
+import static pl.allegro.tech.hermes.common.metric.Gauges.BACKUP_STORAGE_SIZE;
 
 public class PersistentBufferMetrics {
     private final MeterRegistry meterRegistry;
@@ -14,8 +15,8 @@ public class PersistentBufferMetrics {
         this.hermesMetrics = hermesMetrics;
     }
 
-    public void registerBackupStorageSizeGauge(Map<?, ?> map) {
-        this.hermesMetrics.registerMessageRepositorySizeGauge(map::size);
-        this.meterRegistry.gaugeMapSize("backup-storage.size", Tags.empty(), map);
+    public <T> void registerBackupStorageSizeGauge(T obj, ToDoubleFunction<T> f) {
+        hermesMetrics.registerMessageRepositorySizeGauge(() -> (int) f.applyAsDouble(obj));
+        meterRegistry.gauge(BACKUP_STORAGE_SIZE, obj, f);
     }
 }

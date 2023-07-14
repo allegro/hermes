@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -52,7 +53,7 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize, MetricsFacade metricsFacade) {
         this(file, entries, averageMessageSize);
-        metricsFacade.persistentBufferMetrics().registerBackupStorageSizeGauge(map);
+        metricsFacade.persistentBufferMetrics().registerBackupStorageSizeGauge(map, Map::size);
     }
 
     @Override
