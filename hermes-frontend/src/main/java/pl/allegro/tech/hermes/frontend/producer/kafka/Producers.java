@@ -36,27 +36,28 @@ public class Producers {
     }
 
     public void registerGauges(MetricsFacade metricsFacade) {
-        MetricName bufferTotalBytes = new MetricName("buffer-total-bytes", "producer-metrics", "buffer total bytes", Collections.emptyMap());
+        MetricName bufferTotalBytes = producerMetric("buffer-total-bytes", "producer-metrics", "buffer total bytes");
         metricsFacade.producerMetrics().registerAckAllTotalBytesGauge(ackAll, producerGauge(bufferTotalBytes));
         metricsFacade.producerMetrics().registerAckLeaderTotalBytesGauge(ackLeader, producerGauge(bufferTotalBytes));
 
-        MetricName bufferAvailableBytes = new MetricName("buffer-available-bytes", "producer-metrics", "buffer available bytes", Collections.emptyMap());
+        MetricName bufferAvailableBytes = producerMetric("buffer-available-bytes", "producer-metrics", "buffer available bytes");
         metricsFacade.producerMetrics().registerAckAllAvailableBytesGauge(ackAll, producerGauge(bufferAvailableBytes));
         metricsFacade.producerMetrics().registerAckLeaderAvailableBytesGauge(ackLeader, producerGauge(bufferAvailableBytes));
 
-        MetricName compressionRate = new MetricName("compression-rate-avg", "producer-metrics", "average compression rate", Collections.emptyMap());
+        MetricName compressionRate = producerMetric("compression-rate-avg", "producer-metrics", "average compression rate");
         metricsFacade.producerMetrics().registerAckAllCompressionRateGauge(ackAll, producerGauge(compressionRate));
         metricsFacade.producerMetrics().registerAckLeaderCompressionRateGauge(ackLeader, producerGauge(compressionRate));
 
-        MetricName failedBatches = new MetricName("record-error-total", "producer-metrics", "failed publishing batches", Collections.emptyMap());
+        MetricName failedBatches = producerMetric("record-error-total", "producer-metrics", "failed publishing batches");
         metricsFacade.producerMetrics().registerAckAllFailedBatchesGauge(ackAll, producerGauge(failedBatches));
         metricsFacade.producerMetrics().registerAckLeaderFailedBatchesGauge(ackLeader, producerGauge(failedBatches));
 
-        MetricName metadataAge = new MetricName("metadata-age", "producer-metrics", "age [s] of metadata", Collections.emptyMap());
+        MetricName metadataAge = producerMetric("metadata-age", "producer-metrics", "age [s] of metadata");
         metricsFacade.producerMetrics().registerAckAllMetadataAgeGauge(ackAll, producerGauge(metadataAge));
         metricsFacade.producerMetrics().registerAckLeaderMetadataAgeGauge(ackLeader, producerGauge(metadataAge));
 
-        MetricName queueTimeMax = new MetricName("record-queue-time-max", "producer-metrics", "maximum time [ms] that batch spent in the send buffer", Collections.emptyMap());
+        MetricName queueTimeMax = producerMetric("record-queue-time-max", "producer-metrics",
+                "maximum time [ms] that batch spent in the send buffer");
         metricsFacade.producerMetrics().registerAckAllRecordQueueTimeMaxGauge(ackAll, producerGauge(queueTimeMax));
         metricsFacade.producerMetrics().registerAckLeaderRecordQueueTimeMaxGauge(ackLeader, producerGauge(queueTimeMax));
     }
@@ -70,10 +71,14 @@ public class Producers {
     private void registerLatencyPerBrokerGauge(MetricsFacade metricsFacade) {
         List<Node> brokers = ProducerBrokerNodeReader.read(ackLeader);
         for (Node broker : brokers) {
-            metricsFacade.producerMetrics().registerAckAllMaxLatencyBrokerGauge(ackAll, producerLatencyGauge("request-latency-max", broker), broker.host());
-            metricsFacade.producerMetrics().registerAckLeaderMaxLatencyPerBrokerGauge(ackLeader, producerLatencyGauge("request-latency-max", broker), broker.host());
-            metricsFacade.producerMetrics().registerAckAllAvgLatencyPerBrokerGauge(ackAll, producerLatencyGauge("request-latency-avg", broker), broker.host());
-            metricsFacade.producerMetrics().registerAckLeaderAvgLatencyPerBrokerGauge(ackLeader, producerLatencyGauge("request-latency-avg", broker), broker.host());
+            metricsFacade.producerMetrics().registerAckAllMaxLatencyBrokerGauge(ackAll,
+                    producerLatencyGauge("request-latency-max", broker), broker.host());
+            metricsFacade.producerMetrics().registerAckLeaderMaxLatencyPerBrokerGauge(ackLeader,
+                    producerLatencyGauge("request-latency-max", broker), broker.host());
+            metricsFacade.producerMetrics().registerAckAllAvgLatencyPerBrokerGauge(ackAll,
+                    producerLatencyGauge("request-latency-avg", broker), broker.host());
+            metricsFacade.producerMetrics().registerAckLeaderAvgLatencyPerBrokerGauge(ackLeader,
+                    producerLatencyGauge("request-latency-avg", broker), broker.host());
         }
     }
 
@@ -96,6 +101,10 @@ public class Producers {
         Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group())
                 && entry.getKey().name().equals(producerMetricName.name());
         return producer -> findProducerMetric(producer, predicate);
+    }
+
+    private static MetricName producerMetric(String name, String group, String description) {
+        return new MetricName(name, group, description, Collections.emptyMap());
     }
 
     public void close() {

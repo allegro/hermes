@@ -20,7 +20,6 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_FAILED_BATC
 import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_METADATA_AGE;
 import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_RECORD_QUEUE_TIME_MAX;
 import static pl.allegro.tech.hermes.common.metric.Gauges.INFLIGHT_REQUESTS;
-
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 public class ProducerMetrics {
@@ -105,12 +104,12 @@ public class ProducerMetrics {
         registerLatencyPerBrokerGauge(stateObj, f, "request-latency-max", ACK_LEADER, brokerNodeId);
     }
 
-    public <T >void registerAckAllAvgLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
+    public <T> void registerAckAllAvgLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
         registerLatencyPerBrokerGauge(stateObj, f, "request-latency-avg", ACK_ALL, brokerNodeId);
     }
 
     public <T> void registerAckLeaderAvgLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f,"request-latency-avg", ACK_LEADER, brokerNodeId);
+        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-avg", ACK_LEADER, brokerNodeId);
     }
 
     private <T> void registerLatencyPerBrokerGauge(T stateObj,
