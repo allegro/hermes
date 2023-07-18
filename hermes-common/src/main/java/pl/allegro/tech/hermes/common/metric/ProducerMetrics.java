@@ -11,68 +11,68 @@ import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 public class ProducerMetrics {
     private final HermesMetrics hermesMetrics;
     private final MeterRegistry meterRegistry;
-    private final HermesGauge hermesGauge;
+    private final GaugeRegistrar gaugeRegistrar;
 
     public ProducerMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
         this.hermesMetrics = hermesMetrics;
         this.meterRegistry = meterRegistry;
-        this.hermesGauge = new HermesGauge(meterRegistry, hermesMetrics);
+        this.gaugeRegistrar = new GaugeRegistrar(meterRegistry, hermesMetrics);
     }
 
     public <T> void registerAckAllTotalBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_ALL_BUFFER_TOTAL_BYTES, stateObj, f);
+        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_TOTAL_BYTES, stateObj, f);
     }
 
     public <T> void registerAckLeaderTotalBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_LEADER_BUFFER_TOTAL_BYTES, stateObj, f);
+        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_TOTAL_BYTES, stateObj, f);
     }
 
     public <T> void registerAckAllAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_ALL_BUFFER_AVAILABLE_BYTES, stateObj, f);
+        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_AVAILABLE_BYTES, stateObj, f);
     }
 
     public <T> void registerAckLeaderAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_LEADER_BUFFER_AVAILABLE_BYTES, stateObj, f);
+        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_AVAILABLE_BYTES, stateObj, f);
     }
 
     public <T> void registerAckAllCompressionRateGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_ALL_COMPRESSION_RATE, stateObj, f);
+        gaugeRegistrar.registerGauge(ACK_ALL_COMPRESSION_RATE, stateObj, f);
     }
 
     public <T> void registerAckLeaderCompressionRateGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_LEADER_COMPRESSION_RATE, stateObj, f);
+        gaugeRegistrar.registerGauge(ACK_LEADER_COMPRESSION_RATE, stateObj, f);
     }
 
     public <T> void registerAckAllFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_ALL_FAILED_BATCHES_TOTAL, stateObj, f);
+        gaugeRegistrar.registerGauge(ACK_ALL_FAILED_BATCHES_TOTAL, stateObj, f);
     }
 
     public <T> void registerAckLeaderFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_LEADER_FAILED_BATCHES_TOTAL, stateObj, f);
+        gaugeRegistrar.registerGauge(ACK_LEADER_FAILED_BATCHES_TOTAL, stateObj, f);
     }
 
     public <T> void registerAckAllMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
         String graphiteName = ACK_ALL_METADATA_AGE;
         String prometheusName = graphiteName + ".seconds";
-        hermesGauge.registerGauge(graphiteName, prometheusName, stateObj, f);
+        gaugeRegistrar.registerGauge(graphiteName, prometheusName, stateObj, f);
     }
 
     public <T> void registerAckLeaderMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
         String graphiteName = ACK_LEADER_METADATA_AGE;
         String prometheusName = graphiteName + ".seconds";
-        hermesGauge.registerGauge(graphiteName, prometheusName, stateObj, f);
+        gaugeRegistrar.registerGauge(graphiteName, prometheusName, stateObj, f);
     }
 
     public <T> void registerAckAllRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
         String graphiteName = ACK_ALL_RECORD_QUEUE_TIME_MAX;
         String prometheusName = graphiteName + ".milliseconds";
-        hermesGauge.registerGauge(graphiteName, prometheusName, stateObj, f);
+        gaugeRegistrar.registerGauge(graphiteName, prometheusName, stateObj, f);
     }
 
     public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
         String graphiteName = ACK_LEADER_RECORD_QUEUE_TIME_MAX;
         String prometheusName = graphiteName + ".milliseconds";
-        hermesGauge.registerGauge(graphiteName, prometheusName, stateObj, f);
+        gaugeRegistrar.registerGauge(graphiteName, prometheusName, stateObj, f);
     }
 
     public double getBufferTotalBytes() {
@@ -114,7 +114,7 @@ public class ProducerMetrics {
         String baseMetricName = KAFKA_PRODUCER + producerName +  metricName;
         String graphiteMetricName = baseMetricName + "." + escapeDots(brokerNodeId);
 
-        hermesGauge.registerGauge(
+        gaugeRegistrar.registerGauge(
                 graphiteMetricName, baseMetricName, stateObj, f, Tags.of("broker", brokerNodeId)
         );
     }

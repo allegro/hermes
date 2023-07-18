@@ -5,11 +5,11 @@ import io.micrometer.core.instrument.Tags;
 
 import java.util.function.ToDoubleFunction;
 
-public class HermesGauge {
+public class GaugeRegistrar {
     private final MeterRegistry meterRegistry;
     private final HermesMetrics hermesMetrics;
 
-    public HermesGauge(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+    public GaugeRegistrar(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
         this.meterRegistry = meterRegistry;
         this.hermesMetrics = hermesMetrics;
     }
