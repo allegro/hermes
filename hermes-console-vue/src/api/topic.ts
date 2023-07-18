@@ -26,35 +26,49 @@ export interface Topic {
   modifiedAt: number; // java.time.Instant
 }
 
-type TopicName = string;
+export type TopicName = string;
 
-interface RetentionTime {
+export interface RetentionTime {
   duration: number;
   retentionUnit: string; // java.util.concurrent.TimeUnit
 }
 
-enum Ack {
-  NONE,
-  LEADER,
-  ALL,
+export enum Ack {
+  NONE = 'NONE',
+  LEADER = 'LEADER',
+  ALL = 'ALL',
 }
 
-interface PublishingAuth {
+export interface PublishingAuth {
   publishers: string[];
   enabled: boolean;
   unauthenticatedAccessEnabled: boolean;
 }
 
-interface TopicDataOfflineStorage {
+export interface TopicDataOfflineStorage {
   enabled: boolean;
   retentionTime: OfflineRetentionTime;
 }
 
-interface OfflineRetentionTime {
+export interface OfflineRetentionTime {
   duration: number;
   infinite: boolean;
 }
 
-interface TopicLabel {
+export interface TopicLabel {
   value: string;
+}
+
+export interface TopicMetrics {
+  published: number;
+  volume: number;
+  rate: string;
+  deliveryRate: string;
+  subscriptions: number;
+  throughput: string;
+}
+
+export interface MessagePreview {
+  content: string;
+  truncated: boolean;
 }

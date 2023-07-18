@@ -1,32 +1,29 @@
 <script setup lang="ts">
-  import { useI18n } from 'vue-i18n';
   import type { Header } from '@/api/subscription';
 
   const props = defineProps<{
     headers: Header[];
   }>();
-
-  const { t } = useI18n();
 </script>
 
 <template>
   <v-card class="mb-2">
     <template #title>
       <p class="font-weight-bold">
-        {{ t('subscription.headersCard.title') }}
+        {{ $t('subscription.headersCard.title') }}
       </p>
     </template>
     <v-table density="compact">
       <thead>
         <tr>
           <th class="text-left">
-            {{ t('subscription.headersCard.index') }}
+            {{ $t('subscription.headersCard.index') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.headersCard.name') }}
+            {{ $t('subscription.headersCard.name') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.headersCard.value') }}
+            {{ $t('subscription.headersCard.value') }}
           </th>
         </tr>
       </thead>

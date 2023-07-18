@@ -10,6 +10,6 @@ describe('EnvironmentBadge', () => {
       },
     });
     // then
-    expect(getByText('PROD')).toBeInTheDocument();
+    expect(getByText('PROD')).toBeVisible();
   });
 });

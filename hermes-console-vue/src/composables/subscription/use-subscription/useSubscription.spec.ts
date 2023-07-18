@@ -1,3 +1,4 @@
+import { beforeEach } from 'vitest';
 import {
   dummySubscription,
   dummySubscriptionHealth,
@@ -5,7 +6,7 @@ import {
   dummyUndeliveredMessage,
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
-import { useSubscription } from '@/composables/use-subscription/useSubscription';
+import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import { waitFor } from '@testing-library/vue';
 import axios from 'axios';
 import type { Mocked } from 'vitest';
@@ -14,6 +15,10 @@ vitest.mock('axios');
 const mockedAxios = axios as Mocked<typeof axios>;
 
 describe('useSubscription', () => {
+  beforeEach(() => {
+    vitest.resetAllMocks();
+  });
+
   it('should hit expected Hermes API endpoints', async () => {
     // given
     mockedAxios.get.mockResolvedValueOnce({ data: dummySubscription });

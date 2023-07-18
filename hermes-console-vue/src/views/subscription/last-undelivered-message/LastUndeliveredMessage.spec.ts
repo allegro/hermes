@@ -15,7 +15,7 @@ describe('LastUndeliveredMessage', () => {
     // then
     expect(
       getByText('subscription.lastUndeliveredMessage.title'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should render last undelivered message formatted time', () => {
@@ -26,9 +26,7 @@ describe('LastUndeliveredMessage', () => {
     const timeRow = getByText(
       'subscription.lastUndeliveredMessage.time',
     ).closest('tr')!;
-    expect(
-      within(timeRow).getByText('2009-02-13 23:31:30'),
-    ).toBeInTheDocument();
+    expect(within(timeRow).getByText('2009-02-13 23:31:30')).toBeVisible();
   });
 
   it('should render last undelivered message reason', () => {
@@ -43,7 +41,7 @@ describe('LastUndeliveredMessage', () => {
       within(reasonRow).getByText(
         'Message sending failed with status code: 500',
       ),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should render last undelivered message content', () => {
@@ -58,6 +56,6 @@ describe('LastUndeliveredMessage', () => {
       within(messageRow).getByText(
         '{"id":"123","foo":[1,2,3],"bar":{"qaz":42}}',
       ),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 });

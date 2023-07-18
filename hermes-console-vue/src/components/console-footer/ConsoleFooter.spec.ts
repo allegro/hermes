@@ -6,6 +6,6 @@ describe('ConsoleFooter', () => {
     // when
     const { getByText } = render(ConsoleFooter);
     // then
-    expect(getByText(/allegro tech & contributors/i)).toBeInTheDocument();
+    expect(getByText(/allegro tech & contributors/i)).toBeVisible();
   });
 });

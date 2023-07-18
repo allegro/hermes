@@ -16,7 +16,7 @@ describe('ThemeSwitch', () => {
     const { getByRole } = render(ThemeSwitch, {}, vuetify);
 
     // then
-    expect(getByRole('button')).toBeInTheDocument();
+    expect(getByRole('button')).toBeVisible();
   });
 
   it.each([

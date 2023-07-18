@@ -16,7 +16,7 @@ describe('UndeliveredMessagesCard', () => {
     // then
     expect(
       getByText('subscription.undeliveredMessagesCard.title'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should render undelivered messages table', () => {
@@ -28,9 +28,9 @@ describe('UndeliveredMessagesCard', () => {
       const row = getByText(index + 1).closest('tr')!;
       const expectedTimestamp = formatTimestamp(message.timestamp);
 
-      expect(within(row).getByText(message.status)).toBeInTheDocument();
-      expect(within(row).getByText(message.reason)).toBeInTheDocument();
-      expect(within(row).getByText(expectedTimestamp)).toBeInTheDocument();
+      expect(within(row).getByText(message.status)).toBeVisible();
+      expect(within(row).getByText(message.reason)).toBeVisible();
+      expect(within(row).getByText(expectedTimestamp)).toBeVisible();
     });
   });
 });

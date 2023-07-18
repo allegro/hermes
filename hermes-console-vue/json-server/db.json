@@ -24,21 +24,21 @@
       }
     },
     "subscriptionConstraints":
-      {
-        "pl.group.Topic$subscription": {
-          "consumersNumber": 6
-        },
-        "pl.someAnotherGroup.Topic$someSubscription": {
-          "consumersNumber": 8
-        }
+    {
+      "pl.group.Topic$subscription": {
+        "consumersNumber": 6
+      },
+      "pl.someAnotherGroup.Topic$someSubscription": {
+        "consumersNumber": 8
       }
+    }
   },
   "topics": [
     {
       "id": "pl.allegro.public.group.DummyEvent",
-      "schema": "{\"type\":\"record\",\"name\":\"DummyEvent\",\"namespace\":\"pl.allegro.public.group.DummyEvent\",\"doc\":\"Event emitted when swipe-right notification is sent to a user\",\"fields\":[{\"name\":\"__metadata\",\"type\":[\"null\",{\"type\":\"map\",\"values\":\"string\"}],\"doc\":\"Field internally used by Hermes to propagate metadata.\",\"default\":null},{\"name\":\"waybillId\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"WaybillId\",\"fields\":[{\"name\":\"waybill\",\"type\":\"string\",\"doc\":\"Waybill\"},{\"name\":\"carrierId\",\"type\":\"string\",\"doc\":\"CarrierId\"}]}],\"doc\":\"WaybillId\",\"default\":null},{\"name\":\"notificationId\",\"type\":\"string\",\"doc\":\"Notification Id\"},{\"name\":\"userId\",\"type\":\"string\",\"doc\":\"User Id\"}]}",
+      "schema": "{\"type\":\"record\",\"name\":\"DummyEvent\",\"namespace\":\"pl.allegro.public.group.DummyEvent\",\"doc\":\"Event emitted when notification is sent to a user\",\"fields\":[{\"name\":\"__metadata\",\"type\":[\"null\",{\"type\":\"map\",\"values\":\"string\"}],\"doc\":\"Field internally used by Hermes to propagate metadata.\",\"default\":null},{\"name\":\"waybillId\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"WaybillId\",\"fields\":[{\"name\":\"waybill\",\"type\":\"string\",\"doc\":\"Waybill\"},{\"name\":\"carrierId\",\"type\":\"string\",\"doc\":\"CarrierId\"}]}],\"doc\":\"WaybillId\",\"default\":null},{\"name\":\"notificationId\",\"type\":\"string\",\"doc\":\"Notification Id\"},{\"name\":\"userId\",\"type\":\"string\",\"doc\":\"User Id\"}]}",
       "name": "pl.allegro.public.group.DummyEvent",
-      "description": "Events emitted when swipe-right notification is sent to a user.",
+      "description": "Events emitted when notification is sent to a user.",
       "owner": {
         "source": "Service Catalog",
         "id": "41"
@@ -86,6 +86,27 @@
       "subscriptions": 1,
       "throughput": "0.0"
     }
+  ],
+  "topicsOwners": [
+    {
+      "id": "41",
+      "name": "your-super-service",
+      "url": "https://google.pl?q=your-super-service"
+    }
+  ],
+  "topicPreview": [
+    {
+      "content": "{\"__metadata\":{\"x-request-id\":\"65157233-0153-4256-91d6-12d5b60d47a2\",\"messageId\":\"32fdedf7-a425-4sad-ad85-dd3fec785ccd\",\"trace-sampled\":\"0\",\"timestamp\":\"1652257893073\"},\"waybillId\":{\"waybill\":\"1234567890000\",\"carrierId\":\"SAMPLE\"},\"notificationId\":\"142a3f4a-a56e-789c-b866-2a27b0d24cb1\",\"userId\":\"12345678\"}",
+      "truncated": false
+    },
+    {
+      "content": "{\"__metadata\":{\"x-request-id\":\"44a558de-5e12-456f-1d3c-vc55f7v3ffd7\",\"messageId\":\"b33fcc74-2016-24f9-3cb3-ebc4bg49e5e2\",\"trace-sampled\":\"0\",\"timestamp\":\"1652257893205\"},\"waybillId\":{\"waybill\":\"1234567890000\",\"carrierId\":\"SAMPLE\"},\"notificationId\":\"12a3456d-b78e-9efa-a150-28c2f9f2f747\",\"userId\":\"98765432\"}",
+      "truncated": false
+    }
+  ],
+  "topicSubscriptions": [
+    "foobar-service",
+    "barbaz-service"
   ],
   "consumerGroups": [
     {

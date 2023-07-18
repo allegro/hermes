@@ -3,7 +3,6 @@
   import { useConstraints } from '@/composables/use-constraints/useConstraints';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
-  import ConstraintsBreadcrumbs from '@/views/admin/constraints/constraints-breadcrumbs/ConstraintsBreadcrumbs.vue';
   import ConstraintsListing from '@/views/admin/constraints/constraints-listing/ConstraintsListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
@@ -13,18 +12,28 @@
 
   const { topicConstraints, subscriptionConstraints, loading, error } =
     useConstraints();
+
+  const breadcrumbsItems = [
+    {
+      title: t('constraints.breadcrumbs.home'),
+      href: '/',
+    },
+    {
+      title: t('constraints.breadcrumbs.title'),
+    },
+  ];
 </script>
 
 <template>
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <constraints-breadcrumbs />
+        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
-          :title="t('constraints.connectionError.title')"
-          :text="t('constraints.connectionError.text')"
+          :title="$t('constraints.connectionError.title')"
+          :text="$t('constraints.connectionError.text')"
           type="error"
         />
       </v-col>
@@ -32,12 +41,12 @@
     <v-row dense>
       <v-col md="10">
         <p class="text-h4 font-weight-bold mb-3">
-          {{ t('constraints.topicConstraints.heading') }}
+          {{ $t('constraints.topicConstraints.heading') }}
         </p>
       </v-col>
       <v-col md="2">
         <v-btn prepend-icon="mdi-plus" color="secondary" block>
-          {{ t('constraints.topicConstraints.actions.create') }}
+          {{ $t('constraints.topicConstraints.actions.create') }}
         </v-btn>
       </v-col>
     </v-row>
@@ -45,7 +54,7 @@
       <v-col md="12">
         <v-text-field
           single-line
-          :label="t('constraints.topicConstraints.actions.search')"
+          :label="$t('constraints.topicConstraints.actions.search')"
           density="compact"
           v-model="topicFilter"
           prepend-inner-icon="mdi-magnify"
@@ -64,12 +73,12 @@
     <v-row dense class="mt-10">
       <v-col md="10">
         <p class="text-h4 font-weight-bold mb-3">
-          {{ t('constraints.subscriptionConstraints.heading') }}
+          {{ $t('constraints.subscriptionConstraints.heading') }}
         </p>
       </v-col>
       <v-col md="2">
         <v-btn prepend-icon="mdi-plus" color="secondary" block>
-          {{ t('constraints.subscriptionConstraints.actions.create') }}
+          {{ $t('constraints.subscriptionConstraints.actions.create') }}
         </v-btn>
       </v-col>
     </v-row>
@@ -77,7 +86,7 @@
       <v-col md="12">
         <v-text-field
           single-line
-          :label="t('constraints.subscriptionConstraints.actions.search')"
+          :label="$t('constraints.subscriptionConstraints.actions.search')"
           density="compact"
           v-model="subscriptionFilter"
           prepend-inner-icon="mdi-magnify"

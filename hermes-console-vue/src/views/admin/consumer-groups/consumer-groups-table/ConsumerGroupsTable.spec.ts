@@ -12,7 +12,7 @@ describe('ConsumerGroupsTable', () => {
     const { getByText } = render(ConsumerGroupsTable, { props });
 
     // then
-    expect(getByText(/kafka-1 \(Stable\)/i)).toBeInTheDocument();
-    expect(getByText(/kafka-2 \(Dead\)/i)).toBeInTheDocument();
+    expect(getByText(/kafka-1 \(Stable\)/i)).toBeVisible();
+    expect(getByText(/kafka-2 \(Dead\)/i)).toBeVisible();
   });
 });
