@@ -37,11 +37,11 @@ public class MetricsFacade {
         return trackerElasticSearchMetrics;
     }
 
-    public PersistentBufferMetrics persistentBufferMetrics() {
+    public PersistentBufferMetrics persistentBuffer() {
         return persistentBufferMetrics;
     }
 
-    public ProducerMetrics producerMetrics() {
+    public ProducerMetrics producer() {
         return producerMetrics;
     }
 }

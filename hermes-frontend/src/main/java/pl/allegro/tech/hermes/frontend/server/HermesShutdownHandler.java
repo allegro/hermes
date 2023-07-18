@@ -28,7 +28,7 @@ public class HermesShutdownHandler implements HttpHandler {
     public HermesShutdownHandler(HttpHandler next, MetricsFacade metrics) {
         this.next = next;
         this.metrics = metrics;
-        metrics.producerMetrics().registerProducerInflightRequestGauge(inflightRequests, AtomicInteger::get);
+        metrics.producer().registerProducerInflightRequestGauge(inflightRequests, AtomicInteger::get);
     }
 
     @Override
@@ -68,8 +68,8 @@ public class HermesShutdownHandler implements HttpHandler {
     }
 
     private boolean isBufferEmpty() {
-        long bufferUsedBytes = (long) (metrics.producerMetrics().getBufferTotalBytes()
-                - metrics.producerMetrics().getBufferAvailableBytes());
+        long bufferUsedBytes = (long) (metrics.producer().getBufferTotalBytes()
+                - metrics.producer().getBufferAvailableBytes());
         logger.info("Buffer flush: {} bytes still in use", bufferUsedBytes);
         return  bufferUsedBytes < TOLERANCE_BYTES;
     }

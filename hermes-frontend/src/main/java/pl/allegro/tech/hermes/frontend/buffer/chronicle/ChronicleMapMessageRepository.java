@@ -53,7 +53,7 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize, MetricsFacade metricsFacade) {
         this(file, entries, averageMessageSize);
-        metricsFacade.persistentBufferMetrics().registerBackupStorageSizeGauge(map, Map::size);
+        metricsFacade.persistentBuffer().registerBackupStorageSizeGauge(map, Map::size);
     }
 
     @Override
