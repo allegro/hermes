@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
@@ -42,7 +43,7 @@ public class FrontendElasticsearchLogRepository
                                                MetricsFacade metricsFacade) {
         super(queueSize, clusterName, hostname);
         this.elasticClient = elasticClient;
-        registerMetrics(commitInterval, indexFactory, typeName, metricsFacade.trackerElasticSearchMetrics());
+        registerMetrics(commitInterval, indexFactory, typeName, metricsFacade.trackerElasticSearch());
     }
 
     @Override
@@ -126,10 +127,10 @@ public class FrontendElasticsearchLogRepository
                                  IndexFactory indexFactory,
                                  String typeName,
                                  TrackerElasticSearchMetrics trackerMetrics) {
-        trackerMetrics.registerProducerTrackerElasticSearchQueueSizeGauge(this.queue);
-        trackerMetrics.registerProducerTrackerElasticSearchRemainingCapacity(this.queue);
+        trackerMetrics.registerProducerTrackerElasticSearchQueueSizeGauge(this.queue, BlockingQueue::size);
+        trackerMetrics.registerProducerTrackerElasticSearchRemainingCapacity(this.queue, BlockingQueue::size);
 
-        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, indexFactory, typeName, elasticClient,
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(this.queue, indexFactory, typeName, elasticClient,
                 trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
     }
 

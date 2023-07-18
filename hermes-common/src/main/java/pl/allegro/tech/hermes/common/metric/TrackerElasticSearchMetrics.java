@@ -1,10 +1,9 @@
 package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.function.ToDoubleFunction;
 
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.HOSTNAME;
 
@@ -17,24 +16,24 @@ public class TrackerElasticSearchMetrics {
         this.hermesMetrics = hermesMetrics;
     }
 
-    public void registerProducerTrackerElasticSearchQueueSizeGauge(BlockingQueue<?> queue) {
-        registerQueueSizeGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE,
-                Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, queue);
+    public <T> void registerProducerTrackerElasticSearchQueueSizeGauge(T stateObj, ToDoubleFunction<T> f) {
+        hermesMetrics.registerGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE, () -> f.applyAsDouble(stateObj));
+        meterRegistry.gauge(Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, stateObj, f);
     }
 
-    public void registerProducerTrackerElasticSearchRemainingCapacity(BlockingQueue<?> queue) {
-        registerRemainingCapacityGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY,
-                Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, queue);
+    public <T> void registerProducerTrackerElasticSearchRemainingCapacity(T stateObj, ToDoubleFunction<T> f) {
+        hermesMetrics.registerGauge(Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, () -> f.applyAsDouble(stateObj));
+        meterRegistry.gauge(Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, stateObj, f);
     }
 
-    public void registerConsumerTrackerElasticSearchQueueSizeGauge(BlockingQueue<?> queue) {
-        registerQueueSizeGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE,
-                Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, queue);
+    public <T> void registerConsumerTrackerElasticSearchQueueSizeGauge(T stateObj, ToDoubleFunction<T> f) {
+        hermesMetrics.registerGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE, () -> f.applyAsDouble(stateObj));
+        meterRegistry.gauge(Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE, stateObj, f);
     }
 
-    public void registerConsumerTrackerElasticSearchRemainingCapacity(BlockingQueue<?> queue) {
-        registerRemainingCapacityGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY,
-                Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, queue);
+    public <T> void registerConsumerTrackerElasticSearchRemainingCapacity(T stateObj, ToDoubleFunction<T> f) {
+        hermesMetrics.registerGauge(Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, () -> f.applyAsDouble(stateObj));
+        meterRegistry.gauge(Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY, stateObj, f);
     }
 
     public HermesTimer trackerElasticSearchCommitLatencyTimer() {
@@ -42,16 +41,6 @@ public class TrackerElasticSearchMetrics {
                 meterRegistry.timer(Timers.ELASTICSEARCH_COMMIT_LATENCY),
                 hermesMetrics.timer(Timers.ELASTICSEARCH_COMMIT_LATENCY)
         );
-    }
-
-    private void registerQueueSizeGauge(String graphiteMetricName, String prometheusMetricName, BlockingQueue<?> queue) {
-        this.hermesMetrics.registerGauge(graphiteMetricName, queue::size);
-        this.meterRegistry.gaugeCollectionSize(prometheusMetricName, Tags.empty(), queue);
-    }
-
-    private void registerRemainingCapacityGauge(String graphiteMetricName, String prometheusMetricName, BlockingQueue<?> queue) {
-        this.hermesMetrics.registerGauge(graphiteMetricName, queue::remainingCapacity);
-        this.meterRegistry.gauge(prometheusMetricName, Tags.empty(), queue, BlockingQueue::remainingCapacity);
     }
 
     private static class Gauges {

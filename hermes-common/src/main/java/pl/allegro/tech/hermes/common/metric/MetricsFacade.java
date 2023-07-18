@@ -29,7 +29,7 @@ public class MetricsFacade {
         return consumerMetrics;
     }
 
-    public TrackerElasticSearchMetrics trackerElasticSearchMetrics() {
+    public TrackerElasticSearchMetrics trackerElasticSearch() {
         return trackerElasticSearchMetrics;
     }
 }
