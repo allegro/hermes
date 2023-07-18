@@ -1,22 +1,22 @@
 package pl.allegro.tech.hermes.common.metric.timer;
 
-import com.codahale.metrics.Timer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.io.Closeable;
 
 public class StartedTimersPair implements Closeable {
 
-    private final Timer.Context time1;
-    private final Timer.Context time2;
+    private final HermesTimerContext time1;
+    private final HermesTimerContext time2;
 
-    public StartedTimersPair(Timer timer1, Timer timer2) {
-        time1 = timer1.time();
-        time2 = timer2.time();
+    public StartedTimersPair(HermesTimerContext timer1, HermesTimerContext timer2) {
+        time1 = timer1;
+        time2 = timer2;
     }
 
     @Override
     public void close() {
-        time1.stop();
-        time2.stop();
+        time1.close();
+        time2.close();
     }
 }

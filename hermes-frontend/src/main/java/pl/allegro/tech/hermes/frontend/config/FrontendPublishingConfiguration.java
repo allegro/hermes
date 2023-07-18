@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
@@ -56,8 +56,8 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public ThroughputLimiter throughputLimiter(ThroughputProperties throughputProperties, HermesMetrics hermesMetrics) {
-        return new ThroughputLimiterFactory(throughputProperties, hermesMetrics).provide();
+    public ThroughputLimiter throughputLimiter(ThroughputProperties throughputProperties, MetricsFacade metricsFacade) {
+        return new ThroughputLimiterFactory(throughputProperties, metricsFacade).provide();
     }
 
     @Bean

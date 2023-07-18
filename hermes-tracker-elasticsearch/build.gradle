@@ -1,13 +1,18 @@
+plugins {
+    id 'java-library'
+}
 dependencies {
-    compile project(':hermes-common')
-    compile project(':hermes-tracker')
-    compile 'org.slf4j:slf4j-api:1.7.12'
-    compile group: 'org.elasticsearch.client', name: 'transport', version: '6.8.12'
+    implementation project(':hermes-common')
+    implementation project(':hermes-tracker')
+    implementation 'org.slf4j:slf4j-api:2.0.4'
+    api group: 'org.elasticsearch.client', name: 'transport', version: '6.8.12'
 
-    testCompile project(path: ":hermes-tracker", configuration: "testArtifacts")
-    testCompile project(path: ":hermes-test-helper")
-    testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
-    testCompile 'pl.allegro.tech:embedded-elasticsearch:2.10.0'
+    testImplementation project(path: ":hermes-tracker", configuration: "testArtifacts")
+    testImplementation project(path: ":hermes-test-helper")
+    testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
+    testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
+    testImplementation 'pl.allegro.tech:embedded-elasticsearch:2.10.0'
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }
 
 test.useTestNG()

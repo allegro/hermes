@@ -40,7 +40,7 @@ public interface MessageBatch {
 
     long getLifetime();
 
-    int size();
+    int getMessageCount();
 
     MessageBatch close();
 
@@ -49,6 +49,8 @@ public interface MessageBatch {
     boolean isBiggerThanTotalCapacity(byte[] data);
 
     int getCapacity();
+
+    int getSize();
 
     void incrementRetryCounter();
 

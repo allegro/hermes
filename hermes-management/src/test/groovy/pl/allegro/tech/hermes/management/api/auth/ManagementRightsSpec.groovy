@@ -1,19 +1,19 @@
 package pl.allegro.tech.hermes.management.api.auth
 
+import jakarta.ws.rs.container.ContainerRequestContext
+import jakarta.ws.rs.core.Cookie
+import jakarta.ws.rs.core.MediaType
+import jakarta.ws.rs.core.MultivaluedMap
+import jakarta.ws.rs.core.Request
+import jakarta.ws.rs.core.Response
+import jakarta.ws.rs.core.SecurityContext
+import jakarta.ws.rs.core.UriInfo
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.management.config.GroupProperties
 import pl.allegro.tech.hermes.test.helper.builder.GroupBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import javax.ws.rs.container.ContainerRequestContext
-import javax.ws.rs.core.Cookie
-import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.MultivaluedMap
-import javax.ws.rs.core.Request
-import javax.ws.rs.core.Response
-import javax.ws.rs.core.SecurityContext
-import javax.ws.rs.core.UriInfo
 import java.security.Principal
 
 class ManagementRightsSpec extends Specification {

@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 class ScheduledTask<T> implements ScheduledFuture<T> {
 

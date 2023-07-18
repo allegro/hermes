@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Duration.TEN_SECONDS;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_ENABLED;

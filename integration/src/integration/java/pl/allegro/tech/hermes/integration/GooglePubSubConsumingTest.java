@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integration;
 
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.TopicName;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -10,9 +11,8 @@ import pl.allegro.tech.hermes.test.helper.endpoint.GooglePubSubEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.io.IOException;
-import javax.ws.rs.core.Response;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 

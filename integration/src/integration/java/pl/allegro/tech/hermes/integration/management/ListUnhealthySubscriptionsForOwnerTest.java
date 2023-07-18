@@ -1,8 +1,11 @@
 package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableSet;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.GenericType;
 import org.javers.common.collections.Lists;
-import org.jetbrains.annotations.NotNull;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.MonitoringDetails;
@@ -15,12 +18,8 @@ import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 
 import java.util.List;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.GenericType;
 
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static pl.allegro.tech.hermes.api.MonitoringDetails.Severity;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
@@ -279,7 +278,6 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         return subscription;
     }
 
-    @NotNull
     private OwnerId ownerId(String ownerId) {
         return new OwnerId("Plaintext", ownerId);
     }

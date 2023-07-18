@@ -11,7 +11,8 @@ frontend:
   graphite:
     host: "localhost"
   metrics:
-    graphiteReporterEnabled: true
+    metric-registry:
+      graphiteReporterEnabled: true
   schema:
     cache:
       refreshAfterWrite: 1m

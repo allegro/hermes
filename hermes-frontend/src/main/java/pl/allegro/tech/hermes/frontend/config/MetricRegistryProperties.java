@@ -5,8 +5,8 @@ import pl.allegro.tech.hermes.common.di.factories.MetricRegistryParameters;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "frontend.metrics")
-public class MetricsProperties implements MetricRegistryParameters {
+@ConfigurationProperties(prefix = "frontend.metrics.metric-registry")
+public class MetricRegistryProperties implements MetricRegistryParameters {
 
     private boolean zookeeperReporterEnabled = true;
 

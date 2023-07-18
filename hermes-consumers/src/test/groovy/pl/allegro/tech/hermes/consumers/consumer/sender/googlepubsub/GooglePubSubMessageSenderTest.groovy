@@ -25,15 +25,15 @@ class GooglePubSubMessageSenderTest extends Specification {
 
     GooglePubSubClientsPool clientsPool = Mock(GooglePubSubClientsPool)
 
-    GooglePubSubClient client = new GooglePubSubClient(publisher, new GooglePubSubMessageTransformerRaw(
-            new GooglePubSubMetadataAppender()))
+    GooglePubSubClient client = new GooglePubSubClient(publisher)
 
     @Subject
     GooglePubSubMessageSender sender
 
     void setup() {
         clientsPool.acquire(senderTarget) >> client
-        sender = new GooglePubSubMessageSender(senderTarget, clientsPool)
+        sender = new GooglePubSubMessageSender(senderTarget, clientsPool,
+                new GooglePubSubMessageTransformerRaw(new GooglePubSubMetadataAppender()))
     }
 
     def 'should return result on a happy path'() {

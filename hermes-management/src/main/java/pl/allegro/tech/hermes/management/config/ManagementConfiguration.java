@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -51,6 +53,12 @@ public class ManagementConfiguration {
     @ConditionalOnMissingBean
     public MetricRegistry metricRegistry() {
         return new MetricRegistry();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public MeterRegistry micrometerRegistry() {
+        return new SimpleMeterRegistry();
     }
 
     @Bean

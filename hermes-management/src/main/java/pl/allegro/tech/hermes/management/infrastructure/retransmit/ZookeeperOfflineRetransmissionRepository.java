@@ -29,8 +29,7 @@ public class ZookeeperOfflineRetransmissionRepository extends ZookeeperBasedRepo
     public void saveTask(OfflineRetransmissionTask task) {
         logger.info("Saving retransmission task {}", task);
         try {
-            zookeeper.create().creatingParentsIfNeeded()
-                    .forPath(paths.offlineRetransmissionPath(task.getTaskId()), mapper.writeValueAsBytes(task));
+            createRecursively(paths.offlineRetransmissionPath(task.getTaskId()), task);
             logger.info("Successfully saved retransmission task {}", task);
         } catch (Exception ex) {
             String msg = format("Error while saving retransmission task %s", task.toString());
@@ -42,8 +41,7 @@ public class ZookeeperOfflineRetransmissionRepository extends ZookeeperBasedRepo
     public List<OfflineRetransmissionTask> getAllTasks() {
         try {
             if (pathExists(paths.offlineRetransmissionPath())) {
-                return zookeeper.getChildren()
-                        .forPath(paths.offlineRetransmissionPath())
+                return childrenOf(paths.offlineRetransmissionPath())
                         .stream()
                         .map(id -> readFrom(paths.offlineRetransmissionPath(id), OfflineRetransmissionTask.class))
                         .collect(Collectors.toList());
@@ -60,7 +58,7 @@ public class ZookeeperOfflineRetransmissionRepository extends ZookeeperBasedRepo
         logger.info("Trying to delete retransmission task with id={}", taskId);
         try {
             ensureTaskExists(taskId);
-            zookeeper.delete().forPath(paths.offlineRetransmissionPath(taskId));
+            remove(paths.offlineRetransmissionPath(taskId));
             logger.info("Successfully deleted retransmission task with id={}", taskId);
         } catch (OfflineRetransmissionValidationException ex) {
             throw ex;

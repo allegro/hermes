@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.schema;
 
+import jakarta.ws.rs.core.Response;
 import pl.allegro.tech.hermes.api.ErrorCode;
-
-import javax.ws.rs.core.Response;
 
 public class InternalSchemaRepositoryException extends SchemaException {
 

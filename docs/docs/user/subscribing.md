@@ -116,7 +116,7 @@ Request that specifies all available options:
 It is possible to suspend any subscription. This means, that no messages will be sent, but the information about last
 consumed message is preserved. After reactivating subscription, sending starts from the point where it stopped.
 
-To change subscription status send POST request with `application/json` content type:
+To change subscription status send PUT request with `application/json` content type:
 
 ```
 /topics/{topicName}/subscriptions/{subscriptionName}/state

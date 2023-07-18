@@ -21,3 +21,31 @@ class TestMessage {
         JsonOutput.toJson(this)
     }
 }
+
+class TestMessageWithDifferentSchema {
+     String key
+     List<Integer> value
+
+    TestMessageWithDifferentSchema() {}
+
+    TestMessageWithDifferentSchema(String key, Integer value) {
+        this.key = key
+        this.value = List.of(value)
+    }
+
+    static TestMessageWithDifferentSchema random() {
+        return new TestMessageWithDifferentSchema("random", Math.random().toInteger())
+    }
+
+    String asJson() {
+        JsonOutput.toJson(this)
+    }
+}
+
+class TestMessageWithNullableSchema extends TestMessageWithDifferentSchema {
+    TestMessageWithNullableSchema() {}
+
+    TestMessageWithNullableSchema(String key, Integer value) {
+        super(key, value)
+    }
+}

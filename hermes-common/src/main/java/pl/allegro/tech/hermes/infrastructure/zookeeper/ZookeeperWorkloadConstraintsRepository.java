@@ -66,10 +66,7 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
 
     private void createConstraints(String path, Constraints constraints) throws KeeperException.NodeExistsException {
         try {
-            byte[] bytes = mapper.writeValueAsBytes(constraints);
-            zookeeper.create()
-                    .creatingParentsIfNeeded()
-                    .forPath(path, bytes);
+            createRecursively(path, constraints);
         } catch (KeeperException.NodeExistsException e) {
             throw e;
         } catch (Exception e) {
@@ -82,9 +79,11 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
         logger.info("Updating constraints for topic {}", topicName.qualifiedName());
         String path = paths.consumersWorkloadConstraintsPath(topicName.qualifiedName());
         try {
-            updateConstraints(path, constraints);
+            overwrite(path, constraints);
         } catch (KeeperException.NoNodeException e) {
             throw new TopicConstraintsDoNotExistException(topicName, e);
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
         }
     }
 
@@ -93,18 +92,9 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
         logger.info("Updating constraints for subscription {}", subscriptionName.getQualifiedName());
         String path = paths.consumersWorkloadConstraintsPath(subscriptionName.getQualifiedName());
         try {
-            updateConstraints(path, constraints);
+            overwrite(path, constraints);
         } catch (KeeperException.NoNodeException e) {
             throw new SubscriptionConstraintsDoNotExistException(subscriptionName, e);
-        }
-    }
-
-    private void updateConstraints(String path, Constraints constraints) throws KeeperException.NoNodeException {
-        try {
-            byte[] bytes = mapper.writeValueAsBytes(constraints);
-            zookeeper.setData().forPath(path, bytes);
-        } catch (KeeperException.NoNodeException e) {
-            throw e;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
@@ -126,7 +116,7 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
 
     private void deleteConstraints(String path) {
         try {
-            zookeeper.delete().forPath(path);
+            remove(path);
         } catch (KeeperException.NoNodeException e) {
             // ignore - it's ok
         } catch (Exception e) {
@@ -137,20 +127,12 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
     @Override
     public boolean constraintsExist(TopicName topicName) {
         String path = paths.consumersWorkloadConstraintsPath(topicName.qualifiedName());
-        return constraintsExist(path);
+        return pathExists(path);
     }
 
     @Override
     public boolean constraintsExist(SubscriptionName subscriptionName) {
         String path = paths.consumersWorkloadConstraintsPath(subscriptionName.getQualifiedName());
-        return constraintsExist(path);
-    }
-
-    private boolean constraintsExist(String path) {
-        try {
-            return zookeeper.checkExists().forPath(path) != null;
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
-        }
+        return pathExists(path);
     }
 }

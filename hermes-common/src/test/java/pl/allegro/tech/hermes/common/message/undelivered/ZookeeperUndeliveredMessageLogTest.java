@@ -27,7 +27,8 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
 
     private final ZookeeperPaths paths = new ZookeeperPaths("/hermes");
 
-    private final HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"));
+    private final HermesMetrics hermesMetrics = new HermesMetrics(
+            new MetricRegistry(), new PathsCompiler("host"));
 
     private final ZookeeperUndeliveredMessageLog log = new ZookeeperUndeliveredMessageLog(
             zookeeperClient,

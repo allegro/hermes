@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.schema.resolver;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.WebTarget;
+
 import java.net.URI;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.WebTarget;
 
 public class DefaultSchemaRepositoryInstanceResolver implements SchemaRepositoryInstanceResolver {
 

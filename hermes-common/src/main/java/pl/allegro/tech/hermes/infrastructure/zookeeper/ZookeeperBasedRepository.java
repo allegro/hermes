@@ -23,9 +23,9 @@ public abstract class ZookeeperBasedRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperBasedRepository.class);
 
-    protected final CuratorFramework zookeeper;
+    private final CuratorFramework zookeeper;
 
-    protected final ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
     protected final ZookeeperPaths paths;
 
@@ -37,7 +37,7 @@ public abstract class ZookeeperBasedRepository {
         this.paths = paths;
     }
 
-    protected void ensureConnected() {
+    private void ensureConnected() {
         if (!zookeeper.getZookeeperClient().isConnected()) {
             throw new RepositoryNotAvailableException("Could not establish connection to a Zookeeper instance");
         }
@@ -65,6 +65,7 @@ public abstract class ZookeeperBasedRepository {
     }
 
     protected List<String> childrenOf(String path) {
+        ensureConnected();
         try {
             List<String> retrievedNodes = new ArrayList<>(zookeeper.getChildren().forPath(path));
             Collections.sort(retrievedNodes);
@@ -72,6 +73,11 @@ public abstract class ZookeeperBasedRepository {
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected byte[] readFrom(String path) {
+        return readWithStatFrom(path, bytes -> bytes, (t, stat) -> {}, false).get();
     }
 
     @SuppressWarnings("unchecked")
@@ -94,6 +100,7 @@ public abstract class ZookeeperBasedRepository {
     }
 
     private <T> Optional<T> readWithStatFrom(String path, ThrowingReader<T> supplier, BiConsumer<T, Stat> statDecorator, boolean quiet) {
+        ensureConnected();
         try {
             Stat stat = new Stat();
             byte[] data = zookeeper.getData().storingStatIn(stat).forPath(path);
@@ -122,38 +129,52 @@ public abstract class ZookeeperBasedRepository {
         }
     }
 
-    protected void overwrite(String path, Object value) {
-        try {
-            zookeeper.setData().forPath(path, mapper.writeValueAsBytes(value));
-        } catch (Exception ex) {
-            throw new InternalProcessingException(ex);
-        }
+    protected void overwrite(String path, Object value) throws Exception {
+        ensureConnected();
+        zookeeper.setData().forPath(path, mapper.writeValueAsBytes(value));
     }
 
-    protected void touch(String path) {
-        try {
-            byte[] oldData = zookeeper.getData().forPath(path);
-            zookeeper.setData().forPath(path, oldData);
-        } catch (Exception ex) {
-            throw new InternalProcessingException(ex);
-        }
+    protected void overwrite(String path, byte[] value) throws Exception {
+        ensureConnected();
+        zookeeper.setData().forPath(path, value);
     }
 
-    protected void remove(String path) {
-        try {
-            zookeeper.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
-        } catch (Exception ex) {
-            throw new InternalProcessingException(ex);
-        }
+    protected void createRecursively(String path, Object value) throws Exception {
+        ensureConnected();
+        zookeeper.create()
+                .creatingParentsIfNeeded()
+                .forPath(path, mapper.writeValueAsBytes(value));
     }
 
-    protected boolean isEmpty(String path) {
-        try {
-            byte[] data = zookeeper.getData().forPath(path);
-            return data.length == 0;
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
-        }
+    protected void createInTransaction(String path, Object value, String childPath) throws Exception {
+        ensureConnected();
+        zookeeper.inTransaction()
+                .create().forPath(path, mapper.writeValueAsBytes(value))
+                .and()
+                .create().forPath(childPath)
+                .and()
+                .commit();
+    }
+
+    protected void create(String path, Object value) throws Exception {
+        ensureConnected();
+        zookeeper.create().forPath(path, mapper.writeValueAsBytes(value));
+    }
+
+    protected void create(String path, byte[] value) throws Exception {
+        ensureConnected();
+        zookeeper.create().forPath(path, value);
+    }
+
+    protected void touch(String path) throws Exception {
+        ensureConnected();
+        byte[] oldData = zookeeper.getData().forPath(path);
+        zookeeper.setData().forPath(path, oldData);
+    }
+
+    protected void remove(String path) throws Exception {
+        ensureConnected();
+        zookeeper.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
     }
 
     private interface ThrowingReader<T> {

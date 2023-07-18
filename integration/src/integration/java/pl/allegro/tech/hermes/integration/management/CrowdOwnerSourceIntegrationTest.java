@@ -2,6 +2,9 @@ package pl.allegro.tech.hermes.integration.management;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -11,9 +14,6 @@ import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.management.domain.owner.CrowdOwnerSource;
 
 import java.util.List;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -116,7 +116,7 @@ public class CrowdOwnerSourceIntegrationTest extends IntegrationTest {
                         .withStatus(200)
                         .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                         .withBody("{ \"expand\": \"group\", \"groups\": []}")
-                        .withFixedDelay(3000)));
+                        .withFixedDelay(3500)));
 
 
         //when

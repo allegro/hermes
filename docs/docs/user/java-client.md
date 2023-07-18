@@ -174,7 +174,7 @@ HermesClient client = HermesClientBuilder.hermesClient(new OkHttpHermesSender(ne
 
 Requirements:
 
-JVM configured with [ALPN support](http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-starting):
+JVM configured with [ALPN support](https://web.archive.org/web/20200924211005/http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html):
 
 ```bash
 java -Xbootclasspath/p:<path_to_alpn_boot_jar> ...

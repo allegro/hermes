@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.TargetWeightCalculationStrategy.UnknownTargetWeightCalculationStrategyException;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WeightedWorkBalancingProperties;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WorkBalancingStrategy.UnknownWorkBalancingStrategyException;
@@ -260,6 +261,7 @@ public class SupervisorConfiguration {
     @Bean
     public ConsumerFactory consumerFactory(ReceiverFactory messageReceiverFactory,
                                            HermesMetrics hermesMetrics,
+                                           MetricsFacade metricsFacade,
                                            CommonConsumerProperties commonConsumerProperties,
                                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                                            OutputRateCalculatorFactory outputRateCalculatorFactory,
@@ -277,6 +279,7 @@ public class SupervisorConfiguration {
         return new ConsumerFactory(
                 messageReceiverFactory,
                 hermesMetrics,
+                metricsFacade,
                 commonConsumerProperties,
                 consumerRateLimitSupervisor,
                 outputRateCalculatorFactory,
@@ -310,12 +313,13 @@ public class SupervisorConfiguration {
                                                               UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                                               SubscriptionRepository subscriptionRepository,
                                                               HermesMetrics metrics,
+                                                              MetricsFacade metricsFacade,
                                                               ConsumerMonitor monitor,
                                                               Clock clock,
                                                               CommitOffsetProperties commitOffsetProperties) {
         return new NonblockingConsumersSupervisor(commonConsumerProperties, executor, consumerFactory, offsetQueue,
                 consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
-                subscriptionRepository, metrics, monitor, clock, commitOffsetProperties.getPeriod());
+                subscriptionRepository, metrics, metricsFacade, monitor, clock, commitOffsetProperties.getPeriod());
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")

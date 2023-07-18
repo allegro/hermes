@@ -74,8 +74,9 @@ consumer:
     rebalanceInterval: 1s
     consumerPerSubscription: 1
   metrics:
-    graphiteReporterEnabled: true
-    reportPeriod: 1s
+    metric-registry:
+      graphiteReporterEnabled: true
+      reportPeriod: 1s
   graphite:
     port: 18023
   schema:

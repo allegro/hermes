@@ -40,5 +40,5 @@ public interface EnvironmentAware {
 
     String SECONDARY_KAFKA_CLUSTER_NAME = "secondary";
 
-    String KAFKA_NAMESPACE = "";
+    String KAFKA_NAMESPACE = "itTest";
 }

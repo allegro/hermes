@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData;
 
 import java.util.function.Function;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 
