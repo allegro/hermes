@@ -131,7 +131,7 @@ public class TopicMetrics {
 
     public HermesHistogram topicGlobalMessageContentSizeHistogram() {
         return HermesHistogram.of(
-                DistributionSummary.builder("topic-global-message-size")
+                DistributionSummary.builder("topic-global-message-size-bytes")
                         .register(meterRegistry),
                 hermesMetrics.messageContentSizeHistogram()
         );
@@ -139,7 +139,7 @@ public class TopicMetrics {
 
     public HermesHistogram topicMessageContentSizeHistogram(TopicName topicName) {
         return HermesHistogram.of(
-                DistributionSummary.builder("topic-message-size")
+                DistributionSummary.builder("topic-message-size-bytes")
                         .tags(topicTags(topicName))
                         .register(meterRegistry),
                 hermesMetrics.messageContentSizeHistogram(topicName)

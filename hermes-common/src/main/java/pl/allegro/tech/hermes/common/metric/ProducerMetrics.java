@@ -5,20 +5,6 @@ import io.micrometer.core.instrument.Tags;
 
 import java.util.function.ToDoubleFunction;
 
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_COMPRESSION_RATE;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_FAILED_BATCHES_TOTAL;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_METADATA_AGE;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_RECORD_QUEUE_TIME_MAX;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_COMPRESSION_RATE;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_FAILED_BATCHES_TOTAL;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_METADATA_AGE;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_RECORD_QUEUE_TIME_MAX;
 import static pl.allegro.tech.hermes.common.metric.Gauges.INFLIGHT_REQUESTS;
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
@@ -66,19 +52,27 @@ public class ProducerMetrics {
     }
 
     public <T> void registerAckAllMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_ALL_METADATA_AGE, stateObj, f);
+        String graphiteName = ACK_ALL_METADATA_AGE;
+        String prometheusName = graphiteName + ".seconds";
+        hermesGauge.registerGauge(graphiteName, prometheusName, stateObj, f);
     }
 
     public <T> void registerAckLeaderMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_LEADER_METADATA_AGE, stateObj, f);
+        String graphiteName = ACK_LEADER_METADATA_AGE;
+        String prometheusName = graphiteName + ".seconds";
+        hermesGauge.registerGauge(graphiteName, prometheusName, stateObj, f);
     }
 
     public <T> void registerAckAllRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_ALL_RECORD_QUEUE_TIME_MAX, stateObj, f);
+        String graphiteName = ACK_ALL_RECORD_QUEUE_TIME_MAX;
+        String prometheusName = graphiteName + ".milliseconds";
+        hermesGauge.registerGauge(graphiteName, prometheusName, stateObj, f);
     }
 
     public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
-        hermesGauge.registerGauge(ACK_LEADER_RECORD_QUEUE_TIME_MAX, stateObj, f);
+        String graphiteName = ACK_LEADER_RECORD_QUEUE_TIME_MAX;
+        String prometheusName = graphiteName + ".milliseconds";
+        hermesGauge.registerGauge(graphiteName, prometheusName, stateObj, f);
     }
 
     public double getBufferTotalBytes() {
@@ -117,11 +111,29 @@ public class ProducerMetrics {
                                                    String metricName,
                                                    String producerName,
                                                    String brokerNodeId) {
-        String baseMetricName = Gauges.KAFKA_PRODUCER + producerName +  metricName;
+        String baseMetricName = KAFKA_PRODUCER + producerName +  metricName;
         String graphiteMetricName = baseMetricName + "." + escapeDots(brokerNodeId);
 
         hermesGauge.registerGauge(
                 graphiteMetricName, baseMetricName, stateObj, f, Tags.of("broker", brokerNodeId)
         );
     }
+
+    private static final String KAFKA_PRODUCER = "kafka-producer.";
+    private static final String ACK_LEADER = "ack-leader.";
+    private static final String ACK_ALL = "ack-all.";
+
+    private static final String ACK_ALL_BUFFER_TOTAL_BYTES = KAFKA_PRODUCER + ACK_ALL + "buffer-total-bytes";
+    private static final String ACK_ALL_BUFFER_AVAILABLE_BYTES = KAFKA_PRODUCER + ACK_ALL + "buffer-available-bytes";
+    private static final String ACK_ALL_METADATA_AGE = KAFKA_PRODUCER + ACK_ALL + "metadata-age";
+    private static final String ACK_ALL_RECORD_QUEUE_TIME_MAX = KAFKA_PRODUCER + ACK_ALL + "record-queue-time-max";
+    private static final String ACK_ALL_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_ALL + "compression-rate-avg";
+    private static final String ACK_ALL_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_ALL + "failed-batches-total";
+
+    private static final String ACK_LEADER_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_LEADER + "failed-batches-total";
+    private static final String ACK_LEADER_BUFFER_TOTAL_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-total-bytes";
+    private static final String ACK_LEADER_METADATA_AGE = KAFKA_PRODUCER + ACK_LEADER + "metadata-age";
+    private static final String ACK_LEADER_RECORD_QUEUE_TIME_MAX = KAFKA_PRODUCER + ACK_LEADER + "record-queue-time-max";
+    private static final String ACK_LEADER_BUFFER_AVAILABLE_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-available-bytes";
+    private static final String ACK_LEADER_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_LEADER + "compression-rate-avg";
 }
