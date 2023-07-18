@@ -9,6 +9,7 @@ import App from './App.vue';
 import axios from 'axios';
 import messages from '@/i18n/messages';
 import router from './router';
+import { createPinia } from 'pinia';
 
 // TODO: should be fetched from Hermes console configuration
 axios.defaults.baseURL = 'http://localhost:3000';
@@ -52,10 +53,13 @@ const i18n = createI18n({
   messages: messages,
 });
 
+const store = createPinia();
+
 const app = createApp(App);
 
 app.use(vuetify);
 app.use(i18n);
 app.use(router);
+app.use(store);
 
 app.mount('#app');

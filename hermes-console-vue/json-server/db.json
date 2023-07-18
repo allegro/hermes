@@ -406,5 +406,115 @@
       "offset": 217294395,
       "cluster": "kafka-cluster"
     }
-  ]
+  ],
+  "console": {
+    "console": {
+      "title": "hermes console",
+      "footer": "",
+      "environmentName": "LOCAL",
+      "criticalEnvironment": false
+    },
+    "dashboard": {
+      "metrics": "http://localhost:8082",
+      "docs": "http://hermes-pubsub.rtfd.org"
+    },
+    "hermes": {
+      "discovery": {
+        "type": "simple",
+        "simple": {
+          "url": ""
+        }
+      }
+    },
+    "metrics": {
+      "type": "graphite",
+      "graphite": {
+        "url": "localhost:8082",
+        "prefix": "hermes"
+      }
+    },
+    "auth": {
+      "oauth": {
+        "enabled": false,
+        "url": "localhost:8092/auth",
+        "clientId": "hermes",
+        "scope": "hermes"
+      },
+      "headers": {
+        "enabled": false,
+        "adminHeader": "Hermes-Admin-Password"
+      }
+    },
+    "owner": {
+      "sources": [{
+        "name": "Crowd",
+        "placeholder": "Crowd group (or groups separated by ',')"
+      }]
+    },
+    "topic": {
+      "messagePreviewEnabled": true,
+      "offlineClientsEnabled": true,
+      "authEnabled": true,
+      "defaults": {
+        "ack": "LEADER",
+        "contentType": "JSON",
+        "retentionTime": {
+          "duration": 1,
+          "retentionUnit": "DAYS"
+        },
+        "offlineStorage": {
+          "enabled": false,
+          "retentionTime": {
+            "duration": 1,
+            "retentionUnit": "DAYS"
+          }
+        }
+      },
+      "buttonsExtension": "",
+      "removeSchema": false,
+      "schemaIdAwareSerializationEnabled": false,
+      "avroContentTypeMetadataRequired": true,
+      "contentTypes": [{
+        "value": "AVRO",
+        "label": "AVRO"
+      }, {
+        "value": "JSON",
+        "label": "JSON"
+      }],
+      "readOnlyModeEnabled": false,
+      "allowedTopicLabels": [],
+      "retentionUnits": [{
+        "value": "DAYS",
+        "label": "DAYS"
+      }],
+      "offlineRetransmissionEnabled": false,
+      "offlineRetransmissionDescription": "Offline retransmission"
+    },
+    "subscription": {
+      "endpointAddressResolverMetadata": {},
+      "showHeadersFilter": false,
+      "showFixedHeaders": false,
+      "requestTimeoutWarningThreshold": 1001,
+      "defaults": {
+        "subscriptionPolicy": {
+          "messageTtl": 3600,
+          "requestTimeout": 1000
+        },
+        "deliveryType": "SERIAL"
+      },
+      "deliveryTypes": [{
+        "value": "SERIAL",
+        "label": "SERIAL"
+      }, {
+        "value": "BATCH",
+        "label": "BATCH"
+      }]
+    },
+    "consistency": {
+      "maxGroupBatchSize": 10
+    },
+    "group": {
+      "nonAdminCreationEnabled": false
+    }
+  }
 }
