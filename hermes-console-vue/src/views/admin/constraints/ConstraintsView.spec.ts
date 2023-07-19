@@ -25,12 +25,10 @@ describe('ConstraintsView', () => {
 
     // then
     expect(vi.mocked(useConstraints)).toHaveBeenCalledOnce();
-    expect(
-      getByText('constraints.topicConstraints.heading'),
-    ).toBeInTheDocument();
+    expect(getByText('constraints.topicConstraints.heading')).toBeVisible();
     expect(
       getByText('constraints.subscriptionConstraints.heading'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should show loading spinner when fetching Constraints data', () => {
@@ -45,7 +43,7 @@ describe('ConstraintsView', () => {
 
     // then
     expect(vi.mocked(useConstraints)).toHaveBeenCalledOnce();
-    expect(queryByTestId('loading-spinner')).toBeInTheDocument();
+    expect(queryByTestId('loading-spinner')).toBeVisible();
   });
 
   it('should hide loading spinner when data fetch is complete', () => {
@@ -76,10 +74,8 @@ describe('ConstraintsView', () => {
 
     // then
     expect(vi.mocked(useConstraints)).toHaveBeenCalledOnce();
-    expect(
-      queryByText('constraints.connectionError.title'),
-    ).toBeInTheDocument();
-    expect(queryByText('constraints.connectionError.text')).toBeInTheDocument();
+    expect(queryByText('constraints.connectionError.title')).toBeVisible();
+    expect(queryByText('constraints.connectionError.text')).toBeVisible();
   });
 
   it('should not show error message when data was fetch successfully', () => {

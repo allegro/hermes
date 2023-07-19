@@ -69,6 +69,12 @@ export const dummySubscription: Subscription = {
   modifiedAt: 1672140855.813,
 };
 
+export const secondDummySubscription: Subscription = {
+  ...dummySubscription,
+  name: 'bazbar-service',
+  endpoint: 'service://bazbar-service/events/dummy-event',
+};
+
 export const dummySubscriptionMetrics: SubscriptionMetrics = {
   delivered: 39099,
   discarded: 2137086,
@@ -108,4 +114,9 @@ export const dummyUndeliveredMessage: SentMessageTrace = {
 
 export const dummyUndeliveredMessages: SentMessageTrace[] = [
   dummyUndeliveredMessage,
+];
+
+export const dummyTopicSubscriptionsList: string[] = [
+  'foobar-service',
+  'bazbar-service',
 ];

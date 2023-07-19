@@ -3,7 +3,6 @@
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
-  import ConsumerGroupsBreadcrumbs from '@/views/admin/consumer-groups/consumer-groups-breadcrumbs/ConsumerGroupsBreadcrumbs.vue';
   import ConsumerGroupsTable from '@/views/admin/consumer-groups/consumer-groups-table/ConsumerGroupsTable.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
@@ -17,22 +16,44 @@
     topicId,
     subscriptionId,
   );
+
+  const breadcrumbsItems = [
+    {
+      title: t('consumerGroups.breadcrumbs.home'),
+      href: '/',
+    },
+    {
+      title: t('consumerGroups.breadcrumbs.groups'),
+      href: '/groups',
+    },
+    {
+      title: groupId,
+      href: `/groups/${groupId}`,
+    },
+    {
+      title: topicId,
+      href: `/groups/${groupId}/topics/${topicId}`,
+    },
+    {
+      title: subscriptionId,
+      href: `/groups/${groupId}/topics/${topicId}/subscriptions/${subscriptionId}`,
+    },
+    {
+      title: t('consumerGroups.breadcrumbs.title'),
+    },
+  ];
 </script>
 
 <template>
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <consumer-groups-breadcrumbs
-          :group-id="groupId"
-          :topic-id="topicId"
-          :subscription-id="subscriptionId"
-        />
+        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
-          :title="t('consumerGroups.connectionError.title')"
-          :text="t('consumerGroups.connectionError.text')"
+          :title="$t('consumerGroups.connectionError.title')"
+          :text="$t('consumerGroups.connectionError.text')"
           type="error"
         />
       </v-col>
@@ -40,7 +61,7 @@
     <v-row dense>
       <v-col md="10">
         <p class="text-h4 font-weight-bold mb-3">
-          {{ t('consumerGroups.title') }}
+          {{ $t('consumerGroups.title') }}
         </p>
       </v-col>
     </v-row>
@@ -48,7 +69,7 @@
       <v-col>
         <v-card density="compact">
           <v-col md="12">
-            <p class="text-overline">{{ t('consumerGroups.groupId') }}</p>
+            <p class="text-overline">{{ $t('consumerGroups.groupId') }}</p>
             <p class="text-h6 font-weight-bold mb-2">
               {{ consumerGroups[0]?.groupId }}
             </p>

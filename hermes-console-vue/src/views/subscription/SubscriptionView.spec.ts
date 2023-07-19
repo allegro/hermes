@@ -8,11 +8,11 @@ import {
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
-import { useSubscription } from '@/composables/use-subscription/useSubscription';
+import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import router from '@/router';
 import SubscriptionView from '@/views/subscription/SubscriptionView.vue';
 
-vi.mock('@/composables/use-subscription/useSubscription');
+vi.mock('@/composables/subscription/use-subscription/useSubscription');
 
 const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscription: ref(dummySubscription),
@@ -52,7 +52,7 @@ describe('SubscriptionView', () => {
       'subscription.undeliveredMessagesCard.title',
     ];
     cardTitles.forEach((boxTitle) => {
-      expect(getByText(boxTitle)).toBeInTheDocument();
+      expect(getByText(boxTitle)).toBeVisible();
     });
   });
 
@@ -66,10 +66,10 @@ describe('SubscriptionView', () => {
     // then
     expect(
       getByText('subscription.healthProblemsAlerts.lagging.title'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
     expect(
       getByText('subscription.healthProblemsAlerts.lagging.text'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should show loading spinner when fetching subscription data', () => {
@@ -84,7 +84,7 @@ describe('SubscriptionView', () => {
 
     // then
     expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
-    expect(queryByTestId('loading-spinner')).toBeInTheDocument();
+    expect(queryByTestId('loading-spinner')).toBeVisible();
   });
 
   it('should hide loading spinner when data fetch is complete', () => {
@@ -115,12 +115,8 @@ describe('SubscriptionView', () => {
 
     // then
     expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
-    expect(
-      queryByText('subscription.connectionError.title'),
-    ).toBeInTheDocument();
-    expect(
-      queryByText('subscription.connectionError.text'),
-    ).toBeInTheDocument();
+    expect(queryByText('subscription.connectionError.title')).toBeVisible();
+    expect(queryByText('subscription.connectionError.text')).toBeVisible();
   });
 
   it('should not show error message when data was fetch successfully', () => {

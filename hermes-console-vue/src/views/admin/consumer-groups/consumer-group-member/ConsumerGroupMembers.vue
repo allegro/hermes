@@ -1,8 +1,6 @@
 <script setup lang="ts">
   import { formatNumber } from '@/utils/number-formatter/number-formatter';
-  import { useI18n } from 'vue-i18n';
   import type { ConsumerGroupMember } from '@/api/consumer-group';
-  const { t } = useI18n();
 
   const props = defineProps<{
     members: ConsumerGroupMember[];
@@ -14,19 +12,19 @@
     <thead>
       <tr>
         <th class="text-left">
-          {{ t('consumerGroups.listing.type') }}
+          {{ $t('consumerGroups.listing.type') }}
         </th>
         <th class="text-left">
-          {{ t('consumerGroups.listing.partition') }}
+          {{ $t('consumerGroups.listing.partition') }}
         </th>
         <th class="text-left">
-          {{ t('consumerGroups.listing.currentOffset') }}
+          {{ $t('consumerGroups.listing.currentOffset') }}
         </th>
         <th class="text-left">
-          {{ t('consumerGroups.listing.endOffset') }}
+          {{ $t('consumerGroups.listing.endOffset') }}
         </th>
         <th class="text-left">
-          {{ t('consumerGroups.listing.lag') }}
+          {{ $t('consumerGroups.listing.lag') }}
         </th>
       </tr>
     </thead>
@@ -34,7 +32,7 @@
       <tr>
         <td colspan="5">
           <strong
-            >{{ t('consumerGroups.listing.host') }} {{ item.host }}</strong
+            >{{ $t('consumerGroups.listing.host') }} {{ item.host }}</strong
           >
         </td>
       </tr>
