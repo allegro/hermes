@@ -113,9 +113,10 @@ public class ProducerMetrics {
                                                    String brokerNodeId) {
         String baseMetricName = KAFKA_PRODUCER + producerName +  metricName;
         String graphiteMetricName = baseMetricName + "." + escapeDots(brokerNodeId);
+        String prometheusMetricName = baseMetricName + ".milliseconds";
 
         gaugeRegistrar.registerGauge(
-                graphiteMetricName, baseMetricName, stateObj, f, Tags.of("broker", brokerNodeId)
+                graphiteMetricName, prometheusMetricName, stateObj, f, Tags.of("broker", brokerNodeId)
         );
     }
 

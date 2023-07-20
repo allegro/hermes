@@ -8,10 +8,10 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
-import pl.allegro.tech.hermes.metrics.HermesCounterWithRate;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
+import pl.allegro.tech.hermes.metrics.counters.MeterBackedHermesCounter;
 
 import static pl.allegro.tech.hermes.common.metric.Meters.DELAYED_PROCESSING;
 import static pl.allegro.tech.hermes.common.metric.Meters.METER;
@@ -66,14 +66,14 @@ public class TopicMetrics {
                 hermesMetrics.timer(Timers.ACK_LEADER_BROKER_LATENCY));
     }
 
-    public HermesCounterWithRate topicThroughputBytes(TopicName topicName) {
+    public MeterBackedHermesCounter topicThroughputBytes(TopicName topicName) {
         return HermesCounters.from(
                 micrometerCounter("topic-throughput", topicName),
                 hermesMetrics.meter(TOPIC_THROUGHPUT_BYTES, topicName)
         );
     }
 
-    public HermesCounterWithRate topicGlobalThroughputBytes() {
+    public MeterBackedHermesCounter topicGlobalThroughputBytes() {
         return HermesCounters.from(
                 meterRegistry.counter("topic-global-throughput"),
                 hermesMetrics.meter(THROUGHPUT_BYTES)

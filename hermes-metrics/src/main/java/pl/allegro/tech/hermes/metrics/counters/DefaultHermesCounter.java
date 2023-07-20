@@ -13,11 +13,6 @@ public class DefaultHermesCounter implements HermesCounter {
         this.graphiteCounter = graphiteCounter;
     }
 
-    public static DefaultHermesCounter from(io.micrometer.core.instrument.Counter micrometerCounter,
-                                            com.codahale.metrics.Counter graphiteCounter) {
-        return new DefaultHermesCounter(micrometerCounter, graphiteCounter);
-    }
-
     public void increment(long size) {
         this.micrometerCounter.increment((double) size);
         this.graphiteCounter.inc(size);
