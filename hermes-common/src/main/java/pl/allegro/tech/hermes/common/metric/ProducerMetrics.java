@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.metric;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.ToDoubleFunction;
 
 import static pl.allegro.tech.hermes.common.metric.Gauges.INFLIGHT_REQUESTS;
@@ -52,27 +53,19 @@ public class ProducerMetrics {
     }
 
     public <T> void registerAckAllMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
-        String graphiteName = ACK_ALL_METADATA_AGE;
-        String prometheusName = graphiteName + ".seconds";
-        gaugeRegistrar.registerGauge(graphiteName, prometheusName, stateObj, f);
+        registerTimeGauge(stateObj, f, ACK_ALL_METADATA_AGE, ACK_ALL_METADATA_AGE, Tags.empty(), TimeUnit.SECONDS);
     }
 
     public <T> void registerAckLeaderMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
-        String graphiteName = ACK_LEADER_METADATA_AGE;
-        String prometheusName = graphiteName + ".seconds";
-        gaugeRegistrar.registerGauge(graphiteName, prometheusName, stateObj, f);
+        registerTimeGauge(stateObj, f, ACK_LEADER_METADATA_AGE, ACK_LEADER_METADATA_AGE, Tags.empty(), TimeUnit.SECONDS);
     }
 
     public <T> void registerAckAllRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
-        String graphiteName = ACK_ALL_RECORD_QUEUE_TIME_MAX;
-        String prometheusName = graphiteName + ".milliseconds";
-        gaugeRegistrar.registerGauge(graphiteName, prometheusName, stateObj, f);
+        registerTimeGauge(stateObj, f, ACK_ALL_RECORD_QUEUE_TIME_MAX, ACK_ALL_RECORD_QUEUE_TIME_MAX, Tags.empty(), TimeUnit.MILLISECONDS);
     }
 
     public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
-        String graphiteName = ACK_LEADER_RECORD_QUEUE_TIME_MAX;
-        String prometheusName = graphiteName + ".milliseconds";
-        gaugeRegistrar.registerGauge(graphiteName, prometheusName, stateObj, f);
+        registerTimeGauge(stateObj, f, ACK_LEADER_RECORD_QUEUE_TIME_MAX, ACK_LEADER_RECORD_QUEUE_TIME_MAX, Tags.empty(), TimeUnit.MILLISECONDS);
     }
 
     public double getBufferTotalBytes() {
@@ -113,11 +106,18 @@ public class ProducerMetrics {
                                                    String brokerNodeId) {
         String baseMetricName = KAFKA_PRODUCER + producerName +  metricName;
         String graphiteMetricName = baseMetricName + "." + escapeDots(brokerNodeId);
-        String prometheusMetricName = baseMetricName + ".milliseconds";
 
-        gaugeRegistrar.registerGauge(
-                graphiteMetricName, prometheusMetricName, stateObj, f, Tags.of("broker", brokerNodeId)
-        );
+        registerTimeGauge(stateObj, f, graphiteMetricName, baseMetricName, Tags.of("broker", brokerNodeId), TimeUnit.MILLISECONDS);
+    }
+
+    private <T> void registerTimeGauge(T stateObj,
+                                       ToDoubleFunction<T> f,
+                                       String graphiteName,
+                                       String prometheusName,
+                                       Tags tags,
+                                       TimeUnit timeUnit) {
+        hermesMetrics.registerGauge(graphiteName, () -> f.applyAsDouble(stateObj));
+        meterRegistry.more().timeGauge(prometheusName, tags, stateObj, timeUnit, f);
     }
 
     private static final String KAFKA_PRODUCER = "kafka-producer.";
