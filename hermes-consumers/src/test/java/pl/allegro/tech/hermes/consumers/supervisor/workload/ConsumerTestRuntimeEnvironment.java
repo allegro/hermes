@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -11,7 +9,6 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
@@ -47,7 +44,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -86,8 +83,7 @@ class ConsumerTestRuntimeEnvironment {
     private final SubscriptionRepository subscriptionRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final Supplier<HermesMetrics> metricsSupplier;
-    private final Supplier<MetricsFacade> metricsFacadeSupplier;
+    private final Supplier<MetricsFacade> metricsSupplier;
     private final WorkloadConstraintsRepository workloadConstraintsRepository;
     private final CuratorFramework curator;
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
@@ -108,8 +104,7 @@ class ConsumerTestRuntimeEnvironment {
 
         this.workloadConstraintsRepository = new ZookeeperWorkloadConstraintsRepository(curator, objectMapper, zookeeperPaths);
 
-        this.metricsSupplier = () -> new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"));
-        this.metricsFacadeSupplier = () -> new MetricsFacade(new SimpleMeterRegistry(), this.metricsSupplier.get());
+        this.metricsSupplier = TestMetricsFacadeFactory::create;
         this.nodesRegistryPaths = new ConsumerNodesRegistryPaths(zookeeperPaths, kafkaProperties.getClusterName());
         this.zookeeperProperties = new ZookeeperProperties();
     }
@@ -219,8 +214,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     ConsumersSupervisor consumersSupervisor(ConsumerFactory consumerFactory) {
-        HermesMetrics metrics = metricsSupplier.get();
-        MetricsFacade metricsFacade = metricsFacadeSupplier.get();
+        MetricsFacade metrics = metricsSupplier.get();
         CommonConsumerProperties commonConsumerProperties = new CommonConsumerProperties();
         CommonConsumerProperties.BackgroundSupervisor supervisorParameters = new CommonConsumerProperties.BackgroundSupervisor();
         supervisorParameters.setInterval(Duration.ofSeconds(1));
@@ -234,7 +228,6 @@ class ConsumerTestRuntimeEnvironment {
                 mock(UndeliveredMessageLogPersister.class),
                 subscriptionRepository,
                 metrics,
-                metricsFacade,
                 mock(ConsumerMonitor.class),
                 Clock.systemDefaultZone(),
                 Duration.ofSeconds(60));

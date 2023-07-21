@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
 import pl.allegro.tech.hermes.consumers.queue.WaitFreeDrainMpscQueue;
@@ -35,7 +35,7 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private final Clock clock;
 
-    private final HermesMetrics metrics;
+    private final MetricsFacade metrics;
 
     private final SignalsFilter signalsFilter;
 
@@ -43,7 +43,7 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     public ConsumerProcessSupervisor(ConsumersExecutorService executor,
                                      Clock clock,
-                                     HermesMetrics metrics,
+                                     MetricsFacade metrics,
                                      ConsumerProcessSupplier processFactory,
                                      int signalQueueSize,
                                      Duration backgroundSupervisorKillAfter) {
@@ -56,8 +56,8 @@ public class ConsumerProcessSupervisor implements Runnable {
         this.processKiller = new ConsumerProcessKiller(backgroundSupervisorKillAfter.toMillis(), clock);
         this.processFactory = processFactory;
 
-        metrics.registerRunningConsumerProcessesCountGauge(runningConsumerProcesses::count);
-        metrics.registerDyingConsumerProcessesCountGauge(processKiller::countDying);
+        metrics.consumer().registerRunningConsumerProcessesGauge(runningConsumerProcesses, RunningConsumerProcesses::count);
+        metrics.consumer().registerDyingConsumerProcessesGauge(processKiller, ConsumerProcessKiller::countDying);
     }
 
     public ConsumerProcessSupervisor accept(Signal signal) {
@@ -123,7 +123,7 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private void processSignal(Signal signal) {
         logger.debug("Processing signal: {}", signal);
-        metrics.counter("supervisor.signal." + signal.getType().name()).inc();
+        metrics.consumer().processedSignalsCounter(signal.getType().name()).increment();
 
         switch (signal.getType()) {
             case START:
@@ -187,7 +187,7 @@ public class ConsumerProcessSupervisor implements Runnable {
     }
 
     private void drop(Signal signal) {
-        metrics.counter("supervisor.signal.dropped." + signal.getType().name()).inc();
+        metrics.consumer().droppedSignalsCounter(signal.getType().name()).increment();
         logger.warn("Dropping signal {} as running target consumer process does not exist.", signal);
     }
 

@@ -34,7 +34,6 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVers
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.common.metric.DeserializationMetrics;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -245,8 +244,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MetricsFacade micrometerHermesMetrics(MeterRegistry metricRegistry, HermesMetrics hermesMetrics) {
-        return new MetricsFacade(metricRegistry, hermesMetrics);
+    public MetricsFacade metricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+        return new MetricsFacade(meterRegistry, hermesMetrics);
     }
 
     @Bean

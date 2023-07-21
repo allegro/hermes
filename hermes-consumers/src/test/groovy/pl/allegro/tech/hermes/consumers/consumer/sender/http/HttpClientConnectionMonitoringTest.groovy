@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http
 
 import com.codahale.metrics.MetricRegistry
 import com.github.tomakehurst.wiremock.WireMockServer
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.eclipse.jetty.client.HttpClient
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
@@ -28,8 +30,9 @@ class HttpClientConnectionMonitoringTest extends Specification {
     HttpClient batchClient
     MetricRegistry metricRegistry = new MetricRegistry()
     HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
-    MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics)
-    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(metricsFacade)
+    MeterRegistry meterRegistry = new SimpleMeterRegistry()
+    MetricsFacade metrics = new MetricsFacade(meterRegistry, hermesMetrics)
+    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(metrics)
 
     def setupSpec() {
         port = Ports.nextAvailable()
@@ -51,28 +54,32 @@ class HttpClientConnectionMonitoringTest extends Specification {
 
     def "should measure http client connections"() {
         given:
-        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, batchClient, new Http2ClientHolder(null), false, true)
+        def reporter = new HttpClientsWorkloadReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, true)
         reporter.start()
 
         when:
         client.POST("http://localhost:${port}/hello").send()
 
         and:
-        def idle = metricRegistry.gauges['http-clients.serial.http1.idle-connections'].value
-        def active = metricRegistry.gauges['http-clients.serial.http1.active-connections'].value
+        def idleDropwizard = metricRegistry.gauges['http-clients.serial.http1.idle-connections'].value
+        def activeDropwizard = metricRegistry.gauges['http-clients.serial.http1.active-connections'].value
+        def idleMicrometer = Search.in(meterRegistry).name("http-clients.serial.http1.idle-connections").gauge().value()
+        def activeMicrometer = Search.in(meterRegistry).name("http-clients.serial.http1.active-connections").gauge().value()
 
         then:
-        idle + active > 0
+        idleDropwizard + activeDropwizard > 0
+        idleMicrometer + activeMicrometer > 0
     }
 
     def "should not register connection gauges for disabled http connection monitoring"() {
         given:
-        def reporter = new HttpClientsWorkloadReporter(hermesMetrics, client, batchClient, new Http2ClientHolder(null), false, false)
+        def reporter = new HttpClientsWorkloadReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, false)
 
         when:
         reporter.start()
 
         then:
         metricRegistry.gauges.size() == 0
+        Search.in(meterRegistry).gauges().size() == 0
     }
 }

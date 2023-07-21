@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 
 import java.util.function.ToDoubleFunction;
@@ -18,7 +19,7 @@ public class GaugeRegistrar {
                                   String prometheusName,
                                   T stateObj,
                                   ToDoubleFunction<T> f,
-                                  Tags tags) {
+                                  Iterable<Tag> tags) {
         meterRegistry.gauge(prometheusName, tags, stateObj, f);
         hermesMetrics.registerGauge(graphiteName, () -> f.applyAsDouble(stateObj));
     }
