@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
@@ -16,6 +16,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.net.URI;
 import java.time.Clock;
@@ -27,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
@@ -41,17 +44,17 @@ public class ConsumerMessageSender {
     private final Clock clock;
     private final InflightsPool inflight;
     private final SubscriptionLoadRecorder loadRecorder;
-    private final Timer consumerLatencyTimer;
+    private final HermesTimer consumerLatencyTimer;
     private final SerialConsumerRateLimiter rateLimiter;
     private final FutureAsyncTimeout async;
     private final int asyncTimeoutMs;
+    private final LongAdder inflightCount = new LongAdder();
 
     private MessageSender messageSender;
     private Subscription subscription;
 
     private ScheduledExecutorService retrySingleThreadExecutor;
     private volatile boolean running = true;
-
 
     public ConsumerMessageSender(Subscription subscription,
                                  MessageSenderFactory messageSenderFactory,
@@ -60,7 +63,7 @@ public class ConsumerMessageSender {
                                  SerialConsumerRateLimiter rateLimiter,
                                  ExecutorService deliveryReportingExecutor,
                                  InflightsPool inflight,
-                                 SubscriptionMetrics metrics,
+                                 MetricsFacade metrics,
                                  int asyncTimeoutMs,
                                  FutureAsyncTimeout futureAsyncTimeout,
                                  Clock clock,
@@ -77,7 +80,8 @@ public class ConsumerMessageSender {
         this.messageSender = messageSender(subscription);
         this.subscription = subscription;
         this.inflight = inflight;
-        this.consumerLatencyTimer = metrics.subscriptionLatencyTimer();
+        this.consumerLatencyTimer = metrics.subscriptions().latency(subscription.getQualifiedName());
+        metrics.subscriptions().registerInflightGauge(subscription.getQualifiedName(), this, sender -> sender.inflightCount.doubleValue());
     }
 
     public void initialize() {
@@ -99,6 +103,7 @@ public class ConsumerMessageSender {
     }
 
     public void sendAsync(Message message) {
+        inflightCount.increment();
         sendAsync(message, calculateMessageDelay(message.getPublishingTimestamp()));
     }
 
@@ -126,7 +131,7 @@ public class ConsumerMessageSender {
      */
     private void sendMessage(final Message message) {
         loadRecorder.recordSingleOperation();
-        Timer.Context timer = consumerLatencyTimer.time();
+        HermesTimerContext timer = consumerLatencyTimer.time();
         CompletableFuture<MessageSendingResult> response = messageSender.send(message);
 
         response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor)
@@ -228,11 +233,13 @@ public class ConsumerMessageSender {
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result) {
         inflight.release();
+        inflightCount.decrement();
         errorHandlers.forEach(h -> h.handleDiscarded(message, subscription, result));
     }
 
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
         inflight.release();
+        inflightCount.decrement();
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
     }
 
@@ -256,9 +263,9 @@ public class ConsumerMessageSender {
     class ResponseHandlingListener implements java.util.function.Consumer<MessageSendingResult> {
 
         private final Message message;
-        private final Timer.Context timer;
+        private final HermesTimerContext timer;
 
-        public ResponseHandlingListener(Message message, Timer.Context timer) {
+        public ResponseHandlingListener(Message message, HermesTimerContext timer) {
             this.message = message;
             this.timer = timer;
         }

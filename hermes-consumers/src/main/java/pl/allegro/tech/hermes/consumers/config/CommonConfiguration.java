@@ -244,8 +244,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MetricsFacade micrometerHermesMetrics(MeterRegistry metricRegistry, HermesMetrics hermesMetrics) {
-        return new MetricsFacade(metricRegistry, hermesMetrics);
+    public MetricsFacade metricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+        return new MetricsFacade(meterRegistry, hermesMetrics);
     }
 
     @Bean

@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.consumers.consumer.filtering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
@@ -20,14 +20,14 @@ public class FilteredMessageHandler {
     private final OffsetQueue offsetQueue;
     private final Optional<ConsumerRateLimiter> consumerRateLimiter;
     private final Trackers trackers;
-    private final SubscriptionMetrics metrics;
+    private final MetricsFacade metrics;
 
     private static final Logger logger = LoggerFactory.getLogger(FilteredMessageHandler.class);
 
     public FilteredMessageHandler(OffsetQueue offsetQueue,
                                   ConsumerRateLimiter consumerRateLimiter,
                                   Trackers trackers,
-                                  SubscriptionMetrics metrics) {
+                                  MetricsFacade metrics) {
         this.offsetQueue = offsetQueue;
         this.consumerRateLimiter = Optional.ofNullable(consumerRateLimiter);
         this.trackers = trackers;
@@ -43,7 +43,7 @@ public class FilteredMessageHandler {
             offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
                     message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
-            metrics.markFilteredOut();
+            metrics.subscriptions().filteredOutCounter(subscription.getQualifiedName()).increment();
 
             if (subscription.isTrackingEnabled()) {
                 trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());

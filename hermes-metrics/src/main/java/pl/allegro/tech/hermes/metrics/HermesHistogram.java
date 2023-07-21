@@ -15,7 +15,7 @@ public class HermesHistogram {
         return new HermesHistogram(micrometerHistogram, graphiteHistogram);
     }
 
-    public void record(int value) {
+    public void record(long value) {
         micrometerHistogram.record(value);
         graphiteHistogram.update(value);
     }

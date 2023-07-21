@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -14,9 +15,9 @@ public class DefaultSuccessHandler implements SuccessHandler {
 
     private final Trackers trackers;
     private final OffsetQueue offsetQueue;
-    private final SubscriptionMetrics metrics;
+    private final MetricsFacade metrics;
 
-    public DefaultSuccessHandler(OffsetQueue offsetQueue, SubscriptionMetrics metrics, Trackers trackers) {
+    public DefaultSuccessHandler(OffsetQueue offsetQueue, MetricsFacade metrics, Trackers trackers) {
         this.offsetQueue = offsetQueue;
         this.metrics = metrics;
         this.trackers = trackers;
@@ -26,7 +27,14 @@ public class DefaultSuccessHandler implements SuccessHandler {
     public void handleSuccess(Message message, Subscription subscription, MessageSendingResult result) {
         offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
-        metrics.markSuccess(message, result);
+        markSuccess(message, subscription.getQualifiedName(), result);
         trackers.get(subscription).logSent(toMessageMetadata(message, subscription), result.getHostname());
+    }
+
+    private void markSuccess(Message message, SubscriptionName subscription, MessageSendingResult result) {
+        metrics.subscriptions().successes(subscription).increment();
+        metrics.subscriptions().throughputInBytes(subscription).increment(message.getSize());
+        metrics.subscriptions().httpAnswerCounter(subscription, result.getStatusCode()).increment();
+        metrics.subscriptions().inflightTimeHistogram(subscription).record(System.currentTimeMillis() - message.getReadingTimestamp());
     }
 }

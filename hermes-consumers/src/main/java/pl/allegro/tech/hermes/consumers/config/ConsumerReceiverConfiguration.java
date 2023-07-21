@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -37,7 +37,7 @@ public class ConsumerReceiverConfiguration {
                                                        KafkaConsumerProperties kafkaConsumerProperties,
                                                        KafkaClustersProperties kafkaClustersProperties,
                                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
-                                                       HermesMetrics hermesMetrics,
+                                                       MetricsFacade metrics,
                                                        OffsetQueue offsetQueue,
                                                        KafkaNamesMapper kafkaNamesMapper,
                                                        FilterChainFactory filterChainFactory,
@@ -53,7 +53,7 @@ public class ConsumerReceiverConfiguration {
                 kafkaConsumerProperties,
                 kafkaProperties,
                 messageConverterFactory,
-                hermesMetrics,
+                metrics,
                 offsetQueue,
                 kafkaNamesMapper,
                 filterChainFactory,

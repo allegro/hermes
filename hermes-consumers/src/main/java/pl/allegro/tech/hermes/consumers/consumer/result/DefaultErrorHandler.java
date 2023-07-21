@@ -3,9 +3,10 @@ package pl.allegro.tech.hermes.consumers.consumer.result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
@@ -21,14 +22,14 @@ public class DefaultErrorHandler implements ErrorHandler {
     private static final Logger logger = LoggerFactory.getLogger(DefaultErrorHandler.class);
 
     private final OffsetQueue offsetQueue;
-    private final SubscriptionMetrics metrics;
+    private final MetricsFacade metrics;
     private final UndeliveredMessageLog undeliveredMessageLog;
     private final Clock clock;
     private final Trackers trackers;
     private final String cluster;
 
     public DefaultErrorHandler(OffsetQueue offsetQueue,
-                               SubscriptionMetrics metrics,
+                               MetricsFacade metrics,
                                UndeliveredMessageLog undeliveredMessageLog,
                                Clock clock,
                                Trackers trackers,
@@ -48,7 +49,9 @@ public class DefaultErrorHandler implements ErrorHandler {
         offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
-        metrics.markDiscarded(message);
+        metrics.subscriptions().discarded(subscription.getQualifiedName()).increment();
+        metrics.subscriptions().inflightTimeHistogram(subscription.getQualifiedName())
+                .record(System.currentTimeMillis() - message.getReadingTimestamp());
 
         addToMessageLog(message, subscription, result);
 
@@ -85,7 +88,16 @@ public class DefaultErrorHandler implements ErrorHandler {
 
     @Override
     public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
-        metrics.markFailure(message, result);
+        SubscriptionName subscriptionName = subscription.getQualifiedName();
+        metrics.subscriptions().failuresCounter(subscriptionName).increment();
+        if (result.hasHttpAnswer()) {
+            metrics.subscriptions().httpAnswerCounter(subscriptionName, result.getStatusCode()).increment();
+        } else if (result.isTimeout()) {
+            metrics.subscriptions().timeoutsCounter(subscriptionName).increment();
+        } else {
+            metrics.subscriptions().otherErrorsCounter(subscriptionName).increment();
+        }
+        metrics.subscriptions().throughputInBytes(subscriptionName).increment(message.getSize());
         trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause(), result.getHostname());
     }
 }

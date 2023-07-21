@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate
 
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters
 import spock.lang.Specification
 
@@ -12,7 +12,7 @@ class NegotiatedMaxRateProviderTest extends Specification {
 
     def maxRateRegistry = Mock(MaxRateRegistry)
     def maxRateSupervisor = Mock(MaxRateSupervisor)
-    def hermesMetrics = Mock(SubscriptionMetrics)
+    def metrics = Mock(MetricsFacade)
     def sendCounters = Mock(SendCounters)
 
     def subscription = subscription("group.topic", "subscription").build()
@@ -96,7 +96,7 @@ class NegotiatedMaxRateProviderTest extends Specification {
                 maxRateSupervisor,
                 subscription,
                 sendCounters,
-                hermesMetrics,
+                metrics,
                 1d,
                 0.1d,
                 HISTORY_SIZE
