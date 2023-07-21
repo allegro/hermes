@@ -65,7 +65,8 @@ public class ProducerMetrics {
     }
 
     public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
-        registerTimeGauge(stateObj, f, ACK_LEADER_RECORD_QUEUE_TIME_MAX, ACK_LEADER_RECORD_QUEUE_TIME_MAX, Tags.empty(), TimeUnit.MILLISECONDS);
+        registerTimeGauge(stateObj, f, ACK_LEADER_RECORD_QUEUE_TIME_MAX,
+                ACK_LEADER_RECORD_QUEUE_TIME_MAX, Tags.empty(), TimeUnit.MILLISECONDS);
     }
 
     public double getBufferTotalBytes() {
