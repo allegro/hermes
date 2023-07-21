@@ -13,10 +13,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_BUFFER_TOTAL_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Histograms.INFLIGHT_TIME;
 import static pl.allegro.tech.hermes.common.metric.Meters.ERRORS_HTTP_BY_CODE;
 import static pl.allegro.tech.hermes.common.metric.Meters.ERRORS_HTTP_BY_FAMILY;
@@ -170,20 +166,6 @@ public class HermesMetrics {
                 timer.close();
             }
         }
-    }
-
-    public double getBufferTotalBytes() {
-        return getDoubleValue(ACK_LEADER_BUFFER_TOTAL_BYTES)
-                + getDoubleValue(ACK_ALL_BUFFER_TOTAL_BYTES);
-    }
-
-    public double getBufferAvailablesBytes() {
-        return getDoubleValue(ACK_LEADER_BUFFER_AVAILABLE_BYTES)
-                + getDoubleValue(ACK_ALL_BUFFER_AVAILABLE_BYTES);
-    }
-
-    private double getDoubleValue(String gauge) {
-        return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
     }
 
     private Counter getInflightCounter(SubscriptionName subscription) {

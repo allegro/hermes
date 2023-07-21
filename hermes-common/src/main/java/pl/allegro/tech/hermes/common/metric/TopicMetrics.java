@@ -1,16 +1,23 @@
 package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
+import pl.allegro.tech.hermes.metrics.counters.MeterBackedHermesCounter;
 
-import java.util.List;
-
+import static pl.allegro.tech.hermes.common.metric.Meters.DELAYED_PROCESSING;
+import static pl.allegro.tech.hermes.common.metric.Meters.METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.THROUGHPUT_BYTES;
+import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_DELAYED_PROCESSING;
+import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.TOPIC_THROUGHPUT_BYTES;
 
 public class TopicMetrics {
@@ -59,17 +66,83 @@ public class TopicMetrics {
                 hermesMetrics.timer(Timers.ACK_LEADER_BROKER_LATENCY));
     }
 
-    public HermesCounter topicThroughputBytes(TopicName topicName) {
-        return HermesCounter.from(
+    public MeterBackedHermesCounter topicThroughputBytes(TopicName topicName) {
+        return HermesCounters.from(
                 micrometerCounter("topic-throughput", topicName),
                 hermesMetrics.meter(TOPIC_THROUGHPUT_BYTES, topicName)
         );
     }
 
-    public HermesCounter topicGlobalThroughputBytes() {
-        return HermesCounter.from(
+    public MeterBackedHermesCounter topicGlobalThroughputBytes() {
+        return HermesCounters.from(
                 meterRegistry.counter("topic-global-throughput"),
                 hermesMetrics.meter(THROUGHPUT_BYTES)
+        );
+    }
+
+    public HermesCounter topicPublished(TopicName topicName) {
+        return HermesCounters.from(
+                micrometerCounter("published", topicName),
+                hermesMetrics.counter(Counters.PUBLISHED, topicName)
+        );
+    }
+
+    public HermesCounter topicGlobalRequestCounter() {
+        return HermesCounters.from(
+                meterRegistry.counter("topic-global-requests"),
+                hermesMetrics.meter(METER)
+        );
+    }
+
+    public HermesCounter topicRequestCounter(TopicName topicName) {
+        return HermesCounters.from(
+                micrometerCounter("topic-requests", topicName),
+                hermesMetrics.meter(TOPIC_METER)
+        );
+    }
+
+    public HermesCounter topicGlobalDelayedProcessingCounter() {
+        return HermesCounters.from(
+                meterRegistry.counter("topic-global-delayed-processing"),
+                hermesMetrics.meter(DELAYED_PROCESSING)
+        );
+    }
+
+    public HermesCounter topicDelayedProcessingCounter(TopicName topicName) {
+        return HermesCounters.from(
+                micrometerCounter("topic-delayed-processing", topicName),
+                hermesMetrics.meter(TOPIC_DELAYED_PROCESSING)
+        );
+    }
+
+    public HermesCounter topicGlobalHttpStatusCodeCounter(int statusCode) {
+        return HermesCounters.from(
+                meterRegistry.counter("topic-global-http-status-codes", Tags.of("status_code", String.valueOf(statusCode))),
+                hermesMetrics.httpStatusCodeMeter(statusCode)
+        );
+    }
+
+    public HermesCounter topicHttpStatusCodeCounter(TopicName topicName, int statusCode) {
+        return HermesCounters.from(
+                meterRegistry.counter("topic-http-status-codes", topicTags(topicName).and("status_code", String.valueOf(statusCode))),
+                hermesMetrics.httpStatusCodeMeter(statusCode, topicName)
+        );
+    }
+
+    public HermesHistogram topicGlobalMessageContentSizeHistogram() {
+        return HermesHistogram.of(
+                DistributionSummary.builder("topic-global-message-size-bytes")
+                        .register(meterRegistry),
+                hermesMetrics.messageContentSizeHistogram()
+        );
+    }
+
+    public HermesHistogram topicMessageContentSizeHistogram(TopicName topicName) {
+        return HermesHistogram.of(
+                DistributionSummary.builder("topic-message-size-bytes")
+                        .tags(topicTags(topicName))
+                        .register(meterRegistry),
+                hermesMetrics.messageContentSizeHistogram(topicName)
         );
     }
 
@@ -81,8 +154,8 @@ public class TopicMetrics {
         return meterRegistry.counter(metricName, topicTags(topicName));
     }
 
-    private Iterable<Tag> topicTags(TopicName topicName) {
-        return List.of(
+    private Tags topicTags(TopicName topicName) {
+        return Tags.of(
                 Tag.of("group", topicName.getGroupName()),
                 Tag.of("topic", topicName.getName())
         );
