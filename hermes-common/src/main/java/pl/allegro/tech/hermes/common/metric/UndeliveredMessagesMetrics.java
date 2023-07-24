@@ -27,7 +27,7 @@ public class UndeliveredMessagesMetrics {
 
     public HermesHistogram undeliveredMessagesSizeHistogram() {
         return HermesHistogram.of(
-                DistributionSummary.builder("undelivered-messages.persisted.message-size")
+                DistributionSummary.builder("undelivered-messages.persisted.message-size.bytes")
                         .register(meterRegistry),
                 hermesMetrics.histogram(PERSISTED_UNDELIVERED_MESSAGE_SIZE)
         );
