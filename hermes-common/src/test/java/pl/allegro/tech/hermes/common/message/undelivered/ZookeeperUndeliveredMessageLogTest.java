@@ -132,6 +132,6 @@ public class ZookeeperUndeliveredMessageLogTest extends ZookeeperBaseTest {
         assertThat(hermesMetrics.meter(PERSISTED_UNDELIVERED_MESSAGES_METER).getCount()).isEqualTo(persistedMessageCount);
         assertThat(hermesMetrics.histogram(PERSISTED_UNDELIVERED_MESSAGE_SIZE).getCount()).isEqualTo(persistedMessageCount);
         assertThat(metricValue(meterRegistry, PERSISTED_UNDELIVERED_MESSAGES_METER, Search::counter, Counter::count).orElse(0.0d)).isEqualTo(persistedMessageCount);
-        assertThat(metricValue(meterRegistry, PERSISTED_UNDELIVERED_MESSAGE_SIZE, Search::summary, DistributionSummary::count).orElse(0L)).isEqualTo(persistedMessageCount);
+        assertThat(metricValue(meterRegistry, PERSISTED_UNDELIVERED_MESSAGE_SIZE + ".bytes", Search::summary, DistributionSummary::count).orElse(0L)).isEqualTo(persistedMessageCount);
     }
 }
