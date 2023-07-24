@@ -53,12 +53,20 @@ public class MetricsFacade {
         return producerMetrics;
     }
 
-    public ExecutorMetrics executor() {return executorMetrics;}
+    public ExecutorMetrics executor() {
+        return executorMetrics;
+    }
 
-    public SchemaClientMetrics schemaClient() {return schemaClientMetrics;}
+    public SchemaClientMetrics schemaClient() {
+        return schemaClientMetrics;
+    }
 
-    public UndeliveredMessagesMetrics undeliveredMessages() { return undeliveredMessagesMetrics; }
+    public UndeliveredMessagesMetrics undeliveredMessages() {
+        return undeliveredMessagesMetrics;
+    }
 
-    public DeserializationMetrics deserialization() {return deserializationMetrics;}
+    public DeserializationMetrics deserialization() {
+        return deserializationMetrics;
+    }
 }
 
