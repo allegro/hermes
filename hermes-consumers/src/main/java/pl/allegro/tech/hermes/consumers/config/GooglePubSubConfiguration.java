@@ -7,6 +7,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import jakarta.inject.Named;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSu
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import javax.inject.Named;
 
 @Configuration
 @EnableConfigurationProperties({

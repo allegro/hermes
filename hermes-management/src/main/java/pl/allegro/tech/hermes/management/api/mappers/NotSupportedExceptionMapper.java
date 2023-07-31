@@ -1,10 +1,9 @@
 package pl.allegro.tech.hermes.management.api.mappers;
 
+import jakarta.ws.rs.NotSupportedException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 import pl.allegro.tech.hermes.api.ErrorCode;
-
-import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
 
 @Provider
 public class NotSupportedExceptionMapper extends AbstractExceptionMapper<NotSupportedException> {

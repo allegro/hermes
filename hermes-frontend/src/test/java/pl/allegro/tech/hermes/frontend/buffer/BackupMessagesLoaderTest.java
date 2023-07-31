@@ -1,7 +1,8 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
-import com.codahale.metrics.Timer;
 import com.google.common.io.Files;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -18,6 +19,7 @@ import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
@@ -67,8 +69,10 @@ public class BackupMessagesLoaderTest {
     public void setUp() {
         tempDir = Files.createTempDir();
 
+        Timer micrometerTimer = new SimpleMeterRegistry().timer("broker-latency");
+        com.codahale.metrics.Timer graphiteTimer = new com.codahale.metrics.Timer();
         when(cachedTopic.getTopic()).thenReturn(topic);
-        when(cachedTopic.startBrokerLatencyTimer()).thenReturn(new Timer().time());
+        when(cachedTopic.startBrokerLatencyTimer()).thenReturn(HermesTimerContext.from(micrometerTimer, graphiteTimer));
         when(topicsCache.getTopic(topic.getQualifiedName())).thenReturn(Optional.of(cachedTopic));
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
     }

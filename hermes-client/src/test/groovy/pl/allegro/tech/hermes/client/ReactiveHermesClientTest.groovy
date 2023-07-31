@@ -173,7 +173,7 @@ class ReactiveHermesClientTest extends Specification {
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT)
-                .subscribeOn(Schedulers.elastic())
+                .subscribeOn(Schedulers.boundedElastic())
                 .subscribe()
 
         and:
@@ -205,7 +205,7 @@ class ReactiveHermesClientTest extends Specification {
 
         when:
         client.publish(TOPIC, CONTENT_TYPE, CONTENT)
-                .subscribeOn(Schedulers.elastic())
+                .subscribeOn(Schedulers.boundedElastic())
                 .subscribe()
 
         and:

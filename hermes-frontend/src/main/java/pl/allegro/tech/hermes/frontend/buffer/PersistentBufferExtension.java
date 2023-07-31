@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.buffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 
@@ -23,7 +23,7 @@ public class PersistentBufferExtension {
     private final BrokerListeners listeners;
 
     private final BackupMessagesLoader backupMessagesLoader;
-    private final HermesMetrics hermesMetrics;
+    private final MetricsFacade metricsFacade;
 
     private int entries;
     private int avgMessageSize;
@@ -32,12 +32,12 @@ public class PersistentBufferExtension {
                                      Clock clock,
                                      BrokerListeners listeners,
                                      BackupMessagesLoader backupMessagesLoader,
-                                     HermesMetrics hermesMetrics) {
+                                     MetricsFacade metricsFacade) {
         this.persistentBufferExtensionParameters = persistentBufferExtensionParameters;
         this.clock = clock;
         this.listeners = listeners;
         this.backupMessagesLoader = backupMessagesLoader;
-        this.hermesMetrics = hermesMetrics;
+        this.metricsFacade = metricsFacade;
     }
 
     public void extend() {
@@ -82,7 +82,7 @@ public class PersistentBufferExtension {
 
     private void enableLocalStorage(BackupFilesManager backupFilesManager) {
         MessageRepository repository = persistentBufferExtensionParameters.isSizeReportingEnabled()
-                ? new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize, hermesMetrics)
+                ? new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize, metricsFacade)
                 : new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize);
 
         BrokerListener brokerListener = new BrokerListener(repository);

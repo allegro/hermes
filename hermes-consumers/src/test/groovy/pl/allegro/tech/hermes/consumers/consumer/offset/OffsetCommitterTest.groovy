@@ -1,14 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset
 
 import com.codahale.metrics.MetricRegistry
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Shared
 import spock.lang.Specification
-
-import java.time.Duration
 
 class OffsetCommitterTest extends Specification {
 
@@ -32,8 +32,12 @@ class OffsetCommitterTest extends Specification {
     def setup() {
         state = new ConsumerPartitionAssignmentState()
         def commitInterval = 10
+
+        def hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
         committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval,
-                new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
+                hermesMetrics,
+                new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics)
+        )
     }
 
     def "should not commit offsets with negative values"() {

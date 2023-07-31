@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.matching.ValueMatcher;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.apache.avro.Schema;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import pl.allegro.tech.hermes.mock.exchange.Response;
 import pl.allegro.tech.hermes.mock.matching.ContentMatchers;
 

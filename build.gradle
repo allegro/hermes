@@ -50,13 +50,13 @@ allprojects {
     project.ext.versions = [
             kafka             : '2.8.2',
             guava             : '23.0',
-            jackson           : '2.11.4',
-            jersey            : '2.35',
-            jetty             : '9.4.19.v20190610',
+            jackson           : '2.15.2',
+            jersey            : '3.1.2',
+            jetty             : '11.0.15',
             curator           : '5.4.0',
             dropwizard_metrics: '4.1.0',
-            micrometer_metrics: '1.2.1',
-            wiremock          : '2.27.2',
+            micrometer_metrics: '1.11.1',
+            wiremock          : '3.0.0-beta-10',
             spock             : '2.4-M1-groovy-4.0',
             groovy            : '4.0.12',
             alpn_api          : '1.1.2.v20150522',
@@ -64,11 +64,11 @@ allprojects {
             json2avro         : '0.2.14',
             okhttp            : '3.9.1',
             undertow          : '2.0.29.Final',
-            spring_web        : '5.3.24',
+            spring_web        : '6.0.8',
             failsafe          : '2.3.1',
             junit_jupiter     : '5.8.2',
             testcontainers    : '1.18.1',
-            spring            : '2.7.7',
+            spring            : '3.0.6',
             assertj           : '3.22.0'
     ]
 
@@ -77,7 +77,7 @@ allprojects {
     }
 
     dependencies {
-        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
+        implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.4'
         implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 
         testImplementation group: 'junit', name: 'junit', version: '4.11'

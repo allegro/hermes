@@ -10,7 +10,6 @@ on:
 
 jobs:
   release:
-
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,10 +25,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: 'Previous version'
-        if: github.ref == 'refs/heads/master'
-        id: 'previous-version'
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
       - name: Release
         if: github.ref == 'refs/heads/master'
         run: ./gradlew release -Prelease.customPassword=${GITHUB_TOKEN} -Prelease.customUsername=${GITHUB_ACTOR} -Prelease.forceVersion=${FORCE_VERSION}
@@ -42,54 +37,6 @@ jobs:
           NEW_HERMES_VERSION="`./gradlew -q cV -Prelease.quiet`"
           echo "new_hermes_version=$NEW_HERMES_VERSION" >> $GITHUB_OUTPUT
           echo "New Hermes version: ${NEW_HERMES_VERSION}"
-      - name: Generate release notes and create release
-        if: github.ref == 'refs/heads/master'
-        run: |
-          generate_release_notes_body()
-          {
-            cat <<EOF
-          {
-              "tag_name":"$NEW_HERMES_VERSION",
-              "target_commitish":"master",
-              "previous_tag_name":"$PREVIOUS_HERMES_VERSION"
-          }
-          EOF
-          }
-
-          RELEASE_NOTES_MARKDOWN=$(curl -v \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/allegro/hermes/releases/generate-notes \
-            -d "$(generate_release_notes_body)" \
-            | jq -r '.body')
-          
-          TODAY_DD_MM_YYYY=$(date +'%d.%m.%Y')
-
-          create_release_body()
-          {
-            cat <<EOF
-          {
-              "tag_name":"$NEW_HERMES_VERSION",
-              "target_commitish":"master",
-              "name":"$NEW_HERMES_VERSION (${TODAY_DD_MM_YYYY})",
-              "draft":false,
-              "prerelease":false,
-              "generate_release_notes":false,
-              "body":"$RELEASE_NOTES_MARKDOWN"
-          }
-          EOF
-          }
-
-          curl -v \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/allegro/hermes/releases \
-            -d "$(create_release_body)"
-        env:
-          NEW_HERMES_VERSION: ${{ steps.next-version.outputs.new_hermes_version }}
-          PREVIOUS_HERMES_VERSION: ${{ steps.previous-version.outputs.tag }}
       - name: Publish to Sonatype
         run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
@@ -98,3 +45,8 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.GPG_PRIVATE_KEY_PASSWORD }}
+      - name: Generate GitHub release page
+        if: github.ref == 'refs/heads/master'
+        run: gh release create "hermes-${{ steps.next-version.outputs.new_hermes_version }}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

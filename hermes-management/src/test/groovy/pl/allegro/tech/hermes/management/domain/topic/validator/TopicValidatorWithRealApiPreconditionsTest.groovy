@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator
 
+import jakarta.validation.ConstraintViolationException
 import pl.allegro.tech.hermes.api.RetentionTime
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
 import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
@@ -8,8 +9,6 @@ import pl.allegro.tech.hermes.schema.SchemaRepository
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
-
-import javax.validation.ConstraintViolationException
 
 import static java.util.concurrent.TimeUnit.DAYS
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic

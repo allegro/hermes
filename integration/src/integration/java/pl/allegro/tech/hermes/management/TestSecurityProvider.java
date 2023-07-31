@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.management;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.SecurityContext;
 import org.apache.commons.lang.NotImplementedException;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
@@ -8,8 +10,6 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.SecurityContext;
 
 import static java.util.stream.Collectors.toSet;
 
