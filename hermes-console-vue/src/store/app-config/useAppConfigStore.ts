@@ -16,8 +16,7 @@ export const useAppConfigStore = defineStore('appConfig', {
     async loadConfig() {
       try {
         this.loading = true;
-        // this.appConfig = (await fetchAppConfiguration()).data;
-        throw new Error('sss');
+        this.appConfig = (await fetchAppConfiguration()).data;
       } catch (e) {
         this.error.loadConfig = e as Error;
       } finally {

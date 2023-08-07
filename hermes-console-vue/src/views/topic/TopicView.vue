@@ -10,11 +10,13 @@
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
-  import { useAppConfig } from '@/composables/use-app-config/useAppConfig';
 
   const { t } = useI18n();
+
   const route = useRoute();
+
   const { groupId, topicName } = route.params as Record<string, string>;
+
   const {
     topic,
     owner,
@@ -26,6 +28,7 @@
     fetchTopic,
   } = useTopic(topicName);
   fetchTopic();
+
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
@@ -44,12 +47,10 @@
       href: `/groups/${groupId}/topics/${topicName}`,
     },
   ];
-  const { appConfig } = useAppConfig();
 </script>
 
 <template>
   <v-container class="d-flex flex-column topic-view__container">
-    Helo: {{ appConfig }}
     <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
     </div>
