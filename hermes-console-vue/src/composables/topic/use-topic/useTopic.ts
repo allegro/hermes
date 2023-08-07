@@ -5,6 +5,7 @@ import {
   fetchTopicOwner as getTopicOwner,
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
+  fetchOfflineClientsSource as getOfflineClientsSource,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
 import type {
@@ -15,6 +16,8 @@ import type {
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
+import type { OfflineClientsSource } from '@/api/offline-clients-source';
+import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
 
 export interface UseTopic {
   topic: Ref<TopicWithSchema | undefined>;
@@ -22,9 +25,11 @@ export interface UseTopic {
   messages: Ref<MessagePreview[] | undefined>;
   metrics: Ref<TopicMetrics | undefined>;
   subscriptions: Ref<Subscription[] | undefined>;
+  offlineClientsSource: Ref<OfflineClientsSource | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseTopicErrors>;
   fetchTopic: () => Promise<void>;
+  fetchOfflineClientsSource: () => Promise<void>;
 }
 
 export interface UseTopicErrors {
@@ -33,6 +38,7 @@ export interface UseTopicErrors {
   fetchTopicMessagesPreview: Error | null;
   fetchTopicMetrics: Error | null;
   fetchSubscriptions: Error | null;
+  fetchOfflineClientsSource: Error | null;
 }
 
 export function useTopic(topicName: string): UseTopic {
@@ -41,6 +47,7 @@ export function useTopic(topicName: string): UseTopic {
   const messages = ref<MessagePreview[]>();
   const metrics = ref<TopicMetrics>();
   const subscriptions = ref<Subscription[]>();
+  const offlineClientsSource = ref<OfflineClientsSource>();
   const loading = ref(false);
   const error = ref<UseTopicErrors>({
     fetchTopic: null,
@@ -48,6 +55,7 @@ export function useTopic(topicName: string): UseTopic {
     fetchTopicMessagesPreview: null,
     fetchTopicMetrics: null,
     fetchSubscriptions: null,
+    fetchOfflineClientsSource: null,
   });
 
   const fetchTopic = async () => {
@@ -125,14 +133,26 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const fetchOfflineClientsSource = async () => {
+    try {
+      offlineClientsSource.value = (
+        await getOfflineClientsSource(topicName)
+      ).data;
+    } catch (e) {
+      error.value.fetchOfflineClientsSource = e as Error;
+    }
+  };
+
   return {
     topic,
     owner,
     messages,
     metrics,
     subscriptions,
+    offlineClientsSource,
     loading,
     error,
     fetchTopic,
+    fetchOfflineClientsSource,
   };
 }

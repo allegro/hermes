@@ -1,4 +1,7 @@
 {
+  "offlineClientsSource": {
+    "source": "https://datastudio.google.com/embed/u/0/reporting/1kmqVF9wR_zF_RGD4j9QykxhWCKz6KRTs/page/s1iRB?params=%7B%22df17%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580pl_allegro_transaction_order_purchase_paymentstatuschanged%22,%22df18%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580BQ%22,%22df16%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580sc-9620-datahub-prod.datahub%22%7D"
+  },
   "inconsistentTopics": [
     "pl.allegro.group.Topic1_avro",
     "pl.allegro.group.Topic2_avro",

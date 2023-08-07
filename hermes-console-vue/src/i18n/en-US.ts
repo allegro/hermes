@@ -165,6 +165,9 @@ const en_US = {
     messagesPreview: {
       title: 'Topic messages preview',
     },
+    offlineClients: {
+      title: 'Offline clients',
+    },
     schema: {
       title: 'Message schema',
     },

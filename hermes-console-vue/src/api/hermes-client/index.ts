@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { AppConfiguration } from '@/api/app-configuration';
 import type {
   MessagePreview,
   TopicMetrics,
@@ -7,7 +8,7 @@ import type {
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
 import type { Subscription } from '@/api/subscription';
-import type { AppConfiguration } from '@/api/app-configuration';
+import type { OfflineClientsSource } from '@/api/offline-clients-source';
 
 export function fetchTopic(
   topicName: string,
@@ -48,4 +49,12 @@ export function fetchTopicSubscriptionDetails(
 
 export function fetchAppConfiguration(): ResponsePromise<AppConfiguration> {
   return axios.get<AppConfiguration>('/console');
+}
+
+export function fetchOfflineClientsSource(
+  topicName: string,
+): ResponsePromise<OfflineClientsSource> {
+  return axios.get<OfflineClientsSource>(
+    `/topics/${topicName}/offline-clients-source`,
+  );
 }

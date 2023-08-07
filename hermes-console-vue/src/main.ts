@@ -4,12 +4,12 @@ import 'vuetify/styles';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { createApp } from 'vue';
 import { createI18n } from 'vue-i18n';
+import { createPinia } from 'pinia';
 import { createVuetify } from 'vuetify';
 import App from './App.vue';
 import axios from 'axios';
 import messages from '@/i18n/messages';
 import router from './router';
-import { createPinia } from 'pinia';
 
 // TODO: should be fetched from Hermes console configuration
 axios.defaults.baseURL = 'http://localhost:3000';

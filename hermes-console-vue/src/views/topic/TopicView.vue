@@ -10,6 +10,8 @@
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
 
   const { t } = useI18n();
 
@@ -25,7 +27,9 @@
     loading,
     error,
     subscriptions,
+    offlineClientsSource,
     fetchTopic,
+    fetchOfflineClientsSource,
   } = useTopic(topicName);
   fetchTopic();
 
@@ -47,6 +51,10 @@
       href: `/groups/${groupId}/topics/${topicName}`,
     },
   ];
+  const configStore = useAppConfigStore();
+  if (configStore.appConfig?.topic.offlineClientsEnabled) {
+    fetchOfflineClientsSource();
+  }
 </script>
 
 <template>
@@ -72,13 +80,25 @@
 
     <schema-panel v-if="topic" :schema="topic.schema" />
 
-    <messages-preview v-if="messages" :messages="messages" />
+    <messages-preview
+      v-if="messages && configStore.appConfig?.topic.messagePreviewEnabled"
+      :messages="messages"
+    />
 
     <subscriptions-list
       v-if="subscriptions"
       :groupId="groupId"
       :topic-name="topicName"
       :subscriptions="subscriptions"
+    />
+
+    <offline-clients
+      v-if="
+        configStore.appConfig?.topic.offlineClientsEnabled &&
+        offlineClientsSource?.source &&
+        topic.offlineStorage.enabled
+      "
+      :source="offlineClientsSource.source"
     />
   </v-container>
 </template>

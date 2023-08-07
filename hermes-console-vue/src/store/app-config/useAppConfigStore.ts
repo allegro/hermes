@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import type { AppConfigStoreState } from '@/store/types';
 import { fetchAppConfiguration } from '@/api/hermes-client';
+import type { AppConfigStoreState } from '@/store/types';
 
 export const useAppConfigStore = defineStore('appConfig', {
   state: (): AppConfigStoreState => {
