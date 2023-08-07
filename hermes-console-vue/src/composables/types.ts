@@ -6,7 +6,6 @@ import type {
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
-import type { AppConfiguration } from '@/api/app-configuration';
 
 export interface UseTopic {
   topic: Ref<TopicWithSchema | undefined>;
