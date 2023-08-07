@@ -53,7 +53,7 @@ class HermesServerFactory {
         ThroughputLimiter throughputLimiter = (exampleTopic, throughput) -> quotaConfirmed();
         HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
         MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
-        TopicsCache topicsCache = new InMemoryTopicsCache(hermesMetrics, metricsFacade, topic);
+        TopicsCache topicsCache = new InMemoryTopicsCache(metricsFacade, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
         Trackers trackers = new Trackers(Collections.emptyList());
@@ -67,7 +67,7 @@ class HermesServerFactory {
         return new HermesServer(
                 sslProperties,
                 hermesServerProperties,
-                hermesMetrics,
+                metricsFacade,
                 httpHandler,
                 new DisabledReadinessChecker(false),
                 new NoOpMessagePreviewPersister(),

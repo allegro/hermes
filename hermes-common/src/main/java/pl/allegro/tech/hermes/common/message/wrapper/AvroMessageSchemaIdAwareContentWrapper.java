@@ -1,10 +1,11 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import com.codahale.metrics.Counter;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
@@ -15,25 +16,25 @@ public class AvroMessageSchemaIdAwareContentWrapper implements AvroMessageConten
     private final SchemaRepository schemaRepository;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
 
-    private final Counter deserializationUsingSchemaIdAware;
-    private final Counter deserializationErrorsForSchemaIdAwarePayload;
-    private final Counter deserializationWithMissedSchemaIdInPayload;
+    private final HermesCounter deserializationUsingSchemaIdAware;
+    private final HermesCounter deserializationErrorsForSchemaIdAwarePayload;
+    private final HermesCounter deserializationWithMissingSchemaIdInPayload;
 
     public AvroMessageSchemaIdAwareContentWrapper(SchemaRepository schemaRepository,
                                                   AvroMessageContentWrapper avroMessageContentWrapper,
-                                                  DeserializationMetrics deserializationMetrics) {
+                                                  MetricsFacade metrics) {
         this.schemaRepository = schemaRepository;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
 
-        this.deserializationErrorsForSchemaIdAwarePayload = deserializationMetrics.errorsForSchemaIdAwarePayload();
-        this.deserializationWithMissedSchemaIdInPayload = deserializationMetrics.missedSchemaIdInPayload();
-        this.deserializationUsingSchemaIdAware = deserializationMetrics.usingSchemaIdAware();
+        this.deserializationErrorsForSchemaIdAwarePayload = metrics.deserialization().errorsForSchemaIdAwarePayload();
+        this.deserializationWithMissingSchemaIdInPayload = metrics.deserialization().missingSchemaIdInPayload();
+        this.deserializationUsingSchemaIdAware = metrics.deserialization().usingSchemaIdAware();
     }
 
     @Override
     public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaIdFromHeader, Integer schemaVersionFromHeader) {
         try {
-            deserializationUsingSchemaIdAware.inc();
+            deserializationUsingSchemaIdAware.increment();
 
             SchemaAwarePayload payload = SchemaAwareSerDe.deserialize(data);
             CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, payload.getSchemaId());
@@ -42,7 +43,7 @@ public class AvroMessageSchemaIdAwareContentWrapper implements AvroMessageConten
         } catch (Exception ex) {
             logger.warn("Could not deserialize schema id aware payload for topic [{}] - falling back", topic.getQualifiedName(), ex);
 
-            deserializationErrorsForSchemaIdAwarePayload.inc();
+            deserializationErrorsForSchemaIdAwarePayload.increment();
 
             return AvroMessageContentUnwrapperResult.failure();
         }
@@ -59,7 +60,7 @@ public class AvroMessageSchemaIdAwareContentWrapper implements AvroMessageConten
                 return true;
             }
 
-            deserializationWithMissedSchemaIdInPayload.inc();
+            deserializationWithMissingSchemaIdInPayload.increment();
         }
 
         return false;

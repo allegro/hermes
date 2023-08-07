@@ -5,8 +5,7 @@ import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.Node;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.Gauges;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,11 +13,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER;
-import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
-
+// exposes kafka producer metrics, see: https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
 public class Producers {
     private final Producer<byte[], byte[]> ackLeader;
     private final Producer<byte[], byte[]> ackAll;
@@ -38,134 +35,76 @@ public class Producers {
         return topic.isReplicationConfirmRequired() ? ackAll : ackLeader;
     }
 
-    public void registerGauges(HermesMetrics metrics) {
-        registerTotalBytesGauge(ackLeader, metrics, Gauges.ACK_LEADER_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(ackLeader, metrics, Gauges.ACK_LEADER_BUFFER_AVAILABLE_BYTES);
-        registerTotalBytesGauge(ackAll, metrics, Gauges.ACK_ALL_BUFFER_TOTAL_BYTES);
-        registerAvailableBytesGauge(ackAll, metrics, Gauges.ACK_ALL_BUFFER_AVAILABLE_BYTES);
-        registerCompressionRateGauge(ackLeader, metrics, Gauges.ACK_LEADER_COMPRESSION_RATE);
-        registerCompressionRateGauge(ackAll, metrics, Gauges.ACK_ALL_COMPRESSION_RATE);
-        registerFailedBatchesGauge(ackAll, metrics, Gauges.ACK_ALL_FAILED_BATCHES_TOTAL);
-        registerFailedBatchesGauge(ackLeader, metrics, Gauges.ACK_LEADER_FAILED_BATCHES_TOTAL);
-        registerMetadataAgeGauge(ackAll, metrics, Gauges.ACK_ALL_CONFIRMS_METADATA_AGE);
-        registerMetadataAgeGauge(ackLeader, metrics, Gauges.ACK_LEADER_METADATA_AGE);
-        registerRecordQueueTimeMaxGauge(ackAll, metrics, Gauges.ACK_ALL_RECORD_QUEUE_TIME_MAX);
-        registerRecordQueueTimeMaxGauge(ackLeader, metrics, Gauges.ACK_LEADER_RECORD_QUEUE_TIME_MAX);
+    public void registerGauges(MetricsFacade metricsFacade) {
+        MetricName bufferTotalBytes = producerMetric("buffer-total-bytes", "producer-metrics", "buffer total bytes");
+        metricsFacade.producer().registerAckAllTotalBytesGauge(ackAll, producerGauge(bufferTotalBytes));
+        metricsFacade.producer().registerAckLeaderTotalBytesGauge(ackLeader, producerGauge(bufferTotalBytes));
+
+        MetricName bufferAvailableBytes = producerMetric("buffer-available-bytes", "producer-metrics", "buffer available bytes");
+        metricsFacade.producer().registerAckAllAvailableBytesGauge(ackAll, producerGauge(bufferAvailableBytes));
+        metricsFacade.producer().registerAckLeaderAvailableBytesGauge(ackLeader, producerGauge(bufferAvailableBytes));
+
+        MetricName compressionRate = producerMetric("compression-rate-avg", "producer-metrics", "average compression rate");
+        metricsFacade.producer().registerAckAllCompressionRateGauge(ackAll, producerGauge(compressionRate));
+        metricsFacade.producer().registerAckLeaderCompressionRateGauge(ackLeader, producerGauge(compressionRate));
+
+        MetricName failedBatches = producerMetric("record-error-total", "producer-metrics", "failed publishing batches");
+        metricsFacade.producer().registerAckAllFailedBatchesGauge(ackAll, producerGauge(failedBatches));
+        metricsFacade.producer().registerAckLeaderFailedBatchesGauge(ackLeader, producerGauge(failedBatches));
+
+        MetricName metadataAge = producerMetric("metadata-age", "producer-metrics", "age [s] of metadata");
+        metricsFacade.producer().registerAckAllMetadataAgeGauge(ackAll, producerGauge(metadataAge));
+        metricsFacade.producer().registerAckLeaderMetadataAgeGauge(ackLeader, producerGauge(metadataAge));
+
+        MetricName queueTimeMax = producerMetric("record-queue-time-max", "producer-metrics",
+                "maximum time [ms] that batch spent in the send buffer");
+        metricsFacade.producer().registerAckAllRecordQueueTimeMaxGauge(ackAll, producerGauge(queueTimeMax));
+        metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(ackLeader, producerGauge(queueTimeMax));
     }
 
-    public void maybeRegisterNodeMetricsGauges(HermesMetrics metrics) {
+    public void maybeRegisterNodeMetricsGauges(MetricsFacade metricsFacade) {
         if (reportNodeMetrics && nodeMetricsRegistered.compareAndSet(false, true)) {
-            registerLatencyPerBrokerGauge(metrics);
+            registerLatencyPerBrokerGauge(metricsFacade);
         }
     }
 
-    private void registerLatencyPerBrokerGauge(HermesMetrics metrics) {
+    private void registerLatencyPerBrokerGauge(MetricsFacade metricsFacade) {
         List<Node> brokers = ProducerBrokerNodeReader.read(ackLeader);
-        registerLatencyPerBrokerGauge(ackAll, metrics, "request-latency-avg", ACK_ALL, brokers);
-        registerLatencyPerBrokerGauge(ackLeader, metrics, "request-latency-avg", ACK_LEADER, brokers);
-        registerLatencyPerBrokerGauge(ackAll, metrics, "request-latency-max", ACK_ALL, brokers);
-        registerLatencyPerBrokerGauge(ackLeader, metrics, "request-latency-max", ACK_LEADER, brokers);
-    }
-
-    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
-                                               HermesMetrics metrics,
-                                               String metricName,
-                                               String producerName,
-                                               List<Node> brokers) {
         for (Node broker : brokers) {
-            registerLatencyPerBrokerGauge(producer, metrics, metricName, producerName, broker);
+            metricsFacade.producer().registerAckAllMaxLatencyBrokerGauge(ackAll,
+                    producerLatencyGauge("request-latency-max", broker), broker.host());
+            metricsFacade.producer().registerAckLeaderMaxLatencyPerBrokerGauge(ackLeader,
+                    producerLatencyGauge("request-latency-max", broker), broker.host());
+            metricsFacade.producer().registerAckAllAvgLatencyPerBrokerGauge(ackAll,
+                    producerLatencyGauge("request-latency-avg", broker), broker.host());
+            metricsFacade.producer().registerAckLeaderAvgLatencyPerBrokerGauge(ackLeader,
+                    producerLatencyGauge("request-latency-avg", broker), broker.host());
         }
     }
 
-    private void registerLatencyPerBrokerGauge(Producer<byte[], byte[]> producer,
-                                               HermesMetrics metrics,
-                                               String metricName,
-                                               String producerName,
-                                               Node node) {
-
-        String gauge = Gauges.KAFKA_PRODUCER + producerName + "." + metricName + "." + escapeDots(node.host());
-        registerGauge(producer, metrics, gauge,
-                entry -> entry.getKey().group().equals("producer-node-metrics")
-                        && entry.getKey().name().equals(metricName)
-                        && entry.getKey().tags().containsValue("node-" + node.id()));
-
+    private double findProducerMetric(Producer<byte[], byte[]> producer,
+                                      Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
+        Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
+                producer.metrics().entrySet().stream().filter(predicate).findFirst();
+        double value = first.map(metricNameEntry -> metricNameEntry.getValue().value()).orElse(0.0);
+        return value < 0 ? 0.0 : value;
     }
 
-    private void registerCompressionRateGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(
-                producer,
-                metrics,
-                new MetricName("compression-rate-avg", "producer-metrics", "average compression rate", Collections.emptyMap()),
-                gauge
-        );
+    private ToDoubleFunction<Producer<byte[], byte[]>> producerLatencyGauge(String producerMetricName, Node node) {
+        Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals("producer-node-metrics")
+                && entry.getKey().name().equals(producerMetricName)
+                && entry.getKey().tags().containsValue("node-" + node.id());
+        return producer -> findProducerMetric(producer, predicate);
     }
 
-    private void registerTotalBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(
-                producer,
-                metrics,
-                new MetricName("buffer-total-bytes", "producer-metrics", "buffer total bytes", Collections.emptyMap()),
-                gauge
-        );
+    private ToDoubleFunction<Producer<byte[], byte[]>> producerGauge(MetricName producerMetricName) {
+        Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group())
+                && entry.getKey().name().equals(producerMetricName.name());
+        return producer -> findProducerMetric(producer, predicate);
     }
 
-    private void registerAvailableBytesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(
-                producer,
-                metrics,
-                new MetricName("buffer-available-bytes", "producer-metrics", "buffer available bytes", Collections.emptyMap()),
-                gauge
-        );
-    }
-
-    private void registerFailedBatchesGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(
-                producer,
-                metrics,
-                new MetricName("record-error-total", "producer-metrics", "failed publishing batches", Collections.emptyMap()),
-                gauge
-        );
-    }
-
-    private void registerRecordQueueTimeMaxGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(
-                producer,
-                metrics,
-                new MetricName(
-                        "record-queue-time-max",
-                        "producer-metrics",
-                        "maximum time [ms] that batch spent in the send buffer",
-                        Collections.emptyMap()),
-                gauge
-        );
-    }
-
-    private void registerMetadataAgeGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge) {
-        registerProducerGauge(
-                producer,
-                metrics,
-                new MetricName("metadata-age", "producer-metrics", "age [s] of metadata", Collections.emptyMap()),
-                gauge
-        );
-    }
-
-    private void registerProducerGauge(final Producer<byte[], byte[]> producer,
-                                       final HermesMetrics metrics,
-                                       final MetricName name,
-                                       final String gauge) {
-
-        registerGauge(producer, metrics, gauge,
-                entry -> entry.getKey().group().equals(name.group()) && entry.getKey().name().equals(name.name()));
-    }
-
-    private void registerGauge(Producer<byte[], byte[]> producer, HermesMetrics metrics, String gauge,
-                               Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
-        metrics.registerGauge(gauge, () -> {
-            Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
-                    producer.metrics().entrySet().stream().filter(predicate).findFirst();
-            double value = first.map(metricNameEntry -> metricNameEntry.getValue().value()).orElse(0.0);
-            return value < 0 ? 0.0 : value;
-        });
+    private static MetricName producerMetric(String name, String group, String description) {
+        return new MetricName(name, group, description, Collections.emptyMap());
     }
 
     public void close() {

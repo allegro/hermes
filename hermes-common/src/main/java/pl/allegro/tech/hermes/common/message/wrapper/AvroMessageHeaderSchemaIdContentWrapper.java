@@ -1,10 +1,11 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import com.codahale.metrics.Counter;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -16,26 +17,26 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
     private final SchemaRepository schemaRepository;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
 
-    private final Counter deserializationWithErrorsUsingHeaderSchemaId;
-    private final Counter deserializationUsingHeaderSchemaId;
+    private final HermesCounter deserializationWithErrorsUsingHeaderSchemaId;
+    private final HermesCounter deserializationUsingHeaderSchemaId;
     private final boolean schemaIdHeaderEnabled;
 
     public AvroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
                                                    AvroMessageContentWrapper avroMessageContentWrapper,
-                                                   DeserializationMetrics deserializationMetrics,
+                                                   MetricsFacade metrics,
                                                    boolean schemaIdHeaderEnabled) {
         this.schemaRepository = schemaRepository;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
 
-        this.deserializationWithErrorsUsingHeaderSchemaId = deserializationMetrics.errorsForHeaderSchemaId();
-        this.deserializationUsingHeaderSchemaId = deserializationMetrics.usingHeaderSchemaId();
+        this.deserializationWithErrorsUsingHeaderSchemaId = metrics.deserialization().errorsForHeaderSchemaId();
+        this.deserializationUsingHeaderSchemaId = metrics.deserialization().usingHeaderSchemaId();
         this.schemaIdHeaderEnabled = schemaIdHeaderEnabled;
     }
 
     @Override
     public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         try {
-            deserializationUsingHeaderSchemaId.inc();
+            deserializationUsingHeaderSchemaId.increment();
             CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, SchemaId.valueOf(schemaId));
 
             return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(data, avroSchema));
@@ -44,7 +45,7 @@ public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageConte
                     "Could not unwrap content for topic [{}] using schema id provided in header [{}] - falling back",
                     topic.getQualifiedName(), schemaVersion, ex);
 
-            deserializationWithErrorsUsingHeaderSchemaId.inc();
+            deserializationWithErrorsUsingHeaderSchemaId.increment();
 
             return AvroMessageContentUnwrapperResult.failure();
         }

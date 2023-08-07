@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentType;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.tracker.QueueCommitter;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class ElasticsearchQueueCommitter extends QueueCommitter<ElasticsearchDoc
     private final String typeName;
 
     public ElasticsearchQueueCommitter(BlockingQueue<ElasticsearchDocument> queue,
-                                       Timer timer,
+                                       HermesTimer timer,
                                        IndexFactory indexFactory,
                                        String typeName,
                                        Client client) {
@@ -44,7 +45,7 @@ public class ElasticsearchQueueCommitter extends QueueCommitter<ElasticsearchDoc
                                                  IndexFactory indexFactory,
                                                  String typeName,
                                                  Client client,
-                                                 Timer timer,
+                                                 HermesTimer timer,
                                                  int interval) {
         ElasticsearchQueueCommitter committer = new ElasticsearchQueueCommitter(queue, timer, indexFactory, typeName, client);
         ThreadFactory factory = new ThreadFactoryBuilder().setNameFormat("elasticsearch-queue-committer-%d").build();

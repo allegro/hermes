@@ -1,12 +1,15 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
 import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
+import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.AbstractLogRepositoryTest;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
@@ -33,6 +36,11 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     private static final Clock clock = Clock.fixed(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC), ZoneId.systemDefault());
     private static final ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory(clock);
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
+    private static final MetricsFacade metricsFacade = new MetricsFacade(
+            new SimpleMeterRegistry(),
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
+    );
+
 
     private static ElasticsearchResource elasticsearch = new ElasticsearchResource();
     private SchemaManager schemaManager;
@@ -51,7 +59,7 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     @Override
     protected LogRepository createLogRepository() {
         schemaManager.ensureSchema();
-        return new ConsumersElasticsearchLogRepository.Builder(elasticsearch.client(), new PathsCompiler("localhost"), new MetricRegistry())
+        return new ConsumersElasticsearchLogRepository.Builder(elasticsearch.client(), metricsFacade)
                 .withIndexFactory(indexFactory)
                 .build();
     }
