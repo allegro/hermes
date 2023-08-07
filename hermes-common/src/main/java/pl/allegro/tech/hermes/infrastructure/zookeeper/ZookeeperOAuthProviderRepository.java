@@ -45,13 +45,11 @@ public class ZookeeperOAuthProviderRepository extends ZookeeperBasedRepository i
 
     @Override
     public void createOAuthProvider(OAuthProvider oAuthProvider) {
-        ensureConnected();
-
         String oAuthProviderPath = paths.oAuthProviderPath(oAuthProvider.getName());
         logger.info("Creating OAuthProvider for path {}", oAuthProviderPath);
 
         try {
-            zookeeper.create().creatingParentsIfNeeded().forPath(oAuthProviderPath, mapper.writeValueAsBytes(oAuthProvider));
+            createRecursively(oAuthProviderPath, oAuthProvider);
         } catch (KeeperException.NodeExistsException ex) {
             throw new OAuthProviderAlreadyExistsException(oAuthProvider, ex);
         } catch (Exception ex) {
@@ -64,7 +62,11 @@ public class ZookeeperOAuthProviderRepository extends ZookeeperBasedRepository i
         ensureOAuthProviderExists(oAuthprovider.getName());
 
         logger.info("Updating OAuthProvider {}", oAuthprovider.getName());
-        overwrite(paths.oAuthProviderPath(oAuthprovider.getName()), oAuthprovider);
+        try {
+            overwrite(paths.oAuthProviderPath(oAuthprovider.getName()), oAuthprovider);
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     @Override
@@ -72,7 +74,11 @@ public class ZookeeperOAuthProviderRepository extends ZookeeperBasedRepository i
         ensureOAuthProviderExists(oAuthProviderName);
 
         logger.info("Removing OAuthProvider {}", oAuthProviderName);
-        remove(paths.oAuthProviderPath(oAuthProviderName));
+        try {
+            remove(paths.oAuthProviderPath(oAuthProviderName));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     @Override

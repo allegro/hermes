@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.test.helper.client;
 
-import javax.ws.rs.client.AsyncInvoker;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.InvocationCallback;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.AsyncInvoker;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.InvocationCallback;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static javax.ws.rs.client.Entity.text;
+import static jakarta.ws.rs.client.Entity.text;
 
 public class AsyncMessagePublisher {
 

@@ -124,6 +124,7 @@ public class SubscriptionHealthConfiguration {
                                                    MultiDatacenterRepositoryCommandExecutor multiDatacenterRepositoryCommandExecutor,
                                                    SubscriptionOwnerCache subscriptionOwnerCache,
                                                    SubscriptionRepository subscriptionRepository) {
-        return new SubscriptionRemover(auditor, multiDatacenterRepositoryCommandExecutor, subscriptionOwnerCache, subscriptionRepository);
+        return new SubscriptionRemover(auditor, multiDatacenterRepositoryCommandExecutor,
+                subscriptionOwnerCache, subscriptionRepository);
     }
 }

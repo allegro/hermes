@@ -37,7 +37,8 @@ public class ElasticsearchResource extends ExternalResource implements LogSchema
                     .withSetting(TRANSPORT_TCP_PORT, port)
                     .withSetting(HTTP_PORT, httpPort)
                     .withSetting(CLUSTER_NAME, CLUSTER_NAME_VALUE)
-                    .withEsJavaOpts("-Xms128m -Xmx512m")
+                    // embedded elastic search runs with "UseConcMarkSweepGC" which is invalid in Java 17
+                    .withEsJavaOpts("-Xms128m -Xmx512m -XX:+IgnoreUnrecognizedVMOptions")
                     .withStartTimeout(1, TimeUnit.MINUTES)
                     .withCleanInstallationDirectoryOnStop(true)
                     .withInstallationDirectory(Files.createTempDirectory("elasticsearch-installation-" + port).toFile())

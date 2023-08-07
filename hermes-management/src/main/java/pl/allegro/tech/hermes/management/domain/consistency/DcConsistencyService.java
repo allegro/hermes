@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.consistency;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
@@ -30,7 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
-import javax.annotation.PreDestroy;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;

@@ -27,8 +27,8 @@
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
-          :title="t('readiness.connectionError.title')"
-          :text="t('readiness.connectionError.text')"
+          :title="$t('readiness.connectionError.title')"
+          :text="$t('readiness.connectionError.text')"
           type="error"
         />
       </v-col>
@@ -37,7 +37,7 @@
       <v-row dense>
         <v-col md="12">
           <p class="text-h4 font-weight-bold mb-3">
-            {{ t('readiness.title') }}
+            {{ $t('readiness.title') }}
           </p>
         </v-col>
       </v-row>
@@ -46,10 +46,10 @@
           <v-table>
             <thead>
               <tr>
-                <th class="text-left">{{ t('readiness.index') }}</th>
-                <th class="text-left">{{ t('readiness.datacenter') }}</th>
-                <th class="text-left">{{ t('readiness.isReady') }}</th>
-                <th class="text-left">{{ t('readiness.control') }}</th>
+                <th class="text-left">{{ $t('readiness.index') }}</th>
+                <th class="text-left">{{ $t('readiness.datacenter') }}</th>
+                <th class="text-left">{{ $t('readiness.isReady') }}</th>
+                <th class="text-left">{{ $t('readiness.control') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -65,7 +65,7 @@
                     color="green"
                     block
                   >
-                    {{ t('readiness.turnOn') }}</v-btn
+                    {{ $t('readiness.turnOn') }}</v-btn
                   >
                   <v-btn
                     variant="text"
@@ -74,7 +74,7 @@
                     color="red"
                     block
                   >
-                    {{ t('readiness.turnOff') }}</v-btn
+                    {{ $t('readiness.turnOff') }}</v-btn
                   >
                 </td>
               </tr>

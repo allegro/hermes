@@ -52,8 +52,8 @@
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
-          :title="t('consumerGroups.connectionError.title')"
-          :text="t('consumerGroups.connectionError.text')"
+          :title="$t('consumerGroups.connectionError.title')"
+          :text="$t('consumerGroups.connectionError.text')"
           type="error"
         />
       </v-col>
@@ -61,7 +61,7 @@
     <v-row dense>
       <v-col md="10">
         <p class="text-h4 font-weight-bold mb-3">
-          {{ t('consumerGroups.title') }}
+          {{ $t('consumerGroups.title') }}
         </p>
       </v-col>
     </v-row>
@@ -69,7 +69,7 @@
       <v-col>
         <v-card density="compact">
           <v-col md="12">
-            <p class="text-overline">{{ t('consumerGroups.groupId') }}</p>
+            <p class="text-overline">{{ $t('consumerGroups.groupId') }}</p>
             <p class="text-h6 font-weight-bold mb-2">
               {{ consumerGroups[0]?.groupId }}
             </p>

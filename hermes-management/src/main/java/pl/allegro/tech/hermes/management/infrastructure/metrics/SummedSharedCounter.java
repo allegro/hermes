@@ -7,48 +7,95 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.ZookeeperCounterException;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.stream.Collectors.toList;
 
 public class SummedSharedCounter {
 
-    private final List<LoadingCache<String, DistributedAtomicLong>> distributedAtomicLongCaches;
+    private final LoadingCache<String, CounterAggregator> counterAggregators;
 
-    public SummedSharedCounter(List<CuratorFramework> curatorClients, int expireAfter,
-                               int distributedLoaderBackoff, int distributedLoaderRetries) {
-        this.distributedAtomicLongCaches = curatorClients.stream()
-                .map(client -> buildLoadingCache(client, expireAfter, distributedLoaderBackoff, distributedLoaderRetries))
-                .collect(toList());
+    public SummedSharedCounter(List<ZookeeperClient> zookeeperClients,
+                               int expireAfter,
+                               int distributedLoaderBackoff,
+                               int distributedLoaderRetries) {
+        this.counterAggregators = buildLoadingCache(zookeeperClients, expireAfter, distributedLoaderBackoff, distributedLoaderRetries);
     }
 
     public long getValue(String path) {
-        return distributedAtomicLongCaches.stream()
-                .map(distAtomicLong -> getValue(distAtomicLong, path))
-                .reduce(0L, (a, b) -> a + b);
-    }
-
-    private long getValue(LoadingCache<String, DistributedAtomicLong> distAtomicLong, String path) {
         try {
-            return distAtomicLong.get(path).get().preValue();
+            return counterAggregators.get(path).aggregate();
+        } catch (ZookeeperCounterException e) {
+            throw e;
         } catch (Exception e) {
             throw new ZookeeperCounterException(path, e);
         }
     }
 
-    private LoadingCache<String, DistributedAtomicLong> buildLoadingCache(CuratorFramework curatorClient, int expireAfter,
-                                                                          int distributedLoaderBackoff, int distributedLoaderRetries) {
+    private LoadingCache<String, CounterAggregator> buildLoadingCache(List<ZookeeperClient> zookeeperClients,
+                                                                      int expireAfter,
+                                                                      int distributedLoaderBackoff,
+                                                                      int distributedLoaderRetries) {
         return CacheBuilder.newBuilder()
                 .expireAfterAccess(expireAfter, TimeUnit.HOURS)
-                .build(new CacheLoader<String, DistributedAtomicLong>() {
+                .build(new CacheLoader<>() {
                            @Override
-                           public DistributedAtomicLong load(String key) {
-                               return new DistributedAtomicLong(curatorClient, key,
-                                       new ExponentialBackoffRetry(distributedLoaderBackoff, distributedLoaderRetries));
+                           public CounterAggregator load(String key) {
+                               return new CounterAggregator(
+                                       key,
+                                       zookeeperClients,
+                                       distributedLoaderBackoff,
+                                       distributedLoaderRetries
+                               );
                            }
                        }
                 );
+    }
+
+    private static class CounterAggregator {
+
+        private final String counterName;
+        private final Map<String, CuratorFramework> curatorPerDatacenter = new HashMap<>();
+        private final Map<String, DistributedAtomicLong> counterPerDatacenter = new HashMap<>();
+
+        CounterAggregator(String counterName,
+                          List<ZookeeperClient> zookeeperClients,
+                          int distributedLoaderBackoff,
+                          int distributedLoaderRetries) {
+            this.counterName = counterName;
+            for (ZookeeperClient zookeeperClient : zookeeperClients) {
+                CuratorFramework curatorFramework = zookeeperClient.getCuratorFramework();
+                curatorPerDatacenter.put(zookeeperClient.getDatacenterName(), curatorFramework);
+                DistributedAtomicLong distributedAtomicLong = new DistributedAtomicLong(
+                        curatorFramework,
+                        counterName,
+                        new ExponentialBackoffRetry(distributedLoaderBackoff, distributedLoaderRetries)
+                );
+                counterPerDatacenter.put(zookeeperClient.getDatacenterName(), distributedAtomicLong);
+            }
+        }
+
+        long aggregate() throws Exception {
+            long sum = 0;
+            for (Map.Entry<String, DistributedAtomicLong> counterEntry : counterPerDatacenter.entrySet()) {
+                ensureConnected(counterEntry.getKey());
+                DistributedAtomicLong counter = counterEntry.getValue();
+                sum += counter.get().preValue();
+            }
+            return sum;
+        }
+
+        private void ensureConnected(String datacenter) {
+            CuratorFramework curator = curatorPerDatacenter.get(datacenter);
+            if (!curator.getZookeeperClient().isConnected()) {
+                throw new ZookeeperCounterException(
+                        counterName,
+                        "Could not establish connection to a Zookeeper instance in " + datacenter + "."
+                );
+            }
+        }
     }
 }

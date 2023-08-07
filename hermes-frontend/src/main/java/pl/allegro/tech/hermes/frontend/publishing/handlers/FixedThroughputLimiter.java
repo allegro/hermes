@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
-import com.codahale.metrics.Metered;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaViolation;
@@ -14,7 +14,7 @@ public class FixedThroughputLimiter implements ThroughputLimiter {
     }
 
     @Override
-    public QuotaInsight checkQuota(TopicName topic, Metered throughput) {
+    public QuotaInsight checkQuota(TopicName topic, HermesRateMeter throughput) {
         long rate = (long) Math.floor(throughput.getOneMinuteRate());
         return rate > limit ? quotaViolation(rate, limit) : quotaConfirmed();
     }

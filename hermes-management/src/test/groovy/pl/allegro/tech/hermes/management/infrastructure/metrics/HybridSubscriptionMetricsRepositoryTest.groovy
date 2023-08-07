@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics
 
 import pl.allegro.tech.hermes.api.MetricLongValue
-import pl.allegro.tech.hermes.api.SubscriptionMetrics
 import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics
+import pl.allegro.tech.hermes.api.SubscriptionMetrics
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource

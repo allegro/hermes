@@ -12,7 +12,8 @@ consumer:
   graphite:
     host: "localhost"
   metrics:
-    graphiteReporterEnabled: true
+    metrics-registry:
+      graphiteReporterEnabled: true
   workload:
     consumerPerSubscription: 1
   schema:

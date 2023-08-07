@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.curator.framework.CuratorFramework;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -39,14 +39,13 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClien
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 
-import java.util.List;
-import javax.annotation.PostConstruct;
-
-import static java.util.stream.Collectors.toList;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration
 @EnableConfigurationProperties(StorageClustersProperties.class)
 public class StorageConfiguration {
+
+    private static final Logger logger = getLogger(StorageConfiguration.class);
 
     @Autowired
     StorageClustersProperties storageClustersProperties;
@@ -105,10 +104,11 @@ public class StorageConfiguration {
     @Bean
     SummedSharedCounter summedSharedCounter(ZookeeperClientManager manager) {
         return new SummedSharedCounter(
-                getCuratorClients(manager),
+                manager.getClients(),
                 storageClustersProperties.getSharedCountersExpiration(),
                 storageClustersProperties.getRetrySleep(),
-                storageClustersProperties.getRetryTimes());
+                storageClustersProperties.getRetryTimes()
+        );
     }
 
     @Bean
@@ -167,23 +167,5 @@ public class StorageConfiguration {
     OfflineRetransmissionRepository zookeeperOfflineRetransmissionRepository() {
         ZookeeperClient localClient = clientManager().getLocalClient();
         return new ZookeeperOfflineRetransmissionRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
-    }
-
-    @PostConstruct
-    public void init() {
-        ensureInitPathExists();
-    }
-
-    private void ensureInitPathExists() {
-        ZookeeperClientManager clientManager = clientManager();
-        for (ZookeeperClient client : clientManager.getClients()) {
-            client.ensurePathExists(zookeeperPaths().groupsPath());
-        }
-    }
-
-    private List<CuratorFramework> getCuratorClients(ZookeeperClientManager manager) {
-        return manager.getClients().stream()
-                .map(ZookeeperClient::getCuratorFramework)
-                .collect(toList());
     }
 }

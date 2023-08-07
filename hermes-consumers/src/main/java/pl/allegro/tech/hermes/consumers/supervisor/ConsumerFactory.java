@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.BatchConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
@@ -32,6 +33,7 @@ public class ConsumerFactory {
     private final OutputRateCalculatorFactory outputRateCalculatorFactory;
     private final ReceiverFactory messageReceiverFactory;
     private final HermesMetrics hermesMetrics;
+    private final MetricsFacade metricsFacade;
     private final CommonConsumerParameters commonConsumerParameters;
     private final Trackers trackers;
     private final OffsetQueue offsetQueue;
@@ -47,6 +49,7 @@ public class ConsumerFactory {
 
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
                            HermesMetrics hermesMetrics,
+                           MetricsFacade metricsFacade,
                            CommonConsumerParameters commonConsumerParameters,
                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                            OutputRateCalculatorFactory outputRateCalculatorFactory,
@@ -63,6 +66,7 @@ public class ConsumerFactory {
                            SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.hermesMetrics = hermesMetrics;
+        this.metricsFacade = metricsFacade;
         this.commonConsumerParameters = commonConsumerParameters;
         this.consumerRateLimitSupervisor = consumerRateLimitSupervisor;
         this.outputRateCalculatorFactory = outputRateCalculatorFactory;
@@ -82,7 +86,7 @@ public class ConsumerFactory {
     public Consumer createConsumer(Subscription subscription) {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
         SubscriptionLoadRecorder loadRecorder = subscriptionLoadRecordersRegistry.register(subscription.getQualifiedName());
-        SubscriptionMetrics metrics = new SubscriptionMetrics(hermesMetrics, subscription.getQualifiedName());
+        SubscriptionMetrics metrics = new SubscriptionMetrics(hermesMetrics, subscription.getQualifiedName(), metricsFacade);
         if (subscription.isBatchSubscription()) {
             return new BatchConsumer(messageReceiverFactory,
                     batchSenderFactory.create(subscription),

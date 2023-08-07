@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;
+import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.NodePassword;
 
@@ -18,6 +19,10 @@ public class ZookeeperCredentialsRepository extends ZookeeperBasedRepository imp
 
     @Override
     public void overwriteAdminPassword(String password) {
-        overwrite(paths.groupsPath(), new NodePassword(password));
+        try {
+            overwrite(paths.groupsPath(), new NodePassword(password));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 }

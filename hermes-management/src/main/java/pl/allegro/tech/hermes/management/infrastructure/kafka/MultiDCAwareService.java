@@ -59,7 +59,7 @@ public class MultiDCAwareService {
                 .readMessageFromPrimary(topic, partition, offset);
     }
 
-    public MultiDCOffsetChangeSummary moveOffset(Topic topic,
+    public MultiDCOffsetChangeSummary retransmit(Topic topic,
                                                  String subscriptionName,
                                                  Long timestamp,
                                                  boolean dryRun,
@@ -144,5 +144,9 @@ public class MultiDCAwareService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());
+    }
+
+    public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
+        clusters.forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
     }
 }

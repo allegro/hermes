@@ -53,6 +53,6 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
     }
 
     public String getConnectionString() {
-        return String.format("%s:%s", getContainerIpAddress(), getMappedPort(clientPort));
+        return String.format("%s:%s", getHost(), getMappedPort(clientPort));
     }
 }

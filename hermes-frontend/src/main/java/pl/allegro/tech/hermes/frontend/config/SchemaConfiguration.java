@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 import org.apache.avro.Schema;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -22,8 +24,6 @@ import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceRes
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
 import java.net.URI;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 
 @Configuration
 @EnableConfigurationProperties({

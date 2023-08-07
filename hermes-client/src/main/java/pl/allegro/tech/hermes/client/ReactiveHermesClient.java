@@ -129,7 +129,7 @@ public class ReactiveHermesClient {
         return sendOnceResult
                 .flatMap(this::unwrapFailedAttemptAsException)
                 .retryWhen(retrySpec)
-                .subscriberContext(ctx -> ctx.put(RETRY_CONTEXT_KEY, HermesRetryContext.emptyRetryContext()))
+                .contextWrite(ctx -> ctx.put(RETRY_CONTEXT_KEY, HermesRetryContext.emptyRetryContext()))
                 .onErrorResume(Exception.class, this::unwrapRetryExhaustedException);
     }
 
@@ -193,7 +193,7 @@ public class ReactiveHermesClient {
     }
 
     private Mono<Integer> getNextAttempt() {
-        return Mono.subscriberContext()
+        return Mono.deferContextual(Mono::just)
                 .map(ctx -> ctx.getOrDefault(RETRY_CONTEXT_KEY, HermesRetryContext.emptyRetryContext())
                         .getAndIncrementAttempt()
                 );

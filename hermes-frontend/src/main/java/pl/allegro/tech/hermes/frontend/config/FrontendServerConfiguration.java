@@ -1,12 +1,14 @@
 package pl.allegro.tech.hermes.frontend.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
+import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
-import pl.allegro.tech.hermes.domain.readiness.ReadinessRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -18,6 +20,7 @@ import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.util.Optional;
@@ -41,7 +44,8 @@ public class FrontendServerConfiguration {
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider,
-                                     TopicLoadingProperties topicLoadingProperties) {
+                                     TopicLoadingProperties topicLoadingProperties,
+                                     PrometheusMeterRegistry prometheusMeterRegistry) {
         return new HermesServer(
                 sslProperties,
                 hermesServerProperties,
@@ -52,18 +56,25 @@ public class FrontendServerConfiguration {
                 throughputLimiter,
                 topicMetadataLoadingJob,
                 topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
-                sslContextFactoryProvider);
+                sslContextFactoryProvider,
+                prometheusMeterRegistry);
     }
 
     @Bean
     public DefaultReadinessChecker readinessChecker(ReadinessCheckProperties readinessCheckProperties,
                                                     TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                                    ReadinessRepository readinessRepository) {
+                                                    CuratorFramework zookeeper,
+                                                    ZookeeperPaths paths,
+                                                    ObjectMapper mapper) {
         return new DefaultReadinessChecker(
                 topicMetadataLoadingRunner,
-                readinessRepository,
+                zookeeper,
+                paths,
+                mapper,
                 readinessCheckProperties.isEnabled(),
-                readinessCheckProperties.getInterval());
+                readinessCheckProperties.isKafkaCheckEnabled(),
+                readinessCheckProperties.getInterval()
+        );
     }
 
     @Bean

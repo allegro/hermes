@@ -30,8 +30,8 @@
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
-          :title="t('consistency.connectionError.title')"
-          :text="t('consistency.connectionError.text')"
+          :title="$t('consistency.connectionError.title')"
+          :text="$t('consistency.connectionError.text')"
           type="error"
         />
       </v-col>
@@ -39,7 +39,7 @@
     <v-row dense>
       <v-col md="10">
         <p class="text-h5 font-weight-bold mb-3">
-          {{ t('consistency.inconsistentTopics.heading') }}
+          {{ $t('consistency.inconsistentTopics.heading') }}
         </p>
       </v-col>
     </v-row>
@@ -47,7 +47,7 @@
       <v-col md="12">
         <v-text-field
           single-line
-          :label="t('consistency.inconsistentTopics.actions.search')"
+          :label="$t('consistency.inconsistentTopics.actions.search')"
           density="compact"
           v-model="topicFilter"
           prepend-inner-icon="mdi-magnify"

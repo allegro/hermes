@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integration;
 
 import com.jayway.awaitility.Duration;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -13,9 +14,8 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.oauth.server.OAuthTestServer;
 
 import java.io.IOException;
-import javax.ws.rs.core.Response;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.clientCredentialsGrantOAuthPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.passwordGrantOAuthPolicy;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;

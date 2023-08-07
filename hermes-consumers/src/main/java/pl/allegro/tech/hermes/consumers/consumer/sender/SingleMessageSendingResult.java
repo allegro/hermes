@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
@@ -14,14 +15,13 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
-import javax.ws.rs.core.Response;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
-import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.Family.familyOf;
+import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static jakarta.ws.rs.core.Response.Status.Family.familyOf;
 
 public class SingleMessageSendingResult implements MessageSendingResult {
 

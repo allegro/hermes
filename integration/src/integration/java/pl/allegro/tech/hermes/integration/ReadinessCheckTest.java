@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
@@ -8,11 +9,10 @@ import pl.allegro.tech.hermes.test.helper.containers.BrokerId;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.ws.rs.core.Response;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.api.Topic.Ack.ALL;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
@@ -38,6 +38,7 @@ public class ReadinessCheckTest extends IntegrationTest {
         HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
+                .kafkaCheckEnabled()
                 .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
                 .kafkaConnectionString(kafkaClusterOne.getBootstrapServersForExternalClients())
                 .start();
@@ -60,6 +61,29 @@ public class ReadinessCheckTest extends IntegrationTest {
     }
 
     @Test
+    public void shouldRespectKafkaCheckEnabledFlag() {
+        // given
+        kafkaClusterOne.cutOffConnectionsBetweenBrokersAndClients();
+
+        // when
+        HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
+                .metadataMaxAgeInSeconds(1)
+                .readinessCheckIntervalInSeconds(1)
+                .kafkaCheckDisabled()
+                .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
+                .kafkaConnectionString(kafkaClusterOne.getBootstrapServersForExternalClients())
+                .start();
+
+        // then
+        assertThat(hermesFrontend.isReady()).isTrue();
+        assertThat(hermesFrontend.isHealthy()).isTrue();
+
+        // cleanup
+        kafkaClusterOne.restoreConnectionsBetweenBrokersAndClients();
+        hermesFrontend.stop();
+    }
+
+    @Test
     public void shouldNotBeReadyUntilThereAreNoUnderReplicatedPartitions() throws Exception {
         // given
         List<BrokerId> brokers = kafkaClusterOne.getAllBrokers();
@@ -71,6 +95,7 @@ public class ReadinessCheckTest extends IntegrationTest {
         HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
+                .kafkaCheckEnabled()
                 .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
                 .kafkaConnectionString(kafkaClusterOne.getBootstrapServersForExternalClients())
                 .start();
@@ -117,6 +142,7 @@ public class ReadinessCheckTest extends IntegrationTest {
         HermesFrontendInstance hermesFrontend = HermesFrontendInstance.starter()
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
+                .kafkaCheckEnabled()
                 .zookeeperConnectionString(hermesZookeeperOne.getConnectionString())
                 .kafkaConnectionString(kafkaClusterOne.getBootstrapServersForExternalClients())
                 .start();

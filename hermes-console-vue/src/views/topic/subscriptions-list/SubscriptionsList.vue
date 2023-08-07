@@ -35,7 +35,7 @@
         props.subscriptions.length
       })`"
     >
-      <v-expansion-panel-text style="margin: 0 -16px 0">
+      <v-expansion-panel-text class="subscriptions-panel">
         <v-list open-strategy="single">
           <v-list-item
             v-for="subscription in subscriptionItems"
@@ -61,5 +61,9 @@
   .v-list-item:not(:last-child) {
     border-bottom: settings.$list-item-border-thin-width
       settings.$list-item-border-style settings.$list-item-border-color;
+  }
+
+  .subscriptions-panel {
+    margin: 0 -16px 0;
   }
 </style>

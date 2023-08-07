@@ -1,38 +1,35 @@
 <script setup lang="ts">
-  import { useI18n } from 'vue-i18n';
   import type { MessageFilterSpecification } from '@/api/subscription';
 
   const props = defineProps<{
     filters: MessageFilterSpecification[];
   }>();
-
-  const { t } = useI18n();
 </script>
 
 <template>
   <v-card class="mb-2">
     <template #title>
       <p class="font-weight-bold">
-        {{ t('subscription.filtersCard.title') }}
+        {{ $t('subscription.filtersCard.title') }}
       </p>
     </template>
     <v-table density="compact">
       <thead>
         <tr>
           <th class="text-left">
-            {{ t('subscription.filtersCard.index') }}
+            {{ $t('subscription.filtersCard.index') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.filtersCard.type') }}
+            {{ $t('subscription.filtersCard.type') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.filtersCard.path') }}
+            {{ $t('subscription.filtersCard.path') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.filtersCard.matcher') }}
+            {{ $t('subscription.filtersCard.matcher') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.filtersCard.matchingStrategy') }}
+            {{ $t('subscription.filtersCard.matchingStrategy') }}
           </th>
         </tr>
       </thead>
@@ -48,7 +45,7 @@
     </v-table>
     <template #actions>
       <v-btn prepend-icon="mdi-console-line">
-        {{ t('subscription.filtersCard.debug') }}
+        {{ $t('subscription.filtersCard.debug') }}
       </v-btn>
     </template>
   </v-card>

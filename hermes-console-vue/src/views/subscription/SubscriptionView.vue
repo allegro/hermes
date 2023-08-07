@@ -66,7 +66,7 @@
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
-          :title="t('subscription.connectionError.title')"
+          :title="$t('subscription.connectionError.title')"
           :text="t('subscription.connectionError.text', { subscriptionId })"
           type="error"
         />

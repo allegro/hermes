@@ -2,10 +2,14 @@ package pl.allegro.tech.hermes.management.infrastructure.zookeeper;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
+import org.slf4j.Logger;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class ZookeeperClient {
 
+    private static final Logger logger = getLogger(ZookeeperClient.class);
     private final CuratorFramework curatorFramework;
     private final String datacenterName;
 
@@ -20,16 +24,6 @@ public class ZookeeperClient {
 
     public String getDatacenterName() {
         return datacenterName;
-    }
-
-    public void ensurePathExists(String path) {
-        try {
-            if (curatorFramework.checkExists().forPath(path) == null) {
-                curatorFramework.create().creatingParentsIfNeeded().forPath(path);
-            }
-        } catch (Exception e) {
-            throw new InternalProcessingException("Could not ensure existence of path: " + path);
-        }
     }
 
     public void ensureEphemeralNodeExists(String path) {

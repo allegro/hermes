@@ -5,7 +5,7 @@ repositories {
 
 project.configurations {
     integration {
-        extendsFrom project.configurations.testRuntime
+        extendsFrom project.configurations.runtimeClasspath
         description = 'Dependencies for integration tests'
         transitive = true
         visible = true
@@ -14,38 +14,35 @@ project.configurations {
 }
 
 dependencies {
-    compile project(':hermes-common')
-    compile project(':hermes-consumers')
-    compile project(':hermes-frontend')
-    compile project(':hermes-management')
-    compile project(':hermes-client')
-    compile project(':hermes-tracker')
+    integration project(':hermes-common')
+    integration project(':hermes-consumers')
+    integration project(':hermes-frontend')
+    integration project(':hermes-management')
+    integration project(':hermes-client')
+    integration project(':hermes-tracker')
 
-    testCompile project(':hermes-test-helper')
-    testCompile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    testCompile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
-    testCompile group: 'org.apache.curator', name: 'curator-test', version: versions.curator
-    testCompile group: 'org.springframework', name: 'spring-web', version: versions.spring_web
-    testCompile group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
+    integration project(':hermes-test-helper')
+    integration group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+    integration group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    integration group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+    integration group: 'org.apache.curator', name: 'curator-test', version: versions.curator
+    integration group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
+    integration group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
 
-    testCompile group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
-    testCompile group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
+    integration group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
+    integration group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
 
-    testCompile files('./lib/schema-repo-server-0.1.3-jersey2.jar');
-    testCompile group: 'org.glassfish.jersey.containers', name: 'jersey-container-grizzly2-http', version: versions.jersey
-    testCompile group: 'org.freemarker', name: 'freemarker', version: '2.3.21'
-    testCompile group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-server', version: '9.4.28.v20200408'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-alpn-openjdk8-client', version: '9.4.30.v20200611'
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: versions.jetty
-    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlets', version: versions.jetty
-    testCompile group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.23.2'
+    integration files('./lib/schema-repo-server-0.1.3-jersey2.jar');
+    integration group: 'org.glassfish.jersey.containers', name: 'jersey-container-grizzly2-http', version: versions.jersey
+    integration group: 'org.freemarker', name: 'freemarker', version: '2.3.21'
+    integration group: 'org.schemarepo', name: 'schema-repo-common', version: '0.1.3'
+    integration group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.23.2'
 
-    testCompile(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
+    integration(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
 
-    testCompile group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
+    integration group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 }
 
 project.sourceSets {
@@ -61,11 +58,13 @@ project.sourceSets {
         }
 
         compileClasspath = project.sourceSets.main.output +
-                project.configurations.testRuntime +
+                project.configurations.runtimeClasspath +
                 project.configurations.integration
-        runtimeClasspath = output + compileClasspath + project.configurations.testRuntime
+        runtimeClasspath = output + compileClasspath + project.configurations.runtimeClasspath
     }
 }
+
+tasks.getByName('processIntegrationResources').doFirst() { duplicatesStrategy(DuplicatesStrategy.EXCLUDE) }
 
 task integrationTest(type: Test) {
     logging.captureStandardOutput LogLevel.INFO
@@ -78,6 +77,8 @@ task integrationTest(type: Test) {
     if (project.hasProperty("confluentImagesTag")) {
         args += "-DconfluentImagesTag=${project.property("confluentImagesTag")}"
     }
+
+    args += chronicleMapJvmArgs
 
     jvmArgs = args
     minHeapSize "2000m"

@@ -26,7 +26,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
     HttpClient batchClient
     MetricRegistry metricRegistry = new MetricRegistry()
     HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
-    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(threadPoolMetrics)
+    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(hermesMetrics)
 
     def setupSpec() {
         port = Ports.nextAvailable()
