@@ -1,7 +1,7 @@
 {
   "/consistency/inconsistencies/topics": "/inconsistentTopics",
   "/groups": "/groups",
-  "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id"
+  "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id",
   "/readiness/datacenters": "/readinessDatacenters",
   "/topics": "/topicNames",
   "/topics/:id/metrics": "/topicsMetrics/:id",
