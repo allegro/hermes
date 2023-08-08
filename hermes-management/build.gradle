@@ -80,13 +80,13 @@ task attachHermesConsoleV2(type: Copy, dependsOn: 'buildHermesConsoleV2') {
     into(sourceSets.main.output.resourcesDir.path + '/static')
 }
 
-//tasks.register('prepareIndexTemplate') {
-//    doLast {
-//        def indexPath = sourceSets.main.output.resourcesDir.path + '/static/index.html'
-//        ant.move file: indexPath,
-//                tofile: indexPath + '.ftl'
-//    }
-//}
+tasks.register('prepareIndexTemplate') {
+    doLast {
+        def indexPath = sourceSets.main.output.resourcesDir.path + '/static/index.html'
+        ant.move file: indexPath,
+                tofile: indexPath + '.ftl'
+    }
+}
 
 //jar.dependsOn(attachHermesConsole, attachHermesConsoleV2, 'prepareIndexTemplate')
-jar.dependsOn(attachHermesConsoleV2)
+jar.dependsOn(attachHermesConsoleV2, 'prepareIndexTemplate')
