@@ -77,7 +77,7 @@ task buildHermesConsoleV2(type: YarnTask, dependsOn: yarn) {
 
 task attachHermesConsoleV2(type: Copy, dependsOn: 'buildHermesConsoleV2') {
     from '../hermes-console-vue/dist'
-    into(sourceSets.main.output.resourcesDir.path + '/static/v2')
+    into(sourceSets.main.output.resourcesDir.path + '/static/.')
 }
 
 tasks.register('prepareIndexTemplate') {
