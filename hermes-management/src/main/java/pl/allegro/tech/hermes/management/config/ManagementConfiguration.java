@@ -21,6 +21,7 @@ import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
@@ -69,9 +70,10 @@ public class ManagementConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryParameters micrometerRegistryParameters,
-                                                      PrometheusConfig prometheusConfig) {
+                                                      PrometheusConfig prometheusConfig,
+                                                      CounterStorage counterStorage) {
         return new PrometheusMeterRegistryFactory(micrometerRegistryParameters,
-                prometheusConfig, "hermes-management").provide();
+                prometheusConfig, counterStorage, "hermes-management").provide();
     }
 
     @Bean
