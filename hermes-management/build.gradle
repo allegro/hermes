@@ -49,15 +49,15 @@ dependencies {
     testImplementation group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
 }
 
-task buildHermesConsole(type: Exec) {
-    workingDir '../hermes-console'
-    commandLine './package.sh'
-}
-
-task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
-    from '../hermes-console/dist/static'
-    into(sourceSets.main.output.resourcesDir.path + '/static')
-}
+//task buildHermesConsole(type: Exec) {
+//    workingDir '../hermes-console'
+//    commandLine './package.sh'
+//}
+//
+//task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
+//    from '../hermes-console/dist/static'
+//    into(sourceSets.main.output.resourcesDir.path + '/static')
+//}
 
 node {
     version = '20.4.0'
@@ -77,15 +77,16 @@ task buildHermesConsoleV2(type: YarnTask, dependsOn: yarn) {
 
 task attachHermesConsoleV2(type: Copy, dependsOn: 'buildHermesConsoleV2') {
     from '../hermes-console-vue/dist'
-    into(sourceSets.main.output.resourcesDir.path + '/static/.')
+    into(sourceSets.main.output.resourcesDir.path + '/static')
 }
 
-tasks.register('prepareIndexTemplate') {
-    doLast {
-        def indexPath = sourceSets.main.output.resourcesDir.path + '/static/index.html'
-        ant.move file: indexPath,
-                tofile: indexPath + '.ftl'
-    }
-}
+//tasks.register('prepareIndexTemplate') {
+//    doLast {
+//        def indexPath = sourceSets.main.output.resourcesDir.path + '/static/index.html'
+//        ant.move file: indexPath,
+//                tofile: indexPath + '.ftl'
+//    }
+//}
 
-jar.dependsOn(attachHermesConsole, attachHermesConsoleV2, 'prepareIndexTemplate')
+//jar.dependsOn(attachHermesConsole, attachHermesConsoleV2, 'prepareIndexTemplate')
+jar.dependsOn(attachHermesConsoleV2)
