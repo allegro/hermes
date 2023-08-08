@@ -30,8 +30,7 @@ class SummedSharedCounterTest extends MultiZookeeperIntegrationTest {
         def zkClientDc2 = findClientByDc(manager.clients, DC_2_NAME).curatorFramework
         sharedCounterDc2 = new SharedCounter(zkClientDc2, EXPIRE_AFTER, DISTRIBUTED_LEADER_BACKOFF, DISTRIBUTED_LEADER_RETRIES)
 
-        def zkClients = manager.clients.collect { client -> client.curatorFramework }
-        summedSharedCounter = new SummedSharedCounter(zkClients, (int)  EXPIRE_AFTER.toHours(), (int) DISTRIBUTED_LEADER_BACKOFF.toMillis(), DISTRIBUTED_LEADER_RETRIES)
+        summedSharedCounter = new SummedSharedCounter(manager.clients, (int)  EXPIRE_AFTER.toHours(), (int) DISTRIBUTED_LEADER_BACKOFF.toMillis(), DISTRIBUTED_LEADER_RETRIES)
     }
 
     def cleanup() {

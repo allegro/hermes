@@ -13,7 +13,7 @@
     <h1>Datacenter readiness</h1>
     <div class="container">
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-5">
                 <table class="table">
                     <tr>
                         <th>#</th>
@@ -24,8 +24,9 @@
                         <td>{{$index + 1}}</td>
                         <td>{{item.datacenter}}</td>
                         <td>
-                            <button class="btn btn-danger" ng-if=item.isReady ng-click="openModal(item)">Turn off</button>
-                            <button class="btn btn-success" ng-if=!item.isReady ng-click="openModal(item)">Turn on</button>
+                            <button class="btn btn-danger" ng-if="item.status === 'READY'" ng-click="openModal(item)">Turn off</button>
+                            <button class="btn btn-success" ng-if="item.status === 'NOT_READY'" ng-click="openModal(item)">Turn on</button>
+                            <div class="alert alert-warning" ng-if="item.status === 'UNDEFINED'">Cannot obtain readiness status</div>
                         </td>
                     </tr>
 

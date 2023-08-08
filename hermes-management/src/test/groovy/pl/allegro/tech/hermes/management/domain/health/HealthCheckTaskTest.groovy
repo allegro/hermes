@@ -27,6 +27,7 @@ class HealthCheckTaskTest extends MultiZookeeperIntegrationTest {
         healthCheckTask = new HealthCheckTask(manager.clients, healthCheckPath, new ObjectMapper().registerModule(new JavaTimeModule()), modeService, meterRegistry)
         successfulCounter = meterRegistry.counter('storage-health-check.successful')
         failedCounter = meterRegistry.counter('storage-health-check.failed')
+        modeService.mode = ModeService.ManagementMode.READ_WRITE
     }
 
     def cleanup() {

@@ -3,8 +3,7 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Meters;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -16,13 +15,13 @@ public class ThroughputLimiterFactory {
 
     private final ThroughputParameters throughputParameters;
 
-    private final HermesMetrics hermesMetrics;
+    private final MetricsFacade metricsFacade;
 
     private enum ThroughputLimiterType { UNLIMITED, FIXED, DYNAMIC }
 
-    public ThroughputLimiterFactory(ThroughputParameters throughputParameters, HermesMetrics hermesMetrics) {
+    public ThroughputLimiterFactory(ThroughputParameters throughputParameters, MetricsFacade metricsFacade) {
         this.throughputParameters = throughputParameters;
-        this.hermesMetrics = hermesMetrics;
+        this.metricsFacade = metricsFacade;
     }
 
     public ThroughputLimiter provide() {
@@ -38,9 +37,8 @@ public class ThroughputLimiterFactory {
                         throughputParameters.getDynamicDesired(),
                         throughputParameters.getDynamicIdle(),
                         throughputParameters.getDynamicCheckInterval(),
-                        hermesMetrics.meter(Meters.THROUGHPUT_BYTES),
-                        getExecutor()
-                        );
+                        metricsFacade.topics().topicGlobalThroughputBytes(),
+                        getExecutor());
             default:
                 throw new IllegalArgumentException("Unknown throughput limiter type.");
         }

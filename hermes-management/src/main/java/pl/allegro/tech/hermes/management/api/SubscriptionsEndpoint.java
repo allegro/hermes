@@ -1,6 +1,22 @@
 package pl.allegro.tech.hermes.management.api;
 
 import io.swagger.annotations.ApiOperation;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.MessageTrace;
@@ -12,6 +28,7 @@ import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
@@ -23,26 +40,10 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChang
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Path("topics/{topicName}/subscriptions")
@@ -235,7 +236,7 @@ public class SubscriptionsEndpoint {
                                @Valid OffsetRetransmissionDate offsetRetransmissionDate,
                                @Context ContainerRequestContext requestContext) {
 
-        MultiDCOffsetChangeSummary summary = multiDCAwareService.moveOffset(
+        MultiDCOffsetChangeSummary summary = multiDCAwareService.retransmit(
                 topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
                 subscriptionName,
                 offsetRetransmissionDate.getRetransmissionDate().toInstant().toEpochMilli(),
@@ -244,6 +245,20 @@ public class SubscriptionsEndpoint {
         );
 
         return Response.status(OK).entity(summary).build();
+    }
+
+    @POST
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed({Roles.ADMIN})
+    @Path("/{subscriptionName}/moveOffsetsToTheEnd")
+    public Response moveOffsetsToTheEnd(@PathParam("topicName") String qualifiedTopicName,
+                                        @PathParam("subscriptionName") String subscriptionName) {
+        TopicName topicName = fromQualifiedName(qualifiedTopicName);
+        multiDCAwareService.moveOffsetsToTheEnd(
+                topicService.getTopicDetails(topicName),
+                new SubscriptionName(subscriptionName, topicName));
+        return responseStatus(OK);
     }
 
     @GET

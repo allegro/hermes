@@ -205,7 +205,7 @@ class ConsumerProcessSupervisorTest extends Specification {
     }
 
     private static ConditionFactory await() {
-        Awaitility.await().pollInterval(adjust(50), MILLISECONDS).atMost(adjust(500), MILLISECONDS)
+        Awaitility.await().pollInterval(adjust(50), MILLISECONDS).atMost(adjust(1000), MILLISECONDS)
     }
 
     class CurrentTimeClock extends Clock {

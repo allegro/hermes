@@ -1,6 +1,12 @@
 package pl.allegro.tech.hermes.integration.management;
 
 import com.google.common.collect.ImmutableMap;
+import com.jayway.awaitility.Duration;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -24,6 +30,7 @@ import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
+import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations.ConsumerGroupOffset;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -31,19 +38,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static jakarta.ws.rs.client.ClientBuilder.newClient;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static java.net.URI.create;
-import static javax.ws.rs.client.ClientBuilder.newClient;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
@@ -283,6 +286,37 @@ public class SubscriptionManagementTest extends IntegrationTest {
                 "subscription");
     }
 
+    @Test
+    public void shouldMoveOffsetsToTheEnd() {
+        // given
+        Topic topic = operations.buildTopic(randomTopic("moveSubscriptionOffsets", "topic").build());
+        Subscription subscription = subscription(topic.getQualifiedName(), "subscription", remoteService.getUrl())
+                // prevents discarding messages and moving offsets
+                .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600)))
+                .build();
+        management.subscription().create(subscription.getQualifiedTopicName(), subscription);
+        List<String> messages = List.of(MESSAGE.body(), MESSAGE.body(), MESSAGE.body(), MESSAGE.body());
+
+        // prevents from moving offsets during messages sending
+        remoteService.setReturnedStatusCode(503);
+        remoteService.expectMessages(messages);
+        publishMessages(topic.getQualifiedName(), messages);
+        remoteService.waitUntilReceived();
+
+        assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isFalse();
+
+        management.subscription().remove(topic.getQualifiedName(), subscription.getName());
+
+        // when
+        wait.awaitAtMost(Duration.TEN_SECONDS)
+                .until(() -> management
+                        .subscription()
+                        .moveOffsetsToTheEnd(topic.getQualifiedName(), subscription.getName()).getStatus() == 200);
+
+        // then
+        assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue();
+    }
+
     @Unreliable
     @Test(enabled = false)
     public void shouldGetEventStatus() {
@@ -469,7 +503,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
             assertThat(response)
                     .flatExtracting("members")
                     .flatExtracting("partitions")
-                    .usingElementComparatorIgnoringFields("partition", "topic", "offsetMetadata", "contentType")
+                    .usingRecursiveFieldByFieldElementComparatorIgnoringFields("partition", "topic", "offsetMetadata", "contentType")
                     .containsOnlyOnce(new TopicPartition(-1, "any", 0, 1, "any", topic.getContentType()));
         });
     }
@@ -790,7 +824,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         );
     }
 
-    private static Subscription subscriptionWithInflight(Topic topic, String subscriptionName,  Integer inflightSize) {
+    private static Subscription subscriptionWithInflight(Topic topic, String subscriptionName, Integer inflightSize) {
         return subscription(topic, subscriptionName)
                 .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy()
@@ -805,7 +839,16 @@ public class SubscriptionManagementTest extends IntegrationTest {
         });
     }
 
+    private void publishMessages(String topic, List<String> messages) {
+        messages.forEach(it -> publishMessage(topic, it));
+    }
+
     private String publishMessage(String topic, String body) {
         return client.publish(topic, body).join().getMessageId();
+    }
+
+    private boolean allConsumerGroupOffsetsMovedToTheEnd(Subscription subscription) {
+        List<ConsumerGroupOffset> partitionsOffsets = brokerOperations.getTopicPartitionsOffsets(subscription.getQualifiedName());
+        return !partitionsOffsets.isEmpty() && partitionsOffsets.stream().allMatch(ConsumerGroupOffset::movedToEnd);
     }
 }

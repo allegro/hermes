@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka
 
 import com.codahale.metrics.MetricRegistry
 import com.jayway.awaitility.Awaitility
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.NewTopic
@@ -21,7 +22,8 @@ import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
-import pl.allegro.tech.hermes.consumers.config.SchemaProperties
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
+import pl.allegro.tech.hermes.frontend.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
@@ -100,7 +102,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
-                new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")),
+                new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties),
                         schemaProperties.isIdHeaderEnabled()
                 )

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useTheme } from 'vuetify';
 
   const adminViews: { title: string; to: string }[] = [
@@ -8,6 +9,7 @@
   ];
 
   const theme = useTheme();
+  const configStore = useAppConfigStore();
 </script>
 
 <template>
@@ -48,12 +50,20 @@
 
     <v-row justify="center">
       <v-col cols="3">
-        <v-btn block>
+        <v-btn
+          block
+          :href="configStore.appConfig?.dashboard.metrics"
+          target="_blank"
+        >
           <v-icon left icon="mdi-chart-multiple"></v-icon>&nbsp;Runtime
         </v-btn>
       </v-col>
       <v-col cols="3">
-        <v-btn href="https://hermes-pubsub.readthedocs.io/" block>
+        <v-btn
+          block
+          :href="configStore.appConfig?.dashboard.docs"
+          target="_blank"
+        >
           <v-icon left icon="mdi-book-open-variant"></v-icon>&nbsp;Docs
         </v-btn>
       </v-col>

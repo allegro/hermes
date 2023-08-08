@@ -1,10 +1,11 @@
 <script setup lang="ts">
   const props = defineProps<{
     environmentName: string;
+    isCriticalEnvironment: boolean;
   }>();
 
   function environmentBadgeColor(): string {
-    if (props.environmentName.toLowerCase().startsWith('prod')) {
+    if (props.isCriticalEnvironment) {
       return 'red';
     }
     return 'blue';

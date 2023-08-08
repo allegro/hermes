@@ -1,23 +1,22 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.frontend;
 
-import com.codahale.metrics.MetricRegistry;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.common.metric.TrackerElasticSearchMetrics;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchQueueCommitter;
 import pl.allegro.tech.hermes.tracker.elasticsearch.IndexFactory;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
 import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
-import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Gauges;
-import pl.allegro.tech.hermes.tracker.elasticsearch.metrics.Timers;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
@@ -41,16 +40,10 @@ public class FrontendElasticsearchLogRepository
                                                int commitInterval,
                                                IndexFactory indexFactory,
                                                String typeName,
-                                               MetricRegistry metricRegistry,
-                                               PathsCompiler pathsCompiler) {
-        super(queueSize, clusterName, hostname, metricRegistry, pathsCompiler);
-
+                                               MetricsFacade metricsFacade) {
+        super(queueSize, clusterName, hostname);
         this.elasticClient = elasticClient;
-        registerQueueSizeGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE);
-        registerRemainingCapacityGauge(Gauges.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY);
-
-        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(queue, indexFactory, typeName, elasticClient,
-                metricRegistry.timer(pathsCompiler.compile(Timers.PRODUCER_TRACKER_ELASTICSEARCH_COMMIT_LATENCY)), commitInterval);
+        registerMetrics(commitInterval, indexFactory, typeName, metricsFacade.trackerElasticSearch());
     }
 
     @Override
@@ -130,6 +123,17 @@ public class FrontendElasticsearchLogRepository
                     .collect(extraRequestHeadersCollector()));
     }
 
+    private void registerMetrics(int commitInterval,
+                                 IndexFactory indexFactory,
+                                 String typeName,
+                                 TrackerElasticSearchMetrics trackerMetrics) {
+        trackerMetrics.registerProducerTrackerElasticSearchQueueSizeGauge(this.queue, BlockingQueue::size);
+        trackerMetrics.registerProducerTrackerElasticSearchRemainingCapacity(this.queue, BlockingQueue::size);
+
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(this.queue, indexFactory, typeName, elasticClient,
+                trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
+    }
+
     private long toSeconds(long millis) {
         return millis / 1000;
     }
@@ -144,13 +148,11 @@ public class FrontendElasticsearchLogRepository
         private FrontendIndexFactory indexFactory = new FrontendDailyIndexFactory();
         private String typeName = SchemaManager.PUBLISHED_TYPE;
 
-        private final MetricRegistry metricRegistry;
-        private final PathsCompiler pathsCompiler;
+        private final MetricsFacade metricsFacade;
 
-        public Builder(Client elasticClient, PathsCompiler pathsCompiler, MetricRegistry metricRegistry) {
+        public Builder(Client elasticClient, MetricsFacade metricsFacade) {
             this.elasticClient = elasticClient;
-            this.pathsCompiler = pathsCompiler;
-            this.metricRegistry = metricRegistry;
+            this.metricsFacade = metricsFacade;
         }
 
         public Builder withElasticClient(Client elasticClient) {
@@ -196,8 +198,7 @@ public class FrontendElasticsearchLogRepository
                     commitInterval,
                     indexFactory,
                     typeName,
-                    metricRegistry,
-                    pathsCompiler);
+                    metricsFacade);
         }
     }
 }

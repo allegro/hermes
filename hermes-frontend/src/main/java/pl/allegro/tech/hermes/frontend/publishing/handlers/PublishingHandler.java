@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
-import com.codahale.metrics.Timer;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import pl.allegro.tech.hermes.api.Topic;
@@ -10,6 +9,7 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcess
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
@@ -46,7 +46,7 @@ class PublishingHandler implements HttpHandler {
         MessageState messageState = attachment.getMessageState();
 
         messageState.setSendingToKafkaProducerQueue();
-        Timer.Context brokerLatencyTimers = attachment.getCachedTopic().startBrokerLatencyTimer();
+        HermesTimerContext brokerLatencyTimers = attachment.getCachedTopic().startBrokerLatencyTimer();
         brokerMessageProducer.send(attachment.getMessage(), attachment.getCachedTopic(), new PublishingCallback() {
 
             // called from kafka producer thread

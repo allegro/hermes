@@ -36,6 +36,7 @@ public class ZookeeperClientManager {
     public void start() {
         createClients();
         selectLocalClient();
+        waitForConnection(localClient.getCuratorFramework());
     }
 
     private void createClients() {
@@ -113,14 +114,12 @@ public class ZookeeperClientManager {
         );
 
         CuratorFramework curator = builder.build();
-
-        startAndWaitForConnection(curator);
+        curator.start();
 
         return curator;
     }
 
-    private void startAndWaitForConnection(CuratorFramework curator) {
-        curator.start();
+    private void waitForConnection(CuratorFramework curator) {
         try {
             curator.blockUntilConnected();
         } catch (InterruptedException interruptedException) {

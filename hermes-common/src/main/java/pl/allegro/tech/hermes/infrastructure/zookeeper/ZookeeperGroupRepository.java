@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
@@ -28,7 +29,6 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     @Override
     public boolean groupExists(String groupName) {
-        ensureConnected();
         return pathExists(paths.groupPath(groupName));
     }
 
@@ -41,17 +41,11 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     @Override
     public void createGroup(Group group) {
-        ensureConnected();
-
         String groupPath = paths.groupPath(group.getGroupName());
         logger.info("Creating group {} for path {}", group.getGroupName(), groupPath);
 
         try {
-            zookeeper.inTransaction()
-                    .create().forPath(groupPath, mapper.writeValueAsBytes(group))
-                    .and()
-                    .create().forPath(paths.topicsPath(group.getGroupName()))
-                    .and().commit();
+            createInTransaction(groupPath, group, paths.topicsPath(group.getGroupName()));
         } catch (KeeperException.NodeExistsException ex) {
             throw new GroupAlreadyExistsException(group.getGroupName(), ex);
         } catch (Exception ex) {
@@ -61,21 +55,27 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     @Override
     public void updateGroup(Group group) {
-        ensureConnected();
         ensureGroupExists(group.getGroupName());
 
         logger.info("Updating group {}", group.getGroupName());
-        overwrite(paths.groupPath(group.getGroupName()), group);
+        try {
+            overwrite(paths.groupPath(group.getGroupName()), group);
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     @Override
     public void removeGroup(String groupName) {
-        ensureConnected();
         ensureGroupExists(groupName);
         ensureGroupIsEmpty(groupName);
 
         logger.info("Removing group: {}", groupName);
-        remove(paths.groupPath(groupName));
+        try {
+            remove(paths.groupPath(groupName));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
     }
 
     private void ensureGroupIsEmpty(String groupName) {
@@ -86,13 +86,13 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     @Override
     public List<String> listGroupNames() {
-        ensureConnected();
         return childrenOf(paths.groupsPath());
     }
 
     @Override
     public List<Group> listGroups() {
-        return listGroupNames().stream()
+        return listGroupNames()
+                .stream()
                 .map(n -> getGroupDetails(n, true))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -105,10 +105,16 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
     }
 
     private Optional<Group> getGroupDetails(String groupName, boolean quiet) {
-        ensureConnected();
         ensureGroupExists(groupName);
 
         String path = paths.groupPath(groupName);
         return readFrom(path, Group.class, quiet);
+    }
+
+    @PostConstruct
+    public void init() {
+        logger.info("Before ensuring init path exists");
+        ensurePathExists(paths.groupsPath());
+        logger.info("After ensuring init path exists");
     }
 }

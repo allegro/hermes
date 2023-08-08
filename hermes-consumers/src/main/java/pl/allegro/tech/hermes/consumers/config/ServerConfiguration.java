@@ -1,23 +1,25 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.consumers.health.ConsumerHttpServer;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
+import pl.allegro.tech.hermes.consumers.server.ConsumerHttpServer;
 
 import java.io.IOException;
 
 @Configuration
 @EnableConfigurationProperties(CommonConsumerProperties.class)
-public class HealthConfiguration {
+public class ServerConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ConsumerHttpServer consumerHttpServer(CommonConsumerProperties commonConsumerProperties,
                                                  ConsumerMonitor monitor,
-                                                 ObjectMapper mapper) throws IOException {
-        return new ConsumerHttpServer(commonConsumerProperties.getHealthCheckPort(), monitor, mapper);
+                                                 ObjectMapper mapper,
+                                                 PrometheusMeterRegistry meterRegistry) throws IOException {
+        return new ConsumerHttpServer(commonConsumerProperties.getHealthCheckPort(), monitor, mapper, meterRegistry);
     }
 
     @Bean

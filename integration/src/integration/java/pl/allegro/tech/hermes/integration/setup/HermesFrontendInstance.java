@@ -1,17 +1,17 @@
 package pl.allegro.tech.hermes.integration.setup;
 
+import jakarta.ws.rs.core.Response;
 import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integration.env.FrontendStarter;
 import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import javax.ws.rs.core.Response;
-
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED;
 
@@ -83,6 +83,16 @@ public class HermesFrontendInstance {
 
         public Starter kafkaConnectionString(String connectionString) {
             frontend.overrideProperty(FrontendConfigurationProperties.KAFKA_BROKER_LIST, connectionString);
+            return this;
+        }
+
+        public Starter kafkaCheckEnabled() {
+            frontend.overrideProperty(FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED, true);
+            return this;
+        }
+
+        public Starter kafkaCheckDisabled() {
+            frontend.overrideProperty(FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED, false);
             return this;
         }
 

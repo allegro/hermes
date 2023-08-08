@@ -122,7 +122,7 @@ public class HttpClientsWorkloadReporter {
 
     private final Function<HttpClient, Integer> getHttp2PendingConnectionsCount = http2Client ->
             getHttp2ConnectionPool(http2Client)
-                    .map(MultiplexConnectionPool::getPendingCount)
+                    .map(MultiplexConnectionPool::getPendingConnectionCount)
                     .mapToInt(i -> i)
                     .sum();
 

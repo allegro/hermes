@@ -12,8 +12,12 @@
 
 <script setup lang="ts">
   import { RouterView } from 'vue-router';
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import ConsoleFooter from '@/components/console-footer/ConsoleFooter.vue';
   import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
+
+  const configStore = useAppConfigStore();
+  configStore.loadConfig();
 </script>
 
 <style scoped lang="scss">

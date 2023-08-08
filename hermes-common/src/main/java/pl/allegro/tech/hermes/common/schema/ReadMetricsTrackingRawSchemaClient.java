@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.common.schema;
 
-import com.codahale.metrics.Timer;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
@@ -16,13 +16,13 @@ import java.util.function.Supplier;
 
 public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     private final RawSchemaClient rawSchemaClient;
-    private final HermesMetrics hermesMetrics;
+    private final MetricsFacade metricsFacade;
 
     public ReadMetricsTrackingRawSchemaClient(
             RawSchemaClient rawSchemaClient,
-            HermesMetrics hermesMetrics) {
+            MetricsFacade metricsFacade) {
         this.rawSchemaClient = rawSchemaClient;
-        this.hermesMetrics = hermesMetrics;
+        this.metricsFacade = metricsFacade;
     }
 
     @Override
@@ -61,21 +61,16 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     }
 
     private <T> T timedSchema(Supplier<? extends T> callable) {
-        return timed(callable, Timers.GET_SCHEMA_LATENCY);
+        return timed(callable, metricsFacade.schemaClient().schemaTimer());
     }
 
     private <T> T timedVersions(Supplier<? extends T> callable) {
-        return timed(callable, Timers.GET_SCHEMA_VERSIONS_LATENCY);
+        return timed(callable, metricsFacade.schemaClient().versionsTimer());
     }
 
-    private <T> T timed(Supplier<? extends T> callable, String schemaTimer) {
-        try (Timer.Context time = startLatencyTimer(schemaTimer)) {
+    private <T> T timed(Supplier<? extends T> callable, HermesTimer timer) {
+        try (HermesTimerContext time = timer.time()) {
             return callable.get();
         }
     }
-
-    private Timer.Context startLatencyTimer(String schemaReadLatency) {
-        return hermesMetrics.schemaTimer(schemaReadLatency).time();
-    }
-
 }

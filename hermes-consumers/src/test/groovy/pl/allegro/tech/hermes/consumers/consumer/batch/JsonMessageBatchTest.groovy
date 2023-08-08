@@ -114,6 +114,31 @@ class JsonMessageBatchTest extends Specification {
         !jsonMessageBatch.isReadyForDelivery()
     }
 
+    def "should return size and capacity based on the number of bytes appended and allocated"() {
+        given:
+        JsonMessageBatch message = new JsonMessageBatch(
+                BATCH_ID,
+                allocateDirect(LARGE_BATCH_VOLUME),
+                batchSubscription(LARGE_BATCH_SIZE, 10),
+                systemDefaultZone()
+        )
+        byte [] content = [1, 2, 3]
+
+        when:
+        message.append(content, Stub(MessageMetadata))
+
+        then:
+        message.getCapacity() == LARGE_BATCH_VOLUME
+        message.getSize() == content.length + 1 // an extra byte is added by 'append' to indicate the start of the array
+
+        when:
+        message.close()
+
+        then:
+        message.getCapacity() == LARGE_BATCH_VOLUME
+        message.getSize() == content.length + 2 // an extra byte is added by 'close' to indicate the end of the array
+    }
+
     private static def batchSubscription(int batchSize, int batchTime) {
         def batchSubscriptionPolicy = batchSubscriptionPolicy()
                 .withBatchSize(batchSize)

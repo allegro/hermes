@@ -17,8 +17,10 @@
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
   const route = useRoute();
-  const params = route.params as Record<string, string>;
-  const { groupId, subscriptionId, topicId } = params;
+  const { groupId, subscriptionId, topicId } = route.params as Record<
+    string,
+    string
+  >;
 
   const { t } = useI18n();
 

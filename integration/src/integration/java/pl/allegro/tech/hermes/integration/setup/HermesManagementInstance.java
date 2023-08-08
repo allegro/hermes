@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.slf4j.Logger;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
@@ -17,9 +18,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesManagementInstance {
+
+    private static final Logger logger = getLogger(HermesManagementInstance.class);
+
     private final HermesAPIOperations operations;
 
     private HermesManagementInstance(HermesAPIOperations operations) {
@@ -79,31 +84,16 @@ public class HermesManagementInstance {
         public HermesManagementInstance start() {
             try {
                 startManagement();
-                List<CuratorFramework> clusters = startSeparateZookeeperClientPerCluster();
-                waitUntilStructureInZookeeperIsCreated(clusters);
-                closeZookeeperClustersConnections(clusters);
                 HermesAPIOperations operations = setupOperations(startZookeeperClient());
+                waitUntilManagementIsInReadWriteMode(operations);
                 return new HermesManagementInstance(operations);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private void waitUntilStructureInZookeeperIsCreated(List<CuratorFramework> zookeeperClusters) {
-            waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> allZookeeperClustersHaveStructureCreated(zookeeperClusters));
-        }
-
-        private boolean allZookeeperClustersHaveStructureCreated(List<CuratorFramework> zookeeperClusters) throws Exception {
-            for (CuratorFramework zookeeper : zookeeperClusters) {
-                if (zookeeper.checkExists().forPath("/hermes/groups") == null) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private void closeZookeeperClustersConnections(List<CuratorFramework> zookeeperClusters) {
-            zookeeperClusters.forEach(CuratorFramework::close);
+        private void waitUntilManagementIsInReadWriteMode(HermesAPIOperations operations) {
+            waitAtMost(adjust(240), TimeUnit.SECONDS).until(operations::isInReadWriteMode);
         }
 
         private void startManagement() {
@@ -133,7 +123,7 @@ public class HermesManagementInstance {
         }
 
         private HermesAPIOperations setupOperations(CuratorFramework zookeeper) {
-            BrokerOperations brokerOperations = new BrokerOperations(ImmutableMap.of());
+            BrokerOperations brokerOperations = new BrokerOperations(ImmutableMap.of(), "");
             String managementUrl = "http://localhost:" + port + "/";
             HermesEndpoints management = new HermesEndpoints(managementUrl, managementUrl);
             Waiter wait = new Waiter(management, zookeeper, brokerOperations, null, KAFKA_NAMESPACE);

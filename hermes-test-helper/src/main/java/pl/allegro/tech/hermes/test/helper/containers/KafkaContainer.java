@@ -101,7 +101,7 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     String getAddressForExternalClients() {
-        return String.format("%s:%s", getContainerIpAddress(), advertisedPort);
+        return String.format("%s:%s", getHost(), advertisedPort);
     }
 
     String getAddressForInternalClients() {

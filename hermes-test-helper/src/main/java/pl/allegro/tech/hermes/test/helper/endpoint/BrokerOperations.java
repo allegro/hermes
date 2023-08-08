@@ -1,8 +1,19 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.ListOffsetsResult;
+import org.apache.kafka.clients.admin.ListOffsetsResult.ListOffsetsResultInfo;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.admin.OffsetSpec;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
@@ -32,10 +43,9 @@ public class BrokerOperations {
     private final Map<String, AdminClient> adminClients;
     private final KafkaNamesMapper kafkaNamesMapper;
 
-    public BrokerOperations(Map<String, String> kafkaConnection) {
+    public BrokerOperations(Map<String, String> kafkaConnection, String namespace) {
         adminClients = kafkaConnection.entrySet().stream()
                 .collect(toMap(Map.Entry::getKey, e -> brokerAdminClient(e.getValue())));
-        String namespace = "";
         String namespaceSeparator = "_";
         kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(namespace, namespaceSeparator);
     }
@@ -46,6 +56,39 @@ public class BrokerOperations {
 
     public void createTopic(String topicName, String brokerName) {
         createTopic(topicName, adminClients.get(brokerName));
+    }
+
+    public List<ConsumerGroupOffset> getTopicPartitionsOffsets(SubscriptionName subscriptionName) {
+        ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscriptionName);
+        return adminClients.values().stream()
+                .flatMap(client -> {
+                    Map<TopicPartition, OffsetAndMetadata> currentOffsets = getTopicCurrentOffsets(consumerGroupId, client);
+                    Map<TopicPartition, ListOffsetsResultInfo> endOffsets = getEndOffsets(client, new ArrayList<>(currentOffsets.keySet()));
+                    return currentOffsets.keySet()
+                            .stream()
+                            .map(partition -> new ConsumerGroupOffset(
+                                    currentOffsets.get(partition).offset(),
+                                    endOffsets.get(partition).offset())
+                            );
+                }).collect(Collectors.toList());
+    }
+
+    private Map<TopicPartition, OffsetAndMetadata> getTopicCurrentOffsets(ConsumerGroupId consumerGroupId, AdminClient client) {
+        try {
+            return client.listConsumerGroupOffsets(consumerGroupId.asString()).partitionsToOffsetAndMetadata().get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<TopicPartition, ListOffsetsResultInfo> getEndOffsets(AdminClient client, List<TopicPartition> partitions) {
+        try {
+            ListOffsetsResult listOffsetsResult = client.listOffsets(
+                    partitions.stream().collect(toMap(Function.identity(), p -> OffsetSpec.latest())));
+            return listOffsetsResult.all().get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void createTopic(String topicName, AdminClient adminClient) {
@@ -89,5 +132,19 @@ public class BrokerOperations {
         props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, 10000);
         return AdminClient.create(props);
+    }
+
+    public static class ConsumerGroupOffset {
+        private final long currentOffset;
+        private final long endOffset;
+
+        ConsumerGroupOffset(long currentOffset, long endOffset) {
+            this.currentOffset = currentOffset;
+            this.endOffset = endOffset;
+        }
+
+        public boolean movedToEnd() {
+            return currentOffset == endOffset;
+        }
     }
 }

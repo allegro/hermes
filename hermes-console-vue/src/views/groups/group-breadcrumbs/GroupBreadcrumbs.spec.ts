@@ -1,3 +1,4 @@
+
 import { render } from '@/utils/test-utils';
 import GroupBreadcrumbs from '@/views/groups/group-breadcrumbs/GroupBreadcrumbs.vue';
 

@@ -45,6 +45,7 @@ management:
   consumer-groups:
     create-manually: true
 
+
 audit.enabled: false
 
 topicOwnerCache:

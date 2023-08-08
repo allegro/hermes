@@ -28,9 +28,9 @@ public class SslContextFactoryProvider {
         this.sslContextParams = sslContextParams;
     }
 
-    public Optional<org.eclipse.jetty.util.ssl.SslContextFactory> provideSslContextFactory() {
+    public Optional<org.eclipse.jetty.util.ssl.SslContextFactory.Client> provideSslContextFactory() {
         if (sslContextParams.isEnabled()) {
-            org.eclipse.jetty.util.ssl.SslContextFactory sslCtx = new org.eclipse.jetty.util.ssl.SslContextFactory();
+            org.eclipse.jetty.util.ssl.SslContextFactory.Client sslCtx = new org.eclipse.jetty.util.ssl.SslContextFactory.Client();
             sslCtx.setEndpointIdentificationAlgorithm("HTTPS");
             sslCtx.setSslContext(sslContextFactory().create().getSslContext());
             return Optional.of(sslCtx);

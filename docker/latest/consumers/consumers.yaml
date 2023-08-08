@@ -11,7 +11,8 @@ consumer:
   graphite:
     host: "graphite"
   metrics:
-    graphiteReporterEnabled: true
+    metric-registry:
+      graphiteReporterEnabled: true
   workload:
     consumerPerSubscription: 1
   schema:

@@ -26,6 +26,6 @@ public class ConfluentSchemaRegistryContainer extends GenericContainer<Confluent
     }
 
     public String getUrl() {
-        return format("http://%s:%d", getContainerIpAddress(), getMappedPort(SCHEMA_REGISTRY_PORT));
+        return format("http://%s:%d", getHost(), getMappedPort(SCHEMA_REGISTRY_PORT));
     }
 }

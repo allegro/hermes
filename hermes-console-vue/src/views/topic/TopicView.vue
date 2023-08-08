@@ -1,4 +1,5 @@
 <script async setup lang="ts">
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
@@ -6,6 +7,7 @@
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
+  import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
   import PropertiesList from '@/views/topic/properties-list/PropertiesList.vue';
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
@@ -25,7 +27,9 @@
     loading,
     error,
     subscriptions,
+    offlineClientsSource,
     fetchTopic,
+    fetchOfflineClientsSource,
   } = useTopic(topicName);
   fetchTopic();
 
@@ -47,6 +51,10 @@
       href: `/groups/${groupId}/topics/${topicName}`,
     },
   ];
+  const configStore = useAppConfigStore();
+  if (configStore.appConfig?.topic.offlineClientsEnabled) {
+    fetchOfflineClientsSource();
+  }
 </script>
 
 <template>
@@ -72,13 +80,25 @@
 
     <schema-panel v-if="topic" :schema="topic.schema" />
 
-    <messages-preview v-if="messages" :messages="messages" />
+    <messages-preview
+      v-if="messages && configStore.appConfig?.topic.messagePreviewEnabled"
+      :messages="messages"
+    />
 
     <subscriptions-list
       v-if="subscriptions"
       :groupId="groupId"
       :topic-name="topicName"
       :subscriptions="subscriptions"
+    />
+
+    <offline-clients
+      v-if="
+        configStore.appConfig?.topic.offlineClientsEnabled &&
+        offlineClientsSource?.source &&
+        topic.offlineStorage.enabled
+      "
+      :source="offlineClientsSource.source"
     />
   </v-container>
 </template>

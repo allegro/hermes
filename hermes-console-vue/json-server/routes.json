@@ -6,6 +6,7 @@
   "/topics": "/topicNames",
   "/topics/:id/metrics": "/topicsMetrics/:id",
   "/topics/:id/preview": "/topicPreview",
+  "/topics/:id/offline-clients-source": "/offlineClientsSource",
   "/topics/:id/subscriptions": "/topicSubscriptions",
   "/topics/:topicName/subscriptions/:id": "/subscriptions/:id",
   "/topics/:topicName/subscriptions/:id/consumer-groups": "/consumerGroups",

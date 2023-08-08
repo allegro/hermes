@@ -6,7 +6,6 @@ import org.javers.core.diff.Diff;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
-import pl.allegro.tech.hermes.api.Anonymizable;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 

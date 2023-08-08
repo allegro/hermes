@@ -23,6 +23,9 @@
     "pl.allegro.public.admin.AdminOfferActionEvent",
     "pl.allegro.public.admin.AdminOrderActionEvent"
   ],
+  "offlineClientsSource": {
+    "source": "https://datastudio.google.com/embed/u/0/reporting/1kmqVF9wR_zF_RGD4j9QykxhWCKz6KRTs/page/s1iRB?params=%7B%22df17%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580pl_allegro_transaction_order_purchase_paymentstatuschanged%22,%22df18%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580BQ%22,%22df16%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580sc-9620-datahub-prod.datahub%22%7D"
+  },
   "inconsistentTopics": [
     "pl.allegro.group.Topic1_avro",
     "pl.allegro.group.Topic2_avro",
@@ -430,5 +433,115 @@
       "offset": 217294395,
       "cluster": "kafka-cluster"
     }
-  ]
+  ],
+  "console": {
+    "console": {
+      "title": "hermes console",
+      "footer": "",
+      "environmentName": "LOCAL",
+      "criticalEnvironment": false
+    },
+    "dashboard": {
+      "metrics": "http://localhost:8082",
+      "docs": "http://hermes-pubsub.rtfd.org"
+    },
+    "hermes": {
+      "discovery": {
+        "type": "simple",
+        "simple": {
+          "url": ""
+        }
+      }
+    },
+    "metrics": {
+      "type": "graphite",
+      "graphite": {
+        "url": "localhost:8082",
+        "prefix": "hermes"
+      }
+    },
+    "auth": {
+      "oauth": {
+        "enabled": false,
+        "url": "localhost:8092/auth",
+        "clientId": "hermes",
+        "scope": "hermes"
+      },
+      "headers": {
+        "enabled": false,
+        "adminHeader": "Hermes-Admin-Password"
+      }
+    },
+    "owner": {
+      "sources": [{
+        "name": "Crowd",
+        "placeholder": "Crowd group (or groups separated by ',')"
+      }]
+    },
+    "topic": {
+      "messagePreviewEnabled": true,
+      "offlineClientsEnabled": true,
+      "authEnabled": true,
+      "defaults": {
+        "ack": "LEADER",
+        "contentType": "JSON",
+        "retentionTime": {
+          "duration": 1,
+          "retentionUnit": "DAYS"
+        },
+        "offlineStorage": {
+          "enabled": false,
+          "retentionTime": {
+            "duration": 1,
+            "retentionUnit": "DAYS"
+          }
+        }
+      },
+      "buttonsExtension": "",
+      "removeSchema": false,
+      "schemaIdAwareSerializationEnabled": false,
+      "avroContentTypeMetadataRequired": true,
+      "contentTypes": [{
+        "value": "AVRO",
+        "label": "AVRO"
+      }, {
+        "value": "JSON",
+        "label": "JSON"
+      }],
+      "readOnlyModeEnabled": false,
+      "allowedTopicLabels": [],
+      "retentionUnits": [{
+        "value": "DAYS",
+        "label": "DAYS"
+      }],
+      "offlineRetransmissionEnabled": false,
+      "offlineRetransmissionDescription": "Offline retransmission"
+    },
+    "subscription": {
+      "endpointAddressResolverMetadata": {},
+      "showHeadersFilter": false,
+      "showFixedHeaders": false,
+      "requestTimeoutWarningThreshold": 1001,
+      "defaults": {
+        "subscriptionPolicy": {
+          "messageTtl": 3600,
+          "requestTimeout": 1000
+        },
+        "deliveryType": "SERIAL"
+      },
+      "deliveryTypes": [{
+        "value": "SERIAL",
+        "label": "SERIAL"
+      }, {
+        "value": "BATCH",
+        "label": "BATCH"
+      }]
+    },
+    "consistency": {
+      "maxGroupBatchSize": 10
+    },
+    "group": {
+      "nonAdminCreationEnabled": false
+    }
+  }
 }

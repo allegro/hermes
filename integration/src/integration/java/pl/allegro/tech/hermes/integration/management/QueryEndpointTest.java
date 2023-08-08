@@ -314,7 +314,7 @@ public class QueryEndpointTest extends IntegrationTest {
     private <T> void assertListMatches(List<T> elements, List<T> found, List<Integer> positions) {
         found.removeIf(o -> !elements.contains(o));
         List<T> expected = positions.stream().map(i -> elements.get(i - 1)).collect(Collectors.toList());
-        assertThat(found).containsOnlyElementsOf(expected);
+        assertThat(found).isSubsetOf(expected);
     }
 
     private void assertTopicMetricsMatchesToNames(List<TopicNameWithMetrics> found, List<String> expectedQualifiedNames) {

@@ -9,6 +9,7 @@ public class FrontendConfigurationProperties {
     public static String FRONTEND_MESSAGE_PREVIEW_ENABLED = "frontend.message.preview.enabled";
     public static String FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD = "frontend.message.preview.logPersistPeriod";
     public static String FRONTEND_READINESS_CHECK_ENABLED = "frontend.readiness.check.enabled";
+    public static String FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED = "frontend.readiness.check.kafkaCheckEnabled";
     public static String FRONTEND_READINESS_CHECK_INTERVAL_SECONDS = "frontend.readiness.check.interval";
     public static String FRONTEND_AUTHENTICATION_MODE = "frontend.handlers.authentication.mode";
     public static String FRONTEND_AUTHENTICATION_ENABLED = "frontend.handlers.authentication.enabled";
