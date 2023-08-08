@@ -1,68 +1,86 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
+import io.micrometer.core.instrument.Counter;
 import java.util.Optional;
+import pl.allegro.tech.hermes.api.TopicName;
 
 class CounterMatcher {
 
-    private static final int TOPIC_METRICS_PARTS = 3;
-    private static final int SUBSCRIPTION_METRIC_PARTS = 4;
+    private static final String GROUP_TAG_NAME = "group";
+    private static final String TOPIC_TAG_NAME = "topic";
+    private static final String SUBSCRIPTION_TAG_NAME = "subscription";
 
-    private final String counterName;
-    private String topicName;
+    private final Counter counter;
+    private TopicName topicName;
+    private long value;
     private Optional<String> subscription;
-    private int metricParts;
 
-    public CounterMatcher(String counterName) {
-        this.counterName = counterName;
-        parseCounter(counterName);
+    public CounterMatcher(Counter counter) {
+        this.counter = counter;
+        parseCounter(this.counter);
     }
 
-    private void parseCounter(String counterName) {
-        String[] splitted = counterName.split("\\.");
-        metricParts = splitted.length;
+    private void parseCounter(Counter counter) {
         if (isTopicPublished() || isTopicThroughput()) {
-            topicName = splitted[splitted.length - 2] + "." + splitted[splitted.length - 1];
+            topicName = new TopicName(counter.getId().getTag(GROUP_TAG_NAME), counter.getId().getTag(TOPIC_TAG_NAME));
             subscription = Optional.empty();
         } else if (
                 isSubscriptionDelivered()
                         || isSubscriptionThroughput()
                         || isSubscriptionDiscarded()
                         || isSubscriptionFiltered()
-                ) {
-            subscription = Optional.of(splitted[splitted.length - 1]);
-            topicName = splitted[splitted.length - 3] + "." + splitted[splitted.length - 2];
+        ) {
+            topicName = new TopicName(counter.getId().getTag(GROUP_TAG_NAME), counter.getId().getTag(TOPIC_TAG_NAME));
+            subscription = Optional.ofNullable(counter.getId().getTag(SUBSCRIPTION_TAG_NAME));
         }
+        value = (long) counter.count();
     }
 
     public boolean isTopicPublished() {
-        return counterName.startsWith("published.");
+        return isTopicCounter() && nameStartsWith("topic.published"); // TODO extract it from Producer static variable
     }
 
     public boolean isTopicThroughput() {
-        return metricParts == TOPIC_METRICS_PARTS && counterName.startsWith("throughput.");
+        return isTopicCounter() && nameStartsWith("topic.throughput");
     }
 
     public boolean isSubscriptionThroughput() {
-        return metricParts == SUBSCRIPTION_METRIC_PARTS && counterName.startsWith("throughput.");
+        return isSubscriptionCounter() && nameStartsWith("subscription.throughput");
     }
 
     public boolean isSubscriptionDelivered() {
-        return counterName.startsWith("delivered.");
+        return isSubscriptionCounter() && nameStartsWith("subscription.delivered");
     }
 
     public boolean isSubscriptionDiscarded() {
-        return counterName.startsWith("discarded.");
+        return isSubscriptionCounter() && nameStartsWith("subscription.discarded");
     }
 
     public boolean isSubscriptionFiltered() {
-        return counterName.startsWith("filtered.");
+        return isSubscriptionCounter() && nameStartsWith("subscription.filtered");
     }
 
-    public String getTopicName() {
+    public TopicName getTopicName() {
         return topicName;
     }
 
     public String getSubscriptionName() {
         return subscription.orElse("");
+    }
+
+    public long getValue() {
+        return value;
+    }
+
+    private boolean isTopicCounter() {
+        return counter.getId().getTag(TOPIC_TAG_NAME) != null;
+    }
+
+    private boolean isSubscriptionCounter() {
+        return counter.getId().getTag(SUBSCRIPTION_TAG_NAME) != null;
+    }
+
+    private boolean nameStartsWith(String name) {
+        return counter.getId().getName().startsWith(name);
     }
 }

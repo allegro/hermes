@@ -31,72 +31,72 @@ public class TopicMetrics {
 
     public HermesTimer ackAllGlobalLatency() {
         return HermesTimer.from(
-                meterRegistry.timer("ack-all.global-latency"),
+                meterRegistry.timer("topic.ack-all.global-latency"),
                 hermesMetrics.timer(Timers.ACK_ALL_LATENCY)
         );
     }
 
     public HermesTimer ackAllTopicLatency(TopicName topic) {
         return HermesTimer.from(
-                micrometerTimer("ack-all.topic-latency", topic),
+                micrometerTimer("topic.ack-all.latency", topic),
                 hermesMetrics.timer(Timers.ACK_ALL_TOPIC_LATENCY, topic));
     }
 
     public HermesTimer ackAllBrokerLatency() {
         return HermesTimer.from(
-                meterRegistry.timer("ack-all.broker-latency"),
+                meterRegistry.timer("topic.ack-all.broker-latency"),
                 hermesMetrics.timer(Timers.ACK_ALL_BROKER_LATENCY));
     }
 
     public HermesTimer ackLeaderGlobalLatency() {
         return HermesTimer.from(
-                meterRegistry.timer("ack-leader.global-latency"),
+                meterRegistry.timer("topic.ack-leader.global-latency"),
                 hermesMetrics.timer(Timers.ACK_LEADER_LATENCY));
     }
 
     public HermesTimer ackLeaderTopicLatency(TopicName topic) {
         return HermesTimer.from(
-                micrometerTimer("ack-leader.topic-latency", topic),
+                micrometerTimer("topic.ack-leader.latency", topic),
                 hermesMetrics.timer(Timers.ACK_LEADER_TOPIC_LATENCY, topic));
     }
 
     public HermesTimer ackLeaderBrokerLatency() {
         return HermesTimer.from(
-                meterRegistry.timer("ack-leader.broker-latency"),
+                meterRegistry.timer("topic.ack-leader.broker-latency"),
                 hermesMetrics.timer(Timers.ACK_LEADER_BROKER_LATENCY));
     }
 
     public MeterBackedHermesCounter topicThroughputBytes(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter("topic-throughput", topicName),
+                micrometerCounter("topic.throughput", topicName),
                 hermesMetrics.meter(TOPIC_THROUGHPUT_BYTES, topicName)
         );
     }
 
     public MeterBackedHermesCounter topicGlobalThroughputBytes() {
         return HermesCounters.from(
-                meterRegistry.counter("topic-global-throughput"),
+                meterRegistry.counter("topic.global-throughput"),
                 hermesMetrics.meter(THROUGHPUT_BYTES)
         );
     }
 
     public HermesCounter topicPublished(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter("published", topicName),
+                micrometerCounter("topic.published", topicName),
                 hermesMetrics.counter(Counters.PUBLISHED, topicName)
         );
     }
 
     public HermesCounter topicGlobalRequestCounter() {
         return HermesCounters.from(
-                meterRegistry.counter("topic-global-requests"),
+                meterRegistry.counter("topic.global-requests"),
                 hermesMetrics.meter(METER)
         );
     }
 
     public HermesCounter topicRequestCounter(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter("topic-requests", topicName),
+                micrometerCounter("topic.requests", topicName),
                 hermesMetrics.meter(TOPIC_METER)
         );
     }
@@ -159,5 +159,9 @@ public class TopicMetrics {
                 Tag.of("group", topicName.getGroupName()),
                 Tag.of("topic", topicName.getName())
         );
+    }
+
+    public static class TopicMetricsNames {
+
     }
 }

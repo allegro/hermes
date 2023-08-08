@@ -39,7 +39,7 @@ public class SubscriptionMetrics {
 
     public SubscriptionHermesCounter throughputInBytes(SubscriptionName subscription) {
         return SubscriptionHermesCounter.from(
-                micrometerCounter("subscription-throughput", subscription),
+                micrometerCounter("subscription.throughput", subscription),
                 hermesMetrics.meter(SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()),
                 SUBSCRIPTION_THROUGHPUT_BYTES, subscription);
     }
