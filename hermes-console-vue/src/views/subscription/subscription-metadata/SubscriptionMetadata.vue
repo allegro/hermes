@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { State } from '@/api/subscription';
-  import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Subscription } from '@/api/subscription';
@@ -11,14 +10,13 @@
   }>();
 
   const route = useRoute();
-  const { t } = useI18n();
 </script>
 
 <template>
   <v-card density="compact">
     <v-card-item>
       <p class="text-overline">
-        {{ t('subscription.subscriptionMetadata.subscription') }}
+        {{ $t('subscription.subscriptionMetadata.subscription') }}
       </p>
       <p class="text-h4 font-weight-bold">
         {{ props.subscription.name }}
@@ -43,7 +41,7 @@
     <v-card-actions class="d-flex subscription-header__actions">
       <div class="d-flex flex-row">
         <v-btn prepend-icon="mdi-account-supervisor">
-          {{ t('subscription.subscriptionMetadata.owners') }} ({{
+          {{ $t('subscription.subscriptionMetadata.owners') }} ({{
             props.subscription.owner.source
           }})
         </v-btn>
@@ -51,7 +49,7 @@
       <div class="d-flex flex-row">
         <tooltip-icon
           v-if="!props.authorized"
-          :content="t('subscription.subscriptionMetadata.unauthorizedTooltip')"
+          :content="$t('subscription.subscriptionMetadata.unauthorizedTooltip')"
         />
         <v-btn
           v-if="props.authorized"
@@ -59,7 +57,7 @@
           color="green"
           prepend-icon="mdi-doctor"
         >
-          {{ t('subscription.subscriptionMetadata.actions.diagnostics') }}
+          {{ $t('subscription.subscriptionMetadata.actions.diagnostics') }}
         </v-btn>
         <v-btn
           v-if="props.subscription.state === State.ACTIVE"
@@ -67,7 +65,7 @@
           color="orange"
           prepend-icon="mdi-publish-off"
         >
-          {{ t('subscription.subscriptionMetadata.actions.suspend') }}
+          {{ $t('subscription.subscriptionMetadata.actions.suspend') }}
         </v-btn>
         <v-btn
           v-if="props.subscription.state === State.SUSPENDED"
@@ -75,20 +73,20 @@
           color="green"
           prepend-icon="mdi-publish"
         >
-          {{ t('subscription.subscriptionMetadata.actions.activate') }}
+          {{ $t('subscription.subscriptionMetadata.actions.activate') }}
         </v-btn>
         <v-btn :disabled="!props.authorized" prepend-icon="mdi-pencil">
-          {{ t('subscription.subscriptionMetadata.actions.edit') }}
+          {{ $t('subscription.subscriptionMetadata.actions.edit') }}
         </v-btn>
         <v-btn :disabled="!props.authorized" prepend-icon="mdi-content-copy">
-          {{ t('subscription.subscriptionMetadata.actions.clone') }}
+          {{ $t('subscription.subscriptionMetadata.actions.clone') }}
         </v-btn>
         <v-btn
           :disabled="!props.authorized"
           color="red"
           prepend-icon="mdi-delete"
         >
-          {{ t('subscription.subscriptionMetadata.actions.remove') }}
+          {{ $t('subscription.subscriptionMetadata.actions.remove') }}
         </v-btn>
       </div>
     </v-card-actions>

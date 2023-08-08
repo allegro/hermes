@@ -15,6 +15,9 @@ export const render = (
   return renderTL(VApp, {
     global: {
       plugins: [testVuetify, testRouter],
+      mocks: {
+        $t: (key: string) => key,
+      },
     },
     slots: {
       default: h(TestComponent, options?.props),

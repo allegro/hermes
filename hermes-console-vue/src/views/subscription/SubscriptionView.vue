@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
-  import { useSubscription } from '@/composables/use-subscription/useSubscription';
+  import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
   import HeadersCard from '@/views/subscription/headers-card/HeadersCard.vue';
@@ -13,7 +13,6 @@
   import PropertiesCard from '@/views/subscription/properties-card/PropertiesCard.vue';
   import ServiceResponseMetrics from '@/views/subscription/service-response-metrics/ServiceResponseMetrics.vue';
   import ShowEventTrace from '@/views/subscription/show-event-trace/ShowEventTrace.vue';
-  import SubscriptionBreadcrumbs from '@/views/subscription/subscription-breadcrumbs/SubscriptionBreadcrumbs.vue';
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
@@ -34,21 +33,38 @@
   } = useSubscription(topicId, subscriptionId);
 
   const authorized = true;
+  const breadcrumbsItems = [
+    {
+      title: t('subscription.subscriptionBreadcrumbs.home'),
+      href: '/',
+    },
+    {
+      title: t('subscription.subscriptionBreadcrumbs.groups'),
+      href: '/groups',
+    },
+    {
+      title: groupId,
+      href: `/groups/${groupId}`,
+    },
+    {
+      title: topicId,
+      href: `/groups/${groupId}/topics/${topicId}`,
+    },
+    {
+      title: subscriptionId,
+    },
+  ];
 </script>
 
 <template>
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <subscription-breadcrumbs
-          :group-id="groupId"
-          :topic-id="topicId"
-          :subscription-id="subscriptionId"
-        />
+        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
-          :title="t('subscription.connectionError.title')"
+          :title="$t('subscription.connectionError.title')"
           :text="t('subscription.connectionError.text', { subscriptionId })"
           type="error"
         />
@@ -71,7 +87,7 @@
       </v-row>
 
       <v-row dense>
-        <v-col md="6">
+        <v-col md="6" class="d-flex flex-column row-gap-2">
           <metrics-card
             v-if="subscriptionMetrics"
             :subscription-metrics="subscriptionMetrics"

@@ -1,47 +1,45 @@
 <script setup lang="ts">
   import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
-  import { useI18n } from 'vue-i18n';
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
 
   const props = defineProps<{
     undeliveredMessages?: SentMessageTrace[];
   }>();
-
-  const undeliveredMessages = (props.undeliveredMessages ?? []).slice(0, 100);
-
-  const { t } = useI18n();
 </script>
 
 <template>
   <v-card class="mb-2">
     <template #title>
       <p class="font-weight-bold">
-        {{ t('subscription.undeliveredMessagesCard.title') }}
+        {{ $t('subscription.undeliveredMessagesCard.title') }}
       </p>
     </template>
     <v-table density="compact">
       <thead>
         <tr>
           <th class="text-left">
-            {{ t('subscription.undeliveredMessagesCard.index') }}
+            {{ $t('subscription.undeliveredMessagesCard.index') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.undeliveredMessagesCard.messageId') }}
+            {{ $t('subscription.undeliveredMessagesCard.messageId') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.undeliveredMessagesCard.status') }}
+            {{ $t('subscription.undeliveredMessagesCard.status') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.undeliveredMessagesCard.reason') }}
+            {{ $t('subscription.undeliveredMessagesCard.reason') }}
           </th>
           <th class="text-left">
-            {{ t('subscription.undeliveredMessagesCard.timestamp') }}
+            {{ $t('subscription.undeliveredMessagesCard.timestamp') }}
           </th>
           <th class="text-left"></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(message, index) in undeliveredMessages" :key="index">
+        <tr
+          v-for="(message, index) in props.undeliveredMessages.slice(0, 100)"
+          :key="index"
+        >
           <td>{{ index + 1 }}</td>
           <td>{{ message.messageId }}</td>
           <td>{{ message.status }}</td>

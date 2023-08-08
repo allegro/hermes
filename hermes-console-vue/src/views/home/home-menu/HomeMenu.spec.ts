@@ -6,6 +6,6 @@ describe('HomeMenu', () => {
     // when
     const { getByText } = render(HomeMenu);
     // then
-    expect(getByText(/menu/i)).toBeInTheDocument();
+    expect(getByText(/menu/i)).toBeVisible();
   });
 });

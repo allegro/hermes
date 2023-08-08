@@ -22,10 +22,10 @@ describe('HealthProblemsAlerts', () => {
       // then
       expect(
         getByText(`subscription.healthProblemsAlerts.${labelKey}.title`),
-      ).toBeInTheDocument();
+      ).toBeVisible();
       expect(
         getByText(`subscription.healthProblemsAlerts.${labelKey}.text`),
-      ).toBeInTheDocument();
+      ).toBeVisible();
     },
   );
 });

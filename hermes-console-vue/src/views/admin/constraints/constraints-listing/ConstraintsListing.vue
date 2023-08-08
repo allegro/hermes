@@ -23,8 +23,8 @@
     <v-table density="comfortable" hover>
       <thead>
         <tr>
-          <th>{{ t('constraints.listing.index') }}</th>
-          <th>{{ t('constraints.listing.name') }}</th>
+          <th>{{ $t('constraints.listing.index') }}</th>
+          <th>{{ $t('constraints.listing.name') }}</th>
           <th></th>
         </tr>
       </thead>
@@ -47,7 +47,7 @@
               density="comfortable"
               variant="flat"
             >
-              {{ t('constraints.listing.consumersNumberChip') }}
+              {{ $t('constraints.listing.consumersNumberChip') }}
               {{ value.consumersNumber }}
             </v-chip>
             <v-icon icon="mdi-chevron-right"></v-icon>
@@ -57,7 +57,7 @@
       <tbody v-else>
         <tr>
           <th colspan="3" class="text-center text-medium-emphasis">
-            {{ t('constraints.listing.noConstraints') }}
+            {{ $t('constraints.listing.noConstraints') }}
             <template v-if="filter">
               {{ t('constraints.listing.appliedFilter', { filter }) }}
             </template>

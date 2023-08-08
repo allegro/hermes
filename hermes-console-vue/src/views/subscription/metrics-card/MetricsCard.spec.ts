@@ -13,7 +13,7 @@ describe('MetricsCard', () => {
     const { getByText } = render(MetricsCard, { props });
 
     // then
-    expect(getByText('subscription.metricsCard.title')).toBeInTheDocument();
+    expect(getByText('subscription.metricsCard.title')).toBeVisible();
   });
 
   it('should render subscription delivery rate', () => {
@@ -24,7 +24,7 @@ describe('MetricsCard', () => {
     const deliveryRateRow = getByText(
       'subscription.metricsCard.deliveryRate',
     ).closest('tr')!;
-    expect(within(deliveryRateRow).getByText('0.00')).toBeInTheDocument();
+    expect(within(deliveryRateRow).getByText('0.00')).toBeVisible();
   });
 
   it('should render subscription delivered events count', () => {
@@ -35,7 +35,7 @@ describe('MetricsCard', () => {
     const deliveryRateRow = getByText(
       'subscription.metricsCard.delivered',
     ).closest('tr')!;
-    expect(within(deliveryRateRow).getByText('39,099')).toBeInTheDocument();
+    expect(within(deliveryRateRow).getByText('39,099')).toBeVisible();
   });
 
   it('should render subscription discarded events count', () => {
@@ -46,7 +46,7 @@ describe('MetricsCard', () => {
     const deliveryRateRow = getByText(
       'subscription.metricsCard.discarded',
     ).closest('tr')!;
-    expect(within(deliveryRateRow).getByText('2,137,086')).toBeInTheDocument();
+    expect(within(deliveryRateRow).getByText('2,137,086')).toBeVisible();
   });
 
   it('should render subscription lag', () => {
@@ -57,6 +57,6 @@ describe('MetricsCard', () => {
     const deliveryRateRow = getByText('subscription.metricsCard.lag').closest(
       'tr',
     )!;
-    expect(within(deliveryRateRow).getByText('9,055,513')).toBeInTheDocument();
+    expect(within(deliveryRateRow).getByText('9,055,513')).toBeVisible();
   });
 });

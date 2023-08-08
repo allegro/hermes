@@ -22,7 +22,7 @@ describe('ReadinessView', () => {
 
     // then
     expect(vi.mocked(useReadiness)).toHaveBeenCalledOnce();
-    expect(getByText('readiness.title')).toBeInTheDocument();
+    expect(getByText('readiness.title')).toBeVisible();
   });
 
   it('should show loading spinner when fetching Readiness data', () => {
@@ -37,7 +37,7 @@ describe('ReadinessView', () => {
 
     // then
     expect(vi.mocked(useReadiness)).toHaveBeenCalledOnce();
-    expect(queryByTestId('loading-spinner')).toBeInTheDocument();
+    expect(queryByTestId('loading-spinner')).toBeVisible();
   });
 
   it('should hide loading spinner when data fetch is complete', () => {
@@ -68,8 +68,8 @@ describe('ReadinessView', () => {
 
     // then
     expect(vi.mocked(useReadiness)).toHaveBeenCalledOnce();
-    expect(queryByText('readiness.connectionError.title')).toBeInTheDocument();
-    expect(queryByText('readiness.connectionError.text')).toBeInTheDocument();
+    expect(queryByText('readiness.connectionError.title')).toBeVisible();
+    expect(queryByText('readiness.connectionError.text')).toBeVisible();
   });
 
   it('should not show error message when data was fetch successfully', () => {

@@ -17,14 +17,12 @@ describe('ConstraintsListing', () => {
     Object.entries(dummyConstraints.topicConstraints).forEach(
       ([key, value], index) => {
         const constraintRow = getByText(key).closest('tr')!;
-        expect(
-          within(constraintRow).getByText(`${index + 1}`),
-        ).toBeInTheDocument();
+        expect(within(constraintRow).getByText(`${index + 1}`)).toBeVisible();
         expect(
           within(constraintRow).getByText(
             `constraints.listing.consumersNumberChip ${value.consumersNumber}`,
           ),
-        ).toBeInTheDocument();
+        ).toBeVisible();
       },
     );
   });
@@ -42,14 +40,12 @@ describe('ConstraintsListing', () => {
     Object.entries(dummyConstraints.subscriptionConstraints).forEach(
       ([key, value], index) => {
         const constraintRow = getByText(key).closest('tr')!;
-        expect(
-          within(constraintRow).getByText(`${index + 1}`),
-        ).toBeInTheDocument();
+        expect(within(constraintRow).getByText(`${index + 1}`)).toBeVisible();
         expect(
           within(constraintRow).getByText(
             `constraints.listing.consumersNumberChip ${value.consumersNumber}`,
           ),
-        ).toBeInTheDocument();
+        ).toBeVisible();
       },
     );
   });
@@ -70,7 +66,7 @@ describe('ConstraintsListing', () => {
     expect(constraints).toHaveLength(1);
     expect(
       within(constraints[0]!).getByText(/consumersNumberChip 2/),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should render constraints listing with a filter applied (no results)', () => {
@@ -85,10 +81,10 @@ describe('ConstraintsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]!).getByText(/index/)).toBeInTheDocument();
-    expect(within(rows[0]!).getByText(/name/)).toBeInTheDocument();
-    expect(within(rows[1]!).getByText(/noConstraints/)).toBeInTheDocument();
-    expect(within(rows[1]!).getByText(/appliedFilter/)).toBeInTheDocument();
+    expect(within(rows[0]!).getByText(/index/)).toBeVisible();
+    expect(within(rows[0]!).getByText(/name/)).toBeVisible();
+    expect(within(rows[1]!).getByText(/noConstraints/)).toBeVisible();
+    expect(within(rows[1]!).getByText(/appliedFilter/)).toBeVisible();
   });
 
   it('should render an empty constraint listing without filter applied', () => {
@@ -102,7 +98,7 @@ describe('ConstraintsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[1]!).getByText(/noConstraints/)).toBeInTheDocument();
+    expect(within(rows[1]!).getByText(/noConstraints/)).toBeVisible();
     expect(
       within(rows[1]!).queryByText(/appliedFilter/),
     ).not.toBeInTheDocument();

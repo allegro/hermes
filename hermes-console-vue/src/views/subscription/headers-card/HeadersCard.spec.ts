@@ -13,7 +13,7 @@ describe('HeadersCard', () => {
     const { getByText } = render(HeadersCard, { props });
 
     // then
-    expect(getByText('subscription.headersCard.title')).toBeInTheDocument();
+    expect(getByText('subscription.headersCard.title')).toBeVisible();
   });
 
   it('should render headers table', () => {
@@ -23,9 +23,9 @@ describe('HeadersCard', () => {
     // then
     props.headers.forEach(({ name, value }, index) => {
       const row = getByText(index + 1).closest('tr')!;
-      expect(within(row).getByText(index + 1)).toBeInTheDocument();
-      expect(within(row).getByText(name)).toBeInTheDocument();
-      expect(within(row).getByText(value)).toBeInTheDocument();
+      expect(within(row).getByText(index + 1)).toBeVisible();
+      expect(within(row).getByText(name)).toBeVisible();
+      expect(within(row).getByText(value)).toBeVisible();
     });
   });
 });

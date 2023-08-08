@@ -16,14 +16,12 @@ describe('ConstraintsListing', () => {
     // then
     dummyInconsistentTopics.forEach((topic, index) => {
       const inconsistentTopic = getByText(topic).closest('tr')!;
-      expect(
-        within(inconsistentTopic).getByText(`${index + 1}`),
-      ).toBeInTheDocument();
+      expect(within(inconsistentTopic).getByText(`${index + 1}`)).toBeVisible();
       expect(
         within(inconsistentTopic).getByText(
           'consistency.inconsistentTopics.actions.delete',
         ),
-      ).toBeInTheDocument();
+      ).toBeVisible();
     });
   });
 
@@ -45,7 +43,7 @@ describe('ConstraintsListing', () => {
       within(inconsistentTopic[0]!).getByText(
         'consistency.inconsistentTopics.actions.delete',
       ),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should render inconsistent topics listing with a filter applied (no results)', () => {
@@ -62,10 +60,10 @@ describe('ConstraintsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]!).getByText(/index/)).toBeInTheDocument();
-    expect(within(rows[0]!).getByText(/name/)).toBeInTheDocument();
-    expect(within(rows[1]!).getByText(/noTopics/)).toBeInTheDocument();
-    expect(within(rows[1]!).getByText(/appliedFilter/)).toBeInTheDocument();
+    expect(within(rows[0]!).getByText(/index/)).toBeVisible();
+    expect(within(rows[0]!).getByText(/name/)).toBeVisible();
+    expect(within(rows[1]!).getByText(/noTopics/)).toBeVisible();
+    expect(within(rows[1]!).getByText(/appliedFilter/)).toBeVisible();
   });
 
   it('should render an empty inconsistent topics listing without filter applied', () => {
@@ -81,7 +79,7 @@ describe('ConstraintsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[1]!).getByText(/noTopics/)).toBeInTheDocument();
+    expect(within(rows[1]!).getByText(/noTopics/)).toBeVisible();
     expect(
       within(rows[1]!).queryByText(/appliedFilter/),
     ).not.toBeInTheDocument();

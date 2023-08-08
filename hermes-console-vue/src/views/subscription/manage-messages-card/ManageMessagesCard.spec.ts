@@ -7,8 +7,6 @@ describe('ManageMessagesCard', () => {
     const { getByText } = render(ManageMessagesCard);
 
     // then
-    expect(
-      getByText('subscription.manageMessagesCard.title'),
-    ).toBeInTheDocument();
+    expect(getByText('subscription.manageMessagesCard.title')).toBeVisible();
   });
 });

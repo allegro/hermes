@@ -32,10 +32,10 @@ describe('SubscriptionMetadata', () => {
     // then
     expect(
       getByText('subscription.subscriptionMetadata.subscription'),
-    ).toBeInTheDocument();
-    expect(getByText('subscription-name')).toBeInTheDocument();
-    expect(getByText('service://subscription-name/dummy')).toBeInTheDocument();
-    expect(getByText('some description')).toBeInTheDocument();
+    ).toBeVisible();
+    expect(getByText('subscription-name')).toBeVisible();
+    expect(getByText('service://subscription-name/dummy')).toBeVisible();
+    expect(getByText('some description')).toBeVisible();
   });
 
   it('should render owners button', () => {
@@ -57,7 +57,7 @@ describe('SubscriptionMetadata', () => {
     // then
     expect(
       getByText('subscription.subscriptionMetadata.owners (some source)'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should render diagnostics button', () => {
@@ -79,7 +79,7 @@ describe('SubscriptionMetadata', () => {
     // then
     expect(
       getByText('subscription.subscriptionMetadata.actions.diagnostics'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
   it('should render "activate" button and hide "suspend" if subscription is suspended', () => {
@@ -98,7 +98,7 @@ describe('SubscriptionMetadata', () => {
     // then
     expect(
       queryByText('subscription.subscriptionMetadata.actions.activate'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
     expect(
       queryByText('subscription.subscriptionMetadata.actions.suspend'),
     ).not.toBeInTheDocument();
@@ -123,6 +123,6 @@ describe('SubscriptionMetadata', () => {
     ).not.toBeInTheDocument();
     expect(
       queryByText('subscription.subscriptionMetadata.actions.suspend'),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 });
