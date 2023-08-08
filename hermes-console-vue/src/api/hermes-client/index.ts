@@ -5,10 +5,10 @@ import type {
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';
+import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
 import type { Subscription } from '@/api/subscription';
-import type { OfflineClientsSource } from '@/api/offline-clients-source';
 
 export function fetchTopic(
   topicName: string,
@@ -48,7 +48,9 @@ export function fetchTopicSubscriptionDetails(
 }
 
 export function fetchAppConfiguration(): ResponsePromise<AppConfiguration> {
-  return axios.get<AppConfiguration>('/console');
+  return axios.get<AppConfiguration>('/console', {
+    headers: { accept: 'application/json' },
+  });
 }
 
 export function fetchOfflineClientsSource(

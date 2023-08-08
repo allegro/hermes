@@ -1,4 +1,5 @@
 <script async setup lang="ts">
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
@@ -6,12 +7,11 @@
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
+  import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
   import PropertiesList from '@/views/topic/properties-list/PropertiesList.vue';
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
-  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-  import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
 
   const { t } = useI18n();
 

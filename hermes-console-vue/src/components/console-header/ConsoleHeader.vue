@@ -1,8 +1,8 @@
 <script setup lang="ts">
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
-  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 
   const theme = useTheme();
   const configStore = useAppConfigStore();

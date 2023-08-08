@@ -1,23 +1,23 @@
 import {
+  fetchOfflineClientsSource as getOfflineClientsSource,
   fetchTopic as getTopic,
   fetchTopicMessagesPreview as getTopicMessagesPreview,
   fetchTopicMetrics as getTopicMetrics,
   fetchTopicOwner as getTopicOwner,
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
-  fetchOfflineClientsSource as getOfflineClientsSource,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+// import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
 import type {
   MessagePreview,
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';
+import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
-import type { OfflineClientsSource } from '@/api/offline-clients-source';
-import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
 
 export interface UseTopic {
   topic: Ref<TopicWithSchema | undefined>;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { useTheme } from 'vuetify';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import { useTheme } from 'vuetify';
 
   const adminViews: { title: string; to: string }[] = [
     { title: 'Consistency', to: '/consistency' },

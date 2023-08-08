@@ -1,7 +1,7 @@
 <script setup lang="ts">
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import type { Owner } from '@/api/owner';
   import type { TopicWithSchema } from '@/api/topic';
-  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 
   const props = defineProps<{
     topic: TopicWithSchema;
