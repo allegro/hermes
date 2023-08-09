@@ -11,7 +11,7 @@ describe('SchemaPanel', () => {
     // when
     const { getByText } = render(SchemaPanel, { props });
 
-    // when
+    // then
     expect(getByText('topicView.schema.title')).toBeVisible();
   });
 
@@ -23,7 +23,7 @@ describe('SchemaPanel', () => {
     await userEvent.click(getByText('topicView.schema.title'));
     const codeElement = container.querySelector('.v-code')!!;
 
-    // when
+    // then
     expect(codeElement).toBeVisible();
     expect(codeElement.textContent).toEqual(
       JSON.stringify(JSON.parse(props.schema), null, 2),

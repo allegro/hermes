@@ -1,7 +1,7 @@
 import type { AppConfiguration } from '@/api/app-configuration';
 
 export interface AppConfigStoreState {
-  appConfig: AppConfiguration | undefined;
+  appConfig?: AppConfiguration;
   loading: boolean;
   error: AppConfigStoreErrors;
 }
