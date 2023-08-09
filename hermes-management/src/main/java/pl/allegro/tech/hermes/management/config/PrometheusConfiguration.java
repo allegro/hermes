@@ -55,7 +55,9 @@ public class PrometheusConfiguration {
 
                 @Override
                 public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
-                    return DistributionStatisticConfig.builder().percentiles(parameters.getPercentiles().stream().mapToDouble(Double::doubleValue).toArray()).build().merge(config);
+                    return DistributionStatisticConfig.builder()
+                            .percentiles(parameters.getPercentiles().stream().mapToDouble(Double::doubleValue).toArray()
+                    ).build().merge(config);
                 }
             });
         }

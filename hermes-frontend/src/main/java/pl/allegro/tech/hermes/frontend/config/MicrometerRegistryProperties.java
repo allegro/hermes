@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 
+import java.time.Duration;
 import java.util.List;
 
 

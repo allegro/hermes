@@ -68,7 +68,8 @@ public class HttpClientsWorkloadReporter {
         metrics.consumerSender()
                 .registerHttp2SerialClientConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp2SerialClientConnections);
         metrics.consumerSender()
-                .registerHttp2SerialClientPendingConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp2SerialClientPendingConnections);
+                .registerHttp2SerialClientPendingConnectionsGauge(
+                        this, HttpClientsWorkloadReporter::getHttp2SerialClientPendingConnections);
     }
 
     int getQueuesSize() {

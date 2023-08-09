@@ -327,32 +327,50 @@ public class MessageContentWrapperTest {
                                int usingHeaderSchemaId,
                                int usingSchemaVersionTruncation) {
         final String basePath = "content.avro.deserialization";
-        assertThat(metricRegistryCounterValue(basePath + ".missed.schemaIdInPayload")).isEqualTo(missedSchemaIdInPayload);
-        assertThat(meterRegistryCounterValue(basePath + ".missing_schemaIdInPayload", Tags.empty())).isEqualTo(missedSchemaIdInPayload);
+        assertThat(metricRegistryCounterValue(basePath + ".missed.schemaIdInPayload"))
+                .isEqualTo(missedSchemaIdInPayload);
+        assertThat(meterRegistryCounterValue(basePath + ".missing_schemaIdInPayload", Tags.empty()))
+                .isEqualTo(missedSchemaIdInPayload);
 
-        assertThat(metricRegistryCounterValue(basePath + ".errors.payloadWithSchemaId")).isEqualTo(errorsForPayloadWithSchemaId);
-        assertThat(meterRegistryCounterValue(basePath + ".errors", Tags.of("deserialization_type", "payloadWithSchemaId"))).isEqualTo(errorsForPayloadWithSchemaId);
+        assertThat(metricRegistryCounterValue(basePath + ".errors.payloadWithSchemaId"))
+                .isEqualTo(errorsForPayloadWithSchemaId);
+        assertThat(meterRegistryCounterValue(basePath + ".errors", Tags.of("deserialization_type", "payloadWithSchemaId")))
+                .isEqualTo(errorsForPayloadWithSchemaId);
 
-        assertThat(metricRegistryCounterValue(basePath + ".errors.headerSchemaVersion")).isEqualTo(errorsForHeaderSchemaVersion);
-        assertThat(meterRegistryCounterValue(basePath + ".errors", Tags.of("deserialization_type", "headerSchemaVersion"))).isEqualTo(errorsForHeaderSchemaVersion);
+        assertThat(metricRegistryCounterValue(basePath + ".errors.headerSchemaVersion"))
+                .isEqualTo(errorsForHeaderSchemaVersion);
+        assertThat(meterRegistryCounterValue(basePath + ".errors", Tags.of("deserialization_type", "headerSchemaVersion")))
+                .isEqualTo(errorsForHeaderSchemaVersion);
 
-        assertThat(metricRegistryCounterValue(basePath + ".errors.headerSchemaId")).isEqualTo(errorsForHeaderSchemaId);
-        assertThat(meterRegistryCounterValue(basePath + ".errors", Tags.of("deserialization_type", "headerSchemaId"))).isEqualTo(errorsForHeaderSchemaId);
+        assertThat(metricRegistryCounterValue(basePath + ".errors.headerSchemaId"))
+                .isEqualTo(errorsForHeaderSchemaId);
+        assertThat(meterRegistryCounterValue(basePath + ".errors", Tags.of("deserialization_type", "headerSchemaId")))
+                .isEqualTo(errorsForHeaderSchemaId);
 
-        assertThat(metricRegistryCounterValue(basePath + ".errors.schemaVersionTruncation")).isEqualTo(errorsWithSchemaVersionTruncation);
-        assertThat(meterRegistryCounterValue(basePath + ".errors", Tags.of("deserialization_type", "schemaVersionTruncation"))).isEqualTo(errorsWithSchemaVersionTruncation);
+        assertThat(metricRegistryCounterValue(basePath + ".errors.schemaVersionTruncation"))
+                .isEqualTo(errorsWithSchemaVersionTruncation);
+        assertThat(meterRegistryCounterValue(basePath + ".errors", Tags.of("deserialization_type", "schemaVersionTruncation")))
+                .isEqualTo(errorsWithSchemaVersionTruncation);
 
-        assertThat(metricRegistryCounterValue(basePath + ".using.schemaIdAware")).isEqualTo(usingSchemaIdAware);
-        assertThat(meterRegistryCounterValue(basePath, Tags.of("deserialization_type", "payloadWithSchemaId"))).isEqualTo(usingSchemaIdAware);
+        assertThat(metricRegistryCounterValue(basePath + ".using.schemaIdAware"))
+                .isEqualTo(usingSchemaIdAware);
+        assertThat(meterRegistryCounterValue(basePath, Tags.of("deserialization_type", "payloadWithSchemaId")))
+                .isEqualTo(usingSchemaIdAware);
 
-        assertThat(metricRegistryCounterValue(basePath + ".using.headerSchemaVersion")).isEqualTo(usingHeaderSchemaVersion);
-        assertThat(meterRegistryCounterValue(basePath, Tags.of("deserialization_type", "headerSchemaVersion"))).isEqualTo(usingHeaderSchemaVersion);
+        assertThat(metricRegistryCounterValue(basePath + ".using.headerSchemaVersion"))
+                .isEqualTo(usingHeaderSchemaVersion);
+        assertThat(meterRegistryCounterValue(basePath, Tags.of("deserialization_type", "headerSchemaVersion")))
+                .isEqualTo(usingHeaderSchemaVersion);
 
-        assertThat(metricRegistryCounterValue(basePath + ".using.headerSchemaId")).isEqualTo(usingHeaderSchemaId);
-        assertThat(meterRegistryCounterValue(basePath, Tags.of("deserialization_type", "headerSchemaId"))).isEqualTo(usingHeaderSchemaId);
+        assertThat(metricRegistryCounterValue(basePath + ".using.headerSchemaId"))
+                .isEqualTo(usingHeaderSchemaId);
+        assertThat(meterRegistryCounterValue(basePath, Tags.of("deserialization_type", "headerSchemaId")))
+                .isEqualTo(usingHeaderSchemaId);
 
-        assertThat(metricRegistryCounterValue(basePath + ".using.schemaVersionTruncation")).isEqualTo(usingSchemaVersionTruncation);
-        assertThat(meterRegistryCounterValue(basePath, Tags.of("deserialization_type", "schemaVersionTruncation"))).isEqualTo(usingSchemaVersionTruncation);
+        assertThat(metricRegistryCounterValue(basePath + ".using.schemaVersionTruncation"))
+                .isEqualTo(usingSchemaVersionTruncation);
+        assertThat(meterRegistryCounterValue(basePath, Tags.of("deserialization_type", "schemaVersionTruncation")))
+                .isEqualTo(usingSchemaVersionTruncation);
     }
 
     private long metricRegistryCounterValue(String metricName) {

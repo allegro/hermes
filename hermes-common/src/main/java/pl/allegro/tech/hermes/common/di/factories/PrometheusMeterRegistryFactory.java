@@ -5,9 +5,10 @@ import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import java.util.concurrent.TimeUnit;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
+
+import java.util.concurrent.TimeUnit;
 
 public class PrometheusMeterRegistryFactory {
     private final MicrometerRegistryParameters parameters;
@@ -42,7 +43,10 @@ public class PrometheusMeterRegistryFactory {
 
             @Override
             public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
-                return DistributionStatisticConfig.builder().percentiles(parameters.getPercentiles().stream().mapToDouble(Double::doubleValue).toArray()).build().merge(config);
+                return DistributionStatisticConfig.builder()
+                        .percentiles(parameters.getPercentiles()
+                                .stream().mapToDouble(Double::doubleValue).toArray()
+                ).build().merge(config);
             }
         });
     }
