@@ -24,19 +24,19 @@
     },
     {
       title: t('consumerGroups.breadcrumbs.groups'),
-      href: '/groups',
+      href: '/#/groups',
     },
     {
       title: groupId,
-      href: `/groups/${groupId}`,
+      href: `/#/groups/${groupId}`,
     },
     {
       title: topicId,
-      href: `/groups/${groupId}/topics/${topicId}`,
+      href: `/#/groups/${groupId}/topics/${topicId}`,
     },
     {
       title: subscriptionId,
-      href: `/groups/${groupId}/topics/${topicId}/subscriptions/${subscriptionId}`,
+      href: `/#/groups/${groupId}/topics/${topicId}/subscriptions/${subscriptionId}`,
     },
     {
       title: t('consumerGroups.breadcrumbs.title'),

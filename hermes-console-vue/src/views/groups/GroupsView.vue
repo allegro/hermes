@@ -17,6 +17,10 @@
       title: t('subscription.subscriptionBreadcrumbs.home'),
       href: '/',
     },
+    {
+      title: t('subscription.subscriptionBreadcrumbs.groups'),
+      href: '/#/groups',
+    },
   ]
 </script>
 

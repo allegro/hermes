@@ -42,11 +42,11 @@
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
-      href: '/groups',
+      href: '/#/groups',
     },
     {
       title: groupId,
-      href: `/groups/${groupId}`,
+      href: `/#/groups/${groupId}`,
     },
     {
       title: topicId,

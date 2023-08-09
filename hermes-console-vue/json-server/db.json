@@ -24,7 +24,7 @@
     "pl.allegro.public.admin.AdminOrderActionEvent"
   ],
   "offlineClientsSource": {
-    "source": "https://datastudio.google.com/embed/u/0/reporting/1kmqVF9wR_zF_RGD4j9QykxhWCKz6KRTs/page/s1iRB?params=%7B%22df17%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580pl_allegro_transaction_order_purchase_paymentstatuschanged%22,%22df18%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580BQ%22,%22df16%22:%22include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580sc-9620-datahub-prod.datahub%22%7D"
+    "source": "https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik"
   },
   "inconsistentTopics": [
     "pl.allegro.group.Topic1_avro",

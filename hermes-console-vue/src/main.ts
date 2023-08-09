@@ -7,13 +7,15 @@ import { createI18n } from 'vue-i18n';
 import { createPinia } from 'pinia';
 import { createVuetify } from 'vuetify';
 import App from './App.vue';
-// import axios from 'axios';
+import axios from 'axios';
 import messages from '@/i18n/messages';
 import router from './router';
 
 // TODO: should be fetched from Hermes console configuration
-// axios.defaults.baseURL = 'http://localhost:3000';
-// axios.defaults.timeout = 1500;
+if (import.meta.env.DEV) {
+  axios.defaults.baseURL = 'http://localhost:3000';
+}
+axios.defaults.timeout = 1500;
 
 const vuetify = createVuetify({
   theme: {
