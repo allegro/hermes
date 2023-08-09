@@ -4,6 +4,9 @@ import io.micrometer.core.instrument.Counter;
 import java.util.Optional;
 import pl.allegro.tech.hermes.api.TopicName;
 
+import static pl.allegro.tech.hermes.common.metric.SubscriptionMetrics.*;
+import static pl.allegro.tech.hermes.common.metric.TopicMetrics.*;
+
 class CounterMatcher {
 
     private static final String GROUP_TAG_NAME = "group";
@@ -39,27 +42,27 @@ class CounterMatcher {
     }
 
     public boolean isTopicPublished() {
-        return isTopicCounter() && nameStartsWith("topic.published"); // TODO extract it from Producer static variable
+        return isTopicCounter() && nameStartsWith(TopicMetricsNames.TOPIC_PUBLISHED);
     }
 
     public boolean isTopicThroughput() {
-        return isTopicCounter() && nameStartsWith("topic.throughput");
+        return isTopicCounter() && nameStartsWith(TopicMetricsNames.TOPIC_THROUGHPUT);
     }
 
     public boolean isSubscriptionThroughput() {
-        return isSubscriptionCounter() && nameStartsWith("subscription.throughput");
+        return isSubscriptionCounter() && nameStartsWith(SubscriptionMetricsNames.SUBSCRIPTION_THROUGHPUT);
     }
 
     public boolean isSubscriptionDelivered() {
-        return isSubscriptionCounter() && nameStartsWith("subscription.delivered");
+        return isSubscriptionCounter() && nameStartsWith(SubscriptionMetricsNames.SUBSCRIPTION_DELIVERED);
     }
 
     public boolean isSubscriptionDiscarded() {
-        return isSubscriptionCounter() && nameStartsWith("subscription.discarded");
+        return isSubscriptionCounter() && nameStartsWith(SubscriptionMetricsNames.SUBSCRIPTION_DISCARDED);
     }
 
     public boolean isSubscriptionFiltered() {
-        return isSubscriptionCounter() && nameStartsWith("subscription.filtered");
+        return isSubscriptionCounter() && nameStartsWith(SubscriptionMetricsNames.SUBSCRIPTION_FILTERED_OUT);
     }
 
     public TopicName getTopicName() {
