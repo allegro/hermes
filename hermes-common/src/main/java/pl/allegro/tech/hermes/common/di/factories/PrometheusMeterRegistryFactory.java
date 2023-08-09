@@ -48,7 +48,7 @@ public class PrometheusMeterRegistryFactory {
     }
 
     private void registerZookeeperReporter(PrometheusMeterRegistry meterRegistry) {
-        new ZookeeperCounterReporter(meterRegistry, counterStorage)
+        new ZookeeperCounterReporter(meterRegistry, counterStorage, prefix)
                 .start(parameters.zookeeperReportPeriod().toSeconds(), TimeUnit.SECONDS);
     }
 }
