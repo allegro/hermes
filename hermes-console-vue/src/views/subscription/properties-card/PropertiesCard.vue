@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { DeliveryType } from '@/api/subscription';
   import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useI18n } from 'vue-i18n';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
@@ -24,6 +25,45 @@
         return t('subscription.propertiesCard.unknown');
     }
   }
+
+  const configStore = useAppConfigStore();
+  const additionalPropertiesKeys = Object.keys(
+    configStore.appConfig?.subscription?.endpointAddressResolverMetadata || {},
+  );
+  const additionalProperties = additionalPropertiesKeys.map((key) => {
+    const data =
+      configStore.appConfig?.subscription?.endpointAddressResolverMetadata[
+        key
+      ]!!;
+    const value =
+      data?.options == undefined || data?.options == null
+        ? props.subscription.endpointAddressResolverMetadata[key]
+        : data.options[props.subscription.endpointAddressResolverMetadata[key]];
+    return {
+      key: key,
+      ...data,
+      value: value,
+    };
+  });
+
+  const subscriptionEndpointAddressResolverMetadataKeys = Object.keys(
+    props.subscription.endpointAddressResolverMetadata,
+  );
+  const supportedKeys =
+    configStore.appConfig?.subscription.endpointAddressResolverMetadata || {};
+  const nonSupportedAdditionalProperties =
+    subscriptionEndpointAddressResolverMetadataKeys
+      .map((key) => {
+        if (!(key in supportedKeys)) {
+          return {
+            key: key,
+            value: props.subscription.endpointAddressResolverMetadata[key],
+          };
+        } else {
+          return null;
+        }
+      })
+      .filter((entry) => entry) as Array<{ key: string; value: any }>;
 </script>
 
 <template>
@@ -144,18 +184,21 @@
       :value="props.subscription.autoDeleteWithTopicEnabled"
       :tooltip="$t('subscription.propertiesCard.tooltips.autoDeleteWithTopic')"
     />
-    <!--    /*-->
-    <!--    * TODO: subscription.html-->
-    <!--    *-->
-    <!--    * <p ng-repeat="(key, entry) in endpointAddressResolverMetadataConfig">-->
-    <!--    *     <strong>{{entry.title}}:</strong>-->
-    <!--    *     {{entry.options[subscription.endpointAddressResolverMetadata[key]] || subscription.endpointAddressResolverMetadata[key]}}-->
-    <!--    *     <span ng-show="entry.hint" uib-popover="{{entry.hint}}" popover-trigger="mouseenter" class="fa helpme pull-right">&#xf128;</span>-->
-    <!--    * </p>-->
-    <!--    * <p ng-repeat="(key, value) in notSupportedEndpointAddressResolverMetadataEntries(subscription.endpointAddressResolverMetadata)">-->
-    <!--    *     <strong>{{key}}:</strong> {{value}}-->
-    <!--    * </p>-->
-    <!--    */-->
+
+    <key-value-card-item
+      v-for="property in additionalProperties"
+      :key="property.key"
+      :name="property.title"
+      :value="property.value"
+    />
+
+    <key-value-card-item
+      v-for="property in nonSupportedAdditionalProperties"
+      :key="property.key"
+      :name="property.key"
+      :value="property.value"
+    />
+
     <key-value-card-item
       :name="$t('subscription.propertiesCard.createdAt')"
       :value="formatTimestamp(props.subscription.createdAt)"

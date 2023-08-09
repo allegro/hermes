@@ -5,8 +5,8 @@ import type {
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';
-import type { Owner } from '@/api/owner';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
+import type { Owner } from '@/api/owner';
 
 export const dummyTopic: TopicWithSchema = {
   schema:

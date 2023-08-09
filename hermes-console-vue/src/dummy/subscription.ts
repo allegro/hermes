@@ -61,7 +61,10 @@ export const dummySubscription: Subscription = {
     { name: 'X-My-Header', value: 'boobar' },
     { name: 'X-Another-Header', value: 'foobar' },
   ],
-  endpointAddressResolverMetadata: {},
+  endpointAddressResolverMetadata: {
+    supportedMetadata: false,
+    unsupportedMetadata: 2,
+  },
   http2Enabled: false,
   subscriptionIdentityHeadersEnabled: false,
   autoDeleteWithTopicEnabled: false,

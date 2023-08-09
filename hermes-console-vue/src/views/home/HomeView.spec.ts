@@ -1,7 +1,7 @@
-import { render } from '@/utils/test-utils';
-import HomeView from '@/views/home/HomeView.vue';
 import { createTestingPiniaWithState } from '@/dummy/store';
 import { expect } from 'vitest';
+import { render } from '@/utils/test-utils';
+import HomeView from '@/views/home/HomeView.vue';
 
 describe('HomeView', () => {
   it('renders properly', () => {
