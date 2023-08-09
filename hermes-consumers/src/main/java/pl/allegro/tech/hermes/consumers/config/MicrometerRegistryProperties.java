@@ -13,7 +13,6 @@ public class MicrometerRegistryProperties implements MicrometerRegistryParameter
     private boolean zookeeperReporterEnabled = true;
     private Duration reportPeriod = Duration.ofSeconds(20);
 
-
     @Override
     public List<Double> getPercentiles() {
         return percentiles;
@@ -40,7 +39,6 @@ public class MicrometerRegistryProperties implements MicrometerRegistryParameter
     public void setZookeeperReporterEnabled(boolean zookeeperReporterEnabled) {
         this.zookeeperReporterEnabled = zookeeperReporterEnabled;
     }
-
 
     public Duration getReportPeriod() {
         return reportPeriod;
