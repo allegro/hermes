@@ -53,7 +53,10 @@
           >{{ $t('topicView.header.actions.clone') }}
         </v-btn>
         <v-btn
-          v-if="configStore.appConfig.topic.offlineRetransmissionEnabled"
+          v-if="
+            configStore.appConfig.topic.offlineRetransmissionEnabled &&
+            topic.offlineStorage.enabled
+          "
           prepend-icon="mdi-transmission-tower"
           >{{ $t('topicView.header.actions.offlineRetransmission') }}
         </v-btn>
