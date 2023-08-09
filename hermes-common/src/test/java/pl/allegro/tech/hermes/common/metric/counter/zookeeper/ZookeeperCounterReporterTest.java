@@ -45,7 +45,7 @@ public class ZookeeperCounterReporterTest {
     @Before
     public void before() {
         when(instanceIdResolver.resolve()).thenReturn("localhost.domain");
-        zookeeperCounterReporter = new ZookeeperCounterReporter(meterRegistry, counterStorage);
+        zookeeperCounterReporter = new ZookeeperCounterReporter(meterRegistry, counterStorage, "");
     }
 
     @Test

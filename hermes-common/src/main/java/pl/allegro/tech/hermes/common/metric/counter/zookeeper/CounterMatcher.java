@@ -11,12 +11,14 @@ class CounterMatcher {
     private static final String SUBSCRIPTION_TAG_NAME = "subscription";
 
     private final Counter counter;
+    private final String metricSearchPrefix;
     private TopicName topicName;
     private long value;
     private Optional<String> subscription;
 
-    public CounterMatcher(Counter counter) {
+    public CounterMatcher(Counter counter, String metricSearchPrefix) {
         this.counter = counter;
+        this.metricSearchPrefix = metricSearchPrefix;
         parseCounter(this.counter);
     }
 
@@ -81,6 +83,6 @@ class CounterMatcher {
     }
 
     private boolean nameStartsWith(String name) {
-        return counter.getId().getName().startsWith(name);
+        return counter.getId().getName().startsWith(metricSearchPrefix + name);
     }
 }

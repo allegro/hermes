@@ -13,7 +13,7 @@ class CounterMatcherTest extends Specification {
     def "should match topic published"() {
         given:
         def counter = meterRegistry.counter("topic.published", "group", "lagMetricGroup", "topic", "topic")
-        def counterMatcher = new CounterMatcher(counter)
+        def counterMatcher = new CounterMatcher(counter, "")
 
         when:
         def isTopic = counterMatcher.isTopicPublished()
@@ -28,7 +28,7 @@ class CounterMatcherTest extends Specification {
         given:
         def counter = meterRegistry.counter("subscription.delivered", "group", "lagMetricGroup",
                 "topic", "topic", "subscription", "subscription")
-        def counterMatcher = new CounterMatcher(counter)
+        def counterMatcher = new CounterMatcher(counter, "")
 
         when:
         def isSubscription = counterMatcher.isSubscriptionDelivered()
@@ -45,7 +45,7 @@ class CounterMatcherTest extends Specification {
         given:
         def counter = meterRegistry.counter("subscription.discarded", "group", "lagMetricGroup",
                 "topic", "topic", "subscription", "subscription")
-        def counterMatcher = new CounterMatcher(counter)
+        def counterMatcher = new CounterMatcher(counter, "")
 
         when:
         def isSubscription = counterMatcher.isSubscriptionDiscarded()

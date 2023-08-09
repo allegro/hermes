@@ -19,6 +19,7 @@ public class ZookeeperCounterReporter {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperCounterReporter.class);
 
     private final CounterStorage counterStorage;
+    private final String metricsSearchPrefix;
     private final MeterRegistry meterRegistry;
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
@@ -28,9 +29,11 @@ public class ZookeeperCounterReporter {
                     .build());
 
     public ZookeeperCounterReporter(MeterRegistry registry,
-                                    CounterStorage counterStorage) {
+                                    CounterStorage counterStorage,
+                                    String metricsSearchPrefix) {
         this.meterRegistry = registry;
         this.counterStorage = counterStorage;
+        this.metricsSearchPrefix = metricsSearchPrefix;
     }
 
     public void start(long period, TimeUnit unit) {
@@ -41,7 +44,7 @@ public class ZookeeperCounterReporter {
         try {
             Collection<Counter> counters = Search.in(meterRegistry).counters();
             counters.forEach(counter -> {
-                CounterMatcher matcher = new CounterMatcher(counter);
+                CounterMatcher matcher = new CounterMatcher(counter, metricsSearchPrefix);
                 reportCounter(matcher);
                 reportVolumeCounter(matcher);
             });
