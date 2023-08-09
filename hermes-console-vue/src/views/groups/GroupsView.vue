@@ -3,7 +3,6 @@
   import { useGroups } from '@/composables/use-groups/useGroups';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
-  import GroupBreadcrumbs from '@/views/groups/group-breadcrumbs/GroupBreadcrumbs.vue';
   import GroupForm from '@/views/groups/group-form/GroupForm.vue';
   import GroupListing from '@/views/groups/group-listing/GroupListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
@@ -13,13 +12,19 @@
 
   const filter = ref<string>();
   const createGroupDialogOpen = ref(false);
+  const breadcrumbsItems = [
+    {
+      title: t('subscription.subscriptionBreadcrumbs.home'),
+      href: '/',
+    },
+  ]
 </script>
 
 <template>
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <group-breadcrumbs />
+        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error"
