@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 
+import java.time.Duration;
 import java.util.List;
 
 @ConfigurationProperties(prefix = "consumer.metrics.micrometer")

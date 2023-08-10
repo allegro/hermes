@@ -121,7 +121,8 @@ public class TopicMetrics {
 
     public HermesCounter topicHttpStatusCodeCounter(TopicName topicName, int statusCode) {
         return HermesCounters.from(
-                meterRegistry.counter(TopicMetricsNames.TOPIC_HTTP_STATUS_CODES, topicTags(topicName).and("status_code", String.valueOf(statusCode))),
+                meterRegistry.counter(TopicMetricsNames.TOPIC_HTTP_STATUS_CODES, topicTags(topicName)
+                        .and("status_code", String.valueOf(statusCode))),
                 hermesMetrics.httpStatusCodeMeter(statusCode, topicName)
         );
     }

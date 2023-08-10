@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
 import io.micrometer.core.instrument.Counter;
-import java.util.Optional;
 import pl.allegro.tech.hermes.api.TopicName;
 
-import static pl.allegro.tech.hermes.common.metric.SubscriptionMetrics.*;
-import static pl.allegro.tech.hermes.common.metric.TopicMetrics.*;
+import java.util.Optional;
+
+import static pl.allegro.tech.hermes.common.metric.SubscriptionMetrics.SubscriptionMetricsNames;
+import static pl.allegro.tech.hermes.common.metric.TopicMetrics.TopicMetricsNames;
 
 class CounterMatcher {
 
