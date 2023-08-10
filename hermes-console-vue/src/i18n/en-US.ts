@@ -91,6 +91,17 @@ const en_US = {
       appliedFilter: '(applied filter: “{filter}”)',
     },
   },
+  stats: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch stats',
+    },
+    topics: 'Topics',
+    subscriptions: 'Subscriptions',
+    total: 'Total',
+    ackAll: 'Ack ALL',
+    trackingEnabled: 'Tracking Enabled',
+  },
   readiness: {
     title: 'Datacenters Readiness',
     turnOn: 'Turn on',
