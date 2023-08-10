@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+import { computed, ref } from 'vue';
   import { State } from '@/api/subscription';
   import type { Subscription } from '@/api/subscription';
+import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
 
   const props = defineProps<{
     groupId: string;
@@ -26,6 +27,10 @@
       };
     }),
   );
+  const showSubscriptionCreationForm = ref(false);
+  function showSubscriptionForm() {
+    showSubscriptionCreationForm.value = true;
+  }
 </script>
 
 <template>
@@ -35,7 +40,22 @@
         props.subscriptions.length
       })`"
     >
-      <v-expansion-panel-text class="subscriptions-panel">
+      <v-expansion-panel-text class="d-flex flex-row subscriptions-panel">
+        <div class="d-flex justify-end mr-4 mb-1">
+          <v-dialog v-model="showSubscriptionCreationForm" min-width="600">
+            <template v-slot:activator="{ props }">
+              <v-btn icon="mdi-plus" density="comfortable" @click="showSubscriptionForm()"></v-btn>
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="text-h5">Create subscription</span>
+              </v-card-title>
+              <v-card-text>
+                <SubscriptionForm/>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+        </div>
         <v-list open-strategy="single">
           <v-list-item
             v-for="subscription in subscriptionItems"
