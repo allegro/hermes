@@ -27,9 +27,9 @@ public class SubscriptionMetrics {
 
     public SubscriptionHermesCounter throughputInBytes(SubscriptionName subscription) {
         return SubscriptionHermesCounter.from(
-                micrometerCounter("subscription-throughput-bytes", subscription),
-                hermesMetrics.meter(SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()),
-                SUBSCRIPTION_THROUGHPUT_BYTES, subscription);
+                micrometerCounter(SubscriptionMetricsNames.SUBSCRIPTION_THROUGHPUT, subscription),
+                hermesMetrics.meter(Meters.SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()),
+                Meters.SUBSCRIPTION_THROUGHPUT_BYTES, subscription);
     }
 
     public HermesCounter successes(SubscriptionName subscription) {
@@ -118,7 +118,7 @@ public class SubscriptionMetrics {
 
     public HermesHistogram inflightTimeInMillisHistogram(SubscriptionName subscriptionName) {
         return value -> {
-            DistributionSummary.builder("subscription.inflight-time-seconds")
+            DistributionSummary.builder(SubscriptionMetricsNames.SUBSCRIPTION_INFLIGHT_TIME)
                     .tags(subscriptionTags(subscriptionName))
                     .register(meterRegistry)
                     .record(value / 1000d);
@@ -132,7 +132,7 @@ public class SubscriptionMetrics {
 
     public static class SubscriptionMetricsNames {
         public static final String SUBSCRIPTION_DELIVERED = "subscription.delivered";
-        public static final String SUBSCRIPTION_THROUGHPUT = "subscription.throughput";
+        public static final String SUBSCRIPTION_THROUGHPUT = "subscription.throughput-bytes";
         public static final String SUBSCRIPTION_BATCHES = "subscription.batches";
         public static final String SUBSCRIPTION_DISCARDED = "subscription.discarded";
         public static final String SUBSCRIPTION_LATENCY = "subscription.latency";
@@ -143,7 +143,7 @@ public class SubscriptionMetrics {
         public static final String SUBSCRIPTION_TIMEOUTS = "subscription.timeouts";
         public static final String SUBSCRIPTION_OTHER_ERRORS = "subscription.other-errors";
         public static final String SUBSCRIPTION_FAILURES = "subscription.failures";
-        public static final String SUBSCRIPTION_INFLIGHT_TIME = "subscription.inflight-time";
+        public static final String SUBSCRIPTION_INFLIGHT_TIME = "subscription.inflight-time-seconds";
     }
 
 }
