@@ -40,15 +40,15 @@
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
-      href: '/groups',
+      href: '/#/groups',
     },
     {
       title: groupId,
-      href: `/groups/${groupId}`,
+      href: `/#/groups/${groupId}`,
     },
     {
       title: topicName,
-      href: `/groups/${groupId}/topics/${topicName}`,
+      href: `/#/groups/${groupId}/topics/${topicName}`,
     },
   ];
   const configStore = useAppConfigStore();
@@ -96,7 +96,7 @@
       v-if="
         configStore.appConfig?.topic.offlineClientsEnabled &&
         offlineClientsSource?.source &&
-        topic.offlineStorage.enabled
+        topic?.offlineStorage.enabled
       "
       :source="offlineClientsSource.source"
     />

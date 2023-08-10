@@ -1,17 +1,20 @@
 import { beforeEach } from 'vitest';
-import { computed, ref } from 'vue';
 import { dummyConsumerGroups } from '@/dummy/consumerGroups';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
-import { useConsumerGroups } from '@/composables/use-consumer-groups/useConsumerGroups';
+import { useConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
 import ConsumerGroupsView from '@/views/admin/consumer-groups/ConsumerGroupsView.vue';
 import router from '@/router';
+import type { UseConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
 
-vi.mock('@/composables/use-consumer-groups/useConsumerGroups');
+vi.mock('@/composables/consumer-groups/use-consumer-groups/useConsumerGroups');
 
-const useConsumerGroupsStub: ReturnType<typeof useConsumerGroups> = {
+const useConsumerGroupsStub: UseConsumerGroups = {
   consumerGroups: ref(dummyConsumerGroups),
-  loading: computed(() => false),
-  error: ref(false),
+  loading: ref(false),
+  error: ref({
+    fetchConsumerGroups: null,
+  }),
 };
 
 describe('ConsumerGroupsView', () => {
@@ -40,7 +43,7 @@ describe('ConsumerGroupsView', () => {
     // given
     vi.mocked(useConsumerGroups).mockReturnValueOnce({
       ...useConsumerGroupsStub,
-      loading: computed(() => true),
+      loading: ref(true),
     });
 
     // when
@@ -55,7 +58,7 @@ describe('ConsumerGroupsView', () => {
     // given
     vi.mocked(useConsumerGroups).mockReturnValueOnce({
       ...useConsumerGroupsStub,
-      loading: computed(() => false),
+      loading: ref(false),
     });
 
     // when
@@ -70,8 +73,8 @@ describe('ConsumerGroupsView', () => {
     // given
     vi.mocked(useConsumerGroups).mockReturnValueOnce({
       ...useConsumerGroupsStub,
-      loading: computed(() => false),
-      error: ref(true),
+      loading: ref(false),
+      error: ref({ fetchConsumerGroups: new Error() }),
     });
 
     // when
@@ -87,8 +90,8 @@ describe('ConsumerGroupsView', () => {
     // given
     vi.mocked(useConsumerGroups).mockReturnValueOnce({
       ...useConsumerGroupsStub,
-      loading: computed(() => false),
-      error: ref(false),
+      loading: ref(false),
+      error: ref({ fetchConsumerGroups: null }),
     });
 
     // when

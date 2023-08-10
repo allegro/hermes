@@ -3,7 +3,7 @@
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
 
   const props = defineProps<{
-    undeliveredMessages: SentMessageTrace[];
+    undeliveredMessages?: SentMessageTrace[];
   }>();
 </script>
 

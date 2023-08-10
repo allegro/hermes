@@ -9,7 +9,7 @@ describe('HomeView', () => {
     const { getByText } = render(HomeView);
 
     // then
-    expect(getByText(/console/i)).toBeVisible();
+    expect(getByText('homeView.links.console')).toBeVisible();
   });
 
   it.each([

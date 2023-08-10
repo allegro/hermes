@@ -108,6 +108,54 @@ const en_US = {
       text: 'Could not fetch information about datacenters readiness',
     },
   },
+  groups: {
+    actions: {
+      create: 'New Group',
+      search: 'search…',
+    },
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch topic groups',
+    },
+    groupBreadcrumbs: {
+      home: 'home',
+      groups: 'groups',
+    },
+    groupForm: {
+      cancel: 'Cancel',
+      edu:
+        'When creating a group please make sure that it complies with ' +
+        'general group standards and naming conventions. Ensure that ' +
+        'a group that meets your requirements does not already exist.',
+      groupName: 'Group name',
+      save: 'Save',
+      createTitle: 'Create group',
+      editTitle: 'Edit group',
+      validation: {
+        groupName: 'Group name must not be empty',
+      },
+    },
+    groupListing: {
+      index: '#',
+      name: 'Group name',
+      noGroups: 'No groups found',
+      topicsChip: 'topics: ',
+      appliedFilter: '(applied filter: “{filter}”)',
+    },
+    groupTopicsListing: {
+      index: '#',
+      name: 'Topic name',
+      noTopics: 'No topics found',
+      appliedFilter: '(applied filter: “{filter}”)',
+    },
+    heading: 'Groups',
+  },
+  groupTopics: {
+    groupTopicsBreadcrumbs: {
+      home: 'home',
+      groups: 'groups',
+    },
+  },
   topicView: {
     header: {
       topic: 'TOPIC',

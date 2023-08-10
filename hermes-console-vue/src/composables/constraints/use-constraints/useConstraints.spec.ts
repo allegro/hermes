@@ -1,41 +1,37 @@
+import { afterEach } from 'vitest';
 import { dummyConstraints } from '@/dummy/constraints';
-import { useConstraints } from '@/composables/use-constraints/useConstraints';
+import {
+  fetchConstraintsErrorHandler,
+  fetchConstraintsHandler,
+} from '@/mocks/handlers';
+import { setupServer } from 'msw/node';
+import { useConstraints } from '@/composables/constraints/use-constraints/useConstraints';
 import { waitFor } from '@testing-library/vue';
-import axios from 'axios';
-import type { Mocked } from 'vitest';
-
-vitest.mock('axios');
-const mockedAxios = axios as Mocked<typeof axios>;
 
 describe('useConstraints', () => {
-  it('should hit constraints Hermes API endpoint', async () => {
-    // given
-    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+  const server = setupServer(
+    fetchConstraintsHandler({ constraints: dummyConstraints }),
+  );
 
-    // when
-    useConstraints();
-
-    // then
-    await waitFor(() => {
-      expect(mockedAxios.get.mock.calls[0][0]).toBe('/workload-constraints');
-    });
+  afterEach(() => {
+    server.resetHandlers();
   });
 
   it('should fetch constraints names from Hermes backend', async () => {
     // given
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyConstraints });
+    server.listen();
 
     // when
     const { topicConstraints, subscriptionConstraints, loading, error } =
       useConstraints();
 
     // then
-    expect(loading.value).toBe(true);
-    expect(error.value).toBe(false);
+    expect(loading.value).toBeTruthy();
+    expect(error.value.fetchConstraints).toBeNull();
 
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value).toBe(false);
+      expect(loading.value).toBeFalsy();
+      expect(error.value.fetchConstraints).toBeNull();
       expect(topicConstraints.value?.['pl.group.Topic1'].consumersNumber).toBe(
         2,
       );
@@ -48,14 +44,15 @@ describe('useConstraints', () => {
 
   it('should set error to true on workload endpoint failure', async () => {
     // given
-    mockedAxios.get.mockRejectedValueOnce({});
+    server.use(fetchConstraintsErrorHandler({ errorCode: 500 }));
+    server.listen();
 
     // when
     const { error } = useConstraints();
 
     // then
     await waitFor(() => {
-      expect(error.value).toBe(true);
+      expect(error.value.fetchConstraints).not.toBeNull();
     });
   });
 });

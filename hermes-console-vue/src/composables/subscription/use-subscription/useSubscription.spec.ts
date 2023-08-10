@@ -68,11 +68,11 @@ describe('useSubscription', () => {
     } = useSubscription('topic', 'subscription');
 
     // then
-    expect(loading.value).toBe(true);
+    expect(loading.value).toBeTruthy();
 
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value).toBe(false);
+      expect(loading.value).toBeFalsy();
+      expect(error.value).toBeFalsy();
       expect(subscription.value).toEqual(dummySubscription);
       expect(subscriptionMetrics.value).toEqual(dummySubscriptionMetrics);
       expect(subscriptionHealth.value).toEqual(dummySubscriptionHealth);
@@ -92,8 +92,8 @@ describe('useSubscription', () => {
 
     // then
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value).toBe(true);
+      expect(loading.value).toBeFalsy();
+      expect(error.value).toBeTruthy();
     });
   });
 
@@ -110,8 +110,8 @@ describe('useSubscription', () => {
 
     // then
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value).toBe(true);
+      expect(loading.value).toBeFalsy();
+      expect(error.value).toBeTruthy();
     });
   });
 
@@ -128,8 +128,8 @@ describe('useSubscription', () => {
 
     // then
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value).toBe(true);
+      expect(loading.value).toBeFalsy();
+      expect(error.value).toBeTruthy();
     });
   });
 
@@ -147,9 +147,9 @@ describe('useSubscription', () => {
 
     // then
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value).toBe(false);
-      expect(subscriptionLastUndeliveredMessage.value).toBe(null);
+      expect(loading.value).toBeFalsy();
+      expect(error.value).toBeFalsy();
+      expect(subscriptionLastUndeliveredMessage.value).toBeNull();
     });
   });
 
@@ -169,8 +169,8 @@ describe('useSubscription', () => {
 
     // then
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value).toBe(false);
+      expect(loading.value).toBeFalsy();
+      expect(error.value).toBeFalsy();
       expect(subscriptionUndeliveredMessages.value).toEqual([]);
     });
   });
