@@ -26,12 +26,12 @@ describe('useConstraints', () => {
       useConstraints();
 
     // then
-    expect(loading.value).toBe(true);
-    expect(error.value.fetchConstraints).toBe(null);
+    expect(loading.value).toBeTruthy();
+    expect(error.value.fetchConstraints).toBeNull();
 
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value.fetchConstraints).toBe(null);
+      expect(loading.value).toBeFalsy();
+      expect(error.value.fetchConstraints).toBeNull();
       expect(topicConstraints.value?.['pl.group.Topic1'].consumersNumber).toBe(
         2,
       );

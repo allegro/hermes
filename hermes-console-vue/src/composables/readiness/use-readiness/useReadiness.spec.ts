@@ -25,11 +25,11 @@ describe('useReadiness', () => {
     const { datacentersReadiness, loading, error } = useReadiness();
 
     // then
-    expect(loading.value).toBe(true);
+    expect(loading.value).toBeTruthy();
 
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value.fetchReadiness).toBe(null);
+      expect(loading.value).toBeFalsy();
+      expect(error.value.fetchReadiness).toBeNull();
       expect(datacentersReadiness.value).toEqual(dummyDatacentersReadiness);
     });
   });
@@ -44,7 +44,7 @@ describe('useReadiness', () => {
 
     // then
     await waitFor(() => {
-      expect(loading.value).toBe(false);
+      expect(loading.value).toBeFalsy();
       expect(error.value.fetchReadiness).not.toBeNull();
     });
   });

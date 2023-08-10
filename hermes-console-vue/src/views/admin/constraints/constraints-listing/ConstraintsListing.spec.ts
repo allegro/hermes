@@ -81,10 +81,18 @@ describe('ConstraintsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]!).getByText(/index/)).toBeVisible();
-    expect(within(rows[0]!).getByText(/name/)).toBeVisible();
-    expect(within(rows[1]!).getByText(/noConstraints/)).toBeVisible();
-    expect(within(rows[1]!).getByText(/appliedFilter/)).toBeVisible();
+    expect(
+      within(rows[0]!).getByText('constraints.listing.index'),
+    ).toBeVisible();
+    expect(
+      within(rows[0]!).getByText('constraints.listing.name'),
+    ).toBeVisible();
+    expect(
+      within(rows[1]!).getByText(/constraints.listing.noConstraints/),
+    ).toBeVisible();
+    expect(
+      within(rows[1]!).getByText(/constraints.listing.appliedFilter/),
+    ).toBeVisible();
   });
 
   it('should render an empty constraint listing without filter applied', () => {
@@ -98,9 +106,11 @@ describe('ConstraintsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[1]!).getByText(/noConstraints/)).toBeVisible();
     expect(
-      within(rows[1]!).queryByText(/appliedFilter/),
+      within(rows[1]!).getByText('constraints.listing.noConstraints'),
+    ).toBeVisible();
+    expect(
+      within(rows[1]!).queryByText('constraints.listing.appliedFilter'),
     ).not.toBeInTheDocument();
   });
 });

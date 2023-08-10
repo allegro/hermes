@@ -5,10 +5,11 @@ import { render } from '@/utils/test-utils';
 import { useConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
 import ConsumerGroupsView from '@/views/admin/consumer-groups/ConsumerGroupsView.vue';
 import router from '@/router';
+import type { UseConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
 
 vi.mock('@/composables/consumer-groups/use-consumer-groups/useConsumerGroups');
 
-const useConsumerGroupsStub: ReturnType<typeof useConsumerGroups> = {
+const useConsumerGroupsStub: UseConsumerGroups = {
   consumerGroups: ref(dummyConsumerGroups),
   loading: ref(false),
   error: ref({

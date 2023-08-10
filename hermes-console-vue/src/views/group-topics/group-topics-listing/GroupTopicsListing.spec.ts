@@ -50,9 +50,15 @@ describe('GroupTopicsListing', () => {
     // then
     expect(rows).toHaveLength(2);
     expect(within(rows[0]!).getByText(/index/)).toBeInTheDocument();
-    expect(within(rows[0]!).getByText(/name/)).toBeInTheDocument();
-    expect(within(rows[1]!).getByText(/noTopics/)).toBeInTheDocument();
-    expect(within(rows[1]!).getByText(/appliedFilter/)).toBeInTheDocument();
+    expect(
+      within(rows[0]!).getByText('groups.groupTopicsListing.name'),
+    ).toBeInTheDocument();
+    expect(
+      within(rows[1]!).getByText(/groups.groupTopicsListing.noTopics/),
+    ).toBeInTheDocument();
+    expect(
+      within(rows[1]!).getByText(/groups.groupTopicsListing.appliedFilter/),
+    ).toBeInTheDocument();
   });
 
   it('should render an empty group topics listing without filter applied', () => {
@@ -66,9 +72,11 @@ describe('GroupTopicsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[1]!).getByText(/noTopics/)).toBeInTheDocument();
     expect(
-      within(rows[1]!).queryByText(/appliedFilter/),
+      within(rows[1]!).getByText('groups.groupTopicsListing.noTopics'),
+    ).toBeInTheDocument();
+    expect(
+      within(rows[1]!).queryByText('groups.groupTopicsListing.appliedFilter'),
     ).not.toBeInTheDocument();
   });
 });

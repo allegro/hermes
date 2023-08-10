@@ -37,11 +37,11 @@ describe('useConsumerGroups', () => {
     );
 
     // then
-    expect(loading.value).toBe(true);
+    expect(loading.value).toBeTruthy();
 
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value.fetchConsumerGroups).toBe(null);
+      expect(loading.value).toBeFalsy();
+      expect(error.value.fetchConsumerGroups).toBeNull();
       expect(consumerGroups.value).toEqual(consumerGroups.value);
     });
   });
@@ -62,7 +62,7 @@ describe('useConsumerGroups', () => {
 
     // then
     await waitFor(() => {
-      expect(loading.value).toBe(false);
+      expect(loading.value).toBeFalsy();
       expect(error.value.fetchConsumerGroups).not.toBeNull();
     });
   });

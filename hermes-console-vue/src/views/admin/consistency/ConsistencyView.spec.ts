@@ -3,12 +3,13 @@ import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
 import ConsistencyView from '@/views/admin/consistency/ConsistencyView.vue';
+import type { UseInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
 
 vi.mock(
   '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics',
 );
 
-const useInconsistentTopicsStub: ReturnType<typeof useInconsistentTopics> = {
+const useInconsistentTopicsStub: UseInconsistentTopics = {
   topics: ref(dummyInconsistentTopics),
   error: ref({
     fetchInconsistentTopics: null,

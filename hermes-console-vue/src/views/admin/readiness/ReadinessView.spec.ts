@@ -3,10 +3,11 @@ import { dummyDatacentersReadiness } from '@/dummy/readiness';
 import { render } from '@/utils/test-utils';
 import { useReadiness } from '@/composables/readiness/use-readiness/useReadiness';
 import ReadinessView from '@/views/admin/readiness/ReadinessView.vue';
+import type { UseReadiness } from '@/composables/readiness/use-readiness/useReadiness';
 
 vi.mock('@/composables/readiness/use-readiness/useReadiness');
 
-const useReadinessStub: ReturnType<typeof useReadiness> = {
+const useReadinessStub: UseReadiness = {
   datacentersReadiness: ref(dummyDatacentersReadiness),
   error: ref({
     fetchReadiness: null,

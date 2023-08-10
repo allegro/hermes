@@ -25,11 +25,11 @@ describe('useInconsistentTopics', () => {
     const { topics, loading, error } = useInconsistentTopics();
 
     // then
-    expect(loading.value).toBe(true);
+    expect(loading.value).toBeTruthy();
 
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value.fetchInconsistentTopics).toBe(null);
+      expect(loading.value).toBeFalsy();
+      expect(error.value.fetchInconsistentTopics).toBeNull();
       expect(topics.value).toEqual(
         expect.arrayContaining(dummyInconsistentTopics),
       );
@@ -46,7 +46,7 @@ describe('useInconsistentTopics', () => {
 
     // then
     await waitFor(() => {
-      expect(loading.value).toBe(false);
+      expect(loading.value).toBeFalsy();
       expect(error.value.fetchInconsistentTopics).not.toBeNull();
     });
   });

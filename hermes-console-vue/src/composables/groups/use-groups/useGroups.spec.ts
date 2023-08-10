@@ -29,14 +29,14 @@ describe('useGroups', () => {
     const { groups, loading, error } = useGroups();
 
     // then
-    expect(loading.value).toBe(true);
-    expect(error.value.fetchTopicNames).toBe(null);
-    expect(error.value.fetchGroupNames).toBe(null);
+    expect(loading.value).toBeTruthy();
+    expect(error.value.fetchTopicNames).toBeNull();
+    expect(error.value.fetchGroupNames).toBeNull();
 
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value.fetchGroupNames).toBe(null);
-      expect(error.value.fetchTopicNames).toBe(null);
+      expect(loading.value).toBeFalsy();
+      expect(error.value.fetchGroupNames).toBeNull();
+      expect(error.value.fetchTopicNames).toBeNull();
       expect(groups.value?.length).toBe(6);
       expect(groups.value?.[0].name).toBe('pl.allegro.public.admin');
       expect(groups.value?.[0].topics[0]).toContain('AdminOfferActionEvent');
