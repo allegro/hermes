@@ -5,11 +5,13 @@ import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.metrics.DefaultHermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.ToDoubleFunction;
 
 import static pl.allegro.tech.hermes.common.metric.Counters.DELIVERED;
@@ -129,13 +131,13 @@ public class SubscriptionMetrics {
     }
 
     public HermesHistogram inflightTimeInMillisHistogram(SubscriptionName subscriptionName) {
-        return HermesHistogram.of(
-                DistributionSummary.builder("subscription.inflight-time")
-                        .baseUnit("ms")
-                        .tags(subscriptionTags(subscriptionName))
-                        .register(meterRegistry),
-                hermesMetrics.inflightTimeHistogram(subscriptionName)
-        );
+        return value -> {
+            DistributionSummary.builder("subscription.inflight-time-seconds")
+                    .tags(subscriptionTags(subscriptionName))
+                    .register(meterRegistry)
+                    .record(value / 1000d);
+            hermesMetrics.inflightTimeHistogram(subscriptionName);
+        };
     }
 
     private Counter micrometerCounter(String metricName, SubscriptionName subscription) {
