@@ -53,11 +53,11 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEn
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
-import javax.jms.Message;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import javax.jms.Message;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -261,7 +261,7 @@ public class ConsumerSenderConfiguration {
 
     @Bean
     public FutureAsyncTimeout futureAsyncTimeoutFactory(InstrumentedExecutorServiceFactory executorFactory,
-                                                                              SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
+                                                        SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
         ScheduledExecutorService timeoutExecutorService = executorFactory.getScheduledExecutorService(
                 "async-timeout",
                 senderAsyncTimeoutProperties.getThreadPoolSize(),

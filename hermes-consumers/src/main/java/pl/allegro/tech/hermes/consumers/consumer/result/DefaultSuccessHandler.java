@@ -35,6 +35,7 @@ public class DefaultSuccessHandler implements SuccessHandler {
         metrics.subscriptions().successes(subscription).increment();
         metrics.subscriptions().throughputInBytes(subscription).increment(message.getSize());
         metrics.subscriptions().httpAnswerCounter(subscription, result.getStatusCode()).increment();
-        metrics.subscriptions().inflightTimeInMillisHistogram(subscription).record(System.currentTimeMillis() - message.getReadingTimestamp());
+        metrics.subscriptions().inflightTimeInMillisHistogram(subscription)
+                .record(System.currentTimeMillis() - message.getReadingTimestamp());
     }
 }
