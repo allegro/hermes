@@ -166,8 +166,8 @@ public class TopicMetrics {
         public static final String TOPIC_ACK_LEADER_GLOBAL_LATENCY = "topic.ack-leader.global-latency";
         public static final String TOPIC_ACK_LEADER_LATENCY = "topic.ack-leader.latency";
         public static final String TOPIC_ACK_LEADER_BROKER_LATENCY = "topic.ack-leader.broker-latency";
-        public static final String TOPIC_THROUGHPUT = "topic.throughput";
-        public static final String TOPIC_GLOBAL_THROUGHPUT = "topic.global-throughput";
+        public static final String TOPIC_THROUGHPUT = "topic.throughput-bytes";
+        public static final String TOPIC_GLOBAL_THROUGHPUT = "topic.global-throughput-bytes";
         public static final String TOPIC_PUBLISHED = "topic.published";
         public static final String TOPIC_GLOBAL_REQUESTS = "topic.global-requests";
         public static final String TOPIC_REQUESTS = "topic.requests";
