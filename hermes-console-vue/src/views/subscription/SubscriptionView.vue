@@ -50,7 +50,7 @@
     },
     {
       title: topicId,
-      href: `/groups/${groupId}/topics/${topicId}`,
+      href: `/#/groups/${groupId}/topics/${topicId}`,
     },
     {
       title: subscriptionId,
