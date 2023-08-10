@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 public interface MonitoringSubscriptionMetricsProvider {
     MonitoringSubscriptionMetrics provide(SubscriptionName subscriptionName);
 
-    public record MonitoringSubscriptionMetrics(MetricDecimalValue rate,
+    record MonitoringSubscriptionMetrics(MetricDecimalValue rate,
                                                 MetricDecimalValue timeouts,
                                                 MetricDecimalValue throughput,
                                                 MetricDecimalValue otherErrors,
@@ -16,11 +16,11 @@ public interface MonitoringSubscriptionMetricsProvider {
                                                 MetricDecimalValue metricPathBatchRate) {
     }
 
-    public static MetricsBuilder metricsBuilder() {
+    static MetricsBuilder metricsBuilder() {
         return new MetricsBuilder();
     }
 
-    static class MetricsBuilder {
+    class MetricsBuilder {
         private MetricDecimalValue rate;
         private MetricDecimalValue timeouts;
         private MetricDecimalValue throughput;

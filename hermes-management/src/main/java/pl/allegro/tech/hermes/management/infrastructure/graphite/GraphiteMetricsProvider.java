@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.graphite;
 
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscriptionMetricsProvider;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
@@ -36,18 +37,18 @@ public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsPro
         String codes5xxPath = metricPathHttpStatuses(name, "5xx");
         String batchPath = metricPathBatchRate(name);
 
-        GraphiteMetrics graphiteMetrics = graphiteClient.readMetrics(codes2xxPath, codes4xxPath, codes5xxPath,
+        MonitoringMetricsContainer metricsContainer = graphiteClient.readMetrics(codes2xxPath, codes4xxPath, codes5xxPath,
                 rateMetric, throughput, timeouts, otherErrors, batchPath);
 
         return MonitoringSubscriptionMetricsProvider.metricsBuilder()
-                .withRate(graphiteMetrics.metricValue(rateMetric))
-                .withTimeouts(graphiteMetrics.metricValue(timeouts))
-                .withThroughput(graphiteMetrics.metricValue(throughput))
-                .withOtherErrors(graphiteMetrics.metricValue(otherErrors))
-                .withCodes2xx(graphiteMetrics.metricValue(codes2xxPath))
-                .withCode4xx(graphiteMetrics.metricValue(codes4xxPath))
-                .withCode5xx(graphiteMetrics.metricValue(codes5xxPath))
-                .withMetricPathBatchRate(graphiteMetrics.metricValue(batchPath))
+                .withRate(metricsContainer.metricValue(rateMetric))
+                .withTimeouts(metricsContainer.metricValue(timeouts))
+                .withThroughput(metricsContainer.metricValue(throughput))
+                .withOtherErrors(metricsContainer.metricValue(otherErrors))
+                .withCodes2xx(metricsContainer.metricValue(codes2xxPath))
+                .withCode4xx(metricsContainer.metricValue(codes4xxPath))
+                .withCode5xx(metricsContainer.metricValue(codes5xxPath))
+                .withMetricPathBatchRate(metricsContainer.metricValue(batchPath))
                 .build();
     }
 

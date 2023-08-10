@@ -7,7 +7,6 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.topic.TopicMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
-import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
@@ -47,7 +46,7 @@ public class HybridTopicMetricsRepository implements TopicMetricsRepository {
         String deliveryRateMetric = metricPath(DELIVERY_RATE_PATTERN, topicName);
         String throughputMetric = metricPath(THROUGHPUT_PATTERN, topicName);
 
-        GraphiteMetrics metrics = graphiteClient.readMetrics(rateMetric, deliveryRateMetric);
+        MonitoringMetricsContainer metrics = graphiteClient.readMetrics(rateMetric, deliveryRateMetric);
 
         return TopicMetrics.Builder.topicMetrics()
                 .withRate(metrics.metricValue(rateMetric))

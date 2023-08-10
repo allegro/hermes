@@ -86,18 +86,5 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         }
     }
 
-    private static class ZookeeperMetrics {
-
-        final long delivered;
-
-        final long discarded;
-
-        final long volume;
-
-        ZookeeperMetrics(long delivered, long discarded, long volume) {
-            this.delivered = delivered;
-            this.discarded = discarded;
-            this.volume = volume;
-        }
-    }
+    private record ZookeeperMetrics(long delivered, long discarded, long volume) { }
 }

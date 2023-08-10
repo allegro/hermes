@@ -1,8 +1,7 @@
-package pl.allegro.tech.hermes.management.infrastructure.graphite;
+package pl.allegro.tech.hermes.management.infrastructure.prometheus;
 
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
-public interface GraphiteClient {
-
+interface PrometheusClient {
     MonitoringMetricsContainer readMetrics(String... metricPaths);
 }

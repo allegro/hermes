@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.graphite
 
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Specification
 import spock.lang.Subject
@@ -21,7 +22,7 @@ class CachingGraphiteClientTest extends Specification {
 
     def "should return metrics from the underlying client"() {
         given:
-        underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: of("1"), metric_2: of("2")])
+        underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
 
         when:
         def metrics = cachingClient.readMetrics("metric_1", "metric_2")
@@ -38,7 +39,7 @@ class CachingGraphiteClientTest extends Specification {
         cachingClient.readMetrics("metric_1", "metric_2")
 
         then:
-        1 * underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: of("1"), metric_2: of("2")])
+        1 * underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
     }
 
     def "should get metrics from the underlying client after TTL expires"() {
@@ -48,6 +49,6 @@ class CachingGraphiteClientTest extends Specification {
         cachingClient.readMetrics("metric_1", "metric_2")
 
         then:
-        2 * underlyingClient.readMetrics("metric_1", "metric_2") >> new GraphiteMetrics([metric_1: of("1"), metric_2: of("2")])
+        2 * underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
     }
 }

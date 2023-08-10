@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.MetricDecimalValue;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import static com.google.common.collect.Iterables.toArray;
 import static java.util.Arrays.asList;
@@ -32,10 +33,10 @@ public class CachingGraphiteClient implements GraphiteClient {
     }
 
     @Override
-    public GraphiteMetrics readMetrics(String... metricPaths) {
+    public MonitoringMetricsContainer readMetrics(String... metricPaths) {
         try {
             Map<String, MetricDecimalValue> graphiteMetrics = graphiteMetricsCache.getAll(asList(metricPaths));
-            return new GraphiteMetrics(graphiteMetrics);
+            return new MonitoringMetricsContainer(graphiteMetrics);
         } catch (ExecutionException e) {
             // should never happen because the loader does not throw any checked exceptions
             throw new RuntimeException(e);
@@ -51,10 +52,10 @@ public class CachingGraphiteClient implements GraphiteClient {
         @Override
         public Map<String, MetricDecimalValue> loadAll(Iterable<? extends String> metricPaths) {
             String[] metricPathsArray = toArray(metricPaths, String.class);
-            GraphiteMetrics graphiteMetrics = underlyingGraphiteClient.readMetrics(metricPathsArray);
+            MonitoringMetricsContainer metricsContainer = underlyingGraphiteClient.readMetrics(metricPathsArray);
             return stream(metricPathsArray).collect(toMap(
                     identity(),
-                    graphiteMetrics::metricValue
+                    metricsContainer::metricValue
             ));
         }
     }
