@@ -1,10 +1,10 @@
+import { createTestingPinia } from '@pinia/testing';
 import { createVuetify } from 'vuetify';
 import { h } from 'vue';
-import type { RenderOptions, RenderResult } from '@testing-library/vue';
 import { render as renderTL } from '@testing-library/vue';
 import { VApp } from 'vuetify/components';
 import router from '@/router';
-import { createTestingPinia } from '@pinia/testing';
+import type { RenderOptions, RenderResult } from '@testing-library/vue';
 import type { Router } from 'vue-router';
 
 type RenderParameters = {

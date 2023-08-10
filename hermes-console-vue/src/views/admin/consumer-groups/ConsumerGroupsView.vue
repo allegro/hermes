@@ -77,7 +77,10 @@
         </v-card>
       </v-col>
     </v-row>
-    <consumer-groups-table v-if="consumerGroups" :consumer-groups="consumerGroups" />
+    <consumer-groups-table
+      v-if="consumerGroups"
+      :consumer-groups="consumerGroups"
+    />
   </v-container>
 </template>
 

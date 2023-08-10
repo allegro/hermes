@@ -1,15 +1,17 @@
-import { ref } from 'vue';
 import { dummyInconsistentTopics } from '@/dummy/inconsistentTopics';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
 import ConsistencyView from '@/views/admin/consistency/ConsistencyView.vue';
 
-vi.mock('@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics');
+vi.mock(
+  '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics',
+);
 
 const useInconsistentTopicsStub: ReturnType<typeof useInconsistentTopics> = {
   topics: ref(dummyInconsistentTopics),
   error: ref({
-    fetchInconsistentTopics: null
+    fetchInconsistentTopics: null,
   }),
   loading: ref(false),
 };
@@ -64,7 +66,7 @@ describe('ConsistencyView', () => {
     vi.mocked(useInconsistentTopics).mockReturnValueOnce({
       ...useInconsistentTopicsStub,
       loading: ref(false),
-      error: ref({fetchInconsistentTopics: new Error()}),
+      error: ref({ fetchInconsistentTopics: new Error() }),
     });
 
     // when
@@ -81,7 +83,7 @@ describe('ConsistencyView', () => {
     vi.mocked(useInconsistentTopics).mockReturnValueOnce({
       ...useInconsistentTopicsStub,
       loading: ref(false),
-      error: ref({fetchInconsistentTopics: null}),
+      error: ref({ fetchInconsistentTopics: null }),
     });
 
     // when

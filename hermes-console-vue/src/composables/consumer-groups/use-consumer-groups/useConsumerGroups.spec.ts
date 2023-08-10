@@ -1,17 +1,26 @@
+import { afterEach } from 'vitest';
 import { dummyConsumerGroups } from '@/dummy/consumerGroups';
+import { dummySubscription } from '@/dummy/subscription';
+import { dummyTopic } from '@/dummy/topic';
+import {
+  fetchConsumerGroupsErrorHandler,
+  fetchConsumerGroupsHandler,
+} from '@/mocks/handlers';
+import { setupServer } from 'msw/node';
 import { useConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
 import { waitFor } from '@testing-library/vue';
-import {setupServer} from "msw/node";
-import {fetchConsumerGroupsErrorHandler, fetchConsumerGroupsHandler} from "@/mocks/handlers";
-import {afterEach} from "vitest";
-import {dummyTopic} from "@/dummy/topic";
-import {dummySubscription} from "@/dummy/subscription";
 
 describe('useConsumerGroups', () => {
   const topicName = dummyTopic.name;
   const subscriptionName = dummySubscription.name;
 
-  const server = setupServer(fetchConsumerGroupsHandler({ consumerGroups: dummyConsumerGroups, topicName, subscriptionName }));
+  const server = setupServer(
+    fetchConsumerGroupsHandler({
+      consumerGroups: dummyConsumerGroups,
+      topicName,
+      subscriptionName,
+    }),
+  );
 
   afterEach(() => {
     server.resetHandlers();
@@ -39,8 +48,14 @@ describe('useConsumerGroups', () => {
 
   it('should set error to true on consumerGroups endpoint failure', async () => {
     // given
-    server.use(fetchConsumerGroupsErrorHandler({errorCode: 500, topicName, subscriptionName}))
-    server.listen()
+    server.use(
+      fetchConsumerGroupsErrorHandler({
+        errorCode: 500,
+        topicName,
+        subscriptionName,
+      }),
+    );
+    server.listen();
 
     // when
     const { loading, error } = useConsumerGroups(topicName, subscriptionName);

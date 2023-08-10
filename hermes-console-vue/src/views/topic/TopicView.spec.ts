@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect } from 'vitest';
-import {
-  dummySubscription,
-  secondDummySubscription,
-} from '@/dummy/subscription';
+import { createTestingPinia } from '@pinia/testing';
+import { createTestingPiniaWithState } from '@/dummy/store';
+import { dummyAppConfig } from '@/dummy/app-config';
 import {
   dummyOfflineClientsSource,
   dummyTopic,
@@ -10,15 +9,16 @@ import {
   dummyTopicMetrics,
   dummyTopicOwner,
 } from '@/dummy/topic';
+import {
+  dummySubscription,
+  secondDummySubscription,
+} from '@/dummy/subscription';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
-import type { UseTopic } from '@/composables/topic/use-topic/useTopic';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
 import router from '@/router';
 import TopicView from '@/views/topic/TopicView.vue';
-import { createTestingPinia } from '@pinia/testing';
-import { createTestingPiniaWithState } from '@/dummy/store';
-import { dummyAppConfig } from '@/dummy/app-config';
+import type { UseTopic } from '@/composables/topic/use-topic/useTopic';
 
 vi.mock('@/composables/topic/use-topic/useTopic');
 

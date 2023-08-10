@@ -1,5 +1,5 @@
-import { dummyAppConfig } from '@/dummy/app-config';
 import { createTestingPinia } from '@pinia/testing';
+import { dummyAppConfig } from '@/dummy/app-config';
 
 export const appConfigStoreState = {
   appConfig: dummyAppConfig,

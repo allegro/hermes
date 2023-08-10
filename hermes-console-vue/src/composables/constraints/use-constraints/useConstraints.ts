@@ -1,7 +1,7 @@
-import {computed, ref} from 'vue';
+import { computed, ref } from 'vue';
+import { fetchConstraints as getConstraints } from '@/api/hermes-client';
 import type { Constraint, ConstraintsConfig } from '@/api/constraints';
 import type { Ref } from 'vue';
-import { fetchConstraints as getConstraints } from "@/api/hermes-client";
 
 export interface UseConstraints {
   topicConstraints: Ref<Record<string, Constraint> | undefined>;
@@ -11,7 +11,7 @@ export interface UseConstraints {
 }
 
 export interface UseConstraintsErrors {
-  fetchConstraints: Error | null,
+  fetchConstraints: Error | null;
 }
 
 export function useConstraints(): UseConstraints {
@@ -38,7 +38,7 @@ export function useConstraints(): UseConstraints {
     } finally {
       loading.value = false;
     }
-  }
+  };
 
   fetchConstraints();
 

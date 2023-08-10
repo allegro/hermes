@@ -10,7 +10,8 @@
   const topicFilter = ref<string>();
   const subscriptionFilter = ref<string>();
 
-  const { topicConstraints, subscriptionConstraints, loading, error } = useConstraints();
+  const { topicConstraints, subscriptionConstraints, loading, error } =
+    useConstraints();
 
   const breadcrumbsItems = [
     {

@@ -1,6 +1,6 @@
 import { beforeEach } from 'vitest';
-import { ref } from 'vue';
 import { dummyConsumerGroups } from '@/dummy/consumerGroups';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
 import ConsumerGroupsView from '@/views/admin/consumer-groups/ConsumerGroupsView.vue';
@@ -73,7 +73,7 @@ describe('ConsumerGroupsView', () => {
     vi.mocked(useConsumerGroups).mockReturnValueOnce({
       ...useConsumerGroupsStub,
       loading: ref(false),
-      error: ref({fetchConsumerGroups: new Error()}),
+      error: ref({ fetchConsumerGroups: new Error() }),
     });
 
     // when
@@ -90,7 +90,7 @@ describe('ConsumerGroupsView', () => {
     vi.mocked(useConsumerGroups).mockReturnValueOnce({
       ...useConsumerGroupsStub,
       loading: ref(false),
-      error: ref({fetchConsumerGroups: null}),
+      error: ref({ fetchConsumerGroups: null }),
     });
 
     // when

@@ -1,7 +1,7 @@
+import { fetchReadiness as getReadiness } from '@/api/hermes-client';
 import { ref } from 'vue';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { Ref } from 'vue';
-import { fetchReadiness as getReadiness } from "@/api/hermes-client";
 
 export interface UseReadiness {
   datacentersReadiness: Ref<DatacenterReadiness[] | undefined>;
@@ -10,7 +10,7 @@ export interface UseReadiness {
 }
 
 export interface UseReadinessErrors {
-  fetchReadiness: Error | null,
+  fetchReadiness: Error | null;
 }
 
 export function useReadiness(): UseReadiness {
@@ -29,7 +29,7 @@ export function useReadiness(): UseReadiness {
     } finally {
       loading.value = false;
     }
-  }
+  };
 
   fetchReadiness();
 

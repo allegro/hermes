@@ -26,7 +26,7 @@ describe('ThemeSwitch', () => {
     'should change Vuetify theme on button click (initial theme: %s)',
     async (initialTheme: string, changedTheme: string) => {
       // given
-      const { getByRole } = render(ThemeSwitch, {testVuetify});
+      const { getByRole } = render(ThemeSwitch, { testVuetify });
       testVuetify.theme.global.name.value = initialTheme;
 
       // when

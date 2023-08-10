@@ -1,15 +1,15 @@
-import { ref } from 'vue';
 import { dummyConstraints } from '@/dummy/constraints';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
-import {useConstraints} from '@/composables/constraints/use-constraints/useConstraints';
+import { useConstraints } from '@/composables/constraints/use-constraints/useConstraints';
 import ConstraintsView from '@/views/admin/constraints/ConstraintsView.vue';
-import type {UseConstraints} from '@/composables/constraints/use-constraints/useConstraints';
+import type { UseConstraints } from '@/composables/constraints/use-constraints/useConstraints';
 
 vi.mock('@/composables/constraints/use-constraints/useConstraints');
 
 const useConstraintsStub: UseConstraints = {
   topicConstraints: ref(dummyConstraints.topicConstraints),
-  subscriptionConstraints: ref(dummyConstraints.subscriptionConstraints,),
+  subscriptionConstraints: ref(dummyConstraints.subscriptionConstraints),
   loading: ref(false),
   error: ref({
     fetchConstraints: null,
@@ -67,7 +67,7 @@ describe('ConstraintsView', () => {
     vi.mocked(useConstraints).mockReturnValueOnce({
       ...useConstraintsStub,
       loading: ref(false),
-      error: ref({fetchConstraints: new Error()}),
+      error: ref({ fetchConstraints: new Error() }),
     });
 
     // when
@@ -84,7 +84,7 @@ describe('ConstraintsView', () => {
     vi.mocked(useConstraints).mockReturnValueOnce({
       ...useConstraintsStub,
       loading: ref(false),
-      error: ref({fetchConstraints: null}),
+      error: ref({ fetchConstraints: null }),
     });
 
     // when

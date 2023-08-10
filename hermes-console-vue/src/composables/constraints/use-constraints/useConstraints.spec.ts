@@ -1,12 +1,17 @@
+import { afterEach } from 'vitest';
 import { dummyConstraints } from '@/dummy/constraints';
+import {
+  fetchConstraintsErrorHandler,
+  fetchConstraintsHandler,
+} from '@/mocks/handlers';
+import { setupServer } from 'msw/node';
 import { useConstraints } from '@/composables/constraints/use-constraints/useConstraints';
 import { waitFor } from '@testing-library/vue';
-import {setupServer} from "msw/node";
-import {fetchConstraintsErrorHandler, fetchConstraintsHandler} from "@/mocks/handlers";
-import {afterEach} from "vitest";
 
 describe('useConstraints', () => {
-  const server = setupServer(fetchConstraintsHandler({ constraints: dummyConstraints }));
+  const server = setupServer(
+    fetchConstraintsHandler({ constraints: dummyConstraints }),
+  );
 
   afterEach(() => {
     server.resetHandlers();
@@ -39,8 +44,8 @@ describe('useConstraints', () => {
 
   it('should set error to true on workload endpoint failure', async () => {
     // given
-    server.use(fetchConstraintsErrorHandler({errorCode: 500}))
-    server.listen()
+    server.use(fetchConstraintsErrorHandler({ errorCode: 500 }));
+    server.listen();
 
     // when
     const { error } = useConstraints();

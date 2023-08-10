@@ -1,19 +1,21 @@
+import { afterEach } from 'vitest';
 import { dummyGroupNames } from '@/dummy/groups';
 import { dummyTopicNames } from '@/dummy/topics';
-import { useGroups } from '@/composables/groups/use-groups/useGroups';
-import { waitFor } from '@testing-library/vue';
-import {setupServer} from "msw/node";
 import {
   fetchGroupNamesErrorHandler,
   fetchGroupNamesHandler,
   fetchTopicNamesErrorHandler,
-  fetchTopicNamesHandler
-} from "@/mocks/handlers";
-import {afterEach} from "vitest";
+  fetchTopicNamesHandler,
+} from '@/mocks/handlers';
+import { setupServer } from 'msw/node';
+import { useGroups } from '@/composables/groups/use-groups/useGroups';
+import { waitFor } from '@testing-library/vue';
 
 describe('useGroups', () => {
-  const server = setupServer(fetchGroupNamesHandler({ groupNames: dummyGroupNames }),
-      fetchTopicNamesHandler({ topicNames: dummyTopicNames }));
+  const server = setupServer(
+    fetchGroupNamesHandler({ groupNames: dummyGroupNames }),
+    fetchTopicNamesHandler({ topicNames: dummyTopicNames }),
+  );
 
   afterEach(() => {
     server.resetHandlers();
@@ -45,7 +47,7 @@ describe('useGroups', () => {
 
   it('should set error to true on /groups endpoint failure', async () => {
     // given
-    server.use(fetchGroupNamesErrorHandler({errorCode: 500}))
+    server.use(fetchGroupNamesErrorHandler({ errorCode: 500 }));
     server.listen();
 
     // when
@@ -59,7 +61,7 @@ describe('useGroups', () => {
 
   it('should set error to true on /topics endpoint failure', async () => {
     // given
-    server.use(fetchTopicNamesErrorHandler({errorCode: 500}))
+    server.use(fetchTopicNamesErrorHandler({ errorCode: 500 }));
     server.listen();
 
     // when

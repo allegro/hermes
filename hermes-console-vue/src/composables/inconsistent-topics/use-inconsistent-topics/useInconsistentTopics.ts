@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
+import { fetchInconsistentTopics as getInconsistentTopics } from '@/api/hermes-client';
 import type { Ref } from 'vue';
-import { fetchInconsistentTopics as getInconsistentTopics } from "@/api/hermes-client";
 
 export interface UseInconsistentTopics {
   topics: Ref<string[] | undefined>;
@@ -9,7 +9,7 @@ export interface UseInconsistentTopics {
 }
 
 export interface UseInconsistentTopicsErrors {
-  fetchInconsistentTopics: Error | null,
+  fetchInconsistentTopics: Error | null;
 }
 
 export function useInconsistentTopics(): UseInconsistentTopics {
@@ -32,7 +32,7 @@ export function useInconsistentTopics(): UseInconsistentTopics {
     } finally {
       loading.value = false;
     }
-  }
+  };
 
   fetchInconsistentTopics();
 

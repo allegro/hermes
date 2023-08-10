@@ -9,7 +9,10 @@ import {
   dummyTopicMetrics,
   dummyTopicOwner,
 } from '@/dummy/topic';
-import {rest} from 'msw';
+import { rest } from 'msw';
+import type { ConstraintsConfig } from '@/api/constraints';
+import type { ConsumerGroup } from '@/api/consumer-group';
+import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type {
   MessagePreview,
   TopicMetrics,
@@ -17,9 +20,6 @@ import type {
 } from '@/api/topic';
 import type { Owner } from '@/api/owner';
 import type { Subscription } from '@/api/subscription';
-import type {ConstraintsConfig} from "@/api/constraints";
-import type {DatacenterReadiness} from "@/api/datacenter-readiness";
-import type {ConsumerGroup} from "@/api/consumer-group";
 
 const url = 'http://localhost:3000';
 
@@ -176,115 +176,123 @@ export const successfulTopicHandlers = [
 ];
 
 export const fetchConstraintsHandler = ({
-  constraints
-}: { constraints: ConstraintsConfig}) => rest.get(
-    `${url}/workload-constraints`,
-    (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(constraints))
-    }
-)
+  constraints,
+}: {
+  constraints: ConstraintsConfig;
+}) =>
+  rest.get(`${url}/workload-constraints`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(constraints));
+  });
 
 export const fetchConstraintsErrorHandler = ({
-                                            errorCode = 500
-                                        }: { errorCode?: number}) => rest.get(
-    `${url}/workload-constraints`,
-    (req, res, ctx) => {
-        return res(ctx.status(errorCode), ctx.json(undefined))
-    }
-)
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/workload-constraints`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
 
 export const fetchReadinessHandler = ({
-                                          datacentersReadiness
-                                        }: { datacentersReadiness: DatacenterReadiness[]}) => rest.get(
-    `${url}/readiness/datacenters`,
-    (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(datacentersReadiness))
-    }
-)
+  datacentersReadiness,
+}: {
+  datacentersReadiness: DatacenterReadiness[];
+}) =>
+  rest.get(`${url}/readiness/datacenters`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(datacentersReadiness));
+  });
 
 export const fetchReadinessErrorHandler = ({
-                                                 errorCode = 500
-                                             }: { errorCode?: number}) => rest.get(
-    `${url}/readiness/datacenters`,
-    (req, res, ctx) => {
-        return res(ctx.status(errorCode), ctx.json(undefined))
-    }
-)
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/readiness/datacenters`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
 
 export const fetchConsumerGroupsHandler = ({
-                                          consumerGroups,
-                                               topicName,
-                                               subscriptionName,
-                                      }: { consumerGroups: ConsumerGroup[];   topicName: string;
-    subscriptionName: string;}) => rest.get(
+  consumerGroups,
+  topicName,
+  subscriptionName,
+}: {
+  consumerGroups: ConsumerGroup[];
+  topicName: string;
+  subscriptionName: string;
+}) =>
+  rest.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/consumer-groups`,
     (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(consumerGroups))
-    }
-)
+      return res(ctx.status(200), ctx.json(consumerGroups));
+    },
+  );
 
 export const fetchConsumerGroupsErrorHandler = ({
-                                               errorCode = 500,
-                                                    topicName,
-                                                    subscriptionName,
-                                           }: { errorCode?: number;   topicName: string;
-    subscriptionName: string;}) => rest.get(
+  errorCode = 500,
+  topicName,
+  subscriptionName,
+}: {
+  errorCode?: number;
+  topicName: string;
+  subscriptionName: string;
+}) =>
+  rest.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/consumer-groups`,
     (req, res, ctx) => {
-        return res(ctx.status(errorCode), ctx.json(undefined))
-    }
-)
+      return res(ctx.status(errorCode), ctx.json(undefined));
+    },
+  );
 
 export const fetchInconsistentTopicsHandler = ({
-                                            topics
-                                        }: { topics: string[]}) => rest.get(
-    `${url}/consistency/inconsistencies/topics`,
-    (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(topics))
-    }
-)
+  topics,
+}: {
+  topics: string[];
+}) =>
+  rest.get(`${url}/consistency/inconsistencies/topics`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(topics));
+  });
 
 export const fetchInconsistentTopicsErrorHandler = ({
-                                                 errorCode = 500
-                                             }: { errorCode?: number}) => rest.get(
-    `${url}/consistency/inconsistencies/topics`,
-    (req, res, ctx) => {
-        return res(ctx.status(errorCode), ctx.json(undefined))
-    }
-)
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/consistency/inconsistencies/topics`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
 
 export const fetchTopicNamesHandler = ({
-                                          topicNames
-                                      }: { topicNames: string[]}) => rest.get(
-    `${url}/topics`,
-    (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(topicNames))
-    }
-)
+  topicNames,
+}: {
+  topicNames: string[];
+}) =>
+  rest.get(`${url}/topics`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(topicNames));
+  });
 
 export const fetchTopicNamesErrorHandler = ({
-                                               errorCode = 500
-                                           }: { errorCode?: number}) => rest.get(
-    `${url}/topics`,
-    (req, res, ctx) => {
-        return res(ctx.status(errorCode), ctx.json(undefined))
-    }
-)
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/topics`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
 
 export const fetchGroupNamesHandler = ({
-                                          groupNames
-                                      }: { groupNames: string[]}) => rest.get(
-    `${url}/groups`,
-    (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(groupNames))
-    }
-)
+  groupNames,
+}: {
+  groupNames: string[];
+}) =>
+  rest.get(`${url}/groups`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(groupNames));
+  });
 
 export const fetchGroupNamesErrorHandler = ({
-                                               errorCode = 500
-                                           }: { errorCode?: number}) => rest.get(
-    `${url}/groups`,
-    (req, res, ctx) => {
-        return res(ctx.status(errorCode), ctx.json(undefined))
-    }
-)
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/groups`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });

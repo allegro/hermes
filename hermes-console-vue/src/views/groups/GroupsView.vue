@@ -21,7 +21,7 @@
       title: t('subscription.subscriptionBreadcrumbs.groups'),
       href: '/#/groups',
     },
-  ]
+  ];
 </script>
 
 <template>

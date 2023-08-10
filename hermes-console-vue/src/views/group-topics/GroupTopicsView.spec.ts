@@ -1,9 +1,8 @@
 import { dummyGroups } from '@/dummy/groups';
-import { fireEvent, waitFor } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useGroups } from '@/composables/groups/use-groups/useGroups';
-import GroupsView from '@/views/groups/GroupsView.vue';
+import GroupTopicsView from '@/views/group-topics/GroupTopicsView.vue';
 import type { UseGroups } from '@/composables/groups/use-groups/useGroups';
 
 vi.mock('@/composables/groups/use-groups/useGroups');
@@ -17,41 +16,13 @@ const useGroupsStub: UseGroups = {
   }),
 };
 
-describe('GroupsView', () => {
-  it('should render', () => {
-    // given
-    vi.mocked(useGroups).mockReturnValueOnce(useGroupsStub);
-
-    // when
-    const { getByText } = render(GroupsView);
-
-    // then
-    expect(getByText('groups.heading')).toBeInTheDocument();
-    expect(getByText('groups.actions.create')).toBeInTheDocument();
-  });
-
-  it('should open modal on `new group` button click', async () => {
-    // given
-    vi.mocked(useGroups).mockReturnValueOnce(useGroupsStub);
-
-    // given
-    const { getByText } = render(GroupsView);
-
-    // when
-    await fireEvent.click(getByText('groups.actions.create')!);
-
-    // then
-    await waitFor(() => {
-      expect(getByText('groups.groupForm.createTitle')).toBeInTheDocument();
-    });
-  });
-
+describe('GroupTopicsView', () => {
   it('should render if data was successfully fetched', () => {
     // given
     vi.mocked(useGroups).mockReturnValueOnce(useGroupsStub);
 
     // when
-    const { getByText } = render(GroupsView);
+    const { getByText } = render(GroupTopicsView);
 
     // then
     expect(vi.mocked(useGroups)).toHaveBeenCalledOnce();
@@ -66,7 +37,7 @@ describe('GroupsView', () => {
     });
 
     // when
-    const { queryByTestId } = render(GroupsView);
+    const { queryByTestId } = render(GroupTopicsView);
 
     // then
     expect(vi.mocked(useGroups)).toHaveBeenCalledOnce();
@@ -81,7 +52,7 @@ describe('GroupsView', () => {
     });
 
     // when
-    const { queryByTestId } = render(GroupsView);
+    const { queryByTestId } = render(GroupTopicsView);
 
     // then
     expect(vi.mocked(useGroups)).toHaveBeenCalledOnce();
@@ -97,7 +68,7 @@ describe('GroupsView', () => {
     });
 
     // when
-    const { queryByText } = render(GroupsView);
+    const { queryByText } = render(GroupTopicsView);
 
     // then
     expect(vi.mocked(useGroups)).toHaveBeenCalledOnce();
@@ -114,7 +85,7 @@ describe('GroupsView', () => {
     });
 
     // when
-    const { queryByText } = render(GroupsView);
+    const { queryByText } = render(GroupTopicsView);
 
     // then
     expect(vi.mocked(useGroups)).toHaveBeenCalledOnce();

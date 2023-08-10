@@ -23,3 +23,11 @@ export const dummyGroups: Group[] = [
   },
   ...dummyGroupNames.slice(2).map((name) => ({ name, topics: [] })),
 ];
+
+export const dummyGroup: Group = {
+  name: 'pl.allegro.offer.product',
+  topics: [
+    'pl.allegro.offer.product.ProductEventV1',
+    'pl.allegro.offer.product.ProductEventV2',
+  ],
+};

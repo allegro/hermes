@@ -1,12 +1,17 @@
+import { afterEach } from 'vitest';
 import { dummyInconsistentTopics } from '@/dummy/inconsistentTopics';
+import {
+  fetchInconsistentTopicsErrorHandler,
+  fetchInconsistentTopicsHandler,
+} from '@/mocks/handlers';
+import { setupServer } from 'msw/node';
 import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
 import { waitFor } from '@testing-library/vue';
-import {setupServer} from "msw/node";
-import {fetchInconsistentTopicsErrorHandler, fetchInconsistentTopicsHandler} from "@/mocks/handlers";
-import {afterEach} from "vitest";
 
 describe('useInconsistentTopics', () => {
-  const server = setupServer(fetchInconsistentTopicsHandler({ topics: dummyInconsistentTopics }));
+  const server = setupServer(
+    fetchInconsistentTopicsHandler({ topics: dummyInconsistentTopics }),
+  );
 
   afterEach(() => {
     server.resetHandlers();
@@ -25,14 +30,16 @@ describe('useInconsistentTopics', () => {
     await waitFor(() => {
       expect(loading.value).toBe(false);
       expect(error.value.fetchInconsistentTopics).toBe(null);
-      expect(topics.value).toEqual(expect.arrayContaining(dummyInconsistentTopics));
+      expect(topics.value).toEqual(
+        expect.arrayContaining(dummyInconsistentTopics),
+      );
     });
   });
 
   it('should set error to true on topics consistency endpoint failure', async () => {
     // given
-    server.use(fetchInconsistentTopicsErrorHandler({errorCode: 500}))
-    server.listen()
+    server.use(fetchInconsistentTopicsErrorHandler({ errorCode: 500 }));
+    server.listen();
 
     // when
     const { loading, error } = useInconsistentTopics();

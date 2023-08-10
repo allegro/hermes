@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
-import type {Ref} from "vue";
-import { fetchTopicNames as getTopicNames } from "@/api/hermes-client";
-import { fetchGroupNames as getGroupNames } from "@/api/hermes-client";
+import { fetchGroupNames as getGroupNames } from '@/api/hermes-client';
+import { fetchTopicNames as getTopicNames } from '@/api/hermes-client';
+import type { Ref } from 'vue';
 
 export interface UseGroups {
   groups: Ref<Group[] | undefined>;
@@ -10,8 +10,8 @@ export interface UseGroups {
 }
 
 export interface UseGroupsErrors {
-  fetchGroupNames: Error | null,
-  fetchTopicNames: Error | null,
+  fetchGroupNames: Error | null;
+  fetchTopicNames: Error | null;
 }
 
 export interface Group {
@@ -51,7 +51,7 @@ export function useGroups(): UseGroups {
     } finally {
       loading.value = false;
     }
-  }
+  };
 
   const fetchTopicNames = async () => {
     try {
@@ -62,11 +62,10 @@ export function useGroups(): UseGroups {
     } finally {
       loading.value = false;
     }
-  }
+  };
 
   fetchGroupNames();
   fetchTopicNames();
-
 
   return {
     groups,

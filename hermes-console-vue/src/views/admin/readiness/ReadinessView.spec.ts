@@ -62,7 +62,7 @@ describe('ReadinessView', () => {
     vi.mocked(useReadiness).mockReturnValueOnce({
       ...useReadinessStub,
       loading: computed(() => false),
-      error: ref({fetchReadiness: new Error()}),
+      error: ref({ fetchReadiness: new Error() }),
     });
 
     // when
@@ -79,7 +79,7 @@ describe('ReadinessView', () => {
     vi.mocked(useReadiness).mockReturnValueOnce({
       ...useReadinessStub,
       loading: computed(() => false),
-      error: ref({fetchReadiness: null}),
+      error: ref({ fetchReadiness: null }),
     });
 
     // when
