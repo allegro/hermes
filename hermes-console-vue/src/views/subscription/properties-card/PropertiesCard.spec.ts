@@ -1,4 +1,5 @@
 import { ContentType } from '@/api/content-type';
+import { createTestingPiniaWithState } from '@/dummy/store';
 import { DeliveryType, Severity, SubscriptionMode } from '@/api/subscription';
 import { dummySubscription } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
@@ -573,5 +574,41 @@ describe('PropertiesCard', () => {
     expect(
       within(modifiedAtRow).getByText('2023-02-18 15:54:57'),
     ).toBeVisible();
+  });
+
+  it('should render additional supported properties', () => {
+    // given
+    const props = {
+      subscription: dummySubscription,
+    };
+
+    // when
+    const { getByText } = render(PropertiesCard, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    const row = getByText('Supported metadata').closest('tr')!;
+    expect(row).toBeVisible();
+    expect(within(row).getByText('false')).toBeVisible();
+  });
+
+  it('should render additional unsupported properties', () => {
+    // given
+    const props = {
+      subscription: dummySubscription,
+    };
+
+    // when
+    const { getByText } = render(PropertiesCard, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    const row = getByText('unsupportedMetadata').closest('tr')!;
+    expect(row).toBeVisible();
+    expect(within(row).getByText('2')).toBeVisible();
   });
 });

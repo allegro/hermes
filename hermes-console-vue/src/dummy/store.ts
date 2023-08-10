@@ -1,7 +1,8 @@
 import { createTestingPinia } from '@pinia/testing';
 import { dummyAppConfig } from '@/dummy/app-config';
+import type { AppConfigStoreState } from '@/store/types';
 
-export const appConfigStoreState = {
+export const appConfigStoreState: AppConfigStoreState = {
   appConfig: dummyAppConfig,
   loading: false,
   error: {

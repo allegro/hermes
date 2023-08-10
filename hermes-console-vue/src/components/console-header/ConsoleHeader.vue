@@ -29,7 +29,6 @@
             alt="Hermes"
           />
         </router-link>
-        <!-- TODO: pass environment name from config -->
         <environment-badge
           :environment-name="
             configStore.appConfig?.console.environmentName || ''

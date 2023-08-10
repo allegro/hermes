@@ -132,6 +132,7 @@ export interface EndpointAddressResolverMetadataConfiguration {
   title: string;
   type: string;
   hint: string;
+  options?: any;
 }
 
 export interface DefaultSubscriptionViewConfiguration {

@@ -283,7 +283,10 @@
           "value": "foobar"
         }
       ],
-      "endpointAddressResolverMetadata": {},
+      "endpointAddressResolverMetadata": {
+        "additionalMetadata": false,
+        "nonSupportedProperty": 2
+      },
       "http2Enabled": false,
       "subscriptionIdentityHeadersEnabled": false,
       "autoDeleteWithTopicEnabled": false,
@@ -518,7 +521,13 @@
       "offlineRetransmissionDescription": "Offline retransmission"
     },
     "subscription": {
-      "endpointAddressResolverMetadata": {},
+      "endpointAddressResolverMetadata": {
+        "additionalMetadata": {
+          "hint": "Sample hint for additional metadata",
+          "title": "Additional metadata",
+          "type": "boolean"
+        }
+      },
       "showHeadersFilter": false,
       "showFixedHeaders": false,
       "requestTimeoutWarningThreshold": 1001,

@@ -11,7 +11,6 @@ import axios from 'axios';
 import messages from '@/i18n/messages';
 import router from './router';
 
-// TODO: should be fetched from Hermes console configuration
 if (import.meta.env.DEV) {
   axios.defaults.baseURL = 'http://localhost:3000';
 }

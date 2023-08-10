@@ -30,7 +30,8 @@
     <v-row justify="center">
       <v-col cols="6">
         <v-btn to="/groups" color="secondary" block>
-          <v-icon left icon="mdi-cog"></v-icon>&nbsp;Console
+          <v-icon left icon="mdi-cog"></v-icon>
+          <span class="ml-1">{{ $t('homeView.links.console') }}</span>
         </v-btn>
       </v-col>
     </v-row>
@@ -38,12 +39,14 @@
     <v-row justify="center">
       <v-col cols="3">
         <v-btn to="/stats" color="accent" block>
-          <v-icon left icon="mdi-chart-bar"></v-icon>&nbsp;Stats
+          <v-icon left icon="mdi-chart-bar"></v-icon>
+          <span class="ml-1">{{ $t('homeView.links.statistics') }}</span>
         </v-btn>
       </v-col>
       <v-col cols="3">
         <v-btn to="/search" color="accent" block>
-          <v-icon left icon="mdi-magnify"></v-icon>&nbsp;Search
+          <v-icon left icon="mdi-magnify"></v-icon>
+          <span class="ml-1">{{ $t('homeView.links.search') }}</span>
         </v-btn>
       </v-col>
     </v-row>
@@ -55,7 +58,8 @@
           :href="configStore.appConfig?.dashboard.metrics"
           target="_blank"
         >
-          <v-icon left icon="mdi-chart-multiple"></v-icon>&nbsp;Runtime
+          <v-icon left icon="mdi-chart-multiple"></v-icon>
+          <span class="ml-1">{{ $t('homeView.links.runtime') }}</span>
         </v-btn>
       </v-col>
       <v-col cols="3">
@@ -64,7 +68,8 @@
           :href="configStore.appConfig?.dashboard.docs"
           target="_blank"
         >
-          <v-icon left icon="mdi-book-open-variant"></v-icon>&nbsp;Docs
+          <v-icon left icon="mdi-book-open-variant"></v-icon>
+          <span class="ml-1">{{ $t('homeView.links.documentation') }}</span>
         </v-btn>
       </v-col>
     </v-row>
@@ -72,7 +77,8 @@
     <v-row justify="center">
       <v-col cols="6">
         <v-btn color="secondary" block>
-          <v-icon left icon="mdi-security"></v-icon>&nbsp;Admin tools
+          <v-icon left icon="mdi-security"></v-icon>
+          <span class="ml-1">{{ $t('homeView.links.adminTools') }}</span>
           &nbsp;<v-icon left icon="mdi-arrow-down"></v-icon>
           <v-menu activator="parent">
             <v-list>
