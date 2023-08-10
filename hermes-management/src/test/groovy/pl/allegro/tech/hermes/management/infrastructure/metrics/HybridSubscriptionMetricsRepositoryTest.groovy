@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics
+import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetricsProvider
 import pl.allegro.tech.hermes.management.stub.MetricsPaths
 import spock.lang.Specification
 
@@ -25,7 +26,9 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
 
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
-    private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(client, paths,
+    private GraphiteMetricsProvider graphiteMetricsProvider = new GraphiteMetricsProvider(client, paths);
+
+    private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(graphiteMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)
 
     def "should read subscription metrics from multiple places"() {
