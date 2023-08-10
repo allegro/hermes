@@ -5,6 +5,7 @@ import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type {
   MessagePreview,
+  Topic,
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';

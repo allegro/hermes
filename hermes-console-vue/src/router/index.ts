@@ -49,6 +49,11 @@ const router = createRouter({
       component: () =>
         import('@/views/admin/consumer-groups/ConsumerGroupsView.vue'),
     },
+    {
+      path: '/stats/',
+      name: 'stats',
+      component: () => import('../views/admin/stats/StatsView.vue'),
+    },
   ],
 });
 
