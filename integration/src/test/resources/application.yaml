@@ -60,13 +60,6 @@ management:
   endpoints:
     web:
       base-path: /status
-  server:
-    servlet:
-      context-path: /
-  metrics:
-    export:
-      prometheus:
-        enabled: false
 
 spring.groovy.template.check-template-location: false
 

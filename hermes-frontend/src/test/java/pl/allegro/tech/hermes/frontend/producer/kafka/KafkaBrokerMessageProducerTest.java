@@ -69,10 +69,10 @@ public class KafkaBrokerMessageProducerTest {
 
     @Before
     public void before() {
-        cachedTopic = new CachedTopic(TOPIC, hermesMetrics, metricsFacade, kafkaNamesMapper.toKafkaTopics(TOPIC));
+        cachedTopic = new CachedTopic(TOPIC, metricsFacade, kafkaNamesMapper.toKafkaTopics(TOPIC));
         MessageToKafkaProducerRecordConverter messageConverter =
             new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
-        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, messageConverter);
+        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
     }
 
     @After
@@ -131,7 +131,7 @@ public class KafkaBrokerMessageProducerTest {
     public void shouldUseEveryoneConfirmProducerForTopicWithAckAll() {
         //given
         Topic topic = topic("group.all").withAck(Topic.Ack.ALL).build();
-        CachedTopic cachedTopic = new CachedTopic(topic, hermesMetrics, metricsFacade,
+        CachedTopic cachedTopic = new CachedTopic(topic, metricsFacade,
                 kafkaNamesMapper.toKafkaTopics(topic));
 
         //when

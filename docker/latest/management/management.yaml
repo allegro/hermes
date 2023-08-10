@@ -44,10 +44,7 @@ management:
     enabled: true
   consumer-groups:
     create-manually: true
-  metrics:
-    export:
-      prometheus:
-        enabled: false
+
 
 audit.enabled: false
 

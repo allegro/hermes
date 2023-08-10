@@ -1,10 +1,11 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import com.codahale.metrics.Counter;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
@@ -16,23 +17,23 @@ public class AvroMessageHeaderSchemaVersionContentWrapper implements AvroMessage
     private final SchemaRepository schemaRepository;
     private final AvroMessageContentWrapper avroMessageContentWrapper;
 
-    private final Counter deserializationWithErrorsUsingHeaderSchemaVersion;
-    private final Counter deserializationUsingHeaderSchemaVersion;
+    private final HermesCounter deserializationWithErrorsUsingHeaderSchemaVersion;
+    private final HermesCounter deserializationUsingHeaderSchemaVersion;
 
     public AvroMessageHeaderSchemaVersionContentWrapper(SchemaRepository schemaRepository,
                                                         AvroMessageContentWrapper avroMessageContentWrapper,
-                                                        DeserializationMetrics deserializationMetrics) {
+                                                        MetricsFacade metrics) {
         this.schemaRepository = schemaRepository;
         this.avroMessageContentWrapper = avroMessageContentWrapper;
 
-        this.deserializationWithErrorsUsingHeaderSchemaVersion = deserializationMetrics.errorsForHeaderSchemaVersion();
-        this.deserializationUsingHeaderSchemaVersion = deserializationMetrics.usingHeaderSchemaVersion();
+        this.deserializationWithErrorsUsingHeaderSchemaVersion = metrics.deserialization().errorsForHeaderSchemaVersion();
+        this.deserializationUsingHeaderSchemaVersion = metrics.deserialization().usingHeaderSchemaVersion();
     }
 
     @Override
     public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         try {
-            deserializationUsingHeaderSchemaVersion.inc();
+            deserializationUsingHeaderSchemaVersion.increment();
             CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, SchemaVersion.valueOf(schemaVersion));
 
             return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(data, avroSchema));
@@ -41,7 +42,7 @@ public class AvroMessageHeaderSchemaVersionContentWrapper implements AvroMessage
                     "Could not unwrap content for topic [{}] using schema version provided in header [{}] - falling back",
                     topic.getQualifiedName(), schemaVersion, ex);
 
-            deserializationWithErrorsUsingHeaderSchemaVersion.inc();
+            deserializationWithErrorsUsingHeaderSchemaVersion.increment();
 
             return AvroMessageContentUnwrapperResult.failure();
         }

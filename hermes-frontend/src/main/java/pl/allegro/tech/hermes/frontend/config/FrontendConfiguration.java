@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -41,13 +40,12 @@ public class FrontendConfiguration {
     public TopicsCache notificationBasedTopicsCache(InternalNotificationsBus internalNotificationsBus,
                                                     GroupRepository groupRepository,
                                                     TopicRepository topicRepository,
-                                                    HermesMetrics hermesMetrics,
                                                     MetricsFacade metricsFacade,
                                                     KafkaNamesMapper kafkaNamesMapper,
                                                     BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
 
         return new NotificationBasedTopicsCache(internalNotificationsBus, blacklistZookeeperNotifyingCache,
-                groupRepository, topicRepository, hermesMetrics, metricsFacade, kafkaNamesMapper);
+                groupRepository, topicRepository, metricsFacade, kafkaNamesMapper);
     }
 
     @Bean
@@ -66,9 +64,9 @@ public class FrontendConfiguration {
                                                                Clock clock,
                                                                BrokerListeners listeners,
                                                                BackupMessagesLoader backupMessagesLoader,
-                                                               HermesMetrics hermesMetrics) {
+                                                               MetricsFacade metricsFacade) {
         return new PersistentBufferExtension(localMessageStorageProperties, clock, listeners, backupMessagesLoader,
-                hermesMetrics);
+                metricsFacade);
     }
 
     @Bean(initMethod = "startup")

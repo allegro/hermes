@@ -7,7 +7,7 @@ import org.apache.kafka.common.PartitionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
@@ -21,18 +21,18 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
     private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
     private final Producers producers;
     private final KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
-    private final HermesMetrics metrics;
+    private final MetricsFacade metricsFacade;
     private final MessageToKafkaProducerRecordConverter messageConverter;
 
     public KafkaBrokerMessageProducer(Producers producers,
                                       KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
-                                      HermesMetrics metrics,
+                                      MetricsFacade metricsFacade,
                                       MessageToKafkaProducerRecordConverter messageConverter) {
         this.producers = producers;
         this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
-        this.metrics = metrics;
+        this.metricsFacade = metricsFacade;
         this.messageConverter = messageConverter;
-        producers.registerGauges(metrics);
+        producers.registerGauges(metricsFacade);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
             if (e == null) {
                 callback.onPublished(message, topic);
-                producers.maybeRegisterNodeMetricsGauges(metrics);
+                producers.maybeRegisterNodeMetricsGauges(metricsFacade);
             } else {
                 callback.onUnpublished(message, topic, e);
             }

@@ -6,7 +6,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
 import org.xnio.SslClientAuthMode;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
@@ -24,7 +24,7 @@ import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 
 public class HermesServer {
 
-    private final HermesMetrics hermesMetrics;
+    private final MetricsFacade metricsFacade;
     private final HermesServerParameters hermesServerParameters;
     private final SslParameters sslParameters;
     private final HttpHandler publishingHandler;
@@ -42,7 +42,7 @@ public class HermesServer {
     public HermesServer(
             SslParameters sslParameters,
             HermesServerParameters hermesServerParameters,
-            HermesMetrics hermesMetrics,
+            MetricsFacade metricsFacade,
             HttpHandler publishingHandler,
             ReadinessChecker readinessChecker,
             MessagePreviewPersister messagePreviewPersister,
@@ -54,7 +54,7 @@ public class HermesServer {
 
         this.sslParameters = sslParameters;
         this.hermesServerParameters = hermesServerParameters;
-        this.hermesMetrics = hermesMetrics;
+        this.metricsFacade = metricsFacade;
         this.publishingHandler = publishingHandler;
         this.prometheusMeterRegistry = prometheusMeterRegistry;
         this.healthCheckService = new HealthCheckService();
@@ -105,7 +105,7 @@ public class HermesServer {
     }
 
     private Undertow configureServer() {
-        gracefulShutdown = new HermesShutdownHandler(handlers(), hermesMetrics);
+        gracefulShutdown = new HermesShutdownHandler(handlers(), metricsFacade);
         Undertow.Builder builder = Undertow.builder()
                 .addHttpListener(hermesServerParameters.getPort(), hermesServerParameters.getHost())
                 .setServerOption(REQUEST_PARSE_TIMEOUT, (int) hermesServerParameters.getRequestParseTimeout().toMillis())
