@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
-import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.DefaultHermesHistogram;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
