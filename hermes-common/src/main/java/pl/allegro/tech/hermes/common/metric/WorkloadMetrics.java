@@ -106,14 +106,14 @@ public class WorkloadMetrics {
     public <T> void registerCurrentScoreGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
                 buildFullGraphiteMetricPath(CURRENT_SCORE, consumerId),
-                "workload.weighted.current-error",
+                "workload.weighted.current-score",
                 obj,
                 f,
                 Tags.of(CONSUMER_ID_TAG, consumerId)
         );
     }
 
-    public <T> void registerProposedScoreGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
+    public <T> void registerProposedErrorGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
                 buildFullGraphiteMetricPath(PROPOSED_SCORE, consumerId),
                 "workload.weighted.proposed-error",

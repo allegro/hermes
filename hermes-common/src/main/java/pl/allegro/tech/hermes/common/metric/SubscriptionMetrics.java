@@ -39,7 +39,7 @@ public class SubscriptionMetrics {
 
     public SubscriptionHermesCounter throughputInBytes(SubscriptionName subscription) {
         return SubscriptionHermesCounter.from(
-                micrometerCounter("subscription-throughput", subscription),
+                micrometerCounter("subscription-throughput-bytes", subscription),
                 hermesMetrics.meter(SUBSCRIPTION_THROUGHPUT_BYTES, subscription.getTopicName(), subscription.getName()),
                 SUBSCRIPTION_THROUGHPUT_BYTES, subscription);
     }
@@ -128,9 +128,10 @@ public class SubscriptionMetrics {
         );
     }
 
-    public HermesHistogram inflightTimeHistogram(SubscriptionName subscriptionName) {
+    public HermesHistogram inflightTimeInMillisHistogram(SubscriptionName subscriptionName) {
         return HermesHistogram.of(
                 DistributionSummary.builder("subscription.inflight-time")
+                        .baseUnit("ms")
                         .tags(subscriptionTags(subscriptionName))
                         .register(meterRegistry),
                 hermesMetrics.inflightTimeHistogram(subscriptionName)

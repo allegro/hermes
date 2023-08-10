@@ -58,6 +58,6 @@ public class MaxRateMetrics {
 
     public <T> void registerOutputRateGauge(SubscriptionName subscription, T obj, ToDoubleFunction<T> f) {
         hermesMetrics.registerGauge(OUTPUT_RATE, subscription, () -> (int) f.applyAsDouble(obj));
-        // This metric provides almost the same information as Gauge.MAX_RATE_ACTUAL_RATE_VALUE does, so there is no need to migrate it to Micrometer.
+        // This metric provides almost the same information as Gauge.MAX_RATE_VALUE does, so there is no need to migrate it to Micrometer.
     }
 }

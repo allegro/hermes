@@ -35,7 +35,7 @@ public class WeightedWorkloadMetricsReporter {
 
     void reportProposedScore(String consumerId, double score) {
         if (!currentScores.containsKey(consumerId)) {
-            metrics.registerProposedScoreGauge(consumerId, proposedScores, scores -> scores.getOrDefault(consumerId, 0d));
+            metrics.registerProposedErrorGauge(consumerId, proposedScores, scores -> scores.getOrDefault(consumerId, 0d));
         }
         proposedScores.put(consumerId, score);
     }

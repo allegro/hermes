@@ -265,7 +265,7 @@ public class BatchConsumer implements Consumer {
             logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);
             recordAttemptAsFinished(batch.getMessageCount());
             metrics.subscriptions().discarded(subscription.getQualifiedName()).increment(batch.getMessageCount());
-            metrics.subscriptions().inflightTimeHistogram(subscription.getQualifiedName()).record(batch.getLifetime());
+            metrics.subscriptions().inflightTimeInMillisHistogram(subscription.getQualifiedName()).record(batch.getLifetime());
             batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logDiscarded(m, e.getMessage()));
         }
     }
@@ -301,7 +301,7 @@ public class BatchConsumer implements Consumer {
         metrics.subscriptions().batchSuccesses(subscriptionName).increment();
         metrics.subscriptions().throughputInBytes(subscriptionName).increment(batch.getSize());
         metrics.subscriptions().httpAnswerCounter(subscriptionName, result.getStatusCode()).increment();
-        metrics.subscriptions().inflightTimeHistogram(subscriptionName).record(batch.getLifetime());
+        metrics.subscriptions().inflightTimeInMillisHistogram(subscriptionName).record(batch.getLifetime());
     }
 
     private void markFailure(MessageBatch batch, MessageSendingResult result) {

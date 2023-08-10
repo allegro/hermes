@@ -50,7 +50,7 @@ public class DefaultErrorHandler implements ErrorHandler {
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
         metrics.subscriptions().discarded(subscription.getQualifiedName()).increment();
-        metrics.subscriptions().inflightTimeHistogram(subscription.getQualifiedName())
+        metrics.subscriptions().inflightTimeInMillisHistogram(subscription.getQualifiedName())
                 .record(System.currentTimeMillis() - message.getReadingTimestamp());
 
         addToMessageLog(message, subscription, result);

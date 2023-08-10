@@ -68,14 +68,14 @@ public class TopicMetrics {
 
     public MeterBackedHermesCounter topicThroughputBytes(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter("topic-throughput", topicName),
+                micrometerCounter("topic-throughput-bytes", topicName),
                 hermesMetrics.meter(TOPIC_THROUGHPUT_BYTES, topicName)
         );
     }
 
     public MeterBackedHermesCounter topicGlobalThroughputBytes() {
         return HermesCounters.from(
-                meterRegistry.counter("topic-global-throughput"),
+                meterRegistry.counter("topic-global-throughput-bytes"),
                 hermesMetrics.meter(THROUGHPUT_BYTES)
         );
     }
