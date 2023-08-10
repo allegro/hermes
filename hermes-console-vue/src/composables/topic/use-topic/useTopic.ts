@@ -8,7 +8,6 @@ import {
   fetchTopicSubscriptions as getTopicSubscriptions,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
-// import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
 import type {
   MessagePreview,
   TopicMetrics,
