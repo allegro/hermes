@@ -49,70 +49,70 @@ public class HttpClientsWorkloadReporter {
         metrics.consumerSender()
                 .registerRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getQueuesSize);
         metrics.consumerSender()
-                .registerHttp1SerialClientRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp1SerialClientQueueSize);
+                .registerHttp1SerialClientRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp1SerialQueueSize);
         metrics.consumerSender()
-                .registerHttp1BatchClientRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp1BatchClientQueueSize);
+                .registerHttp1BatchClientRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp1BatchQueueSize);
         metrics.consumerSender()
-                .registerHttp2RequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp2SerialClientQueueSize);
+                .registerHttp2RequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp2SerialQueueSize);
     }
 
     private void registerConnectionGauges() {
         metrics.consumerSender()
-                .registerHttp1SerialClientActiveConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1SerialClientActiveConnections);
+                .registerHttp1SerialClientActiveConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1SerialActiveConnections);
         metrics.consumerSender()
-                .registerHttp1SerialClientIdleConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1SerialClientIdleConnections);
+                .registerHttp1SerialClientIdleConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1SerialIdleConnections);
         metrics.consumerSender()
-                .registerHttp1BatchClientActiveConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1BatchClientActiveConnections);
+                .registerHttp1BatchClientActiveConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1BatchActiveConnections);
         metrics.consumerSender()
-                .registerHttp1BatchClientIdleConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1BatchClientIdleConnections);
+                .registerHttp1BatchClientIdleConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1BatchIdleConnections);
         metrics.consumerSender()
-                .registerHttp2SerialClientConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp2SerialClientConnections);
+                .registerHttp2SerialClientConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp2SerialConnections);
         metrics.consumerSender()
-                .registerHttp2SerialClientPendingConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp2SerialClientPendingConnections);
+                .registerHttp2SerialClientPendingConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp2SerialPendingConnections);
     }
 
     int getQueuesSize() {
-        return getHttp1SerialClientQueueSize() + getHttp1BatchClientQueueSize() + getHttp2SerialClientQueueSize();
+        return getHttp1SerialQueueSize() + getHttp1BatchQueueSize() + getHttp2SerialQueueSize();
     }
 
-    int getHttp1SerialClientQueueSize() {
+    int getHttp1SerialQueueSize() {
         return getQueueSize.apply(http1SerialClient);
     }
 
-    int getHttp1BatchClientQueueSize() {
+    int getHttp1BatchQueueSize() {
         return getQueueSize.apply(http1BatchClient);
     }
 
 
-    int getHttp2SerialClientQueueSize() {
+    int getHttp2SerialQueueSize() {
         return http2ClientHolder.getHttp2Client()
                 .map(getQueueSize)
                 .orElse(0);
     }
 
-    private int getHttp1SerialClientActiveConnections() {
+    private int getHttp1SerialActiveConnections() {
         return getHttp1ActiveConnectionsCount.apply(http1SerialClient);
     }
 
-    private int getHttp1SerialClientIdleConnections() {
+    private int getHttp1SerialIdleConnections() {
         return getHttp1IdleConnectionsCount.apply(http1SerialClient);
     }
 
-    private int getHttp1BatchClientActiveConnections() {
+    private int getHttp1BatchActiveConnections() {
         return getHttp1ActiveConnectionsCount.apply(http1BatchClient);
     }
 
-    private int getHttp1BatchClientIdleConnections() {
+    private int getHttp1BatchIdleConnections() {
         return getHttp1IdleConnectionsCount.apply(http1BatchClient);
     }
 
-    private int getHttp2SerialClientConnections() {
+    private int getHttp2SerialConnections() {
         return http2ClientHolder.getHttp2Client()
                 .map(getHttp2ConnectionsCount)
                 .orElse(0);
     }
 
-    private int getHttp2SerialClientPendingConnections() {
+    private int getHttp2SerialPendingConnections() {
         return http2ClientHolder.getHttp2Client()
                 .map(getHttp2PendingConnectionsCount)
                 .orElse(0);

@@ -42,9 +42,9 @@ class HttpClientsWorkloadReporterTest extends Specification {
 
         expect:
         reporter.queuesSize == 8
-        reporter.http1SerialClientQueueSize == 3
-        reporter.http1BatchClientQueueSize == 2
-        reporter.http2SerialClientQueueSize == 3
+        reporter.http1SerialQueueSize == 3
+        reporter.http1BatchQueueSize == 2
+        reporter.http2SerialQueueSize == 3
     }
 
     def "should return sum of http/1 serial client destinations"() {
@@ -64,8 +64,8 @@ class HttpClientsWorkloadReporterTest extends Specification {
 
         expect:
         reporter.queuesSize == 3
-        reporter.http1SerialClientQueueSize == 3
-        reporter.http1BatchClientQueueSize == 0
-        reporter.http2SerialClientQueueSize == 0
+        reporter.http1SerialQueueSize == 3
+        reporter.http1BatchQueueSize == 0
+        reporter.http2SerialQueueSize == 0
     }
 }
