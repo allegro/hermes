@@ -9,6 +9,9 @@ import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
 import type { Subscription } from '@/api/subscription';
+import type {ConstraintsConfig} from "@/api/constraints";
+import type {DatacenterReadiness} from "@/api/datacenter-readiness";
+import type {ConsumerGroup} from "@/api/consumer-group";
 
 export function fetchTopic(
   topicName: string,
@@ -59,4 +62,30 @@ export function fetchOfflineClientsSource(
   return axios.get<OfflineClientsSource>(
     `/topics/${topicName}/offline-clients-source`,
   );
+}
+
+export function fetchConstraints(): ResponsePromise<ConstraintsConfig> {
+  return axios.get<ConstraintsConfig>('/workload-constraints');
+}
+
+export function fetchReadiness(): ResponsePromise<DatacenterReadiness[]> {
+  return axios.get<DatacenterReadiness[]>('/readiness/datacenters');
+}
+
+export function fetchConsumerGroups(
+    topicName: string,
+    subscription: string,
+): ResponsePromise<ConsumerGroup[]> {
+  return axios.get<ConsumerGroup[]>(`/topics/${topicName}/subscriptions/${subscription}/consumer-groups`);
+}
+
+export function fetchInconsistentTopics(): ResponsePromise<string[]> {
+  return axios.get<string[]>('/consistency/inconsistencies/topics');
+}
+
+export function fetchTopicNames(): ResponsePromise<string[]> {
+  return axios.get<string[]>('/topics');
+}
+export function fetchGroupNames(): ResponsePromise<string[]> {
+  return axios.get<string[]>('/groups');
 }

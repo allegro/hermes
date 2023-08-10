@@ -40,7 +40,7 @@ export enum Ack {
 }
 
 export interface PublishingAuth {
-  publishers: string[];
+  publishers?: string[];
   enabled: boolean;
   unauthenticatedAccessEnabled: boolean;
 }

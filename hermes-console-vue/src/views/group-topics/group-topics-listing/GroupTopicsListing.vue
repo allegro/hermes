@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import type { Group } from '@/composables/use-groups/useGroups';
+import type { Group } from '@/composables/groups/use-groups/useGroups';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -28,15 +28,15 @@ function onTopicClick(topicName: string) {
     <v-table density="comfortable" hover>
       <thead>
       <tr>
-        <th>{{ t('groups.groupListing.index') }}</th>
-        <th>{{ t('groups.groupListing.name') }}</th>
+        <th>{{ t('groups.groupTopicsListing.index') }}</th>
+        <th>{{ t('groups.groupTopicsListing.name') }}</th>
       </tr>
       </thead>
       <tbody v-if="filteredTopics.length > 0">
       <tr
           v-for="(topic, index) in filteredTopics"
           :key="topic"
-          class="groups-table__row"
+          class="topics-table__row"
           @click="onTopicClick(topic)"
       >
         <td class="text-medium-emphasis">
@@ -50,9 +50,9 @@ function onTopicClick(topicName: string) {
       <tbody v-else>
       <tr>
         <th colspan="3" class="text-center text-medium-emphasis">
-          {{ t('groups.groupListing.noGroups') }}
+          {{ t('groups.groupTopicsListing.noTopics') }}
           <template v-if="filter">
-            {{ t('groups.groupListing.appliedFilter', { filter }) }}
+            {{ t('groups.groupTopicsListing.appliedFilter', { filter }) }}
           </template>
         </th>
       </tr>
@@ -62,7 +62,7 @@ function onTopicClick(topicName: string) {
 </template>
 
 <style scoped lang="scss">
-.groups-table__row:hover {
+.topics-table__row:hover {
   cursor: pointer;
 }
 </style>

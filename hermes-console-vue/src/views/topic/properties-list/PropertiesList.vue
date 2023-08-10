@@ -15,9 +15,9 @@
     ? 'infinite'
     : `${props.topic.offlineStorage.retentionTime.duration} days`;
   const authorizedPublishers =
-    props.topic.auth.publishers.length === 0
+    props.topic.auth.publishers?.length === 0
       ? t('topicView.properties.authorizedPublishersNotSet')
-      : props.topic.auth.publishers.join(', ');
+      : props.topic.auth.publishers?.join(', ');
   const labels = props.topic.labels.map((label) => label.value).join(', ');
   const retentionTime = `${
     props.topic.retentionTime.duration

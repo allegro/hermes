@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { useConstraints } from '@/composables/use-constraints/useConstraints';
+  import { useConstraints } from '@/composables/constraints/use-constraints/useConstraints';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import ConstraintsListing from '@/views/admin/constraints/constraints-listing/ConstraintsListing.vue';
@@ -10,8 +10,7 @@
   const topicFilter = ref<string>();
   const subscriptionFilter = ref<string>();
 
-  const { topicConstraints, subscriptionConstraints, loading, error } =
-    useConstraints();
+  const { topicConstraints, subscriptionConstraints, loading, error } = useConstraints();
 
   const breadcrumbsItems = [
     {
@@ -31,7 +30,7 @@
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error"
+          v-if="error.fetchConstraints"
           :title="$t('constraints.connectionError.title')"
           :text="$t('constraints.connectionError.text')"
           type="error"

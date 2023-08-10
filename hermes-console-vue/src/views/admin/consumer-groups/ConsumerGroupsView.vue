@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useConsumerGroups } from '@/composables/use-consumer-groups/useConsumerGroups';
+  import { useConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -51,7 +51,7 @@
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error"
+          v-if="error.fetchConsumerGroups"
           :title="$t('consumerGroups.connectionError.title')"
           :text="$t('consumerGroups.connectionError.text')"
           type="error"
@@ -77,7 +77,7 @@
         </v-card>
       </v-col>
     </v-row>
-    <consumer-groups-table :consumer-groups="consumerGroups" />
+    <consumer-groups-table v-if="consumerGroups" :consumer-groups="consumerGroups" />
   </v-container>
 </template>
 

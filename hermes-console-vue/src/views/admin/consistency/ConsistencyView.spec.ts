@@ -1,15 +1,17 @@
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { dummyInconsistentTopics } from '@/dummy/inconsistentTopics';
 import { render } from '@/utils/test-utils';
-import { useInconsistentTopics } from '@/composables/use-inconsistent-topics/useInconsistentTopics';
+import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
 import ConsistencyView from '@/views/admin/consistency/ConsistencyView.vue';
 
-vi.mock('@/composables/use-inconsistent-topics/useInconsistentTopics');
+vi.mock('@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics');
 
 const useInconsistentTopicsStub: ReturnType<typeof useInconsistentTopics> = {
-  topics: computed(() => dummyInconsistentTopics),
-  error: ref(false),
-  loading: computed(() => false),
+  topics: ref(dummyInconsistentTopics),
+  error: ref({
+    fetchInconsistentTopics: null
+  }),
+  loading: ref(false),
 };
 
 describe('ConsistencyView', () => {
@@ -31,7 +33,7 @@ describe('ConsistencyView', () => {
     // given
     vi.mocked(useInconsistentTopics).mockReturnValueOnce({
       ...useInconsistentTopicsStub,
-      loading: computed(() => true),
+      loading: ref(true),
     });
 
     // when
@@ -46,7 +48,7 @@ describe('ConsistencyView', () => {
     // given
     vi.mocked(useInconsistentTopics).mockReturnValueOnce({
       ...useInconsistentTopicsStub,
-      loading: computed(() => false),
+      loading: ref(false),
     });
 
     // when
@@ -61,8 +63,8 @@ describe('ConsistencyView', () => {
     // given
     vi.mocked(useInconsistentTopics).mockReturnValueOnce({
       ...useInconsistentTopicsStub,
-      loading: computed(() => false),
-      error: ref(true),
+      loading: ref(false),
+      error: ref({fetchInconsistentTopics: new Error()}),
     });
 
     // when
@@ -78,8 +80,8 @@ describe('ConsistencyView', () => {
     // given
     vi.mocked(useInconsistentTopics).mockReturnValueOnce({
       ...useInconsistentTopicsStub,
-      loading: computed(() => false),
-      error: ref(false),
+      loading: ref(false),
+      error: ref({fetchInconsistentTopics: null}),
     });
 
     // when

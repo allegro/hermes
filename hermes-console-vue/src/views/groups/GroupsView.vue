@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { useGroups } from '@/composables/use-groups/useGroups';
+  import { useGroups } from '@/composables/groups/use-groups/useGroups';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupForm from '@/views/groups/group-form/GroupForm.vue';
@@ -31,7 +31,7 @@
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error"
+          v-if="error.fetchGroupNames || error.fetchTopicNames"
           :title="t('groups.connectionError.title')"
           :text="t('groups.connectionError.text')"
           type="error"

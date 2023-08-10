@@ -1,44 +1,40 @@
 import { dummyGroupNames } from '@/dummy/groups';
 import { dummyTopicNames } from '@/dummy/topics';
-import { useGroups } from '@/composables/use-groups/useGroups';
+import { useGroups } from '@/composables/groups/use-groups/useGroups';
 import { waitFor } from '@testing-library/vue';
-import axios from 'axios';
-import type { Mocked } from 'vitest';
-
-vitest.mock('axios');
-const mockedAxios = axios as Mocked<typeof axios>;
+import {setupServer} from "msw/node";
+import {
+  fetchGroupNamesErrorHandler,
+  fetchGroupNamesHandler,
+  fetchTopicNamesErrorHandler,
+  fetchTopicNamesHandler
+} from "@/mocks/handlers";
+import {afterEach} from "vitest";
 
 describe('useGroups', () => {
-  it('should hit groups and topics Hermes API endpoints', async () => {
-    // given
-    mockedAxios.get.mockResolvedValueOnce({ data: [] });
-    mockedAxios.get.mockResolvedValueOnce({ data: [] });
+  const server = setupServer(fetchGroupNamesHandler({ groupNames: dummyGroupNames }),
+      fetchTopicNamesHandler({ topicNames: dummyTopicNames }));
 
-    // when
-    useGroups();
-
-    // then
-    await waitFor(() => {
-      expect(mockedAxios.get.mock.calls[0][0]).toBe('/groups');
-      expect(mockedAxios.get.mock.calls[1][0]).toBe('/topics');
-    });
+  afterEach(() => {
+    server.resetHandlers();
   });
 
   it('should fetch group and topic names from Hermes backend', async () => {
     // given
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyGroupNames });
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyTopicNames });
+    server.listen();
 
     // when
     const { groups, loading, error } = useGroups();
 
     // then
     expect(loading.value).toBe(true);
-    expect(error.value).toBe(false);
+    expect(error.value.fetchTopicNames).toBe(null);
+    expect(error.value.fetchGroupNames).toBe(null);
 
     await waitFor(() => {
       expect(loading.value).toBe(false);
-      expect(error.value).toBe(false);
+      expect(error.value.fetchGroupNames).toBe(null);
+      expect(error.value.fetchTopicNames).toBe(null);
       expect(groups.value?.length).toBe(6);
       expect(groups.value?.[0].name).toBe('pl.allegro.public.admin');
       expect(groups.value?.[0].topics[0]).toContain('AdminOfferActionEvent');
@@ -49,29 +45,29 @@ describe('useGroups', () => {
 
   it('should set error to true on /groups endpoint failure', async () => {
     // given
-    mockedAxios.get.mockRejectedValueOnce({});
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyTopicNames });
+    server.use(fetchGroupNamesErrorHandler({errorCode: 500}))
+    server.listen();
 
     // when
     const { error } = useGroups();
 
     // then
     await waitFor(() => {
-      expect(error.value).toBe(true);
+      expect(error.value.fetchGroupNames).not.toBeNull();
     });
   });
 
   it('should set error to true on /topics endpoint failure', async () => {
     // given
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyGroupNames });
-    mockedAxios.get.mockRejectedValueOnce({});
+    server.use(fetchTopicNamesErrorHandler({errorCode: 500}))
+    server.listen();
 
     // when
     const { error } = useGroups();
 
     // then
     await waitFor(() => {
-      expect(error.value).toBe(true);
+      expect(error.value.fetchTopicNames).not.toBeNull();
     });
   });
 });

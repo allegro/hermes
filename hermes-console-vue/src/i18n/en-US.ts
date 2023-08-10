@@ -132,6 +132,12 @@ const en_US = {
       topicsChip: 'topics: ',
       appliedFilter: '(applied filter: “{filter}”)',
     },
+    groupTopicsListing: {
+      index: '#',
+      name: 'Topic name',
+      noTopics: 'No topics found',
+      appliedFilter: '(applied filter: “{filter}”)',
+    },
     heading: 'Groups',
   },
   groupTopics: {

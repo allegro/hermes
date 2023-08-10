@@ -1,4 +1,4 @@
-import type { Group } from '@/composables/use-groups/useGroups';
+import type { Group } from '@/composables/groups/use-groups/useGroups';
 
 export const dummyGroupNames = [
   'pl.allegro.public.offer',

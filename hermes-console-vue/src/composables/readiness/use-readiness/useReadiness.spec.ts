@@ -1,29 +1,23 @@
 import { dummyDatacentersReadiness } from '@/dummy/readiness';
-import { useReadiness } from '@/composables/use-readiness/useReadiness';
+import { useReadiness } from '@/composables/readiness/use-readiness/useReadiness';
 import { waitFor } from '@testing-library/vue';
-import axios from 'axios';
-import type { Mocked } from 'vitest';
-
-vitest.mock('axios');
-const mockedAxios = axios as Mocked<typeof axios>;
+import {setupServer} from "msw/node";
+import {
+  fetchReadinessErrorHandler,
+  fetchReadinessHandler
+} from "@/mocks/handlers";
+import {afterEach} from "vitest";
 
 describe('useReadiness', () => {
-  it('should hit expected Hermes API endpoint', async () => {
-    // given
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyDatacentersReadiness });
+  const server = setupServer(fetchReadinessHandler({ datacentersReadiness: dummyDatacentersReadiness }));
 
-    // when
-    useReadiness();
-
-    // then
-    await waitFor(() => {
-      expect(mockedAxios.get.mock.calls[0][0]).toBe('/readiness/datacenters');
-    });
+  afterEach(() => {
+    server.resetHandlers();
   });
 
   it('should fetch readiness details from Hermes API', async () => {
     // given
-    mockedAxios.get.mockResolvedValueOnce({ data: dummyDatacentersReadiness });
+    server.listen()
 
     // when
     const { datacentersReadiness, loading, error } = useReadiness();
@@ -33,14 +27,15 @@ describe('useReadiness', () => {
 
     await waitFor(() => {
       expect(loading.value).toBe(false);
-      expect(error.value).toBe(false);
+      expect(error.value.fetchReadiness).toBe(null);
       expect(datacentersReadiness.value).toEqual(dummyDatacentersReadiness);
     });
   });
 
   it('should set error to true on datacenters readiness endpoint failure', async () => {
     // given
-    mockedAxios.get.mockRejectedValueOnce({});
+    server.use(fetchReadinessErrorHandler({errorCode: 500}))
+    server.listen()
 
     // when
     const { loading, error } = useReadiness();
@@ -48,7 +43,7 @@ describe('useReadiness', () => {
     // then
     await waitFor(() => {
       expect(loading.value).toBe(false);
-      expect(error.value).toBe(true);
+      expect(error.value.fetchReadiness).not.toBeNull();
     });
   });
 });

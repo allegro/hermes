@@ -2,7 +2,7 @@
   import { computed } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
-  import type { Group } from '@/composables/use-groups/useGroups';
+  import type { Group } from '@/composables/groups/use-groups/useGroups';
 
   const router = useRouter();
   const { t } = useI18n();

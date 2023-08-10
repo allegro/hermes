@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { useRoute } from 'vue-router';
   import {useI18n} from "vue-i18n";
-  import {useGroups} from "@/composables/use-groups/useGroups";
+  import {useGroups} from "@/composables/groups/use-groups/useGroups";
   import ConsoleAlert from "@/components/console-alert/ConsoleAlert.vue";
   import LoadingSpinner from "@/components/loading-spinner/LoadingSpinner.vue";
   import GroupTopicsListing from "@/views/group-topics/group-topics-listing/GroupTopicsListing.vue";
