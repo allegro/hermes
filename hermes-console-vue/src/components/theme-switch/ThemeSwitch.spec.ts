@@ -4,16 +4,16 @@ import { render } from '@/utils/test-utils';
 import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
 describe('ThemeSwitch', () => {
-  const vuetify = createVuetify();
+  const testVuetify = createVuetify();
 
   beforeEach(() => {
-    vuetify.theme.global.name.value = 'light';
+    testVuetify.theme.global.name.value = 'light';
     window.localStorage.clear();
   });
 
   it('should render theme switch button', () => {
     // when
-    const { getByRole } = render(ThemeSwitch, {}, vuetify);
+    const { getByRole } = render(ThemeSwitch, { testVuetify });
 
     // then
     expect(getByRole('button')).toBeVisible();
@@ -26,21 +26,21 @@ describe('ThemeSwitch', () => {
     'should change Vuetify theme on button click (initial theme: %s)',
     (initialTheme: string, changedTheme: string) => {
       // given
-      const { getByRole } = render(ThemeSwitch, {}, vuetify);
-      vuetify.theme.global.name.value = initialTheme;
+      const { getByRole } = render(ThemeSwitch, { testVuetify });
+      testVuetify.theme.global.name.value = initialTheme;
 
       // when
       fireEvent.click(getByRole('button'));
 
       // then
-      expect(vuetify.theme.global.name.value).toBe(changedTheme);
+      expect(testVuetify.theme.global.name.value).toBe(changedTheme);
     },
   );
 
   it('should persist theme preference in local storage', () => {
     // given
-    const { getByRole } = render(ThemeSwitch, {}, vuetify);
-    vuetify.theme.global.name.value = 'light';
+    const { getByRole } = render(ThemeSwitch, { testVuetify });
+    testVuetify.theme.global.name.value = 'light';
 
     // when
     fireEvent.click(getByRole('button'));
@@ -59,18 +59,18 @@ describe('ThemeSwitch', () => {
       localStorage.setItem('hermes-console-theme', persistedTheme);
 
       // when
-      render(ThemeSwitch, {}, vuetify);
+      render(ThemeSwitch, { testVuetify });
 
       // then
-      expect(vuetify.theme.global.name.value).toBe(loadedTheme);
+      expect(testVuetify.theme.global.name.value).toBe(loadedTheme);
     },
   );
 
   it('should set light theme if there is no entry in local storage', () => {
     // when
-    render(ThemeSwitch, {}, vuetify);
+    render(ThemeSwitch, { testVuetify });
 
     // then
-    expect(vuetify.theme.global.name.value).toBe('light');
+    expect(testVuetify.theme.global.name.value).toBe('light');
   });
 });

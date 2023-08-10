@@ -1,20 +1,24 @@
 import { beforeEach, describe, expect } from 'vitest';
+import { createTestingPinia } from '@pinia/testing';
+import { createTestingPiniaWithState } from '@/dummy/store';
+import { dummyAppConfig } from '@/dummy/app-config';
 import {
-  dummySubscription,
-  secondDummySubscription,
-} from '@/dummy/subscription';
-import {
+  dummyOfflineClientsSource,
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
   dummyTopicOwner,
 } from '@/dummy/topic';
+import {
+  dummySubscription,
+  secondDummySubscription,
+} from '@/dummy/subscription';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
 import router from '@/router';
 import TopicView from '@/views/topic/TopicView.vue';
-import type { UseTopic } from '@/composables/types';
+import type { UseTopic } from '@/composables/topic/use-topic/useTopic';
 
 vi.mock('@/composables/topic/use-topic/useTopic');
 
@@ -24,6 +28,7 @@ const useTopicMock: UseTopic = {
   messages: ref(dummyTopicMessagesPreview),
   metrics: ref(dummyTopicMetrics),
   subscriptions: ref([dummySubscription, secondDummySubscription]),
+  offlineClientsSource: ref(undefined),
   loading: ref(false),
   error: ref({
     fetchTopic: null,
@@ -31,8 +36,10 @@ const useTopicMock: UseTopic = {
     fetchTopicMessagesPreview: null,
     fetchTopicMetrics: null,
     fetchSubscriptions: null,
+    fetchOfflineClientsSource: null,
   }),
   fetchTopic: () => Promise.resolve(),
+  fetchOfflineClientsSource: () => Promise.resolve(),
 };
 
 describe('TopicView', () => {
@@ -47,7 +54,7 @@ describe('TopicView', () => {
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
 
     // when
-    render(TopicView);
+    render(TopicView, { testPinia: createTestingPiniaWithState() });
 
     // then
     expect(useTopic).toHaveBeenCalledOnce();
@@ -60,7 +67,7 @@ describe('TopicView', () => {
     const fetchTopicSpy = vi.spyOn(useTopicMock, 'fetchTopic');
 
     // when
-    render(TopicView);
+    render(TopicView, { testPinia: createTestingPiniaWithState() });
 
     // then
     expect(fetchTopicSpy).toHaveBeenCalledOnce();
@@ -68,7 +75,10 @@ describe('TopicView', () => {
 
   it('should render all view boxes', () => {
     // given
-    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useTopic).mockReturnValueOnce({
+      ...useTopicMock,
+      offlineClientsSource: ref(dummyOfflineClientsSource),
+    });
     const expectedTitles = [
       'topicView.header.topic',
       'topicView.metrics.title',
@@ -76,15 +86,101 @@ describe('TopicView', () => {
       'topicView.messagesPreview.title',
       'topicView.schema.title',
       'topicView.subscriptions.title (2)',
+      'topicView.offlineClients.title',
     ];
 
     // when
-    const { getByText } = render(TopicView);
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expectedTitles.forEach((title) => {
       expect(getByText(title)).toBeVisible();
     });
+  });
+
+  it('should not render messages preview when they are disabled in app config', () => {
+    // given
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+
+    // when
+    const { queryByText } = render(TopicView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: {
+            appConfig: {
+              ...dummyAppConfig,
+              topic: { ...dummyAppConfig.topic, messagePreviewEnabled: false },
+            },
+            loading: false,
+            error: {
+              loadConfig: null,
+            },
+          },
+        },
+      }),
+    });
+
+    // then
+    expect(
+      queryByText('topicView.messagesPreview.title'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should not render offline clients when they are disabled in app config', () => {
+    // given
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+
+    // when
+    const { queryByText } = render(TopicView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: {
+            appConfig: {
+              ...dummyAppConfig,
+              topic: { ...dummyAppConfig.topic, offlineClientsEnabled: false },
+            },
+            loading: false,
+            error: {
+              loadConfig: null,
+            },
+          },
+        },
+      }),
+    });
+
+    // then
+    expect(
+      queryByText('topicView.offlineClients.title'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should not render offline clients when topic has disabled offline storage', () => {
+    // given
+    vi.mocked(useTopic).mockReturnValueOnce({
+      ...useTopicMock,
+      topic: ref({
+        ...dummyTopic,
+        offlineStorage: {
+          enabled: false,
+          retentionTime: {
+            duration: 60,
+            infinite: false,
+          },
+        },
+      }),
+    });
+
+    // when
+    const { queryByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(
+      queryByText('topicView.offlineClients.title'),
+    ).not.toBeInTheDocument();
   });
 
   it('should render error message when failed fetching topic data', () => {
@@ -98,11 +194,14 @@ describe('TopicView', () => {
         fetchTopicMessagesPreview: null,
         fetchTopicMetrics: null,
         fetchSubscriptions: null,
+        fetchOfflineClientsSource: null,
       }),
     });
 
     // when
-    const { getByText } = render(TopicView);
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(getByText('topicView.errorMessage.topicFetchFailed')).toBeVisible();
@@ -113,7 +212,9 @@ describe('TopicView', () => {
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
 
     // when
-    const { queryByText } = render(TopicView);
+    const { queryByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(
@@ -129,7 +230,9 @@ describe('TopicView', () => {
     });
 
     // when
-    const { queryByTestId } = render(TopicView);
+    const { queryByTestId } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(queryByTestId('loading-spinner')).toBeVisible();
@@ -140,7 +243,9 @@ describe('TopicView', () => {
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
 
     // when
-    const { queryByTestId } = render(TopicView);
+    const { queryByTestId } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(queryByTestId('loading-spinner')).not.toBeInTheDocument();

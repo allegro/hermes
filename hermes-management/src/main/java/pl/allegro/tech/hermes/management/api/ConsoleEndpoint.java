@@ -27,4 +27,12 @@ public class ConsoleEndpoint {
     public String getConfiguration() {
         return service.getConfiguration();
     }
+
+    @GET
+    @Path("/console")
+    @Produces("application/json")
+    @ApiOperation(value = "Hermes console configuration", httpMethod = HttpMethod.GET)
+    public String getConfigurationJson() {
+        return service.getConfigurationJson();
+    }
 }

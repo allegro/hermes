@@ -1,9 +1,11 @@
 <script setup lang="ts">
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const theme = useTheme();
+  const configStore = useAppConfigStore();
 </script>
 
 <template>
@@ -27,8 +29,14 @@
             alt="Hermes"
           />
         </router-link>
-        <!-- TODO: pass environment name from config -->
-        <environment-badge environment-name="dev" />
+        <environment-badge
+          :environment-name="
+            configStore.appConfig?.console.environmentName || ''
+          "
+          :is-critical-environment="
+            configStore.appConfig?.console.criticalEnvironment || false
+          "
+        />
       </div>
       <theme-switch />
     </div>

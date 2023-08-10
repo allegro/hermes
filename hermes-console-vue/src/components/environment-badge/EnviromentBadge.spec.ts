@@ -1,3 +1,4 @@
+import { expect } from 'vitest';
 import { render } from '@/utils/test-utils';
 import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
 
@@ -7,8 +8,10 @@ describe('EnvironmentBadge', () => {
     const { getByText } = render(EnvironmentBadge, {
       props: {
         environmentName: 'prod',
+        isCriticalEnvironment: false,
       },
     });
+
     // then
     expect(getByText('PROD')).toBeVisible();
   });

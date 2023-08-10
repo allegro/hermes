@@ -1,4 +1,14 @@
 const en_US = {
+  homeView: {
+    links: {
+      console: 'Console',
+      runtime: 'Runtime',
+      statistics: 'Stats',
+      search: 'Search',
+      documentation: 'Docs',
+      adminTools: 'Admin tools',
+    },
+  },
   consistency: {
     connectionError: {
       title: 'Connection error',
@@ -164,6 +174,9 @@ const en_US = {
     },
     messagesPreview: {
       title: 'Topic messages preview',
+    },
+    offlineClients: {
+      title: 'Offline clients',
     },
     schema: {
       title: 'Message schema',
