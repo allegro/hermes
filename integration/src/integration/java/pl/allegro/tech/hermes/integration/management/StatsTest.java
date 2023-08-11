@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.TopicStats;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
@@ -20,17 +21,23 @@ import java.util.UUID;
 public class StatsTest extends IntegrationTest {
     private static final String group = "statsGroup";
 
+    private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
+
     @Test
     public void shouldGetStats() {
         // given
         operations.createGroup(group);
-        TopicWithSchema topic1 = operations.createTopic(topic(group, name(), Topic.Ack.ALL, ContentType.AVRO, true));
+        TopicWithSchema topic1 = operations.buildTopicWithSchema(
+                TopicWithSchema.topicWithSchema(
+                        topic(group, name(), Topic.Ack.ALL, ContentType.AVRO, true),
+                        SCHEMA
+                ));
         TopicWithSchema topic2 = operations.createTopic(topic(group, name(), Topic.Ack.LEADER, ContentType.JSON, false));
         operations.createTopic(topic(group, name(), Topic.Ack.ALL, ContentType.JSON, true));
 
         operations.createSubscription(topic1.getTopic(), subscription(topic1.getName(), name(), ContentType.AVRO, TrackingMode.TRACKING_OFF));
-        operations.createSubscription(topic2.getTopic(), subscription(topic1.getName(), name(), ContentType.JSON, TrackingMode.TRACK_ALL));
-        operations.createSubscription(topic2.getTopic(), subscription(topic1.getName(), name(), ContentType.AVRO, TrackingMode.TRACKING_OFF));
+        operations.createSubscription(topic2.getTopic(), subscription(topic2.getName(), name(), ContentType.JSON, TrackingMode.TRACK_ALL));
+        operations.createSubscription(topic2.getTopic(), subscription(topic2.getName(), name(), ContentType.AVRO, TrackingMode.TRACKING_OFF));
 
         // when then
         Assertions.assertThat(management.statsEndpoint().getStats()).isEqualTo(new Stats(
@@ -44,6 +51,7 @@ public class StatsTest extends IntegrationTest {
                 .withAck(ack)
                 .withContentType(contentType)
                 .withTrackingEnabled(trackingEnabled)
+
                 .build();
     }
 

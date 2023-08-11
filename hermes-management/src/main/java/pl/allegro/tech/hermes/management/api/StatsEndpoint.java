@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.management.api;
 
+import io.swagger.annotations.ApiOperation;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,7 @@ public class StatsEndpoint {
 
     @GET
     @Produces(APPLICATION_JSON)
+    @ApiOperation(value = "Get topic and subscription stats", response = Stats.class, httpMethod = HttpMethod.GET)
     public Stats getStats() {
         TopicStats topicStats = topicService.getStats();
         SubscriptionStats subscriptionStats = subscriptionService.getStats();
