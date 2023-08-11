@@ -1,4 +1,5 @@
 <script async setup lang="ts">
+  import { formatNumber } from '../../../utils/number-formatter/number-formatter';
   import { useI18n } from 'vue-i18n';
   import { useStats } from '@/composables/use-stats/useStats';
 
@@ -44,7 +45,7 @@
           <h2>{{ $t('stats.total') }}</h2>
         </v-row>
         <v-row>
-          <h2>{{ topicCount }}</h2>
+          <h2>{{ formatNumber(topicCount) }}</h2>
         </v-row>
       </v-col>
       <v-col md="3">
@@ -52,7 +53,11 @@
           <h2>{{ $t('stats.ackAll') }}</h2>
         </v-row>
         <v-row>
-          <h2>{{ ackAllTopicCount }} ({{ ackAllTopicShare }}%)</h2>
+          <h2>
+            {{ formatNumber(ackAllTopicCount) }} ({{
+              formatNumber(ackAllTopicShare, 2)
+            }}%)
+          </h2>
         </v-row>
       </v-col>
       <v-col md="3">
@@ -61,7 +66,9 @@
         </v-row>
         <v-row>
           <h2>
-            {{ trackingEnabledTopicCount }} ({{ trackingEnabledTopicShare }}%)
+            {{ formatNumber(trackingEnabledTopicCount) }} ({{
+              formatNumber(trackingEnabledTopicShare, 2)
+            }}%)
           </h2>
         </v-row>
       </v-col>
@@ -70,7 +77,11 @@
           <h2>Avro</h2>
         </v-row>
         <v-row>
-          <h2>{{ avroTopicCount }} ({{ avroTopicShare }}%)</h2>
+          <h2>
+            {{ formatNumber(avroTopicCount) }} ({{
+              formatNumber(avroTopicShare, 2)
+            }}%)
+          </h2>
         </v-row>
       </v-col>
     </v-row>
@@ -83,7 +94,7 @@
           <h2>{{ $t('stats.total') }}</h2>
         </v-row>
         <v-row>
-          <h2>{{ subscriptionCount }}</h2>
+          <h2>{{ formatNumber(subscriptionCount) }}</h2>
         </v-row>
       </v-col>
       <v-col md="3">
@@ -92,8 +103,8 @@
         </v-row>
         <v-row>
           <h2>
-            {{ trackingEnabledSubscriptionCount }} ({{
-              trackingEnabledSubscriptionShare
+            {{ formatNumber(trackingEnabledSubscriptionCount) }} ({{
+              formatNumber(trackingEnabledSubscriptionShare, 2)
             }}%)
           </h2>
         </v-row>
@@ -103,7 +114,11 @@
           <h2>Avro</h2>
         </v-row>
         <v-row>
-          <h2>{{ avroSubscriptionCount }} ({{ avroSubscriptionShare }}%)</h2>
+          <h2>
+            {{ formatNumber(avroSubscriptionCount) }} ({{
+              formatNumber(avroSubscriptionShare, 2)
+            }}%)
+          </h2>
         </v-row>
       </v-col>
     </v-row>

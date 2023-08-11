@@ -1,4 +1,4 @@
-import { querySubscriptions, queryTopics } from '@/api/hermes-client';
+import { fetchStats } from '@/api/hermes-client';
 import { ref } from 'vue';
 import type { Ref } from 'vue';
 
@@ -16,17 +16,7 @@ export interface UseStats {
   avroSubscriptionCount: Ref<number | undefined>;
   avroSubscriptionShare: Ref<number | undefined>;
   loading: Ref<boolean>;
-  error: Ref<UseStatsErrors>;
-}
-
-export interface UseStatsErrors {
-  fetchTopics: Error | null;
-  fetchAckAllTopics: Error | null;
-  fetchTrackingEnabledTopics: Error | null;
-  fetchAvroTopics: Error | null;
-  fetchSubscriptions: Error | null;
-  fetchTrackingEnabledSubscriptions: Error | null;
-  fetchAvroSubscriptions: Error | null;
+  error: Ref<boolean>;
 }
 
 export function useStats(): UseStats {
@@ -44,127 +34,45 @@ export function useStats(): UseStats {
   const avroSubscriptionCount = ref<number>();
   const avroSubscriptionShare = ref<number>();
 
-  const error = ref<UseStatsErrors>({
-    fetchTopics: null,
-    fetchAckAllTopics: null,
-    fetchTrackingEnabledTopics: null,
-    fetchAvroTopics: null,
-    fetchSubscriptions: null,
-    fetchTrackingEnabledSubscriptions: null,
-    fetchAvroSubscriptions: null,
-  });
+  const error = ref<boolean>(false);
 
-  const fetchAllStats = async () => {
+  const getStats = async () => {
     try {
       loading.value = true;
-      await Promise.allSettled([fetchTopicStats(), fetchSubscriptionStats()]);
+      const stats = (await fetchStats()).data;
+      const topicStats = stats.topicStats;
+      const subscriptionStats = stats.subscriptionStats;
+
+      topicCount.value = topicStats.topicCount;
+      ackAllTopicCount.value = topicStats.ackAllTopicCount;
+      ackAllTopicShare.value =
+        (topicStats.ackAllTopicCount / topicStats.topicCount) * 100;
+      trackingEnabledTopicCount.value = topicStats.trackingEnabledTopicCount;
+      trackingEnabledTopicShare.value =
+        (topicStats.trackingEnabledTopicCount / topicStats.topicCount) * 100;
+      avroTopicCount.value = topicStats.avroTopicCount;
+      avroTopicShare.value =
+        (topicStats.avroTopicCount / topicStats.topicCount) * 100;
+      subscriptionCount.value = subscriptionStats.subscriptionCount;
+      trackingEnabledSubscriptionCount.value =
+        subscriptionStats.trackingEnabledSubscriptionCount;
+      trackingEnabledSubscriptionShare.value =
+        (subscriptionStats.trackingEnabledSubscriptionCount /
+          subscriptionStats.subscriptionCount) *
+        100;
+      avroSubscriptionCount.value = subscriptionStats.avroSubscriptionCount;
+      avroSubscriptionShare.value =
+        (subscriptionStats.avroSubscriptionCount /
+          subscriptionStats.subscriptionCount) *
+        100;
+    } catch (e) {
+      error.value = true;
     } finally {
       loading.value = false;
     }
   };
 
-  const fetchTopicStats = async () => {
-    await fetchTopics();
-    const count = topicCount.value;
-    if (count) {
-      await Promise.allSettled([
-        fetchAckAllTopics(count),
-        fetchTrackingEnabledTopics(count),
-        fetchAvroTopics(count),
-      ]);
-    }
-  };
-
-  const fetchSubscriptionStats = async () => {
-    await fetchSubscriptions();
-    const count = subscriptionCount.value;
-    if (count) {
-      await Promise.allSettled([
-        fetchTrackingEnabledSubscriptions(count),
-        fetchAvroSubscriptions(count),
-      ]);
-    }
-  };
-
-  const fetchTopics = async () => {
-    try {
-      topicCount.value = (await queryTopics({})).data.length;
-    } catch (e) {
-      error.value.fetchTopics = e as Error;
-    }
-  };
-
-  const fetchAckAllTopics = async (topicCount: number) => {
-    try {
-      const count = (await queryTopics({ query: { ack: { eq: 'ALL' } } })).data
-        .length;
-      ackAllTopicCount.value = count;
-      ackAllTopicShare.value = (count / topicCount) * 100;
-    } catch (e) {
-      error.value.fetchAckAllTopics = e as Error;
-    }
-  };
-
-  const fetchTrackingEnabledTopics = async (topicCount: number) => {
-    try {
-      const count = (
-        await queryTopics({ query: { trackingEnabled: { eq: true } } })
-      ).data.length;
-      trackingEnabledTopicCount.value = count;
-      trackingEnabledTopicShare.value = (count / topicCount) * 100;
-    } catch (e) {
-      error.value.fetchTrackingEnabledTopics = e as Error;
-    }
-  };
-
-  const fetchAvroTopics = async (topicCount: number) => {
-    try {
-      const count = (
-        await queryTopics({ query: { contentType: { eq: 'AVRO' } } })
-      ).data.length;
-      avroTopicCount.value = count;
-      avroTopicShare.value = (count / topicCount) * 100;
-    } catch (e) {
-      error.value.fetchAvroTopics = e as Error;
-    }
-  };
-
-  const fetchSubscriptions = async () => {
-    try {
-      subscriptionCount.value = (await querySubscriptions({})).data.length;
-    } catch (e) {
-      error.value.fetchSubscriptions = e as Error;
-    }
-  };
-
-  const fetchTrackingEnabledSubscriptions = async (
-    subscriptionCount: number,
-  ) => {
-    try {
-      const count = (
-        await querySubscriptions({ query: { trackingEnabled: { eq: true } } })
-      ).data.length;
-      trackingEnabledSubscriptionCount.value = count;
-      trackingEnabledSubscriptionShare.value =
-        (count / subscriptionCount) * 100;
-    } catch (e) {
-      error.value.fetchTrackingEnabledSubscriptions = e as Error;
-    }
-  };
-
-  const fetchAvroSubscriptions = async (subscriptionCount: number) => {
-    try {
-      const count = (
-        await querySubscriptions({ query: { contentType: { eq: 'AVRO' } } })
-      ).data.length;
-      avroSubscriptionCount.value = count;
-      avroSubscriptionShare.value = (count / subscriptionCount) * 100;
-    } catch (e) {
-      error.value.fetchAvroSubscriptions = e as Error;
-    }
-  };
-
-  fetchAllStats();
+  getStats();
   return {
     topicCount,
     ackAllTopicCount,

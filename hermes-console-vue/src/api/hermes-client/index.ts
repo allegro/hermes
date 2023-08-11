@@ -5,13 +5,13 @@ import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type {
   MessagePreview,
-  Topic,
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
+import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
 export function fetchTopic(
@@ -91,4 +91,8 @@ export function fetchTopicNames(): ResponsePromise<string[]> {
 }
 export function fetchGroupNames(): ResponsePromise<string[]> {
   return axios.get<string[]>('/groups');
+}
+
+export function fetchStats(): ResponsePromise<Stats> {
+    return axios.get<Stats>(`/stats`);
 }
