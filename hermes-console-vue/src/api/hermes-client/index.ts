@@ -1,5 +1,8 @@
 import axios from 'axios';
 import type { AppConfiguration } from '@/api/app-configuration';
+import type { ConstraintsConfig } from '@/api/constraints';
+import type { ConsumerGroup } from '@/api/consumer-group';
+import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type {
   MessagePreview,
   TopicMetrics,
@@ -59,4 +62,32 @@ export function fetchOfflineClientsSource(
   return axios.get<OfflineClientsSource>(
     `/topics/${topicName}/offline-clients-source`,
   );
+}
+
+export function fetchConstraints(): ResponsePromise<ConstraintsConfig> {
+  return axios.get<ConstraintsConfig>('/workload-constraints');
+}
+
+export function fetchReadiness(): ResponsePromise<DatacenterReadiness[]> {
+  return axios.get<DatacenterReadiness[]>('/readiness/datacenters');
+}
+
+export function fetchConsumerGroups(
+  topicName: string,
+  subscription: string,
+): ResponsePromise<ConsumerGroup[]> {
+  return axios.get<ConsumerGroup[]>(
+    `/topics/${topicName}/subscriptions/${subscription}/consumer-groups`,
+  );
+}
+
+export function fetchInconsistentTopics(): ResponsePromise<string[]> {
+  return axios.get<string[]>('/consistency/inconsistencies/topics');
+}
+
+export function fetchTopicNames(): ResponsePromise<string[]> {
+  return axios.get<string[]>('/topics');
+}
+export function fetchGroupNames(): ResponsePromise<string[]> {
+  return axios.get<string[]>('/groups');
 }

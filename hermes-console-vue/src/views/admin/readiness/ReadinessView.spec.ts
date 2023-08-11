@@ -1,15 +1,18 @@
 import { computed, ref } from 'vue';
 import { dummyDatacentersReadiness } from '@/dummy/readiness';
 import { render } from '@/utils/test-utils';
-import { useReadiness } from '@/composables/use-readiness/useReadiness';
+import { useReadiness } from '@/composables/readiness/use-readiness/useReadiness';
 import ReadinessView from '@/views/admin/readiness/ReadinessView.vue';
+import type { UseReadiness } from '@/composables/readiness/use-readiness/useReadiness';
 
-vi.mock('@/composables/use-readiness/useReadiness');
+vi.mock('@/composables/readiness/use-readiness/useReadiness');
 
-const useReadinessStub: ReturnType<typeof useReadiness> = {
+const useReadinessStub: UseReadiness = {
   datacentersReadiness: ref(dummyDatacentersReadiness),
-  error: ref(false),
-  loading: computed(() => false),
+  error: ref({
+    fetchReadiness: null,
+  }),
+  loading: ref(false),
 };
 
 describe('ReadinessView', () => {
@@ -60,7 +63,7 @@ describe('ReadinessView', () => {
     vi.mocked(useReadiness).mockReturnValueOnce({
       ...useReadinessStub,
       loading: computed(() => false),
-      error: ref(true),
+      error: ref({ fetchReadiness: new Error() }),
     });
 
     // when
@@ -77,7 +80,7 @@ describe('ReadinessView', () => {
     vi.mocked(useReadiness).mockReturnValueOnce({
       ...useReadinessStub,
       loading: computed(() => false),
-      error: ref(false),
+      error: ref({ fetchReadiness: null }),
     });
 
     // when

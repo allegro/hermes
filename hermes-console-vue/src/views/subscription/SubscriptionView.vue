@@ -42,15 +42,15 @@
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
-      href: '/groups',
+      href: '/#/groups',
     },
     {
       title: groupId,
-      href: `/groups/${groupId}`,
+      href: `/#/groups/${groupId}`,
     },
     {
       title: topicId,
-      href: `/groups/${groupId}/topics/${topicId}`,
+      href: `/#/groups/${groupId}/topics/${topicId}`,
     },
     {
       title: subscriptionId,
@@ -77,8 +77,8 @@
       <v-row dense>
         <v-col md="12">
           <health-problems-alerts
-            v-if="subscriptionHealth?.problems"
-            :problems="subscriptionHealth.problems"
+            v-if="subscriptionHealth && subscriptionHealth.problems"
+            :problems="subscriptionHealth?.problems"
           />
           <subscription-metadata
             v-if="subscription"
@@ -117,16 +117,19 @@
       <v-row dense>
         <v-col md="12">
           <filters-card
-            v-if="subscription?.filters.length > 0"
-            :filters="subscription!.filters"
+            v-if="subscription && subscription?.filters.length > 0"
+            :filters="subscription?.filters"
           />
           <headers-card
-            v-if="subscription?.headers.length > 0"
-            :headers="subscription!.headers"
+            v-if="!!subscription && subscription.headers.length > 0"
+            :headers="subscription?.headers"
           />
           <undelivered-messages-card
-            v-if="subscriptionUndeliveredMessages?.length > 0"
-            :undelivered-messages="subscriptionUndeliveredMessages!"
+            v-if="
+              subscriptionUndeliveredMessages &&
+              subscriptionUndeliveredMessages?.length > 0
+            "
+            :undelivered-messages="subscriptionUndeliveredMessages"
           />
         </v-col>
       </v-row>

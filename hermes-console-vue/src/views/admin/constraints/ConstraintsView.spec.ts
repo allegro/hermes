@@ -1,18 +1,19 @@
-import { computed, ref } from 'vue';
 import { dummyConstraints } from '@/dummy/constraints';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
-import { useConstraints } from '@/composables/use-constraints/useConstraints';
+import { useConstraints } from '@/composables/constraints/use-constraints/useConstraints';
 import ConstraintsView from '@/views/admin/constraints/ConstraintsView.vue';
+import type { UseConstraints } from '@/composables/constraints/use-constraints/useConstraints';
 
-vi.mock('@/composables/use-constraints/useConstraints');
+vi.mock('@/composables/constraints/use-constraints/useConstraints');
 
-const useConstraintsStub: ReturnType<typeof useConstraints> = {
-  topicConstraints: computed(() => dummyConstraints.topicConstraints),
-  subscriptionConstraints: computed(
-    () => dummyConstraints.subscriptionConstraints,
-  ),
-  loading: computed(() => false),
-  error: ref(false),
+const useConstraintsStub: UseConstraints = {
+  topicConstraints: ref(dummyConstraints.topicConstraints),
+  subscriptionConstraints: ref(dummyConstraints.subscriptionConstraints),
+  loading: ref(false),
+  error: ref({
+    fetchConstraints: null,
+  }),
 };
 
 describe('ConstraintsView', () => {
@@ -35,7 +36,7 @@ describe('ConstraintsView', () => {
     // given
     vi.mocked(useConstraints).mockReturnValueOnce({
       ...useConstraintsStub,
-      loading: computed(() => true),
+      loading: ref(true),
     });
 
     // when
@@ -50,7 +51,7 @@ describe('ConstraintsView', () => {
     // given
     vi.mocked(useConstraints).mockReturnValueOnce({
       ...useConstraintsStub,
-      loading: computed(() => false),
+      loading: ref(false),
     });
 
     // when
@@ -65,8 +66,8 @@ describe('ConstraintsView', () => {
     // given
     vi.mocked(useConstraints).mockReturnValueOnce({
       ...useConstraintsStub,
-      loading: computed(() => false),
-      error: ref(true),
+      loading: ref(false),
+      error: ref({ fetchConstraints: new Error() }),
     });
 
     // when
@@ -82,8 +83,8 @@ describe('ConstraintsView', () => {
     // given
     vi.mocked(useConstraints).mockReturnValueOnce({
       ...useConstraintsStub,
-      loading: computed(() => false),
-      error: ref(false),
+      loading: ref(false),
+      error: ref({ fetchConstraints: null }),
     });
 
     // when

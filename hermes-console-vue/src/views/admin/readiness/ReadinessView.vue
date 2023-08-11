@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
-  import { useReadiness } from '@/composables/use-readiness/useReadiness';
+  import { useReadiness } from '@/composables/readiness/use-readiness/useReadiness';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
@@ -26,14 +26,14 @@
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error"
+          v-if="error.fetchReadiness"
           :title="$t('readiness.connectionError.title')"
           :text="$t('readiness.connectionError.text')"
           type="error"
         />
       </v-col>
     </v-row>
-    <v-container v-if="!loading && !error">
+    <v-container v-if="!loading && !error.fetchReadiness">
       <v-row dense>
         <v-col md="12">
           <p class="text-h4 font-weight-bold mb-3">

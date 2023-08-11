@@ -1,18 +1,16 @@
 <script setup lang="ts">
-  import {
-    ProblemCode,
-    SubscriptionHealthProblem,
-  } from '@/api/subscription-health';
+  import { ProblemCode } from '@/api/subscription-health';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
+  import type { SubscriptionHealthProblem } from '@/api/subscription-health';
 
   const props = defineProps<{
-    problems: SubscriptionHealthProblem[];
+    problems?: SubscriptionHealthProblem[];
   }>();
 </script>
 
 <template>
   <console-alert
-    v-if="props.problems.some(({ code }) => code === ProblemCode.LAGGING)"
+    v-if="props.problems?.some(({ code }) => code === ProblemCode.LAGGING)"
     :title="$t('subscription.healthProblemsAlerts.lagging.title')"
     :text="$t('subscription.healthProblemsAlerts.lagging.text')"
     type="warning"
@@ -21,7 +19,7 @@
   />
   <console-alert
     v-if="
-      props.problems.some(({ code }) => code === ProblemCode.MALFUNCTIONING)
+      props.problems?.some(({ code }) => code === ProblemCode.MALFUNCTIONING)
     "
     :title="$t('subscription.healthProblemsAlerts.malfunctioning.title')"
     :text="$t('subscription.healthProblemsAlerts.malfunctioning.text')"
@@ -31,7 +29,7 @@
   />
   <console-alert
     v-if="
-      props.problems.some(
+      props.problems?.some(
         ({ code }) => code === ProblemCode.RECEIVING_MALFORMED_MESSAGES,
       )
     "
@@ -42,7 +40,7 @@
     class="mb-2"
   />
   <console-alert
-    v-if="props.problems.some(({ code }) => code === ProblemCode.TIMING_OUT)"
+    v-if="props.problems?.some(({ code }) => code === ProblemCode.TIMING_OUT)"
     :title="$t('subscription.healthProblemsAlerts.timingOut.title')"
     :text="$t('subscription.healthProblemsAlerts.timingOut.text')"
     type="warning"
@@ -50,7 +48,7 @@
     class="mb-2"
   />
   <console-alert
-    v-if="props.problems.some(({ code }) => code === ProblemCode.UNREACHABLE)"
+    v-if="props.problems?.some(({ code }) => code === ProblemCode.UNREACHABLE)"
     :title="$t('subscription.healthProblemsAlerts.unreachable.title')"
     :text="$t('subscription.healthProblemsAlerts.unreachable.text')"
     type="warning"

@@ -60,10 +60,22 @@ describe('ConstraintsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]!).getByText(/index/)).toBeVisible();
-    expect(within(rows[0]!).getByText(/name/)).toBeVisible();
-    expect(within(rows[1]!).getByText(/noTopics/)).toBeVisible();
-    expect(within(rows[1]!).getByText(/appliedFilter/)).toBeVisible();
+    expect(
+      within(rows[0]!).getByText(
+        'consistency.inconsistentTopics.listing.index',
+      ),
+    ).toBeVisible();
+    expect(
+      within(rows[0]!).getByText('consistency.inconsistentTopics.listing.name'),
+    ).toBeVisible();
+    expect(
+      within(rows[1]!).getByText(/consistency.inconsistentTopics.noTopics/),
+    ).toBeVisible();
+    expect(
+      within(rows[1]!).getByText(
+        /consistency.inconsistentTopics.appliedFilter/,
+      ),
+    ).toBeVisible();
   });
 
   it('should render an empty inconsistent topics listing without filter applied', () => {
@@ -79,9 +91,13 @@ describe('ConstraintsListing', () => {
 
     // then
     expect(rows).toHaveLength(2);
-    expect(within(rows[1]!).getByText(/noTopics/)).toBeVisible();
     expect(
-      within(rows[1]!).queryByText(/appliedFilter/),
+      within(rows[1]!).getByText('consistency.inconsistentTopics.noTopics'),
+    ).toBeVisible();
+    expect(
+      within(rows[1]!).queryByText(
+        'consistency.inconsistentTopics.appliedFilter',
+      ),
     ).not.toBeInTheDocument();
   });
 });

@@ -14,11 +14,21 @@ describe('ConsumerGroupMembers', () => {
 
     // then
     expect(rows).toHaveLength(4);
-    expect(within(rows[0]!).getByText(/type/)).toBeVisible();
-    expect(within(rows[0]!).getByText(/partition/)).toBeVisible();
-    expect(within(rows[0]!).getByText(/currentOffset/)).toBeVisible();
-    expect(within(rows[0]!).getByText(/endOffset/)).toBeVisible();
-    expect(within(rows[0]!).getByText(/lag/)).toBeVisible();
+    expect(
+      within(rows[0]!).getByText('consumerGroups.listing.type'),
+    ).toBeVisible();
+    expect(
+      within(rows[0]!).getByText('consumerGroups.listing.partition'),
+    ).toBeVisible();
+    expect(
+      within(rows[0]!).getByText('consumerGroups.listing.currentOffset'),
+    ).toBeVisible();
+    expect(
+      within(rows[0]!).getByText('consumerGroups.listing.endOffset'),
+    ).toBeVisible();
+    expect(
+      within(rows[0]!).getByText('consumerGroups.listing.lag'),
+    ).toBeVisible();
 
     props.members.forEach((member, index) => {
       expect(

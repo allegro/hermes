@@ -9,7 +9,7 @@
       "jsdom",
       "vitest/globals",
       "@testing-library/jest-dom"
-    ],
+    ]
   },
   "skipLibCheck": true
 }

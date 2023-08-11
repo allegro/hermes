@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
-  import { useInconsistentTopics } from '@/composables/use-inconsistent-topics/useInconsistentTopics';
+  import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import InconsistentTopicsListing from '@/views/admin/consistency/inconsistent-topics-listing/InconsistentTopicsListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
@@ -29,7 +29,7 @@
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error"
+          v-if="error.fetchInconsistentTopics"
           :title="$t('consistency.connectionError.title')"
           :text="$t('consistency.connectionError.text')"
           type="error"

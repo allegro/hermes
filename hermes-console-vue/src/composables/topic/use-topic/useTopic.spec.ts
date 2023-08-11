@@ -20,7 +20,7 @@ import {
 } from '@/mocks/handlers';
 import { setupServer } from 'msw/node';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
-import type { UseTopicErrors } from '@/composables/types';
+import type { UseTopicErrors } from '@/composables/topic/use-topic/useTopic';
 
 describe('useTopic', () => {
   const server = setupServer(...successfulTopicHandlers);
