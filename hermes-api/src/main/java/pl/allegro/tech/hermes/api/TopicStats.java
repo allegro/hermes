@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
@@ -10,6 +11,7 @@ public class TopicStats {
     private final long trackingEnabledTopicCount;
     private final long avroTopicCount;
 
+    @JsonCreator
     public TopicStats(@JsonProperty("topicCount") long topicCount,
                       @JsonProperty("ackAllTopicCount") long ackAllTopicCount,
                       @JsonProperty("trackingEnabledTopicCount") long trackingEnabledTopicCount,
@@ -41,5 +43,21 @@ public class TopicStats {
                 ", trackingEnabledTopicCount=" + trackingEnabledTopicCount +
                 ", avroTopicCount=" + avroTopicCount +
                 '}';
+    }
+
+    public long getTopicCount() {
+        return topicCount;
+    }
+
+    public long getAckAllTopicCount() {
+        return ackAllTopicCount;
+    }
+
+    public long getTrackingEnabledTopicCount() {
+        return trackingEnabledTopicCount;
+    }
+
+    public long getAvroTopicCount() {
+        return avroTopicCount;
     }
 }

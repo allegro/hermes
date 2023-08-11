@@ -1,12 +1,16 @@
 package pl.allegro.tech.hermes.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 public class Stats {
     private final TopicStats topicStats;
     private final SubscriptionStats subscriptionStats;
 
-    public Stats(TopicStats topicStats, SubscriptionStats subscriptionStats) {
+    @JsonCreator
+    public Stats(@JsonProperty("topicStats") TopicStats topicStats, @JsonProperty("subscriptionStats") SubscriptionStats subscriptionStats) {
         this.topicStats = topicStats;
         this.subscriptionStats = subscriptionStats;
     }
