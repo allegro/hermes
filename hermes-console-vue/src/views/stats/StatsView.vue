@@ -27,7 +27,7 @@
 
 <template>
   <v-container>
-    <v-row class="home__logo" justify="center" cols="12">
+    <v-row v-if="loading || error" justify="center" cols="12">
       <v-col md="12">
         <loading-spinner v-if="loading" />
         <console-alert
@@ -38,7 +38,7 @@
         />
       </v-col>
     </v-row>
-    <v-row>
+    <v-row class="mt-16">
       <h1>{{ $t('stats.topics') }}</h1>
     </v-row>
     <v-row>
@@ -87,7 +87,7 @@
         </v-row>
       </v-col>
     </v-row>
-    <v-row>
+    <v-row class="mt-16">
       <h1>{{ $t('stats.subscriptions') }}</h1>
     </v-row>
     <v-row>
