@@ -28,6 +28,7 @@ describe('useStats', () => {
 
     // when
     const {
+      error,
       loading,
       topicCount,
       ackAllTopicCount,
@@ -48,7 +49,7 @@ describe('useStats', () => {
 
     await waitFor(() => {
       expect(loading.value).toBe(false);
-      expect(loading.value).toBe(false);
+      expect(error.value).toBe(false);
       expect(topicCount.value).toEqual(statsResponse.topicStats.topicCount);
       expect(ackAllTopicCount.value).toEqual(
         statsResponse.topicStats.ackAllTopicCount,
@@ -60,7 +61,9 @@ describe('useStats', () => {
         ),
         0.001,
       );
-      expect(avroTopicCount.value).toEqual(statsResponse.topicStats.avroTopicCount);
+      expect(avroTopicCount.value).toEqual(
+        statsResponse.topicStats.avroTopicCount,
+      );
       expect(avroTopicShare.value).toBeCloseTo(
         share(
           statsResponse.topicStats.avroTopicCount,
