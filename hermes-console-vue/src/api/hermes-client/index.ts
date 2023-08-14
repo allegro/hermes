@@ -94,5 +94,5 @@ export function fetchGroupNames(): ResponsePromise<string[]> {
 }
 
 export function fetchStats(): ResponsePromise<Stats> {
-    return axios.get<Stats>(`/stats`);
+  return axios.get<Stats>(`/stats`);
 }
