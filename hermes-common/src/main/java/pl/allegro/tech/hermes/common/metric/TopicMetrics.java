@@ -107,7 +107,6 @@ public class TopicMetrics {
     public HermesCounter topicDelayedProcessingCounter(TopicName topicName) {
         return HermesCounters.from(
                 micrometerCounter(TopicMetricsNames.TOPIC_DELAYED_PROCESSING, topicName),
-                micrometerCounter("topic-delayed-processing", topicName),
                 hermesMetrics.meter(Meters.TOPIC_DELAYED_PROCESSING, topicName)
         );
     }
