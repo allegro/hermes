@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 
 import java.util.Optional;
 
@@ -17,6 +18,8 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     private final MaxRateSupervisor maxRateSupervisor;
     private final SendCounters sendCounters;
     private final MetricsFacade metrics;
+    private final HermesCounter fetchFailuresCounter;
+    private final HermesCounter historyUpdateFailuresCounter;
     private final double minSignificantChange;
     private final int historyLimit;
     private volatile double maxRate;
@@ -36,6 +39,8 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
         this.maxRateSupervisor = maxRateSupervisor;
         this.sendCounters = sendCounters;
         this.metrics = metrics;
+        this.fetchFailuresCounter = metrics.maxRate().fetchFailuresCounter(subscription.getQualifiedName());
+        this.historyUpdateFailuresCounter = metrics.maxRate().historyUpdateFailuresCounter(subscription.getQualifiedName());
         this.minSignificantChange = minSignificantChange;
         this.historyLimit = historyLimit;
         this.maxRate = initialMaxRate;
@@ -61,7 +66,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
                 previousRecordedRate = usedRate;
             } catch (Exception e) {
                 logger.warn("Encountered problem updating max rate for {}", consumer, e);
-                metrics.maxRate().historyUpdateFailuresCounter(consumer.getSubscription()).increment();
+                historyUpdateFailuresCounter.increment();
             }
         }
     }
@@ -75,7 +80,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
             return registry.getMaxRate(consumer);
         } catch (Exception e) {
             logger.warn("Encountered problem fetching max rate for {}", consumer);
-            metrics.maxRate().fetchFailuresCounter(consumer.getSubscription()).increment();
+            fetchFailuresCounter.increment();
             return Optional.empty();
         }
     }

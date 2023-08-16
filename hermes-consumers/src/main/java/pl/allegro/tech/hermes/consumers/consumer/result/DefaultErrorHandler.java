@@ -9,9 +9,13 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
@@ -27,19 +31,36 @@ public class DefaultErrorHandler implements ErrorHandler {
     private final Clock clock;
     private final Trackers trackers;
     private final String cluster;
+    private final SubscriptionName subscriptionName;
+    private final HermesCounter failures;
+    private final HermesCounter timeouts;
+    private final HermesCounter otherErrors;
+    private final HermesCounter discarded;
+    private final HermesHistogram inflightTime;
+    private final HermesCounter throughputInBytes;
+    private final Map<Integer, HermesCounter> httpStatusCodes = new ConcurrentHashMap<>();
+
 
     public DefaultErrorHandler(OffsetQueue offsetQueue,
                                MetricsFacade metrics,
                                UndeliveredMessageLog undeliveredMessageLog,
                                Clock clock,
                                Trackers trackers,
-                               String cluster) {
+                               String cluster,
+                               SubscriptionName subscriptionName) {
         this.offsetQueue = offsetQueue;
         this.metrics = metrics;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.clock = clock;
         this.trackers = trackers;
         this.cluster = cluster;
+        this.subscriptionName = subscriptionName;
+        this.failures = metrics.subscriptions().failuresCounter(subscriptionName);
+        this.timeouts = metrics.subscriptions().timeoutsCounter(subscriptionName);
+        this.otherErrors = metrics.subscriptions().otherErrorsCounter(subscriptionName);
+        this.discarded = metrics.subscriptions().discarded(subscriptionName);
+        this.inflightTime = metrics.subscriptions().inflightTimeInMillisHistogram(subscriptionName);
+        this.throughputInBytes = metrics.subscriptions().throughputInBytes(subscriptionName);
     }
 
     @Override
@@ -49,9 +70,8 @@ public class DefaultErrorHandler implements ErrorHandler {
         offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
-        metrics.subscriptions().discarded(subscription.getQualifiedName()).increment();
-        metrics.subscriptions().inflightTimeInMillisHistogram(subscription.getQualifiedName())
-                .record(System.currentTimeMillis() - message.getReadingTimestamp());
+        discarded.increment();
+        inflightTime.record(System.currentTimeMillis() - message.getReadingTimestamp());
 
         addToMessageLog(message, subscription, result);
 
@@ -88,16 +108,22 @@ public class DefaultErrorHandler implements ErrorHandler {
 
     @Override
     public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
-        SubscriptionName subscriptionName = subscription.getQualifiedName();
-        metrics.subscriptions().failuresCounter(subscriptionName).increment();
+        failures.increment();
         if (result.hasHttpAnswer()) {
-            metrics.subscriptions().httpAnswerCounter(subscriptionName, result.getStatusCode()).increment();
+            markHttpStatusCode(result.getStatusCode());
         } else if (result.isTimeout()) {
-            metrics.subscriptions().timeoutsCounter(subscriptionName).increment();
+            timeouts.increment();
         } else {
-            metrics.subscriptions().otherErrorsCounter(subscriptionName).increment();
+            otherErrors.increment();
         }
-        metrics.subscriptions().throughputInBytes(subscriptionName).increment(message.getSize());
+        throughputInBytes.increment(message.getSize());
         trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause(), result.getHostname());
+    }
+
+    private void markHttpStatusCode(int statusCode) {
+        httpStatusCodes.computeIfAbsent(
+                statusCode,
+                integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode)
+        ).increment();
     }
 }

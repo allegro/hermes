@@ -64,11 +64,20 @@ public class ConsumerMessageSenderFactory {
 
         List<SuccessHandler> successHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
-                new DefaultSuccessHandler(offsetQueue, metrics, trackers));
+                new DefaultSuccessHandler(offsetQueue, metrics, trackers, subscription.getQualifiedName()));
 
         List<ErrorHandler> errorHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
-                new DefaultErrorHandler(offsetQueue, metrics, undeliveredMessageLog, clock, trackers, kafkaClusterName));
+                new DefaultErrorHandler(
+                        offsetQueue,
+                        metrics,
+                        undeliveredMessageLog,
+                        clock,
+                        trackers,
+                        kafkaClusterName,
+                        subscription.getQualifiedName()
+                )
+        );
 
         return new ConsumerMessageSender(subscription,
                 messageSenderFactory,

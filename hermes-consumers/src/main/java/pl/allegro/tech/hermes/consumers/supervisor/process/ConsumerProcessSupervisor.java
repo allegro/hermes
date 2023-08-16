@@ -9,11 +9,14 @@ import pl.allegro.tech.hermes.consumers.queue.MonitoredMpscQueue;
 import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
 import pl.allegro.tech.hermes.consumers.queue.WaitFreeDrainMpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -40,6 +43,10 @@ public class ConsumerProcessSupervisor implements Runnable {
     private final SignalsFilter signalsFilter;
 
     private final ConsumerProcessSupplier processFactory;
+
+    private final Map<String, HermesCounter> processedSignalsCounters = new HashMap<>();
+
+    private final Map<String, HermesCounter> droppedSignalsCounters = new HashMap<>();
 
     public ConsumerProcessSupervisor(ConsumersExecutorService executor,
                                      Clock clock,
@@ -123,7 +130,10 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     private void processSignal(Signal signal) {
         logger.debug("Processing signal: {}", signal);
-        metrics.consumer().processedSignalsCounter(signal.getType().name()).increment();
+        processedSignalsCounters.computeIfAbsent(
+                signal.getType().name(),
+                name -> metrics.consumer().processedSignalsCounter(name)
+        ).increment();
 
         switch (signal.getType()) {
             case START:
@@ -187,7 +197,10 @@ public class ConsumerProcessSupervisor implements Runnable {
     }
 
     private void drop(Signal signal) {
-        metrics.consumer().droppedSignalsCounter(signal.getType().name()).increment();
+        droppedSignalsCounters.computeIfAbsent(
+                signal.getType().name(),
+                name -> metrics.consumer().droppedSignalsCounter(name)
+        ).increment();
         logger.warn("Dropping signal {} as running target consumer process does not exist.", signal);
     }
 

@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.util.HashMap;
@@ -83,7 +85,9 @@ public class OffsetCommitter implements Runnable {
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
     private final MessageCommitter messageCommitter;
 
-    private final MetricsFacade metrics;
+    private final HermesCounter obsoleteCounter;
+    private final HermesCounter committedCounter;
+    private final HermesTimer timer;
 
     private final Set<SubscriptionPartitionOffset> inflightOffsets = new HashSet<>();
     private final Map<SubscriptionPartition, Long> maxCommittedOffsets = new HashMap<>();
@@ -99,12 +103,14 @@ public class OffsetCommitter implements Runnable {
         this.partitionAssignmentState = partitionAssignmentState;
         this.messageCommitter = messageCommitter;
         this.offsetCommitPeriodSeconds = offsetCommitPeriodSeconds;
-        this.metrics = metrics;
+        this.obsoleteCounter = metrics.offsetCommits().obsoleteCounter();
+        this.committedCounter = metrics.offsetCommits().committedCounter();
+        this.timer = metrics.offsetCommits().duration();
     }
 
     @Override
     public void run() {
-        try (HermesTimerContext ignored = metrics.offsetCommits().duration().time()) {
+        try (HermesTimerContext ignored = timer.time()) {
             // committed offsets need to be drained first so that there is no possibility of new committed offsets
             // showing up after inflight queue is drained - this would lead to stall in committing offsets
             ReducingConsumer committedOffsetsReducer = processCommittedOffsets();
@@ -147,8 +153,8 @@ public class OffsetCommitter implements Runnable {
             committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
             messageCommitter.commitOffsets(offsetsToCommit);
 
-            metrics.offsetCommits().obsoleteCounter().increment(obsoleteCount);
-            metrics.offsetCommits().committedCounter().increment(scheduledToCommitCount);
+            obsoleteCounter.increment(obsoleteCount);
+            committedCounter.increment(scheduledToCommitCount);
 
             cleanupStoredOffsetsWithObsoleteTerms();
         } catch (Exception exception) {

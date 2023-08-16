@@ -6,7 +6,12 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
@@ -14,28 +19,46 @@ import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionParti
 public class DefaultSuccessHandler implements SuccessHandler {
 
     private final Trackers trackers;
+    private final SubscriptionName subscriptionName;
     private final OffsetQueue offsetQueue;
     private final MetricsFacade metrics;
+    private final Map<Integer, HermesCounter> httpStatusCodes = new ConcurrentHashMap<>();
+    private final HermesCounter throughputInBytes;
+    private final HermesCounter successes;
+    private final HermesHistogram inflightTime;
 
-    public DefaultSuccessHandler(OffsetQueue offsetQueue, MetricsFacade metrics, Trackers trackers) {
+    public DefaultSuccessHandler(OffsetQueue offsetQueue,
+                                 MetricsFacade metrics,
+                                 Trackers trackers,
+                                 SubscriptionName subscriptionName) {
         this.offsetQueue = offsetQueue;
         this.metrics = metrics;
         this.trackers = trackers;
+        this.subscriptionName = subscriptionName;
+        this.throughputInBytes = metrics.subscriptions().throughputInBytes(subscriptionName);
+        this.successes = metrics.subscriptions().successes(subscriptionName);
+        this.inflightTime = metrics.subscriptions().inflightTimeInMillisHistogram(subscriptionName);
     }
 
     @Override
     public void handleSuccess(Message message, Subscription subscription, MessageSendingResult result) {
         offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
-        markSuccess(message, subscription.getQualifiedName(), result);
+        markSuccess(message, result);
         trackers.get(subscription).logSent(toMessageMetadata(message, subscription), result.getHostname());
     }
 
-    private void markSuccess(Message message, SubscriptionName subscription, MessageSendingResult result) {
-        metrics.subscriptions().successes(subscription).increment();
-        metrics.subscriptions().throughputInBytes(subscription).increment(message.getSize());
-        metrics.subscriptions().httpAnswerCounter(subscription, result.getStatusCode()).increment();
-        metrics.subscriptions().inflightTimeInMillisHistogram(subscription)
-                .record(System.currentTimeMillis() - message.getReadingTimestamp());
+    private void markSuccess(Message message, MessageSendingResult result) {
+        successes.increment();
+        throughputInBytes.increment(message.getSize());
+        markHttpStatusCode(result.getStatusCode());
+        inflightTime.record(System.currentTimeMillis() - message.getReadingTimestamp());
+    }
+
+    private void markHttpStatusCode(int statusCode) {
+        httpStatusCodes.computeIfAbsent(
+                statusCode,
+                integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode)
+        ).increment();
     }
 }

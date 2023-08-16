@@ -146,7 +146,9 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                 offsetQueue,
                 filteringRateLimitEnabled ? consumerRateLimiter : null,
                 trackers,
-                metrics);
+                metrics,
+                subscription.getQualifiedName()
+        );
         return new FilteringMessageReceiver(receiver, filteredMessageHandler, filterChainFactory, subscription);
     }
 

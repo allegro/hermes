@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
@@ -32,7 +31,6 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.LongAdder;
 
 import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
@@ -51,7 +49,6 @@ public class BatchConsumer implements Consumer {
     private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final Trackers trackers;
     private final SubscriptionLoadRecorder loadRecorder;
-    private final LongAdder inflightCount = new LongAdder();
 
     private Topic topic;
     private final OffsetQueue offsetQueue;
@@ -59,7 +56,8 @@ public class BatchConsumer implements Consumer {
 
     private volatile boolean consuming = true;
 
-    private final MetricsFacade metrics;
+    private final MetricsFacade metricsFacade;
+    private final BatchConsumerMetrics metrics;
     private MessageBatchReceiver receiver;
 
     public BatchConsumer(ReceiverFactory messageReceiverFactory,
@@ -68,7 +66,7 @@ public class BatchConsumer implements Consumer {
                          OffsetQueue offsetQueue,
                          MessageConverterResolver messageConverterResolver,
                          CompositeMessageContentWrapper compositeMessageContentWrapper,
-                         MetricsFacade metrics,
+                         MetricsFacade metricsFacade,
                          Trackers trackers,
                          Subscription subscription,
                          Topic topic,
@@ -81,7 +79,8 @@ public class BatchConsumer implements Consumer {
         this.subscription = subscription;
         this.useTopicMessageSize = useTopicMessageSize;
         this.loadRecorder = loadRecorder;
-        this.metrics = metrics;
+        this.metricsFacade = metricsFacade;
+        this.metrics = new BatchConsumerMetrics(metricsFacade, subscription.getQualifiedName());
         this.messageConverterResolver = messageConverterResolver;
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.topic = topic;
@@ -110,7 +109,7 @@ public class BatchConsumer implements Consumer {
             });
 
             result.getDiscarded().forEach(m -> {
-                metrics.subscriptions().discarded(subscription.getQualifiedName()).increment();
+                metrics.markTooLarge();
                 trackers.get(subscription).logDiscarded(m, "too large");
             });
         } finally {
@@ -136,7 +135,7 @@ public class BatchConsumer implements Consumer {
                 subscription,
                 new BatchConsumerRateLimiter(),
                 loadRecorder,
-                metrics
+                metricsFacade
         );
 
         logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());
@@ -149,8 +148,7 @@ public class BatchConsumer implements Consumer {
                 trackers,
                 loadRecorder
         );
-        metrics.subscriptions()
-                .registerInflightGauge(subscription.getQualifiedName(), this, consumer -> consumer.inflightCount.doubleValue());
+        metrics.initialize();
     }
 
     @Override
@@ -162,7 +160,7 @@ public class BatchConsumer implements Consumer {
             logger.info("No batch receiver to stop [subscription={}].", subscription.getQualifiedName());
         }
         loadRecorder.shutdown();
-        metrics.unregisterAllMetricsRelatedTo(subscription.getQualifiedName());
+        metrics.shutdown();
     }
 
     @Override
@@ -231,13 +229,13 @@ public class BatchConsumer implements Consumer {
 
     private void markSendingResult(MessageBatch batch, MessageSendingResult result) {
         if (result.succeeded()) {
-            recordAttemptAsFinished(batch.getMessageCount());
-            markSuccess(batch, result);
+            metrics.recordAttemptAsFinished(batch.getMessageCount());
+            metrics.markSuccess(batch, result);
             batch.getMessagesMetadata().forEach(
                     m -> trackers.get(subscription).logSent(m, result.getHostname())
             );
         } else {
-            markFailure(batch, result);
+            metrics.markFailure(batch, result);
             batch.getMessagesMetadata().forEach(
                     m -> trackers.get(subscription).logFailed(m, result.getRootCause(), result.getHostname())
             );
@@ -249,8 +247,8 @@ public class BatchConsumer implements Consumer {
     }
 
     private void deliver(Runnable signalsInterrupt, MessageBatch batch, Retryer<MessageSendingResult> retryer) {
-        recordAttempt(batch.getMessageCount());
-        try (HermesTimerContext ignored = metrics.subscriptions().latency(subscription.getQualifiedName()).time()) {
+        metrics.recordAttempt(batch.getMessageCount());
+        try (HermesTimerContext ignored = metrics.latencyTimer().time()) {
             retryer.call(() -> {
                 loadRecorder.recordSingleOperation();
                 signalsInterrupt.run();
@@ -263,9 +261,8 @@ public class BatchConsumer implements Consumer {
             });
         } catch (Exception e) {
             logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);
-            recordAttemptAsFinished(batch.getMessageCount());
-            metrics.subscriptions().discarded(subscription.getQualifiedName()).increment(batch.getMessageCount());
-            metrics.subscriptions().inflightTimeInMillisHistogram(subscription.getQualifiedName()).record(batch.getLifetime());
+            metrics.recordAttemptAsFinished(batch.getMessageCount());
+            metrics.markDiscarded(batch.getMessageCount(), batch.getLifetime());
             batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logDiscarded(m, e.getMessage()));
         }
     }
@@ -285,35 +282,5 @@ public class BatchConsumer implements Consumer {
                 }
             }
         };
-    }
-
-    private void recordAttempt(int messageCount) {
-        inflightCount.add(messageCount);
-    }
-
-    private void recordAttemptAsFinished(int messageCount) {
-        inflightCount.add(-1 * messageCount);
-    }
-
-    private void markSuccess(MessageBatch batch, MessageSendingResult result) {
-        SubscriptionName subscriptionName = subscription.getQualifiedName();
-        metrics.subscriptions().successes(subscriptionName).increment(batch.getMessageCount());
-        metrics.subscriptions().batchSuccesses(subscriptionName).increment();
-        metrics.subscriptions().throughputInBytes(subscriptionName).increment(batch.getSize());
-        metrics.subscriptions().httpAnswerCounter(subscriptionName, result.getStatusCode()).increment();
-        metrics.subscriptions().inflightTimeInMillisHistogram(subscriptionName).record(batch.getLifetime());
-    }
-
-    private void markFailure(MessageBatch batch, MessageSendingResult result) {
-        SubscriptionName subscriptionName = subscription.getQualifiedName();
-        metrics.subscriptions().failuresCounter(subscriptionName).increment();
-        if (result.hasHttpAnswer()) {
-            metrics.subscriptions().httpAnswerCounter(subscriptionName, result.getStatusCode()).increment();
-        } else if (result.isTimeout()) {
-            metrics.subscriptions().timeoutsCounter(subscriptionName).increment();
-        } else {
-            metrics.subscriptions().otherErrorsCounter(subscriptionName).increment();
-        }
-        metrics.subscriptions().throughputInBytes(subscriptionName).increment(batch.getSize());
     }
 }

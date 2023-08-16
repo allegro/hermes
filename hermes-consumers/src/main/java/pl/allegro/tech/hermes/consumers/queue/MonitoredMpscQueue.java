@@ -4,6 +4,7 @@ import org.jctools.queues.MessagePassingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 
 public class MonitoredMpscQueue<T> implements MpscQueue<T> {
 
@@ -13,20 +14,20 @@ public class MonitoredMpscQueue<T> implements MpscQueue<T> {
 
     private final String name;
 
-    private final MetricsFacade metrics;
+    private final HermesCounter failuresCounter;
 
     public MonitoredMpscQueue(MpscQueue<T> queue, MetricsFacade metrics, String name) {
         this.queue = queue;
         this.name = name;
-        this.metrics = metrics;
         metrics.consumer().registerQueueUtilizationGauge(queue, name, q -> (double) q.size() / q.capacity());
+        this.failuresCounter = metrics.consumer().queueFailuresCounter(name);
     }
 
     @Override
     public boolean offer(T element) {
         boolean accepted = queue.offer(element);
         if (!accepted) {
-            metrics.consumer().queueFailuresCounter(name).increment();
+            failuresCounter.increment();
             logger.error("[Queue: {}] Unable to add item: queue is full. Offered item: {}", name, element);
         }
         return accepted;

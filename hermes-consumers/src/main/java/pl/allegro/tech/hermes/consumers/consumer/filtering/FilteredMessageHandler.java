@@ -3,11 +3,13 @@ package pl.allegro.tech.hermes.consumers.consumer.filtering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.util.Optional;
@@ -20,18 +22,19 @@ public class FilteredMessageHandler {
     private final OffsetQueue offsetQueue;
     private final Optional<ConsumerRateLimiter> consumerRateLimiter;
     private final Trackers trackers;
-    private final MetricsFacade metrics;
+    private final HermesCounter filteredOutCounter;
 
     private static final Logger logger = LoggerFactory.getLogger(FilteredMessageHandler.class);
 
     public FilteredMessageHandler(OffsetQueue offsetQueue,
                                   ConsumerRateLimiter consumerRateLimiter,
                                   Trackers trackers,
-                                  MetricsFacade metrics) {
+                                  MetricsFacade metrics,
+                                  SubscriptionName subscriptionName) {
         this.offsetQueue = offsetQueue;
         this.consumerRateLimiter = Optional.ofNullable(consumerRateLimiter);
         this.trackers = trackers;
-        this.metrics = metrics;
+        this.filteredOutCounter = metrics.subscriptions().filteredOutCounter(subscriptionName);
     }
 
     public void handle(FilterResult result, Message message, Subscription subscription) {
@@ -43,7 +46,7 @@ public class FilteredMessageHandler {
             offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
                     message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
-            metrics.subscriptions().filteredOutCounter(subscription.getQualifiedName()).increment();
+            filteredOutCounter.increment();
 
             if (subscription.isTrackingEnabled()) {
                 trackers.get(subscription).logFiltered(toMessageMetadata(message, subscription), result.getFilterType().get());

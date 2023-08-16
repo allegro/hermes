@@ -54,7 +54,7 @@ public class ConsumerMetrics {
         gaugeRegistrar.registerGauge(BATCH_BUFFER_TOTAL_BYTES, "batch-buffer.total-bytes", obj, f);
     }
 
-    public  <T> void registerBatchBufferAvailableBytesGauge(T obj, ToDoubleFunction<T> f) {
+    public <T> void registerBatchBufferAvailableBytesGauge(T obj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(BATCH_BUFFER_AVAILABLE_BYTES, "batch-buffer.available-bytes", obj, f);
     }
 

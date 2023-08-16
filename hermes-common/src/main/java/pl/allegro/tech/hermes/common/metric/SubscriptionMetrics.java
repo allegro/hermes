@@ -136,7 +136,7 @@ public class SubscriptionMetrics {
                     .tags(subscriptionTags(subscriptionName))
                     .register(meterRegistry)
                     .record(value / 1000d);
-            hermesMetrics.inflightTimeHistogram(subscriptionName);
+            hermesMetrics.inflightTimeHistogram(subscriptionName).update(value);
         };
     }
 
