@@ -37,7 +37,7 @@ class CounterMatcher {
                         || isSubscriptionFiltered()
         ) {
             topicName = new TopicName(counter.getId().getTag(GROUP_TAG_NAME), counter.getId().getTag(TOPIC_TAG_NAME));
-            subscription = Optional.ofNullable(counter.getId().getTag(SUBSCRIPTION_TAG_NAME));
+            subscription = Optional.of(counter.getId().getTag(SUBSCRIPTION_TAG_NAME));
         }
         value = (long) counter.count();
     }
@@ -87,6 +87,6 @@ class CounterMatcher {
     }
 
     private boolean nameStartsWith(String name) {
-        return counter.getId().getName().startsWith(metricSearchPrefix + name);
+        return counter.getId().getName().equals(metricSearchPrefix + name);
     }
 }
