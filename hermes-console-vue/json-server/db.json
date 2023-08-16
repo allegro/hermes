@@ -60,6 +60,23 @@
       }
     }
   },
+  "ownerSources": [
+    {
+      "name": "Service Catalog",
+      "autocomplete": true,
+      "deprecated": false
+    },
+    {
+      "name": "Crowd Catalog",
+      "autocomplete": false,
+      "deprecated": false
+    },
+    {
+      "name": "Deprecated catalog",
+      "autocomplete": true,
+      "deprecated": true
+    }
+  ],
   "topics": [
     {
       "id": "pl.allegro.public.group.DummyEvent",
@@ -118,7 +135,17 @@
     {
       "id": "41",
       "name": "your-super-service",
-      "url": "https://google.pl?q=your-super-service"
+      "url": "https://google.com?q=your-super-service"
+    },
+    {
+      "id": "42",
+      "name": "your-other-super-service",
+      "url": "https://google.com?q=your-other-super-service"
+    },
+    {
+      "id": "43",
+      "name": "third-super-service",
+      "url": "https://google.com?q=third-super-service"
     }
   ],
   "topicPreview": [

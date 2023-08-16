@@ -3,7 +3,9 @@
     <console-header />
 
     <v-main class="main">
-      <RouterView />
+      <AppNotificationsProvider>
+        <RouterView />
+      </AppNotificationsProvider>
     </v-main>
 
     <console-footer />
@@ -13,6 +15,7 @@
 <script setup lang="ts">
   import { RouterView } from 'vue-router';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import AppNotificationsProvider from '@/components/app-notification/AppNotificationsProvider.vue';
   import ConsoleFooter from '@/components/console-footer/ConsoleFooter.vue';
   import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
 

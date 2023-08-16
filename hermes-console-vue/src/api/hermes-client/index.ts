@@ -9,7 +9,7 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
-import type { Owner } from '@/api/owner';
+import type { Owner, OwnerSource } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
 import type { Subscription } from '@/api/subscription';
 
@@ -17,6 +17,17 @@ export function fetchTopic(
   topicName: string,
 ): ResponsePromise<TopicWithSchema> {
   return axios.get<TopicWithSchema>(`/topics/${topicName}`);
+}
+
+export function fetchOwnersSources(): ResponsePromise<OwnerSource[]> {
+  return axios.get<OwnerSource[]>(`/owners/sources`);
+}
+
+export function searchOwners(
+  source: string,
+  searchPhrase: string,
+): ResponsePromise<Owner[]> {
+  return axios.get<Owner[]>(`/owners/sources/${source}?search=${searchPhrase}`);
 }
 
 export function fetchTopicOwner(ownerId: string): ResponsePromise<Owner> {

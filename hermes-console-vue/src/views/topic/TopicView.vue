@@ -1,5 +1,6 @@
 <script async setup lang="ts">
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import { useAppNotifications } from '@/store/app-notifications/useAppNotifications';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
@@ -55,12 +56,22 @@
   if (configStore.appConfig?.topic.offlineClientsEnabled) {
     fetchOfflineClientsSource();
   }
+  const notificationsStore = useAppNotifications();
 </script>
 
 <template>
   <v-container class="d-flex flex-column topic-view__container">
     <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
+      <v-btn
+        @click="
+          notificationsStore.dispatchNotification({
+            text: 'Some msg',
+            type: 'info',
+          })
+        "
+        >Elo</v-btn
+      >
     </div>
     <loading-spinner v-if="loading" />
     <console-alert
