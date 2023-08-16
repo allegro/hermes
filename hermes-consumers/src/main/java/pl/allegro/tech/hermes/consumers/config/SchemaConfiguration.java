@@ -10,7 +10,7 @@ import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.schema.AvroCompiledSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaRepositoryFactory;
@@ -48,12 +48,12 @@ public class SchemaConfiguration {
     }
 
     @Bean
-    public RawSchemaClient rawSchemaClient(HermesMetrics hermesMetrics,
+    public RawSchemaClient rawSchemaClient(MetricsFacade metricsFacade,
                                            ObjectMapper objectMapper,
                                            SchemaRepositoryInstanceResolver resolver,
                                            SchemaProperties schemaProperties,
                                            KafkaClustersProperties kafkaProperties) {
-        return new RawSchemaClientFactory(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator(), hermesMetrics,
+        return new RawSchemaClientFactory(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator(), metricsFacade,
                 objectMapper, resolver,
                 schemaProperties.getRepository().isSubjectSuffixEnabled(),
                 schemaProperties.getRepository().isSubjectNamespaceEnabled()).provide();

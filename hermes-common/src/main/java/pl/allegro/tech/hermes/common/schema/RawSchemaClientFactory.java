@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaClient;
@@ -11,7 +12,7 @@ public class RawSchemaClientFactory {
 
     private final String kafkaNamespace;
     private final String kafkaNamespaceSeparator;
-    private final HermesMetrics hermesMetrics;
+    private final MetricsFacade metricsFacade;
     private final ObjectMapper objectMapper;
     private final SchemaRepositoryInstanceResolver resolver;
     private final boolean subjectSuffixEnabled;
@@ -19,14 +20,14 @@ public class RawSchemaClientFactory {
 
     public RawSchemaClientFactory(String kafkaNamespace,
                                   String kafkaNamespaceSeparator,
-                                  HermesMetrics hermesMetrics,
+                                  MetricsFacade metricsFacade,
                                   ObjectMapper objectMapper,
                                   SchemaRepositoryInstanceResolver resolver,
                                   boolean subjectSuffixEnabled,
                                   boolean subjectNamespaceEnabled) {
         this.kafkaNamespace = kafkaNamespace;
         this.kafkaNamespaceSeparator = kafkaNamespaceSeparator;
-        this.hermesMetrics = hermesMetrics;
+        this.metricsFacade = metricsFacade;
         this.objectMapper = objectMapper;
         this.resolver = resolver;
         this.subjectSuffixEnabled = subjectSuffixEnabled;
@@ -49,6 +50,6 @@ public class RawSchemaClientFactory {
     }
 
     private RawSchemaClient createMetricsTrackingClient(RawSchemaClient rawSchemaClient) {
-        return new ReadMetricsTrackingRawSchemaClient(rawSchemaClient, hermesMetrics);
+        return new ReadMetricsTrackingRawSchemaClient(rawSchemaClient, metricsFacade);
     }
 }

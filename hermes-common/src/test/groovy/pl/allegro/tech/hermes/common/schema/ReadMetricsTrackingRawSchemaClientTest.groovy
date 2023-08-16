@@ -1,12 +1,19 @@
 package pl.allegro.tech.hermes.common.schema
 
-import com.codahale.metrics.Timer
+import com.codahale.metrics.MetricRegistry
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
+import io.micrometer.core.instrument.search.Search
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.common.metric.Timers
+import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
+import pl.allegro.tech.hermes.test.helper.metrics.MicrometerUtils
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
@@ -21,54 +28,50 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
     @Shared
     RawSchema schema = RawSchema.valueOf("some_schema")
 
-    HermesMetrics hermesMetrics = Mock()
-    
-    Timer schemaLatencyTimer = new Timer()
+    MeterRegistry meterRegistry = new SimpleMeterRegistry()
+    HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
 
-    Timer schemaVersionsLatencyTimer = new Timer()
+    MetricsFacade metricsFacade = new MetricsFacade(meterRegistry, hermesMetrics)
 
     RawSchemaClient rawSchemaClient = Mock()
 
     @Subject
-    RawSchemaClient readMetricsTrackingClient = new ReadMetricsTrackingRawSchemaClient(rawSchemaClient, hermesMetrics)
+    RawSchemaClient readMetricsTrackingClient = new ReadMetricsTrackingRawSchemaClient(rawSchemaClient, metricsFacade)
 
-    def "should track latency metrics for schema retrieval"(){
+    def "should track latency metrics for schema retrieval"() {
         expect:
-        schemaLatencyTimer.count == 0
+        getSchemaCounterValue() == 0
 
         when:
         readMetricsTrackingClient.getRawSchemaWithMetadata(topicName, schemaVersion)
 
         then:
-        1 * hermesMetrics.schemaTimer(Timers.GET_SCHEMA_LATENCY) >> schemaLatencyTimer
         1 * rawSchemaClient.getRawSchemaWithMetadata(topicName, schemaVersion)
-        schemaLatencyTimer.count == 1
+        getSchemaCounterValue() == 1
     }
 
-    def "should track latency metrics for latest schema retrieval"(){
+    def "should track latency metrics for latest schema retrieval"() {
         expect:
-        schemaLatencyTimer.count == 0
+        getSchemaCounterValue() == 0
 
         when:
         readMetricsTrackingClient.getLatestRawSchemaWithMetadata(topicName)
 
         then:
-        1 * hermesMetrics.schemaTimer(Timers.GET_SCHEMA_LATENCY) >> schemaLatencyTimer
         1 * rawSchemaClient.getLatestRawSchemaWithMetadata(topicName)
-        schemaLatencyTimer.count == 1
+        getSchemaCounterValue() == 1
     }
 
-    def "should track latency metrics for versions retrieval"(){
+    def "should track latency metrics for versions retrieval"() {
         expect:
-        schemaVersionsLatencyTimer.count == 0
+        getVersionsCounterValue() == 0
 
         when:
         readMetricsTrackingClient.getVersions(topicName)
 
         then:
-        1 * hermesMetrics.schemaTimer(Timers.GET_SCHEMA_VERSIONS_LATENCY) >> schemaVersionsLatencyTimer
         1 * rawSchemaClient.getVersions(topicName)
-        schemaVersionsLatencyTimer.count == 1
+        getVersionsCounterValue() == 1
     }
 
     def "should call inner client for non-read operations"() {
@@ -77,13 +80,28 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
 
         then:
         1 * rawSchemaClient.deleteAllSchemaVersions(topicName)
-        schemaVersionsLatencyTimer.count == 0
+        getVersionsCounterValue() == 0
 
         when:
         readMetricsTrackingClient.registerSchema(topicName, schema)
 
         then:
         1 * rawSchemaClient.registerSchema(topicName, schema)
-        schemaLatencyTimer.count == 0
+        getSchemaCounterValue() == 0
+    }
+
+    private long getSchemaCounterValue() {
+        return getCounterValue("schema.get-schema", Timers.GET_SCHEMA_LATENCY)
+    }
+
+    private long getVersionsCounterValue() {
+        return getCounterValue("schema.get-versions", Timers.GET_SCHEMA_VERSIONS_LATENCY)
+    }
+
+    private long getCounterValue(String meterRegistryName, String hermesMetricsName) {
+        def meterRegistryCount = MicrometerUtils.metricValue(meterRegistry, meterRegistryName, Search.&timer, Timer.&count).orElse(0L);
+        def hermesMetricsCount = hermesMetrics.schemaTimer(hermesMetricsName).count
+        assert meterRegistryCount == hermesMetricsCount
+        return meterRegistryCount
     }
 }
