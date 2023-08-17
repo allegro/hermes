@@ -43,27 +43,27 @@ class CounterMatcher {
     }
 
     public boolean isTopicPublished() {
-        return isTopicCounter() && nameStartsWith(TopicMetricsNames.TOPIC_PUBLISHED);
+        return isTopicCounter() && nameEquals(TopicMetricsNames.TOPIC_PUBLISHED);
     }
 
     public boolean isTopicThroughput() {
-        return isTopicCounter() && nameStartsWith(TopicMetricsNames.TOPIC_THROUGHPUT);
+        return isTopicCounter() && nameEquals(TopicMetricsNames.TOPIC_THROUGHPUT);
     }
 
     public boolean isSubscriptionThroughput() {
-        return isSubscriptionCounter() && nameStartsWith(SubscriptionMetricsNames.SUBSCRIPTION_THROUGHPUT);
+        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_THROUGHPUT);
     }
 
     public boolean isSubscriptionDelivered() {
-        return isSubscriptionCounter() && nameStartsWith(SubscriptionMetricsNames.SUBSCRIPTION_DELIVERED);
+        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_DELIVERED);
     }
 
     public boolean isSubscriptionDiscarded() {
-        return isSubscriptionCounter() && nameStartsWith(SubscriptionMetricsNames.SUBSCRIPTION_DISCARDED);
+        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_DISCARDED);
     }
 
     public boolean isSubscriptionFiltered() {
-        return isSubscriptionCounter() && nameStartsWith(SubscriptionMetricsNames.SUBSCRIPTION_FILTERED_OUT);
+        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_FILTERED_OUT);
     }
 
     public TopicName getTopicName() {
@@ -86,7 +86,7 @@ class CounterMatcher {
         return counter.getId().getTag(SUBSCRIPTION_TAG_NAME) != null;
     }
 
-    private boolean nameStartsWith(String name) {
+    private boolean nameEquals(String name) {
         return counter.getId().getName().equals(metricSearchPrefix + name);
     }
 }
