@@ -5,10 +5,10 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import static com.google.common.collect.Iterables.toArray;
 import static java.util.Arrays.asList;

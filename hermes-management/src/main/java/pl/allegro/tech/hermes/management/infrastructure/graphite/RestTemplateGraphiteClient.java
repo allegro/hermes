@@ -44,7 +44,7 @@ public class RestTemplateGraphiteClient implements GraphiteClient {
     public MonitoringMetricsContainer readMetrics(String... metricPaths) {
         try {
             MonitoringMetricsContainer response = new MonitoringMetricsContainer();
-            queryGraphite(metricPaths).stream().forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
+            queryGraphite(metricPaths).forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
             return response;
         } catch (Exception exception) {
             logger.warn("Unable to read from Graphite: {}", getRootCauseMessage(exception));

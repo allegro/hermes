@@ -52,7 +52,6 @@ public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsPro
                 .build();
     }
 
-
     private String metricPath(SubscriptionName name) {
         return String.format(SUBSCRIPTION_RATE_PATTERN,
                 metricsPaths.prefix(), subscriptionNameToPath(name)
