@@ -24,89 +24,94 @@
       </v-col>
     </v-row>
     <div v-if="stats">
-      <v-row class="mt-16">
-        <h1>{{ $t('stats.topics') }}</h1>
-      </v-row>
       <v-row>
+        <div class="text-h2 mt-16">{{ $t('stats.title') }}</div>
+      </v-row>
+      <v-row class="mt-16">
+        <div class="text-h3">{{ $t('stats.topics') }}</div>
+      </v-row>
+      <v-row class="mt-6">
         <v-col md="3">
           <v-row>
-            <h2>{{ $t('stats.total') }}</h2>
+            <div class="text-h5">{{ $t('stats.total') }}</div>
           </v-row>
           <v-row>
-            <h2>{{ formatNumber(stats.topicCount) }}</h2>
+            <div class="text-h4">{{ formatNumber(stats.topicCount) }}</div>
           </v-row>
         </v-col>
         <v-col md="3">
           <v-row>
-            <h2>{{ $t('stats.ackAll') }}</h2>
+            <div class="text-h5">{{ $t('stats.ackAll') }}</div>
           </v-row>
           <v-row>
-            <h2>
+            <div class="text-h4">
               {{ formatNumber(stats.ackAllTopicCount) }} ({{
                 formatNumber(stats.ackAllTopicShare, 2)
               }}%)
-            </h2>
+            </div>
           </v-row>
         </v-col>
         <v-col md="3">
           <v-row>
-            <h2>{{ $t('stats.trackingEnabled') }}</h2>
+            <div class="text-h5">{{ $t('stats.trackingEnabled') }}</div>
           </v-row>
           <v-row>
-            <h2>
+            <div class="text-h4">
               {{ formatNumber(stats.trackingEnabledTopicCount) }} ({{
                 formatNumber(stats.trackingEnabledTopicShare, 2)
               }}%)
-            </h2>
+            </div>
           </v-row>
         </v-col>
         <v-col md="3">
           <v-row>
-            <h2>Avro</h2>
+            <div class="text-h5">Avro</div>
           </v-row>
           <v-row>
-            <h2>
+            <div class="text-h4">
               {{ formatNumber(stats.avroTopicCount) }} ({{
                 formatNumber(stats.avroTopicShare, 2)
               }}%)
-            </h2>
+            </div>
           </v-row>
         </v-col>
       </v-row>
       <v-row class="mt-16">
-        <h1>{{ $t('stats.subscriptions') }}</h1>
+        <div class="text-h3">{{ $t('stats.subscriptions') }}</div>
       </v-row>
-      <v-row>
+      <v-row class="mt-6">
         <v-col md="3">
           <v-row>
-            <h2>{{ $t('stats.total') }}</h2>
+            <div class="text-h5">{{ $t('stats.total') }}</div>
           </v-row>
           <v-row>
-            <h2>{{ formatNumber(stats.subscriptionCount) }}</h2>
+            <div class="text-h4">
+              {{ formatNumber(stats.subscriptionCount) }}
+            </div>
           </v-row>
         </v-col>
         <v-col md="3">
           <v-row>
-            <h2>{{ $t('stats.trackingEnabled') }}</h2>
+            <div class="text-h5">{{ $t('stats.trackingEnabled') }}</div>
           </v-row>
           <v-row>
-            <h2>
+            <div class="text-h4">
               {{ formatNumber(stats.trackingEnabledSubscriptionCount) }} ({{
                 formatNumber(stats.trackingEnabledSubscriptionShare, 2)
               }}%)
-            </h2>
+            </div>
           </v-row>
         </v-col>
         <v-col md="3">
           <v-row>
-            <h2>Avro</h2>
+            <div class="text-h5">Avro</div>
           </v-row>
           <v-row>
-            <h2>
+            <div class="text-h4">
               {{ formatNumber(stats.avroSubscriptionCount) }} ({{
                 formatNumber(stats.avroSubscriptionShare, 2)
               }}%)
-            </h2>
+            </div>
           </v-row>
         </v-col>
       </v-row>

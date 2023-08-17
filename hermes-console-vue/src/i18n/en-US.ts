@@ -96,6 +96,7 @@ const en_US = {
       title: 'Connection error',
       text: 'Could not fetch stats',
     },
+    title: 'Statistics',
     topics: 'Topics',
     subscriptions: 'Subscriptions',
     total: 'Total',
