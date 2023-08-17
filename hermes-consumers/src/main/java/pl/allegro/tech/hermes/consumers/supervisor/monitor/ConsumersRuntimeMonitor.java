@@ -5,7 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkloadSupervisor;
@@ -39,7 +39,7 @@ public class ConsumersRuntimeMonitor implements Runnable {
 
     public ConsumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
                                    WorkloadSupervisor workloadSupervisor,
-                                   HermesMetrics hermesMetrics,
+                                   MetricsFacade metrics,
                                    SubscriptionsCache subscriptionsCache,
                                    Duration scanInterval) {
         this.consumerSupervisor = consumerSupervisor;
@@ -47,10 +47,10 @@ public class ConsumersRuntimeMonitor implements Runnable {
         this.subscriptionsCache = subscriptionsCache;
         this.scanInterval = scanInterval;
 
-        hermesMetrics.registerGauge("consumers-workload.monitor.running", () -> monitorMetrics.running);
-        hermesMetrics.registerGauge("consumers-workload.monitor.assigned", () -> monitorMetrics.assigned);
-        hermesMetrics.registerGauge("consumers-workload.monitor.missing", () -> monitorMetrics.missing);
-        hermesMetrics.registerGauge("consumers-workload.monitor.oversubscribed", () -> monitorMetrics.oversubscribed);
+        metrics.workload().registerRunningSubscriptionsGauge(monitorMetrics, mm -> mm.running);
+        metrics.workload().registerAssignedSubscriptionsGauge(monitorMetrics, mm -> mm.assigned);
+        metrics.workload().registerMissingSubscriptionsGauge(monitorMetrics, mm -> mm.missing);
+        metrics.workload().registerOversubscribedGauge(monitorMetrics, mm -> mm.oversubscribed);
     }
 
     @Override

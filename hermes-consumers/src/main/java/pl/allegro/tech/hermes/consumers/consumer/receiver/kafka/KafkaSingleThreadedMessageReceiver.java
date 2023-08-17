@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
@@ -25,6 +25,7 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOff
 import pl.allegro.tech.hermes.consumers.consumer.offset.kafka.broker.KafkaConsumerOffsetMover;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.RetryableReceiverError;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -46,7 +47,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     private final BlockingQueue<ConsumerRecord<byte[], byte[]>> readQueue;
     private final KafkaConsumerOffsetMover offsetMover;
 
-    private final HermesMetrics metrics;
+    private final HermesCounter skippedCounter;
+    private final HermesCounter failuresCounter;
     private final SubscriptionLoadRecorder loadReporter;
     private volatile Subscription subscription;
 
@@ -55,7 +57,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
     public KafkaSingleThreadedMessageReceiver(KafkaConsumer<byte[], byte[]> consumer,
                                               KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
-                                              HermesMetrics metrics,
+                                              MetricsFacade metrics,
                                               KafkaNamesMapper kafkaNamesMapper,
                                               Topic topic,
                                               Subscription subscription,
@@ -63,7 +65,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                                               int readQueueCapacity,
                                               SubscriptionLoadRecorder loadReporter,
                                               ConsumerPartitionAssignmentState partitionAssignmentState) {
-        this.metrics = metrics;
+        this.skippedCounter = metrics.offsetCommits().skippedCounter();
+        this.failuresCounter = metrics.offsetCommits().failuresCounter();
         this.subscription = subscription;
         this.poolTimeout = poolTimeout;
         this.loadReporter = loadReporter;
@@ -176,7 +179,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
             Thread.currentThread().interrupt();
         } catch (Exception ex) {
             logger.error("Error while committing offset for subscription {}", subscription.getQualifiedName(), ex);
-            metrics.counter("offset-committer.failed").inc();
+            failuresCounter.increment();
         }
     }
 
@@ -191,7 +194,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
                 if (consumer.position(topicAndPartition) >= partitionOffset.getOffset()) {
                     offsetsData.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset()));
                 } else {
-                    metrics.counter("offset-committer.skipped").inc();
+                    skippedCounter.increment();
                 }
             } else {
                 logger.warn(

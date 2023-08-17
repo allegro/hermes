@@ -1,16 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.result
 
-import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.consumer.Message
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
-import pl.allegro.tech.hermes.metrics.PathsCompiler
+import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory
 import pl.allegro.tech.hermes.tracker.consumers.Trackers
 import spock.lang.Specification
 
@@ -20,10 +18,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 
 class DefaultErrorHandlerTest extends Specification {
 
-    private OffsetQueue offsetQueue = new OffsetQueue(
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
-            200_000
-    )
+    private OffsetQueue offsetQueue = new OffsetQueue(TestMetricsFacadeFactory.create(), 200_000)
 
     private UndeliveredMessageLog undeliveredLog = Mock(UndeliveredMessageLog)
 
@@ -35,7 +30,7 @@ class DefaultErrorHandlerTest extends Specification {
             .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
     private DefaultErrorHandler handler = new DefaultErrorHandler(
-            offsetQueue, Stub(SubscriptionMetrics), undeliveredLog, Clock.systemUTC(), trackers, "cluster")
+            offsetQueue, Stub(MetricsFacade), undeliveredLog, Clock.systemUTC(), trackers, "cluster", subscription.qualifiedName)
 
     def "should save tracking information on message failure but not commit message"() {
         given:

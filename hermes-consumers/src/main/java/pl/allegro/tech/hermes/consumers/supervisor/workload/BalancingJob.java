@@ -1,14 +1,14 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
-import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.domain.workload.constraints.ConsumersWorkloadConstraints;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ class BalancingJob implements Runnable {
     private final ClusterAssignmentCache clusterAssignmentCache;
     private final ConsumerAssignmentRegistry consumerAssignmentRegistry;
     private final WorkBalancer workBalancer;
-    private final HermesMetrics metrics;
+    private final MetricsFacade metrics;
     private final String kafkaCluster;
     private final WorkloadConstraintsRepository workloadConstraintsRepository;
     private final BalancingListener balancingListener;
@@ -34,7 +34,7 @@ class BalancingJob implements Runnable {
                  ClusterAssignmentCache clusterAssignmentCache,
                  ConsumerAssignmentRegistry consumerAssignmentRegistry,
                  WorkBalancer workBalancer,
-                 HermesMetrics metrics,
+                 MetricsFacade metrics,
                  String kafkaCluster,
                  WorkloadConstraintsRepository workloadConstraintsRepository,
                  BalancingListener balancingListener) {
@@ -48,26 +48,10 @@ class BalancingJob implements Runnable {
         this.kafkaCluster = kafkaCluster;
         this.workloadConstraintsRepository = workloadConstraintsRepository;
         this.balancingListener = balancingListener;
-        metrics.registerGauge(
-                gaugeName(kafkaCluster, ".all-assignments"),
-                () -> balancingMetrics.allAssignments
-        );
-        metrics.registerGauge(
-                gaugeName(kafkaCluster, ".missing-resources"),
-                () -> balancingMetrics.missingResources
-        );
-        metrics.registerGauge(
-                gaugeName(kafkaCluster, ".deleted-assignments"),
-                () -> balancingMetrics.deletedAssignments
-        );
-        metrics.registerGauge(
-                gaugeName(kafkaCluster, ".created-assignments"),
-                () -> balancingMetrics.createdAssignments
-        );
-    }
-
-    private String gaugeName(String kafkaCluster, String name) {
-        return "consumers-workload." + kafkaCluster + "." + name;
+        metrics.workload().registerAllAssignmentsGauge(balancingMetrics, kafkaCluster, bm -> bm.allAssignments);
+        metrics.workload().registerMissingResourcesGauge(balancingMetrics, kafkaCluster, bm -> bm.missingResources);
+        metrics.workload().registerDeletedAssignmentsGauge(balancingMetrics, kafkaCluster, bm -> bm.deletedAssignments);
+        metrics.workload().registerCreatedAssignmentsGauge(balancingMetrics, kafkaCluster, bm -> bm.createdAssignments);
     }
 
     @Override
@@ -75,7 +59,7 @@ class BalancingJob implements Runnable {
         try {
             consumersRegistry.refresh();
             if (consumersRegistry.isLeader()) {
-                try (Timer.Context ctx = metrics.consumersWorkloadRebalanceDurationTimer(kafkaCluster).time()) {
+                try (HermesTimerContext ignored = metrics.workload().rebalanceDurationTimer(kafkaCluster).time()) {
                     logger.info("Initializing workload balance.");
                     clusterAssignmentCache.refresh();
 

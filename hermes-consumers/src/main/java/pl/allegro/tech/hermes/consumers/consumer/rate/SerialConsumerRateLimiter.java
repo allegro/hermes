@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate;
 
 import com.google.common.util.concurrent.RateLimiter;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculationResult;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
@@ -14,7 +14,7 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
 
     private Subscription subscription;
 
-    private final SubscriptionMetrics metrics;
+    private final MetricsFacade metrics;
 
     private final ConsumerRateLimitSupervisor rateLimitSupervisor;
 
@@ -30,7 +30,7 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
 
     public SerialConsumerRateLimiter(Subscription subscription,
                                      OutputRateCalculatorFactory outputRateCalculatorFactory,
-                                     SubscriptionMetrics metrics,
+                                     MetricsFacade metrics,
                                      ConsumerRateLimitSupervisor rateLimitSupervisor,
                                      Clock clock) {
         this.subscription = subscription;
@@ -47,7 +47,7 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
     public void initialize() {
         outputRateCalculator.start();
         adjustConsumerRate();
-        metrics.registerOutputRateGauge(rateLimiter::getRate);
+        metrics.maxRate().registerOutputRateGauge(subscription.getQualifiedName(), rateLimiter, RateLimiter::getRate);
         rateLimitSupervisor.register(this);
     }
 

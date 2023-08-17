@@ -18,7 +18,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
@@ -133,7 +133,7 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(initMethod = "start")
-    public HttpClientsWorkloadReporter httpClientsWorkloadReporter(HermesMetrics metrics,
+    public HttpClientsWorkloadReporter httpClientsWorkloadReporter(MetricsFacade metrics,
                                                                    @Named("http1-serial-client") HttpClient http1SerialClient,
                                                                    @Named("http1-batch-client") HttpClient http1BatchClient,
                                                                    Http2ClientHolder http2ClientHolder,
@@ -261,7 +261,7 @@ public class ConsumerSenderConfiguration {
 
     @Bean
     public FutureAsyncTimeout futureAsyncTimeoutFactory(InstrumentedExecutorServiceFactory executorFactory,
-                                                                              SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
+                                                        SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
         ScheduledExecutorService timeoutExecutorService = executorFactory.getScheduledExecutorService(
                 "async-timeout",
                 senderAsyncTimeoutProperties.getThreadPoolSize(),

@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
@@ -29,7 +29,7 @@ class MaxRateCalculatorJob implements LeaderLatchListener, Runnable {
                          MaxRateBalancer balancer,
                          MaxRateRegistry maxRateRegistry,
                          SubscriptionsCache subscriptionsCache,
-                         HermesMetrics metrics,
+                         MetricsFacade metrics,
                          Clock clock) {
         this.consumerNodesRegistry = consumerNodesRegistry;
         this.interval = internal;

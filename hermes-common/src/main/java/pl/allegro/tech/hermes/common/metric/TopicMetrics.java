@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.metrics.DefaultHermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
@@ -68,14 +69,14 @@ public class TopicMetrics {
 
     public MeterBackedHermesCounter topicThroughputBytes(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter("topic-throughput", topicName),
+                micrometerCounter("topic-throughput-bytes", topicName),
                 hermesMetrics.meter(TOPIC_THROUGHPUT_BYTES, topicName)
         );
     }
 
     public MeterBackedHermesCounter topicGlobalThroughputBytes() {
         return HermesCounters.from(
-                meterRegistry.counter("topic-global-throughput"),
+                meterRegistry.counter("topic-global-throughput-bytes"),
                 hermesMetrics.meter(THROUGHPUT_BYTES)
         );
     }
@@ -97,7 +98,7 @@ public class TopicMetrics {
     public HermesCounter topicRequestCounter(TopicName topicName) {
         return HermesCounters.from(
                 micrometerCounter("topic-requests", topicName),
-                hermesMetrics.meter(TOPIC_METER)
+                hermesMetrics.meter(TOPIC_METER, topicName)
         );
     }
 
@@ -111,7 +112,7 @@ public class TopicMetrics {
     public HermesCounter topicDelayedProcessingCounter(TopicName topicName) {
         return HermesCounters.from(
                 micrometerCounter("topic-delayed-processing", topicName),
-                hermesMetrics.meter(TOPIC_DELAYED_PROCESSING)
+                hermesMetrics.meter(TOPIC_DELAYED_PROCESSING, topicName)
         );
     }
 
@@ -130,7 +131,7 @@ public class TopicMetrics {
     }
 
     public HermesHistogram topicGlobalMessageContentSizeHistogram() {
-        return HermesHistogram.of(
+        return DefaultHermesHistogram.of(
                 DistributionSummary.builder("topic-global-message-size-bytes")
                         .register(meterRegistry),
                 hermesMetrics.messageContentSizeHistogram()
@@ -138,7 +139,7 @@ public class TopicMetrics {
     }
 
     public HermesHistogram topicMessageContentSizeHistogram(TopicName topicName) {
-        return HermesHistogram.of(
+        return DefaultHermesHistogram.of(
                 DistributionSummary.builder("topic-message-size-bytes")
                         .tags(topicTags(topicName))
                         .register(meterRegistry),
