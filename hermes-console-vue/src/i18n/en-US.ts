@@ -480,6 +480,14 @@ const en_US = {
       reason: 'Reason',
       timestamp: 'Timestamp',
     },
+    moveOffsets: {
+      title: 'Move subscription offsets to the end',
+      button: 'MOVE',
+      success: 'Moved offsets for subscription',
+      failure: 'Failed to move offsets for subscription',
+      status: 'status',
+      response: 'response',
+    },
   },
   search: {
     collection: {
