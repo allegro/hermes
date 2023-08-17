@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,18 +82,18 @@ class BatchConsumerMetrics {
         metrics.unregisterAllMetricsRelatedTo(subscriptionName);
     }
 
-    void markTooLarge() {
-        discarded.increment();
-    }
-
     void initialize() {
         metrics.subscriptions()
                 .registerInflightGauge(subscriptionName, this, metrics -> metrics.inflightCount.doubleValue());
     }
 
-    void markDiscarded(int messageCount, long lifetime) {
-        discarded.increment(messageCount);
-        inflightTime.record(lifetime);
+    void markDiscarded() {
+        discarded.increment();
+    }
+
+    void markDiscarded(MessageBatch batch) {
+        discarded.increment(batch.getMessageCount());
+        inflightTime.record(batch.getLifetime());
     }
 
     HermesTimer latencyTimer() {

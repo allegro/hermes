@@ -7,6 +7,7 @@ import org.apache.kafka.common.TopicPartition
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
+import pl.allegro.tech.hermes.common.metric.OffsetCommitsMetrics
 import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState
@@ -31,10 +32,14 @@ class KafkaSingleThreadedMessageReceiverTest extends Specification {
     def topic = TopicBuilder.topic("pl.allegro.someTestTopic").build()
     def subscription = SubscriptionBuilder.subscription(topic, "someSub").build()
 
+    MetricsFacade metricsFacade = Mock(MetricsFacade)
+    OffsetCommitsMetrics offsetCommitsMetrics = Mock(OffsetCommitsMetrics)
+
     def setup() {
+        metricsFacade.offsetCommits() >> offsetCommitsMetrics
         converterFactory.create(*_) >> messageConverter
         receiver = new KafkaSingleThreadedMessageReceiver(
-                consumer, converterFactory, Mock(MetricsFacade),
+                consumer, converterFactory, metricsFacade,
                 kafkaNamesMapper, topic, subscription, Duration.ofMillis(10), 10,
                 Mock(SubscriptionLoadRecorder),
                 Mock(ConsumerPartitionAssignmentState)

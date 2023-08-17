@@ -109,7 +109,7 @@ public class BatchConsumer implements Consumer {
             });
 
             result.getDiscarded().forEach(m -> {
-                metrics.markTooLarge();
+                metrics.markDiscarded();
                 trackers.get(subscription).logDiscarded(m, "too large");
             });
         } finally {
@@ -262,7 +262,7 @@ public class BatchConsumer implements Consumer {
         } catch (Exception e) {
             logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);
             metrics.recordAttemptAsFinished(batch.getMessageCount());
-            metrics.markDiscarded(batch.getMessageCount(), batch.getLifetime());
+            metrics.markDiscarded(batch);
             batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logDiscarded(m, e.getMessage()));
         }
     }
