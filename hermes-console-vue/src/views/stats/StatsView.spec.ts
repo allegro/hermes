@@ -6,20 +6,22 @@ import StatsView from '@/views/stats/StatsView.vue';
 vi.mock('@/composables/use-stats/useStats');
 
 const useStatsStub: ReturnType<typeof useStats> = {
-  error: ref(false),
+  error: ref({ fetchError: null }),
   loading: computed(() => false),
-  topicCount: ref(100),
-  ackAllTopicCount: ref(50),
-  ackAllTopicShare: ref(0.5),
-  trackingEnabledTopicCount: ref(20),
-  trackingEnabledTopicShare: ref(0.2),
-  avroTopicCount: ref(10),
-  avroTopicShare: ref(0.1),
-  subscriptionCount: ref(1000),
-  trackingEnabledSubscriptionCount: ref(100),
-  trackingEnabledSubscriptionShare: ref(0.1),
-  avroSubscriptionCount: ref(500),
-  avroSubscriptionShare: ref(0.5),
+  stats: ref({
+    topicCount: 100,
+    ackAllTopicCount: 50,
+    ackAllTopicShare: 0.5,
+    trackingEnabledTopicCount: 20,
+    trackingEnabledTopicShare: 0.2,
+    avroTopicCount: 10,
+    avroTopicShare: 0.1,
+    subscriptionCount: 1000,
+    trackingEnabledSubscriptionCount: 100,
+    trackingEnabledSubscriptionShare: 0.1,
+    avroSubscriptionCount: 500,
+    avroSubscriptionShare: 0.5,
+  }),
 };
 
 describe('StatsView', () => {
@@ -70,7 +72,7 @@ describe('StatsView', () => {
     vi.mocked(useStats).mockReturnValueOnce({
       ...useStatsStub,
       loading: computed(() => false),
-      error: ref(true),
+      error: ref({ fetchError: new Error() }),
     });
 
     // when
@@ -87,7 +89,6 @@ describe('StatsView', () => {
     vi.mocked(useStats).mockReturnValueOnce({
       ...useStatsStub,
       loading: computed(() => false),
-      error: ref(false),
     });
 
     // when

@@ -7,22 +7,7 @@
 
   const { t } = useI18n();
 
-  const {
-    topicCount,
-    ackAllTopicCount,
-    ackAllTopicShare,
-    trackingEnabledTopicCount,
-    trackingEnabledTopicShare,
-    avroTopicCount,
-    avroTopicShare,
-    subscriptionCount,
-    trackingEnabledSubscriptionCount,
-    trackingEnabledSubscriptionShare,
-    avroSubscriptionCount,
-    avroSubscriptionShare,
-    loading,
-    error,
-  } = useStats();
+  const { stats, loading, error } = useStats();
 </script>
 
 <template>
@@ -31,98 +16,100 @@
       <v-col md="12">
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error"
+          v-if="error.fetchError"
           :title="t('stats.connectionError.title')"
           :text="t('stats.connectionError.text')"
           type="error"
         />
       </v-col>
     </v-row>
-    <v-row class="mt-16">
-      <h1>{{ $t('stats.topics') }}</h1>
-    </v-row>
-    <v-row>
-      <v-col md="3">
-        <v-row>
-          <h2>{{ $t('stats.total') }}</h2>
-        </v-row>
-        <v-row>
-          <h2>{{ formatNumber(topicCount) }}</h2>
-        </v-row>
-      </v-col>
-      <v-col md="3">
-        <v-row>
-          <h2>{{ $t('stats.ackAll') }}</h2>
-        </v-row>
-        <v-row>
-          <h2>
-            {{ formatNumber(ackAllTopicCount) }} ({{
-              formatNumber(ackAllTopicShare, 2)
-            }}%)
-          </h2>
-        </v-row>
-      </v-col>
-      <v-col md="3">
-        <v-row>
-          <h2>{{ $t('stats.trackingEnabled') }}</h2>
-        </v-row>
-        <v-row>
-          <h2>
-            {{ formatNumber(trackingEnabledTopicCount) }} ({{
-              formatNumber(trackingEnabledTopicShare, 2)
-            }}%)
-          </h2>
-        </v-row>
-      </v-col>
-      <v-col md="3">
-        <v-row>
-          <h2>Avro</h2>
-        </v-row>
-        <v-row>
-          <h2>
-            {{ formatNumber(avroTopicCount) }} ({{
-              formatNumber(avroTopicShare, 2)
-            }}%)
-          </h2>
-        </v-row>
-      </v-col>
-    </v-row>
-    <v-row class="mt-16">
-      <h1>{{ $t('stats.subscriptions') }}</h1>
-    </v-row>
-    <v-row>
-      <v-col md="3">
-        <v-row>
-          <h2>{{ $t('stats.total') }}</h2>
-        </v-row>
-        <v-row>
-          <h2>{{ formatNumber(subscriptionCount) }}</h2>
-        </v-row>
-      </v-col>
-      <v-col md="3">
-        <v-row>
-          <h2>{{ $t('stats.trackingEnabled') }}</h2>
-        </v-row>
-        <v-row>
-          <h2>
-            {{ formatNumber(trackingEnabledSubscriptionCount) }} ({{
-              formatNumber(trackingEnabledSubscriptionShare, 2)
-            }}%)
-          </h2>
-        </v-row>
-      </v-col>
-      <v-col md="3">
-        <v-row>
-          <h2>Avro</h2>
-        </v-row>
-        <v-row>
-          <h2>
-            {{ formatNumber(avroSubscriptionCount) }} ({{
-              formatNumber(avroSubscriptionShare, 2)
-            }}%)
-          </h2>
-        </v-row>
-      </v-col>
-    </v-row>
+    <div v-if="stats">
+      <v-row class="mt-16">
+        <h1>{{ $t('stats.topics') }}</h1>
+      </v-row>
+      <v-row>
+        <v-col md="3">
+          <v-row>
+            <h2>{{ $t('stats.total') }}</h2>
+          </v-row>
+          <v-row>
+            <h2>{{ formatNumber(stats.topicCount) }}</h2>
+          </v-row>
+        </v-col>
+        <v-col md="3">
+          <v-row>
+            <h2>{{ $t('stats.ackAll') }}</h2>
+          </v-row>
+          <v-row>
+            <h2>
+              {{ formatNumber(stats.ackAllTopicCount) }} ({{
+                formatNumber(stats.ackAllTopicShare, 2)
+              }}%)
+            </h2>
+          </v-row>
+        </v-col>
+        <v-col md="3">
+          <v-row>
+            <h2>{{ $t('stats.trackingEnabled') }}</h2>
+          </v-row>
+          <v-row>
+            <h2>
+              {{ formatNumber(stats.trackingEnabledTopicCount) }} ({{
+                formatNumber(stats.trackingEnabledTopicShare, 2)
+              }}%)
+            </h2>
+          </v-row>
+        </v-col>
+        <v-col md="3">
+          <v-row>
+            <h2>Avro</h2>
+          </v-row>
+          <v-row>
+            <h2>
+              {{ formatNumber(stats.avroTopicCount) }} ({{
+                formatNumber(stats.avroTopicShare, 2)
+              }}%)
+            </h2>
+          </v-row>
+        </v-col>
+      </v-row>
+      <v-row class="mt-16">
+        <h1>{{ $t('stats.subscriptions') }}</h1>
+      </v-row>
+      <v-row>
+        <v-col md="3">
+          <v-row>
+            <h2>{{ $t('stats.total') }}</h2>
+          </v-row>
+          <v-row>
+            <h2>{{ formatNumber(stats.subscriptionCount) }}</h2>
+          </v-row>
+        </v-col>
+        <v-col md="3">
+          <v-row>
+            <h2>{{ $t('stats.trackingEnabled') }}</h2>
+          </v-row>
+          <v-row>
+            <h2>
+              {{ formatNumber(stats.trackingEnabledSubscriptionCount) }} ({{
+                formatNumber(stats.trackingEnabledSubscriptionShare, 2)
+              }}%)
+            </h2>
+          </v-row>
+        </v-col>
+        <v-col md="3">
+          <v-row>
+            <h2>Avro</h2>
+          </v-row>
+          <v-row>
+            <h2>
+              {{ formatNumber(stats.avroSubscriptionCount) }} ({{
+                formatNumber(stats.avroSubscriptionShare, 2)
+              }}%)
+            </h2>
+          </v-row>
+        </v-col>
+      </v-row>
+    </div>
   </v-container>
 </template>

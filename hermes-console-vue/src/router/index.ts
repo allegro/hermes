@@ -52,7 +52,7 @@ const router = createRouter({
     {
       path: '/stats/',
       name: 'stats',
-      component: () => import('../views/stats/StatsView.vue'),
+      component: () => import('@/views/stats/StatsView.vue'),
     },
   ],
 });

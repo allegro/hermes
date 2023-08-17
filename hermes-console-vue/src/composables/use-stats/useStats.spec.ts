@@ -1,103 +1,91 @@
-import { expect } from 'vitest';
+import { afterEach } from 'vitest';
+import { fetchStatsErrorHandler, fetchStatsHandler } from '@/mocks/handlers';
+import { setupServer } from 'msw/node';
 import { statsResponse } from '@/dummy/stats';
 import { useStats } from '@/composables/use-stats/useStats';
 import { waitFor } from '@testing-library/vue';
-import axios from 'axios';
-import type { Mocked } from 'vitest';
-
-vitest.mock('axios');
-const mockedAxios = axios as Mocked<typeof axios>;
 
 describe('useStats', () => {
-  it('should hit expected Hermes API endpoint', async () => {
-    // given
-    mockedAxios.get.mockResolvedValueOnce({ data: statsResponse });
+  const server = setupServer(fetchStatsHandler({ stats: statsResponse }));
 
-    // when
-    useStats();
-
-    // then
-    await waitFor(() => {
-      expect(mockedAxios.get.mock.calls[0][0]).toBe('/stats');
-    });
+  afterEach(() => {
+    server.resetHandlers();
   });
 
   it('should fetch stats details from Hermes API', async () => {
     // given
-    mockedAxios.get.mockResolvedValueOnce({ data: statsResponse });
+    server.listen();
 
     // when
-    const {
-      error,
-      loading,
-      topicCount,
-      ackAllTopicCount,
-      ackAllTopicShare,
-      trackingEnabledTopicCount,
-      trackingEnabledTopicShare,
-      avroTopicCount,
-      avroTopicShare,
-      subscriptionCount,
-      trackingEnabledSubscriptionCount,
-      trackingEnabledSubscriptionShare,
-      avroSubscriptionCount,
-      avroSubscriptionShare,
-    } = useStats();
+    const { stats, loading, error } = useStats();
 
     // then
-    expect(loading.value).toBe(true);
+    expect(loading.value).toBeTruthy();
 
     await waitFor(() => {
-      expect(loading.value).toBe(false);
-      expect(error.value).toBe(false);
-      expect(topicCount.value).toEqual(statsResponse.topicStats.topicCount);
-      expect(ackAllTopicCount.value).toEqual(
+      expect(loading.value).toBeFalsy();
+      expect(error.value.fetchError).toBeNull();
+      const {
+        topicCount,
+        ackAllTopicCount,
+        ackAllTopicShare,
+        trackingEnabledTopicCount,
+        trackingEnabledTopicShare,
+        avroTopicCount,
+        avroTopicShare,
+        subscriptionCount,
+        trackingEnabledSubscriptionCount,
+        trackingEnabledSubscriptionShare,
+        avroSubscriptionCount,
+        avroSubscriptionShare,
+      } = stats.value!!;
+
+      expect(topicCount).toEqual(statsResponse.topicStats.topicCount);
+      expect(ackAllTopicCount).toEqual(
         statsResponse.topicStats.ackAllTopicCount,
       );
-      expect(ackAllTopicShare.value).toBeCloseTo(
+      expect(ackAllTopicShare).toBeCloseTo(
         share(
           statsResponse.topicStats.ackAllTopicCount,
           statsResponse.topicStats.topicCount,
         ),
         0.001,
       );
-      expect(avroTopicCount.value).toEqual(
-        statsResponse.topicStats.avroTopicCount,
-      );
-      expect(avroTopicShare.value).toBeCloseTo(
+      expect(avroTopicCount).toEqual(statsResponse.topicStats.avroTopicCount);
+      expect(avroTopicShare).toBeCloseTo(
         share(
           statsResponse.topicStats.avroTopicCount,
           statsResponse.topicStats.topicCount,
         ),
         0.001,
       );
-      expect(trackingEnabledTopicCount.value).toEqual(
+      expect(trackingEnabledTopicCount).toEqual(
         statsResponse.topicStats.trackingEnabledTopicCount,
       );
-      expect(trackingEnabledTopicShare.value).toBeCloseTo(
+      expect(trackingEnabledTopicShare).toBeCloseTo(
         share(
           statsResponse.topicStats.trackingEnabledTopicCount,
           statsResponse.topicStats.topicCount,
         ),
         0.001,
       );
-      expect(subscriptionCount.value).toEqual(
+      expect(subscriptionCount).toEqual(
         statsResponse.subscriptionStats.subscriptionCount,
       );
-      expect(avroSubscriptionCount.value).toEqual(
+      expect(avroSubscriptionCount).toEqual(
         statsResponse.subscriptionStats.avroSubscriptionCount,
       );
-      expect(avroSubscriptionShare.value).toBeCloseTo(
+      expect(avroSubscriptionShare).toBeCloseTo(
         share(
           statsResponse.subscriptionStats.avroSubscriptionCount,
           statsResponse.subscriptionStats.subscriptionCount,
         ),
         0.001,
       );
-      expect(trackingEnabledSubscriptionCount.value).toEqual(
+      expect(trackingEnabledSubscriptionCount).toEqual(
         statsResponse.subscriptionStats.trackingEnabledSubscriptionCount,
       );
-      expect(trackingEnabledSubscriptionShare.value).toBeCloseTo(
+      expect(trackingEnabledSubscriptionShare).toBeCloseTo(
         share(
           statsResponse.subscriptionStats.trackingEnabledSubscriptionCount,
           statsResponse.subscriptionStats.subscriptionCount,
@@ -109,7 +97,8 @@ describe('useStats', () => {
 
   it('should set error to true on stats endpoint failure', async () => {
     // given
-    mockedAxios.get.mockRejectedValueOnce({});
+    server.use(fetchStatsErrorHandler({ errorCode: 500 }));
+    server.listen();
 
     // when
     const { loading, error } = useStats();
@@ -117,7 +106,7 @@ describe('useStats', () => {
     // then
     await waitFor(() => {
       expect(loading.value).toBe(false);
-      expect(error.value).toBe(true);
+      expect(error.value.fetchError).not.toBeNull();
     });
   });
 });
