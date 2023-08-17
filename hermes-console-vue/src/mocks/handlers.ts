@@ -19,6 +19,7 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { Owner } from '@/api/owner';
+import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
 const url = 'http://localhost:3000';
@@ -294,5 +295,19 @@ export const fetchGroupNamesErrorHandler = ({
   errorCode?: number;
 }) =>
   rest.get(`${url}/groups`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const fetchStatsHandler = ({ stats }: { stats: Stats }) =>
+  rest.get(`${url}/stats`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stats));
+  });
+
+export const fetchStatsErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/stats`, (req, res, ctx) => {
     return res(ctx.status(errorCode), ctx.json(undefined));
   });
