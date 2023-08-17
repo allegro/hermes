@@ -42,8 +42,12 @@
     >
       <v-expansion-panel-text class="d-flex flex-row subscriptions-panel">
         <div class="d-flex justify-end mr-4 mb-1">
-          <v-dialog v-model="showSubscriptionCreationForm" min-width="600">
-            <template>
+          <v-dialog
+            v-model="showSubscriptionCreationForm"
+            min-width="800"
+            :persistent="true"
+          >
+            <template #activator>
               <v-btn
                 icon="mdi-plus"
                 density="comfortable"
@@ -55,7 +59,7 @@
                 <span class="text-h5">Create subscription</span>
               </v-card-title>
               <v-card-text>
-                <SubscriptionForm operation="add" />
+                <SubscriptionForm operation="add" :topic="props.topicName" />
               </v-card-text>
             </v-card>
           </v-dialog>

@@ -1,3 +1,5 @@
+import subscriptionForm from '@/i18n/en-US/subscription-form';
+
 const en_US = {
   homeView: {
     links: {
@@ -430,6 +432,7 @@ const en_US = {
       timestamp: 'Timestamp',
     },
   },
+  subscriptionForm,
 };
 
 export default en_US;

@@ -2,6 +2,10 @@ import axios from 'axios';
 import type { AppConfiguration } from '@/api/app-configuration';
 import type { ConstraintsConfig } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
+import type {
+  CreateSubscriptionFormRequestBody,
+  Subscription,
+} from '@/api/subscription';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type {
   MessagePreview,
@@ -11,7 +15,26 @@ import type {
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner, OwnerSource } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
-import type { Subscription } from '@/api/subscription';
+
+const acceptHeader = 'Accept';
+const contentTypeHeader = 'Content-Type';
+const applicationJsonMediaType = 'application/json';
+
+export class HermesClient {
+  createSubscription(
+    topic: string,
+    requestBody: CreateSubscriptionFormRequestBody,
+  ): ResponsePromise<void> {
+    return axios.post(`/topics/${topic}/subscriptions`, requestBody, {
+      headers: {
+        [acceptHeader]: applicationJsonMediaType,
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    });
+  }
+}
+
+export const hermesClient = new HermesClient();
 
 export function fetchTopic(
   topicName: string,
@@ -99,6 +122,7 @@ export function fetchInconsistentTopics(): ResponsePromise<string[]> {
 export function fetchTopicNames(): ResponsePromise<string[]> {
   return axios.get<string[]>('/topics');
 }
+
 export function fetchGroupNames(): ResponsePromise<string[]> {
   return axios.get<string[]>('/groups');
 }

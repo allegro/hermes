@@ -503,10 +503,16 @@
       }
     },
     "owner": {
-      "sources": [{
-        "name": "Crowd",
-        "placeholder": "Crowd group (or groups separated by ',')"
-      }]
+      "sources": [
+        {
+          "name": "Crowd Catalog",
+          "placeholder": "Crowd group (or groups separated by ',')"
+        },
+        {
+          "name": "Service Catalog",
+          "placeholder": "Service name from Service Catalog"
+        }
+      ]
     },
     "topic": {
       "messagePreviewEnabled": true,

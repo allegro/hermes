@@ -19,3 +19,19 @@ export const required =
   (errorMsg: string = 'Required'): FieldValidator<any> =>
   (v: any) =>
     validate(!!v, errorMsg);
+
+export const min =
+  (
+    minValue: number,
+    errorMsg: string = `Should be grater or equal to ${minValue}`,
+  ): FieldValidator<number> =>
+  (v: number) =>
+    validate(v >= minValue, errorMsg);
+
+export const max =
+  (
+    maxValue: number,
+    errorMsg: string = `Should be lower or equal to ${maxValue}`,
+  ): FieldValidator<number> =>
+  (v: number) =>
+    validate(v <= maxValue, errorMsg);

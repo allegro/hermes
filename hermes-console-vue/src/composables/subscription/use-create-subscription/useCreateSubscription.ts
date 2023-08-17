@@ -1,89 +1,53 @@
 import { computed, ref, watch } from 'vue';
-import { fetchOwnersSources, searchOwners } from '@/api/hermes-client';
-import { matchRegex, required } from '@/utils/validators';
+import {
+  fetchOwnersSources,
+  hermesClient,
+  searchOwners,
+} from '@/api/hermes-client';
+import { matchRegex, max, min, required } from '@/utils/validators';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-import type { ComputedRef, Ref } from 'vue';
-import type { FieldValidator } from '@/utils/validators';
+import { useAppNotifications } from '@/store/app-notifications/useAppNotifications';
+import type { CreateSubscriptionFormRequestBody } from '@/api/subscription';
+import type {
+  DataSources,
+  FormValidators,
+  SubscriptionForm,
+  UseCreateSubscription,
+  UseCreateSubscriptionErrors,
+} from '@/composables/subscription/use-create-subscription/types';
 import type { OwnerSource } from '@/api/owner';
-import type { SelectFieldOption } from '@/views/subscription/subscription-form/select-field/types';
+import type { Ref } from 'vue';
+import type { SelectFieldOption } from '@/components/select-field/types';
 
-export interface UseCreateSubscription {
-  form: Ref<SubscriptionForm>;
-  validators: FormValidators;
-  dataSources: DataSources;
-  errors: Ref<UseCreateSubscriptionErrors>;
-}
-
-export interface SubscriptionForm {
-  name: string;
-  endpoint: string;
-  description: string;
-  ownerSource: OwnerSource | null;
-  owner: string;
-  ownerSearch: string;
-  contentType: string;
-  deliveryType: string;
-  subscriptionPolicy: FormSubscriptionPolicy;
-  mode: string;
-  rateLimit: number | null;
-  retryOn4xx: boolean;
-  messageDeliveryTrackingMode: string;
-  monitoringDetails: FormMonitoringDetails;
-  deliverUsingHttp2: boolean;
-  attachSubscriptionIdentityHeaders: boolean;
-  deleteSubscriptionAutomatically: boolean;
-}
-
-interface FormSubscriptionPolicy {
-  inflightMessageTTL: number;
-  retryBackoff: number;
-  sendingDelay: number;
-  retryBackoffMultiplier: number;
-  requestTimeout: number;
-}
-
-interface FormMonitoringDetails {
-  severity: string;
-  reaction: string;
-}
-
-interface FormValidators {
-  name: FieldValidator<string>[];
-  endpoint: FieldValidator<string>[];
-  description: FieldValidator<string>[];
-  ownerSource: FieldValidator<string>[];
-  owner: FieldValidator<any>[];
-  contentType: FieldValidator<string>[];
-  deliveryType: FieldValidator<string>[];
-}
-
-interface UseCreateSubscriptionErrors {
-  fetchOwnerSources: Error | null;
-  fetchOwners: Error | null;
-}
-
-interface DataSources {
-  contentTypes: ComputedRef<SelectFieldOption[]>;
-  deliveryTypes: SelectFieldOption[];
-  deliveryModes: SelectFieldOption[];
-  monitoringSeverities: SelectFieldOption[];
-  messageDeliveryTrackingModes: SelectFieldOption[];
-  ownerSources: ComputedRef<SelectFieldOption<OwnerSource>[]>;
-  owners: Ref<SelectFieldOption[]>;
-  loadingOwners: Ref<boolean>;
-}
-
-const formValidators: FormValidators = {
-  name: [required(), matchRegex(/^[a-zA-Z0-9.-]+$/, 'Invalid name')],
-  endpoint: [required()],
-  description: [required()],
-  ownerSource: [required()],
-  owner: [required()],
-  contentType: [required()],
-  deliveryType: [required()],
+const formValidators = (form: Ref<SubscriptionForm>): FormValidators => {
+  return {
+    name: [required(), matchRegex(/^[a-zA-Z0-9.-]+$/, 'Invalid name')],
+    endpoint: [required()],
+    description: [required()],
+    ownerSource: [required()],
+    owner: [required()],
+    contentType: [required()],
+    deliveryType: [required()],
+    mode: [required()],
+    rateLimit: [required(), min(0), max(5000)],
+    batchSize: [required(), min(1), max(1000000)],
+    batchTime: [required(), min(1), max(1000000)],
+    batchVolume: [required(), min(1), max(1000000)],
+    requestTimeout: [
+      required(),
+      min(0),
+      max(form.value.deliveryType === 'SERIAL' ? 10000 : 1000000),
+    ],
+    sendingDelay: [required(), min(0), max(5000)],
+    inflightMessageTTL: [required(), min(0), max(7200)],
+    retryBackoff: [required(), min(0), max(1000000)],
+    retryBackoffMultiplier: [required(), min(1), max(10)],
+    messageDeliveryTrackingMode: [required()],
+    monitoringSeverity: [required()],
+  };
 };
 
-export function useCreateSubscription(): UseCreateSubscription {
+export function useCreateSubscription(topic: string): UseCreateSubscription {
   const { loadedConfig } = useAppConfigStore();
   const errors = ref<UseCreateSubscriptionErrors>({
     fetchOwnerSources: null,
@@ -100,8 +64,8 @@ export function useCreateSubscription(): UseCreateSubscription {
     contentType: '',
     deliveryType: loadedConfig.subscription.defaults.deliveryType,
     mode: rawDataSources.deliveryModes[0].value,
-    rateLimit: null,
     subscriptionPolicy: {
+      rateLimit: null,
       inflightMessageTTL:
         loadedConfig.subscription.defaults.subscriptionPolicy.messageTtl ||
         3600,
@@ -111,6 +75,9 @@ export function useCreateSubscription(): UseCreateSubscription {
       requestTimeout:
         loadedConfig.subscription.defaults.subscriptionPolicy.requestTimeout ||
         1000,
+      batchSize: null,
+      batchTime: null,
+      batchVolume: null,
     },
     retryOn4xx: false,
     messageDeliveryTrackingMode:
@@ -165,12 +132,38 @@ export function useCreateSubscription(): UseCreateSubscription {
       form.value.contentType = '';
     },
   );
+  const validators = formValidators(form);
+
+  const creatingSubscription = ref(false);
+
+  async function createSubscription() {
+    creatingSubscription.value = true;
+    const requestBody = parseFormToRequestBody(topic, form.value);
+    try {
+      const response = await hermesClient.createSubscription(
+        topic,
+        requestBody,
+      );
+      console.log(response);
+    } catch (e) {
+      const notificationsStore = useAppNotifications();
+      notificationsStore.dispatchNotification({
+        title: 'Failed creating subscription',
+        type: 'error',
+        text: 'Error occured',
+      });
+    } finally {
+      creatingSubscription.value = false;
+    }
+  }
 
   return {
     form,
-    validators: formValidators,
+    validators,
     dataSources,
+    creatingSubscription,
     errors,
+    createSubscription,
   };
 }
 
@@ -230,5 +223,41 @@ function useDataSources(errors: Ref<UseCreateSubscriptionErrors>) {
     ownerSources,
     owners,
     loadingOwners,
+  };
+}
+
+function parseFormToRequestBody(
+  topic: string,
+  form: SubscriptionForm,
+): CreateSubscriptionFormRequestBody {
+  return {
+    name: form.name,
+    topicName: topic,
+    owner: {
+      source: form.ownerSource!!.name,
+      id: form.owner,
+    },
+    contentType: form.contentType,
+    deliveryType: form.deliveryType,
+    description: form.description,
+    endpoint: form.endpoint,
+    filters: [],
+    headers: [],
+    http2Enabled: form.deliverUsingHttp2,
+    mode: form.mode,
+    monitoringDetails: {
+      reaction: form.monitoringDetails.reaction,
+      severity: form.monitoringDetails.severity,
+    },
+    subscriptionPolicy: {
+      backoffMaxIntervalInSec: 600,
+      backoffMultiplier: form.subscriptionPolicy.retryBackoffMultiplier,
+      messageBackoff: form.subscriptionPolicy.retryBackoff,
+      messageTtl: form.subscriptionPolicy.inflightMessageTTL,
+      rate: form.subscriptionPolicy.rateLimit!!,
+      requestTimeout: form.subscriptionPolicy.requestTimeout,
+      sendingDelay: form.subscriptionPolicy.sendingDelay,
+    },
+    trackingMode: form.messageDeliveryTrackingMode,
   };
 }

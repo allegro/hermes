@@ -75,3 +75,50 @@ export const enum GrantType {
   CLIENT_CREDENTIALS = 'CLIENT_CREDENTIALS',
   USERNAME_PASSWORD = 'USERNAME_PASSWORD',
 }
+
+export interface CreateSubscriptionFormRequestBody {
+  name: string;
+  topicName: string;
+  owner: OwnerJson;
+  contentType: string;
+  deliveryType: string;
+  description: string;
+  endpoint: string;
+  filters: SubscriptionFilterJson[];
+  headers: SubscriptionHeaderJson[];
+  http2Enabled: boolean;
+  mode: string;
+  monitoringDetails: MonitoringDetailsJson;
+  subscriptionPolicy: SubscriptionPolicyJson;
+  trackingMode: string;
+}
+
+interface OwnerJson {
+  source: string;
+  id: string;
+}
+
+interface SubscriptionFilterJson {
+  type: string;
+  header?: string;
+  matcher?: string;
+  matchingStrategy?: string;
+  path?: string;
+}
+
+interface SubscriptionHeaderJson {}
+
+interface MonitoringDetailsJson {
+  reaction: string;
+  severity: string;
+}
+
+interface SubscriptionPolicyJson {
+  backoffMaxIntervalInSec: number;
+  backoffMultiplier: number;
+  messageBackoff: number;
+  messageTtl: number;
+  rate: number;
+  requestTimeout: number;
+  sendingDelay: number;
+}

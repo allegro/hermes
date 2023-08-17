@@ -19,6 +19,7 @@
         :key="notification.id"
         :notification="notification"
         class="app-notifications-provider__notification"
+        @close="notificationsStore"
       />
     </TransitionGroup>
   </div>

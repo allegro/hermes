@@ -4,6 +4,7 @@
   const props = defineProps<{
     notification: Notification;
   }>();
+  defineEmits(['close']);
 </script>
 
 <template>
@@ -15,6 +16,7 @@
     border="start"
     elevation="3"
     width="500"
+    @click:close="$emit('close')"
   />
 </template>
 

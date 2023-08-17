@@ -7,7 +7,10 @@ import type {
 } from '@/store/app-notifications/types';
 
 export interface UseAppNotifications {
-  dispatchNotification: (notificationConfig: NotificationConfig) => void;
+  dispatchNotification: (
+    notificationConfig: NotificationConfig,
+  ) => Promise<void>;
+  removeNotification: (id: string) => Promise<void>;
   notifications: Notification[];
 }
 
@@ -16,7 +19,11 @@ const state = ref<NotificationsState>({
 });
 
 export const useAppNotifications = (): UseAppNotifications => {
-  const dispatchNotification = ({ title, text, type }: NotificationConfig) => {
+  async function dispatchNotification({
+    title,
+    text,
+    type,
+  }: NotificationConfig): Promise<void> {
     const notification: Notification = {
       id: generateUUID(),
       title,
@@ -24,11 +31,17 @@ export const useAppNotifications = (): UseAppNotifications => {
       type,
     };
     state.value.notifications.push(notification);
-  };
+  }
+  async function removeNotification(id: string): Promise<void> {
+    state.value.notifications = state.value.notifications.filter(
+      (notification) => notification.id !== id,
+    );
+  }
   const notifications = state.value.notifications;
 
   return {
     dispatchNotification,
+    removeNotification,
     notifications,
   };
 };
