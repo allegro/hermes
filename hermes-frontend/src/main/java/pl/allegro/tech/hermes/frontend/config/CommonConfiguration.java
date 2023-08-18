@@ -301,10 +301,9 @@ public class CommonConfiguration {
     @Bean
     public MetricRegistry metricRegistry(MetricRegistryProperties metricRegistryProperties,
                                          GraphiteProperties graphiteProperties,
-                                         CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
                                          @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(metricRegistryProperties, graphiteProperties, counterStorage,
+        return new MetricRegistryFactory(metricRegistryProperties, graphiteProperties,
                 instanceIdResolver, moduleName).provide();
     }
 
@@ -315,9 +314,10 @@ public class CommonConfiguration {
 
     @Bean
     public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryParameters micrometerRegistryParameters,
-                                                      PrometheusConfig prometheusConfig) {
+                                                      PrometheusConfig prometheusConfig,
+                                                      CounterStorage counterStorage) {
         return new PrometheusMeterRegistryFactory(micrometerRegistryParameters,
-                prometheusConfig, "hermes-frontend").provide();
+                prometheusConfig, counterStorage, "hermes-frontend").provide();
     }
 
     @Bean
