@@ -6,18 +6,15 @@ import pl.allegro.tech.hermes.api.SubscriptionMetrics
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource
-import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient
-import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetricsProvider
-import pl.allegro.tech.hermes.management.stub.MetricsPaths
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusMetricsProvider
 import spock.lang.Specification
 
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 
-class HybridSubscriptionMetricsRepositoryTest extends Specification {
+class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specification {
 
-    private GraphiteClient client = Stub(GraphiteClient)
-
-    private MetricsPaths paths = new MetricsPaths("stats")
+    private PrometheusClient client = Stub(PrometheusClient)
 
     private SummedSharedCounter summedSharedCounter = Stub(SummedSharedCounter)
 
@@ -25,27 +22,33 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
 
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
-    private GraphiteMetricsProvider graphiteMetricsProvider = new GraphiteMetricsProvider(client, paths);
+    private PrometheusMetricsProvider prometheusMetricsProvider = new PrometheusMetricsProvider(client, "hermes_consumers_");
 
-    private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(graphiteMetricsProvider,
+    private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)
+
+    private static final String query = "sum by (__name__,group,topic,subscription,status_code)" +
+            "(irate({__name__=~'hermes_consumers_subscription_delivered_total" +
+            "|hermes_consumers_subscription_timeouts_total" +
+            "|hermes_consumers_subscription_throughput_bytes_total" +
+            "|hermes_consumers_subscription_other_errors_total" +
+            "|hermes_consumers_subscription_batches_total" +
+            "|hermes_consumers_subscription_http_status_codes_total'," +
+            "group='group',topic='topic',subscription='subscription'}[1m]) keep_metric_names)"
 
     def "should read subscription metrics from multiple places"() {
         given:
-        String rate = 'sumSeries(stats.consumer.*.meter.group.topic.subscription.m1_rate)'
-        String timeouts = 'sumSeries(stats.consumer.*.status.group.topic.subscription.errors.timeout.m1_rate)'
-        String otherErrors = 'sumSeries(stats.consumer.*.status.group.topic.subscription.errors.other.m1_rate)'
-
-        client.readMetrics(_ as String, _ as String, _ as String, rate, _ as String, timeouts, otherErrors, _ as String) >> new MonitoringMetricsContainer()
-                .addMetricValue(rate, of('10'))
-                .addMetricValue(timeouts, of('100'))
-                .addMetricValue(otherErrors, of('1000'))
+        client.readMetrics(query) >> new MonitoringMetricsContainer()
+                .addMetricValue("hermes_consumers_subscription_delivered_total", of('10'))
+                .addMetricValue("hermes_consumers_subscription_timeouts_total", of('100'))
+                .addMetricValue("hermes_consumers_subscription_other_errors_total", of('1000'))
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/volume') >> 16
 
         when:
-        SubscriptionMetrics metrics = repository.loadMetrics(new TopicName('group', 'topic'), 'subscription')
+        SubscriptionMetrics metrics = repository.loadMetrics(
+                new TopicName('group', 'topic'), 'subscription')
 
         then:
         metrics.rate == of('10')
@@ -59,11 +62,10 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
 
     def "should read subscription metrics for all http status codes"() {
         given:
-        client.readMetrics(getHttpStatusCodeForFamily(2), getHttpStatusCodeForFamily(4), getHttpStatusCodeForFamily(5),
-                _ as String, _ as String, _ as String, _ as String, _ as String) >> new MonitoringMetricsContainer()
-                .addMetricValue(getHttpStatusCodeForFamily(2), of('2'))
-                .addMetricValue(getHttpStatusCodeForFamily(4), of('4'))
-                .addMetricValue(getHttpStatusCodeForFamily(5), of('5'))
+        client.readMetrics(query) >> new MonitoringMetricsContainer()
+                .addMetricValue("hermes_consumers_subscription_http_status_codes_total_2xx", of('2'))
+                .addMetricValue("hermes_consumers_subscription_http_status_codes_total_4xx", of('4'))
+                .addMetricValue("hermes_consumers_subscription_http_status_codes_total_5xx", of('5'))
 
         when:
         SubscriptionMetrics metrics = repository.loadMetrics(new TopicName('group', 'topic'), 'subscription')
@@ -87,9 +89,5 @@ class HybridSubscriptionMetricsRepositoryTest extends Specification {
         zookeeperMetrics.delivered == 1000
         zookeeperMetrics.discarded == 10
         zookeeperMetrics.volume == 16
-    }
-
-    private static String getHttpStatusCodeForFamily(int family) {
-        "sumSeries(stats.consumer.*.status.group.topic.subscription.${family}xx.m1_rate)"
     }
 }

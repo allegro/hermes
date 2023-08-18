@@ -27,17 +27,15 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
     public PrometheusMetricsProvider(PrometheusClient prometheusClient, String prefix) {
         this.prometheusClient = prometheusClient;
         this.prefix = prefix;
-        this.metricsToQuery = Stream.of(DELIVERED, TIMEOUTS, THROUGHPUT, OTHER_ERRORS, BATCHES)
+        this.metricsToQuery = Stream.of(DELIVERED, TIMEOUTS, THROUGHPUT, OTHER_ERRORS, BATCHES, STATUS_CODES)
                 .map(this::consumerMetricName)
                 .collect(Collectors.joining("|"));
     }
 
     @Override
     public MonitoringSubscriptionMetrics provide(SubscriptionName subscriptionName) {
-        String rawQuery = """
-                sum({__name__=~'%s',group='%s',topic='%s',subscription='%s'})
-                by (__name__,group,topic,subscription,status_code);
-                """;
+        String rawQuery = ("sum by (__name__,group,topic,subscription,status_code)" +
+                "(irate({__name__=~'%s',group='%s',topic='%s',subscription='%s'}[1m]) keep_metric_names)");
         String query = String.format(rawQuery, metricsToQuery, subscriptionName.getTopicName().getGroupName(),
                 subscriptionName.getTopicName().getName(), subscriptionName.getName());
         MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(query);
@@ -49,8 +47,8 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
                 .withOtherErrors(prometheusMetricsContainer.metricValue(consumerMetricName(OTHER_ERRORS)))
                 .withMetricPathBatchRate(prometheusMetricsContainer.metricValue(consumerMetricName(BATCHES)))
                 .withCodes2xx(prometheusMetricsContainer.metricValue(consumerMetricName(STATUS_CODES_2XX)))
-                .withCodes2xx(prometheusMetricsContainer.metricValue(consumerMetricName(STATUS_CODES_4XX)))
-                .withCodes2xx(prometheusMetricsContainer.metricValue(consumerMetricName(STATUS_CODES_5XX)))
+                .withCode4xx(prometheusMetricsContainer.metricValue(consumerMetricName(STATUS_CODES_4XX)))
+                .withCode5xx(prometheusMetricsContainer.metricValue(consumerMetricName(STATUS_CODES_5XX)))
                 .build();
     }
 

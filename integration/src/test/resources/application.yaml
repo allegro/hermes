@@ -50,7 +50,12 @@ metrics:
 
 graphite:
   client:
+    enabled: false
     cacheTtlSeconds: 1
+
+prometheus:
+  client:
+    enabled: true
 
 spring:
   jersey:

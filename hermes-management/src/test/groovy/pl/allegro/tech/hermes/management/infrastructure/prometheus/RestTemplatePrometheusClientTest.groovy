@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.infrastructure.prometheus.graphite
+package pl.allegro.tech.hermes.management.infrastructure.prometheus
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
@@ -6,7 +6,6 @@ import jakarta.ws.rs.core.MediaType
 import org.junit.Rule
 import org.springframework.web.client.RestTemplate
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
-import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
 
@@ -18,15 +17,14 @@ import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 class RestTemplatePrometheusClientTest extends Specification {
 
     private static final int PROMETHEUS_HTTP_PORT = Ports.nextAvailable()
-    private static final String query = "sum({__name__=~'hermes_consumers_subscription_delivered_total" +
+    private static final String query = "sumby(__name__,group,topic,subscription,status_code)" +
+            "(irate{__name__=~'hermes_consumers_subscription_delivered_total" +
             "|hermes_consumers_subscription_timeouts_total" +
             "|hermes_consumers_subscription_throughput_bytes_total" +
             "|hermes_consumers_subscription_other_errors_total" +
             "|hermes_consumers_subscription_batches_total" +
             "|hermes_consumers_subscription_http_status_codes_total'," +
-            "group='pl.allegro.tech.hermes',topic='hermesTopic',subscription='hermesSubscription'})" +
-            "by(__name__,group,topic,subscription,status_code)"
-
+            "group='pl.allegro.tech.hermes',topic='hermesTopic',subscription='hermesSubscription'}[1m])keep_metric_names)"
 
     @Rule
     WireMockRule wireMockRule = new WireMockRule(
