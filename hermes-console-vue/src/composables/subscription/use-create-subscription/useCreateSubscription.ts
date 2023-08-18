@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import { computed, ref, watch } from 'vue';
 import {
   fetchOwnersSources,
@@ -159,11 +160,13 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
     let response: AxiosResponse<void, any> | null;
     try {
       response = await hermesClient.createSubscription(topic, requestBody!!);
-    } catch (e) {
+    } catch (e: any) {
       const notificationsStore = useNotificationsStore();
+      const text =
+        e instanceof AxiosError ? e.message : 'Unknown error occurred';
       notificationsStore.dispatchNotification({
         title: 'Failed creating subscription',
-        text: 'Error',
+        text,
         type: 'error',
       });
     } finally {
