@@ -7,11 +7,18 @@ import org.glassfish.jersey.server.mvc.Viewable;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_HTML;
 
-@Path("/")
 public class UiResource {
     @GET
     @Produces(TEXT_HTML)
+    @Path("/")
     public Viewable getIndex() {
+        return new Viewable("/index.html");
+    }
+
+    @GET
+    @Produces(TEXT_HTML)
+    @Path("/ui")
+    public Viewable getIndexUi() {
         return new Viewable("/index.html");
     }
 }

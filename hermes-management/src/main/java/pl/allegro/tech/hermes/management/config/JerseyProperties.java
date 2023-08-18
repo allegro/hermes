@@ -9,7 +9,7 @@ import java.util.List;
 public class JerseyProperties {
 
     private List<String> packagesToScan = new ArrayList<>();
-    private String filterStaticContentRegexp = "(/ui|/status/|/assets/|favicon.ico).*";
+    private String filterStaticContentRegexp = "(/status/|/assets/|/favicon.ico).*";
 
     public List<String> getPackagesToScan() {
         return packagesToScan;
