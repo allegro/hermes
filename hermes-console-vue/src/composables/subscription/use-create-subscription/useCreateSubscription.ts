@@ -5,8 +5,10 @@ import {
   searchOwners,
 } from '@/api/hermes-client';
 import { matchRegex, max, min, required } from '@/utils/validators';
+import { parseFormToRequestBody } from '@/composables/subscription/use-create-subscription/form-mapper';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-import { useAppNotifications } from '@/store/app-notifications/useAppNotifications';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
+import type { AxiosResponse } from 'axios';
 import type { CreateSubscriptionFormRequestBody } from '@/api/subscription';
 import type {
   DataSources,
@@ -89,6 +91,8 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
     deliverUsingHttp2: false,
     attachSubscriptionIdentityHeaders: false,
     deleteSubscriptionAutomatically: false,
+    pathFilters: [],
+    headerFilters: [],
   });
   const dataSources: DataSources = {
     ...rawDataSources,
@@ -138,19 +142,29 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
 
   async function createSubscription() {
     creatingSubscription.value = true;
-    const requestBody = parseFormToRequestBody(topic, form.value);
+    let requestBody: CreateSubscriptionFormRequestBody | null = null;
+
     try {
-      const response = await hermesClient.createSubscription(
-        topic,
-        requestBody,
-      );
-      console.log(response);
+      requestBody = parseFormToRequestBody(topic, form.value);
     } catch (e) {
-      const notificationsStore = useAppNotifications();
+      const notificationsStore = useNotificationsStore();
       notificationsStore.dispatchNotification({
         title: 'Failed creating subscription',
+        text: 'Error parsing form data',
         type: 'error',
-        text: 'Error occured',
+      });
+      creatingSubscription.value = false;
+    }
+
+    let response: AxiosResponse<void, any> | null;
+    try {
+      response = await hermesClient.createSubscription(topic, requestBody!!);
+    } catch (e) {
+      const notificationsStore = useNotificationsStore();
+      notificationsStore.dispatchNotification({
+        title: 'Failed creating subscription',
+        text: 'Error',
+        type: 'error',
       });
     } finally {
       creatingSubscription.value = false;
@@ -223,41 +237,5 @@ function useDataSources(errors: Ref<UseCreateSubscriptionErrors>) {
     ownerSources,
     owners,
     loadingOwners,
-  };
-}
-
-function parseFormToRequestBody(
-  topic: string,
-  form: SubscriptionForm,
-): CreateSubscriptionFormRequestBody {
-  return {
-    name: form.name,
-    topicName: topic,
-    owner: {
-      source: form.ownerSource!!.name,
-      id: form.owner,
-    },
-    contentType: form.contentType,
-    deliveryType: form.deliveryType,
-    description: form.description,
-    endpoint: form.endpoint,
-    filters: [],
-    headers: [],
-    http2Enabled: form.deliverUsingHttp2,
-    mode: form.mode,
-    monitoringDetails: {
-      reaction: form.monitoringDetails.reaction,
-      severity: form.monitoringDetails.severity,
-    },
-    subscriptionPolicy: {
-      backoffMaxIntervalInSec: 600,
-      backoffMultiplier: form.subscriptionPolicy.retryBackoffMultiplier,
-      messageBackoff: form.subscriptionPolicy.retryBackoff,
-      messageTtl: form.subscriptionPolicy.inflightMessageTTL,
-      rate: form.subscriptionPolicy.rateLimit!!,
-      requestTimeout: form.subscriptionPolicy.requestTimeout,
-      sendingDelay: form.subscriptionPolicy.sendingDelay,
-    },
-    trackingMode: form.messageDeliveryTrackingMode,
   };
 }

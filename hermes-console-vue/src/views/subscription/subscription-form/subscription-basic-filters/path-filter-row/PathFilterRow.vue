@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import { required } from '@/utils/validators';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
   import type { FilterMatchingStrategy } from '@/views/subscription/subscription-form/subscription-basic-filters/types';

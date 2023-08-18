@@ -15,7 +15,7 @@
 
 <template>
   <v-text-field
-    :value="props.modelValue"
+    :model-value="props.modelValue"
     @input="$emit('update:modelValue', $event.target.value)"
     :type="props.type || 'string'"
     :rules="props.rules || []"

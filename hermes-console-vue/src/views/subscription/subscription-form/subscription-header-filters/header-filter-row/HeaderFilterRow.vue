@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { required } from '@/utils/validators';
   import TextField from '@/components/text-field/TextField.vue';
 
   const props = defineProps<{

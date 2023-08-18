@@ -1,6 +1,8 @@
 import type { ComputedRef, Ref } from 'vue';
 import type { FieldValidator } from '@/utils/validators';
+import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
 import type { OwnerSource } from '@/api/owner';
+import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
 import type { SelectFieldOption } from '@/components/select-field/types';
 
 export interface UseCreateSubscription {
@@ -29,6 +31,8 @@ export interface SubscriptionForm {
   deliverUsingHttp2: boolean;
   attachSubscriptionIdentityHeaders: boolean;
   deleteSubscriptionAutomatically: boolean;
+  pathFilters: PathFilter[];
+  headerFilters: HeaderFilter[];
 }
 
 export interface FormSubscriptionPolicy {

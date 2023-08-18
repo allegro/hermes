@@ -1,45 +1,43 @@
 <script setup lang="ts">
-  import { useAppNotifications } from '@/store/app-notifications/useAppNotifications';
+  import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import AppNotification from '@/components/app-notification/AppNotification.vue';
 
-  const notificationsStore = useAppNotifications();
+  const notificationsStore = useNotificationsStore();
 </script>
 
 <template>
   <div
     class="position-fixed d-flex justify-start align-end app-notifications-provider"
   >
-    <TransitionGroup
+    <transition-group
       appear
       tag="div"
-      class="app-notifications-provider__notifications-container"
+      class="app-notifications-provider__notifications-container d-flex flex-column"
     >
-      <AppNotification
+      <app-notification
         v-for="notification in notificationsStore.notifications"
         :key="notification.id"
         :notification="notification"
         class="app-notifications-provider__notification"
-        @close="notificationsStore"
+        @close="notificationsStore.removeNotification(notification.id)"
       />
-    </TransitionGroup>
+    </transition-group>
   </div>
   <slot />
 </template>
 
 <style scoped lang="scss">
   .app-notifications-provider {
-    inset: 0;
-    padding: 32px 32px;
-    //z-index: 3000;
+    z-index: 3000;
+    bottom: 32px;
+    left: 32px;
 
     &__notification {
-      z-index: 3000;
+      z-index: 2000;
     }
 
-    //&__notifications-container {
-    //  display: flex;
-    //  flex-direction: column;
-    //  row-gap: 8px;
-    //}
+    &__notifications-container {
+      row-gap: 16px;
+    }
   }
 </style>

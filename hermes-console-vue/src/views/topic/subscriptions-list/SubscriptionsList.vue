@@ -31,6 +31,9 @@
   function showSubscriptionForm() {
     showSubscriptionCreationForm.value = true;
   }
+  function hideSubscriptionForm() {
+    showSubscriptionCreationForm.value = false;
+  }
 </script>
 
 <template>
@@ -59,11 +62,16 @@
                 <span class="text-h5">Create subscription</span>
               </v-card-title>
               <v-card-text>
-                <SubscriptionForm operation="add" :topic="props.topicName" />
+                <SubscriptionForm
+                  operation="add"
+                  :topic="props.topicName"
+                  @cancel="hideSubscriptionForm()"
+                />
               </v-card-text>
             </v-card>
           </v-dialog>
         </div>
+
         <v-list open-strategy="single">
           <v-list-item
             v-for="subscription in subscriptionItems"

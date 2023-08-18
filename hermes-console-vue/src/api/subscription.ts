@@ -91,6 +91,9 @@ export interface CreateSubscriptionFormRequestBody {
   monitoringDetails: MonitoringDetailsJson;
   subscriptionPolicy: SubscriptionPolicyJson;
   trackingMode: string;
+  endpointAddressResolverMetadata: EndpointAddressResolverMetadataJson;
+  subscriptionIdentityHeadersEnabled: boolean;
+  autoDeleteWithTopicEnabled: boolean;
 }
 
 interface OwnerJson {
@@ -98,13 +101,20 @@ interface OwnerJson {
   id: string;
 }
 
-interface SubscriptionFilterJson {
+interface HeaderFilterJson {
   type: string;
-  header?: string;
-  matcher?: string;
-  matchingStrategy?: string;
-  path?: string;
+  header: string;
+  matcher: string;
 }
+
+interface PathFilterJson {
+  type: string;
+  path: string;
+  matcher: string;
+  matchingStrategy: string;
+}
+
+export type SubscriptionFilterJson = HeaderFilterJson | PathFilterJson;
 
 interface SubscriptionHeaderJson {}
 
@@ -113,7 +123,7 @@ interface MonitoringDetailsJson {
   severity: string;
 }
 
-interface SubscriptionPolicyJson {
+export interface SerialSubscriptionPolicyJson {
   backoffMaxIntervalInSec: number;
   backoffMultiplier: number;
   messageBackoff: number;
@@ -121,4 +131,21 @@ interface SubscriptionPolicyJson {
   rate: number;
   requestTimeout: number;
   sendingDelay: number;
+  retryClientErrors: boolean;
 }
+
+export interface BatchSubscriptionPolicyJson {
+  messageTtl: number;
+  retryClientsErrors: boolean;
+  messageBackoff: number;
+  requestTimeout: number;
+  batchSize: number;
+  batchTime: number;
+  batchVolume: number;
+}
+
+export type SubscriptionPolicyJson =
+  | SerialSubscriptionPolicyJson
+  | BatchSubscriptionPolicyJson;
+
+export type EndpointAddressResolverMetadataJson = Record<string, any>;

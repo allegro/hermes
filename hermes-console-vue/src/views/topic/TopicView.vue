@@ -1,6 +1,9 @@
 <script async setup lang="ts">
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-  import { useAppNotifications } from '@/store/app-notifications/useAppNotifications';
+  import {
+    useAppNotifications,
+    useNotificationsStore,
+  } from '@/store/app-notifications/useAppNotifications';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
@@ -56,7 +59,7 @@
   if (configStore.appConfig?.topic.offlineClientsEnabled) {
     fetchOfflineClientsSource();
   }
-  const notificationsStore = useAppNotifications();
+  const notificationsStore = useNotificationsStore();
 </script>
 
 <template>

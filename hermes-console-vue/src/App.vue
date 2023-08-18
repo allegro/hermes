@@ -3,9 +3,9 @@
     <console-header />
 
     <v-main class="main">
-      <AppNotificationsProvider>
-        <RouterView />
-      </AppNotificationsProvider>
+      <app-notifications-provider>
+        <router-view />
+      </app-notifications-provider>
     </v-main>
 
     <console-footer />

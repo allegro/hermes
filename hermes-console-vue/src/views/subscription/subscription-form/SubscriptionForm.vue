@@ -4,14 +4,15 @@
   import { useCreateSubscription } from '@/composables/subscription/use-create-subscription/useCreateSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
-  import SubscriptionBasicFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionBasicFilters.vue';
   import SubscriptionHeaderFilters from '@/views/subscription/subscription-form/subscription-header-filters/SubscriptionHeaderFilters.vue';
+  import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
   import TextField from '@/components/text-field/TextField.vue';
 
   const props = defineProps<{
     topic: string;
     operation: 'add' | 'edit';
   }>();
+  const emit = defineEmits(['created', 'cancel']);
   const configStore = useAppConfigStore();
   const {
     form,
@@ -43,9 +44,9 @@
   );
   const isFormValid = ref(false);
   function submit() {
-    console.log('submitting form', isFormValid.value);
     if (isFormValid.value) {
       createSubscription();
+      emit('created');
     }
   }
 </script>
@@ -265,11 +266,11 @@
 
     <v-divider />
 
-    <subscription-basic-filters />
+    <subscription-path-filters v-model="form.pathFilters" />
 
     <v-divider class="mb-4" />
 
-    <subscription-header-filters />
+    <subscription-header-filters v-model="form.headerFilters" />
 
     <v-divider class="mb-4" />
 
@@ -320,13 +321,17 @@
     />
 
     <div class="d-flex justify-end column-gap-2 mt-4">
-      <v-btn variant="flat" color="error" :disabled="creatingSubscription"
+      <v-btn
+        variant="outlined"
+        color="primary"
+        :disabled="creatingSubscription"
+        @click="$emit('cancel')"
         >{{ $t('subscriptionForm.actions.cancel') }}
       </v-btn>
       <v-btn
         type="submit"
         variant="flat"
-        color="success"
+        color="primary"
         :loading="creatingSubscription"
         >{{
           props.operation === 'add'

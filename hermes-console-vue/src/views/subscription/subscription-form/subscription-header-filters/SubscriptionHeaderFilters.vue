@@ -4,35 +4,40 @@
   import HeaderFilterRow from '@/views/subscription/subscription-form/subscription-header-filters/header-filter-row/HeaderFilterRow.vue';
   import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
 
-  const filters = ref<HeaderFilter[]>([]);
+  const props = defineProps<{
+    modelValue: HeaderFilter[];
+  }>();
+  const emit = defineEmits(['update:modelValue']);
+
   const newFilterHeaderName = ref('');
   const newFilterMatcher = ref('');
-
   function addFilter() {
-    filters.value.push({
+    const newFilter = {
       id: generateUUID(),
-      name: newFilterHeaderName.value,
+      headerName: newFilterHeaderName.value,
       matcher: newFilterMatcher.value,
-    });
+    };
+    const updatedFilters = props.modelValue.concat([newFilter]);
     newFilterHeaderName.value = '';
     newFilterMatcher.value = '';
+    emit('update:modelValue', updatedFilters);
   }
 
-  function removeFilter(id: string) {
-    const indexOfElementToRemove = filters.value.findIndex(
-      (filter) => filter.id === id,
+  function removeFilter(filterToRemove: HeaderFilter) {
+    const updatedFilters = props.modelValue.filter(
+      (filter) => filter !== filterToRemove,
     );
-    filters.value.splice(indexOfElementToRemove, 1);
+    emit('update:modelValue', updatedFilters);
   }
 </script>
 <template>
   <span class="text-subtitle-1 mb-2">HTTP header filters</span>
   <header-filter-row
-    v-for="filter in filters"
+    v-for="filter in props.modelValue"
     :key="filter.id"
-    v-model:name="filter.name"
+    v-model:name="filter.headerName"
     v-model:matcher="filter.matcher"
-    @remove="removeFilter(filter.id)"
+    @remove="removeFilter(filter)"
     type="created"
   />
 

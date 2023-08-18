@@ -1,47 +1,53 @@
 <script setup lang="ts">
   import { v4 as generateUUID } from 'uuid';
   import { ref } from 'vue';
-  import BasicFilterRow from '@/views/subscription/subscription-form/subscription-basic-filters/basic-filter-row/BasicFilterRow.vue';
-  import type { Filter, FilterMatchingStrategy } from './types';
+  import PathFilterRow from '@/views/subscription/subscription-form/subscription-basic-filters/path-filter-row/PathFilterRow.vue';
+  import type { FilterMatchingStrategy, PathFilter } from './types';
 
-  const filters = ref<Filter[]>([]);
+  const props = defineProps<{
+    modelValue: PathFilter[];
+  }>();
+  const emit = defineEmits(['update:modelValue']);
+
   const newFilterPath = ref('');
   const newFilterMatcher = ref('');
   const newFilterMatchingStrategy = ref<FilterMatchingStrategy>('all');
 
   function addFilter() {
-    filters.value.push({
+    const newFilter = {
       id: generateUUID(),
       path: newFilterPath.value,
       matcher: newFilterMatcher.value,
       matchingStrategy: newFilterMatchingStrategy.value,
-    });
+    };
+    const updatedFilters = props.modelValue.concat([newFilter]);
     newFilterPath.value = '';
     newFilterMatcher.value = '';
     newFilterMatchingStrategy.value = 'all';
+    emit('update:modelValue', updatedFilters);
   }
 
-  function removeFilter(id: string) {
-    const indexOfElementToRemove = filters.value.findIndex(
-      (filter) => filter.id === id,
+  function removeFilter(filterToRemove: PathFilter) {
+    const updatedFilters = props.modelValue.filter(
+      (filter) => filter !== filterToRemove,
     );
-    filters.value.splice(indexOfElementToRemove, 1);
+    emit('update:modelValue', updatedFilters);
   }
 </script>
 
 <template>
   <span class="text-subtitle-1 mb-2">Filters</span>
-  <basic-filter-row
-    v-for="filter in filters"
+  <path-filter-row
+    v-for="filter in props.modelValue"
     :key="filter.id"
     v-model:path="filter.path"
     v-model:matcher="filter.matcher"
     v-model:matching-strategy="filter.matchingStrategy"
-    @remove="removeFilter(filter.id)"
+    @remove="removeFilter(filter)"
     type="created"
   />
 
-  <basic-filter-row
+  <path-filter-row
     v-model:path="newFilterPath"
     v-model:matcher="newFilterMatcher"
     v-model:matchingStrategy="newFilterMatchingStrategy"
