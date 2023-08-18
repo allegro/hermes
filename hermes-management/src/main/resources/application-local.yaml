@@ -1,38 +1,64 @@
+zookeeper:
+  enabled: false
+
+storage:
+  pathPrefix: /run/hermes
+  clusters:
+    -
+      datacenter: dc
+      clusterName: zk
+      connectionString: localhost:2181
+
+kafka:
+  clusters:
+    -
+      datacenter: dc
+      clusterName: primary
+      connectionTimeout: 3000
+      bootstrapKafkaServer: localhost:29092
+
+metrics:
+  graphiteHttpUri: localhost:8082
+  graphite:
+    enabled: true
+
+server:
+  port: 8090
+
+spring:
+  jersey:
+    type: filter
+
+management:
+  endpoints:
+    web:
+      base-path: /
+  rest-template:
+    connect-timeout: 2000
+    read-timeout: 2000
+  server:
+    servlet:
+      context-path: /
+  health:
+    periodSeconds: 30
+    enabled: true
+  consumer-groups:
+    create-manually: true
+
+
+audit.enabled: false
+
+topicOwnerCache:
+  refreshRateInSeconds: 300 # 5 minutes
+
+subscriptionOwnerCache:
+  refreshRateInSeconds: 300
+
+schema.repository:
+  type: schema_registry
+  serverUrl: http://localhost:8081
+  validationEnabled: true
+
 console:
-  console:
-    title: hermes console
-  dashboard:
-    metrics: http://localhost:8082
-    docs: http://hermes-pubsub.rtfd.org
-  metrics:
-    type: graphite
-    graphite:
-      url: localhost:8082
-      prefix: hermes
-  auth:
-    oauth:
-      enabled: false
-      url: localhost:8092/auth
-      clientId: hermes
-      scope: hermes
-    headers:
-      enabled: false
-      adminHeader: Hermes-Admin-Password
-  topic:
-    messagePreviewEnabled: true
-    offlineRetransmissionEnabled: true
-    offlineClientsEnabled: false
-    readOnlyModeEnabled: false
-    retentionUnits:
-      - value: HOURS
-        label: HOURS
-      - value: DAYS
-        label: DAYS
-  subscription:
-    showHeadersFilter: true
-    showFixedHeaders: false
-    deliveryTypes:
-      - value: SERIAL
-        label: SERIAL
-      - value: BATCH
-        label: BATCH
+  configurationLocation: console/config-local.json
+  configurationType: classpath_resource

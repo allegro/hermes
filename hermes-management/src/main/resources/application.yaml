@@ -1,7 +1,6 @@
 zookeeper:
   enabled: false
 
-
 storage:
   pathPrefix: /run/hermes
   clusters:
@@ -16,39 +15,38 @@ kafka:
       datacenter: dc
       clusterName: primary
       connectionTimeout: 3000
-      bootstrapKafkaServer: localhost:9092
+      bootstrapKafkaServer: localhost:29092
 
-spring:
-  jersey:
-    type: filter
-  profiles:
-    default: local
+metrics:
+  graphiteHttpUri: localhost:8082
+  graphite:
+    enabled: true
 
 server:
   port: 8090
 
+spring:
+  jersey:
+    type: filter
+
 management:
   endpoints:
     web:
-      base-path: /status
-      exposure:
-        include: health, prometheus
+      base-path: /
   rest-template:
     connect-timeout: 2000
     read-timeout: 2000
+  server:
+    servlet:
+      context-path: /
   health:
     periodSeconds: 30
     enabled: true
+  consumer-groups:
+    create-manually: true
 
-audit:
-  isLoggingAuditEnabled: false
-  isEventAuditEnabled: false
-  eventUrl: null
 
-topic:
-  allowedTopicLabels: &ALLOWED_LABELS
-    - internal
-    - deprecated
+audit.enabled: false
 
 topicOwnerCache:
   refreshRateInSeconds: 300 # 5 minutes
@@ -56,21 +54,11 @@ topicOwnerCache:
 subscriptionOwnerCache:
   refreshRateInSeconds: 300
 
+schema.repository:
+  type: schema_registry
+  serverUrl: http://localhost:8081
+  validationEnabled: true
+
 console:
   configurationLocation: console/config-local.json
   configurationType: classpath_resource
-  topic:
-    allowedTopicLabels: *ALLOWED_LABELS
-    retentionUnits:
-      - value: TimeUnit.HOURS
-        label: Hours
-      - value: TimeUnit.DAYS
-        label: Days
-    defaults:
-      offlineStorage:
-        retentionTime:
-          duration: 60
-
-  subscription:
-    showHeadersFilter: false
-    showFixedHeaders: false

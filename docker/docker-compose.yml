@@ -43,36 +43,36 @@ services:
       - graphite_data:/opt/graphite/storage
       - statsd_data:/opt/statsd
 
-  frontend:
-    build:
-      context: ../
-      dockerfile: ./docker/latest/frontend/Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - zk
-      - kafka
-      - graphite
+#  frontend:
+#    build:
+#      context: ../
+#      dockerfile: ./docker/latest/frontend/Dockerfile
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - zk
+#      - kafka
+#      - graphite
 
-  consumers:
-    build:
-      context: ../
-      dockerfile: ./docker/latest/consumers/Dockerfile
-    depends_on:
-      - zk
-      - kafka
-      - graphite
+#  consumers:
+#    build:
+#      context: ../
+#      dockerfile: ./docker/latest/consumers/Dockerfile
+#    depends_on:
+#      - zk
+#      - kafka
+#      - graphite
 
-  management:
-    build:
-      context: ../
-      dockerfile: ./docker/latest/management/Dockerfile
-    ports:
-      - "8090:8090"
-    depends_on:
-      - zk
-      - kafka
-      - graphite
+#  management:
+#    build:
+#      context: ../
+#      dockerfile: ./docker/latest/management/Dockerfile
+#    ports:
+#      - "8090:8090"
+#    depends_on:
+#      - zk
+#      - kafka
+#      - graphite
 
   schema-registry:
     image: "confluentinc/cp-schema-registry:${CONFLUENT_IMAGES_TAG}"

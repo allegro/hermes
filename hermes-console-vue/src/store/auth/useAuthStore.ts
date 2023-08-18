@@ -38,8 +38,13 @@ export const useAuthStore = defineStore('auth', {
         .finally(() => (this.codeVerifier = null));
     },
     async getAuthorizationCodeWithPKCE(pathname: string): Promise<void> {
+      console.log('useAuthStore.getAuthorizationCodeWithPKCE(), 1', pathname);
       const configStore = useAppConfigStore();
       this.codeVerifier = window.crypto.randomUUID();
+      console.log(
+        'useAuthStore.getAuthorizationCodeWithPKCE(), 2',
+        this.codeVerifier,
+      );
       const queryParams = qs.stringify({
         client_id: configStore.loadedConfig.auth.oauth.clientId,
         redirect_uri: this.getRedirectUri(),
@@ -48,11 +53,16 @@ export const useAuthStore = defineStore('auth', {
         code_challenge: await this.generateCodeChallange(this.codeVerifier),
         state: pathname,
       });
+      console.log(
+        'useAuthStore.getAuthorizationCodeWithPKCE(), 3',
+        queryParams,
+      );
       window.location.href = `${configStore.loadedConfig.auth.oauth.url}${configStore.loadedConfig.auth.oauth.authorizationEndpoint}?${queryParams}`;
     },
     async generateCodeChallange(codeVerifier: string): Promise<string> {
       const encoder = new TextEncoder();
       const data = encoder.encode(codeVerifier);
+      console.log('useAuthStore.getAuthorizationCodeWithPKCE(), 3', data);
       const digest = await window.crypto.subtle.digest('SHA-256', data);
       const base64Digest = base64encode(digest);
       return base64Digest
@@ -67,10 +77,12 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = null;
     },
     async login(path: string): Promise<void> {
+      console.log('useAuthStore.login()');
       try {
         this.loading = true;
         await this.getAuthorizationCodeWithPKCE(path);
       } catch (e) {
+        console.log('useAuthStore.login(): error', e);
         this.error.loadAuth = e as Error;
       } finally {
         this.loading = false;
