@@ -15,6 +15,7 @@
   "/topics/:topicName/subscriptions/:id/undelivered": "/subscriptionUndeliveredMessages",
   "/topics/:topicName/subscriptions/:id/undelivered/last": "/subscriptionUndeliveredMessages/:id",
   "/workload-constraints": "/constraints",
+  "/stats": "/stats",
   "/owners/sources": "/ownerSources",
   "/owners/sources/*?search=:searchPhrase": "/topicsOwners?name_like=:searchPhrase"
 }

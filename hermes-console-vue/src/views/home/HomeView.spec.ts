@@ -6,7 +6,9 @@ import HomeView from '@/views/home/HomeView.vue';
 describe('HomeView', () => {
   it('renders properly', () => {
     // when
-    const { getByText } = render(HomeView);
+    const { getByText } = render(HomeView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(getByText('homeView.links.console')).toBeVisible();

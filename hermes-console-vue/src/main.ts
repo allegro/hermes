@@ -9,6 +9,7 @@ import { createVuetify } from 'vuetify';
 import App from './App.vue';
 import axios from 'axios';
 import messages from '@/i18n/messages';
+import piniaPluginPersistedState from 'pinia-plugin-persistedstate';
 import router from './router';
 
 if (import.meta.env.DEV) {
@@ -55,6 +56,8 @@ const i18n = createI18n({
 });
 
 const store = createPinia();
+
+store.use(piniaPluginPersistedState);
 
 const app = createApp(App);
 

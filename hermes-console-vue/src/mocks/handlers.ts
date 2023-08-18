@@ -10,6 +10,7 @@ import {
   dummyTopicOwner,
 } from '@/dummy/topic';
 import { rest } from 'msw';
+import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { ConstraintsConfig } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
@@ -19,6 +20,7 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { Owner } from '@/api/owner';
+import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
 const url = 'http://localhost:3000';
@@ -295,4 +297,27 @@ export const fetchGroupNamesErrorHandler = ({
 }) =>
   rest.get(`${url}/groups`, (req, res, ctx) => {
     return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const fetchStatsHandler = ({ stats }: { stats: Stats }) =>
+  rest.get(`${url}/stats`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stats));
+  });
+
+export const fetchStatsErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/stats`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const fetchTokenHandler = ({
+  accessToken,
+}: {
+  accessToken: AccessTokenResponse;
+}) =>
+  rest.post(`http://localhost:8080/token`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(accessToken));
   });

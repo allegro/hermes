@@ -11,6 +11,10 @@ const en_US = {
       adminTools: 'Admin tools',
     },
   },
+  header: {
+    signIn: 'Sign in',
+    logout: 'Logout',
+  },
   consistency: {
     connectionError: {
       title: 'Connection error',
@@ -92,6 +96,18 @@ const en_US = {
       consumersNumberChip: 'consumers number: ',
       appliedFilter: '(applied filter: “{filter}”)',
     },
+  },
+  stats: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch stats',
+    },
+    title: 'Statistics',
+    topics: 'Topics',
+    subscriptions: 'Subscriptions',
+    total: 'Total',
+    ackAll: 'Ack ALL',
+    trackingEnabled: 'Tracking Enabled',
   },
   readiness: {
     title: 'Datacenters Readiness',

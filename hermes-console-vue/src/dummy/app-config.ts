@@ -29,8 +29,10 @@ export const dummyAppConfig: AppConfiguration = {
   auth: {
     oauth: {
       enabled: false,
-      url: '',
-      clientId: '',
+      url: 'http://localhost:8080',
+      authorizationEndpoint: '/authorization',
+      tokenEndpoint: '/token',
+      clientId: 'hermes',
       scope: '',
     },
     headers: {
