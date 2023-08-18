@@ -22,6 +22,39 @@ const en_US = {
       home: 'home',
       title: 'consistency',
     },
+    inconsistentGroups: {
+      heading: 'Inconsistent groups',
+      noGroups: 'No inconsistent groups found',
+      appliedFilter: '(applied filter: “{filter}”)',
+      actions: {
+        search: 'Search inconsistent groups...',
+        check: 'Check consistency',
+      },
+      listing: {
+        index: '#',
+        name: 'Group',
+      },
+    },
+    inconsistentGroup: {
+      listing: {
+        index: '#',
+        name: 'Topic',
+        title: 'Inconsistent topics',
+      },
+      noTopics: 'No inconsistent topics',
+      inconsistentTopic: {
+        listing: {
+          index: '#',
+          name: 'Subscription',
+        },
+        noSubscriptions: 'No inconsistent subscriptions',
+        inconsistentSubscriptions: 'Inconsistent subscriptions',
+      },
+      metadata: {
+        consistent: 'Metadata are consistent',
+        inconsistent: 'Inconsistent metadata',
+      },
+    },
     inconsistentTopics: {
       noTopics: 'No inconsistent topics found',
       appliedFilter: '(applied filter: “{filter}”)',

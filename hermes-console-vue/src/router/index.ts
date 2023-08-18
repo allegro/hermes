@@ -48,6 +48,22 @@ const router = createRouter({
       component: () => import('@/views/admin/consistency/ConsistencyView.vue'),
     },
     {
+      path: '/ui/consistency/:groupId',
+      name: 'groupConsistency',
+      component: () =>
+        import(
+          '@/views/admin/consistency/inconsistent-groups-listing/InconsistentGroup.vue'
+        ),
+    },
+    {
+      path: '/ui/consistency/:groupId/topics/:topicId',
+      name: 'topicConsistency',
+      component: () =>
+        import(
+          '@/views/admin/consistency/inconsistent-groups-listing/InconsistentTopic.vue'
+        ),
+    },
+    {
       path: '/ui/groups/:groupId/topics/:topicId/subscriptions/:subscriptionId/diagnostics/',
       name: 'consumerGroups',
       component: () =>
