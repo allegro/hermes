@@ -16,13 +16,14 @@ describe('useGroups', () => {
 
   it('should initialize', async () => {
     // when
-    const authStoreState = useAuthStore();
+    const authStore = useAuthStore();
 
     // then
-    expect(authStoreState.accessToken).toBeNull();
-    expect(authStoreState.codeVerifier).toBeNull();
-    expect(authStoreState.loading).toBeFalsy();
-    expect(authStoreState.error.loadAuth).toBeNull();
+    expect(authStore.accessToken).toBeNull();
+    expect(authStore.codeVerifier).toBeNull();
+    expect(authStore.loading).toBeFalsy();
+    expect(authStore.error.loadAuth).toBeNull();
+    expect(authStore.isUserAuthorized).toBeFalsy();
   });
 
   it('should generate codeVerifier', async () => {
@@ -59,5 +60,6 @@ describe('useGroups', () => {
     // then
     expect(authStore.accessToken).toBe(validToken);
     expect(authStore.codeVerifier).toBeNull();
+    expect(authStore.isUserAuthorized).toBeTruthy();
   });
 });
