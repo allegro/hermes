@@ -1,9 +1,8 @@
 <script setup lang="ts">
-  import { ref, watch } from 'vue';
+  import { computed } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useAuthStore } from '@/store/auth/useAuthStore';
   import { useI18n } from 'vue-i18n';
-  import { useRoute } from 'vue-router';
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
@@ -12,23 +11,17 @@
 
   const theme = useTheme();
   const configStore = useAppConfigStore();
-  const auth = useAuthStore();
-  const route = useRoute();
+  const authStore = useAuthStore();
 
-  const isLoggedIn = ref(auth.isUserAuthorized);
+  const isLoggedIn = computed(() => authStore.isUserAuthorized);
 
   function logIn() {
-    auth.login(window.location.pathname);
+    authStore.login(window.location.pathname);
   }
 
   function logout() {
-    auth.logout();
-    isLoggedIn.value = false;
+    authStore.logout();
   }
-
-  watch(route, async () => {
-    isLoggedIn.value = auth.isUserAuthorized;
-  });
 </script>
 
 <template>

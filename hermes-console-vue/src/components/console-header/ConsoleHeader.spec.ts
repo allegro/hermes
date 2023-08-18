@@ -73,6 +73,36 @@ describe('ConsoleHeader', () => {
     expect(getByText('header.signIn')).toBeVisible();
   });
 
+  it('should not display login button when auth is disabled', () => {
+    // when
+    const { queryByText } = render(ConsoleHeader, {
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: {
+            ...appConfigStoreState,
+            appConfig: {
+              ...dummyAppConfig,
+              auth: {
+                ...dummyAppConfig.auth,
+                oauth: {
+                  ...dummyAppConfig.auth.oauth,
+                  enabled: false,
+                },
+              },
+            },
+          },
+          auth: {
+            ...authStoreState,
+          },
+        },
+      }),
+    });
+
+    // then
+    expect(queryByText('header.signIn')).not.toBeInTheDocument();
+    expect(queryByText('header.signout')).not.toBeInTheDocument();
+  });
+
   it('should display logout button if token is valid', () => {
     // when
     const { getByText } = render(ConsoleHeader, {

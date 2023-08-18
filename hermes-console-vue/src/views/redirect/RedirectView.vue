@@ -9,7 +9,6 @@
   const route = useRoute();
   const router = useRouter();
 
-  auth.exchangeCodeForTokenWithPKCE(String(route.query.code));
   if (configStore.loadedConfig && route.query.code) {
     auth.exchangeCodeForTokenWithPKCE(String(route.query.code)).then(() => {
       router.push(String(route.query.state));
