@@ -9,6 +9,10 @@ const en_US = {
       adminTools: 'Admin tools',
     },
   },
+  header: {
+    signIn: 'Sign in',
+    logout: 'Logout',
+  },
   consistency: {
     connectionError: {
       title: 'Connection error',

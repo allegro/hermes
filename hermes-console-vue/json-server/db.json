@@ -466,7 +466,9 @@
     "auth": {
       "oauth": {
         "enabled": false,
-        "url": "localhost:8092/auth",
+        "url": "localhost:8092",
+        "authorizationEndpoint": "/auth/oauth/authorize",
+        "tokenEndpoint": "/auth/oauth/token",
         "clientId": "hermes",
         "scope": "hermes"
       },

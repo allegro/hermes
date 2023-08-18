@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { fetchAppConfiguration } from '@/api/hermes-client';
-import type { AppConfigStoreState } from '@/store/types';
+import type { AppConfigStoreState } from '@/store/app-config/types';
+import type { AppConfiguration } from '@/api/app-configuration';
 
 export const useAppConfigStore = defineStore('appConfig', {
   state: (): AppConfigStoreState => {
@@ -22,6 +23,11 @@ export const useAppConfigStore = defineStore('appConfig', {
       } finally {
         this.loading = false;
       }
+    },
+  },
+  getters: {
+    loadedConfig(state: AppConfigStoreState): AppConfiguration {
+      return state.appConfig!!;
     },
   },
 });

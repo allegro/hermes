@@ -40,15 +40,15 @@
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
-      href: '/#/groups',
+      href: '/ui/groups',
     },
     {
       title: groupId,
-      href: `/#/groups/${groupId}`,
+      href: `/ui/groups/${groupId}`,
     },
     {
       title: topicName,
-      href: `/#/groups/${groupId}/topics/${topicName}`,
+      href: `/ui/groups/${groupId}/topics/${topicName}`,
     },
   ];
   const configStore = useAppConfigStore();

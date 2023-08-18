@@ -1,11 +1,34 @@
 <script setup lang="ts">
+  import { ref, watch } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import { useAuthStore } from '@/store/auth/useAuthStore';
+  import { useI18n } from 'vue-i18n';
+  import { useRoute } from 'vue-router';
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
+  const { t } = useI18n();
+
   const theme = useTheme();
   const configStore = useAppConfigStore();
+  const auth = useAuthStore();
+  const route = useRoute();
+
+  const isLoggedIn = ref(auth.isUserAuthorized);
+
+  function logIn() {
+    auth.login(window.location.pathname);
+  }
+
+  function logout() {
+    auth.logout();
+    isLoggedIn.value = false;
+  }
+
+  watch(route, async () => {
+    isLoggedIn.value = auth.isUserAuthorized;
+  });
 </script>
 
 <template>
@@ -13,7 +36,7 @@
     <div class="header">
       <!-- TODO: navigate to home -->
       <div class="header-left">
-        <router-link to="/" custom v-slot="{ navigate }">
+        <router-link to="/ui" custom v-slot="{ navigate }">
           <img
             @click="navigate"
             v-if="!theme.current.value.dark"
@@ -38,7 +61,25 @@
           "
         />
       </div>
-      <theme-switch />
+      <div>
+        <theme-switch />
+        <v-btn
+          v-if="configStore.loadedConfig.auth.oauth.enabled && !isLoggedIn"
+          color="primary"
+          variant="tonal"
+          @click="logIn()"
+        >
+          {{ t('header.signIn') }}
+        </v-btn>
+        <v-btn
+          v-if="configStore.loadedConfig.auth.oauth.enabled && isLoggedIn"
+          variant="tonal"
+          color="primary"
+          @click="logout"
+        >
+          {{ t('header.logout') }}
+        </v-btn>
+      </div>
     </div>
   </v-app-bar>
 </template>

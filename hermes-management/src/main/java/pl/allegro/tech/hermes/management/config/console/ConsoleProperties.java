@@ -277,7 +277,9 @@ public class ConsoleProperties {
 
     public static final class OAuth {
         private boolean enabled = false;
-        private String url = "localhost:8092/auth";
+        private String url = "localhost:8092";
+        private String authorizationEndpoint = "/auth/oauth/authorize";
+        private String tokenEndpoint = "/auth/oauth/token";
         private String clientId = "hermes";
         private String scope = "hermes";
 
@@ -295,6 +297,22 @@ public class ConsoleProperties {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public String getAuthorizationEndpoint() {
+            return authorizationEndpoint;
+        }
+
+        public void setAuthorizationEndpoint(String authorizationEndpoint) {
+            this.authorizationEndpoint = authorizationEndpoint;
+        }
+
+        public String getTokenEndpoint() {
+            return tokenEndpoint;
+        }
+
+        public void setTokenEndpoint(String tokenEndpoint) {
+            this.tokenEndpoint = tokenEndpoint;
         }
 
         public String getClientId() {

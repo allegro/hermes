@@ -42,15 +42,15 @@
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
-      href: '/#/groups',
+      href: '/ui/groups',
     },
     {
       title: groupId,
-      href: `/#/groups/${groupId}`,
+      href: `/ui/groups/${groupId}`,
     },
     {
       title: topicId,
-      href: `/#/groups/${groupId}/topics/${topicId}`,
+      href: `/ui/groups/${groupId}/topics/${topicId}`,
     },
     {
       title: subscriptionId,

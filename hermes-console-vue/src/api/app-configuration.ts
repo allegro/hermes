@@ -54,6 +54,8 @@ export interface AuthConfiguration {
 export interface OAuthConfiguration {
   enabled: boolean;
   url: string;
+  authorizationEndpoint: string;
+  tokenEndpoint: string;
   clientId: string;
   scope: string;
 }
