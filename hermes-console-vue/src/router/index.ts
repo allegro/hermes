@@ -54,6 +54,11 @@ const router = createRouter({
         import('@/views/admin/consumer-groups/ConsumerGroupsView.vue'),
     },
     {
+      path: '/ui/stats',
+      name: 'stats',
+      component: () => import('@/views/stats/StatsView.vue'),
+    },
+    {
       path: '/ui/redirect',
       name: 'redirect',
       component: () => import('@/views/redirect/RedirectView.vue'),

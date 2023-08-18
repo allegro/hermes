@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -14,6 +15,7 @@ import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
+import pl.allegro.tech.hermes.api.SubscriptionStats;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -308,6 +310,13 @@ public class SubscriptionService {
                                                             List<String> subscriptionNames,
                                                             List<String> qualifiedTopicNames) {
         return getUnhealthyList(subscriptionOwnerCache.get(ownerId), respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames);
+    }
+
+    public SubscriptionStats getStats() {
+        List<Subscription> subscriptions = getAllSubscriptions();
+        long trackingEnabledSubscriptionsCount = subscriptions.stream().filter(Subscription::isTrackingEnabled).count();
+        long avroSubscriptionCount = subscriptions.stream().filter(s -> s.getContentType() == ContentType.AVRO).count();
+        return new SubscriptionStats(subscriptions.size(), trackingEnabledSubscriptionsCount, avroSubscriptionCount);
     }
 
     private List<UnhealthySubscription> getUnhealthyList(Collection<SubscriptionName> ownerSubscriptionNames,

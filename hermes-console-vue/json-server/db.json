@@ -554,5 +554,18 @@
     "group": {
       "nonAdminCreationEnabled": false
     }
+  },
+  "stats": {
+    "topicStats": {
+      "topicCount": 111,
+      "ackAllTopicCount": 33,
+      "trackingEnabledTopicCount": 12,
+      "avroTopicCount": 95
+    },
+    "subscriptionStats": {
+      "subscriptionCount": 527,
+      "trackingEnabledSubscriptionCount": 67,
+      "avroSubscriptionCount": 100
+    }
   }
 }
