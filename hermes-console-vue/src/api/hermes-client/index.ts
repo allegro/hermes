@@ -1,5 +1,8 @@
 import axios from 'axios';
+import qs from 'query-string';
+import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { AppConfiguration } from '@/api/app-configuration';
+import type { AxiosRequestConfig } from 'axios';
 import type { ConstraintsConfig } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
@@ -95,4 +98,26 @@ export function fetchGroupNames(): ResponsePromise<string[]> {
 
 export function fetchStats(): ResponsePromise<Stats> {
   return axios.get<Stats>(`/stats`);
+}
+
+export function fetchToken(
+  code: string,
+  url: string,
+  clientId: string,
+  redirectUri: string,
+  codeVerifier: string,
+): ResponsePromise<AccessTokenResponse> {
+  return axios.post<AccessTokenResponse>(
+    url,
+    qs.stringify({
+      client_id: clientId,
+      code: code,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
+      code_verifier: codeVerifier,
+    }),
+    {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    } as AxiosRequestConfig,
+  );
 }

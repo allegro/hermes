@@ -19,7 +19,7 @@
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
-      href: '/#/groups',
+      href: '/ui/groups',
     },
   ];
 </script>

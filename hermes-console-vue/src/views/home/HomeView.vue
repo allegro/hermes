@@ -3,9 +3,9 @@
   import { useTheme } from 'vuetify';
 
   const adminViews: { title: string; to: string }[] = [
-    { title: 'Consistency', to: '/consistency' },
-    { title: 'Constraints', to: '/constraints' },
-    { title: 'Readiness', to: '/readiness' },
+    { title: 'Consistency', to: '/ui/consistency' },
+    { title: 'Constraints', to: '/ui/constraints' },
+    { title: 'Readiness', to: '/ui/readiness' },
   ];
 
   const theme = useTheme();
@@ -29,7 +29,7 @@
 
     <v-row justify="center">
       <v-col cols="6">
-        <v-btn to="/groups" color="secondary" block>
+        <v-btn to="/ui/groups" color="secondary" block>
           <v-icon left icon="mdi-cog"></v-icon>
           <span class="ml-1">{{ $t('homeView.links.console') }}</span>
         </v-btn>
@@ -38,13 +38,13 @@
 
     <v-row justify="center">
       <v-col cols="3">
-        <v-btn to="/stats" color="accent" block>
+        <v-btn to="/ui/stats" color="accent" block>
           <v-icon left icon="mdi-chart-bar"></v-icon>
           <span class="ml-1">{{ $t('homeView.links.statistics') }}</span>
         </v-btn>
       </v-col>
       <v-col cols="3">
-        <v-btn to="/search" color="accent" block>
+        <v-btn to="/ui/search" color="accent" block>
           <v-icon left icon="mdi-magnify"></v-icon>
           <span class="ml-1">{{ $t('homeView.links.search') }}</span>
         </v-btn>
@@ -55,7 +55,7 @@
       <v-col cols="3">
         <v-btn
           block
-          :href="configStore.appConfig?.dashboard.metrics"
+          :href="configStore.loadedConfig.dashboard.metrics"
           target="_blank"
         >
           <v-icon left icon="mdi-chart-multiple"></v-icon>
@@ -65,7 +65,7 @@
       <v-col cols="3">
         <v-btn
           block
-          :href="configStore.appConfig?.dashboard.docs"
+          :href="configStore.loadedConfig.dashboard.docs"
           target="_blank"
         >
           <v-icon left icon="mdi-book-open-variant"></v-icon>

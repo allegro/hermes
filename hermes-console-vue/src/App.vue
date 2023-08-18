@@ -1,24 +1,28 @@
-<template>
-  <v-app class="fill-height">
-    <console-header />
-
-    <v-main class="main">
-      <RouterView />
-    </v-main>
-
-    <console-footer />
-  </v-app>
-</template>
-
 <script setup lang="ts">
   import { RouterView } from 'vue-router';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import ConsoleFooter from '@/components/console-footer/ConsoleFooter.vue';
   import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
+  import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
   const configStore = useAppConfigStore();
   configStore.loadConfig();
 </script>
+
+<template>
+  <v-app class="fill-height">
+    <div v-if="configStore.appConfig">
+      <console-header />
+
+      <v-main class="main">
+        <RouterView />
+      </v-main>
+
+      <console-footer />
+    </div>
+    <loading-spinner v-else />
+  </v-app>
+</template>
 
 <style scoped lang="scss">
   .main {

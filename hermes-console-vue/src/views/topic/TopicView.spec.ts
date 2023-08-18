@@ -45,7 +45,7 @@ const useTopicMock: UseTopic = {
 describe('TopicView', () => {
   beforeEach(async () => {
     await router.push(
-      `/groups/pl.allegro.public.group` + `/topics/${dummyTopic.name}`,
+      `/ui/groups/pl.allegro.public.group` + `/topics/${dummyTopic.name}`,
     );
   });
 

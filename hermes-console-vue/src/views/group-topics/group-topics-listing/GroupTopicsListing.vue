@@ -19,7 +19,9 @@
   });
 
   function onTopicClick(topicName: string) {
-    router.push({ path: `/groups/${props.group?.name}/topics/${topicName}` });
+    router.push({
+      path: `/ui/groups/${props.group?.name}/topics/${topicName}`,
+    });
   }
 </script>
 

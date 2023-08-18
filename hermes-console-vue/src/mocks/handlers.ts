@@ -10,6 +10,7 @@ import {
   dummyTopicOwner,
 } from '@/dummy/topic';
 import { rest } from 'msw';
+import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { ConstraintsConfig } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
@@ -310,4 +311,13 @@ export const fetchStatsErrorHandler = ({
 }) =>
   rest.get(`${url}/stats`, (req, res, ctx) => {
     return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const fetchTokenHandler = ({
+  accessToken,
+}: {
+  accessToken: AccessTokenResponse;
+}) =>
+  rest.post(`http://localhost:8080/token`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(accessToken));
   });
