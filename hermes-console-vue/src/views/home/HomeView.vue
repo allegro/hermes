@@ -55,7 +55,7 @@
       <v-col cols="3">
         <v-btn
           block
-          :href="configStore.appConfig?.dashboard.metrics"
+          :href="configStore.loadedConfig.dashboard.metrics"
           target="_blank"
         >
           <v-icon left icon="mdi-chart-multiple"></v-icon>
@@ -65,7 +65,7 @@
       <v-col cols="3">
         <v-btn
           block
-          :href="configStore.appConfig?.dashboard.docs"
+          :href="configStore.loadedConfig.dashboard.docs"
           target="_blank"
         >
           <v-icon left icon="mdi-book-open-variant"></v-icon>
