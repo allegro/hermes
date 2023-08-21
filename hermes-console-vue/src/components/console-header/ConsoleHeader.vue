@@ -16,7 +16,6 @@
   const isLoggedIn = computed(() => authStore.isUserAuthorized);
 
   function logIn() {
-    console.log('ConsoleHeader.logIn()');
     authStore.login(window.location.pathname);
   }
 
