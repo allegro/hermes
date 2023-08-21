@@ -18,7 +18,7 @@ export const matchRegex =
 export const required =
   (errorMsg: string = 'Required'): FieldValidator<any> =>
   (v: any) =>
-    validate(!!v, errorMsg);
+    validate(typeof v === 'string' ? !!v.trim() : v != null, errorMsg);
 
 export const min =
   (

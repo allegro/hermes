@@ -194,7 +194,7 @@
 
     <text-field
       v-if="isSerialDeliveryTypeSelected"
-      v-model="form.subscriptionPolicy.sendingDelay"
+      v-model.number="form.subscriptionPolicy.sendingDelay"
       :rules="validators.sendingDelay"
       type="number"
       :label="$t('subscriptionForm.fields.sendingDelay.label')"
