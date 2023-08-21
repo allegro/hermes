@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.infrastructure.graphite
+package pl.allegro.tech.hermes.management.infrastructure.prometheus
 
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
@@ -9,23 +9,23 @@ import java.time.Duration
 
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 
-class CachingGraphiteClientTest extends Specification {
+class CachingPrometheusClientTest extends Specification {
     static final CACHE_TTL_IN_SECONDS = 30
     static final CACHE_SIZE = 100_000
     static final CACHE_TTL = Duration.ofSeconds(CACHE_TTL_IN_SECONDS)
 
-    def underlyingClient = Mock(GraphiteClient)
+    def underlyingClient = Mock(PrometheusClient)
     def ticker = new FakeTicker()
 
     @Subject
-    def cachingClient = new CachingGraphiteClient(underlyingClient, ticker, CACHE_TTL_IN_SECONDS, CACHE_SIZE)
+    def cachingClient = new CachingPrometheusClient(underlyingClient, ticker, CACHE_TTL_IN_SECONDS, CACHE_SIZE)
 
     def "should return metrics from the underlying client"() {
         given:
-        underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        underlyingClient.readMetrics("someQuery") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
 
         when:
-        def metrics = cachingClient.readMetrics("metric_1", "metric_2")
+        def metrics = cachingClient.readMetrics("someQuery")
 
         then:
         metrics.metricValue("metric_1") == of("1")
@@ -34,21 +34,21 @@ class CachingGraphiteClientTest extends Specification {
 
     def "should return metrics from cache while TTL has not expired"() {
         when:
-        cachingClient.readMetrics("metric_1", "metric_2")
+        cachingClient.readMetrics("someQuery")
         ticker.advance(CACHE_TTL.minusSeconds(1))
-        cachingClient.readMetrics("metric_1", "metric_2")
+        cachingClient.readMetrics("someQuery")
 
         then:
-        1 * underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        1 * underlyingClient.readMetrics("someQuery") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
     }
 
     def "should get metrics from the underlying client after TTL expires"() {
         when:
-        cachingClient.readMetrics("metric_1", "metric_2")
+        cachingClient.readMetrics("someQuery")
         ticker.advance(CACHE_TTL.plusSeconds(1))
-        cachingClient.readMetrics("metric_1", "metric_2")
+        cachingClient.readMetrics("someQuery")
 
         then:
-        2 * underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        2 * underlyingClient.readMetrics("someQuery") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
     }
 }

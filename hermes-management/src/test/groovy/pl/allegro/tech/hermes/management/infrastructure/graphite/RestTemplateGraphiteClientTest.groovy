@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule
 import jakarta.ws.rs.core.MediaType
 import org.junit.Rule
 import org.springframework.web.client.RestTemplate
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
 
@@ -32,7 +33,7 @@ class RestTemplateGraphiteClientTest extends Specification {
         ])
 
         when:
-        GraphiteMetrics metrics = client.readMetrics("metric1", "metric2")
+        MonitoringMetricsContainer metrics = client.readMetrics("metric1", "metric2")
 
         then:
         metrics.metricValue("metric1") == of("10")
@@ -44,8 +45,8 @@ class RestTemplateGraphiteClientTest extends Specification {
         mockGraphite([[ metric: 'metric', data: [null] ]])
 
         when:
-        GraphiteMetrics metrics = client.readMetrics("metric");
-        
+        MonitoringMetricsContainer metrics = client.readMetrics("metric");
+
         then:
         metrics.metricValue("metric1") == of("0.0")
     }
@@ -57,7 +58,7 @@ class RestTemplateGraphiteClientTest extends Specification {
         ])
 
         when:
-        GraphiteMetrics metrics = client.readMetrics("metric");
+        MonitoringMetricsContainer metrics = client.readMetrics("metric");
 
         then:
         metrics.metricValue("metric") == of("13")
@@ -70,7 +71,7 @@ class RestTemplateGraphiteClientTest extends Specification {
         ])
 
         when:
-        GraphiteMetrics metrics = client.readMetrics('sumSeries(stats.tech.hermes.*.m1_rate)');
+        MonitoringMetricsContainer metrics = client.readMetrics('sumSeries(stats.tech.hermes.*.m1_rate)');
 
         then:
         metrics.metricValue('sumSeries%28stats.tech.hermes.%2A.m1_rate%29') == of("13")
@@ -96,5 +97,5 @@ class RestTemplateGraphiteClientTest extends Specification {
         String datapointsString = datapoints.collect({ "[$it, $timestamp]" }).join(',')
         return '{"target": "' + query + '", "datapoints": [' + datapointsString + '], "tags": []}'
     }
-    
+
 }
