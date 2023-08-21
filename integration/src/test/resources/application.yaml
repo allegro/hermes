@@ -50,12 +50,13 @@ metrics:
 
 graphite:
   client:
-    enabled: false
+    enabled: true
     cacheTtlSeconds: 1
 
 prometheus:
   client:
-    enabled: true
+    enabled: false
+    cacheTtlSeconds: 1
 
 spring:
   jersey:

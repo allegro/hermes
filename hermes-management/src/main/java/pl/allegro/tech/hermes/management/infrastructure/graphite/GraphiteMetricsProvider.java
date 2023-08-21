@@ -1,13 +1,15 @@
 package pl.allegro.tech.hermes.management.infrastructure.graphite;
 
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscriptionMetricsProvider;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringTopicMetricsProvider;
 import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
-public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsProvider {
+public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
 
     private static final String SUBSCRIPTION_PATH = "%s.%s.%s";
 
@@ -18,6 +20,10 @@ public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsPro
     private static final String SUBSCRIPTION_ERROR_OTHER_PATTERN = "sumSeries(%s.consumer.*.status.%s.errors.other.m1_rate)";
     private static final String SUBSCRIPTION_BATCH_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.batch.m1_rate)";
 
+    private static final String TOPIC_RATE_PATTERN = "sumSeries(%s.producer.*.meter.%s.%s.m1_rate)";
+    private static final String TOPIC_DELIVERY_RATE_PATTERN = "sumSeries(%s.consumer.*.meter.%s.%s.m1_rate)";
+    private static final String TOPIC_THROUGHPUT_PATTERN = "sumSeries(%s.producer.*.throughput.%s.%s.m1_rate)";
+
     private final GraphiteClient graphiteClient;
     private final MetricsPaths metricsPaths;
 
@@ -27,7 +33,7 @@ public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsPro
     }
 
     @Override
-    public MonitoringSubscriptionMetrics provide(SubscriptionName name) {
+    public MonitoringSubscriptionMetrics subscriptionMetrics(SubscriptionName name) {
         String rateMetric = metricPath(name);
         String timeouts = metricPathTimeouts(name);
         String throughput = metricPathThroughput(name);
@@ -52,10 +58,29 @@ public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsPro
                 .build();
     }
 
+    @Override
+    public MonitoringTopicMetrics topicMetrics(TopicName topicName) {
+        String rateMetric = metricPath(TOPIC_RATE_PATTERN, topicName);
+        String deliveryRateMetric = metricPath(TOPIC_DELIVERY_RATE_PATTERN, topicName);
+        String throughputMetric = metricPath(TOPIC_THROUGHPUT_PATTERN, topicName);
+
+        MonitoringMetricsContainer metrics = graphiteClient.readMetrics(rateMetric, deliveryRateMetric, throughputMetric);
+        return MonitoringTopicMetricsProvider.metricsBuilder()
+                .withRate(metrics.metricValue(rateMetric))
+                .withDeliveryRate(metrics.metricValue(deliveryRateMetric))
+                .withThroughput(metrics.metricValue(throughputMetric))
+                .build();
+    }
+
     private String metricPath(SubscriptionName name) {
         return String.format(SUBSCRIPTION_RATE_PATTERN,
                 metricsPaths.prefix(), subscriptionNameToPath(name)
         );
+    }
+
+    private String metricPath(String pattern, TopicName topicName) {
+        return String.format(pattern, metricsPaths.prefix(), escapeDots(topicName.getGroupName()),
+                escapeDots(topicName.getName()));
     }
 
     private String metricPathThroughput(SubscriptionName name) {

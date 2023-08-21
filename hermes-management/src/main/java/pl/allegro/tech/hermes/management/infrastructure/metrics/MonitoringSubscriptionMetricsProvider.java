@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.api.MetricDecimalValue;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 public interface MonitoringSubscriptionMetricsProvider {
-    MonitoringSubscriptionMetrics provide(SubscriptionName subscriptionName);
+    MonitoringSubscriptionMetrics subscriptionMetrics(SubscriptionName subscriptionName);
 
     record MonitoringSubscriptionMetrics(MetricDecimalValue rate,
                                                 MetricDecimalValue timeouts,

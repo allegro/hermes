@@ -39,7 +39,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
     public SubscriptionMetrics loadMetrics(TopicName topicName, String subscriptionName) {
         SubscriptionName name = new SubscriptionName(subscriptionName, topicName);
 
-        MonitoringSubscriptionMetrics monitoringMetrics = monitoringSubscriptionMetricsProvider.provide(name);
+        MonitoringSubscriptionMetrics monitoringMetrics = monitoringSubscriptionMetricsProvider.subscriptionMetrics(name);
         ZookeeperMetrics zookeeperMetrics = readZookeeperMetrics(name);
 
         return SubscriptionMetrics.Builder.subscriptionMetrics()

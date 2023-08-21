@@ -50,7 +50,7 @@ public class ExternalMonitoringConfiguration {
     @Bean
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public PrometheusMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient) {
-        return new PrometheusMetricsProvider(prometheusClient, "hermes_consumers");
+        return new PrometheusMetricsProvider(prometheusClient, "hermes_consumers", "hermes_frontend");
     }
 
 
@@ -73,7 +73,7 @@ public class ExternalMonitoringConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true"ve)
+    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate graphiteRestTemplate,
                                              MonitoringClientProperties clientProperties) {
         RestTemplatePrometheusClient underlyingPrometheusClient =

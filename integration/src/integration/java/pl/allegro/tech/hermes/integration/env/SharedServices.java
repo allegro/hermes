@@ -52,10 +52,6 @@ public final class SharedServices {
         return ((WireMockStarter) starters.get(GraphiteHttpMockStarter.class)).instance();
     }
 
-    public WireMockServer oauthMock() {
-        return ((WireMockStarter) starters.get(OAuthServerMockStarter.class)).instance();
-    }
-
     public WireMockServer auditEventMock() {
         return ((WireMockStarter) starters.get(AuditEventMockStarter.class)).instance();
     }
