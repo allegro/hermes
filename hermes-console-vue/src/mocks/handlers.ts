@@ -324,37 +324,37 @@ export const fetchTokenHandler = ({
   });
 
 export const queryTopicsHandler = ({
-                                       topics = [dummyTopic],
-                                   }: {
-    topics?: Topic[];
+  topics = [dummyTopic],
+}: {
+  topics?: Topic[];
 }) =>
-    rest.post(`${url}/query/topics`, (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(topics));
-    });
+  rest.post(`${url}/query/topics`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(topics));
+  });
 
 export const queryTopicsErrorHandler = ({
-                                            errorCode = 500,
-                                        }: {
-    errorCode?: number;
+  errorCode = 500,
+}: {
+  errorCode?: number;
 }) =>
-    rest.post(`${url}/query/topics`, (req, res, ctx) => {
-        return res(ctx.status(errorCode), ctx.json(undefined));
-    });
+  rest.post(`${url}/query/topics`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
 
 export const querySubscriptionsHandler = ({
-                                              subscriptions = [dummySubscription],
-                                          }: {
-    subscriptions?: Subscription[];
+  subscriptions = [dummySubscription],
+}: {
+  subscriptions?: Subscription[];
 }) =>
-    rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(subscriptions));
-    });
+  rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(subscriptions));
+  });
 
 export const querySubscriptionsErrorHandler = ({
-                                                   errorCode = 500,
-                                               }: {
-    errorCode?: number;
+  errorCode = 500,
+}: {
+  errorCode?: number;
 }) =>
-    rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
-        return res(ctx.status(errorCode), ctx.json(undefined));
-    });
+  rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });

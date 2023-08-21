@@ -124,15 +124,15 @@ export function fetchToken(
 }
 
 export function queryTopics(queryJSON: object): ResponsePromise<Topic[]> {
-    return axios.post<Topic[]>(`/query/topics`, queryJSON, {
-        headers: { 'Content-Type': 'application/json' },
-    });
+  return axios.post<Topic[]>(`/query/topics`, queryJSON, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export function querySubscriptions(
-    queryJSON: object,
+  queryJSON: object,
 ): ResponsePromise<Subscription[]> {
-    return axios.post<Subscription[]>(`/query/subscriptions`, queryJSON, {
-        headers: { 'Content-Type': 'application/json' },
-    });
+  return axios.post<Subscription[]>(`/query/subscriptions`, queryJSON, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }

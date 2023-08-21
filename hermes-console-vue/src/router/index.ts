@@ -63,11 +63,11 @@ const router = createRouter({
       name: 'redirect',
       component: () => import('@/views/redirect/RedirectView.vue'),
     },
-      {
-          path: '/search/',
-          name: 'search',
-          component: () => import('@/views/search/SearchView.vue'),
-      },
+    {
+      path: '/search/',
+      name: 'search',
+      component: () => import('@/views/search/SearchView.vue'),
+    },
   ],
 });
 
