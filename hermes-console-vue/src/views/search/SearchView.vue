@@ -34,10 +34,10 @@
   } = useSearch();
 
   function search() {
-    if (selectedSearchCollection.value == 'topics') {
+    if (selectedSearchCollection.value === 'topics') {
       subscriptions.value = undefined;
       queryTopics(selectedSearchFilter.value, searchPattern.value);
-    } else if (selectedSearchCollection.value == 'subscriptions') {
+    } else if (selectedSearchCollection.value === 'subscriptions') {
       topics.value = undefined;
       querySubscriptions(selectedSearchFilter.value, searchPattern.value);
     } else {
