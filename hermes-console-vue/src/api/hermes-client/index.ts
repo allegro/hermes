@@ -161,15 +161,15 @@ export function fetchRoles(path: string): ResponsePromise<Role[]> {
 }
 
 export function moveSubscriptionOffsets(
-    topicName: string,
-    subscription: string,
+  topicName: string,
+  subscription: string,
 ): ResponsePromise<null> {
-    return axios.post<null>(
-        `/topics/${topicName}/subscriptions/${subscription}/moveOffsetsToTheEnd`,
-        {
-            validateStatus: (status: number) => {
-                return status > 200 && status < 400;
-            },
-        },
-    );
+  return axios.post<null>(
+    `/topics/${topicName}/subscriptions/${subscription}/moveOffsetsToTheEnd`,
+    {
+      validateStatus: (status: number) => {
+        return status > 200 && status < 400;
+      },
+    },
+  );
 }

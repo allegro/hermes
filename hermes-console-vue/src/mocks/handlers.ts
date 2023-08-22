@@ -420,17 +420,17 @@ export const fetchGroupInconsistenciesErrorHandler = ({
   });
 
 export const moveSubscriptionOffsetsHandler = ({
-                                                   topicName,
-                                                   subscriptionName,
-                                                   statusCode,
-                                               }: {
-    topicName: string;
-    subscriptionName: string;
-    statusCode: number;
+  topicName,
+  subscriptionName,
+  statusCode,
+}: {
+  topicName: string;
+  subscriptionName: string;
+  statusCode: number;
 }) =>
-    rest.post(
-        `${url}/topics/${topicName}/subscriptions/${subscriptionName}/moveOffsetsToTheEnd`,
-        (req, res, ctx) => {
-            return res(ctx.status(statusCode), ctx.json(undefined));
-        },
-    );
+  rest.post(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/moveOffsetsToTheEnd`,
+    (req, res, ctx) => {
+      return res(ctx.status(statusCode), ctx.json(undefined));
+    },
+  );
