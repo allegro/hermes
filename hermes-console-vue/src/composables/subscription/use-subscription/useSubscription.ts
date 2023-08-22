@@ -76,6 +76,10 @@ export function useSubscription(topicName: string, subscriptionName: string) {
       .catch(() => (subscriptionLastUndeliveredMessage.value = null));
   }
 
+  function suspend() {
+    // make axios call
+  }
+
   fetchSubscription();
   fetchSubscriptionMetrics();
   fetchSubscriptionHealth();
@@ -88,6 +92,7 @@ export function useSubscription(topicName: string, subscriptionName: string) {
     subscriptionHealth,
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
+    suspend,
     loading,
     error,
   };

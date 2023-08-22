@@ -8,11 +8,23 @@
     subscription: Subscription;
     authorized: boolean;
   }>();
+  defineEmits(['suspend']);
 
   const route = useRoute();
+  const suspendDialogOpened = ref(false);
+
+  function openSuspendConfirmationDialog() {}
+  function closeDialog() {}
 </script>
 
 <template>
+  <v-confirmation-dialog
+    v-model="suspendDialogOpened"
+    title="Confirm suspend"
+    text=""
+    @confirm="$emit('suspend')"
+    @cancel="closeDialog"
+  />
   <v-card density="compact">
     <v-card-item>
       <p class="text-overline">
@@ -64,6 +76,7 @@
           :disabled="!props.authorized"
           color="orange"
           prepend-icon="mdi-publish-off"
+          @click="openSuspendConfirmationDialog"
         >
           {{ $t('subscription.subscriptionMetadata.actions.suspend') }}
         </v-btn>

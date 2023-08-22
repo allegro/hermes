@@ -30,6 +30,7 @@
     subscriptionHealth,
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
+    suspend,
     error,
     loading,
   } = useSubscription(topicId, subscriptionId);
@@ -84,6 +85,7 @@
             v-if="subscription"
             :subscription="subscription"
             :authorized="authorized"
+            @suspend="suspend"
           />
         </v-col>
       </v-row>
