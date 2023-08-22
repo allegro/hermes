@@ -57,7 +57,7 @@
     <v-row>
       <p class="text-h3 mt-16">Search</p>
     </v-row>
-    <v-form @submit.prevent v-on:submit="search">
+    <v-form @submit.prevent="search">
       <v-row class="mt-8">
         <v-col md="2" cols="12">
           <v-select
