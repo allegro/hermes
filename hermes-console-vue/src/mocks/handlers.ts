@@ -16,6 +16,7 @@ import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type {
   MessagePreview,
+  Topic,
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';
@@ -321,6 +322,42 @@ export const fetchTokenHandler = ({
 }) =>
   rest.post(`http://localhost:8080/token`, (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(accessToken));
+  });
+
+export const queryTopicsHandler = ({
+  topics = [dummyTopic],
+}: {
+  topics?: Topic[];
+}) =>
+  rest.post(`${url}/query/topics`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(topics));
+  });
+
+export const queryTopicsErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.post(`${url}/query/topics`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const querySubscriptionsHandler = ({
+  subscriptions = [dummySubscription],
+}: {
+  subscriptions?: Subscription[];
+}) =>
+  rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(subscriptions));
+  });
+
+export const querySubscriptionsErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
   });
 
 export const fetchRolesHandler = ({
