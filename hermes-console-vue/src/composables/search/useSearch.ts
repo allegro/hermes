@@ -18,9 +18,9 @@ export interface UseSearchErrors {
 }
 
 export enum SearchFilter {
-  NAME,
-  OWNER,
-  ENDPOINT,
+  NAME = 'name',
+  OWNER = 'owner.id',
+  ENDPOINT = 'endpoint',
 }
 
 export function useSearch(): UseSearch {
@@ -69,20 +69,9 @@ export function useSearch(): UseSearch {
 }
 
 function buildQuery(filter: SearchFilter, pattern: string): Object {
-  let filterByField = '';
-  if (filter === SearchFilter.NAME) {
-    filterByField = 'name';
-  } else if (filter === SearchFilter.OWNER) {
-    filterByField = 'owner.id';
-  } else if (filter === SearchFilter.ENDPOINT) {
-    filterByField = 'endpoint';
-  } else {
-    throw new Error(`Invalid search filter: ${filter}`);
-  }
-
   return {
     query: {
-      [filterByField]: {
+      [filter]: {
         like: pattern,
       },
     },
