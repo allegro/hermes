@@ -63,12 +63,14 @@
           <v-select
             v-model="selectedSearchCollection"
             :items="searchCollections"
+            variant="outlined"
           ></v-select>
         </v-col>
         <v-col md="2" cols="12">
           <v-select
             v-model="selectedSearchFilter"
             :items="searchFilters"
+            variant="outlined"
           ></v-select>
         </v-col>
         <v-col md="7" cols="12" class="pr-0">
@@ -76,6 +78,7 @@
             v-model="searchPattern"
             label="regex pattern"
             required
+            variant="outlined"
           ></v-text-field>
         </v-col>
         <v-col md="1" cols="12" class="text-right">
