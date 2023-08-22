@@ -20,6 +20,7 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { Owner } from '@/api/owner';
+import type { Roles } from '@/api/roles';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
@@ -320,4 +321,26 @@ export const fetchTokenHandler = ({
 }) =>
   rest.post(`http://localhost:8080/token`, (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(accessToken));
+  });
+
+export const fetchRolesHandler = ({
+  roles,
+  path,
+}: {
+  roles: Roles[];
+  path: string;
+}) =>
+  rest.get(path, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(roles));
+  });
+
+export const fetchRolesErrorHandler = ({
+  errorCode = 500,
+  path,
+}: {
+  errorCode?: number;
+  path: string;
+}) =>
+  rest.get(path, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
   });

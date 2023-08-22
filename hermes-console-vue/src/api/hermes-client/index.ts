@@ -14,6 +14,7 @@ import type {
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
+import type { Roles } from '@/api/roles';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
@@ -120,4 +121,8 @@ export function fetchToken(
       'Content-Type': 'application/x-www-form-urlencoded',
     } as AxiosRequestConfig,
   );
+}
+
+export function fetchRoles(path: string): ResponsePromise<Roles[]> {
+  return axios.get<Roles[]>(path);
 }

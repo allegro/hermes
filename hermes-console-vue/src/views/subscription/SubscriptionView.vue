@@ -1,5 +1,7 @@
 <script setup lang="ts">
+  import { isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
   import { useI18n } from 'vue-i18n';
+  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useRoute } from 'vue-router';
   import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -34,7 +36,7 @@
     loading,
   } = useSubscription(topicId, subscriptionId);
 
-  const authorized = true;
+  const roles = useRoles(topicId, subscriptionId);
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
@@ -83,7 +85,7 @@
           <subscription-metadata
             v-if="subscription"
             :subscription="subscription"
-            :authorized="authorized"
+            :roles="roles?.roles.value"
           />
         </v-col>
       </v-row>
@@ -95,7 +97,9 @@
             :subscription-metrics="subscriptionMetrics"
           />
           <service-response-metrics />
-          <manage-messages-card />
+          <manage-messages-card
+            v-if="isSubscriptionOwnerOrAdmin(roles?.roles.value)"
+          />
         </v-col>
         <v-col md="6">
           <properties-card v-if="subscription" :subscription="subscription" />
@@ -105,12 +109,17 @@
       <v-row dense>
         <v-col md="6">
           <last-undelivered-message
-            v-if="subscriptionLastUndeliveredMessage"
+            v-if="
+              subscriptionLastUndeliveredMessage &&
+              isSubscriptionOwnerOrAdmin(roles?.roles.value)
+            "
             :last-undelivered="subscriptionLastUndeliveredMessage"
           />
         </v-col>
         <v-col md="6">
-          <show-event-trace /><!-- v-if="subscription?.trackingEnabled" -->
+          <show-event-trace
+            v-if="isSubscriptionOwnerOrAdmin(roles?.roles.value)"
+          /><!-- v-if="subscription?.trackingEnabled" -->
         </v-col>
       </v-row>
 
@@ -127,7 +136,8 @@
           <undelivered-messages-card
             v-if="
               subscriptionUndeliveredMessages &&
-              subscriptionUndeliveredMessages?.length > 0
+              subscriptionUndeliveredMessages?.length > 0 &&
+              isSubscriptionOwnerOrAdmin(roles?.roles.value)
             "
             :undelivered-messages="subscriptionUndeliveredMessages"
           />

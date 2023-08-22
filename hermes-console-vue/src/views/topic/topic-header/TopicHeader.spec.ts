@@ -5,12 +5,18 @@ import {
 import { createTestingPinia } from '@pinia/testing';
 import { describe, expect } from 'vitest';
 import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyRoles } from '@/dummy/roles';
 import { dummyTopic, dummyTopicOwner } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
+import { Roles } from '@/api/roles';
 import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
 
 describe('TopicHeader', () => {
-  const props = { topic: dummyTopic, owner: dummyTopicOwner };
+  const props = {
+    topic: dummyTopic,
+    owner: dummyTopicOwner,
+    roles: dummyRoles,
+  };
 
   it('should render basic topic information', () => {
     // when
@@ -27,6 +33,50 @@ describe('TopicHeader', () => {
     ).toBeVisible();
     expect(getByText(dummyTopic.description)).toBeVisible();
   });
+
+  it.each([
+    { roles: [], disabled: true },
+    { roles: [Roles.ANY], disabled: true },
+    { roles: [Roles.ADMIN], disabled: false },
+    { roles: [Roles.TOPIC_OWNER], disabled: false },
+  ])(
+    'should disable or enable buttons based on user authorization',
+    ({ roles, disabled }) => {
+      // when
+      const testProps = {
+        topic: dummyTopic,
+        owner: dummyTopicOwner,
+        roles: roles,
+      };
+      const { getByText } = render(TopicHeader, {
+        props: testProps,
+        testPinia: createTestingPiniaWithState(),
+      });
+
+      // then
+      if (disabled) {
+        expect(
+          getByText('topicView.header.actions.edit').closest('button'),
+        ).toBeDisabled();
+        expect(
+          getByText('topicView.header.actions.clone').closest('button'),
+        ).toBeDisabled();
+        expect(
+          getByText('topicView.header.actions.remove').closest('button'),
+        ).toBeDisabled();
+      } else {
+        expect(
+          getByText('topicView.header.actions.edit').closest('button'),
+        ).toBeEnabled();
+        expect(
+          getByText('topicView.header.actions.clone').closest('button'),
+        ).toBeEnabled();
+        expect(
+          getByText('topicView.header.actions.remove').closest('button'),
+        ).toBeEnabled();
+      }
+    },
+  );
 
   it.each([{ readOnlyModeEnabled: false }, { readOnlyModeEnabled: true }])(
     'should disable or enable edit button based on read only mode',
@@ -109,6 +159,7 @@ describe('TopicHeader', () => {
           },
         },
         owner: dummyTopicOwner,
+        roles: dummyRoles,
       };
       const { queryByText } = render(TopicHeader, {
         props,

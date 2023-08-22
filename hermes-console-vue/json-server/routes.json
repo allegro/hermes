@@ -15,5 +15,8 @@
   "/topics/:topicName/subscriptions/:id/undelivered": "/subscriptionUndeliveredMessages",
   "/topics/:topicName/subscriptions/:id/undelivered/last": "/subscriptionUndeliveredMessages/:id",
   "/workload-constraints": "/constraints",
-  "/stats": "/stats"
+  "/stats": "/stats",
+  "/roles": "/roles",
+  "/roles/topics/:id": "/roles",
+  "/roles/topics/:topicName/subscriptions/:id": "/roles"
 }
