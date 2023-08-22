@@ -64,7 +64,7 @@ const router = createRouter({
       component: () => import('@/views/redirect/RedirectView.vue'),
     },
     {
-      path: '/search/',
+      path: '/ui/search',
       name: 'search',
       component: () => import('@/views/search/SearchView.vue'),
     },

@@ -14,7 +14,7 @@
   function onSubscriptionClick(subscription: Subscription) {
     const group = groupName(subscription.topicName);
     router.push({
-      path: `/groups/${group}/topics/${subscription.topicName}/subscriptions/${subscription.name}`,
+      path: `/ui/groups/${group}/topics/${subscription.topicName}/subscriptions/${subscription.name}`,
     });
   }
 </script>

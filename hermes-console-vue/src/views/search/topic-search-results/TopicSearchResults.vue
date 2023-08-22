@@ -13,7 +13,7 @@
 
   function onTopicClick(topic: Topic) {
     const group = groupName(topic.name);
-    router.push({ path: `/groups/${group}/topics/${topic.name}` });
+    router.push({ path: `/ui/groups/${group}/topics/${topic.name}` });
   }
 </script>
 
