@@ -37,7 +37,6 @@ export function useSearch(): UseSearch {
       const query = buildQuery(filter, pattern);
       topics.value = (await queryTopics(query)).data;
     } catch (e) {
-      console.error(e);
       error.value.fetchError = e as Error;
     } finally {
       loading.value = false;
@@ -53,7 +52,6 @@ export function useSearch(): UseSearch {
       const query = buildQuery(filter, pattern);
       subscriptions.value = (await querySubscriptions(query)).data;
     } catch (e) {
-      console.error(e);
       error.value.fetchError = e as Error;
     } finally {
       loading.value = false;
