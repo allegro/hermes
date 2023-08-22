@@ -35,6 +35,15 @@ describe('SubscriptionSearchResults', () => {
       expect(
         within(rows[index + 1]).getByText(subscription.name),
       ).toBeVisible();
+      expect(
+        within(rows[index + 1]).getByText(subscription.endpoint),
+      ).toBeVisible();
+      expect(
+        within(rows[index + 1]).getByText(subscription.owner.id),
+      ).toBeVisible();
+      expect(
+        within(rows[index + 1]).getByText(subscription.state),
+      ).toBeVisible();
     });
   });
 });
