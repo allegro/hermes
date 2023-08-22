@@ -448,6 +448,36 @@ const en_US = {
       timestamp: 'Timestamp',
     },
   },
+  search: {
+    collection: {
+      topics: 'topics',
+      subscriptions: 'subscriptions',
+    },
+    filter: {
+      name: 'by name',
+      endpoint: 'by endpoint',
+      owner: 'by owner',
+    },
+    pattern: 'regex pattern',
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch query results',
+    },
+    results: {
+      topic: {
+        name: 'name',
+        owner: 'owner',
+        noTopics: 'No topics found',
+      },
+      subscription: {
+        name: 'name',
+        status: 'status',
+        owner: 'owner',
+        endpoint: 'endpoint',
+        noSubscriptions: 'No subscriptions found',
+      },
+    },
+  },
   subscriptionForm,
 };
 

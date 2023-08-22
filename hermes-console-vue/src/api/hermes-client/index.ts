@@ -12,6 +12,7 @@ import type {
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type {
   MessagePreview,
+  Topic,
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';
@@ -155,4 +156,18 @@ export function fetchToken(
       'Content-Type': 'application/x-www-form-urlencoded',
     } as AxiosRequestConfig,
   );
+}
+
+export function queryTopics(queryJSON: object): ResponsePromise<Topic[]> {
+  return axios.post<Topic[]>(`/query/topics`, queryJSON, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export function querySubscriptions(
+  queryJSON: object,
+): ResponsePromise<Subscription[]> {
+  return axios.post<Subscription[]>(`/query/subscriptions`, queryJSON, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
