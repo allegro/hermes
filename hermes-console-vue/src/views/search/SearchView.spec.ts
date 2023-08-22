@@ -12,8 +12,8 @@ vi.mock('@/composables/search/useSearch');
 const useSearchStub: UseSearch = {
   topics: ref(),
   subscriptions: ref(),
-  querySubscriptionsFn: () => {},
-  queryTopicsFn: () => {},
+  querySubscriptions: () => {},
+  queryTopics: () => {},
   error: ref({
     fetchError: null,
   }),

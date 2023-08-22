@@ -27,8 +27,8 @@
   const {
     topics,
     subscriptions,
-    queryTopicsFn,
-    querySubscriptionsFn,
+    queryTopics,
+    querySubscriptions,
     loading,
     error,
   } = useSearch();
@@ -36,10 +36,10 @@
   function search() {
     if (selectedSearchCollection.value == 'topics') {
       subscriptions.value = undefined;
-      queryTopicsFn(selectedSearchFilter.value, searchPattern.value);
+      queryTopics(selectedSearchFilter.value, searchPattern.value);
     } else if (selectedSearchCollection.value == 'subscriptions') {
       topics.value = undefined;
-      querySubscriptionsFn(selectedSearchFilter.value, searchPattern.value);
+      querySubscriptions(selectedSearchFilter.value, searchPattern.value);
     } else {
       throw Error(`Unknown search filter: ${selectedSearchCollection.value}`);
     }

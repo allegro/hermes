@@ -26,9 +26,9 @@ describe('useSearch', () => {
     server.listen();
 
     // when
-    const { topics, queryTopicsFn, loading, error } = useSearch();
+    const { topics, queryTopics, loading, error } = useSearch();
 
-    queryTopicsFn(SearchFilter.NAME, 'query');
+    queryTopics(SearchFilter.NAME, 'query');
 
     // then
     expect(loading.value).toBeTruthy();
@@ -50,9 +50,9 @@ describe('useSearch', () => {
     server.listen();
 
     // when
-    const { subscriptions, querySubscriptionsFn, loading, error } = useSearch();
+    const { subscriptions, querySubscriptions, loading, error } = useSearch();
 
-    querySubscriptionsFn(SearchFilter.NAME, 'query');
+    querySubscriptions(SearchFilter.NAME, 'query');
 
     // then
     expect(loading.value).toBeTruthy();
@@ -73,8 +73,8 @@ describe('useSearch', () => {
     server.listen();
 
     // when
-    const { queryTopicsFn, loading, error } = useSearch();
-    queryTopicsFn(SearchFilter.ENDPOINT, 'query');
+    const { queryTopics, loading, error } = useSearch();
+    queryTopics(SearchFilter.ENDPOINT, 'query');
 
     // then
     await waitFor(() => {
@@ -89,8 +89,8 @@ describe('useSearch', () => {
     server.listen();
 
     // when
-    const { querySubscriptionsFn, loading, error } = useSearch();
-    querySubscriptionsFn(SearchFilter.ENDPOINT, 'query');
+    const { querySubscriptions, loading, error } = useSearch();
+    querySubscriptions(SearchFilter.ENDPOINT, 'query');
 
     // then
     await waitFor(() => {

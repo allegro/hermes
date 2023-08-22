@@ -7,8 +7,8 @@ import type { Topic } from '@/api/topic';
 export interface UseSearch {
   topics: Ref<Topic[] | undefined>;
   subscriptions: Ref<Subscription[] | undefined>;
-  queryTopicsFn: (filter: SearchFilter, pattern: string) => void;
-  querySubscriptionsFn: (filter: SearchFilter, pattern: string) => void;
+  queryTopics: (filter: SearchFilter, pattern: string) => void;
+  querySubscriptions: (filter: SearchFilter, pattern: string) => void;
   loading: Ref<boolean>;
   error: Ref<UseSearchErrors>;
 }
@@ -31,7 +31,7 @@ export function useSearch(): UseSearch {
   });
   const loading = ref(false);
 
-  const queryTopicsFn = async (filter: SearchFilter, pattern: string) => {
+  const doQueryTopics = async (filter: SearchFilter, pattern: string) => {
     try {
       loading.value = true;
       const query = buildQuery(filter, pattern);
@@ -43,7 +43,7 @@ export function useSearch(): UseSearch {
     }
   };
 
-  const querySubscriptionsFn = async (
+  const doQuerySubscriptions = async (
     filter: SearchFilter,
     pattern: string,
   ) => {
@@ -61,8 +61,8 @@ export function useSearch(): UseSearch {
   return {
     topics,
     subscriptions,
-    queryTopicsFn,
-    querySubscriptionsFn,
+    queryTopics: doQueryTopics,
+    querySubscriptions: doQuerySubscriptions,
     loading,
     error,
   };
