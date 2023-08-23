@@ -16,7 +16,6 @@
   import ServiceResponseMetrics from '@/views/subscription/service-response-metrics/ServiceResponseMetrics.vue';
   import ShowEventTrace from '@/views/subscription/show-event-trace/ShowEventTrace.vue';
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
-  import SubscriptionOffsets from '@/views/subscription/subscription-offsets/SubscriptionOffsets.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
   const route = useRoute();
@@ -119,15 +118,6 @@
           <show-event-trace
             v-if="isSubscriptionOwnerOrAdmin(roles)"
           /><!-- v-if="subscription?.trackingEnabled" -->
-        </v-col>
-      </v-row>
-
-      <v-row dense>
-        <v-col md="6">
-          <subscription-offsets
-            v-if="subscription"
-            :subscription="subscription"
-          ></subscription-offsets>
         </v-col>
       </v-row>
 

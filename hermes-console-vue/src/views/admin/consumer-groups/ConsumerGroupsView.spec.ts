@@ -11,6 +11,7 @@ vi.mock('@/composables/consumer-groups/use-consumer-groups/useConsumerGroups');
 
 const useConsumerGroupsStub: UseConsumerGroups = {
   consumerGroups: ref(dummyConsumerGroups),
+  moveOffsets: () => {},
   loading: ref(false),
   error: ref({
     fetchConsumerGroups: null,

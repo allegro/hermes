@@ -1,10 +1,14 @@
-import { fetchConsumerGroups as getConsumerGroups } from '@/api/hermes-client';
+import {
+  fetchConsumerGroups as getConsumerGroups,
+  moveSubscriptionOffsets,
+} from '@/api/hermes-client';
 import { ref } from 'vue';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { Ref } from 'vue';
 
 export interface UseConsumerGroups {
   consumerGroups: Ref<ConsumerGroup[] | undefined>;
+  moveOffsets: (topicName: string, subscriptionName: string) => void
   loading: Ref<boolean>;
   error: Ref<UseConsumerGroupsErrors>;
 }
@@ -36,10 +40,15 @@ export function useConsumerGroups(
     }
   };
 
+  const moveOffsets = async (topicName: string, subscriptionName: string) => {
+    await moveSubscriptionOffsets(topicName, subscriptionName);
+  };
+
   fetchConsumerGroups();
 
   return {
     consumerGroups,
+    moveOffsets,
     loading,
     error,
   };
