@@ -8,7 +8,7 @@ import {
 } from '@/dummy/subscription';
 import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import { waitFor } from '@testing-library/vue';
-import axios from 'axios';
+import axios from '@/utils/axios/axios-instance';
 import type { Mocked } from 'vitest';
 
 vitest.mock('axios');

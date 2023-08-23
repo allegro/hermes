@@ -1,4 +1,5 @@
 import {
+  removeTopic as deleteTopic,
   fetchOfflineClientsSource as getOfflineClientsSource,
   fetchTopic as getTopic,
   fetchTopicMessagesPreview as getTopicMessagesPreview,
@@ -29,6 +30,7 @@ export interface UseTopic {
   error: Ref<UseTopicErrors>;
   fetchTopic: () => Promise<void>;
   fetchOfflineClientsSource: () => Promise<void>;
+  removeTopic: () => Promise<boolean>;
 }
 
 export interface UseTopicErrors {
@@ -142,6 +144,17 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const removeTopic = async (): Promise<boolean> => {
+    try {
+      await deleteTopic(topicName);
+      // notification success
+      return true;
+    } catch (e) {
+      // notification error
+      return false;
+    }
+  };
+
   return {
     topic,
     owner,
@@ -153,5 +166,6 @@ export function useTopic(topicName: string): UseTopic {
     error,
     fetchTopic,
     fetchOfflineClientsSource,
+    removeTopic,
   };
 }

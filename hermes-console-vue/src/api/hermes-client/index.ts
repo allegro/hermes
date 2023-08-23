@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '@/utils/axios/axios-instance';
 import qs from 'query-string';
 import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { AppConfiguration } from '@/api/app-configuration';
@@ -14,7 +14,7 @@ import type {
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
-import type { ResponsePromise } from '@/utils/axios-utils';
+import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
@@ -135,4 +135,8 @@ export function querySubscriptions(
   return axios.post<Subscription[]>(`/query/subscriptions`, queryJSON, {
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+export function removeTopic(topic: String): ResponsePromise<TopicMetrics> {
+  return axios.delete(`/topics/${topic}`);
 }

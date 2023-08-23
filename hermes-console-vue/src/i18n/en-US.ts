@@ -13,6 +13,11 @@ const en_US = {
     signIn: 'Sign in',
     logout: 'Logout',
   },
+  confirmationDialog: {
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    confirmText: "Type 'prod' to confirm action.",
+  },
   consistency: {
     connectionError: {
       title: 'Connection error',
@@ -173,6 +178,12 @@ const en_US = {
     },
   },
   topicView: {
+    confirmationDialog: {
+      remove: {
+        title: 'Confirm topic deletion',
+        text: 'Are you sure you want to delete topic {topicName}',
+      },
+    },
     header: {
       topic: 'TOPIC',
       owner: 'OWNER:',

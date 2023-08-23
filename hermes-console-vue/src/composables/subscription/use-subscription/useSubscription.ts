@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import axios from 'axios';
+import axios from '@/utils/axios/axios-instance';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Subscription } from '@/api/subscription';
 import type { SubscriptionHealth } from '@/api/subscription-health';
