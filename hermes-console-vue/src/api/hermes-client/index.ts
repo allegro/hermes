@@ -166,10 +166,5 @@ export function moveSubscriptionOffsets(
 ): ResponsePromise<null> {
   return axios.post<null>(
     `/topics/${topicName}/subscriptions/${subscription}/moveOffsetsToTheEnd`,
-    {
-      validateStatus: (status: number) => {
-        return status > 200 && status < 400;
-      },
-    },
   );
 }
