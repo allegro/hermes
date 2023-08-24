@@ -57,7 +57,7 @@
   if (configStore.appConfig?.topic.offlineClientsEnabled) {
     fetchOfflineClientsSource();
   }
-  const roles = useRoles(topicName, null);
+  const roles = useRoles(topicName, null)?.roles.value;
 </script>
 
 <template>
@@ -78,7 +78,7 @@
       v-if="topic && owner"
       :topic="topic"
       :owner="owner"
-      :roles="roles?.roles.value"
+      :roles="roles"
     />
 
     <div class="topic-view__upper_panel">
@@ -92,7 +92,7 @@
       v-if="
         messages &&
         configStore.appConfig?.topic.messagePreviewEnabled &&
-        isTopicOwnerOrAdmin(roles?.roles.value)
+        isTopicOwnerOrAdmin(roles)
       "
       :messages="messages"
     />

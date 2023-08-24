@@ -2,13 +2,13 @@
   import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import type { Owner } from '@/api/owner';
-  import type { Roles } from '@/api/roles';
+  import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';
 
   const props = defineProps<{
     topic: TopicWithSchema;
     owner: Owner;
-    roles: Roles[] | undefined;
+    roles: Role[] | undefined;
   }>();
 
   const configStore = useAppConfigStore();

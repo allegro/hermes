@@ -2,7 +2,7 @@ import { beforeEach } from 'vitest';
 import { dummySubscription } from '@/dummy/subscription';
 import { expect } from 'vitest';
 import { render } from '@/utils/test-utils';
-import { Roles } from '@/api/roles';
+import { Role } from '@/api/role';
 import { State } from '@/api/subscription';
 import router from '@/router';
 import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
@@ -25,7 +25,7 @@ describe('SubscriptionMetadata', () => {
         endpoint: 'service://subscription-name/dummy',
         description: 'some description',
       },
-      roles: [Roles.SUBSCRIPTION_OWNER],
+      roles: [Role.SUBSCRIPTION_OWNER],
     };
 
     // when
@@ -50,7 +50,7 @@ describe('SubscriptionMetadata', () => {
           source: 'some source',
         },
       },
-      roles: [Roles.SUBSCRIPTION_OWNER],
+      roles: [Role.SUBSCRIPTION_OWNER],
     };
 
     // when
@@ -72,7 +72,7 @@ describe('SubscriptionMetadata', () => {
           source: 'some source',
         },
       },
-      roles: [Roles.ADMIN],
+      roles: [Role.ADMIN],
     };
 
     // when
@@ -152,7 +152,7 @@ describe('SubscriptionMetadata', () => {
         ...dummySubscription,
         state: State.SUSPENDED,
       },
-      roles: [Roles.SUBSCRIPTION_OWNER],
+      roles: [Role.SUBSCRIPTION_OWNER],
     };
 
     // when
@@ -174,7 +174,7 @@ describe('SubscriptionMetadata', () => {
         ...dummySubscription,
         state: State.ACTIVE,
       },
-      roles: [Roles.SUBSCRIPTION_OWNER],
+      roles: [Role.SUBSCRIPTION_OWNER],
     };
 
     // when

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { Roles } from '@/api/roles';
+  import { isAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useTheme } from 'vuetify';
@@ -12,7 +12,7 @@
 
   const theme = useTheme();
   const configStore = useAppConfigStore();
-  const roles = useRoles(null, null);
+  const roles = useRoles(null, null)?.roles.value;
 </script>
 
 <template>
@@ -77,7 +77,7 @@
       </v-col>
     </v-row>
 
-    <v-row justify="center" v-if="roles?.roles.value?.includes(Roles.ADMIN)">
+    <v-row justify="center" v-if="isAdmin(roles)">
       <v-col cols="6">
         <v-btn color="secondary" block>
           <v-icon left icon="mdi-security"></v-icon>

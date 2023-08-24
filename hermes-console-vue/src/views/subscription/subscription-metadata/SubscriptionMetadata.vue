@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
-  import { Roles } from '@/api/roles';
+  import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
   import { useRoute } from 'vue-router';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
@@ -8,7 +8,7 @@
 
   const props = defineProps<{
     subscription: Subscription;
-    roles: Roles[] | undefined;
+    roles: Role[] | undefined;
   }>();
 
   const route = useRoute();

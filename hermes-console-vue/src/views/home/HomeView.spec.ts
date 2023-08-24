@@ -3,7 +3,7 @@ import { dummyRoles } from '@/dummy/roles';
 import { expect } from 'vitest';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
-import { Roles } from '@/api/roles';
+import { Role } from '@/api/role';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import HomeView from '@/views/home/HomeView.vue';
 import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
@@ -53,7 +53,7 @@ describe('HomeView', () => {
     // when
     vi.mocked(useRoles).mockReturnValueOnce({
       ...useRolesStub,
-      roles: ref([Roles.ADMIN]),
+      roles: ref([Role.ADMIN]),
     });
     const { getByText } = render(HomeView, {
       testPinia: createTestingPiniaWithState(),

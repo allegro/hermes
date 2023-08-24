@@ -36,7 +36,7 @@
     loading,
   } = useSubscription(topicId, subscriptionId);
 
-  const roles = useRoles(topicId, subscriptionId);
+  const roles = useRoles(topicId, subscriptionId)?.roles.value;
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
@@ -85,7 +85,7 @@
           <subscription-metadata
             v-if="subscription"
             :subscription="subscription"
-            :roles="roles?.roles.value"
+            :roles="roles"
           />
         </v-col>
       </v-row>
@@ -97,9 +97,7 @@
             :subscription-metrics="subscriptionMetrics"
           />
           <service-response-metrics />
-          <manage-messages-card
-            v-if="isSubscriptionOwnerOrAdmin(roles?.roles.value)"
-          />
+          <manage-messages-card v-if="isSubscriptionOwnerOrAdmin(roles)" />
         </v-col>
         <v-col md="6">
           <properties-card v-if="subscription" :subscription="subscription" />
@@ -111,14 +109,14 @@
           <last-undelivered-message
             v-if="
               subscriptionLastUndeliveredMessage &&
-              isSubscriptionOwnerOrAdmin(roles?.roles.value)
+              isSubscriptionOwnerOrAdmin(roles)
             "
             :last-undelivered="subscriptionLastUndeliveredMessage"
           />
         </v-col>
         <v-col md="6">
           <show-event-trace
-            v-if="isSubscriptionOwnerOrAdmin(roles?.roles.value)"
+            v-if="isSubscriptionOwnerOrAdmin(roles)"
           /><!-- v-if="subscription?.trackingEnabled" -->
         </v-col>
       </v-row>
@@ -137,7 +135,7 @@
             v-if="
               subscriptionUndeliveredMessages &&
               subscriptionUndeliveredMessages?.length > 0 &&
-              isSubscriptionOwnerOrAdmin(roles?.roles.value)
+              isSubscriptionOwnerOrAdmin(roles)
             "
             :undelivered-messages="subscriptionUndeliveredMessages"
           />

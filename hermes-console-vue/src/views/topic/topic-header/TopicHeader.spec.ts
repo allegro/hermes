@@ -8,7 +8,7 @@ import { dummyAppConfig } from '@/dummy/app-config';
 import { dummyRoles } from '@/dummy/roles';
 import { dummyTopic, dummyTopicOwner } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
-import { Roles } from '@/api/roles';
+import { Role } from '@/api/role';
 import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
 
 describe('TopicHeader', () => {
@@ -36,9 +36,9 @@ describe('TopicHeader', () => {
 
   it.each([
     { roles: [], disabled: true },
-    { roles: [Roles.ANY], disabled: true },
-    { roles: [Roles.ADMIN], disabled: false },
-    { roles: [Roles.TOPIC_OWNER], disabled: false },
+    { roles: [Role.ANY], disabled: true },
+    { roles: [Role.ADMIN], disabled: false },
+    { roles: [Role.TOPIC_OWNER], disabled: false },
   ])(
     'should disable or enable buttons based on user authorization',
     ({ roles, disabled }) => {

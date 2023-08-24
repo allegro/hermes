@@ -15,7 +15,7 @@ import type {
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
-import type { Roles } from '@/api/roles';
+import type { Role } from '@/api/role';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
@@ -138,6 +138,6 @@ export function querySubscriptions(
   });
 }
 
-export function fetchRoles(path: string): ResponsePromise<Roles[]> {
-  return axios.get<Roles[]>(path);
+export function fetchRoles(path: string): ResponsePromise<Role[]> {
+  return axios.get<Role[]>(path);
 }

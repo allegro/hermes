@@ -1,10 +1,10 @@
 import { fetchRoles as getRoles } from '@/api/hermes-client';
 import { ref } from 'vue';
 import type { Ref } from 'vue';
-import type { Roles } from '@/api/roles';
+import type { Role } from '@/api/role';
 
 export interface UseRoles {
-  roles: Ref<Roles[] | undefined>;
+  roles: Ref<Role[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseRolesErrors>;
 }
@@ -17,7 +17,7 @@ export function useRoles(
   topicName: string | null,
   subscriptionName: string | null,
 ): UseRoles {
-  const roles = ref<Roles[]>();
+  const roles = ref<Role[]>();
   const error = ref<UseRolesErrors>({
     fetchRoles: null,
   });
@@ -30,6 +30,7 @@ export function useRoles(
       ).data;
     } catch (e) {
       error.value.fetchRoles = e as Error;
+      // TODO should send notification
     } finally {
       loading.value = false;
     }

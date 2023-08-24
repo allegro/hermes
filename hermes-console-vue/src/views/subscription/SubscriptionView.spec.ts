@@ -8,7 +8,7 @@ import {
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
-import { Roles } from '@/api/roles';
+import { Role } from '@/api/role';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import router from '@/router';
@@ -30,7 +30,7 @@ const useSubscriptionStub: ReturnType<typeof useSubscription> = {
 vi.mock('@/composables/roles/use-roles/useRoles');
 
 const useRolesStub: UseRoles = {
-  roles: ref([Roles.SUBSCRIPTION_OWNER]),
+  roles: ref([Role.SUBSCRIPTION_OWNER]),
   loading: ref(false),
   error: ref({
     fetchRoles: null,

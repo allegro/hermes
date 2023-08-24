@@ -1,3 +1,3 @@
-import { Roles } from '@/api/roles';
+import { Role } from '@/api/role';
 
-export const dummyRoles = [Roles.ANY, Roles.TOPIC_OWNER];
+export const dummyRoles = [Role.ANY, Role.TOPIC_OWNER];

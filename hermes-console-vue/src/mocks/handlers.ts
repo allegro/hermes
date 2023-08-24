@@ -21,7 +21,7 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { Owner } from '@/api/owner';
-import type { Roles } from '@/api/roles';
+import type { Role } from '@/api/role';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
@@ -364,7 +364,7 @@ export const fetchRolesHandler = ({
   roles,
   path,
 }: {
-  roles: Roles[];
+  roles: Role[];
   path: string;
 }) =>
   rest.get(path, (req, res, ctx) => {

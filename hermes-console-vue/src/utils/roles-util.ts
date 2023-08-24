@@ -1,25 +1,23 @@
-import { Roles } from '@/api/roles';
+import { Role } from '@/api/role';
 
-export function isAdmin(roles: Roles[] | undefined): boolean {
+export function isAdmin(roles: Role[] | undefined): boolean {
   if (roles) {
-    return roles.includes(Roles.ADMIN);
+    return roles.includes(Role.ADMIN);
   }
   return false;
 }
 
-export function isTopicOwnerOrAdmin(roles: Roles[] | undefined): boolean {
+export function isTopicOwnerOrAdmin(roles: Role[] | undefined): boolean {
   if (roles) {
-    return roles.includes(Roles.ADMIN) || roles.includes(Roles.TOPIC_OWNER);
+    return roles.includes(Role.ADMIN) || roles.includes(Role.TOPIC_OWNER);
   }
   return false;
 }
 
-export function isSubscriptionOwnerOrAdmin(
-  roles: Roles[] | undefined,
-): boolean {
+export function isSubscriptionOwnerOrAdmin(roles: Role[] | undefined): boolean {
   if (roles) {
     return (
-      roles.includes(Roles.ADMIN) || roles.includes(Roles.SUBSCRIPTION_OWNER)
+      roles.includes(Role.ADMIN) || roles.includes(Role.SUBSCRIPTION_OWNER)
     );
   }
   return false;
