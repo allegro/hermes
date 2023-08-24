@@ -148,6 +148,7 @@ function expectErrors(
   errors: UseSubscriptionsErrors,
   {
     fetchSubscription = false,
+    fetchOwner = false,
     fetchSubscriptionMetrics = false,
     fetchSubscriptionHealth = false,
     fetchSubscriptionUndeliveredMessages = false,
@@ -156,6 +157,8 @@ function expectErrors(
 ) {
   (fetchSubscription && expect(errors.fetchSubscription).not.toBeNull()) ||
     expect(errors.fetchSubscription).toBeNull();
+  (fetchOwner && expect(errors.fetchOwner).not.toBeNull()) ||
+    expect(errors.fetchOwner).toBeNull();
   (fetchSubscriptionMetrics &&
     expect(errors.fetchSubscriptionMetrics).not.toBeNull()) ||
     expect(errors.fetchSubscriptionMetrics).toBeNull();

@@ -28,6 +28,7 @@
 
   const {
     subscription,
+    owner,
     subscriptionMetrics,
     subscriptionHealth,
     subscriptionUndeliveredMessages,
@@ -83,8 +84,9 @@
             :problems="subscriptionHealth?.problems"
           />
           <subscription-metadata
-            v-if="subscription"
+            v-if="subscription && owner"
             :subscription="subscription"
+            :owner="owner"
             :roles="roles"
           />
         </v-col>

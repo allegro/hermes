@@ -1,5 +1,6 @@
 import { beforeEach } from 'vitest';
 import { computed, ref } from 'vue';
+import { dummyOwner } from '@/dummy/topic';
 import {
   dummySubscription,
   dummySubscriptionHealth,
@@ -19,12 +20,14 @@ vi.mock('@/composables/subscription/use-subscription/useSubscription');
 
 const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscription: ref(dummySubscription),
+  owner: ref(dummyOwner),
   subscriptionMetrics: ref(dummySubscriptionMetrics),
   subscriptionHealth: ref(dummySubscriptionHealth),
   subscriptionUndeliveredMessages: ref(dummyUndeliveredMessages),
   subscriptionLastUndeliveredMessage: ref(dummyUndeliveredMessage),
   error: ref({
     fetchSubscription: null,
+    fetchOwner: null,
     fetchSubscriptionMetrics: null,
     fetchSubscriptionHealth: null,
     fetchSubscriptionUndeliveredMessages: null,
@@ -162,6 +165,7 @@ describe('SubscriptionView', () => {
       loading: computed(() => false),
       error: ref({
         fetchSubscription: new Error('Sample error'),
+        fetchOwner: null,
         fetchSubscriptionMetrics: null,
         fetchSubscriptionHealth: null,
         fetchSubscriptionUndeliveredMessages: null,

@@ -1,19 +1,19 @@
 import { afterEach, describe, expect } from 'vitest';
 import {
+  dummyOwner,
+  dummyTopic,
+  dummyTopicMessagesPreview,
+  dummyTopicMetrics,
+} from '@/dummy/topic';
+import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
 import {
-  dummyTopic,
-  dummyTopicMessagesPreview,
-  dummyTopicMetrics,
-  dummyTopicOwner,
-} from '@/dummy/topic';
-import {
+  fetchOwnerErrorHandler,
   fetchTopicErrorHandler,
   fetchTopicMessagesPreviewErrorHandler,
   fetchTopicMetricsErrorHandler,
-  fetchTopicOwnerErrorHandler,
   fetchTopicSubscriptionDetailsErrorHandler,
   fetchTopicSubscriptionsErrorHandler,
   successfulTopicHandlers,
@@ -26,7 +26,7 @@ describe('useTopic', () => {
   const server = setupServer(...successfulTopicHandlers);
 
   const topicName = dummyTopic.name;
-  const topicOwner = dummyTopicOwner.id;
+  const topicOwner = dummyOwner.id;
 
   afterEach(() => {
     server.resetHandlers();
@@ -61,7 +61,7 @@ describe('useTopic', () => {
     // and: correct data was returned
     await topicPromise;
     expect(topic.value).toEqual(dummyTopic);
-    expect(owner.value).toEqual(dummyTopicOwner);
+    expect(owner.value).toEqual(dummyOwner);
     expect(metrics.value).toEqual(dummyTopicMetrics);
     expect(messages.value).toEqual(dummyTopicMessagesPreview);
     expect(subscriptions.value).toEqual([
@@ -76,7 +76,7 @@ describe('useTopic', () => {
 
   const expectedDataForErrorTest = {
     expectedTopic: dummyTopic,
-    expectedOwner: dummyTopicOwner,
+    expectedOwner: dummyOwner,
     expectedMessages: dummyTopicMessagesPreview,
     expectedMetrics: dummyTopicMetrics,
     expectedSubscriptions: [dummySubscription, secondDummySubscription],
@@ -93,7 +93,7 @@ describe('useTopic', () => {
       expectedSubscriptions: undefined,
     },
     {
-      mockHandler: fetchTopicOwnerErrorHandler({ topicOwner }),
+      mockHandler: fetchOwnerErrorHandler({ owner: topicOwner }),
       expectedErrors: { fetchOwner: true },
       ...expectedDataForErrorTest,
       expectedOwner: undefined,

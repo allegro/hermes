@@ -437,7 +437,7 @@ const en_US = {
     },
     subscriptionMetadata: {
       subscription: 'Subscription',
-      owners: 'Owners',
+      owners: 'OWNER:',
       unauthorizedTooltip: 'Sign in to edit the subscription',
       actions: {
         diagnostics: 'Diagnostics',

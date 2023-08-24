@@ -1,4 +1,10 @@
 import {
+  dummyOwner,
+  dummyTopic,
+  dummyTopicMessagesPreview,
+  dummyTopicMetrics,
+} from '@/dummy/topic';
+import {
   dummySubscription,
   dummySubscriptionHealth,
   dummySubscriptionMetrics,
@@ -7,12 +13,6 @@ import {
   dummyUndeliveredMessages,
   secondDummySubscription,
 } from '@/dummy/subscription';
-import {
-  dummyTopic,
-  dummyTopicMessagesPreview,
-  dummyTopicMetrics,
-  dummyTopicOwner,
-} from '@/dummy/topic';
 import { rest } from 'msw';
 import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { ConstraintsConfig } from '@/api/constraints';
@@ -54,27 +54,23 @@ export const fetchTopicErrorHandler = ({
     return res(ctx.status(errorCode), ctx.json(undefined));
   });
 
-export const fetchTopicOwnerHandler = ({
-  topicOwner = dummyTopicOwner,
-}: {
-  topicOwner?: Owner;
-}) =>
+export const fetchOwnerHandler = ({ owner = dummyOwner }: { owner?: Owner }) =>
   rest.get(
-    `${url}/owners/sources/Service%20Catalog/${topicOwner.id}`,
+    `${url}/owners/sources/Service%20Catalog/${owner.id}`,
     (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(topicOwner));
+      return res(ctx.status(200), ctx.json(owner));
     },
   );
 
-export const fetchTopicOwnerErrorHandler = ({
-  topicOwner,
+export const fetchOwnerErrorHandler = ({
+  owner,
   errorCode = 500,
 }: {
-  topicOwner: string;
+  owner: string;
   errorCode?: number;
 }) =>
   rest.get(
-    `${url}/owners/sources/Service%20Catalog/${topicOwner}`,
+    `${url}/owners/sources/Service%20Catalog/${owner}`,
     (req, res, ctx) => {
       return res(ctx.status(errorCode), ctx.json(undefined));
     },
@@ -176,7 +172,7 @@ export const fetchTopicSubscriptionDetailsErrorHandler = ({
 
 export const successfulTopicHandlers = [
   fetchTopicHandler({}),
-  fetchTopicOwnerHandler({}),
+  fetchOwnerHandler({}),
   fetchTopicMessagesPreviewHandler({ topicName: dummyTopic.name }),
   fetchTopicMetricsHandler({ topicName: dummyTopic.name }),
   fetchTopicSubscriptionsHandler({ topicName: dummyTopic.name }),
@@ -342,6 +338,7 @@ export const fetchSubscriptionLastUndeliveredMessageErrorHandler = ({
 
 export const successfulSubscriptionHandlers = [
   fetchSubscriptionHandler({}),
+  fetchOwnerHandler({}),
   fetchSubscriptionMetricsHandler({}),
   fetchSubscriptionHealthHandler({}),
   fetchSubscriptionUndeliveredMessagesHandler({}),

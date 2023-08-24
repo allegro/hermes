@@ -4,7 +4,7 @@ import {
   fetchTopic as getTopic,
   fetchTopicMessagesPreview as getTopicMessagesPreview,
   fetchTopicMetrics as getTopicMetrics,
-  fetchTopicOwner as getTopicOwner,
+  fetchOwner as getTopicOwner,
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
 } from '@/api/hermes-client';

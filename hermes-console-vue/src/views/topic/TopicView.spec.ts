@@ -4,10 +4,10 @@ import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyAppConfig } from '@/dummy/app-config';
 import {
   dummyOfflineClientsSource,
+  dummyOwner,
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
-  dummyTopicOwner,
 } from '@/dummy/topic';
 import { dummyRoles } from '@/dummy/roles';
 import {
@@ -36,7 +36,7 @@ const useRolesStub: UseRoles = {
 
 const useTopicMock: UseTopic = {
   topic: ref(dummyTopic),
-  owner: ref(dummyTopicOwner),
+  owner: ref(dummyOwner),
   messages: ref(dummyTopicMessagesPreview),
   metrics: ref(dummyTopicMetrics),
   subscriptions: ref([dummySubscription, secondDummySubscription]),

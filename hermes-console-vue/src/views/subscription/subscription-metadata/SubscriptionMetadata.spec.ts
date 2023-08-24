@@ -1,4 +1,5 @@
 import { beforeEach } from 'vitest';
+import { dummyOwner } from '@/dummy/topic';
 import { dummySubscription } from '@/dummy/subscription';
 import { expect } from 'vitest';
 import { render } from '@/utils/test-utils';
@@ -25,6 +26,7 @@ describe('SubscriptionMetadata', () => {
         endpoint: 'service://subscription-name/dummy',
         description: 'some description',
       },
+      owner: dummyOwner,
       roles: [Role.SUBSCRIPTION_OWNER],
     };
 
@@ -50,6 +52,7 @@ describe('SubscriptionMetadata', () => {
           source: 'some source',
         },
       },
+      owner: dummyOwner,
       roles: [Role.SUBSCRIPTION_OWNER],
     };
 
@@ -58,7 +61,7 @@ describe('SubscriptionMetadata', () => {
 
     // then
     expect(
-      getByText('subscription.subscriptionMetadata.owners (some source)'),
+      getByText('subscription.subscriptionMetadata.owners your-super-service'),
     ).toBeVisible();
   });
 
@@ -72,6 +75,7 @@ describe('SubscriptionMetadata', () => {
           source: 'some source',
         },
       },
+      owner: dummyOwner,
       roles: [Role.ADMIN],
     };
 
@@ -94,6 +98,7 @@ describe('SubscriptionMetadata', () => {
           source: 'some source',
         },
       },
+      owner: dummyOwner,
       roles: [],
     };
 
@@ -116,6 +121,7 @@ describe('SubscriptionMetadata', () => {
           source: 'some source',
         },
       },
+      owner: dummyOwner,
       roles: [],
     };
 
@@ -152,6 +158,7 @@ describe('SubscriptionMetadata', () => {
         ...dummySubscription,
         state: State.SUSPENDED,
       },
+      owner: dummyOwner,
       roles: [Role.SUBSCRIPTION_OWNER],
     };
 
@@ -174,6 +181,7 @@ describe('SubscriptionMetadata', () => {
         ...dummySubscription,
         state: State.ACTIVE,
       },
+      owner: dummyOwner,
       roles: [Role.SUBSCRIPTION_OWNER],
     };
 

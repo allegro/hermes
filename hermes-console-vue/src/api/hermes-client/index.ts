@@ -28,7 +28,7 @@ export function fetchTopic(
   return axios.get<TopicWithSchema>(`/topics/${topicName}`);
 }
 
-export function fetchTopicOwner(ownerId: string): ResponsePromise<Owner> {
+export function fetchOwner(ownerId: string): ResponsePromise<Owner> {
   return axios.get<Owner>(`/owners/sources/Service Catalog/${ownerId}`);
 }
 

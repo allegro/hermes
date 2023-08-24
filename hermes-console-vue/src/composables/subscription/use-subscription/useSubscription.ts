@@ -1,4 +1,5 @@
 import {
+  fetchOwner as getOwner,
   fetchSubscription as getSubscription,
   fetchSubscriptionHealth as getSubscriptionHealth,
   fetchSubscriptionLastUndeliveredMessage as getSubscriptionLastUndeliveredMessage,
@@ -6,6 +7,7 @@ import {
   fetchSubscriptionUndeliveredMessages as getSubscriptionUndeliveredMessages,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Subscription } from '@/api/subscription';
@@ -14,6 +16,7 @@ import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
 export interface UseSubscription {
   subscription: Ref<Subscription | undefined>;
+  owner: Ref<Owner | undefined>;
   subscriptionMetrics: Ref<SubscriptionMetrics | undefined>;
   subscriptionHealth: Ref<SubscriptionHealth | undefined>;
   subscriptionUndeliveredMessages: Ref<SentMessageTrace[] | null>;
@@ -24,6 +27,7 @@ export interface UseSubscription {
 
 export interface UseSubscriptionsErrors {
   fetchSubscription: Error | null;
+  fetchOwner: Error | null;
   fetchSubscriptionMetrics: Error | null;
   fetchSubscriptionHealth: Error | null;
   fetchSubscriptionUndeliveredMessages: Error | null;
@@ -35,6 +39,7 @@ export function useSubscription(
   subscriptionName: string,
 ): UseSubscription {
   const subscription = ref<Subscription>();
+  const owner = ref<Owner>();
   const subscriptionMetrics = ref<SubscriptionMetrics>();
   const subscriptionHealth = ref<SubscriptionHealth>();
   const subscriptionUndeliveredMessages = ref<SentMessageTrace[]>([]);
@@ -42,6 +47,7 @@ export function useSubscription(
   const loading = ref(false);
   const error = ref<UseSubscriptionsErrors>({
     fetchSubscription: null,
+    fetchOwner: null,
     fetchSubscriptionMetrics: null,
     fetchSubscriptionHealth: null,
     fetchSubscriptionUndeliveredMessages: null,
@@ -54,6 +60,7 @@ export function useSubscription(
       await fetchSubscriptionInfo();
       if (subscription.value) {
         await Promise.allSettled([
+          fetchSubscriptionOwner(subscription.value.owner.id),
           fetchSubscriptionMetrics(),
           fetchSubscriptionHealth(),
           fetchSubscriptionUndeliveredMessages(),
@@ -72,6 +79,14 @@ export function useSubscription(
       ).data;
     } catch (e) {
       error.value.fetchSubscription = e as Error;
+    }
+  };
+
+  const fetchSubscriptionOwner = async (ownerId: string) => {
+    try {
+      owner.value = (await getOwner(ownerId)).data;
+    } catch (e) {
+      error.value.fetchOwner = e as Error;
     }
   };
 
@@ -119,6 +134,7 @@ export function useSubscription(
 
   return {
     subscription,
+    owner,
     subscriptionMetrics,
     subscriptionHealth,
     subscriptionUndeliveredMessages,
