@@ -483,10 +483,8 @@ const en_US = {
     moveOffsets: {
       tooltip: 'Move subscription offsets to the end',
       button: 'MOVE OFFSETS',
-      success: 'Moved offsets for subscription',
-      failure: 'Failed to move offsets for subscription',
-      status: 'status',
-      response: 'response',
+      success: 'Moved offsets for subscription {subscriptionName}',
+      failure: 'Failed to move offsets for subscription {subscriptionName}',
     },
   },
   search: {

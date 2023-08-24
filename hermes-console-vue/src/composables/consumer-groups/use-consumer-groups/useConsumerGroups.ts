@@ -3,12 +3,15 @@ import {
   moveSubscriptionOffsets,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { Ref } from 'vue';
 
+import i18n from '@/main';
+
 export interface UseConsumerGroups {
   consumerGroups: Ref<ConsumerGroup[] | undefined>;
-  moveOffsets: (topicName: string, subscriptionName: string) => void
+  moveOffsets: (topicName: string, subscriptionName: string) => void;
   loading: Ref<boolean>;
   error: Ref<UseConsumerGroupsErrors>;
 }
@@ -41,7 +44,25 @@ export function useConsumerGroups(
   };
 
   const moveOffsets = async (topicName: string, subscriptionName: string) => {
-    await moveSubscriptionOffsets(topicName, subscriptionName);
+    const notificationsStore = useNotificationsStore();
+    try {
+      await moveSubscriptionOffsets(topicName, subscriptionName);
+      await notificationsStore.dispatchNotification({
+        title: i18n.global.t('subscription.moveOffsets.success', {
+          subscriptionName,
+        }),
+        text: '',
+        type: 'success',
+      });
+    } catch (e) {
+      await notificationsStore.dispatchNotification({
+        title: i18n.global.t('subscription.moveOffsets.failure', {
+          subscriptionName,
+        }),
+        text: (e as Error).message,
+        type: 'error',
+      });
+    }
   };
 
   fetchConsumerGroups();
