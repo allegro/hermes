@@ -52,7 +52,7 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
                             MetricDecimalValue.of(pair.getValue().toString())));
             return metricsContainer;
         } catch (Exception exception) {
-            logger.warn("Unable to read from Prometheus: {}", getRootCauseMessage(exception));
+            logger.warn("Unable to read from Prometheus...", exception);
             return MonitoringMetricsContainer.unavailable(query);
         }
     }

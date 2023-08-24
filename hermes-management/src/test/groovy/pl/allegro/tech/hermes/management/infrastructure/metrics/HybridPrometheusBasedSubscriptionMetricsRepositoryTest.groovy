@@ -22,7 +22,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
 
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
-    private PrometheusMetricsProvider prometheusMetricsProvider = new PrometheusMetricsProvider(client, "hermes_consumers_", "hermes_frontend_");
+    private PrometheusMetricsProvider prometheusMetricsProvider = new PrometheusMetricsProvider(client, "hermes_consumers", "hermes_frontend");
 
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)

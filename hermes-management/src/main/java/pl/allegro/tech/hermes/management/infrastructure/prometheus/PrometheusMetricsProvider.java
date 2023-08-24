@@ -36,8 +36,8 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
     public PrometheusMetricsProvider(PrometheusClient prometheusClient, String consumersMetricsPrefix,
                                      String frontendMetricsPrefix) {
         this.prometheusClient = prometheusClient;
-        this.consumersMetricsPrefix = consumersMetricsPrefix;
-        this.frontendMetricsPrefix = frontendMetricsPrefix;
+        this.consumersMetricsPrefix = consumersMetricsPrefix.isEmpty() ? "" : consumersMetricsPrefix + "_";
+        this.frontendMetricsPrefix = frontendMetricsPrefix.isEmpty() ? "" : frontendMetricsPrefix + "_";
         this.subscriptionMetricsToQuery = Stream.of(SUBSCRIPTION_DELIVERED, SUBSCRIPTION_TIMEOUTS,
                         SUBSCRIPTION_THROUGHPUT, SUBSCRIPTION_OTHER_ERRORS, SUBSCRIPTION_BATCHES,
                         SUBSCRIPTION_STATUS_CODES)

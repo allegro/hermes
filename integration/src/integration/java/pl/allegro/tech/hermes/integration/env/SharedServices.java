@@ -52,6 +52,10 @@ public final class SharedServices {
         return ((WireMockStarter) starters.get(GraphiteHttpMockStarter.class)).instance();
     }
 
+    public WireMockServer prometheusHttpMock() {
+        return ((WireMockStarter) starters.get(PrometheusHttpMockStarter.class)).instance();
+    }
+
     public WireMockServer auditEventMock() {
         return ((WireMockStarter) starters.get(AuditEventMockStarter.class)).instance();
     }

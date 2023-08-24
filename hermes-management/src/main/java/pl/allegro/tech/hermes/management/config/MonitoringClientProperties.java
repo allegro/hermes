@@ -14,7 +14,7 @@ public class MonitoringClientProperties {
 
     private int cacheSize = 100_000;
 
-    private String externalMonitoringUrl = "http://localhost";
+    private String externalMonitoringUrl = "http://localhost:18090";
 
     public int getConnectionTimeoutMillis() {
         return connectionTimeoutMillis;

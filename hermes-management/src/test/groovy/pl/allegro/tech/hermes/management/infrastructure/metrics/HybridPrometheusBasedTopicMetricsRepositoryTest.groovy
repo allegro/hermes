@@ -21,7 +21,7 @@ class HybridPrometheusBasedTopicMetricsRepositoryTest extends Specification {
     private SubscriptionRepository subscriptionRepository = Mock(SubscriptionRepository)
 
     private PrometheusMetricsProvider prometheusMetricsProvider = new PrometheusMetricsProvider(client,
-            "hermes_consumers_", "hermes_frontend_")
+            "hermes_consumers", "hermes_frontend")
 
     private HybridTopicMetricsRepository repository = new HybridTopicMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, subscriptionRepository)
