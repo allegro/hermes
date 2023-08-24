@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { RouterView } from 'vue-router';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import AppNotificationProvider from '@/components/app-notification/AppNotificationProvider.vue';
   import ConsoleFooter from '@/components/console-footer/ConsoleFooter.vue';
   import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
@@ -15,7 +16,9 @@
       <console-header />
 
       <v-main class="main">
-        <RouterView />
+        <app-notification-provider>
+          <RouterView />
+        </app-notification-provider>
       </v-main>
 
       <console-footer />

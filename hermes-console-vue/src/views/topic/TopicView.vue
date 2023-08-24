@@ -63,7 +63,7 @@
   if (configStore.appConfig?.topic.offlineClientsEnabled) {
     fetchOfflineClientsSource();
   }
-  const roles = useRoles(topicName, null)?.roles.value;
+  const roles = useRoles(topicName, null)?.roles;
 
   const {
     isDialogOpened: isRemovedDialogOpened,

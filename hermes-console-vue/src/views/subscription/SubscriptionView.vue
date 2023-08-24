@@ -37,7 +37,7 @@
     loading,
   } = useSubscription(topicId, subscriptionId);
 
-  const roles = useRoles(topicId, subscriptionId)?.roles.value;
+  const roles = useRoles(topicId, subscriptionId)?.roles;
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),

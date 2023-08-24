@@ -12,7 +12,7 @@
 
   const theme = useTheme();
   const configStore = useAppConfigStore();
-  const roles = useRoles(null, null)?.roles.value;
+  const roles = useRoles(null, null)?.roles;
 </script>
 
 <template>
