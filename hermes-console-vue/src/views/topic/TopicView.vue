@@ -1,7 +1,9 @@
 <script async setup lang="ts">
+  import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
+  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useRouter } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
@@ -61,6 +63,7 @@
   if (configStore.appConfig?.topic.offlineClientsEnabled) {
     fetchOfflineClientsSource();
   }
+  const roles = useRoles(topicName, null)?.roles.value;
 
   const {
     isDialogOpened: isRemovedDialogOpened,
@@ -108,6 +111,7 @@
       v-if="topic && owner"
       :topic="topic"
       :owner="owner"
+      :roles="roles"
       @remove="openRemoveDialog"
     />
 
@@ -119,7 +123,11 @@
     <schema-panel v-if="topic" :schema="topic.schema" />
 
     <messages-preview
-      v-if="messages && configStore.appConfig?.topic.messagePreviewEnabled"
+      v-if="
+        messages &&
+        configStore.appConfig?.topic.messagePreviewEnabled &&
+        isTopicOwnerOrAdmin(roles)
+      "
       :messages="messages"
     />
 

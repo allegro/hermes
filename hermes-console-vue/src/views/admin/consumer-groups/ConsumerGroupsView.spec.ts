@@ -20,7 +20,7 @@ const useConsumerGroupsStub: UseConsumerGroups = {
 describe('ConsumerGroupsView', () => {
   beforeEach(async () => {
     await router.push(
-      '/groups/pl.allegro.public.group' +
+      '/ui/groups/pl.allegro.public.group' +
         '/topics/pl.allegro.public.group.DummyEvent' +
         '/subscriptions/foobar-service',
     );

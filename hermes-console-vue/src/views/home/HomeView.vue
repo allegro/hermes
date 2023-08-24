@@ -1,5 +1,7 @@
 <script setup lang="ts">
+  import { isAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useTheme } from 'vuetify';
 
   const adminViews: { title: string; to: string }[] = [
@@ -10,6 +12,7 @@
 
   const theme = useTheme();
   const configStore = useAppConfigStore();
+  const roles = useRoles(null, null)?.roles.value;
 </script>
 
 <template>
@@ -74,7 +77,7 @@
       </v-col>
     </v-row>
 
-    <v-row justify="center">
+    <v-row justify="center" v-if="isAdmin(roles)">
       <v-col cols="6">
         <v-btn color="secondary" block>
           <v-icon left icon="mdi-security"></v-icon>

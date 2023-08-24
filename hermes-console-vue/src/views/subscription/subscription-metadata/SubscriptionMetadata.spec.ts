@@ -1,6 +1,8 @@
 import { beforeEach } from 'vitest';
 import { dummySubscription } from '@/dummy/subscription';
+import { expect } from 'vitest';
 import { render } from '@/utils/test-utils';
+import { Role } from '@/api/role';
 import { State } from '@/api/subscription';
 import router from '@/router';
 import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
@@ -8,7 +10,7 @@ import SubscriptionMetadata from '@/views/subscription/subscription-metadata/Sub
 describe('SubscriptionMetadata', () => {
   beforeEach(async () => {
     await router.push(
-      '/groups/pl.allegro.public.group' +
+      '/ui/groups/pl.allegro.public.group' +
         '/topics/pl.allegro.public.group.DummyEvent' +
         '/subscriptions/foobar-service',
     );
@@ -23,7 +25,7 @@ describe('SubscriptionMetadata', () => {
         endpoint: 'service://subscription-name/dummy',
         description: 'some description',
       },
-      authorized: true,
+      roles: [Role.SUBSCRIPTION_OWNER],
     };
 
     // when
@@ -48,7 +50,7 @@ describe('SubscriptionMetadata', () => {
           source: 'some source',
         },
       },
-      authorized: true,
+      roles: [Role.SUBSCRIPTION_OWNER],
     };
 
     // when
@@ -70,7 +72,7 @@ describe('SubscriptionMetadata', () => {
           source: 'some source',
         },
       },
-      authorized: true,
+      roles: [Role.ADMIN],
     };
 
     // when
@@ -82,6 +84,67 @@ describe('SubscriptionMetadata', () => {
     ).toBeVisible();
   });
 
+  it('should not render diagnostics button', () => {
+    // given
+    const props = {
+      subscription: {
+        ...dummySubscription,
+        owner: {
+          ...dummySubscription.owner,
+          source: 'some source',
+        },
+      },
+      roles: [],
+    };
+
+    // when
+    const { queryByText } = render(SubscriptionMetadata, { props });
+
+    // then
+    expect(
+      queryByText('subscription.subscriptionMetadata.actions.diagnostics'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should disable subscription actions buttons', () => {
+    // given
+    const props = {
+      subscription: {
+        ...dummySubscription,
+        owner: {
+          ...dummySubscription.owner,
+          source: 'some source',
+        },
+      },
+      roles: [],
+    };
+
+    // when
+    const { getByText } = render(SubscriptionMetadata, { props });
+
+    // then
+    expect(
+      getByText('subscription.subscriptionMetadata.actions.suspend').closest(
+        'button',
+      ),
+    ).toBeDisabled();
+    expect(
+      getByText('subscription.subscriptionMetadata.actions.edit').closest(
+        'button',
+      ),
+    ).toBeDisabled();
+    expect(
+      getByText('subscription.subscriptionMetadata.actions.clone').closest(
+        'button',
+      ),
+    ).toBeDisabled();
+    expect(
+      getByText('subscription.subscriptionMetadata.actions.remove').closest(
+        'button',
+      ),
+    ).toBeDisabled();
+  });
+
   it('should render "activate" button and hide "suspend" if subscription is suspended', () => {
     // given
     const props = {
@@ -89,7 +152,7 @@ describe('SubscriptionMetadata', () => {
         ...dummySubscription,
         state: State.SUSPENDED,
       },
-      authorized: false,
+      roles: [Role.SUBSCRIPTION_OWNER],
     };
 
     // when
@@ -111,7 +174,7 @@ describe('SubscriptionMetadata', () => {
         ...dummySubscription,
         state: State.ACTIVE,
       },
-      authorized: false,
+      roles: [Role.SUBSCRIPTION_OWNER],
     };
 
     // when

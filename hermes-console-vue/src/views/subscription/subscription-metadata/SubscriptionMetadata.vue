@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
+  import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
   import { useRoute } from 'vue-router';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
@@ -6,7 +8,7 @@
 
   const props = defineProps<{
     subscription: Subscription;
-    authorized: boolean;
+    roles: Role[] | undefined;
   }>();
 
   const route = useRoute();
@@ -48,11 +50,11 @@
       </div>
       <div class="d-flex flex-row">
         <tooltip-icon
-          v-if="!props.authorized"
+          v-if="!isSubscriptionOwnerOrAdmin(roles)"
           :content="$t('subscription.subscriptionMetadata.unauthorizedTooltip')"
         />
         <v-btn
-          v-if="props.authorized"
+          v-if="isAdmin(roles)"
           :to="`${route.path}/diagnostics`"
           color="green"
           prepend-icon="mdi-doctor"
@@ -61,7 +63,7 @@
         </v-btn>
         <v-btn
           v-if="props.subscription.state === State.ACTIVE"
-          :disabled="!props.authorized"
+          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="orange"
           prepend-icon="mdi-publish-off"
         >
@@ -69,20 +71,26 @@
         </v-btn>
         <v-btn
           v-if="props.subscription.state === State.SUSPENDED"
-          :disabled="!props.authorized"
+          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="green"
           prepend-icon="mdi-publish"
         >
           {{ $t('subscription.subscriptionMetadata.actions.activate') }}
         </v-btn>
-        <v-btn :disabled="!props.authorized" prepend-icon="mdi-pencil">
+        <v-btn
+          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
+          prepend-icon="mdi-pencil"
+        >
           {{ $t('subscription.subscriptionMetadata.actions.edit') }}
         </v-btn>
-        <v-btn :disabled="!props.authorized" prepend-icon="mdi-content-copy">
+        <v-btn
+          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
+          prepend-icon="mdi-content-copy"
+        >
           {{ $t('subscription.subscriptionMetadata.actions.clone') }}
         </v-btn>
         <v-btn
-          :disabled="!props.authorized"
+          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="red"
           prepend-icon="mdi-delete"
         >
