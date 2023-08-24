@@ -21,6 +21,7 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { Owner } from '@/api/owner';
+import type { Role } from '@/api/role';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
@@ -356,5 +357,27 @@ export const querySubscriptionsErrorHandler = ({
   errorCode?: number;
 }) =>
   rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const fetchRolesHandler = ({
+  roles,
+  path,
+}: {
+  roles: Role[];
+  path: string;
+}) =>
+  rest.get(path, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(roles));
+  });
+
+export const fetchRolesErrorHandler = ({
+  errorCode = 500,
+  path,
+}: {
+  errorCode?: number;
+  path: string;
+}) =>
+  rest.get(path, (req, res, ctx) => {
     return res(ctx.status(errorCode), ctx.json(undefined));
   });

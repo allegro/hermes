@@ -1,11 +1,14 @@
 <script setup lang="ts">
+  import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import type { Owner } from '@/api/owner';
+  import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';
 
   const props = defineProps<{
     topic: TopicWithSchema;
     owner: Owner;
+    roles: Role[] | undefined;
   }>();
 
   const configStore = useAppConfigStore();
@@ -45,22 +48,31 @@
       </div>
       <div>
         <v-btn
-          :disabled="configStore.appConfig.topic.readOnlyModeEnabled"
+          :disabled="
+            configStore.appConfig.topic.readOnlyModeEnabled ||
+            !isTopicOwnerOrAdmin(roles)
+          "
           prepend-icon="mdi-pencil"
           >{{ $t('topicView.header.actions.edit') }}
         </v-btn>
-        <v-btn prepend-icon="mdi-content-copy"
+        <v-btn
+          prepend-icon="mdi-content-copy"
+          :disabled="!isTopicOwnerOrAdmin(roles)"
           >{{ $t('topicView.header.actions.clone') }}
         </v-btn>
         <v-btn
           v-if="
             configStore.appConfig.topic.offlineRetransmissionEnabled &&
-            topic.offlineStorage.enabled
+            topic.offlineStorage.enabled &&
+            isTopicOwnerOrAdmin(roles)
           "
           prepend-icon="mdi-transmission-tower"
           >{{ $t('topicView.header.actions.offlineRetransmission') }}
         </v-btn>
-        <v-btn color="red" prepend-icon="mdi-delete"
+        <v-btn
+          color="red"
+          prepend-icon="mdi-delete"
+          :disabled="!isTopicOwnerOrAdmin(roles)"
           >{{ $t('topicView.header.actions.remove') }}
         </v-btn>
       </div>

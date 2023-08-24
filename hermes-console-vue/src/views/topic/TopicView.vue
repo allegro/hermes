@@ -1,6 +1,8 @@
 <script async setup lang="ts">
+  import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useI18n } from 'vue-i18n';
+  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useRoute } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -55,6 +57,7 @@
   if (configStore.appConfig?.topic.offlineClientsEnabled) {
     fetchOfflineClientsSource();
   }
+  const roles = useRoles(topicName, null)?.roles.value;
 </script>
 
 <template>
@@ -71,7 +74,12 @@
       type="error"
     />
 
-    <topic-header v-if="topic && owner" :topic="topic" :owner="owner" />
+    <topic-header
+      v-if="topic && owner"
+      :topic="topic"
+      :owner="owner"
+      :roles="roles"
+    />
 
     <div class="topic-view__upper_panel">
       <metrics-list v-if="metrics" :metrics="metrics" />
@@ -81,7 +89,11 @@
     <schema-panel v-if="topic" :schema="topic.schema" />
 
     <messages-preview
-      v-if="messages && configStore.appConfig?.topic.messagePreviewEnabled"
+      v-if="
+        messages &&
+        configStore.appConfig?.topic.messagePreviewEnabled &&
+        isTopicOwnerOrAdmin(roles)
+      "
       :messages="messages"
     />
 

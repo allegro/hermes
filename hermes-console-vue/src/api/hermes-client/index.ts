@@ -15,6 +15,7 @@ import type {
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios-utils';
+import type { Role } from '@/api/role';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 
@@ -135,4 +136,8 @@ export function querySubscriptions(
   return axios.post<Subscription[]>(`/query/subscriptions`, queryJSON, {
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+export function fetchRoles(path: string): ResponsePromise<Role[]> {
+  return axios.get<Role[]>(path);
 }
