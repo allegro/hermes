@@ -65,7 +65,7 @@
         </p>
       </v-col>
       <v-col md="2" class="text-right">
-        <v-btn color="red" @click="moveOffsets(topicId, subscriptionId)">
+        <v-btn color="red" @click="moveOffsets">
           {{ $t('subscription.moveOffsets.button') }}
           <v-tooltip activator="parent" location="left">{{
             $t('subscription.moveOffsets.tooltip')

@@ -1,10 +1,11 @@
-import { afterEach } from 'vitest';
+import { afterEach, expect } from 'vitest';
 import { dummyConsumerGroups } from '@/dummy/consumerGroups';
 import { dummySubscription } from '@/dummy/subscription';
 import { dummyTopic } from '@/dummy/topic';
 import {
   fetchConsumerGroupsErrorHandler,
   fetchConsumerGroupsHandler,
+  moveSubscriptionOffsetsHandler,
 } from '@/mocks/handlers';
 import { setupServer } from 'msw/node';
 import { useConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
@@ -65,5 +66,36 @@ describe('useConsumerGroups', () => {
       expect(loading.value).toBeFalsy();
       expect(error.value.fetchConsumerGroups).not.toBeNull();
     });
+  });
+
+  it('should show message that moving offsets was successful', async () => {
+    // given
+    server.listen();
+    const { moveOffsets } = useConsumerGroups(topicName, subscriptionName);
+
+    // when
+    moveOffsets();
+
+    // then
+    //TODO: check that notification was sent
+  });
+
+  it('should show message that moving offsets was unsuccessful', async () => {
+    // given
+    server.use(
+      moveSubscriptionOffsetsHandler({
+        topicName,
+        subscriptionName,
+        statusCode: 500,
+      }),
+    );
+    server.listen();
+    const { moveOffsets } = useConsumerGroups(topicName, subscriptionName);
+
+    // when
+    moveOffsets();
+
+    // then
+    //TODO: check that notification was sent
   });
 });

@@ -11,7 +11,7 @@ import i18n from '@/main';
 
 export interface UseConsumerGroups {
   consumerGroups: Ref<ConsumerGroup[] | undefined>;
-  moveOffsets: (topicName: string, subscriptionName: string) => void;
+  moveOffsets: () => void;
   loading: Ref<boolean>;
   error: Ref<UseConsumerGroupsErrors>;
 }
@@ -43,7 +43,7 @@ export function useConsumerGroups(
     }
   };
 
-  const moveOffsets = async (topicName: string, subscriptionName: string) => {
+  const moveOffsets = async () => {
     const notificationsStore = useNotificationsStore();
     try {
       await moveSubscriptionOffsets(topicName, subscriptionName);
