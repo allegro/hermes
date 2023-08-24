@@ -18,6 +18,14 @@ const en_US = {
     cancel: 'Cancel',
     confirmText: "Type 'prod' to confirm action.",
   },
+  notifications: {
+    topic: {
+      delete: {
+        success: 'Topic {topicName} successfully deleted',
+        failure: 'Couldn\'t delete topic {topicName}'
+      }
+    }
+  },
   consistency: {
     connectionError: {
       title: 'Connection error',

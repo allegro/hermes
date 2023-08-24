@@ -18,6 +18,8 @@ import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
+import {useNotificationsStore} from "@/store/app-notifications/useAppNotifications";
+import i18n from "@/main";
 
 export interface UseTopic {
   topic: Ref<TopicWithSchema | undefined>;
@@ -43,6 +45,8 @@ export interface UseTopicErrors {
 }
 
 export function useTopic(topicName: string): UseTopic {
+  const notificationStore = useNotificationsStore();
+
   const topic = ref<TopicWithSchema>();
   const owner = ref<Owner>();
   const messages = ref<MessagePreview[]>();
@@ -147,10 +151,25 @@ export function useTopic(topicName: string): UseTopic {
   const removeTopic = async (): Promise<boolean> => {
     try {
       await deleteTopic(topicName);
-      // notification success
+      notificationStore.dispatchNotification(
+          {
+            text: i18n.global.t('notifications.topic.delete.success', {
+              topicName,
+            }),
+            type: 'success',
+          }
+      )
       return true;
     } catch (e) {
-      // notification error
+      notificationStore.dispatchNotification(
+          {
+            title: i18n.global.t('notifications.topic.delete.failure', {
+              topicName,
+            }),
+            text: (e as Error).message,
+            type: 'error',
+          }
+      )
       return false;
     }
   };

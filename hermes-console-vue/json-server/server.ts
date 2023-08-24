@@ -19,6 +19,14 @@ server.post('/query/subscriptions', (req, res) => {
   res.jsonp(subscriptions);
 });
 
+server.delete('/topics/:topic', (req, res) => {
+  res.sendStatus(200);
+});
+
+server.delete('/topics/:topic/subscriptions/:subscription', (req, res) => {
+  res.sendStatus(200);
+});
+
 const router = jsonServer.router('json-server/db.json');
 server.use(router);
 
