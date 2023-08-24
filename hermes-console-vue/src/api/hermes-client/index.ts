@@ -16,8 +16,11 @@ import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { Role } from '@/api/role';
+import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
+import type { SubscriptionHealth } from '@/api/subscription-health';
+import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
 export function fetchTopic(
   topicName: string,
@@ -53,6 +56,51 @@ export function fetchTopicSubscriptionDetails(
 ): ResponsePromise<Subscription> {
   return axios.get<Subscription>(
     `/topics/${topicName}/subscriptions/${subscription}`,
+  );
+}
+
+export function fetchSubscription(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<Subscription> {
+  return axios.get<Subscription>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}`,
+  );
+}
+
+export function fetchSubscriptionMetrics(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<SubscriptionMetrics> {
+  return axios.get<SubscriptionMetrics>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/metrics`,
+  );
+}
+
+export function fetchSubscriptionHealth(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<SubscriptionHealth> {
+  return axios.get<SubscriptionHealth>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/health`,
+  );
+}
+
+export function fetchSubscriptionUndeliveredMessages(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<SentMessageTrace[]> {
+  return axios.get<SentMessageTrace[]>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/undelivered`,
+  );
+}
+
+export function fetchSubscriptionLastUndeliveredMessage(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<SentMessageTrace> {
+  return axios.get<SentMessageTrace>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/undelivered/last`,
   );
 }
 

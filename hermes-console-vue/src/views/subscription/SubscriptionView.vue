@@ -67,7 +67,7 @@
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error"
+          v-if="error.fetchSubscription"
           :title="$t('subscription.connectionError.title')"
           :text="t('subscription.connectionError.text', { subscriptionId })"
           type="error"
@@ -75,7 +75,7 @@
       </v-col>
     </v-row>
 
-    <template v-if="!loading && !error">
+    <template v-if="!loading && !error.fetchSubscription">
       <v-row dense>
         <v-col md="12">
           <health-problems-alerts

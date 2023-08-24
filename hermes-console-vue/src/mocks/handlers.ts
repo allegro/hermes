@@ -1,6 +1,10 @@
 import {
   dummySubscription,
+  dummySubscriptionHealth,
+  dummySubscriptionMetrics,
   dummyTopicSubscriptionsList,
+  dummyUndeliveredMessage,
+  dummyUndeliveredMessages,
   secondDummySubscription,
 } from '@/dummy/subscription';
 import {
@@ -22,8 +26,11 @@ import type {
 } from '@/api/topic';
 import type { Owner } from '@/api/owner';
 import type { Role } from '@/api/role';
+import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
+import type { SubscriptionHealth } from '@/api/subscription-health';
+import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
 const url = 'http://localhost:3000';
 
@@ -177,6 +184,168 @@ export const successfulTopicHandlers = [
   fetchTopicSubscriptionDetailsHandler({
     subscription: secondDummySubscription,
   }),
+];
+
+export const fetchSubscriptionHandler = ({
+  subscription = dummySubscription,
+}: {
+  subscription?: Subscription;
+}) =>
+  rest.get(
+    `${url}/topics/${subscription.topicName}/subscriptions/${subscription.name}`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(subscription));
+    },
+  );
+
+export const fetchSubscriptionMetricsHandler = ({
+  topicName = dummySubscription.topicName,
+  subscriptionName = dummySubscription.name,
+  subscriptionMetrics = dummySubscriptionMetrics,
+}: {
+  topicName?: string;
+  subscriptionName?: string;
+  subscriptionMetrics?: SubscriptionMetrics;
+}) =>
+  rest.get(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/metrics`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(subscriptionMetrics));
+    },
+  );
+
+export const fetchSubscriptionHealthHandler = ({
+  topicName = dummySubscription.topicName,
+  subscriptionName = dummySubscription.name,
+  subscriptionHealth = dummySubscriptionHealth,
+}: {
+  topicName?: string;
+  subscriptionName?: string;
+  subscriptionHealth?: SubscriptionHealth;
+}) =>
+  rest.get(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/health`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(subscriptionHealth));
+    },
+  );
+
+export const fetchSubscriptionUndeliveredMessagesHandler = ({
+  topicName = dummySubscription.topicName,
+  subscriptionName = dummySubscription.name,
+  subscriptionUndeliveredMessages = dummyUndeliveredMessages,
+}: {
+  topicName?: string;
+  subscriptionName?: string;
+  subscriptionUndeliveredMessages?: SentMessageTrace[];
+}) =>
+  rest.get(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/undelivered`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(subscriptionUndeliveredMessages));
+    },
+  );
+
+export const fetchSubscriptionLastUndeliveredMessageHandler = ({
+  topicName = dummySubscription.topicName,
+  subscriptionName = dummySubscription.name,
+  subscriptionLastUndeliveredMessage = dummyUndeliveredMessage,
+}: {
+  topicName?: string;
+  subscriptionName?: string;
+  subscriptionLastUndeliveredMessage?: SentMessageTrace;
+}) =>
+  rest.get(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/undelivered/last`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(subscriptionLastUndeliveredMessage));
+    },
+  );
+
+export const fetchSubscriptionErrorHandler = ({
+  subscription = dummySubscription,
+  errorCode = 500,
+}: {
+  subscription?: Subscription;
+  errorCode?: number;
+}) =>
+  rest.get(
+    `${url}/topics/${subscription.topicName}/subscriptions/${subscription.name}`,
+    (req, res, ctx) => {
+      return res(ctx.status(errorCode), ctx.json(undefined));
+    },
+  );
+
+export const fetchSubscriptionMetricsErrorHandler = ({
+  topicName = dummySubscription.topicName,
+  subscriptionName = dummySubscription.name,
+  errorCode = 500,
+}: {
+  topicName?: string;
+  subscriptionName?: string;
+  errorCode?: number;
+}) =>
+  rest.get(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/metrics`,
+    (req, res, ctx) => {
+      return res(ctx.status(errorCode), ctx.json(undefined));
+    },
+  );
+
+export const fetchSubscriptionHealthErrorHandler = ({
+  topicName = dummySubscription.topicName,
+  subscriptionName = dummySubscription.name,
+  errorCode = 500,
+}: {
+  topicName?: string;
+  subscriptionName?: string;
+  errorCode?: number;
+}) =>
+  rest.get(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/health`,
+    (req, res, ctx) => {
+      return res(ctx.status(errorCode), ctx.json(undefined));
+    },
+  );
+
+export const fetchSubscriptionUndeliveredMessagesErrorHandler = ({
+  topicName = dummySubscription.topicName,
+  subscriptionName = dummySubscription.name,
+  errorCode = 500,
+}: {
+  topicName?: string;
+  subscriptionName?: string;
+  errorCode?: number;
+}) =>
+  rest.get(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/undelivered`,
+    (req, res, ctx) => {
+      return res(ctx.status(errorCode), ctx.json(undefined));
+    },
+  );
+
+export const fetchSubscriptionLastUndeliveredMessageErrorHandler = ({
+  topicName = dummySubscription.topicName,
+  subscriptionName = dummySubscription.name,
+  errorCode = 500,
+}: {
+  topicName?: string;
+  subscriptionName?: string;
+  errorCode?: number;
+}) =>
+  rest.get(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/undelivered/last`,
+    (req, res, ctx) => {
+      return res(ctx.status(errorCode), ctx.json(undefined));
+    },
+  );
+
+export const successfulSubscriptionHandlers = [
+  fetchSubscriptionHandler({}),
+  fetchSubscriptionMetricsHandler({}),
+  fetchSubscriptionHealthHandler({}),
+  fetchSubscriptionUndeliveredMessagesHandler({}),
+  fetchSubscriptionLastUndeliveredMessageHandler({}),
 ];
 
 export const fetchConstraintsHandler = ({

@@ -52,6 +52,7 @@ const useTopicMock: UseTopic = {
   }),
   fetchTopic: () => Promise.resolve(),
   fetchOfflineClientsSource: () => Promise.resolve(),
+  removeTopic: () => Promise.resolve(true),
 };
 
 describe('TopicView', () => {

@@ -23,7 +23,13 @@ const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscriptionHealth: ref(dummySubscriptionHealth),
   subscriptionUndeliveredMessages: ref(dummyUndeliveredMessages),
   subscriptionLastUndeliveredMessage: ref(dummyUndeliveredMessage),
-  error: ref(false),
+  error: ref({
+    fetchSubscription: null,
+    fetchSubscriptionMetrics: null,
+    fetchSubscriptionHealth: null,
+    fetchSubscriptionUndeliveredMessages: null,
+    fetchSubscriptionLastUndeliveredMessage: null,
+  }),
   loading: computed(() => false),
 };
 
@@ -154,7 +160,13 @@ describe('SubscriptionView', () => {
     vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       loading: computed(() => false),
-      error: ref(true),
+      error: ref({
+        fetchSubscription: new Error('Sample error'),
+        fetchSubscriptionMetrics: null,
+        fetchSubscriptionHealth: null,
+        fetchSubscriptionUndeliveredMessages: null,
+        fetchSubscriptionLastUndeliveredMessage: null,
+      }),
     });
 
     // when
@@ -171,7 +183,6 @@ describe('SubscriptionView', () => {
     vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       loading: computed(() => false),
-      error: ref(false),
     });
 
     // when
