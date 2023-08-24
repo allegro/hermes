@@ -4,7 +4,12 @@ import qs from 'query-string';
 import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { AppConfiguration } from '@/api/app-configuration';
 import type { AxiosRequestConfig } from 'axios';
-import type { ConstraintsConfig } from '@/api/constraints';
+import type {
+  Constraint,
+  ConstraintsConfig,
+  SubscriptionConstraint,
+  TopicConstraint,
+} from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
@@ -277,4 +282,45 @@ export function switchReadiness(
       'Content-Type': 'application/json',
     } as AxiosRequestConfig,
   );
+}
+
+export function upsertTopicConstraint(
+    topicName: string,
+    constraint: Constraint,
+): ResponsePromise<void> {
+    const body: TopicConstraint = {
+        topicName: topicName,
+        constraint: constraint,
+    };
+    return axios.put(`/workload-constraints/topic`, body, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+
+export function deleteTopicConstraint(
+    topicName: string,
+): ResponsePromise<void> {
+    return axios.delete(`/workload-constraints/topic/${topicName}`);
+}
+
+export function upsertSubscriptionConstraint(
+    subscriptionName: string,
+    constraint: Constraint,
+): ResponsePromise<void> {
+    const body: SubscriptionConstraint = {
+        subscriptionName: subscriptionName,
+        constraint: constraint,
+    };
+    return axios.put(`/workload-constraints/subscription`, body, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+
+export function deleteSubscriptionConstraint(
+    topicName: string,
+    subscriptionName: string,
+): ResponsePromise<void> {
+    return axios.delete(
+        `/workload-constraints/subscription/${topicName}/${subscriptionName}`,
+    );
 }

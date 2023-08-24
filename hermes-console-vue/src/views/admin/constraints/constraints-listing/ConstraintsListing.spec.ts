@@ -1,13 +1,17 @@
 import { dummyConstraints } from '@/dummy/constraints';
+import { expect } from 'vitest';
 import { render } from '@/utils/test-utils';
 import { within } from '@testing-library/vue';
 import ConstraintsListing from '@/views/admin/constraints/constraints-listing/ConstraintsListing.vue';
+import userEvent from '@testing-library/user-event';
 
 describe('ConstraintsListing', () => {
   it('should render topic constraints listing with no filter applied', () => {
     // given
     const props = {
       constraints: dummyConstraints.topicConstraints,
+      upsertConstraint: () => {},
+      deleteConstraint: () => {},
     };
 
     // when
@@ -31,6 +35,8 @@ describe('ConstraintsListing', () => {
     // given
     const props = {
       constraints: dummyConstraints.subscriptionConstraints,
+      upsertConstraint: () => {},
+      deleteConstraint: () => {},
     };
 
     // when
@@ -55,6 +61,8 @@ describe('ConstraintsListing', () => {
     const props = {
       constraints: dummyConstraints.topicConstraints,
       filter: 'pl.group.Topic1',
+      upsertConstraint: () => {},
+      deleteConstraint: () => {},
     };
 
     // when
@@ -74,6 +82,8 @@ describe('ConstraintsListing', () => {
     const props = {
       constraints: dummyConstraints.topicConstraints,
       filter: 'pl.group.NoExistingTopic',
+      upsertConstraint: () => {},
+      deleteConstraint: () => {},
     };
 
     // when
@@ -112,5 +122,44 @@ describe('ConstraintsListing', () => {
     expect(
       within(rows[1]!).queryByText('constraints.listing.appliedFilter'),
     ).not.toBeInTheDocument();
+  });
+
+  it('should open edit topic constraint dialog when topic is clicked ', async () => {
+    // given
+    const user = userEvent.setup();
+
+    const props = {
+      constraints: dummyConstraints.topicConstraints,
+      upsertConstraint: () => {},
+      deleteConstraint: () => {},
+    };
+
+    const { queryByText, getByText } = render(ConstraintsListing, { props });
+
+    // when
+    await user.click(getByText('pl.group.Topic1'));
+
+    // then
+    expect(queryByText('constraints.editForm.title')).toBeVisible();
+    expect(queryByText('constraints.editForm.title')).toBeVisible();
+  });
+
+  it('should open edit subscription constraint dialog when subscription is clicked ', async () => {
+    // given
+    const user = userEvent.setup();
+
+    const props = {
+      constraints: dummyConstraints.subscriptionConstraints,
+      upsertConstraint: () => {},
+      deleteConstraint: () => {},
+    };
+
+    const { queryByText, getByText } = render(ConstraintsListing, { props });
+
+    // when
+    await user.click(getByText('pl.group.Topic$subscription1'));
+
+    // then
+    expect(queryByText('constraints.editForm.title')).toBeVisible();
   });
 });

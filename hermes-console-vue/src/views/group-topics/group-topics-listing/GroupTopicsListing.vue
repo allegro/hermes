@@ -4,8 +4,8 @@
   import { useRouter } from 'vue-router';
   import type { Group } from '@/composables/groups/use-groups/useGroups';
 
-  const router = useRouter();
   const { t } = useI18n();
+  const router = useRouter();
 
   const props = defineProps<{
     group?: Group;

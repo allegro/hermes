@@ -2,6 +2,7 @@ import { createTestingPinia } from '@pinia/testing';
 import { createVuetify } from 'vuetify';
 import { expect } from 'vitest';
 import { h } from 'vue';
+import { mount, VueWrapper } from '@vue/test-utils';
 import { render as renderTL } from '@testing-library/vue';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import { VApp } from 'vuetify/components';
@@ -66,5 +67,29 @@ export const render = (
       default: h(TestComponent, options?.props),
     },
     ...options,
+  });
+};
+
+export const renderWithEmits = (
+  TestComponent: any,
+  {
+    props = undefined,
+    testVuetify = createVuetify(),
+    testPinia = createTestingPinia(),
+    testRouter = router,
+  }: RenderParameters = {
+    testVuetify: createVuetify(),
+    testPinia: createTestingPinia(),
+    testRouter: router,
+  },
+): VueWrapper<any> => {
+  return mount(TestComponent, {
+    global: {
+      plugins: [testVuetify, testRouter, testPinia],
+      mocks: {
+        $t: (key: string) => key,
+      },
+    },
+    propsData: props,
   });
 };
