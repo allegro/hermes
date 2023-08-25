@@ -6,6 +6,7 @@ import type { AxiosRequestConfig } from 'axios';
 import type { ConstraintsConfig } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
+import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
   MessagePreview,
   Topic,
@@ -85,6 +86,23 @@ export function fetchConsumerGroups(
   return axios.get<ConsumerGroup[]>(
     `/topics/${topicName}/subscriptions/${subscription}/consumer-groups`,
   );
+}
+
+export function fetchConsistencyGroups(): ResponsePromise<string[]> {
+  return axios.get<string[]>('/consistency/groups');
+}
+
+export function fetchInconsistentGroups(
+  groups: string[],
+): ResponsePromise<InconsistentGroup[]> {
+  return axios.get<InconsistentGroup[]>('/consistency/inconsistencies/groups', {
+    params: {
+      groupNames: groups,
+    },
+    paramsSerializer: {
+      indexes: null,
+    },
+  });
 }
 
 export function fetchInconsistentTopics(): ResponsePromise<string[]> {
