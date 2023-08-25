@@ -1,14 +1,16 @@
 <script setup lang="ts">
   import { useConsistencyStore } from '@/store/consistency/useConsistencyStore';
   import { useI18n } from 'vue-i18n';
-  import { useRoute, useRouter } from 'vue-router';
+  import { useRouter } from 'vue-router';
   import InconsistentMetadata from '@/views/admin/consistency/inconsistent-metadata/InconsistentMetadata.vue';
 
-  const route = useRoute();
   const router = useRouter();
   const { t } = useI18n();
 
-  const { groupId } = route.params as Record<string, string>;
+  const { groupId } = router.currentRoute.value.params as Record<
+    string,
+    string
+  >;
 
   const consistencyStore = useConsistencyStore();
 
