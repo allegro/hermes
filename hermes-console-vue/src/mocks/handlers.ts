@@ -392,6 +392,15 @@ export const fetchConsistencyGroupsHandler = ({
     return res(ctx.status(200), ctx.json(groups));
   });
 
+export const fetchConsistencyGroupsErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/consistency/groups`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
 export const fetchGroupInconsistenciesHandler = ({
   groupsInconsistency,
 }: {
@@ -399,4 +408,13 @@ export const fetchGroupInconsistenciesHandler = ({
 }) =>
   rest.get(`${url}/consistency/inconsistencies/groups`, (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(groupsInconsistency));
+  });
+
+export const fetchGroupInconsistenciesErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/consistency/inconsistencies/groups`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
   });

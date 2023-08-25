@@ -1,4 +1,4 @@
-export const dummyInconsistentMetadata = [
+export const inconsistentMetadata = [
   {
     datacenter: 'DC1',
   },

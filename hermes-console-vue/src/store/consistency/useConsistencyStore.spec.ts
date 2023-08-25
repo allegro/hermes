@@ -3,7 +3,9 @@ import { createPinia, setActivePinia } from 'pinia';
 import { dummyGroupInconsistency } from '@/dummy/groupInconsistency';
 import { dummyInconsistentGroups } from '@/dummy/inconsistentGroups';
 import {
+  fetchConsistencyGroupsErrorHandler,
   fetchConsistencyGroupsHandler,
+  fetchGroupInconsistenciesErrorHandler,
   fetchGroupInconsistenciesHandler,
 } from '@/mocks/handlers';
 import { setupServer } from 'msw/node';
@@ -38,6 +40,7 @@ describe('useConsistencyStore', () => {
     await consistencyStore.fetch();
 
     expect(consistencyStore.groups).toEqual(dummyGroupInconsistency);
+    expect(consistencyStore.error.fetchError).toBeNull();
   });
 
   it('should filter groups', async () => {
@@ -75,5 +78,26 @@ describe('useConsistencyStore', () => {
       ),
     ).toEqual(dummyGroupInconsistency[0].inconsistentTopics[0]);
     expect(consistencyStore.topic('whatever', 'topic')).toBeUndefined();
+  });
+
+  it('should set error when fetching consistency groups fails', async () => {
+    server.use(fetchConsistencyGroupsErrorHandler({}));
+    server.listen();
+    const consistencyStore = useConsistencyStore();
+    await consistencyStore.fetch();
+
+    expect(consistencyStore.error.fetchError).not.toBeNull();
+  });
+
+  it('should set error when fetching group inconsistencies fails', async () => {
+    server.use(
+      fetchConsistencyGroupsHandler({ groups: dummyInconsistentGroups }),
+      fetchGroupInconsistenciesErrorHandler({}),
+    );
+    server.listen();
+    const consistencyStore = useConsistencyStore();
+    await consistencyStore.fetch();
+
+    expect(consistencyStore.error.fetchError).not.toBeNull();
   });
 });
