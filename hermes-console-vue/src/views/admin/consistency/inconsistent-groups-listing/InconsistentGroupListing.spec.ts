@@ -5,7 +5,7 @@ import router from '@/router';
 
 describe('InconsistentGroupListing', () => {
   it('should render inconsistent groups table', async () => {
-    //given
+    // given
     const group = 'pl.allegro.public.group';
 
     // when
@@ -25,6 +25,7 @@ describe('InconsistentGroupListing', () => {
     const group = 'pl.allegro.public.group';
     const topic = `${group}.DummyEvent`;
     await router.push(`/ui/consistency/${group}/topics/${topic}`);
+
     // when
     const { getByText } = render(InconsistentGroupsListing, {
       props: {
