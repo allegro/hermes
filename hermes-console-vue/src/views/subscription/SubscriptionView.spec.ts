@@ -34,6 +34,7 @@ const useSubscriptionStub: ReturnType<typeof useSubscription> = {
     fetchSubscriptionLastUndeliveredMessage: null,
   }),
   loading: computed(() => false),
+  removeSubscription: () => Promise.resolve(true),
 };
 
 vi.mock('@/composables/roles/use-roles/useRoles');

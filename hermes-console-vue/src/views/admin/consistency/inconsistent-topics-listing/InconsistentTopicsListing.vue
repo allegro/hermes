@@ -13,6 +13,8 @@
       (topic) => !props.filter || topic.includes(props.filter),
     );
   });
+
+  defineEmits(['remove']);
 </script>
 
 <template>
@@ -34,7 +36,12 @@
             {{ topic }}
           </td>
           <td class="text-right">
-            <v-btn variant="text" prepend-icon="mdi-delete" color="red">
+            <v-btn
+              variant="text"
+              prepend-icon="mdi-delete"
+              color="red"
+              @click="$emit('remove', topic)"
+            >
               {{ $t('consistency.inconsistentTopics.actions.delete') }}
             </v-btn>
           </td>

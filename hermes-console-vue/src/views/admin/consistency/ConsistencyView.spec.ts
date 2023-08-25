@@ -17,6 +17,7 @@ const useInconsistentTopicsStub: UseInconsistentTopics = {
     fetchInconsistentTopics: null,
   }),
   loading: ref(false),
+  removeInconsistentTopic: () => Promise.resolve(true),
 };
 
 describe('ConsistencyView', () => {

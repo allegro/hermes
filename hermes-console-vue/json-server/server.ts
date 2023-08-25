@@ -19,11 +19,23 @@ server.post('/query/subscriptions', (req, res) => {
   res.jsonp(subscriptions);
 });
 
+server.delete('/groups/:group', (req, res) => {
+  res.sendStatus(200);
+});
+
 server.delete('/topics/:topic', (req, res) => {
   res.sendStatus(200);
 });
 
 server.delete('/subscriptions/:subscription', (req, res) => {
+  res.sendStatus(200);
+});
+
+server.delete('/consistency/inconsistencies/topics', (req, res) => {
+  res.sendStatus(200);
+});
+
+server.post('/readiness/datacenters/:dc', (req, res) => {
   res.sendStatus(200);
 });
 

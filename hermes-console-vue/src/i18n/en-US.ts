@@ -19,16 +19,34 @@ const en_US = {
     confirmText: "Type 'prod' to confirm action.",
   },
   notifications: {
+    readiness: {
+      switch: {
+        success: 'Successfully switched datacenter {datacenter} readiness',
+        failure: "Couldn't switch datacenter {datacenter} readiness",
+      },
+    },
     roles: {
       fetch: {
         failure:
           'Fetching user roles failed. Some options might not be visible.',
       },
     },
+    group: {
+      delete: {
+        success: 'Group {groupId} successfully deleted',
+        failure: "Couldn't delete group {groupId}",
+      },
+    },
     topic: {
       delete: {
         success: 'Topic {topicName} successfully deleted',
         failure: "Couldn't delete topic {topicName}",
+      },
+    },
+    inconsistentTopic: {
+      delete: {
+        success: 'Topic {topic} successfully deleted',
+        failure: "Couldn't delete topic {topic}",
       },
     },
     subscription: {
@@ -83,6 +101,12 @@ const en_US = {
       },
     },
     inconsistentTopics: {
+      confirmationDialog: {
+        remove: {
+          title: 'Confirm topic deletion',
+          text: 'Are you sure you want to delete topic {topicToDelete}',
+        },
+      },
       noTopics: 'No inconsistent topics found',
       appliedFilter: '(applied filter: “{filter}”)',
       heading: 'Topics existing on kafka cluster but not present in hermes',
@@ -168,9 +192,15 @@ const en_US = {
     trackingEnabled: 'Tracking Enabled',
   },
   readiness: {
+    confirmationDialog: {
+      switch: {
+        title: 'Confirm readiness switch',
+        text: 'Are you sure you want to {switchAction} datacenter {dcToSwitch}?',
+      },
+    },
     title: 'Datacenters Readiness',
-    turnOn: 'Turn on',
-    turnOff: 'Turn off',
+    turnOn: 'turn on',
+    turnOff: 'turn off',
     index: '#',
     datacenter: 'Datacenter',
     isReady: 'Is ready',
@@ -186,8 +216,15 @@ const en_US = {
   },
   groups: {
     actions: {
+      remove: 'Remove',
       create: 'New Group',
       search: 'search…',
+    },
+    confirmationDialog: {
+      remove: {
+        title: 'Confirm group deletion',
+        text: 'Are you sure you want to delete group {groupId}',
+      },
     },
     connectionError: {
       title: 'Connection error',
@@ -227,6 +264,7 @@ const en_US = {
     heading: 'Groups',
   },
   groupTopics: {
+    title: 'Group',
     groupTopicsBreadcrumbs: {
       home: 'home',
       groups: 'groups',

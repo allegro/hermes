@@ -3,6 +3,7 @@ import { dummyAppConfig } from '@/dummy/app-config';
 import type { AppConfigStoreState } from '@/store/app-config/types';
 import type { AuthStoreState } from '@/store/auth/types';
 import type { ConsistencyStoreState } from '@/store/consistency/types';
+import type { NotificationsState } from '@/store/app-notifications/types';
 
 export const appConfigStoreState: AppConfigStoreState = {
   appConfig: dummyAppConfig,
@@ -10,6 +11,10 @@ export const appConfigStoreState: AppConfigStoreState = {
   error: {
     loadConfig: null,
   },
+};
+
+export const notificationsStoreState: NotificationsState = {
+  notifications: [],
 };
 
 export const authStoreState: AuthStoreState = {

@@ -208,13 +208,43 @@ export function fetchRoles(path: string): ResponsePromise<Role[]> {
   return axios.get<Role[]>(path);
 }
 
-export function removeTopic(topic: String): ResponsePromise<TopicMetrics> {
+export function removeTopic(topic: String): ResponsePromise<void> {
   return axios.delete(`/topics/${topic}`);
 }
 
 export function removeSubscription(
   topic: String,
   subscription: String,
-): ResponsePromise<TopicMetrics> {
+): ResponsePromise<void> {
   return axios.delete(`/topics/${topic}/subscriptions/${subscription}`);
+}
+
+export function removeGroup(group: String): ResponsePromise<void> {
+  return axios.delete(`/groups/${group}`);
+}
+
+export function removeInconsistentTopic(topic: string): ResponsePromise<void> {
+  return axios.delete('/consistency/inconsistencies/topics', {
+    params: {
+      topicName: topic,
+    },
+    paramsSerializer: {
+      indexes: null,
+    },
+  });
+}
+
+export function switchReadiness(
+  datacenter: string,
+  desiredState: boolean,
+): ResponsePromise<AccessTokenResponse> {
+  return axios.post<AccessTokenResponse>(
+    `/readiness/datacenters/${datacenter}`,
+    qs.stringify({
+      isReady: desiredState,
+    }),
+    {
+      'Content-Type': 'application/json',
+    } as AxiosRequestConfig,
+  );
 }

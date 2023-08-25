@@ -2,20 +2,22 @@
   import { computed } from 'vue';
   import { isAdmin } from '@/utils/roles-util';
   import { ref } from 'vue';
+  import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useGroups } from '@/composables/groups/use-groups/useGroups';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRoute } from 'vue-router';
+  import { useRouter } from 'vue-router';
+  import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupTopicsListing from '@/views/group-topics/group-topics-listing/GroupTopicsListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
-  const route = useRoute();
-  const params = route.params as Record<string, string>;
+  const router = useRouter();
+  const params = router.currentRoute.value.params as Record<string, string>;
   const { groupId } = params;
   const { t } = useI18n();
 
-  const { groups, loading, error } = useGroups();
+  const { groups, loading, error, removeGroup } = useGroups();
 
   const filter = ref<string>();
 
@@ -24,6 +26,25 @@
   const group = computed(() => {
     return (groups.value || [])?.find((i) => i.name === groupId);
   });
+
+  const {
+    isDialogOpened: isRemoveDialogOpened,
+    actionButtonEnabled: actionRemoveButtonEnabled,
+    openDialog: openRemoveDialog,
+    closeDialog: closeRemoveDialog,
+    enableActionButton: enableRemoveActionButton,
+    disableActionButton: disableRemoveActionButton,
+  } = useDialog();
+
+  async function deleteGroup(groupId: string) {
+    disableRemoveActionButton();
+    const isGroupRemoved = await removeGroup(groupId);
+    enableRemoveActionButton();
+    closeRemoveDialog();
+    if (isGroupRemoved) {
+      router.push({ path: `/ui/groups` });
+    }
+  }
 
   const breadcrumbsItems = [
     {
@@ -42,6 +63,14 @@
 </script>
 
 <template>
+  <confirmation-dialog
+    v-model="isRemoveDialogOpened"
+    :actionButtonEnabled="actionRemoveButtonEnabled"
+    :title="$t('groups.confirmationDialog.remove.title')"
+    :text="t('groups.confirmationDialog.remove.text', { groupId })"
+    @action="deleteGroup(groupId)"
+    @cancel="closeRemoveDialog"
+  />
   <v-container>
     <v-row dense>
       <v-col md="12">
@@ -59,7 +88,7 @@
       <v-col>
         <v-card density="compact" class="d-flex flex-row justify-space-between">
           <v-card-text>
-            <p class="text-overline">Group</p>
+            <p class="text-overline">{{ $t('groupTopics.title') }}</p>
             <p class="text-h4 font-weight-bold mb-2">
               {{ groupId }}
             </p>
@@ -70,9 +99,9 @@
               :disabled="group?.topics.length !== 0"
               color="red"
               prepend-icon="mdi-delete"
-              @click="$emit('remove')"
+              @click="openRemoveDialog"
             >
-              {{ $t('subscription.subscriptionMetadata.actions.remove') }}
+              {{ $t('groups.actions.remove') }}
             </v-btn>
           </v-card-actions>
         </v-card>

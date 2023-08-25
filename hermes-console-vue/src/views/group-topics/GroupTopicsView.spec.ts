@@ -18,6 +18,7 @@ const useGroupsStub: UseGroups = {
     fetchTopicNames: null,
     fetchGroupNames: null,
   }),
+  removeGroup: () => Promise.resolve(true),
 };
 
 const useRolesStub: UseRoles = {

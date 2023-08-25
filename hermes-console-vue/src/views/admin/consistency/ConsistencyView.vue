@@ -1,8 +1,11 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useConsistencyStore } from '@/store/consistency/useConsistencyStore';
+  import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
+  import { useRouter } from 'vue-router';
+  import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import InconsistentGroupsListing from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentGroupsListing.vue';
   import InconsistentTopicsListing from '@/views/admin/consistency/inconsistent-topics-listing/InconsistentTopicsListing.vue';
@@ -12,7 +15,10 @@
   const topicFilter = ref<string>();
   const groupFilter = ref<string>();
 
-  const { topics, loading, error } = useInconsistentTopics();
+  const { topics, loading, error, removeInconsistentTopic } =
+    useInconsistentTopics();
+
+  const router = useRouter();
 
   const consistencyStore = useConsistencyStore();
 
@@ -29,9 +35,49 @@
       title: t('consistency.breadcrumbs.title'),
     },
   ];
+
+  const topicToDelete = ref();
+
+  const {
+    isDialogOpened: isRemoveDialogOpened,
+    actionButtonEnabled: actionRemoveButtonEnabled,
+    openDialog: openRemoveDialog,
+    closeDialog: closeRemoveDialog,
+    enableActionButton: enableRemoveActionButton,
+    disableActionButton: disableRemoveActionButton,
+  } = useDialog();
+
+  async function deleteInconsistentTopic() {
+    disableRemoveActionButton();
+    const isTopicRemoved = await removeInconsistentTopic(topicToDelete.value);
+    enableRemoveActionButton();
+    closeRemoveDialog();
+    if (isTopicRemoved) {
+      router.go(0);
+    }
+  }
+
+  function openTopicRemoveDialog(topic: string) {
+    topicToDelete.value = topic;
+    openRemoveDialog();
+  }
 </script>
 
 <template>
+  <confirmation-dialog
+    v-model="isRemoveDialogOpened"
+    :actionButtonEnabled="actionRemoveButtonEnabled"
+    :title="
+      $t('consistency.inconsistentTopics.confirmationDialog.remove.title')
+    "
+    :text="
+      t('consistency.inconsistentTopics.confirmationDialog.remove.text', {
+        topicToDelete,
+      })
+    "
+    @action="deleteInconsistentTopic"
+    @cancel="closeRemoveDialog"
+  />
   <v-container>
     <v-row dense>
       <v-col md="12">
@@ -113,6 +159,7 @@
           v-if="topics"
           :inconsistentTopics="topics"
           :filter="topicFilter"
+          @remove="openTopicRemoveDialog"
         />
       </v-col>
     </v-row>

@@ -1,7 +1,7 @@
 import { fetchRoles as getRoles } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-import i18n from '@/main';
 import type { Ref } from 'vue';
 import type { Role } from '@/api/role';
 
@@ -35,7 +35,7 @@ export function useRoles(
     } catch (e) {
       error.value.fetchRoles = e as Error;
       notificationStore.dispatchNotification({
-        text: i18n.global.t('notifications.roles.fetch.failure'),
+        text: useGlobalI18n().t('notifications.roles.fetch.failure'),
         type: 'warning',
       });
     } finally {

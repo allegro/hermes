@@ -13,6 +13,7 @@ const useReadinessStub: UseReadiness = {
     fetchReadiness: null,
   }),
   loading: ref(false),
+  switchReadinessState: () => Promise.resolve(true),
 };
 
 describe('ReadinessView', () => {
