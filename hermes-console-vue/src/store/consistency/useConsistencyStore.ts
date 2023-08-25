@@ -52,15 +52,23 @@ export const useConsistencyStore = defineStore('consistency', {
         this.fetchInProgress = false;
       }
     },
-    group(groupName: string): InconsistentGroup | undefined {
-      return this.groups.filter((g) => g.name == groupName)[0];
+  },
+  getters: {
+    group(
+      state: ConsistencyStoreState,
+    ): (groupName: string) => InconsistentGroup | undefined {
+      return (groupName: string) =>
+        state.groups.filter((g) => g.name == groupName)[0];
     },
-    topic(groupName: string, topicName: string): InconsistentTopic | undefined {
-      return this.group(groupName)?.inconsistentTopics.filter(
-        (t) => t.name == topicName,
-      )[0];
+    topic(): (
+      groupName: string,
+      topicName: string,
+    ) => InconsistentTopic | undefined {
+      return (groupName: string, topicName: string) =>
+        this.group(groupName)?.inconsistentTopics.filter(
+          (t) => t.name == topicName,
+        )[0];
     },
   },
-  getters: {},
   persist: true,
 });
