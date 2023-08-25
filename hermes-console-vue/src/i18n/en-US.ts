@@ -36,6 +36,7 @@ const en_US = {
       },
     },
     inconsistentGroup: {
+      title: 'Group: {groupId}',
       listing: {
         index: '#',
         name: 'Topic',
@@ -43,6 +44,7 @@ const en_US = {
       },
       noTopics: 'No inconsistent topics',
       inconsistentTopic: {
+        title: 'Topic: {topicId}',
         listing: {
           index: '#',
           name: 'Subscription',

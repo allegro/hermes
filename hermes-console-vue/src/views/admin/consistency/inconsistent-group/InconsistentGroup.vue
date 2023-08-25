@@ -42,7 +42,9 @@
     </v-row>
     <v-row dense>
       <v-col md="12">
-        <h3 class="text-h3">Group: {{ groupId }}</h3>
+        <h3 class="text-h3">
+          {{ t('consistency.inconsistentGroup.title', { groupId }) }}
+        </h3>
       </v-col>
     </v-row>
     <InconsistentMetadata
