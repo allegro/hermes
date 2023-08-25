@@ -52,7 +52,7 @@ const router = createRouter({
       name: 'groupConsistency',
       component: () =>
         import(
-          '@/views/admin/consistency/inconsistent-groups-listing/InconsistentGroup.vue'
+          '@/views/admin/consistency/inconsistent-group/InconsistentGroup.vue'
         ),
     },
     {
@@ -60,7 +60,7 @@ const router = createRouter({
       name: 'topicConsistency',
       component: () =>
         import(
-          '@/views/admin/consistency/inconsistent-groups-listing/InconsistentTopic.vue'
+          '@/views/admin/consistency/inconsistent-topic/InconsistentTopic.vue'
         ),
     },
     {

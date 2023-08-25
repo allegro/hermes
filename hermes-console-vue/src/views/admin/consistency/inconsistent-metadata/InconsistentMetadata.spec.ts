@@ -1,7 +1,7 @@
 import { describe, expect } from 'vitest';
 import { inconsistentMetadata } from '@/dummy/inconsistentMetadata';
 import { render } from '@/utils/test-utils';
-import InconsistentMetadata from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentMetadata.vue';
+import InconsistentMetadata from '@/views/admin/consistency/inconsistent-metadata/InconsistentMetadata.vue';
 
 describe('InconsistentMetadataView', () => {
   it('should render metadata inconsistencies', () => {

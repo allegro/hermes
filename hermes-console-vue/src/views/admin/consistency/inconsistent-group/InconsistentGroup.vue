@@ -2,7 +2,7 @@
   import { useConsistencyStore } from '@/store/consistency/useConsistencyStore';
   import { useI18n } from 'vue-i18n';
   import { useRoute, useRouter } from 'vue-router';
-  import InconsistentMetadata from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentMetadata.vue';
+  import InconsistentMetadata from '@/views/admin/consistency/inconsistent-metadata/InconsistentMetadata.vue';
 
   const route = useRoute();
   const router = useRouter();

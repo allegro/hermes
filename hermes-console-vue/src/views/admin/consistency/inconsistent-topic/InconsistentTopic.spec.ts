@@ -6,7 +6,7 @@ import {
   dummyGroupInconsistency2,
 } from '@/dummy/groupInconsistency';
 import { render } from '@/utils/test-utils';
-import InconsistentTopic from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentTopic.vue';
+import InconsistentTopic from '@/views/admin/consistency/inconsistent-topic/InconsistentTopic.vue';
 import router from '@/router';
 
 describe('InconsistentTopic', () => {

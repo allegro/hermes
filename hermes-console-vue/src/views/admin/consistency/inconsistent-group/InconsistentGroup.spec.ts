@@ -5,7 +5,7 @@ import {
   dummyGroupInconsistency3,
 } from '@/dummy/groupInconsistency';
 import { render } from '@/utils/test-utils';
-import InconsistentGroup from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentGroup.vue';
+import InconsistentGroup from '@/views/admin/consistency/inconsistent-group/InconsistentGroup.vue';
 import router from '@/router';
 
 describe('InconsistentGroup', () => {
