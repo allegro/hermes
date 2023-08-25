@@ -1,13 +1,16 @@
 package pl.allegro.tech.hermes.integration.helper;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import java.util.List;
+import java.util.ArrayList;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
+
+import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -37,7 +40,7 @@ public class PrometheusEndpoint implements EnvironmentAware {
             ".*hermes_consumers_subscription_throughput_bytes_total" +
             ".*hermes_consumers_subscription_other_errors_total" +
             ".*hermes_consumers_subscription_batches_total" +
-            ".*hermes_consumers_subscription_http_status_codes_total.*";
+            ".*hermes_consumers_subscription_http_status_codes_total.*GROUP.*TOPIC.*SUBSCRIPTION.*";
 
     private final ObjectMapper objectMapper;
     private final WireMock prometheusListener;
@@ -47,8 +50,8 @@ public class PrometheusEndpoint implements EnvironmentAware {
         this.objectMapper = new ObjectMapper();
     }
 
-    public void returnTopicMetrics(String group, String topic, int rate, int deliveryRate) {
-        String response = generateTopicsMetricsResponse(rate, deliveryRate);
+    public void returnTopicMetrics(String group, String topic, PrometheusTopicResponse topicStub) {
+        String response = generateTopicsMetricsResponse(topicStub.topicRate, topicStub.deliveredRate, topicStub.throughput);
         String query = TOPIC_QUERY_PATTERN
                 .replaceAll("GROUP", group)
                 .replaceAll("TOPIC", topic);
@@ -59,8 +62,8 @@ public class PrometheusEndpoint implements EnvironmentAware {
                         .withBody(response)));
     }
 
-    public void returnSubscriptionMetrics(Topic topic, String subscription, int rate) {
-        String response = generateSubscriptionResponse(rate);
+    public void returnSubscriptionMetrics(Topic topic, String subscription, PrometheusSubscriptionResponse stub) {
+        String response = generateSubscriptionResponse(stub);
         String query = SUBSCRIPTION_QUERY_PATTERN
                 .replaceAll("GROUP", topic.getName().getGroupName())
                 .replaceAll("TOPIC", topic.getName().getName())
@@ -72,7 +75,32 @@ public class PrometheusEndpoint implements EnvironmentAware {
                         .withBody(response)));
     }
 
-    private String generateTopicsMetricsResponse(int rate, int deliveryRate) {
+    public void returnSubscriptionMetricsWithDelay(Topic topic, String subscription, PrometheusSubscriptionResponse stub,
+                                                   int prometheusDelay) {
+        String response = generateSubscriptionResponse(stub);
+        String query = SUBSCRIPTION_QUERY_PATTERN
+                .replaceAll("GROUP", topic.getName().getGroupName())
+                .replaceAll("TOPIC", topic.getName().getName())
+                .replaceAll("SUBSCRIPTION", subscription);
+        prometheusListener.register(get(urlMatching(query))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withFixedDelay(prometheusDelay)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(response)));
+    }
+
+    public void returnServerErrorForAllTopics() {
+        String query = TOPIC_QUERY_PATTERN
+                .replaceAll("GROUP", "")
+                .replaceAll("TOPIC", "");
+        prometheusListener.register(get(urlMatching(query))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withHeader("Content-Type", "application/json")));
+    }
+
+    private String generateTopicsMetricsResponse(int rate, int deliveryRate, int throughput) {
         return writeToString(
                 new PrometheusResponse(
                         "success",
@@ -80,119 +108,32 @@ public class PrometheusEndpoint implements EnvironmentAware {
                                 "vector",
                                 List.of(
                                         new PrometheusResponse.Result(
-                                                new PrometheusResponse.MetricName(TOPIC_REQUESTS_TOTAL),
+                                                new PrometheusResponse.MetricName(TOPIC_REQUESTS_TOTAL, null),
                                                 List.of(TIMESTAMP, String.valueOf(rate))),
                                         new PrometheusResponse.Result(
-                                                new PrometheusResponse.MetricName(TOPIC_DELIVERED_TOTAL),
-                                                List.of(TIMESTAMP, String.valueOf(deliveryRate))))
+                                                new PrometheusResponse.MetricName(TOPIC_DELIVERED_TOTAL, null),
+                                                List.of(TIMESTAMP, String.valueOf(deliveryRate))),
+                                        new PrometheusResponse.Result(
+                                                new PrometheusResponse.MetricName(TOPIC_THROUGHPUT_TOTAL, null),
+                                                List.of(TIMESTAMP, String.valueOf(throughput))))
                         )));
     }
 
-    private String generateSubscriptionResponse(int rate) {
-        return writeToString(
-                new PrometheusResponse(
-                        "success",
-                        new PrometheusResponse.Data(
-                                "vector",
-                                List.of(
-                                        new PrometheusResponse.Result(
-                                                new PrometheusResponse.MetricName(SUBSCRIPTION_DELIVERED),
-                                                List.of(TIMESTAMP, String.valueOf(rate)))
-                                ))));
+    private String generateSubscriptionResponse(PrometheusSubscriptionResponse stub) {
+        List<PrometheusResponse.Result> results = new ArrayList<>();
+        results.add(
+                new PrometheusResponse.Result(
+                        new PrometheusResponse.MetricName(SUBSCRIPTION_DELIVERED, null),
+                        List.of(TIMESTAMP, String.valueOf(stub.rate)))
+        );
+        stub.statusCodes().forEach(s -> results.add(
+                new PrometheusResponse.Result(
+                        new PrometheusResponse.MetricName(SUBSCRIPTION_STATUS_CODES, s.code()),
+                        List.of(TIMESTAMP, String.valueOf(s.rate)))));
+        PrometheusResponse response = new PrometheusResponse(
+                "success", new PrometheusResponse.Data("vector", results));
+        return writeToString(response);
     }
-
-
-//    public void returnServerErrorForAllTopics() {
-//        graphiteListener.register(get(urlMatching(TOPIC_URL_PATTERN))
-//                .willReturn(aResponse()
-//                        .withStatus(500)
-//                        .withHeader("Content-Type", "application/json")
-//                )
-//        );
-//    }
-//
-//    public void returnMetric(SubscriptionMetricsStubDefinition metricsStubDefinition) {
-//        graphiteListener.register(get(urlMatching(metricsStubDefinition.toUrlPattern()))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(metricsStubDefinition.toBody())));
-//    }
-//
-//    public void returnMetricWithDelay(SubscriptionMetricsStubDefinition metricsStubDefinition, int responseDelayInMs) {
-//        graphiteListener.register(get(urlMatching(metricsStubDefinition.toUrlPattern()))
-//                .willReturn(aResponse()
-//                        .withFixedDelay(responseDelayInMs)
-//                        .withStatus(200)
-//                        .withHeader("Content-Type", "application/json")
-//                        .withBody(metricsStubDefinition.toBody())));
-//    }
-//
-//    private static class SubscriptionMetricsStubDefinition {
-//        private final String subscription;
-//        private final List<GraphiteStubResponse> responseBody;
-//
-//        private SubscriptionMetricsStubDefinition(String subscription, List<GraphiteStubResponse> responseBody) {
-//            this.subscription = subscription;
-//            this.responseBody = responseBody;
-//        }
-//
-//        private String toUrlPattern() {
-//            return "/.*sumSeries%28stats.tech.hermes\\.consumer\\.%2A\\.meter\\." + subscription + "\\.m1_rate%29.*";
-//        }
-//
-//        private String toBody() {
-//            try {
-//                return new ObjectMapper().writeValueAsString(responseBody);
-//            } catch (JsonProcessingException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//    }
-//
-//    public static class SubscriptionMetricsStubDefinitionBuilder {
-//        private final String subscription;
-//        private final List<GraphiteStubResponse> response = new ArrayList<>();
-//
-//        private SubscriptionMetricsStubDefinitionBuilder(String subscription) {
-//            this.subscription = subscription;
-//        }
-//
-//        public SubscriptionMetricsStubDefinitionBuilder withRate(int rate) {
-//            String target = "sumSeries(stats.tech.hermes.consumer.*.meter." + subscription + ".m1_rate)";
-//            response.add(new GraphiteStubResponse(target, dataPointOf(rate)));
-//            return this;
-//        }
-//
-//        public SubscriptionMetricsStubDefinitionBuilder withThroughput(int rate) {
-//            String target = "sumSeries(stats.tech.hermes.consumer.*.throughput." + subscription + ".m1_rate)";
-//            response.add(new GraphiteStubResponse(target, dataPointOf(rate)));
-//            return this;
-//        }
-//
-//        public SubscriptionMetricsStubDefinitionBuilder withStatusRate(int httpStatus, int rate) {
-//            String statusFamily = httpStatusFamily(httpStatus);
-//            String target = "sumSeries(stats.tech.hermes.consumer.*.status." + subscription + "." + statusFamily + ".m1_rate)";
-//            response.add(new GraphiteStubResponse(target, dataPointOf(rate)));
-//            return this;
-//        }
-//
-//        public SubscriptionMetricsStubDefinition build() {
-//            return new SubscriptionMetricsStubDefinition(subscription, response);
-//        }
-//
-//        private String httpStatusFamily(int statusCode) {
-//            return format("%dxx", statusCode / 100);
-//        }
-//
-//        private static List<List<Object>> dataPointOf(int rate) {
-//            return singletonList(asList(rate, TIMESTAMP));
-//        }
-//    }
-//
-//    public static SubscriptionMetricsStubDefinitionBuilder subscriptionMetricsStub(String subscription) {
-//        return new SubscriptionMetricsStubDefinitionBuilder(subscription);
-//    }
 
     String writeToString(Object o) {
         try {
@@ -202,18 +143,46 @@ public class PrometheusEndpoint implements EnvironmentAware {
         }
     }
 
+    public record PrometheusTopicResponse(int topicRate, int deliveredRate, int throughput) {
+    }
+
+    public record PrometheusSubscriptionResponse(int rate, List<SubscriptionStatusCode> statusCodes) {
+    }
+
+    public record SubscriptionStatusCode(String code, int rate) {
+    }
+
+    public static class PrometheusSubscriptionResponseBuilder {
+        private int rate = 0;
+        private final List<SubscriptionStatusCode> statusCodes = new ArrayList<>();
+
+        private PrometheusSubscriptionResponseBuilder() {
+        }
+
+        public static PrometheusSubscriptionResponseBuilder builder() {
+            return new PrometheusSubscriptionResponseBuilder();
+        }
+
+        public PrometheusSubscriptionResponseBuilder withRate(int rate) {
+            this.rate = rate;
+            return this;
+        }
+
+        public PrometheusSubscriptionResponseBuilder withRatedStatusCode(String statusCode, int rate) {
+            this.statusCodes.add(new SubscriptionStatusCode(statusCode, rate));
+            return this;
+        }
+
+        public PrometheusSubscriptionResponse build() {
+            return new PrometheusSubscriptionResponse(rate, statusCodes);
+        }
+    }
+
     record PrometheusResponse(@JsonProperty("status") String status,
                               @JsonProperty("data") Data data) {
 
-        boolean isSuccess() {
-            return status.equals("success") && data.isVector();
-        }
-
         record Data(@JsonProperty("resultType") String resultType,
                     @JsonProperty("result") List<Result> results) {
-            boolean isVector() {
-                return resultType.equals("vector");
-            }
         }
 
         record Result(
@@ -221,8 +190,11 @@ public class PrometheusEndpoint implements EnvironmentAware {
                 @JsonProperty("value") List<String> values) {
         }
 
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         record MetricName(
-                @JsonProperty(value = "__name__") String name) {
+                @JsonProperty(value = "__name__") String name,
+                @JsonProperty(value = "status_code") String statusCode
+        ) {
         }
     }
 }

@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.integration;
 
 import com.googlecode.catchexception.CatchException;
 import jakarta.ws.rs.BadRequestException;
+import java.util.Collections;
+import java.util.List;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
@@ -14,6 +16,9 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.frontend.config.GraphiteProperties;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponse;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusTopicResponse;
 import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -27,6 +32,7 @@ import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static java.lang.Integer.MAX_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
+import static pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder.*;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
@@ -54,7 +60,8 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("group", "topic_metrics").build());
         operations.createSubscription(topic, "subscription", remoteService.getUrl());
-        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(), 10, 15);
+        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(),
+                new PrometheusTopicResponse(10, 15, 0));
 
         remoteService.expectMessages(TestMessage.simple().body());
         assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
@@ -79,7 +86,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("pl.group", "topic").build());
         operations.createSubscription(topic, "subscription", remoteService.getUrl());
-        prometheusEndpoint.returnSubscriptionMetrics(topic, "subscription", 15);
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "subscription", builder().withRate(15).build());
 
         remoteService.expectMessages(TestMessage.simple().body());
         assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
@@ -122,7 +129,7 @@ public class MetricsTest extends IntegrationTest {
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
         String subscriptionName = "pl.allegro.tech.hermes.subscription";
         operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
-        prometheusEndpoint.returnSubscriptionMetrics(topic, subscriptionName, 15);
+        prometheusEndpoint.returnSubscriptionMetrics(topic, subscriptionName, builder().withRate(15).build());
 
         wait.until(() -> {
             // when

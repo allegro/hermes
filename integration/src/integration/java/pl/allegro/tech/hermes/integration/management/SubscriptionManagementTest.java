@@ -28,6 +28,8 @@ import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusTopicResponse;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations.ConsumerGroupOffset;
@@ -40,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static jakarta.ws.rs.client.ClientBuilder.newClient;
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
@@ -52,6 +53,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
 import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
+import static pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder.builder;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
@@ -64,13 +66,13 @@ public class SubscriptionManagementTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
     private HermesClient client;
-    private GraphiteEndpoint graphiteEndpoint;
+    private PrometheusEndpoint prometheusEndpoint;
 
     @BeforeMethod
     public void initializeAlways() {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
         client = hermesClient(new JerseyHermesSender(newClient())).withURI(create("http://localhost:" + FRONTEND_PORT)).build();
-        graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
+        prometheusEndpoint = new PrometheusEndpoint(SharedServices.services().prometheusHttpMock());
     }
 
     @AfterMethod
@@ -410,8 +412,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // and
         operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
-        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 100);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription").withRate(100).build());
+        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(),
+                new PrometheusTopicResponse(100, 100, 0));
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
@@ -429,10 +431,10 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // and
         operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
-        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription")
-                .withRate(50)
-                .withStatusRate(500, 11).build());
+        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(),
+                new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "subscription",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
@@ -445,15 +447,15 @@ public class SubscriptionManagementTest extends IntegrationTest {
     @Test
     public void shouldReturnNoDataStatusWhenGraphiteRespondsWithAnError() {
         // given
-        String topicName = "topic";
         Topic topic = randomTopic("healthNoData", "topic").build();
         String subscriptionName = "subscription";
 
         // and
         operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
-        graphiteEndpoint.returnServerErrorForAllTopics();
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub(topic.getQualifiedName() + ".subscription").withRate(100).build());
+        prometheusEndpoint.returnServerErrorForAllTopics();
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "subscription",
+                builder().withRate(100).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
