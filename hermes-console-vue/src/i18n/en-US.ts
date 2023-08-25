@@ -19,6 +19,12 @@ const en_US = {
     confirmText: "Type 'prod' to confirm action.",
   },
   notifications: {
+    roles: {
+      fetch: {
+        failure:
+          'Fetching user roles failed. Some options might not be visible.',
+      },
+    },
     topic: {
       delete: {
         success: 'Topic {topicName} successfully deleted',

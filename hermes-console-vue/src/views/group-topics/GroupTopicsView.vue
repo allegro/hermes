@@ -1,8 +1,10 @@
 <script setup lang="ts">
   import { computed } from 'vue';
+  import { isAdmin } from '@/utils/roles-util';
   import { ref } from 'vue';
   import { useGroups } from '@/composables/groups/use-groups/useGroups';
   import { useI18n } from 'vue-i18n';
+  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useRoute } from 'vue-router';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupTopicsListing from '@/views/group-topics/group-topics-listing/GroupTopicsListing.vue';
@@ -16,6 +18,8 @@
   const { groups, loading, error } = useGroups();
 
   const filter = ref<string>();
+
+  const roles = useRoles(null, null).roles;
 
   const group = computed(() => {
     return (groups.value || [])?.find((i) => i.name === groupId);
@@ -52,14 +56,25 @@
       </v-col>
     </v-row>
     <v-row dense>
-      <v-col md="12">
-        <v-card density="compact">
-          <v-card-item>
+      <v-col>
+        <v-card density="compact" class="d-flex flex-row justify-space-between">
+          <v-card-text>
             <p class="text-overline">Group</p>
             <p class="text-h4 font-weight-bold mb-2">
               {{ groupId }}
             </p>
-          </v-card-item>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              v-if="isAdmin(roles)"
+              :disabled="group?.topics.length !== 0"
+              color="red"
+              prepend-icon="mdi-delete"
+              @click="$emit('remove')"
+            >
+              {{ $t('subscription.subscriptionMetadata.actions.remove') }}
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>

@@ -1,5 +1,7 @@
 import { fetchRoles as getRoles } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
+import i18n from '@/main';
 import type { Ref } from 'vue';
 import type { Role } from '@/api/role';
 
@@ -17,6 +19,8 @@ export function useRoles(
   topicName: string | null,
   subscriptionName: string | null,
 ): UseRoles {
+  const notificationStore = useNotificationsStore();
+
   const roles = ref<Role[]>();
   const error = ref<UseRolesErrors>({
     fetchRoles: null,
@@ -30,7 +34,10 @@ export function useRoles(
       ).data;
     } catch (e) {
       error.value.fetchRoles = e as Error;
-      // TODO should send notification
+      notificationStore.dispatchNotification({
+        text: i18n.global.t('notifications.roles.fetch.failure'),
+        type: 'warning',
+      });
     } finally {
       loading.value = false;
     }
