@@ -18,6 +18,7 @@ import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { ConstraintsConfig } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
+import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
   MessagePreview,
   Topic,
@@ -545,5 +546,41 @@ export const fetchRolesErrorHandler = ({
   path: string;
 }) =>
   rest.get(path, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const fetchConsistencyGroupsHandler = ({
+  groups,
+}: {
+  groups: string[];
+}) =>
+  rest.get(`${url}/consistency/groups`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(groups));
+  });
+
+export const fetchConsistencyGroupsErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/consistency/groups`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const fetchGroupInconsistenciesHandler = ({
+  groupsInconsistency,
+}: {
+  groupsInconsistency: InconsistentGroup[];
+}) =>
+  rest.get(`${url}/consistency/inconsistencies/groups`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(groupsInconsistency));
+  });
+
+export const fetchGroupInconsistenciesErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  rest.get(`${url}/consistency/inconsistencies/groups`, (req, res, ctx) => {
     return res(ctx.status(errorCode), ctx.json(undefined));
   });

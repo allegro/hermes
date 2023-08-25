@@ -2,6 +2,7 @@ import { createTestingPinia } from '@pinia/testing';
 import { dummyAppConfig } from '@/dummy/app-config';
 import type { AppConfigStoreState } from '@/store/app-config/types';
 import type { AuthStoreState } from '@/store/auth/types';
+import type { ConsistencyStoreState } from '@/store/consistency/types';
 
 export const appConfigStoreState: AppConfigStoreState = {
   appConfig: dummyAppConfig,
@@ -18,6 +19,15 @@ export const authStoreState: AuthStoreState = {
   error: {
     loadAuth: null,
   },
+};
+
+export const consistencyStoreState: ConsistencyStoreState = {
+  fetchInProgress: false,
+  progressPercent: 0,
+  error: {
+    fetchError: null,
+  },
+  groups: [],
 };
 
 export const dummyStoresState = {

@@ -1,15 +1,24 @@
 <script setup lang="ts">
   import { ref } from 'vue';
+  import { useConsistencyStore } from '@/store/consistency/useConsistencyStore';
   import { useI18n } from 'vue-i18n';
   import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
+  import InconsistentGroupsListing from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentGroupsListing.vue';
   import InconsistentTopicsListing from '@/views/admin/consistency/inconsistent-topics-listing/InconsistentTopicsListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
   const { t } = useI18n();
   const topicFilter = ref<string>();
+  const groupFilter = ref<string>();
 
   const { topics, loading, error } = useInconsistentTopics();
+
+  const consistencyStore = useConsistencyStore();
+
+  function checkConsistency() {
+    consistencyStore.fetch();
+  }
 
   const breadcrumbsItems = [
     {
@@ -29,10 +38,54 @@
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error.fetchInconsistentTopics"
+          v-if="
+            error.fetchInconsistentTopics || consistencyStore.error.fetchError
+          "
           :title="$t('consistency.connectionError.title')"
           :text="$t('consistency.connectionError.text')"
           type="error"
+        />
+      </v-col>
+    </v-row>
+    <v-row dense>
+      <v-col md="4">
+        <p class="text-h5 font-weight-bold mb-3">
+          {{ $t('consistency.inconsistentGroups.heading') }}
+        </p>
+      </v-col>
+      <v-col class="text-right">
+        <v-btn color="light-blue" @click="checkConsistency">
+          {{ $t('consistency.inconsistentGroups.actions.check') }}
+        </v-btn>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col md="12" v-if="consistencyStore.fetchInProgress">
+        <v-progress-linear
+          :model-value="consistencyStore.progressPercent"
+          :buffer-value="100"
+          color="blue"
+          data-testid="consistency-progress-bar"
+        ></v-progress-linear>
+      </v-col>
+    </v-row>
+    <v-row dense>
+      <v-col md="12">
+        <v-text-field
+          single-line
+          :label="$t('consistency.inconsistentGroups.actions.search')"
+          density="compact"
+          v-model="groupFilter"
+          prepend-inner-icon="mdi-magnify"
+        />
+      </v-col>
+    </v-row>
+    <v-row dense>
+      <v-col md="12">
+        <inconsistent-groups-listing
+          v-if="consistencyStore.groups"
+          :inconsistent-groups="consistencyStore.groups"
+          :filter="groupFilter"
         />
       </v-col>
     </v-row>

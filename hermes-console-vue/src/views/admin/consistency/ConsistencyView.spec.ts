@@ -1,3 +1,5 @@
+import { consistencyStoreState } from '@/dummy/store';
+import { createTestingPinia } from '@pinia/testing';
 import { dummyInconsistentTopics } from '@/dummy/inconsistentTopics';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
@@ -94,6 +96,104 @@ describe('ConsistencyView', () => {
     expect(vi.mocked(useInconsistentTopics)).toHaveBeenCalledOnce();
     expect(
       queryByText('consistency.connectionError.title'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should show progress bar when fetching consistency data', () => {
+    // when
+    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
+      useInconsistentTopicsStub,
+    );
+    const { queryByTestId } = render(ConsistencyView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          consistency: {
+            ...consistencyStoreState,
+            fetchInProgress: true,
+          },
+        },
+        stubActions: false,
+      }),
+    });
+
+    // then
+    expect(queryByTestId('consistency-progress-bar')).toBeVisible();
+  });
+
+  it('should not show progress bar when fetching consistency data is not in progress', () => {
+    // when
+    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
+      useInconsistentTopicsStub,
+    );
+    const { queryByTestId } = render(ConsistencyView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          consistency: {
+            ...consistencyStoreState,
+            fetchInProgress: false,
+          },
+        },
+        stubActions: false,
+      }),
+    });
+
+    // then
+    expect(queryByTestId('consistency-progress-bar')).not.toBeInTheDocument();
+  });
+
+  it('should show error message when fetching consistency failed', () => {
+    // given
+    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
+      useInconsistentTopicsStub,
+    );
+
+    // when
+    const { queryByText } = render(ConsistencyView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          consistency: {
+            ...consistencyStoreState,
+            error: {
+              fetchError: true,
+            },
+          },
+        },
+        stubActions: false,
+      }),
+    });
+
+    // then
+    expect(queryByText('consistency.connectionError.title')).toBeVisible();
+    expect(queryByText('consistency.connectionError.text')).toBeVisible();
+  });
+
+  it('should not show error message when fetching consistency succeeded', () => {
+    // given
+    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
+      useInconsistentTopicsStub,
+    );
+
+    // when
+    const { queryByText } = render(ConsistencyView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          consistency: {
+            ...consistencyStoreState,
+            error: {
+              fetchError: null,
+            },
+          },
+        },
+        stubActions: false,
+      }),
+    });
+
+    // then
+    expect(
+      queryByText('consistency.connectionError.title'),
+    ).not.toBeInTheDocument();
+    expect(
+      queryByText('consistency.connectionError.text'),
     ).not.toBeInTheDocument();
   });
 });
