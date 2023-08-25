@@ -45,14 +45,7 @@ describe('useConsistencyStore', () => {
 
   it('should filter groups', async () => {
     const consistencyStore = useConsistencyStore();
-    consistencyStore.set({
-      groups: dummyGroupInconsistency,
-      fetchInProgress: false,
-      progressPercent: 0,
-      error: {
-        fetchError: null,
-      },
-    });
+    consistencyStore.groups = dummyGroupInconsistency;
 
     expect(consistencyStore.group(dummyGroupInconsistency[0].name)).toEqual(
       dummyGroupInconsistency[0],
@@ -62,14 +55,7 @@ describe('useConsistencyStore', () => {
 
   it('should filter topics', async () => {
     const consistencyStore = useConsistencyStore();
-    consistencyStore.set({
-      groups: dummyGroupInconsistency,
-      fetchInProgress: false,
-      progressPercent: 0,
-      error: {
-        fetchError: null,
-      },
-    });
+    consistencyStore.groups = dummyGroupInconsistency;
 
     expect(
       consistencyStore.topic(

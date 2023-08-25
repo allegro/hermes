@@ -60,11 +60,6 @@ export const useConsistencyStore = defineStore('consistency', {
         (t) => t.name == topicName,
       )[0];
     },
-    set(newState: ConsistencyStoreState) {
-      this.groups = newState.groups;
-      this.progressPercent = newState.progressPercent;
-      this.fetchInProgress = newState.fetchInProgress;
-    },
   },
   getters: {},
   persist: true,

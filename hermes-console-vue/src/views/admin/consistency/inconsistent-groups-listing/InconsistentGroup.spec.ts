@@ -37,6 +37,7 @@ describe('InconsistentGroup', () => {
     const group = 'pl.allegro.public.group';
     const topic = `${group}.DummyEvent`;
     await router.push(`/ui/consistency/${group}/topics/${topic}`);
+
     // when
     const { getByText } = render(InconsistentGroup, {
       testPinia: createTestingPinia({
