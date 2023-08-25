@@ -9,10 +9,10 @@ import type {
   InconsistentTopic,
 } from '@/api/inconsistent-group';
 
-const partition = (arr: string[], batch_size: number): string[][] => {
+const partition = (array: string[], batch_size: number): string[][] => {
   const output: string[][] = [];
-  for (let i = 0; i < arr.length; i += batch_size) {
-    output[output.length] = arr.slice(i, i + batch_size);
+  for (let i = 0; i < array.length; i += batch_size) {
+    output[output.length] = array.slice(i, i + batch_size);
   }
   return output;
 };
