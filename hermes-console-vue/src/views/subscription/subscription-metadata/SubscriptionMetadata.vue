@@ -14,6 +14,8 @@
   }>();
 
   const route = useRoute();
+
+  defineEmits(['remove']);
 </script>
 
 <template>
@@ -100,6 +102,7 @@
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="red"
           prepend-icon="mdi-delete"
+          @click="$emit('remove')"
         >
           {{ $t('subscription.subscriptionMetadata.actions.remove') }}
         </v-btn>

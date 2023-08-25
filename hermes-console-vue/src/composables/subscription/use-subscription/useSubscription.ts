@@ -1,4 +1,5 @@
 import {
+  removeSubscription as deleteSubscription,
   fetchOwner as getOwner,
   fetchSubscription as getSubscription,
   fetchSubscriptionHealth as getSubscriptionHealth,
@@ -7,6 +8,8 @@ import {
   fetchSubscriptionUndeliveredMessages as getSubscriptionUndeliveredMessages,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
+import i18n from '@/main';
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
@@ -23,6 +26,7 @@ export interface UseSubscription {
   subscriptionLastUndeliveredMessage: Ref<SentMessageTrace | null>;
   loading: Ref<boolean>;
   error: Ref<UseSubscriptionsErrors>;
+  removeSubscription: () => Promise<boolean>;
 }
 
 export interface UseSubscriptionsErrors {
@@ -38,6 +42,8 @@ export function useSubscription(
   topicName: string,
   subscriptionName: string,
 ): UseSubscription {
+  const notificationStore = useNotificationsStore();
+
   const subscription = ref<Subscription>();
   const owner = ref<Owner>();
   const subscriptionMetrics = ref<SubscriptionMetrics>();
@@ -130,6 +136,28 @@ export function useSubscription(
     }
   };
 
+  const removeSubscription = async (): Promise<boolean> => {
+    try {
+      await deleteSubscription(topicName, subscriptionName);
+      notificationStore.dispatchNotification({
+        text: i18n.global.t('notifications.subscription.delete.success', {
+          subscriptionName,
+        }),
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: i18n.global.t('notifications.subscription.delete.failure', {
+          subscriptionName,
+        }),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
   fetchSubscription();
 
   return {
@@ -141,5 +169,6 @@ export function useSubscription(
     subscriptionLastUndeliveredMessage,
     loading,
     error,
+    removeSubscription,
   };
 }

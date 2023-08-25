@@ -193,3 +193,10 @@ export function fetchRoles(path: string): ResponsePromise<Role[]> {
 export function removeTopic(topic: String): ResponsePromise<TopicMetrics> {
   return axios.delete(`/topics/${topic}`);
 }
+
+export function removeSubscription(
+  topic: String,
+  subscription: String,
+): ResponsePromise<TopicMetrics> {
+  return axios.delete(`/topics/${topic}/subscriptions/${subscription}`);
+}

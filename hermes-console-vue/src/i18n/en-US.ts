@@ -22,9 +22,15 @@ const en_US = {
     topic: {
       delete: {
         success: 'Topic {topicName} successfully deleted',
-        failure: 'Couldn\'t delete topic {topicName}'
-      }
-    }
+        failure: "Couldn't delete topic {topicName}",
+      },
+    },
+    subscription: {
+      delete: {
+        success: 'Subscription {subscriptionName} successfully deleted',
+        failure: "Couldn't delete subscription {subscriptionName}",
+      },
+    },
   },
   consistency: {
     connectionError: {
@@ -272,6 +278,12 @@ const en_US = {
     },
   },
   subscription: {
+    confirmationDialog: {
+      remove: {
+        title: 'Confirm subscription deletion',
+        text: 'Are you sure you want to delete subscription {subscriptionId}',
+      },
+    },
     connectionError: {
       title: 'Connection error',
       text: 'Could not fetch {subscriptionId} subscription details',

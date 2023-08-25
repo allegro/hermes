@@ -66,8 +66,8 @@
   const roles = useRoles(topicName, null)?.roles;
 
   const {
-    isDialogOpened: isRemovedDialogOpened,
-    actionButtonEnabled: actionRemoveTopicButtonEnabled,
+    isDialogOpened: isRemoveDialogOpened,
+    actionButtonEnabled: actionRemoveButtonEnabled,
     openDialog: openRemoveDialog,
     closeDialog: closeRemoveDialog,
     enableActionButton: enableRemoveActionButton,
@@ -87,8 +87,8 @@
 
 <template>
   <confirmation-dialog
-    v-model="isRemovedDialogOpened"
-    :actionButtonEnabled="actionRemoveTopicButtonEnabled"
+    v-model="isRemoveDialogOpened"
+    :actionButtonEnabled="actionRemoveButtonEnabled"
     :title="$t('topicView.confirmationDialog.remove.title')"
     :text="t('topicView.confirmationDialog.remove.text', { topicName })"
     @action="deleteTopic"

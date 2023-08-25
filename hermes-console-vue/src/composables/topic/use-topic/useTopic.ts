@@ -9,6 +9,8 @@ import {
   fetchTopicSubscriptions as getTopicSubscriptions,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
+import i18n from '@/main';
 import type {
   MessagePreview,
   TopicMetrics,
@@ -18,8 +20,6 @@ import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
-import {useNotificationsStore} from "@/store/app-notifications/useAppNotifications";
-import i18n from "@/main";
 
 export interface UseTopic {
   topic: Ref<TopicWithSchema | undefined>;
@@ -151,25 +151,21 @@ export function useTopic(topicName: string): UseTopic {
   const removeTopic = async (): Promise<boolean> => {
     try {
       await deleteTopic(topicName);
-      notificationStore.dispatchNotification(
-          {
-            text: i18n.global.t('notifications.topic.delete.success', {
-              topicName,
-            }),
-            type: 'success',
-          }
-      )
+      notificationStore.dispatchNotification({
+        text: i18n.global.t('notifications.topic.delete.success', {
+          topicName,
+        }),
+        type: 'success',
+      });
       return true;
     } catch (e) {
-      notificationStore.dispatchNotification(
-          {
-            title: i18n.global.t('notifications.topic.delete.failure', {
-              topicName,
-            }),
-            text: (e as Error).message,
-            type: 'error',
-          }
-      )
+      notificationStore.dispatchNotification({
+        title: i18n.global.t('notifications.topic.delete.failure', {
+          topicName,
+        }),
+        text: (e as Error).message,
+        type: 'error',
+      });
       return false;
     }
   };
