@@ -208,6 +208,15 @@ export function fetchRoles(path: string): ResponsePromise<Role[]> {
   return axios.get<Role[]>(path);
 }
 
+export function moveSubscriptionOffsets(
+  topicName: string,
+  subscription: string,
+): ResponsePromise<null> {
+  return axios.post<null>(
+    `/topics/${topicName}/subscriptions/${subscription}/moveOffsetsToTheEnd`,
+  );
+}
+
 export function removeTopic(topic: String): ResponsePromise<void> {
   return axios.delete(`/topics/${topic}`);
 }

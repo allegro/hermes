@@ -584,3 +584,19 @@ export const fetchGroupInconsistenciesErrorHandler = ({
   rest.get(`${url}/consistency/inconsistencies/groups`, (req, res, ctx) => {
     return res(ctx.status(errorCode), ctx.json(undefined));
   });
+
+export const moveSubscriptionOffsetsHandler = ({
+  topicName,
+  subscriptionName,
+  statusCode,
+}: {
+  topicName: string;
+  subscriptionName: string;
+  statusCode: number;
+}) =>
+  rest.post(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/moveOffsetsToTheEnd`,
+    (req, res, ctx) => {
+      return res(ctx.status(statusCode), ctx.json(undefined));
+    },
+  );

@@ -32,7 +32,7 @@ vi.mocked(useI18n, {
 vi.mocked(useGlobalI18n, {
   partial: true,
   deep: true,
-}).mockReturnValueOnce({
+}).mockReturnValue({
   // @ts-ignore
   t: (key) => key,
 });

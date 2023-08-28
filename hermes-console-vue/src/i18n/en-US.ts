@@ -555,6 +555,10 @@ const en_US = {
       reason: 'Reason',
       timestamp: 'Timestamp',
     },
+    moveOffsets: {
+      tooltip: 'Move subscription offsets to the end',
+      button: 'MOVE OFFSETS',
+    },
   },
   search: {
     collection: {
@@ -583,6 +587,14 @@ const en_US = {
         owner: 'owner',
         endpoint: 'endpoint',
         noSubscriptions: 'No subscriptions found',
+      },
+    },
+  },
+  notifications: {
+    subscriptionOffsets: {
+      move: {
+        success: 'Moved offsets for subscription {subscriptionName}',
+        failure: 'Failed to move offsets for subscription {subscriptionName}',
       },
     },
   },
