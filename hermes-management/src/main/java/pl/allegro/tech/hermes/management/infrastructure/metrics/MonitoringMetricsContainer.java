@@ -9,29 +9,38 @@ public class MonitoringMetricsContainer {
 
     private static final MetricDecimalValue DEFAULT_VALUE = MetricDecimalValue.of("0.0");
 
-    private final Map<String, MetricDecimalValue> metrics = new HashMap<>();
+    private final Map<String, MetricDecimalValue> metrics;
+    private final boolean isAvailable;
 
-    public MonitoringMetricsContainer() {
+    private MonitoringMetricsContainer(boolean isAvailable, Map<String, MetricDecimalValue> metrics) {
+        this.metrics = metrics;
+        this.isAvailable = isAvailable;
     }
 
-    public MonitoringMetricsContainer(Map<String, MetricDecimalValue> metrics) {
-        this.metrics.putAll(metrics);
+    public static MonitoringMetricsContainer createEmpty() {
+        return new MonitoringMetricsContainer(true, new HashMap<>());
     }
 
-    public static MonitoringMetricsContainer unavailable(String... metrics) {
-        MonitoringMetricsContainer metricsContainer = new MonitoringMetricsContainer();
-        for (String metric : metrics) {
-            metricsContainer.addMetricValue(metric, MetricDecimalValue.unavailable());
-        }
-        return metricsContainer;
+    public static MonitoringMetricsContainer initialized(Map<String, MetricDecimalValue> metrics) {
+        return new MonitoringMetricsContainer(true, metrics);
+    }
+
+    public static MonitoringMetricsContainer unavailable() {
+        return new MonitoringMetricsContainer(false, new HashMap<>());
     }
 
     public MonitoringMetricsContainer addMetricValue(String metricPath, MetricDecimalValue value) {
+        if (!isAvailable) {
+            throw new IllegalStateException("Adding value to unavailable metrics container");
+        }
         this.metrics.put(metricPath, value);
         return this;
     }
 
     public MetricDecimalValue metricValue(String metricPath) {
+        if (!isAvailable) {
+            return MetricDecimalValue.unavailable();
+        }
         return metrics.getOrDefault(metricPath, DEFAULT_VALUE);
     }
 }

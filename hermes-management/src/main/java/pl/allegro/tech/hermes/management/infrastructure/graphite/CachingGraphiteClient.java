@@ -36,7 +36,7 @@ public class CachingGraphiteClient implements GraphiteClient {
     public MonitoringMetricsContainer readMetrics(String... metricPaths) {
         try {
             Map<String, MetricDecimalValue> graphiteMetrics = graphiteMetricsCache.getAll(asList(metricPaths));
-            return new MonitoringMetricsContainer(graphiteMetrics);
+            return MonitoringMetricsContainer.initialized(graphiteMetrics);
         } catch (ExecutionException e) {
             // should never happen because the loader does not throw any checked exceptions
             throw new RuntimeException(e);

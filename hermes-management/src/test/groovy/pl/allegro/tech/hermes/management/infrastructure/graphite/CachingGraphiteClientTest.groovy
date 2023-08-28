@@ -22,7 +22,7 @@ class CachingGraphiteClientTest extends Specification {
 
     def "should return metrics from the underlying client"() {
         given:
-        underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        underlyingClient.readMetrics("metric_1", "metric_2") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
 
         when:
         def metrics = cachingClient.readMetrics("metric_1", "metric_2")
@@ -39,7 +39,7 @@ class CachingGraphiteClientTest extends Specification {
         cachingClient.readMetrics("metric_1", "metric_2")
 
         then:
-        1 * underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        1 * underlyingClient.readMetrics("metric_1", "metric_2") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
     }
 
     def "should get metrics from the underlying client after TTL expires"() {
@@ -49,6 +49,6 @@ class CachingGraphiteClientTest extends Specification {
         cachingClient.readMetrics("metric_1", "metric_2")
 
         then:
-        2 * underlyingClient.readMetrics("metric_1", "metric_2") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        2 * underlyingClient.readMetrics("metric_1", "metric_2") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
     }
 }

@@ -27,7 +27,6 @@ import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
 import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint;
 import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusTopicResponse;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
@@ -52,7 +51,6 @@ import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
-import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
 import static pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder.builder;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -445,7 +443,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldReturnNoDataStatusWhenGraphiteRespondsWithAnError() {
+    public void shouldReturnNoDataStatusWhenPrometheusRespondsWithAnError() {
         // given
         Topic topic = randomTopic("healthNoData", "topic").build();
         String subscriptionName = "subscription";

@@ -34,7 +34,7 @@ class HybridPrometheusBasedTopicMetricsRepositoryTest extends Specification {
                 "topic='topic'}[1m]) keep_metric_names)"
         TopicName topic = new TopicName('group', 'topic')
 
-        client.readMetrics(query) >> new MonitoringMetricsContainer()
+        client.readMetrics(query) >> MonitoringMetricsContainer.createEmpty()
             .addMetricValue("hermes_frontend_topic_requests_total", of('10'))
             .addMetricValue("hermes_consumers_subscription_delivered_total", of('20'))
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/published') >> 100

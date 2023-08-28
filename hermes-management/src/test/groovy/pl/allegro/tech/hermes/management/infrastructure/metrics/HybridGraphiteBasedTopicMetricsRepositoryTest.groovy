@@ -35,7 +35,7 @@ class HybridGraphiteBasedTopicMetricsRepositoryTest extends Specification {
         String throughput = 'sumSeries(stats.producer.*.throughput.group.topic.m1_rate)'
         TopicName topic = new TopicName('group', 'topic')
 
-        client.readMetrics(rate, deliveryRate, throughput) >> new MonitoringMetricsContainer()
+        client.readMetrics(rate, deliveryRate, throughput) >> MonitoringMetricsContainer.createEmpty()
             .addMetricValue(rate, of('10'))
             .addMetricValue(deliveryRate, of('20'))
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/published') >> 100

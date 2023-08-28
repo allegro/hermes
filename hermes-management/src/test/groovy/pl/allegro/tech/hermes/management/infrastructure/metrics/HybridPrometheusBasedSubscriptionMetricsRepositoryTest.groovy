@@ -38,7 +38,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
 
     def "should read subscription metrics from multiple places"() {
         given:
-        client.readMetrics(query) >> new MonitoringMetricsContainer()
+        client.readMetrics(query) >> MonitoringMetricsContainer.createEmpty()
                 .addMetricValue("hermes_consumers_subscription_delivered_total", of('10'))
                 .addMetricValue("hermes_consumers_subscription_timeouts_total", of('100'))
                 .addMetricValue("hermes_consumers_subscription_other_errors_total", of('1000'))
@@ -62,7 +62,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
 
     def "should read subscription metrics for all http status codes"() {
         given:
-        client.readMetrics(query) >> new MonitoringMetricsContainer()
+        client.readMetrics(query) >> MonitoringMetricsContainer.createEmpty()
                 .addMetricValue("hermes_consumers_subscription_http_status_codes_total_2xx", of('2'))
                 .addMetricValue("hermes_consumers_subscription_http_status_codes_total_4xx", of('4'))
                 .addMetricValue("hermes_consumers_subscription_http_status_codes_total_5xx", of('5'))

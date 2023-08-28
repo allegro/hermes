@@ -22,7 +22,7 @@ class CachingPrometheusClientTest extends Specification {
 
     def "should return metrics from the underlying client"() {
         given:
-        underlyingClient.readMetrics("someQuery") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        underlyingClient.readMetrics("someQuery") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
 
         when:
         def metrics = cachingClient.readMetrics("someQuery")
@@ -39,7 +39,7 @@ class CachingPrometheusClientTest extends Specification {
         cachingClient.readMetrics("someQuery")
 
         then:
-        1 * underlyingClient.readMetrics("someQuery") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        1 * underlyingClient.readMetrics("someQuery") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
     }
 
     def "should get metrics from the underlying client after TTL expires"() {
@@ -49,6 +49,6 @@ class CachingPrometheusClientTest extends Specification {
         cachingClient.readMetrics("someQuery")
 
         then:
-        2 * underlyingClient.readMetrics("someQuery") >> new MonitoringMetricsContainer([metric_1: of("1"), metric_2: of("2")])
+        2 * underlyingClient.readMetrics("someQuery") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
     }
 }

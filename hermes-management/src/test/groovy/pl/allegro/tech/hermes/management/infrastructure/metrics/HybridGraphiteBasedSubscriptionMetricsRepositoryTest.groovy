@@ -36,7 +36,7 @@ class HybridGraphiteBasedSubscriptionMetricsRepositoryTest extends Specification
         String timeouts = 'sumSeries(stats.consumer.*.status.group.topic.subscription.errors.timeout.m1_rate)'
         String otherErrors = 'sumSeries(stats.consumer.*.status.group.topic.subscription.errors.other.m1_rate)'
 
-        client.readMetrics(_ as String, _ as String, _ as String, rate, _ as String, timeouts, otherErrors, _ as String) >> new MonitoringMetricsContainer()
+        client.readMetrics(_ as String, _ as String, _ as String, rate, _ as String, timeouts, otherErrors, _ as String) >> MonitoringMetricsContainer.createEmpty()
                 .addMetricValue(rate, of('10'))
                 .addMetricValue(timeouts, of('100'))
                 .addMetricValue(otherErrors, of('1000'))
@@ -60,7 +60,7 @@ class HybridGraphiteBasedSubscriptionMetricsRepositoryTest extends Specification
     def "should read subscription metrics for all http status codes"() {
         given:
         client.readMetrics(getHttpStatusCodeForFamily(2), getHttpStatusCodeForFamily(4), getHttpStatusCodeForFamily(5),
-                _ as String, _ as String, _ as String, _ as String, _ as String) >> new MonitoringMetricsContainer()
+                _ as String, _ as String, _ as String, _ as String, _ as String) >> MonitoringMetricsContainer.createEmpty()
                 .addMetricValue(getHttpStatusCodeForFamily(2), of('2'))
                 .addMetricValue(getHttpStatusCodeForFamily(4), of('4'))
                 .addMetricValue(getHttpStatusCodeForFamily(5), of('5'))

@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.net.URLEncoder.encode;
-import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
 
 
 public class RestTemplatePrometheusClient implements PrometheusClient {
@@ -39,7 +38,7 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
     @Override
     public MonitoringMetricsContainer readMetrics(String query) {
         try {
-            MonitoringMetricsContainer metricsContainer = new MonitoringMetricsContainer();
+            MonitoringMetricsContainer metricsContainer = MonitoringMetricsContainer.createEmpty();
             PrometheusResponse response = queryPrometheus(query);
             Preconditions.checkState(response.isSuccess(), "Prometheus response does not contain valid data");
 
@@ -53,7 +52,7 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
             return metricsContainer;
         } catch (Exception exception) {
             logger.warn("Unable to read from Prometheus...", exception);
-            return MonitoringMetricsContainer.unavailable(query);
+            return MonitoringMetricsContainer.unavailable();
         }
     }
 

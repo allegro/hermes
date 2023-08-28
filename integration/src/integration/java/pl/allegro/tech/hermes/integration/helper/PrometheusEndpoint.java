@@ -126,6 +126,12 @@ public class PrometheusEndpoint implements EnvironmentAware {
                         new PrometheusResponse.MetricName(SUBSCRIPTION_DELIVERED, null),
                         List.of(TIMESTAMP, String.valueOf(stub.rate)))
         );
+        results.add(
+                new PrometheusResponse.Result(
+                        new PrometheusResponse.MetricName(SUBSCRIPTION_THROUGHPUT, null),
+                        List.of(TIMESTAMP, String.valueOf(stub.throughput))
+                )
+        );
         stub.statusCodes().forEach(s -> results.add(
                 new PrometheusResponse.Result(
                         new PrometheusResponse.MetricName(SUBSCRIPTION_STATUS_CODES, s.code()),
@@ -146,7 +152,7 @@ public class PrometheusEndpoint implements EnvironmentAware {
     public record PrometheusTopicResponse(int topicRate, int deliveredRate, int throughput) {
     }
 
-    public record PrometheusSubscriptionResponse(int rate, List<SubscriptionStatusCode> statusCodes) {
+    public record PrometheusSubscriptionResponse(int rate, int throughput, List<SubscriptionStatusCode> statusCodes) {
     }
 
     public record SubscriptionStatusCode(String code, int rate) {
@@ -154,6 +160,7 @@ public class PrometheusEndpoint implements EnvironmentAware {
 
     public static class PrometheusSubscriptionResponseBuilder {
         private int rate = 0;
+        private int throughput = 0;
         private final List<SubscriptionStatusCode> statusCodes = new ArrayList<>();
 
         private PrometheusSubscriptionResponseBuilder() {
@@ -168,13 +175,18 @@ public class PrometheusEndpoint implements EnvironmentAware {
             return this;
         }
 
+        public PrometheusSubscriptionResponseBuilder withThroughput(int throughput) {
+            this.throughput = throughput;
+            return this;
+        }
+
         public PrometheusSubscriptionResponseBuilder withRatedStatusCode(String statusCode, int rate) {
             this.statusCodes.add(new SubscriptionStatusCode(statusCode, rate));
             return this;
         }
 
         public PrometheusSubscriptionResponse build() {
-            return new PrometheusSubscriptionResponse(rate, statusCodes);
+            return new PrometheusSubscriptionResponse(rate, throughput, statusCodes);
         }
     }
 
