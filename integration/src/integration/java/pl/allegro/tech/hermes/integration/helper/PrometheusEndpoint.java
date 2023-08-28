@@ -6,10 +6,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import java.util.ArrayList;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -25,10 +25,7 @@ public class PrometheusEndpoint implements EnvironmentAware {
     private static final String TOPIC_THROUGHPUT_TOTAL = "hermes_frontend_topic_throughput_bytes_total";
 
     private static final String SUBSCRIPTION_DELIVERED = "hermes_consumers_subscription_delivered_total";
-    private static final String SUBSCRIPTION_TIMEOUTS = "hermes_consumers_subscription_timeouts_total";
     private static final String SUBSCRIPTION_THROUGHPUT = "hermes_consumers_subscription_throughput_bytes_total";
-    private static final String SUBSCRIPTION_OTHER_ERRORS = "hermes_consumers_subscription_other_errors_total";
-    private static final String SUBSCRIPTION_BATCHES = "hermes_consumers_subscription_batches_total";
     private static final String SUBSCRIPTION_STATUS_CODES = "hermes_consumers_subscription_http_status_codes_total";
 
     private static final String TOPIC_QUERY_PATTERN = ".*hermes_frontend_topic_requests_total" +
@@ -50,11 +47,11 @@ public class PrometheusEndpoint implements EnvironmentAware {
         this.objectMapper = new ObjectMapper();
     }
 
-    public void returnTopicMetrics(String group, String topic, PrometheusTopicResponse topicStub) {
+    public void returnTopicMetrics(Topic topic, PrometheusTopicResponse topicStub) {
         String response = generateTopicsMetricsResponse(topicStub.topicRate, topicStub.deliveredRate, topicStub.throughput);
         String query = TOPIC_QUERY_PATTERN
-                .replaceAll("GROUP", group)
-                .replaceAll("TOPIC", topic);
+                .replaceAll("GROUP", topic.getName().getGroupName())
+                .replaceAll("TOPIC", topic.getName().getName());
         prometheusListener.register(get(urlMatching(query))
                 .willReturn(aResponse()
                         .withStatus(200)

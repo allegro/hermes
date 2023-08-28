@@ -410,8 +410,8 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // and
         operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
-        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(),
-                new PrometheusTopicResponse(100, 100, 0));
+        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(100, 100, 0));
+        prometheusEndpoint.returnSubscriptionMetrics(topic, subscriptionName, builder().withRate(100).build());
 
         // when
         SubscriptionHealth subscriptionHealth = management.subscription().getHealth(topic.getQualifiedName(), subscriptionName);
@@ -429,8 +429,7 @@ public class SubscriptionManagementTest extends IntegrationTest {
         // and
         operations.buildTopic(topic);
         operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
-        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(),
-                new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(100, 50, 0));
         prometheusEndpoint.returnSubscriptionMetrics(topic, "subscription",
                 builder().withRate(50).withRatedStatusCode("500", 11).build());
 

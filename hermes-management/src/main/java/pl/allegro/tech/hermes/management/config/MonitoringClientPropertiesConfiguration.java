@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /*
-These properties beans must be at different configuration class than ExternalMonitoringConfiguration.java to avoid
-circular dependencies.
+These properties beans must be in different configuration class than ExternalMonitoringConfiguration.java. It allows
+avoiding circular dependencies between beans.
  */
 @Configuration
 public class MonitoringClientPropertiesConfiguration {

@@ -60,7 +60,7 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         final Subscription subscription = createSubscriptionForOwner(topic, "ownedSubscription2", "Team A");
         createSubscriptionForOwner(topic, "ownedSubscription3", "Team B");
         PrometheusTopicResponse topicStub = new PrometheusTopicResponse(100, 50, 0);
-        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(), topicStub);
+        prometheusEndpoint.returnTopicMetrics(topic, topicStub);
         prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription1",
                 builder().withRate(100).withRatedStatusCode("500", 0).build());
         prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription2",
@@ -93,12 +93,9 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         final Subscription subscription5 = createSubscriptionForOwner(topic2, "ownedSubscription5", "Team B");
         final Subscription subscription6 = createSubscriptionForOwner(topic3, "ownedSubscription6", "Team B");
 
-        prometheusEndpoint.returnTopicMetrics(topic1.getName().getGroupName(), topic1.getName().getName(),
-                new PrometheusTopicResponse(100, 50, 0));
-        prometheusEndpoint.returnTopicMetrics(topic2.getName().getGroupName(), topic2.getName().getName(),
-                new PrometheusTopicResponse(100, 50, 0));
-        prometheusEndpoint.returnTopicMetrics(topic3.getName().getGroupName(), topic3.getName().getName(),
-                new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnTopicMetrics(topic1, new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnTopicMetrics(topic2, new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnTopicMetrics(topic3, new PrometheusTopicResponse(100, 50, 0));
 
         prometheusEndpoint.returnSubscriptionMetrics(topic1, "ownedSubscription1",
                 builder().withRate(100).withRatedStatusCode("500", 0).build());
@@ -164,8 +161,7 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         createSubscriptionForOwner(topic, "ownedSubscription1", "Team A");
         final Subscription subscription = createSubscriptionForOwner(topic, "ownedSubscription2", "Team A");
 
-        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(),
-                new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(100, 50, 0));
         prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription1",
                 builder().withRate(100).withRatedStatusCode("500", 0).build());
         prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription2",
@@ -190,8 +186,7 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         final Subscription subscription2 = createSubscriptionForOwner(topic, "ownedSubscription2", "Team A", Severity.IMPORTANT);
         final Subscription subscription3 = createSubscriptionForOwner(topic, "ownedSubscription3", "Team A", Severity.NON_IMPORTANT);
 
-        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(),
-                new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(100, 50, 0));
         prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription1",
                 builder().withRate(50).withRatedStatusCode("500", 11).build());
         prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription2",

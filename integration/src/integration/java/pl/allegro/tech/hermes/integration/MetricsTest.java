@@ -60,8 +60,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("group", "topic_metrics").build());
         operations.createSubscription(topic, "subscription", remoteService.getUrl());
-        prometheusEndpoint.returnTopicMetrics(topic.getName().getGroupName(), topic.getName().getName(),
-                new PrometheusTopicResponse(10, 15, 0));
+        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(10, 15, 0));
 
         remoteService.expectMessages(TestMessage.simple().body());
         assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
