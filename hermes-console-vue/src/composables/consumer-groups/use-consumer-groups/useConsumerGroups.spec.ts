@@ -1,4 +1,5 @@
 import { afterEach, expect } from 'vitest';
+import { createTestingPinia } from '@pinia/testing';
 import { dummyConsumerGroups } from '@/dummy/consumerGroups';
 import { dummySubscription } from '@/dummy/subscription';
 import { dummyTopic } from '@/dummy/topic';
@@ -7,8 +8,10 @@ import {
   fetchConsumerGroupsHandler,
   moveSubscriptionOffsetsHandler,
 } from '@/mocks/handlers';
+import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import { waitFor } from '@testing-library/vue';
 
 describe('useConsumerGroups', () => {
@@ -22,6 +25,14 @@ describe('useConsumerGroups', () => {
       subscriptionName,
     }),
   );
+
+  const pinia = createTestingPinia({
+    fakeApp: true,
+  });
+
+  beforeEach(() => {
+    setActivePinia(pinia);
+  });
 
   afterEach(() => {
     server.resetHandlers();
@@ -70,14 +81,34 @@ describe('useConsumerGroups', () => {
 
   it('should show message that moving offsets was successful', async () => {
     // given
+    server.use(
+      moveSubscriptionOffsetsHandler({
+        topicName,
+        subscriptionName,
+        statusCode: 200,
+      }),
+    );
     server.listen();
+    const notificationsStore = useNotificationsStore();
+    const dispatchNotification = vi.spyOn(
+      notificationsStore,
+      'dispatchNotification',
+    );
+
     const { moveOffsets } = useConsumerGroups(topicName, subscriptionName);
 
     // when
     moveOffsets();
 
     // then
-    //TODO: check that notification was sent
+    await waitFor(() => {
+      expect(dispatchNotification).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          type: 'success',
+          title: 'notifications.subscriptionOffsets.move.success',
+        }),
+      );
+    });
   });
 
   it('should show message that moving offsets was unsuccessful', async () => {
@@ -90,12 +121,25 @@ describe('useConsumerGroups', () => {
       }),
     );
     server.listen();
+
+    const notificationsStore = useNotificationsStore();
+    const dispatchNotification = vi.spyOn(
+      notificationsStore,
+      'dispatchNotification',
+    );
     const { moveOffsets } = useConsumerGroups(topicName, subscriptionName);
 
     // when
     moveOffsets();
 
     // then
-    //TODO: check that notification was sent
+    await waitFor(() => {
+      expect(dispatchNotification).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          title: 'notifications.subscriptionOffsets.move.failure',
+        }),
+      );
+    });
   });
 });

@@ -483,8 +483,6 @@ const en_US = {
     moveOffsets: {
       tooltip: 'Move subscription offsets to the end',
       button: 'MOVE OFFSETS',
-      success: 'Moved offsets for subscription {subscriptionName}',
-      failure: 'Failed to move offsets for subscription {subscriptionName}',
     },
   },
   search: {
@@ -514,6 +512,14 @@ const en_US = {
         owner: 'owner',
         endpoint: 'endpoint',
         noSubscriptions: 'No subscriptions found',
+      },
+    },
+  },
+  notifications: {
+    subscriptionOffsets: {
+      move: {
+        success: 'Moved offsets for subscription {subscriptionName}',
+        failure: 'Failed to move offsets for subscription {subscriptionName}',
       },
     },
   },
