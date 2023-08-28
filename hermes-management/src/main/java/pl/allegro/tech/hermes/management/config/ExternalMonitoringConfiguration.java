@@ -9,7 +9,6 @@ import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +37,7 @@ public class ExternalMonitoringConfiguration {
     MetricsProperties metricsProperties;
 
     @Autowired
-    MonitoringClientProperties graphiteClientProperties;
+    ExternalMonitoringClientProperties graphiteClientProperties;
 
 
     @Bean
@@ -52,7 +51,6 @@ public class ExternalMonitoringConfiguration {
     public PrometheusMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient) {
         return new PrometheusMetricsProvider(prometheusClient, "hermes_consumers", "hermes_frontend");
     }
-
 
     @Bean
     public MetricsPaths metricsPaths() {
@@ -75,7 +73,7 @@ public class ExternalMonitoringConfiguration {
     @Bean
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate graphiteRestTemplate,
-                                             MonitoringClientProperties clientProperties) {
+                                             ExternalMonitoringClientProperties clientProperties) {
         RestTemplatePrometheusClient underlyingPrometheusClient =
                 new RestTemplatePrometheusClient(graphiteRestTemplate, URI.create(clientProperties.getExternalMonitoringUrl()));
         return new CachingPrometheusClient(
@@ -87,7 +85,7 @@ public class ExternalMonitoringConfiguration {
     }
 
     @Bean("monitoringRestTemplate")
-    public RestTemplate restTemplate(MonitoringClientProperties clientProperties) {
+    public RestTemplate restTemplate(ExternalMonitoringClientProperties clientProperties) {
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setMaxConnTotal(clientProperties.getMaxConnections())
                 .setMaxConnPerRoute(clientProperties.getMaxConnectionsPerRoute())

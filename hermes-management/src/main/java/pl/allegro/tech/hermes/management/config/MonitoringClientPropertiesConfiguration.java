@@ -14,14 +14,14 @@ public class MonitoringClientPropertiesConfiguration {
     @Bean
     @ConfigurationProperties("graphite.client")
     @ConditionalOnProperty(value = "graphite.client.enabled", havingValue = "true")
-    public MonitoringClientProperties graphiteMonitoringClientProperties() {
-        return new MonitoringClientProperties();
+    public ExternalMonitoringClientProperties graphiteMonitoringClientProperties() {
+        return new ExternalMonitoringClientProperties();
     }
 
     @Bean
     @ConfigurationProperties("prometheus.client")
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
-    public MonitoringClientProperties prometheusMonitoringClientProperties() {
-        return new MonitoringClientProperties();
+    public ExternalMonitoringClientProperties prometheusMonitoringClientProperties() {
+        return new ExternalMonitoringClientProperties();
     }
 }

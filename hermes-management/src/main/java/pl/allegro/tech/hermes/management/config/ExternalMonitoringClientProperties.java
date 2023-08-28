@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
-public class MonitoringClientProperties {
+public class ExternalMonitoringClientProperties {
 
     private int connectionTimeoutMillis = 1000;
 
