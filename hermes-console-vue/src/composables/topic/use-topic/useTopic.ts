@@ -9,8 +9,8 @@ import {
   fetchTopicSubscriptions as getTopicSubscriptions,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-import i18n from '@/main';
 import type {
   MessagePreview,
   TopicMetrics,
@@ -152,7 +152,7 @@ export function useTopic(topicName: string): UseTopic {
     try {
       await deleteTopic(topicName);
       notificationStore.dispatchNotification({
-        text: i18n.global.t('notifications.topic.delete.success', {
+        text: useGlobalI18n().t('notifications.topic.delete.success', {
           topicName,
         }),
         type: 'success',
@@ -160,7 +160,7 @@ export function useTopic(topicName: string): UseTopic {
       return true;
     } catch (e) {
       notificationStore.dispatchNotification({
-        title: i18n.global.t('notifications.topic.delete.failure', {
+        title: useGlobalI18n().t('notifications.topic.delete.failure', {
           topicName,
         }),
         text: (e as Error).message,

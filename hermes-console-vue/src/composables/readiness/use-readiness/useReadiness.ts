@@ -3,8 +3,8 @@ import {
   switchReadiness,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-import i18n from '@/main';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { Ref } from 'vue';
 
@@ -49,7 +49,7 @@ export function useReadiness(): UseReadiness {
     try {
       await switchReadiness(datacenter, desiredState);
       notificationStore.dispatchNotification({
-        text: i18n.global.t('notifications.readiness.switch.success', {
+        text: useGlobalI18n().t('notifications.readiness.switch.success', {
           datacenter,
         }),
         type: 'success',
@@ -57,7 +57,7 @@ export function useReadiness(): UseReadiness {
       return true;
     } catch (e) {
       notificationStore.dispatchNotification({
-        title: i18n.global.t('notifications.readiness.switch.failure', {
+        title: useGlobalI18n().t('notifications.readiness.switch.failure', {
           datacenter,
         }),
         text: (e as Error).message,

@@ -8,8 +8,8 @@ import {
   fetchSubscriptionUndeliveredMessages as getSubscriptionUndeliveredMessages,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-import i18n from '@/main';
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
@@ -140,7 +140,7 @@ export function useSubscription(
     try {
       await deleteSubscription(topicName, subscriptionName);
       notificationStore.dispatchNotification({
-        text: i18n.global.t('notifications.subscription.delete.success', {
+        text: useGlobalI18n().t('notifications.subscription.delete.success', {
           subscriptionName,
         }),
         type: 'success',
@@ -148,7 +148,7 @@ export function useSubscription(
       return true;
     } catch (e) {
       notificationStore.dispatchNotification({
-        title: i18n.global.t('notifications.subscription.delete.failure', {
+        title: useGlobalI18n().t('notifications.subscription.delete.failure', {
           subscriptionName,
         }),
         text: (e as Error).message,

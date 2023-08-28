@@ -1,10 +1,13 @@
 import { afterEach } from 'vitest';
 import { createTestingPinia } from '@pinia/testing';
 import { dummyRoles } from '@/dummy/roles';
+import {
+  expectNotificationDispatched,
+  notificationStoreSpy,
+} from '@/utils/test-utils';
 import { fetchRolesErrorHandler, fetchRolesHandler } from '@/mocks/handlers';
 import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
-import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { waitFor } from '@testing-library/vue';
 
@@ -94,11 +97,7 @@ describe('useRoles', () => {
     // given
     server.use(fetchRolesErrorHandler({ errorCode: 500, path: '/roles' }));
     server.listen();
-    const notificationsStore = useNotificationsStore();
-    const dispatchNotification = vi.spyOn(
-      notificationsStore,
-      'dispatchNotification',
-    );
+    const notificationStore = notificationStoreSpy();
 
     // when
     const { loading, error } = useRoles(null, null);
@@ -107,7 +106,10 @@ describe('useRoles', () => {
     await waitFor(() => {
       expect(loading.value).toBeFalsy();
       expect(error.value.fetchRoles).not.toBeNull();
-      expect(dispatchNotification).toHaveBeenCalledOnce();
+      expectNotificationDispatched(notificationStore, {
+        type: 'warning',
+        text: 'notifications.roles.fetch.failure',
+      });
     });
   });
 });

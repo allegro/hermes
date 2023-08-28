@@ -4,8 +4,8 @@ import {
   fetchGroupNames as getGroupNames,
 } from '@/api/hermes-client';
 import { fetchTopicNames as getTopicNames } from '@/api/hermes-client';
+import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-import i18n from '@/main';
 import type { Ref } from 'vue';
 
 export interface UseGroups {
@@ -76,7 +76,7 @@ export function useGroups(): UseGroups {
     try {
       await deleteGroup(groupId);
       notificationStore.dispatchNotification({
-        text: i18n.global.t('notifications.group.delete.success', {
+        text: useGlobalI18n().t('notifications.group.delete.success', {
           groupId,
         }),
         type: 'success',
@@ -84,7 +84,7 @@ export function useGroups(): UseGroups {
       return true;
     } catch (e) {
       notificationStore.dispatchNotification({
-        title: i18n.global.t('notifications.group.delete.failure', {
+        title: useGlobalI18n().t('notifications.group.delete.failure', {
           groupId,
         }),
         text: (e as Error).message,

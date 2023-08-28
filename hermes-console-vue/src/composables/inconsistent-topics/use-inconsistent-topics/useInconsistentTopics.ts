@@ -3,8 +3,8 @@ import {
   removeInconsistentTopic as deleteInconsistentTopic,
   fetchInconsistentTopics as getInconsistentTopics,
 } from '@/api/hermes-client';
+import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-import i18n from '@/main';
 import type { Ref } from 'vue';
 
 export interface UseInconsistentTopics {
@@ -46,17 +46,23 @@ export function useInconsistentTopics(): UseInconsistentTopics {
     try {
       await deleteInconsistentTopic(topic);
       notificationStore.dispatchNotification({
-        text: i18n.global.t('notifications.inconsistentTopic.delete.success', {
-          topic,
-        }),
+        text: useGlobalI18n().t(
+          'notifications.inconsistentTopic.delete.success',
+          {
+            topic,
+          },
+        ),
         type: 'success',
       });
       return true;
     } catch (e) {
       notificationStore.dispatchNotification({
-        title: i18n.global.t('notifications.inconsistentTopic.delete.failure', {
-          topic,
-        }),
+        title: useGlobalI18n().t(
+          'notifications.inconsistentTopic.delete.failure',
+          {
+            topic,
+          },
+        ),
         text: (e as Error).message,
         type: 'error',
       });

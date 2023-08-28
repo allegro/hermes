@@ -18,44 +18,6 @@ const en_US = {
     cancel: 'Cancel',
     confirmText: "Type 'prod' to confirm action.",
   },
-  notifications: {
-    readiness: {
-      switch: {
-        success: 'Successfully switched datacenter {datacenter} readiness',
-        failure: "Couldn't switch datacenter {datacenter} readiness",
-      },
-    },
-    roles: {
-      fetch: {
-        failure:
-          'Fetching user roles failed. Some options might not be visible.',
-      },
-    },
-    group: {
-      delete: {
-        success: 'Group {groupId} successfully deleted',
-        failure: "Couldn't delete group {groupId}",
-      },
-    },
-    topic: {
-      delete: {
-        success: 'Topic {topicName} successfully deleted',
-        failure: "Couldn't delete topic {topicName}",
-      },
-    },
-    inconsistentTopic: {
-      delete: {
-        success: 'Topic {topic} successfully deleted',
-        failure: "Couldn't delete topic {topic}",
-      },
-    },
-    subscription: {
-      delete: {
-        success: 'Subscription {subscriptionName} successfully deleted',
-        failure: "Couldn't delete subscription {subscriptionName}",
-      },
-    },
-  },
   consistency: {
     connectionError: {
       title: 'Connection error',
@@ -595,6 +557,42 @@ const en_US = {
       move: {
         success: 'Moved offsets for subscription {subscriptionName}',
         failure: 'Failed to move offsets for subscription {subscriptionName}',
+      },
+    },
+    readiness: {
+      switch: {
+        success: 'Successfully switched datacenter {datacenter} readiness',
+        failure: "Couldn't switch datacenter {datacenter} readiness",
+      },
+    },
+    roles: {
+      fetch: {
+        failure:
+          'Fetching user roles failed. Some options might not be visible.',
+      },
+    },
+    group: {
+      delete: {
+        success: 'Group {groupId} successfully deleted',
+        failure: "Couldn't delete group {groupId}",
+      },
+    },
+    topic: {
+      delete: {
+        success: 'Topic {topicName} successfully deleted',
+        failure: "Couldn't delete topic {topicName}",
+      },
+    },
+    inconsistentTopic: {
+      delete: {
+        success: 'Topic {topic} successfully deleted',
+        failure: "Couldn't delete topic {topic}",
+      },
+    },
+    subscription: {
+      delete: {
+        success: 'Subscription {subscriptionName} successfully deleted',
+        failure: "Couldn't delete subscription {subscriptionName}",
       },
     },
   },

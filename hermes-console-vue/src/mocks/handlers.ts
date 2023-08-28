@@ -585,6 +585,102 @@ export const fetchGroupInconsistenciesErrorHandler = ({
     return res(ctx.status(errorCode), ctx.json(undefined));
   });
 
+export const removeGroupHandler = ({ group }: { group: string }) =>
+  rest.delete(`/groups/${group}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(undefined));
+  });
+
+export const removeGroupErrorHandler = ({
+  group,
+  errorCode = 500,
+}: {
+  group: string;
+  errorCode: number;
+}) =>
+  rest.delete(`/groups/${group}`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const removeTopicHandler = ({ topic }: { topic: string }) =>
+  rest.delete(`/topics/${topic}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(undefined));
+  });
+
+export const removeTopicErrorHandler = ({
+  topic,
+  errorCode = 500,
+}: {
+  topic: string;
+  errorCode: number;
+}) =>
+  rest.delete(`/topics/${topic}`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const removeInconsistentTopicHandler = () =>
+  rest.delete(`/consistency/inconsistencies/topics`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(undefined));
+  });
+
+export const removeInconsistentTopicErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode: number;
+}) =>
+  rest.delete(`/consistency/inconsistencies/topics`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const removeSubscriptionHandler = ({
+  topic,
+  subscription,
+}: {
+  topic: string;
+  subscription: string;
+}) =>
+  rest.delete(
+    `/topics/${topic}/subscriptions/${subscription}`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(undefined));
+    },
+  );
+
+export const removeSubscriptionErrorHandler = ({
+  topic,
+  subscription,
+  errorCode = 500,
+}: {
+  topic: string;
+  subscription: string;
+  errorCode: number;
+}) =>
+  rest.delete(
+    `/topics/${topic}/subscriptions/${subscription}`,
+    (req, res, ctx) => {
+      return res(ctx.status(errorCode), ctx.json(undefined));
+    },
+  );
+
+export const switchReadinessHandler = ({
+  datacenter,
+}: {
+  datacenter: string;
+}) =>
+  rest.post(`/readiness/datacenters/${datacenter}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(undefined));
+  });
+
+export const switchReadinessErrorHandler = ({
+  datacenter,
+  errorCode,
+}: {
+  datacenter: string;
+  errorCode: number;
+}) =>
+  rest.post(`/readiness/datacenters/${datacenter}`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
 export const moveSubscriptionOffsetsHandler = ({
   topicName,
   subscriptionName,

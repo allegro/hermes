@@ -1,4 +1,5 @@
 import { afterEach, describe, expect } from 'vitest';
+import { createTestingPinia } from '@pinia/testing';
 import {
   dummyOwner,
   dummyTopic,
@@ -10,16 +11,24 @@ import {
   secondDummySubscription,
 } from '@/dummy/subscription';
 import {
+  expectNotificationDispatched,
+  notificationStoreSpy,
+} from '@/utils/test-utils';
+import {
   fetchOwnerErrorHandler,
   fetchTopicErrorHandler,
   fetchTopicMessagesPreviewErrorHandler,
   fetchTopicMetricsErrorHandler,
   fetchTopicSubscriptionDetailsErrorHandler,
   fetchTopicSubscriptionsErrorHandler,
+  removeTopicErrorHandler,
+  removeTopicHandler,
   successfulTopicHandlers,
 } from '@/mocks/handlers';
+import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
+import { waitFor } from '@testing-library/vue';
 import type { UseTopicErrors } from '@/composables/topic/use-topic/useTopic';
 
 describe('useTopic', () => {
@@ -27,6 +36,14 @@ describe('useTopic', () => {
 
   const topicName = dummyTopic.name;
   const topicOwner = dummyOwner.id;
+
+  const pinia = createTestingPinia({
+    fakeApp: true,
+  });
+
+  beforeEach(() => {
+    setActivePinia(pinia);
+  });
 
   afterEach(() => {
     server.resetHandlers();
@@ -173,6 +190,48 @@ describe('useTopic', () => {
       expectErrors(error.value, expectedErrors);
     },
   );
+
+  it('should show message that removing topic was successful', async () => {
+    // given
+    server.use(removeTopicHandler({ topic: dummyTopic.name }));
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { removeTopic } = useTopic(dummyTopic.name);
+
+    // when
+    await removeTopic();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        text: 'notifications.topic.delete.success',
+      });
+    });
+  });
+
+  it('should show message that removing subscription was unsuccessful', async () => {
+    // given
+    server.use(
+      removeTopicErrorHandler({ topic: dummyTopic.name, errorCode: 500 }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { removeTopic } = useTopic(dummyTopic.name);
+
+    // when
+    await removeTopic();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.topic.delete.failure',
+      });
+    });
+  });
 });
 
 function expectErrors(

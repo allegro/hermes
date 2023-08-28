@@ -1,4 +1,5 @@
 import { afterEach } from 'vitest';
+import { createTestingPinia } from '@pinia/testing';
 import {
   dummySubscription,
   dummySubscriptionHealth,
@@ -6,13 +7,20 @@ import {
 } from '@/dummy/subscription';
 import { expect } from 'vitest';
 import {
+  expectNotificationDispatched,
+  notificationStoreSpy,
+} from '@/utils/test-utils';
+import {
   fetchSubscriptionErrorHandler,
   fetchSubscriptionHealthErrorHandler,
   fetchSubscriptionLastUndeliveredMessageErrorHandler,
   fetchSubscriptionMetricsErrorHandler,
   fetchSubscriptionUndeliveredMessagesErrorHandler,
+  removeSubscriptionErrorHandler,
+  removeSubscriptionHandler,
   successfulSubscriptionHandlers,
 } from '@/mocks/handlers';
+import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import { waitFor } from '@testing-library/vue';
@@ -20,6 +28,14 @@ import type { UseSubscriptionsErrors } from '@/composables/subscription/use-subs
 
 describe('useSubscription', () => {
   const server = setupServer(...successfulSubscriptionHandlers);
+
+  const pinia = createTestingPinia({
+    fakeApp: true,
+  });
+
+  beforeEach(() => {
+    setActivePinia(pinia);
+  });
 
   afterEach(() => {
     server.resetHandlers();
@@ -140,6 +156,63 @@ describe('useSubscription', () => {
       expect(loading.value).toBeFalsy();
       expect(error.value.fetchSubscriptionUndeliveredMessages).not.toBeNull();
       expect(subscriptionUndeliveredMessages.value).toEqual([]);
+    });
+  });
+
+  it('should show message that removing subscription was successful', async () => {
+    // given
+    server.use(
+      removeSubscriptionHandler({
+        topic: dummySubscription.topicName,
+        subscription: dummySubscription.name,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { removeSubscription } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await removeSubscription();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        text: 'notifications.subscription.delete.success',
+      });
+    });
+  });
+
+  it('should show message that removing subscription was unsuccessful', async () => {
+    // given
+    server.use(
+      removeSubscriptionErrorHandler({
+        topic: dummySubscription.topicName,
+        subscription: dummySubscription.name,
+        errorCode: 500,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { removeSubscription } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await removeSubscription();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.subscription.delete.failure',
+      });
     });
   });
 });
