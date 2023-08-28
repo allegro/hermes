@@ -56,8 +56,8 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
         The query is based on MetricsQL, available only in VictoriaMetrics
         https://docs.victoriametrics.com/MetricsQL.html. Basic PromQL does not support `keep_metric_names` param.
          */
-        String queryFormat = "sum by (__name__,group,topic,subscription,status_code)" +
-                "(irate({__name__=~'%s',group='%s',topic='%s',subscription='%s'}[1m]) keep_metric_names)";
+        String queryFormat = "sum by (__name__,group,topic,subscription,status_code)"
+                + "(irate({__name__=~'%s',group='%s',topic='%s',subscription='%s'}[1m]) keep_metric_names)";
         String query = String.format(queryFormat, subscriptionMetricsToQuery, subscriptionName.getTopicName().getGroupName(),
                 subscriptionName.getTopicName().getName(), subscriptionName.getName());
         MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(query);
@@ -80,8 +80,8 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
         The query is based on MetricsQL, available only in VictoriaMetrics
         https://docs.victoriametrics.com/MetricsQL.html. Basic PromQL does not support `keep_metric_names` param.
          */
-        String queryFormat = "sum by (__name__, group, topic) (irate({__name__=~'%s', group='%s', " +
-                "topic='%s'}[1m]) keep_metric_names)";
+        String queryFormat = "sum by (__name__, group, topic) (irate({__name__=~'%s', group='%s', "
+                + "topic='%s'}[1m]) keep_metric_names)";
         String query = String.format(queryFormat, topicMetricsToQuery, topicName.getGroupName(), topicName.getName());
         MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(query);
         return MonitoringTopicMetricsProvider

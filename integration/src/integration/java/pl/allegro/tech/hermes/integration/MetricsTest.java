@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.integration;
 
 import com.googlecode.catchexception.CatchException;
 import jakarta.ws.rs.BadRequestException;
-import java.util.Collections;
-import java.util.List;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
@@ -16,8 +14,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.frontend.config.GraphiteProperties;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint;
-import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponse;
-import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder;
 import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusTopicResponse;
 import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
@@ -32,7 +28,7 @@ import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static java.lang.Integer.MAX_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
-import static pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder.*;
+import static pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder.builder;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 

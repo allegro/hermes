@@ -28,16 +28,16 @@ public class PrometheusEndpoint implements EnvironmentAware {
     private static final String SUBSCRIPTION_THROUGHPUT = "hermes_consumers_subscription_throughput_bytes_total";
     private static final String SUBSCRIPTION_STATUS_CODES = "hermes_consumers_subscription_http_status_codes_total";
 
-    private static final String TOPIC_QUERY_PATTERN = ".*hermes_frontend_topic_requests_total" +
-            ".*hermes_consumers_subscription_delivered_total.*" +
-            ".*hermes_frontend_topic_throughput_bytes_total.*GROUP.*TOPIC.*";
+    private static final String TOPIC_QUERY_PATTERN = ".*hermes_frontend_topic_requests_total"
+            + ".*hermes_consumers_subscription_delivered_total.*"
+            + ".*hermes_frontend_topic_throughput_bytes_total.*GROUP.*TOPIC.*";
 
-    private static final String SUBSCRIPTION_QUERY_PATTERN = ".*hermes_consumers_subscription_delivered_total" +
-            ".*hermes_consumers_subscription_timeouts_total" +
-            ".*hermes_consumers_subscription_throughput_bytes_total" +
-            ".*hermes_consumers_subscription_other_errors_total" +
-            ".*hermes_consumers_subscription_batches_total" +
-            ".*hermes_consumers_subscription_http_status_codes_total.*GROUP.*TOPIC.*SUBSCRIPTION.*";
+    private static final String SUBSCRIPTION_QUERY_PATTERN = ".*hermes_consumers_subscription_delivered_total"
+            + ".*hermes_consumers_subscription_timeouts_total"
+            + ".*hermes_consumers_subscription_throughput_bytes_total"
+            + ".*hermes_consumers_subscription_other_errors_total"
+            + ".*hermes_consumers_subscription_batches_total"
+            + ".*hermes_consumers_subscription_http_status_codes_total.*GROUP.*TOPIC.*SUBSCRIPTION.*";
 
     private final ObjectMapper objectMapper;
     private final WireMock prometheusListener;
