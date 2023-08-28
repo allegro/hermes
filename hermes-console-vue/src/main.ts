@@ -3,12 +3,11 @@ import '@mdi/font/css/materialdesignicons.css';
 import 'vuetify/styles';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { createApp } from 'vue';
-import { createI18n } from 'vue-i18n';
 import { createPinia } from 'pinia';
 import { createVuetify } from 'vuetify';
+import { i18n } from '@/i18n';
 import App from './App.vue';
 import axios from 'axios';
-import messages from '@/i18n/messages';
 import piniaPluginPersistedState from 'pinia-plugin-persistedstate';
 import router from './router';
 
@@ -48,13 +47,6 @@ const vuetify = createVuetify({
   },
 });
 
-const i18n = createI18n({
-  legacy: false,
-  locale: 'en-US',
-  fallbackLocale: 'en-US',
-  messages: messages,
-});
-
 const store = createPinia();
 
 store.use(piniaPluginPersistedState);
@@ -67,5 +59,3 @@ app.use(router);
 app.use(store);
 
 app.mount('#app');
-
-export default i18n;

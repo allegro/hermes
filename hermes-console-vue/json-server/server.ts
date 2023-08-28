@@ -19,6 +19,10 @@ server.post('/query/subscriptions', (req, res) => {
   res.jsonp(subscriptions);
 });
 
+server.post('/topics/*/subscriptions/*/moveOffsetsToTheEnd', (req, res) => {
+  res.sendStatus(200);
+});
+
 const router = jsonServer.router('json-server/db.json');
 server.use(router);
 
