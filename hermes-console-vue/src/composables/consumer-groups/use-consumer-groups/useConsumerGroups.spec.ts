@@ -4,6 +4,10 @@ import { dummyConsumerGroups } from '@/dummy/consumerGroups';
 import { dummySubscription } from '@/dummy/subscription';
 import { dummyTopic } from '@/dummy/topic';
 import {
+  expectNotificationDispatched,
+  notificationStoreSpy,
+} from '@/utils/test-utils';
+import {
   fetchConsumerGroupsErrorHandler,
   fetchConsumerGroupsHandler,
   moveSubscriptionOffsetsHandler,
@@ -11,7 +15,6 @@ import {
 import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useConsumerGroups } from '@/composables/consumer-groups/use-consumer-groups/useConsumerGroups';
-import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import { waitFor } from '@testing-library/vue';
 
 describe('useConsumerGroups', () => {
@@ -89,11 +92,7 @@ describe('useConsumerGroups', () => {
       }),
     );
     server.listen();
-    const notificationsStore = useNotificationsStore();
-    const dispatchNotification = vi.spyOn(
-      notificationsStore,
-      'dispatchNotification',
-    );
+    const notificationStore = notificationStoreSpy();
 
     const { moveOffsets } = useConsumerGroups(topicName, subscriptionName);
 
@@ -102,12 +101,10 @@ describe('useConsumerGroups', () => {
 
     // then
     await waitFor(() => {
-      expect(dispatchNotification).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          type: 'success',
-          title: 'notifications.subscriptionOffsets.move.success',
-        }),
-      );
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        title: 'notifications.subscriptionOffsets.move.success',
+      });
     });
   });
 
@@ -122,11 +119,7 @@ describe('useConsumerGroups', () => {
     );
     server.listen();
 
-    const notificationsStore = useNotificationsStore();
-    const dispatchNotification = vi.spyOn(
-      notificationsStore,
-      'dispatchNotification',
-    );
+    const notificationStore = notificationStoreSpy();
     const { moveOffsets } = useConsumerGroups(topicName, subscriptionName);
 
     // when
@@ -134,12 +127,10 @@ describe('useConsumerGroups', () => {
 
     // then
     await waitFor(() => {
-      expect(dispatchNotification).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          type: 'error',
-          title: 'notifications.subscriptionOffsets.move.failure',
-        }),
-      );
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.subscriptionOffsets.move.failure',
+      });
     });
   });
 });
