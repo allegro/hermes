@@ -1,6 +1,11 @@
-import { consistencyStoreState } from '@/dummy/store';
+import {
+  consistencyStoreState,
+  createTestingPiniaWithState,
+} from '@/dummy/store';
 import { createTestingPinia } from '@pinia/testing';
 import { dummyInconsistentTopics } from '@/dummy/inconsistentTopics';
+import { expect } from 'vitest';
+import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
@@ -196,5 +201,32 @@ describe('ConsistencyView', () => {
     expect(
       queryByText('consistency.connectionError.text'),
     ).not.toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on remove button click', async () => {
+    // given
+    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
+      useInconsistentTopicsStub,
+    );
+
+    // when
+    const { getAllByText, getByText } = render(ConsistencyView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(
+      getAllByText('consistency.inconsistentTopics.actions.delete')[0],
+    );
+
+    // then
+    expect(
+      getByText(
+        'consistency.inconsistentTopics.confirmationDialog.remove.title',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      getByText(
+        'consistency.inconsistentTopics.confirmationDialog.remove.text',
+      ),
+    ).toBeInTheDocument();
   });
 });

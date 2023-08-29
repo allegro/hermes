@@ -15,7 +15,7 @@
 
   const route = useRoute();
 
-  defineEmits(['remove']);
+  defineEmits(['remove', 'suspend', 'activate']);
 </script>
 
 <template>
@@ -75,6 +75,7 @@
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="orange"
           prepend-icon="mdi-publish-off"
+          @click="$emit('suspend')"
         >
           {{ $t('subscription.subscriptionMetadata.actions.suspend') }}
         </v-btn>
@@ -83,6 +84,7 @@
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="green"
           prepend-icon="mdi-publish"
+          @click="$emit('activate')"
         >
           {{ $t('subscription.subscriptionMetadata.actions.activate') }}
         </v-btn>

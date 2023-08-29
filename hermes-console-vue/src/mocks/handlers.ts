@@ -661,6 +661,36 @@ export const removeSubscriptionErrorHandler = ({
     },
   );
 
+export const subscriptionStateHandler = ({
+  topic,
+  subscription,
+}: {
+  topic: string;
+  subscription: string;
+}) =>
+  rest.put(
+    `/topics/${topic}/subscriptions/${subscription}/state`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(undefined));
+    },
+  );
+
+export const subscriptionStateErrorHandler = ({
+  topic,
+  subscription,
+  errorCode = 500,
+}: {
+  topic: string;
+  subscription: string;
+  errorCode: number;
+}) =>
+  rest.put(
+    `/topics/${topic}/subscriptions/${subscription}/state`,
+    (req, res, ctx) => {
+      return res(ctx.status(errorCode), ctx.json(undefined));
+    },
+  );
+
 export const switchReadinessHandler = ({
   datacenter,
 }: {

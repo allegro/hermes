@@ -1,5 +1,8 @@
 import { computed, ref } from 'vue';
+import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyDatacentersReadiness } from '@/dummy/readiness';
+import { expect } from 'vitest';
+import { fireEvent } from '@testing-library/vue';
 import { render } from '@/utils/test-utils';
 import { useReadiness } from '@/composables/readiness/use-readiness/useReadiness';
 import ReadinessView from '@/views/admin/readiness/ReadinessView.vue';
@@ -92,5 +95,24 @@ describe('ReadinessView', () => {
     expect(
       queryByText('readiness.connectionError.title'),
     ).not.toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on switch button click', async () => {
+    // given
+    vi.mocked(useReadiness).mockReturnValueOnce(useReadinessStub);
+
+    // when
+    const { getAllByText, getByText } = render(ReadinessView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(getAllByText('readiness.turnOn')[0]);
+
+    // then
+    expect(
+      getByText('readiness.confirmationDialog.switch.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('readiness.confirmationDialog.switch.text'),
+    ).toBeInTheDocument();
   });
 });

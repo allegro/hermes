@@ -14,6 +14,7 @@ import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
+import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
@@ -293,5 +294,25 @@ describe('TopicView', () => {
 
     // then
     expect(queryByTestId('loading-spinner')).not.toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on remove button click', async () => {
+    // given
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(getByText('topicView.header.actions.remove'));
+
+    // then
+    expect(
+      getByText('topicView.confirmationDialog.remove.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('topicView.confirmationDialog.remove.text'),
+    ).toBeInTheDocument();
   });
 });

@@ -18,6 +18,8 @@ import {
   fetchSubscriptionUndeliveredMessagesErrorHandler,
   removeSubscriptionErrorHandler,
   removeSubscriptionHandler,
+  subscriptionStateErrorHandler,
+  subscriptionStateHandler,
   successfulSubscriptionHandlers,
 } from '@/mocks/handlers';
 import { setActivePinia } from 'pinia';
@@ -212,6 +214,120 @@ describe('useSubscription', () => {
       expectNotificationDispatched(notificationStore, {
         type: 'error',
         title: 'notifications.subscription.delete.failure',
+      });
+    });
+  });
+
+  it('should show message that suspending subscription was successful', async () => {
+    // given
+    server.use(
+      subscriptionStateHandler({
+        topic: dummySubscription.topicName,
+        subscription: dummySubscription.name,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { suspendSubscription } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await suspendSubscription();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        text: 'notifications.subscription.suspend.success',
+      });
+    });
+  });
+
+  it('should show message that suspending subscription was unsuccessful', async () => {
+    // given
+    server.use(
+      subscriptionStateErrorHandler({
+        topic: dummySubscription.topicName,
+        subscription: dummySubscription.name,
+        errorCode: 500,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { suspendSubscription } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await suspendSubscription();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.subscription.suspend.failure',
+      });
+    });
+  });
+
+  it('should show message that activating subscription was successful', async () => {
+    // given
+    server.use(
+      subscriptionStateHandler({
+        topic: dummySubscription.topicName,
+        subscription: dummySubscription.name,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { activateSubscription } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await activateSubscription();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        text: 'notifications.subscription.activate.success',
+      });
+    });
+  });
+
+  it('should show message that activating subscription was unsuccessful', async () => {
+    // given
+    server.use(
+      subscriptionStateErrorHandler({
+        topic: dummySubscription.topicName,
+        subscription: dummySubscription.name,
+        errorCode: 500,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { activateSubscription } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await activateSubscription();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.subscription.activate.failure',
       });
     });
   });

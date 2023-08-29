@@ -1,3 +1,4 @@
+import { State } from '@/api/subscription';
 import axios from '@/utils/axios/axios-instance';
 import qs from 'query-string';
 import type { AccessTokenResponse } from '@/api/access-token-response';
@@ -66,6 +67,26 @@ export function fetchSubscription(
 ): ResponsePromise<Subscription> {
   return axios.get<Subscription>(
     `/topics/${topicName}/subscriptions/${subscriptionName}`,
+  );
+}
+
+export function suspendSubscription(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<Subscription> {
+  return axios.put(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
+    State.SUSPENDED,
+  );
+}
+
+export function activateSubscription(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<Subscription> {
+  return axios.put(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
+    State.ACTIVE,
   );
 }
 

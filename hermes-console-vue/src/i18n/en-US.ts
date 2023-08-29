@@ -324,6 +324,14 @@ const en_US = {
         title: 'Confirm subscription deletion',
         text: 'Are you sure you want to delete subscription {subscriptionId}',
       },
+      suspend: {
+        title: 'Confirm subscription suspension',
+        text: 'Are you sure you want to suspend subscription {subscriptionId}',
+      },
+      activate: {
+        title: 'Confirm subscription activation',
+        text: 'Are you sure you want to activate subscription {subscriptionId}',
+      },
     },
     connectionError: {
       title: 'Connection error',
@@ -593,6 +601,14 @@ const en_US = {
       delete: {
         success: 'Subscription {subscriptionName} successfully deleted',
         failure: "Couldn't delete subscription {subscriptionName}",
+      },
+      suspend: {
+        success: 'Subscription {subscriptionName} successfully suspended',
+        failure: "Couldn't suspend subscription {subscriptionName}",
+      },
+      activate: {
+        success: 'Subscription {subscriptionName} successfully activated',
+        failure: "Couldn't activate subscription {subscriptionName}",
       },
     },
   },

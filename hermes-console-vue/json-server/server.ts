@@ -35,6 +35,10 @@ server.delete('/subscriptions/:subscription', (req, res) => {
   res.sendStatus(200);
 });
 
+server.put('/topics/*/subscriptions/*/state', (req, res) => {
+  res.sendStatus(200);
+});
+
 server.delete('/consistency/inconsistencies/topics', (req, res) => {
   res.sendStatus(200);
 });

@@ -1,4 +1,6 @@
+import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyGroups } from '@/dummy/groups';
+import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
@@ -22,7 +24,7 @@ const useGroupsStub: UseGroups = {
 };
 
 const useRolesStub: UseRoles = {
-  roles: ref([Role.SUBSCRIPTION_OWNER]),
+  roles: ref([Role.SUBSCRIPTION_OWNER, Role.ADMIN]),
   loading: ref(false),
   error: ref({
     fetchRoles: null,
@@ -108,5 +110,25 @@ describe('GroupTopicsView', () => {
     // then
     expect(vi.mocked(useGroups)).toHaveBeenCalledOnce();
     expect(queryByText('groups.connectionError.title')).not.toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on remove button click', async () => {
+    // given
+    vi.mocked(useGroups).mockReturnValueOnce(useGroupsStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(GroupTopicsView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(getByText('groups.actions.remove'));
+
+    // then
+    expect(
+      getByText('groups.confirmationDialog.remove.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('groups.confirmationDialog.remove.text'),
+    ).toBeInTheDocument();
   });
 });

@@ -36,6 +36,8 @@
     error,
     loading,
     removeSubscription,
+    suspendSubscription,
+    activateSubscription,
   } = useSubscription(topicId, subscriptionId);
 
   const roles = useRoles(topicId, subscriptionId)?.roles;
@@ -56,6 +58,44 @@
     closeRemoveDialog();
     if (isSubscriptionRemoved) {
       router.push({ path: `/ui/groups/${groupId}/topics/${topicId}` });
+    }
+  }
+
+  const {
+    isDialogOpened: isSuspendDialogOpened,
+    actionButtonEnabled: actionSuspendButtonEnabled,
+    openDialog: openSuspendDialog,
+    closeDialog: closeSuspendDialog,
+    enableActionButton: enableSuspendActionButton,
+    disableActionButton: disableSuspendActionButton,
+  } = useDialog();
+
+  async function suspend() {
+    disableSuspendActionButton();
+    const isSubscriptionSuspended = await suspendSubscription();
+    enableSuspendActionButton();
+    closeSuspendDialog();
+    if (isSubscriptionSuspended) {
+      router.go(0);
+    }
+  }
+
+  const {
+    isDialogOpened: isActivateDialogOpened,
+    actionButtonEnabled: actionActivateButtonEnabled,
+    openDialog: openActivateDialog,
+    closeDialog: closeActivateDialog,
+    enableActionButton: enableActivateActionButton,
+    disableActionButton: disableActivateActionButton,
+  } = useDialog();
+
+  async function activate() {
+    disableActivateActionButton();
+    const isSubscriptionActivated = await activateSubscription();
+    enableActivateActionButton();
+    closeActivateDialog();
+    if (isSubscriptionActivated) {
+      router.go(0);
     }
   }
 
@@ -91,6 +131,26 @@
     @action="deleteSubscription"
     @cancel="closeRemoveDialog"
   />
+  <confirmation-dialog
+    v-model="isSuspendDialogOpened"
+    :actionButtonEnabled="actionSuspendButtonEnabled"
+    :title="$t('subscription.confirmationDialog.suspend.title')"
+    :text="
+      t('subscription.confirmationDialog.suspend.text', { subscriptionId })
+    "
+    @action="suspend"
+    @cancel="closeSuspendDialog"
+  />
+  <confirmation-dialog
+    v-model="isActivateDialogOpened"
+    :actionButtonEnabled="actionActivateButtonEnabled"
+    :title="$t('subscription.confirmationDialog.activate.title')"
+    :text="
+      t('subscription.confirmationDialog.activate.text', { subscriptionId })
+    "
+    @action="activate"
+    @cancel="closeActivateDialog"
+  />
   <v-container>
     <v-row dense>
       <v-col md="12">
@@ -118,6 +178,8 @@
             :owner="owner"
             :roles="roles"
             @remove="openRemoveDialog"
+            @suspend="openSuspendDialog"
+            @activate="openActivateDialog"
           />
         </v-col>
       </v-row>

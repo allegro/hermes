@@ -1,4 +1,5 @@
 import {
+  activateSubscription as activate,
   removeSubscription as deleteSubscription,
   fetchOwner as getOwner,
   fetchSubscription as getSubscription,
@@ -6,6 +7,7 @@ import {
   fetchSubscriptionLastUndeliveredMessage as getSubscriptionLastUndeliveredMessage,
   fetchSubscriptionMetrics as getSubscriptionMetrics,
   fetchSubscriptionUndeliveredMessages as getSubscriptionUndeliveredMessages,
+  suspendSubscription as suspend,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
 import { useGlobalI18n } from '@/i18n';
@@ -27,6 +29,8 @@ export interface UseSubscription {
   loading: Ref<boolean>;
   error: Ref<UseSubscriptionsErrors>;
   removeSubscription: () => Promise<boolean>;
+  suspendSubscription: () => Promise<boolean>;
+  activateSubscription: () => Promise<boolean>;
 }
 
 export interface UseSubscriptionsErrors {
@@ -158,6 +162,53 @@ export function useSubscription(
     }
   };
 
+  const suspendSubscription = async (): Promise<boolean> => {
+    try {
+      await suspend(topicName, subscriptionName);
+      notificationStore.dispatchNotification({
+        text: useGlobalI18n().t('notifications.subscription.suspend.success', {
+          subscriptionName,
+        }),
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t('notifications.subscription.suspend.failure', {
+          subscriptionName,
+        }),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
+  const activateSubscription = async (): Promise<boolean> => {
+    try {
+      await activate(topicName, subscriptionName);
+      notificationStore.dispatchNotification({
+        text: useGlobalI18n().t('notifications.subscription.activate.success', {
+          subscriptionName,
+        }),
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t(
+          'notifications.subscription.activate.failure',
+          {
+            subscriptionName,
+          },
+        ),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
   fetchSubscription();
 
   return {
@@ -170,5 +221,7 @@ export function useSubscription(
     loading,
     error,
     removeSubscription,
+    suspendSubscription,
+    activateSubscription,
   };
 }
