@@ -726,3 +726,51 @@ export const moveSubscriptionOffsetsHandler = ({
       return res(ctx.status(statusCode), ctx.json(undefined));
     },
   );
+
+export const upsertTopicConstraintHandler = ({
+  statusCode,
+}: {
+  statusCode: number;
+}) =>
+  rest.put(`${url}/workload-constraints/topic`, (req, res, ctx) => {
+    return res(ctx.status(statusCode), ctx.json(undefined));
+  });
+
+export const upsertSubscriptionConstraintHandler = ({
+  statusCode,
+}: {
+  statusCode: number;
+}) =>
+  rest.put(`${url}/workload-constraints/subscription`, (req, res, ctx) => {
+    return res(ctx.status(statusCode), ctx.json(undefined));
+  });
+
+export const deleteTopicConstraintHandler = ({
+  statusCode,
+  topicName,
+}: {
+  statusCode: number;
+  topicName: string;
+}) =>
+  rest.delete(
+    `${url}/workload-constraints/topic/${topicName}`,
+    (req, res, ctx) => {
+      return res(ctx.status(statusCode), ctx.json(undefined));
+    },
+  );
+
+export const deleteSubscriptionConstraintHandler = ({
+  statusCode,
+  topicName,
+  subscriptionName,
+}: {
+  statusCode: number;
+  topicName: string;
+  subscriptionName: string;
+}) =>
+  rest.delete(
+    `${url}/workload-constraints/subscription/${topicName}/${subscriptionName}`,
+    (req, res, ctx) => {
+      return res(ctx.status(statusCode), ctx.json(undefined));
+    },
+  );

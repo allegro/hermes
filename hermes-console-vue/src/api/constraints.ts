@@ -6,3 +6,13 @@ export interface ConstraintsConfig {
 export interface Constraint {
   consumersNumber: number;
 }
+
+export interface SubscriptionConstraint {
+  subscriptionName: string;
+  constraint: Constraint;
+}
+
+export interface TopicConstraint {
+  topicName: string;
+  constraint: Constraint;
+}

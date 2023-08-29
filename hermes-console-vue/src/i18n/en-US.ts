@@ -108,6 +108,22 @@ const en_US = {
       title: 'Connection error',
       text: 'Could not fetch information about constraints',
     },
+    createForm: {
+      createSubscriptionTitle: 'Create constraints for subscription',
+      createTopicTitle: 'Create constraints for topic',
+      topicName: 'Topic name',
+      subscriptionName: 'Subscription name',
+      consumersNumber: 'Consumers count',
+      save: 'Save',
+      cancel: 'Cancel',
+    },
+    editForm: {
+      title: 'Edit constraints for: “{resourceId}”',
+      consumersNumber: 'Consumers count',
+      save: 'Save',
+      remove: 'Remove',
+      cancel: 'Cancel',
+    },
     topicConstraints: {
       heading: 'Topic constraints',
       actions: {
@@ -609,6 +625,32 @@ const en_US = {
       activate: {
         success: 'Subscription {subscriptionName} successfully activated',
         failure: "Couldn't activate subscription {subscriptionName}",
+      },
+    },
+    constraints: {
+      topic: {
+        created: {
+          success: 'Successfully upserted constraint for topic: “{topicName}“',
+          failure: 'Failed to upsert constraint for topic: “{topicName}“',
+        },
+        deleted: {
+          success: 'Successfully deleted constraint for topic: “{topicName}“',
+          failure: 'Failed to delete constraint for topic: “{topicName}“',
+        },
+      },
+      subscription: {
+        created: {
+          success:
+            'Successfully upserted constraint for subscription: “{subscriptionFqn}“',
+          failure:
+            'Failed to upsert constraint for subscription: “{subscriptionFqn}“',
+        },
+        deleted: {
+          success:
+            'Successfully deleted constraint for subscription: “{subscriptionFqn}“',
+          failure:
+            'Failed to delete constraint for subscription: “{subscriptionFqn}“',
+        },
       },
     },
   },
