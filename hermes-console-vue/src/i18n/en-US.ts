@@ -600,6 +600,10 @@ const en_US = {
         success: 'Group {groupId} successfully deleted',
         failure: "Couldn't delete group {groupId}",
       },
+      create: {
+        success: 'Group {groupId} successfully created',
+        failure: "Couldn't create group {groupId}",
+      },
     },
     topic: {
       delete: {

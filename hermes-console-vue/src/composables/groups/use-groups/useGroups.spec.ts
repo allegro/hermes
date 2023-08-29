@@ -1,12 +1,7 @@
 import { afterEach } from 'vitest';
-import { createTestingPinia } from '@pinia/testing';
-import { dummyGroupNames } from '@/dummy/groups';
-import { dummyTopicNames } from '@/dummy/topics';
 import {
-  expectNotificationDispatched,
-  notificationStoreSpy,
-} from '@/utils/test-utils';
-import {
+  createGroupErrorHandler,
+  createGroupHandler,
   fetchGroupNamesErrorHandler,
   fetchGroupNamesHandler,
   fetchTopicNamesErrorHandler,
@@ -14,6 +9,13 @@ import {
   removeGroupErrorHandler,
   removeGroupHandler,
 } from '@/mocks/handlers';
+import { createTestingPinia } from '@pinia/testing';
+import { dummyGroupNames } from '@/dummy/groups';
+import { dummyTopicNames } from '@/dummy/topics';
+import {
+  expectNotificationDispatched,
+  notificationStoreSpy,
+} from '@/utils/test-utils';
 import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useGroups } from '@/composables/groups/use-groups/useGroups';
@@ -127,6 +129,46 @@ describe('useGroups', () => {
       expectNotificationDispatched(notificationStore, {
         type: 'error',
         title: 'notifications.group.delete.failure',
+      });
+    });
+  });
+
+  it('should dispatch notification on successful group create', async () => {
+    // given
+    server.use(createGroupHandler({ group: { groupName: 'group' } }));
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { createGroup } = useGroups();
+
+    // when
+    await createGroup('group');
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        title: 'notifications.group.create.success',
+      });
+    });
+  });
+
+  it('should dispatch notification on unsuccessful group create', async () => {
+    // given
+    server.use(createGroupErrorHandler({}));
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { createGroup } = useGroups();
+
+    // when
+    await createGroup('group');
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.group.create.failure',
       });
     });
   });

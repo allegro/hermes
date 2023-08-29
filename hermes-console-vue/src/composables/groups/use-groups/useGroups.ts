@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue';
 import {
+  createGroup,
   removeGroup as deleteGroup,
   fetchGroupNames as getGroupNames,
 } from '@/api/hermes-client';
@@ -12,6 +13,7 @@ export interface UseGroups {
   groups: Ref<Group[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseGroupsErrors>;
+  createGroup: (groupId: string) => Promise<boolean>;
   removeGroup: (groupId: string) => Promise<boolean>;
 }
 
@@ -94,6 +96,29 @@ export function useGroups(): UseGroups {
     }
   };
 
+  const doCreateGroup = async (groupId: string): Promise<boolean> => {
+    try {
+      await createGroup({ groupName: groupId });
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t('notifications.group.create.success', {
+          groupId,
+        }),
+        text: '',
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t('notifications.group.create.failure', {
+          groupId,
+        }),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
   fetchGroupNames();
   fetchTopicNames();
 
@@ -101,6 +126,7 @@ export function useGroups(): UseGroups {
     groups,
     loading,
     error,
+    createGroup: doCreateGroup,
     removeGroup,
   };
 }

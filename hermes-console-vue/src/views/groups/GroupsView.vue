@@ -2,13 +2,15 @@
   import { ref } from 'vue';
   import { useGroups } from '@/composables/groups/use-groups/useGroups';
   import { useI18n } from 'vue-i18n';
+  import { useRouter } from 'vue-router';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupForm from '@/views/groups/group-form/GroupForm.vue';
   import GroupListing from '@/views/groups/group-listing/GroupListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
-  const { groups, loading, error } = useGroups();
+  const { groups, loading, error, createGroup } = useGroups();
   const { t } = useI18n();
+  const router = useRouter();
 
   const filter = ref<string>();
   const createGroupDialogOpen = ref(false);
@@ -22,6 +24,13 @@
       href: '/ui/groups',
     },
   ];
+
+  const onCreateGroup = async (groupId: string) => {
+    const succeeded = await createGroup(groupId);
+    if (succeeded) {
+      router.go(0);
+    }
+  };
 </script>
 
 <template>
@@ -56,6 +65,7 @@
         <group-form
           operation="create"
           v-model:dialog-open="createGroupDialogOpen"
+          @create="onCreateGroup"
         />
       </v-col>
     </v-row>

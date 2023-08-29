@@ -1,4 +1,4 @@
-import { fireEvent, waitFor } from '@testing-library/vue';
+import { fireEvent } from '@testing-library/vue';
 import { render } from '@/utils/test-utils';
 import GroupForm from '@/views/groups/group-form/GroupForm.vue';
 
@@ -49,7 +49,7 @@ describe('GroupForm', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should show name validation error after invalid form submit', async () => {
+  it('should disable save button for invalid group name', async () => {
     // given
     const props = {
       dialogOpen: true,
@@ -58,17 +58,12 @@ describe('GroupForm', () => {
 
     // when
     const { getByText } = render(GroupForm, { props });
-    await fireEvent.click(getByText('groups.groupForm.save'));
 
     // then
-    await waitFor(() => {
-      expect(
-        getByText('groups.groupForm.validation.groupName'),
-      ).toBeInTheDocument();
-    });
+    expect(getByText('groups.groupForm.save').closest('button')).toBeDisabled();
   });
 
-  it('should not show name validation error for valid group name', async () => {
+  it('should enable save button for valid group name', async () => {
     // given
     const props = {
       dialogOpen: true,
@@ -76,17 +71,16 @@ describe('GroupForm', () => {
     };
 
     // when
-    const { getByLabelText, queryByText } = render(GroupForm, { props });
+    const { getByLabelText, getByText } = render(GroupForm, { props });
 
     await fireEvent.update(
       getByLabelText('groups.groupForm.groupName'),
       'pl.allegro.sample',
     );
-    await fireEvent.click(queryByText('groups.groupForm.save')!);
 
     // then
     expect(
-      queryByText('groups.groupForm.validation.groupName'),
-    ).not.toBeInTheDocument();
+      getByText('groups.groupForm.save').closest('button'),
+    ).not.toBeEnabled();
   });
 });

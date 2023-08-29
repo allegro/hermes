@@ -12,6 +12,7 @@ import type {
 } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
+import type { Group } from '@/api/group';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
   MessagePreview,
@@ -323,4 +324,10 @@ export function deleteSubscriptionConstraint(
   return axios.delete(
     `/workload-constraints/subscription/${topicName}/${subscriptionName}`,
   );
+}
+
+export function createGroup(group: Group): ResponsePromise<void> {
+  return axios.post(`/groups`, group, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
