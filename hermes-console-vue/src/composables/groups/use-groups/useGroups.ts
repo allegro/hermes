@@ -1,12 +1,18 @@
 import { computed, ref } from 'vue';
-import { fetchGroupNames as getGroupNames } from '@/api/hermes-client';
+import {
+  removeGroup as deleteGroup,
+  fetchGroupNames as getGroupNames,
+} from '@/api/hermes-client';
 import { fetchTopicNames as getTopicNames } from '@/api/hermes-client';
+import { useGlobalI18n } from '@/i18n';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { Ref } from 'vue';
 
 export interface UseGroups {
   groups: Ref<Group[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseGroupsErrors>;
+  removeGroup: (groupId: string) => Promise<boolean>;
 }
 
 export interface UseGroupsErrors {
@@ -20,6 +26,8 @@ export interface Group {
 }
 
 export function useGroups(): UseGroups {
+  const notificationStore = useNotificationsStore();
+
   const groupNames = ref<string[]>();
   const topicNames = ref<string[]>();
   const error = ref<UseGroupsErrors>({
@@ -64,6 +72,28 @@ export function useGroups(): UseGroups {
     }
   };
 
+  const removeGroup = async (groupId: string): Promise<boolean> => {
+    try {
+      await deleteGroup(groupId);
+      notificationStore.dispatchNotification({
+        text: useGlobalI18n().t('notifications.group.delete.success', {
+          groupId,
+        }),
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t('notifications.group.delete.failure', {
+          groupId,
+        }),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
   fetchGroupNames();
   fetchTopicNames();
 
@@ -71,5 +101,6 @@ export function useGroups(): UseGroups {
     groups,
     loading,
     error,
+    removeGroup,
   };
 }

@@ -5,8 +5,8 @@ import {
 import { createTestingPinia } from '@pinia/testing';
 import { describe, expect } from 'vitest';
 import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyOwner, dummyTopic } from '@/dummy/topic';
 import { dummyRoles } from '@/dummy/roles';
-import { dummyTopic, dummyTopicOwner } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
 import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
@@ -14,7 +14,7 @@ import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
 describe('TopicHeader', () => {
   const props = {
     topic: dummyTopic,
-    owner: dummyTopicOwner,
+    owner: dummyOwner,
     roles: dummyRoles,
   };
 
@@ -29,7 +29,7 @@ describe('TopicHeader', () => {
     expect(getByText('topicView.header.topic')).toBeVisible();
     expect(getByText(dummyTopic.name)).toBeVisible();
     expect(
-      getByText(`topicView.header.owner ${dummyTopicOwner.name}`),
+      getByText(`topicView.header.owner ${dummyOwner.name}`),
     ).toBeVisible();
     expect(getByText(dummyTopic.description)).toBeVisible();
   });
@@ -45,7 +45,7 @@ describe('TopicHeader', () => {
       // when
       const testProps = {
         topic: dummyTopic,
-        owner: dummyTopicOwner,
+        owner: dummyOwner,
         roles: roles,
       };
       const { getByText } = render(TopicHeader, {
@@ -158,7 +158,7 @@ describe('TopicHeader', () => {
             },
           },
         },
-        owner: dummyTopicOwner,
+        owner: dummyOwner,
         roles: dummyRoles,
       };
       const { queryByText } = render(TopicHeader, {

@@ -1,11 +1,17 @@
 import { computed, ref } from 'vue';
-import { fetchInconsistentTopics as getInconsistentTopics } from '@/api/hermes-client';
+import {
+  removeInconsistentTopic as deleteInconsistentTopic,
+  fetchInconsistentTopics as getInconsistentTopics,
+} from '@/api/hermes-client';
+import { useGlobalI18n } from '@/i18n';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { Ref } from 'vue';
 
 export interface UseInconsistentTopics {
   topics: Ref<string[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseInconsistentTopicsErrors>;
+  removeInconsistentTopic: (topic: string) => Promise<boolean>;
 }
 
 export interface UseInconsistentTopicsErrors {
@@ -13,6 +19,8 @@ export interface UseInconsistentTopicsErrors {
 }
 
 export function useInconsistentTopics(): UseInconsistentTopics {
+  const notificationStore = useNotificationsStore();
+
   const topicNames = ref<string[]>();
   const error = ref<UseInconsistentTopicsErrors>({
     fetchInconsistentTopics: null,
@@ -34,11 +42,40 @@ export function useInconsistentTopics(): UseInconsistentTopics {
     }
   };
 
+  const removeInconsistentTopic = async (topic: string): Promise<boolean> => {
+    try {
+      await deleteInconsistentTopic(topic);
+      notificationStore.dispatchNotification({
+        text: useGlobalI18n().t(
+          'notifications.inconsistentTopic.delete.success',
+          {
+            topic,
+          },
+        ),
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t(
+          'notifications.inconsistentTopic.delete.failure',
+          {
+            topic,
+          },
+        ),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
   fetchInconsistentTopics();
 
   return {
     topics,
     loading,
     error,
+    removeInconsistentTopic,
   };
 }

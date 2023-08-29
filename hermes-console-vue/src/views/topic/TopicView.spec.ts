@@ -4,16 +4,17 @@ import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyAppConfig } from '@/dummy/app-config';
 import {
   dummyOfflineClientsSource,
+  dummyOwner,
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
-  dummyTopicOwner,
 } from '@/dummy/topic';
 import { dummyRoles } from '@/dummy/roles';
 import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
+import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
@@ -36,7 +37,7 @@ const useRolesStub: UseRoles = {
 
 const useTopicMock: UseTopic = {
   topic: ref(dummyTopic),
-  owner: ref(dummyTopicOwner),
+  owner: ref(dummyOwner),
   messages: ref(dummyTopicMessagesPreview),
   metrics: ref(dummyTopicMetrics),
   subscriptions: ref([dummySubscription, secondDummySubscription]),
@@ -52,6 +53,7 @@ const useTopicMock: UseTopic = {
   }),
   fetchTopic: () => Promise.resolve(),
   fetchOfflineClientsSource: () => Promise.resolve(),
+  removeTopic: () => Promise.resolve(true),
 };
 
 describe('TopicView', () => {
@@ -292,5 +294,25 @@ describe('TopicView', () => {
 
     // then
     expect(queryByTestId('loading-spinner')).not.toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on remove button click', async () => {
+    // given
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(getByText('topicView.header.actions.remove'));
+
+    // then
+    expect(
+      getByText('topicView.confirmationDialog.remove.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('topicView.confirmationDialog.remove.text'),
+    ).toBeInTheDocument();
   });
 });

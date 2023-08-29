@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
+  import { Owner } from '@/api/owner';
   import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
   import { useRoute } from 'vue-router';
@@ -8,10 +9,17 @@
 
   const props = defineProps<{
     subscription: Subscription;
+    owner: Owner;
     roles: Role[] | undefined;
   }>();
 
   const route = useRoute();
+
+  const emit = defineEmits<{
+    remove: [];
+    suspend: [];
+    activate: [];
+  }>();
 </script>
 
 <template>
@@ -42,10 +50,15 @@
 
     <v-card-actions class="d-flex subscription-header__actions">
       <div class="d-flex flex-row">
-        <v-btn prepend-icon="mdi-account-supervisor">
-          {{ $t('subscription.subscriptionMetadata.owners') }} ({{
-            props.subscription.owner.source
-          }})
+        <v-btn
+          class="text-none"
+          prepend-icon="mdi-account-supervisor"
+          :href="props.owner.url"
+          target="_blank"
+          color="blue"
+        >
+          {{ $t('subscription.subscriptionMetadata.owners') }}
+          {{ props.owner.name }}
         </v-btn>
       </div>
       <div class="d-flex flex-row">
@@ -66,6 +79,7 @@
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="orange"
           prepend-icon="mdi-publish-off"
+          @click="emit('suspend')"
         >
           {{ $t('subscription.subscriptionMetadata.actions.suspend') }}
         </v-btn>
@@ -74,6 +88,7 @@
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="green"
           prepend-icon="mdi-publish"
+          @click="emit('activate')"
         >
           {{ $t('subscription.subscriptionMetadata.actions.activate') }}
         </v-btn>
@@ -93,6 +108,7 @@
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           color="red"
           prepend-icon="mdi-delete"
+          @click="emit('remove')"
         >
           {{ $t('subscription.subscriptionMetadata.actions.remove') }}
         </v-btn>

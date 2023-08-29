@@ -99,8 +99,6 @@
     "pl.allegro.public.offer.OfferEventV3",
     "pl.allegro.public.order.OrderEventV1",
     "pl.allegro.public.order.OrderEventV2",
-    "pl.allegro.public.user.UserCreatedEvent",
-    "pl.allegro.public.user.UserChangedEvent",
     "pl.allegro.public.group.DummyEvent",
     "pl.allegro.public.admin.AdminOfferActionEvent",
     "pl.allegro.public.admin.AdminOrderActionEvent"
@@ -119,11 +117,11 @@
   ],
   "readinessDatacenters": [
     {
-      "datacenter":  "DC1",
+      "datacenter": "DC1",
       "isReady": true
     },
     {
-      "datacenter":  "DC2",
+      "datacenter": "DC2",
       "isReady": false
     }
   ],
@@ -136,8 +134,7 @@
         "consumersNumber": 4
       }
     },
-    "subscriptionConstraints":
-    {
+    "subscriptionConstraints": {
       "pl.group.Topic$subscription": {
         "consumersNumber": 6
       },
@@ -327,7 +324,7 @@
         "requestTimeout": 1000,
         "socketTimeout": 0,
         "sendingDelay": 0,
-        "backoffMultiplier": 1.0,
+        "backoffMultiplier": 1,
         "backoffMaxIntervalInSec": 600,
         "retryClientErrors": true,
         "backoffMaxIntervalMillis": 600000
@@ -336,7 +333,7 @@
       "trackingMode": "trackingOff",
       "owner": {
         "source": "Service Catalog",
-        "id": "42"
+        "id": "41"
       },
       "monitoringDetails": {
         "severity": "NON_IMPORTANT",
@@ -401,7 +398,7 @@
       "trackingMode": "trackingOff",
       "owner": {
         "source": "Service Catalog",
-        "id": "42"
+        "id": "41"
       },
       "monitoringDetails": {
         "severity": "NON_IMPORTANT",
@@ -564,10 +561,12 @@
       }
     },
     "owner": {
-      "sources": [{
-        "name": "Crowd",
-        "placeholder": "Crowd group (or groups separated by ',')"
-      }]
+      "sources": [
+        {
+          "name": "Crowd",
+          "placeholder": "Crowd group (or groups separated by ',')"
+        }
+      ]
     },
     "topic": {
       "messagePreviewEnabled": true,
@@ -592,19 +591,24 @@
       "removeSchema": false,
       "schemaIdAwareSerializationEnabled": false,
       "avroContentTypeMetadataRequired": true,
-      "contentTypes": [{
-        "value": "AVRO",
-        "label": "AVRO"
-      }, {
-        "value": "JSON",
-        "label": "JSON"
-      }],
+      "contentTypes": [
+        {
+          "value": "AVRO",
+          "label": "AVRO"
+        },
+        {
+          "value": "JSON",
+          "label": "JSON"
+        }
+      ],
       "readOnlyModeEnabled": false,
       "allowedTopicLabels": [],
-      "retentionUnits": [{
-        "value": "DAYS",
-        "label": "DAYS"
-      }],
+      "retentionUnits": [
+        {
+          "value": "DAYS",
+          "label": "DAYS"
+        }
+      ],
       "offlineRetransmissionEnabled": false,
       "offlineRetransmissionDescription": "Offline retransmission"
     },
@@ -626,13 +630,16 @@
         },
         "deliveryType": "SERIAL"
       },
-      "deliveryTypes": [{
-        "value": "SERIAL",
-        "label": "SERIAL"
-      }, {
-        "value": "BATCH",
-        "label": "BATCH"
-      }]
+      "deliveryTypes": [
+        {
+          "value": "SERIAL",
+          "label": "SERIAL"
+        },
+        {
+          "value": "BATCH",
+          "label": "BATCH"
+        }
+      ]
     },
     "consistency": {
       "maxGroupBatchSize": 10

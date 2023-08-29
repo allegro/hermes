@@ -1,5 +1,7 @@
 import { beforeEach } from 'vitest';
 import { computed, ref } from 'vue';
+import { createTestingPiniaWithState } from '@/dummy/store';
+import { dummyOwner } from '@/dummy/topic';
 import {
   dummySubscription,
   dummySubscriptionHealth,
@@ -7,8 +9,10 @@ import {
   dummyUndeliveredMessage,
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
+import { fireEvent } from '@testing-library/vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
+import { State } from '@/api/subscription';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import router from '@/router';
@@ -19,12 +23,23 @@ vi.mock('@/composables/subscription/use-subscription/useSubscription');
 
 const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscription: ref(dummySubscription),
+  owner: ref(dummyOwner),
   subscriptionMetrics: ref(dummySubscriptionMetrics),
   subscriptionHealth: ref(dummySubscriptionHealth),
   subscriptionUndeliveredMessages: ref(dummyUndeliveredMessages),
   subscriptionLastUndeliveredMessage: ref(dummyUndeliveredMessage),
-  error: ref(false),
+  error: ref({
+    fetchSubscription: null,
+    fetchOwner: null,
+    fetchSubscriptionMetrics: null,
+    fetchSubscriptionHealth: null,
+    fetchSubscriptionUndeliveredMessages: null,
+    fetchSubscriptionLastUndeliveredMessage: null,
+  }),
   loading: computed(() => false),
+  removeSubscription: () => Promise.resolve(true),
+  suspendSubscription: () => Promise.resolve(true),
+  activateSubscription: () => Promise.resolve(true),
 };
 
 vi.mock('@/composables/roles/use-roles/useRoles');
@@ -154,7 +169,14 @@ describe('SubscriptionView', () => {
     vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       loading: computed(() => false),
-      error: ref(true),
+      error: ref({
+        fetchSubscription: new Error('Sample error'),
+        fetchOwner: null,
+        fetchSubscriptionMetrics: null,
+        fetchSubscriptionHealth: null,
+        fetchSubscriptionUndeliveredMessages: null,
+        fetchSubscriptionLastUndeliveredMessage: null,
+      }),
     });
 
     // when
@@ -171,7 +193,6 @@ describe('SubscriptionView', () => {
     vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       loading: computed(() => false),
-      error: ref(false),
     });
 
     // when
@@ -182,5 +203,77 @@ describe('SubscriptionView', () => {
     expect(
       queryByText('subscription.connectionError.title'),
     ).not.toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on remove button click', async () => {
+    // given
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(
+      getByText('subscription.subscriptionMetadata.actions.remove'),
+    );
+
+    // then
+    expect(
+      getByText('subscription.confirmationDialog.remove.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.confirmationDialog.remove.text'),
+    ).toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on suspend button click', async () => {
+    // given
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(
+      getByText('subscription.subscriptionMetadata.actions.suspend'),
+    );
+
+    // then
+    expect(
+      getByText('subscription.confirmationDialog.suspend.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.confirmationDialog.suspend.text'),
+    ).toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on activate button click', async () => {
+    // given
+    vi.mocked(useSubscription).mockReturnValueOnce({
+      ...useSubscriptionStub,
+      subscription: ref({
+        ...dummySubscription,
+        state: ref(State.SUSPENDED),
+      }),
+    });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(
+      getByText('subscription.subscriptionMetadata.actions.activate'),
+    );
+
+    // then
+    expect(
+      getByText('subscription.confirmationDialog.activate.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('subscription.confirmationDialog.activate.text'),
+    ).toBeInTheDocument();
   });
 });

@@ -1,11 +1,11 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyValidToken } from '@/dummy/jwt-tokens';
 import { expect } from 'vitest';
 import { fetchTokenHandler } from '@/mocks/handlers';
 import { setupServer } from 'msw/node';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 import { useAuthStore } from '@/store/auth/useAuthStore';
-import { validToken } from '@/utils/jwt-utils';
 
 describe('useGroups', () => {
   const server = setupServer();
@@ -47,7 +47,7 @@ describe('useGroups', () => {
   it('should exchange code for token', async () => {
     //given
     server.use(
-      fetchTokenHandler({ accessToken: { access_token: validToken } }),
+      fetchTokenHandler({ accessToken: { access_token: dummyValidToken } }),
     );
     server.listen();
     const configStore = useAppConfigStore();
@@ -58,7 +58,7 @@ describe('useGroups', () => {
     await authStore.exchangeCodeForTokenWithPKCE('codeXYZ');
 
     // then
-    expect(authStore.accessToken).toBe(validToken);
+    expect(authStore.accessToken).toBe(dummyValidToken);
     expect(authStore.codeVerifier).toBeNull();
     expect(authStore.isUserAuthorized).toBeTruthy();
   });

@@ -1,9 +1,11 @@
 <script setup lang="ts">
   import { isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
+  import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRoute } from 'vue-router';
+  import { useRouter } from 'vue-router';
   import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
+  import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
   import HeadersCard from '@/views/subscription/headers-card/HeadersCard.vue';
@@ -18,25 +20,85 @@
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
-  const route = useRoute();
-  const { groupId, subscriptionId, topicId } = route.params as Record<
-    string,
-    string
-  >;
+  const router = useRouter();
+  const { groupId, subscriptionId, topicId } = router.currentRoute.value
+    .params as Record<string, string>;
 
   const { t } = useI18n();
 
   const {
     subscription,
+    owner,
     subscriptionMetrics,
     subscriptionHealth,
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
     error,
     loading,
+    removeSubscription,
+    suspendSubscription,
+    activateSubscription,
   } = useSubscription(topicId, subscriptionId);
 
   const roles = useRoles(topicId, subscriptionId)?.roles;
+
+  const {
+    isDialogOpened: isRemoveDialogOpened,
+    actionButtonEnabled: removeActionButtonEnabled,
+    openDialog: openRemoveDialog,
+    closeDialog: closeRemoveDialog,
+    enableActionButton: enableRemoveActionButton,
+    disableActionButton: disableRemoveActionButton,
+  } = useDialog();
+
+  async function deleteSubscription() {
+    disableRemoveActionButton();
+    const isSubscriptionRemoved = await removeSubscription();
+    enableRemoveActionButton();
+    closeRemoveDialog();
+    if (isSubscriptionRemoved) {
+      router.push({ path: `/ui/groups/${groupId}/topics/${topicId}` });
+    }
+  }
+
+  const {
+    isDialogOpened: isSuspendDialogOpened,
+    actionButtonEnabled: actionSuspendButtonEnabled,
+    openDialog: openSuspendDialog,
+    closeDialog: closeSuspendDialog,
+    enableActionButton: enableSuspendActionButton,
+    disableActionButton: disableSuspendActionButton,
+  } = useDialog();
+
+  async function suspend() {
+    disableSuspendActionButton();
+    const isSubscriptionSuspended = await suspendSubscription();
+    enableSuspendActionButton();
+    closeSuspendDialog();
+    if (isSubscriptionSuspended) {
+      router.go(0);
+    }
+  }
+
+  const {
+    isDialogOpened: isActivateDialogOpened,
+    actionButtonEnabled: actionActivateButtonEnabled,
+    openDialog: openActivateDialog,
+    closeDialog: closeActivateDialog,
+    enableActionButton: enableActivateActionButton,
+    disableActionButton: disableActivateActionButton,
+  } = useDialog();
+
+  async function activate() {
+    disableActivateActionButton();
+    const isSubscriptionActivated = await activateSubscription();
+    enableActivateActionButton();
+    closeActivateDialog();
+    if (isSubscriptionActivated) {
+      router.go(0);
+    }
+  }
+
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
@@ -61,13 +123,41 @@
 </script>
 
 <template>
+  <confirmation-dialog
+    v-model="isRemoveDialogOpened"
+    :actionButtonEnabled="removeActionButtonEnabled"
+    :title="$t('subscription.confirmationDialog.remove.title')"
+    :text="t('subscription.confirmationDialog.remove.text', { subscriptionId })"
+    @action="deleteSubscription"
+    @cancel="closeRemoveDialog"
+  />
+  <confirmation-dialog
+    v-model="isSuspendDialogOpened"
+    :actionButtonEnabled="actionSuspendButtonEnabled"
+    :title="$t('subscription.confirmationDialog.suspend.title')"
+    :text="
+      t('subscription.confirmationDialog.suspend.text', { subscriptionId })
+    "
+    @action="suspend"
+    @cancel="closeSuspendDialog"
+  />
+  <confirmation-dialog
+    v-model="isActivateDialogOpened"
+    :actionButtonEnabled="actionActivateButtonEnabled"
+    :title="$t('subscription.confirmationDialog.activate.title')"
+    :text="
+      t('subscription.confirmationDialog.activate.text', { subscriptionId })
+    "
+    @action="activate"
+    @cancel="closeActivateDialog"
+  />
   <v-container>
     <v-row dense>
       <v-col md="12">
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
         <loading-spinner v-if="loading" />
         <console-alert
-          v-if="error"
+          v-if="error.fetchSubscription"
           :title="$t('subscription.connectionError.title')"
           :text="t('subscription.connectionError.text', { subscriptionId })"
           type="error"
@@ -75,7 +165,7 @@
       </v-col>
     </v-row>
 
-    <template v-if="!loading && !error">
+    <template v-if="!loading && !error.fetchSubscription">
       <v-row dense>
         <v-col md="12">
           <health-problems-alerts
@@ -83,9 +173,13 @@
             :problems="subscriptionHealth?.problems"
           />
           <subscription-metadata
-            v-if="subscription"
+            v-if="subscription && owner"
             :subscription="subscription"
+            :owner="owner"
             :roles="roles"
+            @remove="openRemoveDialog"
+            @suspend="openSuspendDialog"
+            @activate="openActivateDialog"
           />
         </v-col>
       </v-row>

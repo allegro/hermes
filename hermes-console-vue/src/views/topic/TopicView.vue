@@ -1,10 +1,12 @@
 <script async setup lang="ts">
   import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRoute } from 'vue-router';
+  import { useRouter } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
+  import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
@@ -15,11 +17,14 @@
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
 
+  const router = useRouter();
+
   const { t } = useI18n();
 
-  const route = useRoute();
-
-  const { groupId, topicName } = route.params as Record<string, string>;
+  const { groupId, topicName } = router.currentRoute.value.params as Record<
+    string,
+    string
+  >;
 
   const {
     topic,
@@ -32,6 +37,7 @@
     offlineClientsSource,
     fetchTopic,
     fetchOfflineClientsSource,
+    removeTopic,
   } = useTopic(topicName);
   fetchTopic();
 
@@ -58,9 +64,36 @@
     fetchOfflineClientsSource();
   }
   const roles = useRoles(topicName, null)?.roles;
+
+  const {
+    isDialogOpened: isRemoveDialogOpened,
+    actionButtonEnabled: removeActionButtonEnabled,
+    openDialog: openRemoveDialog,
+    closeDialog: closeRemoveDialog,
+    enableActionButton: enableRemoveActionButton,
+    disableActionButton: disableRemoveActionButton,
+  } = useDialog();
+
+  async function deleteTopic() {
+    disableRemoveActionButton();
+    const isTopicRemoved = await removeTopic();
+    enableRemoveActionButton();
+    closeRemoveDialog();
+    if (isTopicRemoved) {
+      router.push({ path: `/ui/groups/${groupId}` });
+    }
+  }
 </script>
 
 <template>
+  <confirmation-dialog
+    v-model="isRemoveDialogOpened"
+    :actionButtonEnabled="removeActionButtonEnabled"
+    :title="$t('topicView.confirmationDialog.remove.title')"
+    :text="t('topicView.confirmationDialog.remove.text', { topicName })"
+    @action="deleteTopic"
+    @cancel="closeRemoveDialog"
+  />
   <v-container class="d-flex flex-column topic-view__container">
     <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
@@ -79,6 +112,7 @@
       :topic="topic"
       :owner="owner"
       :roles="roles"
+      @remove="openRemoveDialog"
     />
 
     <div class="topic-view__upper_panel">

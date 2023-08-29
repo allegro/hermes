@@ -2,7 +2,7 @@ import { afterEach } from 'vitest';
 import { fetchStatsErrorHandler, fetchStatsHandler } from '@/mocks/handlers';
 import { setupServer } from 'msw/node';
 import { statsResponse } from '@/dummy/stats';
-import { useStats } from '@/composables/use-stats/useStats';
+import { useStats } from '@/composables/stats/use-stats/useStats';
 import { waitFor } from '@testing-library/vue';
 
 describe('useStats', () => {

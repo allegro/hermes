@@ -1,32 +1,49 @@
 import { afterEach, describe, expect } from 'vitest';
+import { createTestingPinia } from '@pinia/testing';
+import {
+  dummyOwner,
+  dummyTopic,
+  dummyTopicMessagesPreview,
+  dummyTopicMetrics,
+} from '@/dummy/topic';
 import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
 import {
-  dummyTopic,
-  dummyTopicMessagesPreview,
-  dummyTopicMetrics,
-  dummyTopicOwner,
-} from '@/dummy/topic';
+  expectNotificationDispatched,
+  notificationStoreSpy,
+} from '@/utils/test-utils';
 import {
+  fetchOwnerErrorHandler,
   fetchTopicErrorHandler,
   fetchTopicMessagesPreviewErrorHandler,
   fetchTopicMetricsErrorHandler,
-  fetchTopicOwnerErrorHandler,
   fetchTopicSubscriptionDetailsErrorHandler,
   fetchTopicSubscriptionsErrorHandler,
+  removeTopicErrorHandler,
+  removeTopicHandler,
   successfulTopicHandlers,
 } from '@/mocks/handlers';
+import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
+import { waitFor } from '@testing-library/vue';
 import type { UseTopicErrors } from '@/composables/topic/use-topic/useTopic';
 
 describe('useTopic', () => {
   const server = setupServer(...successfulTopicHandlers);
 
   const topicName = dummyTopic.name;
-  const topicOwner = dummyTopicOwner.id;
+  const topicOwner = dummyOwner.id;
+
+  const pinia = createTestingPinia({
+    fakeApp: true,
+  });
+
+  beforeEach(() => {
+    setActivePinia(pinia);
+  });
 
   afterEach(() => {
     server.resetHandlers();
@@ -61,7 +78,7 @@ describe('useTopic', () => {
     // and: correct data was returned
     await topicPromise;
     expect(topic.value).toEqual(dummyTopic);
-    expect(owner.value).toEqual(dummyTopicOwner);
+    expect(owner.value).toEqual(dummyOwner);
     expect(metrics.value).toEqual(dummyTopicMetrics);
     expect(messages.value).toEqual(dummyTopicMessagesPreview);
     expect(subscriptions.value).toEqual([
@@ -76,7 +93,7 @@ describe('useTopic', () => {
 
   const expectedDataForErrorTest = {
     expectedTopic: dummyTopic,
-    expectedOwner: dummyTopicOwner,
+    expectedOwner: dummyOwner,
     expectedMessages: dummyTopicMessagesPreview,
     expectedMetrics: dummyTopicMetrics,
     expectedSubscriptions: [dummySubscription, secondDummySubscription],
@@ -93,7 +110,7 @@ describe('useTopic', () => {
       expectedSubscriptions: undefined,
     },
     {
-      mockHandler: fetchTopicOwnerErrorHandler({ topicOwner }),
+      mockHandler: fetchOwnerErrorHandler({ owner: topicOwner }),
       expectedErrors: { fetchOwner: true },
       ...expectedDataForErrorTest,
       expectedOwner: undefined,
@@ -173,6 +190,48 @@ describe('useTopic', () => {
       expectErrors(error.value, expectedErrors);
     },
   );
+
+  it('should show message that removing topic was successful', async () => {
+    // given
+    server.use(removeTopicHandler({ topic: dummyTopic.name }));
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { removeTopic } = useTopic(dummyTopic.name);
+
+    // when
+    await removeTopic();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        text: 'notifications.topic.delete.success',
+      });
+    });
+  });
+
+  it('should show message that removing topic was unsuccessful', async () => {
+    // given
+    server.use(
+      removeTopicErrorHandler({ topic: dummyTopic.name, errorCode: 500 }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { removeTopic } = useTopic(dummyTopic.name);
+
+    // when
+    await removeTopic();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.topic.delete.failure',
+      });
+    });
+  });
 });
 
 function expectErrors(

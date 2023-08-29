@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { State } from '@/api/subscription';
+import axios from '@/utils/axios/axios-instance';
 import qs from 'query-string';
 import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { AppConfiguration } from '@/api/app-configuration';
@@ -15,10 +16,13 @@ import type {
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
-import type { ResponsePromise } from '@/utils/axios-utils';
+import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { Role } from '@/api/role';
+import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
+import type { SubscriptionHealth } from '@/api/subscription-health';
+import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
 export function fetchTopic(
   topicName: string,
@@ -26,7 +30,7 @@ export function fetchTopic(
   return axios.get<TopicWithSchema>(`/topics/${topicName}`);
 }
 
-export function fetchTopicOwner(ownerId: string): ResponsePromise<Owner> {
+export function fetchOwner(ownerId: string): ResponsePromise<Owner> {
   return axios.get<Owner>(`/owners/sources/Service Catalog/${ownerId}`);
 }
 
@@ -54,6 +58,71 @@ export function fetchTopicSubscriptionDetails(
 ): ResponsePromise<Subscription> {
   return axios.get<Subscription>(
     `/topics/${topicName}/subscriptions/${subscription}`,
+  );
+}
+
+export function fetchSubscription(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<Subscription> {
+  return axios.get<Subscription>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}`,
+  );
+}
+
+export function suspendSubscription(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<void> {
+  return axios.put(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
+    State.SUSPENDED,
+  );
+}
+
+export function activateSubscription(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<void> {
+  return axios.put(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
+    State.ACTIVE,
+  );
+}
+
+export function fetchSubscriptionMetrics(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<SubscriptionMetrics> {
+  return axios.get<SubscriptionMetrics>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/metrics`,
+  );
+}
+
+export function fetchSubscriptionHealth(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<SubscriptionHealth> {
+  return axios.get<SubscriptionHealth>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/health`,
+  );
+}
+
+export function fetchSubscriptionUndeliveredMessages(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<SentMessageTrace[]> {
+  return axios.get<SentMessageTrace[]>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/undelivered`,
+  );
+}
+
+export function fetchSubscriptionLastUndeliveredMessage(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<SentMessageTrace> {
+  return axios.get<SentMessageTrace>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/undelivered/last`,
   );
 }
 
@@ -166,5 +235,46 @@ export function moveSubscriptionOffsets(
 ): ResponsePromise<null> {
   return axios.post<null>(
     `/topics/${topicName}/subscriptions/${subscription}/moveOffsetsToTheEnd`,
+  );
+}
+
+export function removeTopic(topic: String): ResponsePromise<void> {
+  return axios.delete(`/topics/${topic}`);
+}
+
+export function removeSubscription(
+  topic: String,
+  subscription: String,
+): ResponsePromise<void> {
+  return axios.delete(`/topics/${topic}/subscriptions/${subscription}`);
+}
+
+export function removeGroup(group: String): ResponsePromise<void> {
+  return axios.delete(`/groups/${group}`);
+}
+
+export function removeInconsistentTopic(topic: string): ResponsePromise<void> {
+  return axios.delete('/consistency/inconsistencies/topics', {
+    params: {
+      topicName: topic,
+    },
+    paramsSerializer: {
+      indexes: null,
+    },
+  });
+}
+
+export function switchReadiness(
+  datacenter: string,
+  desiredState: boolean,
+): ResponsePromise<void> {
+  return axios.post(
+    `/readiness/datacenters/${datacenter}`,
+    qs.stringify({
+      isReady: desiredState,
+    }),
+    {
+      'Content-Type': 'application/json',
+    } as AxiosRequestConfig,
   );
 }

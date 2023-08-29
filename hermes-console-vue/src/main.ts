@@ -7,14 +7,8 @@ import { createPinia } from 'pinia';
 import { createVuetify } from 'vuetify';
 import { i18n } from '@/i18n';
 import App from './App.vue';
-import axios from 'axios';
 import piniaPluginPersistedState from 'pinia-plugin-persistedstate';
 import router from './router';
-
-if (import.meta.env.DEV) {
-  axios.defaults.baseURL = 'http://localhost:3000';
-}
-axios.defaults.timeout = 5000;
 
 const vuetify = createVuetify({
   theme: {

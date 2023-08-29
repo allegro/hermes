@@ -12,6 +12,10 @@
   }>();
 
   const configStore = useAppConfigStore();
+
+  const emit = defineEmits<{
+    remove: [];
+  }>();
 </script>
 
 <template>
@@ -49,7 +53,7 @@
       <div>
         <v-btn
           :disabled="
-            configStore.appConfig.topic.readOnlyModeEnabled ||
+            configStore.loadedConfig.topic.readOnlyModeEnabled ||
             !isTopicOwnerOrAdmin(roles)
           "
           prepend-icon="mdi-pencil"
@@ -62,7 +66,7 @@
         </v-btn>
         <v-btn
           v-if="
-            configStore.appConfig.topic.offlineRetransmissionEnabled &&
+            configStore.loadedConfig.topic.offlineRetransmissionEnabled &&
             topic.offlineStorage.enabled &&
             isTopicOwnerOrAdmin(roles)
           "
@@ -72,6 +76,7 @@
         <v-btn
           color="red"
           prepend-icon="mdi-delete"
+          @click="emit('remove')"
           :disabled="!isTopicOwnerOrAdmin(roles)"
           >{{ $t('topicView.header.actions.remove') }}
         </v-btn>

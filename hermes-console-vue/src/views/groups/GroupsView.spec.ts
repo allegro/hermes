@@ -15,6 +15,7 @@ const useGroupsStub: UseGroups = {
     fetchTopicNames: null,
     fetchGroupNames: null,
   }),
+  removeGroup: () => Promise.resolve(true),
 };
 
 describe('GroupsView', () => {
