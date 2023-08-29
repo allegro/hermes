@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.prometheus
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import jakarta.ws.rs.core.MediaType
+import org.glassfish.jersey.uri.UriComponent
 import org.junit.Rule
 import org.springframework.web.client.RestTemplate
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
@@ -17,14 +18,14 @@ import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 class RestTemplatePrometheusClientTest extends Specification {
 
     private static final int PROMETHEUS_HTTP_PORT = Ports.nextAvailable()
-    private static final String query = "sumby(__name__,group,topic,subscription,status_code)" +
+    private static final String query = "sum by (__name__,group,topic,subscription,status_code)" +
             "(irate{__name__=~'hermes_consumers_subscription_delivered_total" +
             "|hermes_consumers_subscription_timeouts_total" +
             "|hermes_consumers_subscription_throughput_bytes_total" +
             "|hermes_consumers_subscription_other_errors_total" +
             "|hermes_consumers_subscription_batches_total" +
             "|hermes_consumers_subscription_http_status_codes_total'," +
-            "group='pl.allegro.tech.hermes',topic='hermesTopic',subscription='hermesSubscription'}[1m])keep_metric_names)"
+            "group='pl.allegro.tech.hermes',topic='hermesTopic',subscription='hermesSubscription'}[1m]) keep_metric_names)"
 
     @Rule
     WireMockRule wireMockRule = new WireMockRule(
@@ -75,6 +76,7 @@ class RestTemplatePrometheusClientTest extends Specification {
 
     private void mockPrometheus(String query, String responseFile) {
         String encodedQuery = URLEncoder.encode(query, defaultCharset())
+        encodedQuery = UriComponent.contextualEncode(encodedQuery, UriComponent.Type.QUERY_PARAM);
         WireMock.stubFor(WireMock.get(urlEqualTo(String.format("/api/v1/query?query=%s", encodedQuery)))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)

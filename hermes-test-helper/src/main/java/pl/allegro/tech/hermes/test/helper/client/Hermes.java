@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.test.helper.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
+import jakarta.ws.rs.client.ClientRequestContext;
+import java.util.function.Function;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
@@ -73,6 +75,21 @@ public class Hermes {
                         JacksonXmlBindJsonProvider.DEFAULT_ANNOTATIONS
                 )
         );
+    }
+
+    public Hermes withPassword(String password) {
+        this.filters.add(new PasswordAuthenticationFeature(password));
+        return this;
+    }
+
+    public Hermes withAuthToken(String authToken) {
+        this.filters.add(new OAuth2AuthenticationFeature(clientRequestContext -> authToken));
+        return this;
+    }
+
+    public Hermes withAuthToken(Function<ClientRequestContext, String> authTokenSupplier) {
+        this.filters.add(new OAuth2AuthenticationFeature(authTokenSupplier));
+        return this;
     }
 
     public Hermes withManagementConfig(ClientConfig config) {
