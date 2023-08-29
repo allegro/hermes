@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.net.URLEncoder.encode;
 
@@ -27,7 +28,6 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
     private static final Logger logger = LoggerFactory.getLogger(RestTemplatePrometheusClient.class);
 
     private final URI prometheusUri;
-
     private final RestTemplate restTemplate;
 
     public RestTemplatePrometheusClient(RestTemplate restTemplate, URI prometheusUri) {
@@ -38,18 +38,11 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
     @Override
     public MonitoringMetricsContainer readMetrics(String query) {
         try {
-            MonitoringMetricsContainer metricsContainer = MonitoringMetricsContainer.createEmpty();
             PrometheusResponse response = queryPrometheus(query);
             Preconditions.checkState(response.isSuccess(), "Prometheus response does not contain valid data");
 
-            Map<String, List<PrometheusResponse.Result>> metricsGroupedByName = response.data().results().stream()
-                    .map(RestTemplatePrometheusClient::remapNames)
-                    .collect(Collectors.groupingBy(r -> r.metricName().name()));
-            metricsGroupedByName.entrySet().stream()
-                    .map(RestTemplatePrometheusClient::sumResults)
-                    .forEach(pair -> metricsContainer.addMetricValue(pair.getKey(),
-                            MetricDecimalValue.of(pair.getValue().toString())));
-            return metricsContainer;
+            Map<String, List<PrometheusResponse.Result>> metricsGroupedByName = groupMetricsByName(response);
+            return produceMetricsContainer(metricsGroupedByName);
         } catch (Exception exception) {
             logger.warn("Unable to read from Prometheus...", exception);
             return MonitoringMetricsContainer.unavailable();
@@ -64,6 +57,23 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
         ResponseEntity<PrometheusResponse> response = restTemplate.exchange(builder.build(),
                 HttpMethod.GET, HttpEntity.EMPTY, PrometheusResponse.class);
         return response.getBody();
+    }
+
+    private static Map<String, List<PrometheusResponse.Result>> groupMetricsByName(PrometheusResponse response) {
+        return response.data().results().stream()
+                .map(RestTemplatePrometheusClient::remapNames)
+                .collect(Collectors.groupingBy(r -> r.metricName().name()));
+    }
+
+    private static MonitoringMetricsContainer produceMetricsContainer(Map<String, List<PrometheusResponse.Result>> metricsGroupedByName) {
+        MonitoringMetricsContainer metricsContainer = MonitoringMetricsContainer.createEmpty();
+
+        Stream<Pair<String, Double>> metricsSummedByName = metricsGroupedByName.entrySet().stream()
+                .map(RestTemplatePrometheusClient::sumResults);
+        metricsSummedByName.forEach(pair -> metricsContainer.addMetricValue(
+                pair.getKey(),
+                MetricDecimalValue.of(pair.getValue().toString())));
+        return metricsContainer;
     }
 
     private static PrometheusResponse.Result remapNames(PrometheusResponse.Result r) {

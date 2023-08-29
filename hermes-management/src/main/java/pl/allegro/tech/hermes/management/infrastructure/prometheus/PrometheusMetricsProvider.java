@@ -7,9 +7,6 @@ import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscr
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringTopicMetricsProvider;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 
 public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
 
@@ -38,11 +35,9 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
         this.prometheusClient = prometheusClient;
         this.consumersMetricsPrefix = consumersMetricsPrefix.isEmpty() ? "" : consumersMetricsPrefix + "_";
         this.frontendMetricsPrefix = frontendMetricsPrefix.isEmpty() ? "" : frontendMetricsPrefix + "_";
-        this.subscriptionMetricsToQuery = Stream.of(SUBSCRIPTION_DELIVERED, SUBSCRIPTION_TIMEOUTS,
+        this.subscriptionMetricsToQuery = String.join("|", List.of(SUBSCRIPTION_DELIVERED, SUBSCRIPTION_TIMEOUTS,
                         SUBSCRIPTION_THROUGHPUT, SUBSCRIPTION_OTHER_ERRORS, SUBSCRIPTION_BATCHES,
-                        SUBSCRIPTION_STATUS_CODES)
-                .map(this::consumerMetricName)
-                .collect(Collectors.joining("|"));
+                        SUBSCRIPTION_STATUS_CODES));
         this.topicMetricsToQuery = String.join("|", List.of(
                 frontendMetricName(TOPIC_RATE),
                 consumerMetricName(TOPIC_DELIVERY_RATE),
