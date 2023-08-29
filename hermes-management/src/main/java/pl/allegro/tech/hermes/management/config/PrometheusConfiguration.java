@@ -22,7 +22,7 @@ public class PrometheusConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    PrometheusConfig prometheusConfig(PrometheusProperties properties) {
+    public PrometheusConfig prometheusConfig(PrometheusProperties properties) {
         return new PrometheusConfigAdapter(properties);
     }
 
