@@ -5,8 +5,8 @@ import {
 } from '@/dummy/store';
 import { createTestingPinia } from '@pinia/testing';
 import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyExpiredToken, dummyValidToken } from '@/dummy/jwt-tokens';
 import { expect } from 'vitest';
-import { expiredToken, validToken } from '@/utils/jwt-utils';
 import { render } from '@/utils/test-utils';
 import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
 
@@ -123,7 +123,7 @@ describe('ConsoleHeader', () => {
           },
           auth: {
             ...authStoreState,
-            accessToken: validToken,
+            accessToken: dummyValidToken,
           },
         },
       }),
@@ -153,7 +153,7 @@ describe('ConsoleHeader', () => {
           },
           auth: {
             ...authStoreState,
-            accessToken: expiredToken,
+            accessToken: dummyExpiredToken,
           },
         },
       }),
