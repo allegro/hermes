@@ -48,11 +48,11 @@ server.post('/readiness/datacenters/:dc', (req, res) => {
 });
 
 server.put('/workload-constraints/*', (req, res) => {
-    res.sendStatus(200);
+  res.sendStatus(200);
 });
 
 server.delete('/workload-constraints/*', (req, res) => {
-    res.sendStatus(200);
+  res.sendStatus(200);
 });
 
 const router = jsonServer.router('json-server/db.json');

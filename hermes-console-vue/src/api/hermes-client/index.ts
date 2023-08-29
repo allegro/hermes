@@ -285,42 +285,42 @@ export function switchReadiness(
 }
 
 export function upsertTopicConstraint(
-    topicName: string,
-    constraint: Constraint,
+  topicName: string,
+  constraint: Constraint,
 ): ResponsePromise<void> {
-    const body: TopicConstraint = {
-        topicName: topicName,
-        constraint: constraint,
-    };
-    return axios.put(`/workload-constraints/topic`, body, {
-        headers: { 'Content-Type': 'application/json' },
-    });
+  const body: TopicConstraint = {
+    topicName: topicName,
+    constraint: constraint,
+  };
+  return axios.put(`/workload-constraints/topic`, body, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export function deleteTopicConstraint(
-    topicName: string,
+  topicName: string,
 ): ResponsePromise<void> {
-    return axios.delete(`/workload-constraints/topic/${topicName}`);
+  return axios.delete(`/workload-constraints/topic/${topicName}`);
 }
 
 export function upsertSubscriptionConstraint(
-    subscriptionName: string,
-    constraint: Constraint,
+  subscriptionName: string,
+  constraint: Constraint,
 ): ResponsePromise<void> {
-    const body: SubscriptionConstraint = {
-        subscriptionName: subscriptionName,
-        constraint: constraint,
-    };
-    return axios.put(`/workload-constraints/subscription`, body, {
-        headers: { 'Content-Type': 'application/json' },
-    });
+  const body: SubscriptionConstraint = {
+    subscriptionName: subscriptionName,
+    constraint: constraint,
+  };
+  return axios.put(`/workload-constraints/subscription`, body, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export function deleteSubscriptionConstraint(
-    topicName: string,
-    subscriptionName: string,
+  topicName: string,
+  subscriptionName: string,
 ): ResponsePromise<void> {
-    return axios.delete(
-        `/workload-constraints/subscription/${topicName}/${subscriptionName}`,
-    );
+  return axios.delete(
+    `/workload-constraints/subscription/${topicName}/${subscriptionName}`,
+  );
 }
