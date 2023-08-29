@@ -27,12 +27,12 @@ public class PrometheusConfiguration {
     }
 
 
-    static class PrometheusMeterRegistryFactory {
+    public static class PrometheusMeterRegistryFactory {
         private final MicrometerRegistryProperties parameters;
         private final PrometheusConfig prometheusConfig;
         private final String prefix;
 
-        PrometheusMeterRegistryFactory(MicrometerRegistryProperties properties,
+        public PrometheusMeterRegistryFactory(MicrometerRegistryProperties properties,
                                        PrometheusConfig prometheusConfig,
                                        String prefix) {
             this.parameters = properties;
@@ -40,13 +40,13 @@ public class PrometheusConfiguration {
             this.prefix = prefix + "_";
         }
 
-        PrometheusMeterRegistry provide() {
+        public PrometheusMeterRegistry provide() {
             PrometheusMeterRegistry meterRegistry = new PrometheusMeterRegistry(prometheusConfig);
             applyFilters(meterRegistry);
             return meterRegistry;
         }
 
-        void applyFilters(PrometheusMeterRegistry meterRegistry) {
+        private void applyFilters(PrometheusMeterRegistry meterRegistry) {
             meterRegistry.config().meterFilter(new MeterFilter() {
                 @Override
                 public Meter.Id map(Meter.Id id) {
