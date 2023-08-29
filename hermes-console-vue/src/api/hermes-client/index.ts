@@ -73,7 +73,7 @@ export function fetchSubscription(
 export function suspendSubscription(
   topicName: string,
   subscriptionName: string,
-): ResponsePromise<Subscription> {
+): ResponsePromise<void> {
   return axios.put(
     `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
     State.SUSPENDED,
@@ -83,7 +83,7 @@ export function suspendSubscription(
 export function activateSubscription(
   topicName: string,
   subscriptionName: string,
-): ResponsePromise<Subscription> {
+): ResponsePromise<void> {
   return axios.put(
     `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
     State.ACTIVE,
@@ -267,8 +267,8 @@ export function removeInconsistentTopic(topic: string): ResponsePromise<void> {
 export function switchReadiness(
   datacenter: string,
   desiredState: boolean,
-): ResponsePromise<AccessTokenResponse> {
-  return axios.post<AccessTokenResponse>(
+): ResponsePromise<void> {
+  return axios.post(
     `/readiness/datacenters/${datacenter}`,
     qs.stringify({
       isReady: desiredState,
