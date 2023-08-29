@@ -6,8 +6,6 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.GenericType;
 import org.javers.common.collections.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -287,7 +285,6 @@ public class ListUnhealthySubscriptionsForOwnerBasedOnGraphiteTest extends Integ
 
     }
 
-
     @Test
     public void shouldReportSuspendedSubscriptionAsHealthy() {
         // given
@@ -342,14 +339,8 @@ public class ListUnhealthySubscriptionsForOwnerBasedOnGraphiteTest extends Integ
         return listUnhealthy(null, null, true, subscriptionNames, qualifiedTopicNames);
     }
 
-    Logger logger = LoggerFactory.getLogger(ListUnhealthySubscriptionsForOwnerBasedOnGraphiteTest.class);
-
     private List<UnhealthySubscription> listUnhealthy(String ownerSourceName, String ownerId, boolean respectMonitoringSeverity,
                                                       List<String> subscriptionNames, List<String> qualifiedTopicNames) {
-        logger.info("Response -> {}", customManagement.unhealthyEndpoint()
-                .listUnhealthy(ownerSourceName, ownerId, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
-                .readEntity(String.class));
-
         return customManagement.unhealthyEndpoint()
                 .listUnhealthy(ownerSourceName, ownerId, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
                 .readEntity(new GenericType<>() {

@@ -49,6 +49,7 @@ graphite:
   client:
     enabled: false
     cacheTtlSeconds: 1
+    externalMonitoringUrl: http://localhost:18089/
 
 prometheus:
   client:
