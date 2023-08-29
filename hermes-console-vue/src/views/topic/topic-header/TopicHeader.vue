@@ -13,7 +13,9 @@
 
   const configStore = useAppConfigStore();
 
-  defineEmits(['remove']);
+  const emit = defineEmits<{
+    remove: [];
+  }>();
 </script>
 
 <template>
@@ -74,7 +76,7 @@
         <v-btn
           color="red"
           prepend-icon="mdi-delete"
-          @click="$emit('remove')"
+          @click="emit('remove')"
           :disabled="!isTopicOwnerOrAdmin(roles)"
           >{{ $t('topicView.header.actions.remove') }}
         </v-btn>

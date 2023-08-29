@@ -40,7 +40,7 @@
 
   const {
     isDialogOpened: isRemoveDialogOpened,
-    actionButtonEnabled: actionRemoveButtonEnabled,
+    actionButtonEnabled: removeActionButtonEnabled,
     openDialog: openRemoveDialog,
     closeDialog: closeRemoveDialog,
     enableActionButton: enableRemoveActionButton,
@@ -66,7 +66,7 @@
 <template>
   <confirmation-dialog
     v-model="isRemoveDialogOpened"
-    :actionButtonEnabled="actionRemoveButtonEnabled"
+    :actionButtonEnabled="removeActionButtonEnabled"
     :title="
       $t('consistency.inconsistentTopics.confirmationDialog.remove.title')
     "

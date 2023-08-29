@@ -4,10 +4,10 @@ import type { Ref } from 'vue';
 export interface UseDialog {
   isDialogOpened: Ref<boolean>;
   actionButtonEnabled: Ref<boolean>;
-  openDialog: () => Promise<void>;
-  closeDialog: () => Promise<void>;
-  enableActionButton: () => Promise<void>;
-  disableActionButton: () => Promise<void>;
+  openDialog: () => void;
+  closeDialog: () => void;
+  enableActionButton: () => void;
+  disableActionButton: () => void;
 }
 
 export function useDialog(
@@ -17,19 +17,19 @@ export function useDialog(
   const isDialogOpened = ref(isOpenedByDefault);
   const actionButtonEnabled = ref(actionButtonEnabledByDefault);
 
-  async function openDialog() {
+  function openDialog() {
     isDialogOpened.value = true;
   }
 
-  async function closeDialog() {
+  function closeDialog() {
     isDialogOpened.value = false;
   }
 
-  async function enableActionButton() {
+  function enableActionButton() {
     actionButtonEnabled.value = true;
   }
 
-  async function disableActionButton() {
+  function disableActionButton() {
     actionButtonEnabled.value = false;
   }
 

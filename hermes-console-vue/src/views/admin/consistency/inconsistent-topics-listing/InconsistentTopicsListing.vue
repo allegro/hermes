@@ -14,7 +14,9 @@
     );
   });
 
-  defineEmits(['remove']);
+  const emit = defineEmits<{
+    remove: [topic: string];
+  }>();
 </script>
 
 <template>
@@ -40,7 +42,7 @@
               variant="text"
               prepend-icon="mdi-delete"
               color="red"
-              @click="$emit('remove', topic)"
+              @click="emit('remove', topic)"
             >
               {{ $t('consistency.inconsistentTopics.actions.delete') }}
             </v-btn>

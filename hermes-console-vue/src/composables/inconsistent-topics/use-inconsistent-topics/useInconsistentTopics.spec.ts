@@ -67,7 +67,7 @@ describe('useInconsistentTopics', () => {
     });
   });
 
-  it('should show message that removing subscription was successful', async () => {
+  it('should show message that removing inconsistentTopic was successful', async () => {
     // given
     server.use(removeInconsistentTopicHandler());
     server.listen();

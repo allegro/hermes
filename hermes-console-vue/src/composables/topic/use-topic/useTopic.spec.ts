@@ -211,7 +211,7 @@ describe('useTopic', () => {
     });
   });
 
-  it('should show message that removing subscription was unsuccessful', async () => {
+  it('should show message that removing topic was unsuccessful', async () => {
     // given
     server.use(
       removeTopicErrorHandler({ topic: dummyTopic.name, errorCode: 500 }),
