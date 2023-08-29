@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.prometheus;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
@@ -9,6 +7,8 @@ import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscr
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringTopicMetricsProvider;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
 
