@@ -51,7 +51,7 @@ public class UnhealthyEndpoint {
                 ))
                 .orElseThrow(() -> new OwnerSource.OwnerNotFound(ownerSourceName, id));
         return Response.ok()
-                .entity(new GenericEntity<List<UnhealthySubscription>>(unhealthySubscriptions) {
+                .entity(new GenericEntity<>(unhealthySubscriptions) {
                 })
                 .build();
     }

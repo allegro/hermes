@@ -53,8 +53,8 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
     public void after() {
         auditEvents.reset();
         try {
-            removeSubscriptions();
-            removeTopics();
+            removeSubscriptions(management, wait);
+            removeTopics(management, wait);
         } catch (RuntimeException e) {
             logger.error("Error while removing topics and subscriptions", e);
         }
@@ -65,7 +65,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
         auditEvents.stop();
     }
 
-    private void removeSubscriptions() {
+    protected void removeSubscriptions(HermesEndpoints management, Waiter wait) {
         management.query().querySubscriptions("{\"query\": {}}").forEach(sub -> {
             Response response = management.subscription().remove(sub.getQualifiedTopicName(), sub.getName());
             if (response.getStatus() == OK.getStatusCode()) {
@@ -77,7 +77,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
         });
     }
 
-    private void removeTopics() {
+    protected void removeTopics(HermesEndpoints management, Waiter wait) {
         management.query().queryTopics("{\"query\": {}}").forEach(topic -> {
             Response response = management.topic().remove(topic.getQualifiedName());
             if (response.getStatus() == OK.getStatusCode()) {

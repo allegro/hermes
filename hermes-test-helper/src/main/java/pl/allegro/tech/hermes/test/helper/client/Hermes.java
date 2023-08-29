@@ -25,10 +25,8 @@ import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Function;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import jakarta.ws.rs.client.WebTarget;
 
@@ -75,21 +73,6 @@ public class Hermes {
                         JacksonXmlBindJsonProvider.DEFAULT_ANNOTATIONS
                 )
         );
-    }
-
-    public Hermes withPassword(String password) {
-        this.filters.add(new PasswordAuthenticationFeature(password));
-        return this;
-    }
-
-    public Hermes withAuthToken(String authToken) {
-        this.filters.add(new OAuth2AuthenticationFeature(clientRequestContext -> authToken));
-        return this;
-    }
-
-    public Hermes withAuthToken(Function<ClientRequestContext, String> authTokenSupplier) {
-        this.filters.add(new OAuth2AuthenticationFeature(authTokenSupplier));
-        return this;
     }
 
     public Hermes withManagementConfig(ClientConfig config) {
@@ -164,11 +147,6 @@ public class Hermes {
 
     public OfflineRetransmissionEndpoint createOfflineRetransmissionEndpoint() {
         return createProxy(url, OfflineRetransmissionEndpoint.class, managementConfig);
-    }
-
-    public AsyncMessagePublisher createAsyncMessagePublisher() {
-        String resource = TopicEndpoint.class.getAnnotation(Path.class).value();
-        return new AsyncMessagePublisher(getClientBuilder(publisherConfig).build().target(url).path(resource));
     }
 
     public WebTarget createWebTargetForPublishing() {

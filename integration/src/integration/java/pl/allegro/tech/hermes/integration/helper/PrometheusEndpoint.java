@@ -16,7 +16,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
-public class PrometheusEndpoint implements EnvironmentAware {
+public class PrometheusEndpoint {
 
     private static final String TIMESTAMP = "1396860420";
 
