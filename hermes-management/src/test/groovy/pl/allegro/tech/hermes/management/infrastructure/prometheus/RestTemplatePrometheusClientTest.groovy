@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.infrastructure.prometheus
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import jakarta.ws.rs.core.MediaType
-import org.glassfish.jersey.uri.UriComponent
 import org.junit.Rule
 import org.springframework.web.client.RestTemplate
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer

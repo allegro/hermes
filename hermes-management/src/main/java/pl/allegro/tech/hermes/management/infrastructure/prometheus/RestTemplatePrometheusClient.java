@@ -1,9 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.prometheus;
 
 import com.google.common.base.Preconditions;
-import jakarta.ws.rs.core.UriBuilder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +12,6 @@ import pl.allegro.tech.hermes.api.MetricDecimalValue;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
