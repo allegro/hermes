@@ -35,11 +35,9 @@
     error,
     subscriptions,
     offlineClientsSource,
-    fetchTopic,
     fetchOfflineClientsSource,
     removeTopic,
   } = useTopic(topicName);
-  fetchTopic();
 
   const breadcrumbsItems = [
     {
@@ -107,45 +105,47 @@
       type="error"
     />
 
-    <topic-header
-      v-if="topic && owner"
-      :topic="topic"
-      :owner="owner"
-      :roles="roles"
-      @remove="openRemoveDialog"
-    />
+    <template v-if="!loading && !error.fetchTopic">
+      <topic-header
+        v-if="topic && owner"
+        :topic="topic"
+        :owner="owner"
+        :roles="roles"
+        @remove="openRemoveDialog"
+      />
 
-    <div class="topic-view__upper_panel">
-      <metrics-list v-if="metrics" :metrics="metrics" />
-      <properties-list v-if="topic" :topic="topic" />
-    </div>
+      <div class="topic-view__upper_panel">
+        <metrics-list v-if="metrics" :metrics="metrics" />
+        <properties-list v-if="topic" :topic="topic" />
+      </div>
 
-    <schema-panel v-if="topic" :schema="topic.schema" />
+      <schema-panel v-if="topic" :schema="topic.schema" />
 
-    <messages-preview
-      v-if="
-        messages &&
-        configStore.appConfig?.topic.messagePreviewEnabled &&
-        isTopicOwnerOrAdmin(roles)
-      "
-      :messages="messages"
-    />
+      <messages-preview
+        v-if="
+          messages &&
+          configStore.appConfig?.topic.messagePreviewEnabled &&
+          isTopicOwnerOrAdmin(roles)
+        "
+        :messages="messages"
+      />
 
-    <subscriptions-list
-      v-if="subscriptions"
-      :groupId="groupId"
-      :topic-name="topicName"
-      :subscriptions="subscriptions"
-    />
+      <subscriptions-list
+        v-if="subscriptions"
+        :groupId="groupId"
+        :topic-name="topicName"
+        :subscriptions="subscriptions"
+      />
 
-    <offline-clients
-      v-if="
-        configStore.appConfig?.topic.offlineClientsEnabled &&
-        offlineClientsSource?.source &&
-        topic?.offlineStorage.enabled
-      "
-      :source="offlineClientsSource.source"
-    />
+      <offline-clients
+        v-if="
+          configStore.appConfig?.topic.offlineClientsEnabled &&
+          offlineClientsSource?.source &&
+          topic?.offlineStorage.enabled
+        "
+        :source="offlineClientsSource.source"
+      />
+    </template>
   </v-container>
 </template>
 

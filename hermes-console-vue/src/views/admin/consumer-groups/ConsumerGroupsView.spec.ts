@@ -1,4 +1,5 @@
 import { beforeEach } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { dummyConsumerGroups } from '@/dummy/consumerGroups';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
@@ -20,6 +21,7 @@ const useConsumerGroupsStub: UseConsumerGroups = {
 
 describe('ConsumerGroupsView', () => {
   beforeEach(async () => {
+    setActivePinia(createPinia());
     await router.push(
       '/ui/groups/pl.allegro.public.group' +
         '/topics/pl.allegro.public.group.DummyEvent' +

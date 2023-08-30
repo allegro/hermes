@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyAppConfig } from '@/dummy/app-config';
@@ -51,13 +52,13 @@ const useTopicMock: UseTopic = {
     fetchSubscriptions: null,
     fetchOfflineClientsSource: null,
   }),
-  fetchTopic: () => Promise.resolve(),
   fetchOfflineClientsSource: () => Promise.resolve(),
   removeTopic: () => Promise.resolve(true),
 };
 
 describe('TopicView', () => {
   beforeEach(async () => {
+    setActivePinia(createPinia());
     await router.push(
       `/ui/groups/pl.allegro.public.group` + `/topics/${dummyTopic.name}`,
     );
@@ -74,20 +75,6 @@ describe('TopicView', () => {
     // then
     expect(useTopic).toHaveBeenCalledOnce();
     expect(useTopic).toHaveBeenCalledWith(dummyTopic.name);
-  });
-
-  it('should fetch topic on render', () => {
-    // given
-    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-
-    const fetchTopicSpy = vi.spyOn(useTopicMock, 'fetchTopic');
-
-    // when
-    render(TopicView, { testPinia: createTestingPiniaWithState() });
-
-    // then
-    expect(fetchTopicSpy).toHaveBeenCalledOnce();
   });
 
   it('should render all view boxes', () => {

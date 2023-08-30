@@ -1,5 +1,6 @@
 import { beforeEach } from 'vitest';
 import { computed, ref } from 'vue';
+import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyOwner } from '@/dummy/topic';
 import {
@@ -54,6 +55,7 @@ const useRolesStub: UseRoles = {
 
 describe('SubscriptionView', () => {
   beforeEach(async () => {
+    setActivePinia(createPinia());
     await router.push(
       '/ui/groups/pl.allegro.public.group' +
         '/topics/pl.allegro.public.group.DummyEvent' +

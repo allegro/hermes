@@ -84,7 +84,7 @@ public class ConsoleProperties {
 
     public static final class Console {
         private String title = "hermes console";
-        private String footer = "";
+        private String contactLink = "";
         private String environmentName = "LOCAL";
 
         private boolean criticalEnvironment = false;
@@ -97,12 +97,12 @@ public class ConsoleProperties {
             this.title = title;
         }
 
-        public String getFooter() {
-            return footer;
+        public String getContactLink() {
+            return contactLink;
         }
 
-        public void setFooter(String footer) {
-            this.footer = footer;
+        public void setContactLink(String contactLink) {
+            this.contactLink = contactLink;
         }
 
         public boolean isCriticalEnvironment() {

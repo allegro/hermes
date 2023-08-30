@@ -30,7 +30,6 @@ export interface UseTopic {
   offlineClientsSource: Ref<OfflineClientsSource | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseTopicErrors>;
-  fetchTopic: () => Promise<void>;
   fetchOfflineClientsSource: () => Promise<void>;
   removeTopic: () => Promise<boolean>;
 }
@@ -170,6 +169,8 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  fetchTopic();
+
   return {
     topic,
     owner,
@@ -179,7 +180,6 @@ export function useTopic(topicName: string): UseTopic {
     offlineClientsSource,
     loading,
     error,
-    fetchTopic,
     fetchOfflineClientsSource,
     removeTopic,
   };

@@ -41,6 +41,23 @@
 
     <v-row justify="center">
       <v-col cols="3">
+        <v-btn to="/ui/favorite-topics" color="primary" block>
+          <v-icon left icon="mdi-chart-bar"></v-icon>
+          <span class="ml-1">{{ $t('homeView.links.favoriteTopics') }}</span>
+        </v-btn>
+      </v-col>
+      <v-col cols="3">
+        <v-btn to="/ui/favorite-subscriptions" color="primary" block>
+          <v-icon left icon="mdi-magnify"></v-icon>
+          <span class="ml-1">{{
+            $t('homeView.links.favoriteSubscriptions')
+          }}</span>
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row justify="center">
+      <v-col cols="3">
         <v-btn to="/ui/stats" color="accent" block>
           <v-icon left icon="mdi-chart-bar"></v-icon>
           <span class="ml-1">{{ $t('homeView.links.statistics') }}</span>

@@ -1,4 +1,5 @@
 import { beforeEach } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { dummyOwner } from '@/dummy/topic';
 import { dummySubscription } from '@/dummy/subscription';
 import { expect } from 'vitest';
@@ -10,6 +11,7 @@ import SubscriptionMetadata from '@/views/subscription/subscription-metadata/Sub
 
 describe('SubscriptionMetadata', () => {
   beforeEach(async () => {
+    setActivePinia(createPinia());
     await router.push(
       '/ui/groups/pl.allegro.public.group' +
         '/topics/pl.allegro.public.group.DummyEvent' +

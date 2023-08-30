@@ -1,9 +1,16 @@
 <script setup lang="ts">
-  import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
+  import {
+    isSubscriptionOwnerOrAdmin,
+    isTopicOwnerOrAdmin,
+  } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import { useFavorites } from '@/store/favorites/useFavorites';
+  import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Owner } from '@/api/owner';
   import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';
+
+  const favorites = useFavorites();
 
   const props = defineProps<{
     topic: TopicWithSchema;
@@ -24,11 +31,44 @@
       <p class="text-overline">{{ $t('topicView.header.topic') }}</p>
       <div class="d-flex justify-space-between">
         <p class="text-h4 font-weight-bold">{{ props.topic.name }}</p>
-        <v-tooltip :text="$t('topicView.header.actions.copyName')">
-          <template v-slot:activator="{ props }">
-            <v-btn icon="mdi-content-copy" variant="plain" v-bind="props" />
-          </template>
-        </v-tooltip>
+        <div>
+          <v-tooltip :text="$t('topicView.header.actions.copyName')">
+            <template v-slot:activator="{ props }">
+              <v-btn
+                icon="mdi-content-copy"
+                variant="plain"
+                v-bind="props"
+                @click="navigator.clipboard.writeText(topic.name)"
+              />
+            </template>
+          </v-tooltip>
+          <span v-if="favorites.topics.includes(topic.name)">
+            <v-tooltip
+              :text="$t('topicView.header.actions.removeFromFavorites')"
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  icon="mdi-star"
+                  variant="plain"
+                  v-bind="props"
+                  @click="favorites.removeTopic(topic.name)"
+                />
+              </template>
+            </v-tooltip>
+          </span>
+          <span v-if="!favorites.topics.includes(topic.name)">
+            <v-tooltip :text="$t('topicView.header.actions.addToFavorites')">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  icon="mdi-star-outline"
+                  variant="plain"
+                  v-bind="props"
+                  @click="favorites.addTopic(topic.name)"
+                />
+              </template>
+            </v-tooltip>
+          </span>
+        </div>
       </div>
     </v-card-item>
 
@@ -50,7 +90,11 @@
           {{ $t('topicView.header.owner') }} {{ props.owner.name }}
         </v-btn>
       </div>
-      <div>
+      <div class="d-flex flex-row">
+        <tooltip-icon
+          v-if="!isSubscriptionOwnerOrAdmin(roles)"
+          :content="$t('topicView.header.unauthorizedTooltip')"
+        />
         <v-btn
           :disabled="
             configStore.loadedConfig.topic.readOnlyModeEnabled ||
