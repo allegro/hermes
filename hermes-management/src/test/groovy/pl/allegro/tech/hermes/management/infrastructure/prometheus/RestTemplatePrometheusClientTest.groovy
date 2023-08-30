@@ -10,22 +10,23 @@ import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetric
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
 
+import java.nio.charset.StandardCharsets
+
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
-import static java.nio.charset.Charset.defaultCharset
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 
 class RestTemplatePrometheusClientTest extends Specification {
 
     private static final int PROMETHEUS_HTTP_PORT = Ports.nextAvailable()
     private static final String query = "sum by (__name__,group,topic,subscription,status_code)" +
-            "(irate{__name__=~'hermes_consumers_subscription_delivered_total" +
+            "(irate({__name__=~'hermes_consumers_subscription_delivered_total" +
             "|hermes_consumers_subscription_timeouts_total" +
             "|hermes_consumers_subscription_throughput_bytes_total" +
             "|hermes_consumers_subscription_other_errors_total" +
             "|hermes_consumers_subscription_batches_total" +
             "|hermes_consumers_subscription_http_status_codes_total'," +
-            "group='pl.allegro.tech.hermes',topic='hermesTopic',subscription='hermesSubscription'}[1m]) keep_metric_names)"
+            "group='pl.allegro.tech.hermes',topic='Monitor',subscription='consumer1'}[1m]) keep_metric_names)"
 
     @Rule
     WireMockRule wireMockRule = new WireMockRule(
@@ -75,8 +76,7 @@ class RestTemplatePrometheusClientTest extends Specification {
     }
 
     private void mockPrometheus(String query, String responseFile) {
-        String encodedQuery = URLEncoder.encode(query, defaultCharset())
-        encodedQuery = UriComponent.contextualEncode(encodedQuery, UriComponent.Type.QUERY_PARAM);
+        String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8)
         WireMock.stubFor(WireMock.get(urlEqualTo(String.format("/api/v1/query?query=%s", encodedQuery)))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)

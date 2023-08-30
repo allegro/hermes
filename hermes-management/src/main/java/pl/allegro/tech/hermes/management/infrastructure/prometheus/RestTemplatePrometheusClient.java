@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.management.infrastructure.prometheus;
 
 import com.google.common.base.Preconditions;
 import jakarta.ws.rs.core.UriBuilder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.net.URLEncoder.encode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 public class RestTemplatePrometheusClient implements PrometheusClient {
@@ -50,11 +53,9 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
     }
 
     private PrometheusResponse queryPrometheus(String query) {
-        UriBuilder builder = UriBuilder.fromUri(prometheusUri).path("api/v1/query");
+        URI queryUri = URI.create(prometheusUri.toString() + "/api/v1/query?query=" + encode(query, UTF_8));
 
-        builder.queryParam("query", encode(query, Charset.defaultCharset()));
-
-        ResponseEntity<PrometheusResponse> response = restTemplate.exchange(builder.build(),
+        ResponseEntity<PrometheusResponse> response = restTemplate.exchange(queryUri,
                 HttpMethod.GET, HttpEntity.EMPTY, PrometheusResponse.class);
         return response.getBody();
     }

@@ -22,13 +22,6 @@ public class PrometheusConfiguration {
                 prometheusConfig, "hermes-management").provide();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public PrometheusConfig prometheusConfig(PrometheusProperties properties) {
-        return new PrometheusConfigAdapter(properties);
-    }
-
-
     public static class PrometheusMeterRegistryFactory {
         private final MicrometerRegistryProperties parameters;
         private final PrometheusConfig prometheusConfig;
