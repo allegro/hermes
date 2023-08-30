@@ -55,6 +55,10 @@ server.delete('/workload-constraints/*', (req, res) => {
   res.sendStatus(200);
 });
 
+server.post('/groups', (req, res) => {
+  res.sendStatus(200);
+});
+
 const router = jsonServer.router('json-server/db.json');
 server.use(router);
 

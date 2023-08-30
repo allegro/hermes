@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
 
@@ -9,9 +10,13 @@
 
   const emit = defineEmits<{
     (e: 'update:dialogOpen', dialog: boolean): void;
+    (e: 'create', groupId: string): void;
   }>();
 
   const { t } = useI18n();
+
+  const groupId = ref('');
+  const isFormValid = ref(false);
 
   const groupNameRules = [
     (value: string) => {
@@ -19,6 +24,11 @@
       return t('groups.groupForm.validation.groupName');
     },
   ];
+
+  const saveGroup = () => {
+    emit('update:dialogOpen', false);
+    emit('create', groupId.value);
+  };
 </script>
 
 <template>
@@ -28,7 +38,7 @@
     width="100%"
     min-width="30%"
   >
-    <v-form @submit.prevent>
+    <v-form @submit.prevent v-model="isFormValid">
       <v-card>
         <v-card-title>
           {{
@@ -44,13 +54,19 @@
           <v-text-field
             :label="t('groups.groupForm.groupName')"
             :rules="groupNameRules"
+            v-model="groupId"
             autofocus
             required
           ></v-text-field>
         </v-card-item>
         <v-card-actions>
           <v-col class="text-right">
-            <v-btn type="submit" color="primary">
+            <v-btn
+              type="submit"
+              color="primary"
+              @click="saveGroup"
+              :disabled="!isFormValid"
+            >
               {{ t('groups.groupForm.save') }}
             </v-btn>
             <v-btn @click="emit('update:dialogOpen', false)">
