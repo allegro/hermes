@@ -51,6 +51,7 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
     private PrometheusResponse queryPrometheus(String query) {
         URI queryUri = URI.create(prometheusUri.toString() + "/api/v1/query?query=" + encode(query, UTF_8));
 
+        logger.info("Prom URI: {}", queryUri);
         ResponseEntity<PrometheusResponse> response = restTemplate.exchange(queryUri,
                 HttpMethod.GET, HttpEntity.EMPTY, PrometheusResponse.class);
         return response.getBody();
