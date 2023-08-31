@@ -1,24 +1,17 @@
-import { beforeEach } from 'vitest';
-import { createPinia, setActivePinia } from 'pinia';
+import {
+  appConfigStoreState,
+  createTestingPiniaWithState,
+} from '@/dummy/store';
+import { createTestingPinia } from '@pinia/testing';
 import { dummyOwner } from '@/dummy/topic';
 import { dummySubscription } from '@/dummy/subscription';
 import { expect } from 'vitest';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
 import { State } from '@/api/subscription';
-import router from '@/router';
 import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
 
 describe('SubscriptionMetadata', () => {
-  beforeEach(async () => {
-    setActivePinia(createPinia());
-    await router.push(
-      '/ui/groups/pl.allegro.public.group' +
-        '/topics/pl.allegro.public.group.DummyEvent' +
-        '/subscriptions/foobar-service',
-    );
-  });
-
   it('should render subscription metadata box', () => {
     // given
     const props = {
@@ -42,6 +35,69 @@ describe('SubscriptionMetadata', () => {
     expect(getByText('subscription-name')).toBeVisible();
     expect(getByText('service://subscription-name/dummy')).toBeVisible();
     expect(getByText('some description')).toBeVisible();
+  });
+
+  it('should show add subscription to favorites button', async () => {
+    // given
+    const props = {
+      subscription: {
+        dummySubscription,
+      },
+      owner: dummyOwner,
+      roles: [],
+    };
+
+    // when
+    const { getByText, queryByText } = render(SubscriptionMetadata, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(
+      getByText('subscription.subscriptionMetadata.actions.addToFavorites'),
+    ).toBeInTheDocument();
+    expect(
+      queryByText(
+        'subscription.subscriptionMetadata.actions.removeFromFavorites',
+      ),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should show remove subscription from favorites button', async () => {
+    // given
+    const props = {
+      subscription: {
+        ...dummySubscription,
+        name: 'sub',
+        topicName: 'topic',
+      },
+      owner: dummyOwner,
+      roles: [],
+    };
+
+    // when
+    const { getByText, queryByText } = render(SubscriptionMetadata, {
+      props,
+      testPinia: createTestingPinia({
+        initialState: {
+          favorites: {
+            subscriptions: ['topic$sub'],
+          },
+          appConfig: appConfigStoreState,
+        },
+      }),
+    });
+
+    // then
+    expect(
+      queryByText('subscription.subscriptionMetadata.actions.addToFavorites'),
+    ).not.toBeInTheDocument();
+    expect(
+      getByText(
+        'subscription.subscriptionMetadata.actions.removeFromFavorites',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('should render owners button', () => {

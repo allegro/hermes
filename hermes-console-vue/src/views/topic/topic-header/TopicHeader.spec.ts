@@ -34,6 +34,45 @@ describe('TopicHeader', () => {
     expect(getByText(dummyTopic.description)).toBeVisible();
   });
 
+  it('should show add topic to favorites button', async () => {
+    // when
+    const { getByText, queryByText } = render(TopicHeader, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(
+      getByText('topicView.header.actions.addToFavorites'),
+    ).toBeInTheDocument();
+    expect(
+      queryByText('topicView.header.actions.removeFromFavorites'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should show remove topic from favorites button', async () => {
+    // when
+    const { getByText, queryByText } = render(TopicHeader, {
+      props,
+      testPinia: createTestingPinia({
+        initialState: {
+          favorites: {
+            topics: [dummyTopic.name],
+          },
+          appConfig: appConfigStoreState,
+        },
+      }),
+    });
+
+    // then
+    expect(
+      getByText('topicView.header.actions.removeFromFavorites'),
+    ).toBeInTheDocument();
+    expect(
+      queryByText('topicView.header.actions.addToFavorites'),
+    ).not.toBeInTheDocument();
+  });
+
   it.each([
     { roles: [], disabled: true },
     { roles: [Role.ANY], disabled: true },
