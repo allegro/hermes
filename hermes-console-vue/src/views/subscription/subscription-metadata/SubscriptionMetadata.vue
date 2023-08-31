@@ -4,6 +4,7 @@
   import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
   import { subscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
+  import { unsecuredCopyToClipboard } from '@/utils/copy-utils';
   import { useFavorites } from '@/store/favorites/useFavorites';
   import { useRoute } from 'vue-router';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
@@ -24,6 +25,14 @@
     suspend: [];
     activate: [];
   }>();
+
+  const copyToClipboard = (content: string) => {
+    if (window.isSecureContext && navigator.clipboard) {
+      navigator.clipboard.writeText(content);
+    } else {
+      unsecuredCopyToClipboard(content);
+    }
+  };
 </script>
 
 <template>
@@ -51,7 +60,7 @@
                 icon="mdi-content-copy"
                 variant="plain"
                 v-bind="props"
-                @click="navigator.clipboard.writeText(subscription.name)"
+                @click="copyToClipboard(subscription.name)"
               />
             </template>
           </v-tooltip>
