@@ -6,6 +6,8 @@ import {
 import { render } from '@/utils/test-utils';
 import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
 import userEvent from '@testing-library/user-event';
+import {beforeEach} from "vitest";
+import router from "@/router";
 
 describe('SubscriptionsList', () => {
   const props = {
@@ -13,6 +15,12 @@ describe('SubscriptionsList', () => {
     topicName: 'pl.allegro.DummyTopic',
     subscriptions: [dummySubscription, secondDummySubscription],
   };
+
+  beforeEach(async () => {
+    await router.push(
+        `/ui/groups/${props.groupId}/topics/${props.topicName}`,
+    );
+  });
 
   it('should render proper heading', () => {
     // when
