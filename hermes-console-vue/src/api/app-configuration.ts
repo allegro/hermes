@@ -13,7 +13,7 @@ export interface AppConfiguration {
 
 export interface ConsoleConfiguration {
   title: string;
-  footer: string;
+  contactLink: string;
   environmentName: string;
   criticalEnvironment: boolean;
 }

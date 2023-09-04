@@ -1,7 +1,7 @@
 <script async setup lang="ts">
   import { formatNumber } from '@/utils/number-formatter/number-formatter';
   import { useI18n } from 'vue-i18n';
-  import { useStats } from '@/composables/use-stats/useStats';
+  import { useStats } from '@/composables/stats/use-stats/useStats';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 

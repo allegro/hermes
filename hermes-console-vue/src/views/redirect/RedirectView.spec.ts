@@ -1,12 +1,12 @@
 import { appConfigStoreState } from '@/dummy/store';
 import { createTestingPinia } from '@pinia/testing';
+import { dummyValidToken } from '@/dummy/jwt-tokens';
 import { expect } from 'vitest';
 import { fetchTokenHandler } from '@/mocks/handlers';
 import { render } from '@/utils/test-utils';
 import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useAuthStore } from '@/store/auth/useAuthStore';
-import { validToken } from '@/utils/jwt-utils';
 import RedirectView from '@/views/redirect/RedirectView.vue';
 import router from '@/router';
 
@@ -24,7 +24,7 @@ describe('RedirectView', () => {
   it('should push to state', async () => {
     // given
     server.use(
-      fetchTokenHandler({ accessToken: { access_token: validToken } }),
+      fetchTokenHandler({ accessToken: { access_token: dummyValidToken } }),
     );
     server.listen();
     const authStore = useAuthStore();

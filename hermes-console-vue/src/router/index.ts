@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/store/auth/useAuthStore';
+import axios from '@/utils/axios/axios-instance';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,6 +18,17 @@ const router = createRouter({
       path: '/ui/groups',
       name: 'groups',
       component: () => import('@/views/groups/GroupsView.vue'),
+    },
+    {
+      path: '/ui/favorite-topics',
+      name: 'favoriteTopics',
+      component: () => import('@/views/favorite/topics/FavoriteTopicsView.vue'),
+    },
+    {
+      path: '/ui/favorite-subscriptions',
+      name: 'favoriteSubscriptions',
+      component: () =>
+        import('@/views/favorite/subscriptions/FavoriteSubscriptionsView.vue'),
     },
     {
       path: '/ui/groups/:groupId',
@@ -48,6 +61,22 @@ const router = createRouter({
       component: () => import('@/views/admin/consistency/ConsistencyView.vue'),
     },
     {
+      path: '/ui/consistency/:groupId',
+      name: 'groupConsistency',
+      component: () =>
+        import(
+          '@/views/admin/consistency/inconsistent-group/InconsistentGroup.vue'
+        ),
+    },
+    {
+      path: '/ui/consistency/:groupId/topics/:topicId',
+      name: 'topicConsistency',
+      component: () =>
+        import(
+          '@/views/admin/consistency/inconsistent-topic/InconsistentTopic.vue'
+        ),
+    },
+    {
       path: '/ui/groups/:groupId/topics/:topicId/subscriptions/:subscriptionId/diagnostics/',
       name: 'consumerGroups',
       component: () =>
@@ -69,6 +98,17 @@ const router = createRouter({
       component: () => import('@/views/search/SearchView.vue'),
     },
   ],
+});
+
+router.beforeEach(() => {
+  const authStore = useAuthStore();
+
+  if (authStore.isUserAuthorized) {
+    axios.interceptors.request.use(function (config) {
+      config.headers.Authorization = `Bearer ${authStore.accessToken}`;
+      return config;
+    });
+  }
 });
 
 export default router;

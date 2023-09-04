@@ -1,9 +1,9 @@
 import { computed, ref } from 'vue';
 import { render } from '@/utils/test-utils';
-import { useStats } from '@/composables/use-stats/useStats';
+import { useStats } from '@/composables/stats/use-stats/useStats';
 import StatsView from '@/views/stats/StatsView.vue';
 
-vi.mock('@/composables/use-stats/useStats');
+vi.mock('@/composables/stats/use-stats/useStats');
 
 const useStatsStub: ReturnType<typeof useStats> = {
   error: ref({ fetchError: null }),

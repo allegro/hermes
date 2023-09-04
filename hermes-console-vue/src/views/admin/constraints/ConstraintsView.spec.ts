@@ -1,8 +1,10 @@
 import { dummyConstraints } from '@/dummy/constraints';
+import { expect } from 'vitest';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useConstraints } from '@/composables/constraints/use-constraints/useConstraints';
 import ConstraintsView from '@/views/admin/constraints/ConstraintsView.vue';
+import userEvent from '@testing-library/user-event';
 import type { UseConstraints } from '@/composables/constraints/use-constraints/useConstraints';
 
 vi.mock('@/composables/constraints/use-constraints/useConstraints');
@@ -10,6 +12,10 @@ vi.mock('@/composables/constraints/use-constraints/useConstraints');
 const useConstraintsStub: UseConstraints = {
   topicConstraints: ref(dummyConstraints.topicConstraints),
   subscriptionConstraints: ref(dummyConstraints.subscriptionConstraints),
+  upsertTopicConstraint: () => Promise.resolve(),
+  upsertSubscriptionConstraint: () => Promise.resolve(),
+  deleteTopicConstraint: () => Promise.resolve(),
+  deleteSubscriptionConstraint: () => Promise.resolve(),
   loading: ref(false),
   error: ref({
     fetchConstraints: null,
@@ -95,5 +101,35 @@ describe('ConstraintsView', () => {
     expect(
       queryByText('constraints.connectionError.title'),
     ).not.toBeInTheDocument();
+  });
+
+  it('should open create subscription constraint dialog when add subscription constraint is clicked', async () => {
+    // given
+    vi.mocked(useConstraints).mockReturnValueOnce(useConstraintsStub);
+    const user = userEvent.setup();
+
+    // when
+    const { getByTestId, queryByText } = render(ConstraintsView);
+
+    // then
+    await user.click(getByTestId('addSubscriptionConstraint'));
+    expect(
+      queryByText('constraints.createForm.createSubscriptionTitle'),
+    ).toBeVisible();
+  });
+
+  it('should open create topic constraint dialog when add topic constraint is clicked', async () => {
+    // given
+    vi.mocked(useConstraints).mockReturnValueOnce(useConstraintsStub);
+    const user = userEvent.setup();
+
+    // when
+    const { getByTestId, queryByText } = render(ConstraintsView);
+
+    // then
+    await user.click(getByTestId('addTopicConstraint'));
+    expect(
+      queryByText('constraints.createForm.createTopicTitle'),
+    ).toBeVisible();
   });
 });

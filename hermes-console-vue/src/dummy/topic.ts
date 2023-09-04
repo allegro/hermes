@@ -53,7 +53,7 @@ export const dummyTopic: TopicWithSchema = {
   modifiedAt: 1636451113.517,
 };
 
-export const dummyTopicOwner: Owner = {
+export const dummyOwner: Owner = {
   id: '41',
   name: 'your-super-service',
   url: 'https://google.pl?q=your-super-service',

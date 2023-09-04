@@ -1,13 +1,16 @@
 import {
+  removeTopic as deleteTopic,
   fetchOfflineClientsSource as getOfflineClientsSource,
   fetchTopic as getTopic,
   fetchTopicMessagesPreview as getTopicMessagesPreview,
   fetchTopicMetrics as getTopicMetrics,
-  fetchTopicOwner as getTopicOwner,
+  fetchOwner as getTopicOwner,
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
+import { useGlobalI18n } from '@/i18n';
+import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type {
   MessagePreview,
   TopicMetrics,
@@ -27,8 +30,8 @@ export interface UseTopic {
   offlineClientsSource: Ref<OfflineClientsSource | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseTopicErrors>;
-  fetchTopic: () => Promise<void>;
   fetchOfflineClientsSource: () => Promise<void>;
+  removeTopic: () => Promise<boolean>;
 }
 
 export interface UseTopicErrors {
@@ -41,6 +44,8 @@ export interface UseTopicErrors {
 }
 
 export function useTopic(topicName: string): UseTopic {
+  const notificationStore = useNotificationsStore();
+
   const topic = ref<TopicWithSchema>();
   const owner = ref<Owner>();
   const messages = ref<MessagePreview[]>();
@@ -142,6 +147,30 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const removeTopic = async (): Promise<boolean> => {
+    try {
+      await deleteTopic(topicName);
+      notificationStore.dispatchNotification({
+        text: useGlobalI18n().t('notifications.topic.delete.success', {
+          topicName,
+        }),
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t('notifications.topic.delete.failure', {
+          topicName,
+        }),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
+  fetchTopic();
+
   return {
     topic,
     owner,
@@ -151,7 +180,7 @@ export function useTopic(topicName: string): UseTopic {
     offlineClientsSource,
     loading,
     error,
-    fetchTopic,
     fetchOfflineClientsSource,
+    removeTopic,
   };
 }

@@ -1,12 +1,22 @@
 import { afterEach } from 'vitest';
-import { dummyGroupNames } from '@/dummy/groups';
-import { dummyTopicNames } from '@/dummy/topics';
 import {
+  createGroupErrorHandler,
+  createGroupHandler,
   fetchGroupNamesErrorHandler,
   fetchGroupNamesHandler,
   fetchTopicNamesErrorHandler,
   fetchTopicNamesHandler,
+  removeGroupErrorHandler,
+  removeGroupHandler,
 } from '@/mocks/handlers';
+import { createTestingPinia } from '@pinia/testing';
+import { dummyGroupNames } from '@/dummy/groups';
+import { dummyTopicNames } from '@/dummy/topics';
+import {
+  expectNotificationDispatched,
+  notificationStoreSpy,
+} from '@/utils/test-utils';
+import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useGroups } from '@/composables/groups/use-groups/useGroups';
 import { waitFor } from '@testing-library/vue';
@@ -16,6 +26,14 @@ describe('useGroups', () => {
     fetchGroupNamesHandler({ groupNames: dummyGroupNames }),
     fetchTopicNamesHandler({ topicNames: dummyTopicNames }),
   );
+
+  const pinia = createTestingPinia({
+    fakeApp: true,
+  });
+
+  beforeEach(() => {
+    setActivePinia(pinia);
+  });
 
   afterEach(() => {
     server.resetHandlers();
@@ -70,6 +88,88 @@ describe('useGroups', () => {
     // then
     await waitFor(() => {
       expect(error.value.fetchTopicNames).not.toBeNull();
+    });
+  });
+
+  it('should show message that removing group was successful', async () => {
+    // given
+    server.use(removeGroupHandler({ group: dummyGroupNames[0] }));
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { removeGroup } = useGroups();
+
+    // when
+    await removeGroup(dummyGroupNames[0]);
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        text: 'notifications.group.delete.success',
+      });
+    });
+  });
+
+  it('should show message that removing group was unsuccessful', async () => {
+    // given
+    server.use(
+      removeGroupErrorHandler({ group: dummyGroupNames[0], errorCode: 500 }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { removeGroup } = useGroups();
+
+    // when
+    await removeGroup(dummyGroupNames[0]);
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.group.delete.failure',
+      });
+    });
+  });
+
+  it('should dispatch notification on successful group create', async () => {
+    // given
+    server.use(createGroupHandler({ group: { groupName: 'group' } }));
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { createGroup } = useGroups();
+
+    // when
+    await createGroup('group');
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        title: 'notifications.group.create.success',
+      });
+    });
+  });
+
+  it('should dispatch notification on unsuccessful group create', async () => {
+    // given
+    server.use(createGroupErrorHandler({}));
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { createGroup } = useGroups();
+
+    // when
+    await createGroup('group');
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.group.create.failure',
+      });
     });
   });
 });

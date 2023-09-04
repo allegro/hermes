@@ -3,11 +3,14 @@
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useAuthStore } from '@/store/auth/useAuthStore';
   import { useI18n } from 'vue-i18n';
+  import { useRouter } from 'vue-router';
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const { t } = useI18n();
+
+  const router = useRouter();
 
   const theme = useTheme();
   const configStore = useAppConfigStore();
@@ -21,6 +24,7 @@
 
   function logout() {
     authStore.logout();
+    router.go(0);
   }
 </script>
 

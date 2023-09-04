@@ -4,6 +4,8 @@ const en_US = {
   homeView: {
     links: {
       console: 'Console',
+      favoriteTopics: 'Favorite topics',
+      favoriteSubscriptions: 'Favorite subs',
       runtime: 'Runtime',
       statistics: 'Stats',
       search: 'Search',
@@ -15,6 +17,33 @@ const en_US = {
     signIn: 'Sign in',
     logout: 'Logout',
   },
+  favorites: {
+    breadcrumbs: {
+      home: 'home',
+      topics: 'favorite topics',
+      subscriptions: 'favorite subscriptions',
+    },
+    topics: {
+      heading: 'Favorite topics',
+      actions: {
+        search: 'Search favorite topics...',
+      },
+    },
+    subscriptions: {
+      index: '#',
+      name: 'Qualified subscription name',
+      appliedFilter: '(applied filter: “{filter}”)',
+      heading: 'Favorite subscriptions',
+      actions: {
+        search: 'Search favorite subscriptions...',
+      },
+    },
+  },
+  confirmationDialog: {
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    confirmText: "Type 'prod' to confirm action.",
+  },
   consistency: {
     connectionError: {
       title: 'Connection error',
@@ -24,7 +53,48 @@ const en_US = {
       home: 'home',
       title: 'consistency',
     },
+    inconsistentGroups: {
+      heading: 'Inconsistent groups',
+      noGroups: 'No inconsistent groups found',
+      appliedFilter: '(applied filter: “{filter}”)',
+      actions: {
+        search: 'Search inconsistent groups...',
+        check: 'Check consistency',
+      },
+      listing: {
+        index: '#',
+        name: 'Group',
+      },
+    },
+    inconsistentGroup: {
+      title: 'Group: {groupId}',
+      listing: {
+        index: '#',
+        name: 'Topic',
+        title: 'Inconsistent topics',
+      },
+      noTopics: 'No inconsistent topics',
+      inconsistentTopic: {
+        title: 'Topic: {topicId}',
+        listing: {
+          index: '#',
+          name: 'Subscription',
+        },
+        noSubscriptions: 'No inconsistent subscriptions',
+        inconsistentSubscriptions: 'Inconsistent subscriptions',
+      },
+      metadata: {
+        consistent: 'Metadata are consistent',
+        inconsistent: 'Inconsistent metadata',
+      },
+    },
     inconsistentTopics: {
+      confirmationDialog: {
+        remove: {
+          title: 'Confirm topic deletion',
+          text: 'Are you sure you want to delete topic {topicToDelete}',
+        },
+      },
       noTopics: 'No inconsistent topics found',
       appliedFilter: '(applied filter: “{filter}”)',
       heading: 'Topics existing on kafka cluster but not present in hermes',
@@ -63,6 +133,22 @@ const en_US = {
     connectionError: {
       title: 'Connection error',
       text: 'Could not fetch information about constraints',
+    },
+    createForm: {
+      createSubscriptionTitle: 'Create constraints for subscription',
+      createTopicTitle: 'Create constraints for topic',
+      topicName: 'Topic name',
+      subscriptionName: 'Subscription name',
+      consumersNumber: 'Consumers count',
+      save: 'Save',
+      cancel: 'Cancel',
+    },
+    editForm: {
+      title: 'Edit constraints for: “{resourceId}”',
+      consumersNumber: 'Consumers count',
+      save: 'Save',
+      remove: 'Remove',
+      cancel: 'Cancel',
     },
     topicConstraints: {
       heading: 'Topic constraints',
@@ -110,9 +196,15 @@ const en_US = {
     trackingEnabled: 'Tracking Enabled',
   },
   readiness: {
+    confirmationDialog: {
+      switch: {
+        title: 'Confirm readiness switch',
+        text: 'Are you sure you want to {switchAction} datacenter {dcToSwitch}?',
+      },
+    },
     title: 'Datacenters Readiness',
-    turnOn: 'Turn on',
-    turnOff: 'Turn off',
+    turnOn: 'turn on',
+    turnOff: 'turn off',
     index: '#',
     datacenter: 'Datacenter',
     isReady: 'Is ready',
@@ -128,8 +220,15 @@ const en_US = {
   },
   groups: {
     actions: {
+      remove: 'Remove',
       create: 'New Group',
       search: 'search…',
+    },
+    confirmationDialog: {
+      remove: {
+        title: 'Confirm group deletion',
+        text: 'Are you sure you want to delete group {groupId}',
+      },
     },
     connectionError: {
       title: 'Connection error',
@@ -169,13 +268,21 @@ const en_US = {
     heading: 'Groups',
   },
   groupTopics: {
+    title: 'Group',
     groupTopicsBreadcrumbs: {
       home: 'home',
       groups: 'groups',
     },
   },
   topicView: {
+    confirmationDialog: {
+      remove: {
+        title: 'Confirm topic deletion',
+        text: 'Are you sure you want to delete topic {topicName}',
+      },
+    },
     header: {
+      unauthorizedTooltip: "You don't have permissions to manage this topic",
       topic: 'TOPIC',
       owner: 'OWNER:',
       actions: {
@@ -184,6 +291,8 @@ const en_US = {
         offlineRetransmission: 'Offline retransmission',
         remove: 'Remove',
         copyName: 'Copy topic name',
+        addToFavorites: 'Add topic to favorites',
+        removeFromFavorites: 'Remove topic from favorites',
       },
     },
     metrics: {
@@ -255,6 +364,20 @@ const en_US = {
     },
   },
   subscription: {
+    confirmationDialog: {
+      remove: {
+        title: 'Confirm subscription deletion',
+        text: 'Are you sure you want to delete subscription {subscriptionId}',
+      },
+      suspend: {
+        title: 'Confirm subscription suspension',
+        text: 'Are you sure you want to suspend subscription {subscriptionId}',
+      },
+      activate: {
+        title: 'Confirm subscription activation',
+        text: 'Are you sure you want to activate subscription {subscriptionId}',
+      },
+    },
     connectionError: {
       title: 'Connection error',
       text: 'Could not fetch {subscriptionId} subscription details',
@@ -428,8 +551,9 @@ const en_US = {
     },
     subscriptionMetadata: {
       subscription: 'Subscription',
-      owners: 'Owners',
-      unauthorizedTooltip: 'Sign in to edit the subscription',
+      owners: 'OWNER:',
+      unauthorizedTooltip:
+        "You don't have permissions to manage this subscription",
       actions: {
         diagnostics: 'Diagnostics',
         suspend: 'Suspend',
@@ -437,6 +561,9 @@ const en_US = {
         edit: 'Edit',
         clone: 'Clone',
         remove: 'Remove',
+        copyName: 'Copy subscription name',
+        addToFavorites: 'Add subscription to favorites',
+        removeFromFavorites: 'Remove subscription from favorites',
       },
     },
     undeliveredMessagesCard: {
@@ -446,6 +573,10 @@ const en_US = {
       status: 'Status',
       reason: 'Reason',
       timestamp: 'Timestamp',
+    },
+    moveOffsets: {
+      tooltip: 'Move subscription offsets to the end',
+      button: 'MOVE OFFSETS',
     },
   },
   search: {
@@ -475,6 +606,88 @@ const en_US = {
         owner: 'owner',
         endpoint: 'endpoint',
         noSubscriptions: 'No subscriptions found',
+      },
+    },
+  },
+  notifications: {
+    subscriptionOffsets: {
+      move: {
+        success: 'Moved offsets for subscription {subscriptionName}',
+        failure: 'Failed to move offsets for subscription {subscriptionName}',
+      },
+    },
+    readiness: {
+      switch: {
+        success: 'Successfully switched datacenter {datacenter} readiness',
+        failure: "Couldn't switch datacenter {datacenter} readiness",
+      },
+    },
+    roles: {
+      fetch: {
+        failure:
+          'Fetching user roles failed. Some options might not be visible.',
+      },
+    },
+    group: {
+      delete: {
+        success: 'Group {groupId} successfully deleted',
+        failure: "Couldn't delete group {groupId}",
+      },
+      create: {
+        success: 'Group {groupId} successfully created',
+        failure: "Couldn't create group {groupId}",
+      },
+    },
+    topic: {
+      delete: {
+        success: 'Topic {topicName} successfully deleted',
+        failure: "Couldn't delete topic {topicName}",
+      },
+    },
+    inconsistentTopic: {
+      delete: {
+        success: 'Topic {topic} successfully deleted',
+        failure: "Couldn't delete topic {topic}",
+      },
+    },
+    subscription: {
+      delete: {
+        success: 'Subscription {subscriptionName} successfully deleted',
+        failure: "Couldn't delete subscription {subscriptionName}",
+      },
+      suspend: {
+        success: 'Subscription {subscriptionName} successfully suspended',
+        failure: "Couldn't suspend subscription {subscriptionName}",
+      },
+      activate: {
+        success: 'Subscription {subscriptionName} successfully activated',
+        failure: "Couldn't activate subscription {subscriptionName}",
+      },
+    },
+    constraints: {
+      topic: {
+        created: {
+          success: 'Successfully upserted constraint for topic: “{topicName}“',
+          failure: 'Failed to upsert constraint for topic: “{topicName}“',
+        },
+        deleted: {
+          success: 'Successfully deleted constraint for topic: “{topicName}“',
+          failure: 'Failed to delete constraint for topic: “{topicName}“',
+        },
+      },
+      subscription: {
+        created: {
+          success:
+            'Successfully upserted constraint for subscription: “{subscriptionFqn}“',
+          failure:
+            'Failed to upsert constraint for subscription: “{subscriptionFqn}“',
+        },
+        deleted: {
+          success:
+            'Successfully deleted constraint for subscription: “{subscriptionFqn}“',
+          failure:
+            'Failed to delete constraint for subscription: “{subscriptionFqn}“',
+        },
       },
     },
   },

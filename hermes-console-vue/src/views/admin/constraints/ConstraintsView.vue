@@ -2,16 +2,29 @@
   import { ref } from 'vue';
   import { useConstraints } from '@/composables/constraints/use-constraints/useConstraints';
   import { useI18n } from 'vue-i18n';
+  import { useRouter } from 'vue-router';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import ConstraintsListing from '@/views/admin/constraints/constraints-listing/ConstraintsListing.vue';
+  import CreateConstraintDialog from '@/views/admin/constraints/create-constraint-form/CreateConstraintDialog.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
+  import type { Constraint } from '@/api/constraints';
 
   const { t } = useI18n();
+  const router = useRouter();
+
   const topicFilter = ref<string>();
   const subscriptionFilter = ref<string>();
 
-  const { topicConstraints, subscriptionConstraints, loading, error } =
-    useConstraints();
+  const {
+    topicConstraints,
+    subscriptionConstraints,
+    upsertTopicConstraint,
+    deleteTopicConstraint,
+    upsertSubscriptionConstraint,
+    deleteSubscriptionConstraint,
+    loading,
+    error,
+  } = useConstraints();
 
   const breadcrumbsItems = [
     {
@@ -22,6 +35,43 @@
       title: t('constraints.breadcrumbs.title'),
     },
   ];
+
+  const refreshOnMutation = (mutated: boolean) => {
+    if (mutated) {
+      router.go(0);
+    }
+  };
+
+  const onTopicConstraintUpserted = async (
+    topicName: string,
+    constraint: Constraint,
+  ) => {
+    const topicDeleted = await upsertTopicConstraint(topicName, constraint);
+    refreshOnMutation(topicDeleted);
+  };
+
+  const onTopicConstraintDeleted = async (topicName: string) => {
+    const subscriptionDeleted = await deleteTopicConstraint(topicName);
+    refreshOnMutation(subscriptionDeleted);
+  };
+
+  const onSubscriptionConstraintCreated = async (
+    subscriptionFqn: string,
+    constraint: Constraint,
+  ) => {
+    const constraintChanged = await upsertSubscriptionConstraint(
+      subscriptionFqn,
+      constraint,
+    );
+    refreshOnMutation(constraintChanged);
+  };
+
+  const onSubscriptionConstraintDeleted = async (subscriptionFqn: string) => {
+    const constraintChanged = await deleteSubscriptionConstraint(
+      subscriptionFqn,
+    );
+    refreshOnMutation(constraintChanged);
+  };
 </script>
 
 <template>
@@ -45,8 +95,18 @@
         </p>
       </v-col>
       <v-col md="2">
-        <v-btn prepend-icon="mdi-plus" color="secondary" block>
+        <v-btn
+          prepend-icon="mdi-plus"
+          color="secondary"
+          block
+          data-testid="addTopicConstraint"
+        >
           {{ $t('constraints.topicConstraints.actions.create') }}
+          <CreateConstraintDialog
+            :isSubscription="false"
+            @create="onTopicConstraintUpserted"
+          >
+          </CreateConstraintDialog>
         </v-btn>
       </v-col>
     </v-row>
@@ -67,6 +127,8 @@
           v-if="topicConstraints"
           :constraints="topicConstraints"
           :filter="topicFilter"
+          @update="onTopicConstraintUpserted"
+          @delete="onTopicConstraintDeleted"
         />
       </v-col>
     </v-row>
@@ -77,8 +139,18 @@
         </p>
       </v-col>
       <v-col md="2">
-        <v-btn prepend-icon="mdi-plus" color="secondary" block>
+        <v-btn
+          prepend-icon="mdi-plus"
+          color="secondary"
+          block
+          data-testid="addSubscriptionConstraint"
+        >
           {{ $t('constraints.subscriptionConstraints.actions.create') }}
+          <CreateConstraintDialog
+            :isSubscription="true"
+            @create="onSubscriptionConstraintCreated"
+          >
+          </CreateConstraintDialog>
         </v-btn>
       </v-col>
     </v-row>
@@ -99,6 +171,8 @@
           v-if="subscriptionConstraints"
           :constraints="subscriptionConstraints"
           :filter="subscriptionFilter"
+          @update="onSubscriptionConstraintCreated"
+          @delete="onSubscriptionConstraintDeleted"
         />
       </v-col>
     </v-row>

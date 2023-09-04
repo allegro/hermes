@@ -1,10 +1,11 @@
 <script setup lang="ts">
   import type { Notification } from '@/store/app-notifications/types';
-
   const props = defineProps<{
     notification: Notification;
   }>();
-  defineEmits(['close']);
+  const emit = defineEmits<{
+    close: [];
+  }>();
 </script>
 
 <template>
@@ -16,8 +17,7 @@
     border="start"
     elevation="3"
     width="500"
-    @click:close="$emit('close')"
+    @click:close="emit('close')"
   />
 </template>
-
 <style scoped lang="scss"></style>

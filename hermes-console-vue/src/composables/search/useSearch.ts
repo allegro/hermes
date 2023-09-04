@@ -68,11 +68,14 @@ export function useSearch(): UseSearch {
   };
 }
 
+const patternPrefix = '(?i).*';
+const patternSuffix = '.*';
+
 function buildQuery(filter: SearchFilter, pattern: string): Object {
   return {
     query: {
       [filter]: {
-        like: pattern,
+        like: `${patternPrefix}${pattern}${patternSuffix}`,
       },
     },
   };

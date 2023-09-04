@@ -1,12 +1,18 @@
 <script setup lang="ts">
   import { computed } from 'vue';
   import { useI18n } from 'vue-i18n';
+  import EditConstraintDialog from '@/views/admin/constraints/edit-constraint-form/EditConstraintDialog.vue';
   import type { Constraint } from '@/api/constraints';
   const { t } = useI18n();
 
   const props = defineProps<{
     constraints: Record<string, Constraint>;
     filter?: string;
+  }>();
+
+  const emit = defineEmits<{
+    update: [resourceId: string, constraint: Constraint];
+    delete: [resourceId: string];
   }>();
 
   const filteredConstraints = computed(() =>
@@ -16,6 +22,14 @@
       ),
     ),
   );
+
+  const onUpdated = (resourceId: string, constraint: Constraint) => {
+    emit('update', resourceId, constraint);
+  };
+
+  const onDeleted = (resourceId: string) => {
+    emit('delete', resourceId);
+  };
 </script>
 
 <template>
@@ -34,6 +48,12 @@
           :key="key"
           class="constraints-table__row"
         >
+          <EditConstraintDialog
+            :resource-id="key"
+            :constraint="value"
+            @update="onUpdated"
+            @delete="onDeleted"
+          ></EditConstraintDialog>
           <td class="text-medium-emphasis">
             {{ index + 1 }}
           </td>

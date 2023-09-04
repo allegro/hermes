@@ -2,7 +2,7 @@ import { encode as base64encode } from 'base64-arraybuffer';
 import { defineStore } from 'pinia';
 import { fetchToken } from '@/api/hermes-client';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-import axios from 'axios';
+import axios from '@/utils/axios/axios-instance';
 import decode from 'jwt-decode';
 import qs from 'query-string';
 import type { AuthStoreState } from '@/store/auth/types';

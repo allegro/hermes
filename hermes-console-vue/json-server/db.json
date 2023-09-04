@@ -7,6 +7,88 @@
     "pl.allegro.public.group",
     "pl.allegro.public.admin"
   ],
+  "consistencyGroups": [
+    "pl.allegro.public.offer",
+    "pl.allegro.public.offer.product",
+    "pl.allegro.public.order",
+    "pl.allegro.public.user",
+    "pl.allegro.public.group",
+    "pl.allegro.public.admin",
+    "pl.allegro.public.offer2",
+    "pl.allegro.public.offer.product2",
+    "pl.allegro.public.order2",
+    "pl.allegro.public.user2",
+    "pl.allegro.public.group2",
+    "pl.allegro.public.admin2"
+  ],
+  "inconsistentGroups": [
+    {
+      "name": "pl.allegro.public.group",
+      "inconsistentMetadata": [],
+      "inconsistentTopics": [
+        {
+          "name": "pl.allegro.public.group.DummyEvent",
+          "inconsistentMetadata": [],
+          "inconsistentSubscriptions": [
+            {
+              "name": "pl.allegro.public.group.DummyEvent$foobar-service",
+              "inconsistentMetadata": [
+                {
+                  "datacenter": "DC1"
+                },
+                {
+                  "datacenter": "DC2",
+                  "content": "{\n  \"id\": \"foobar-service\",\n  \"topicName\": \"pl.allegro.public.group.DummyEvent\",\n  \"name\": \"foobar-service\",\n  \"endpoint\": \"service://foobar-service/events/dummy-event\",\n  \"state\": \"ACTIVE\",\n  \"description\": \"Test Hermes endpoint\",\n  \"subscriptionPolicy\": {\n    \"rate\": 10,\n    \"messageTtl\": 60,\n    \"messageBackoff\": 100,\n    \"requestTimeout\": 1000,\n    \"socketTimeout\": 0,\n    \"sendingDelay\": 0,\n    \"backoffMultiplier\": 1.0,\n    \"backoffMaxIntervalInSec\": 600,\n    \"retryClientErrors\": true,\n    \"backoffMaxIntervalMillis\": 600000\n  },\n  \"trackingEnabled\": false,\n  \"trackingMode\": \"trackingOff\",\n  \"owner\": {\n    \"source\": \"Service Catalog\",\n    \"id\": \"42\"\n  },\n  \"monitoringDetails\": {\n    \"severity\": \"NON_IMPORTANT\",\n    \"reaction\": \"\"\n  },\n  \"contentType\": \"JSON\",\n  \"deliveryType\": \"SERIAL\",\n  \"filters\": [\n    {\n      \"type\": \"avropath\",\n      \"path\": \"foobar\",\n      \"matcher\": \"^FOO_BAR$|^BAZ_BAR$\",\n      \"matchingStrategy\": \"any\"\n    },\n    {\n      \"type\": \"avropath\",\n      \"path\": \".foo.bar.baz\",\n      \"matcher\": \"true\",\n      \"matchingStrategy\": \"all\"\n    }\n  ],\n  \"mode\": \"ANYCAST\",\n  \"headers\": [\n    {\n      \"name\": \"X-My-Header\",\n      \"value\": \"boobar\"\n    },\n    {\n      \"name\": \"X-Another-Header\",\n      \"value\": \"foobar\"\n    }\n  ],\n  \"endpointAddressResolverMetadata\": {\n    \"additionalMetadata\": false,\n    \"nonSupportedProperty\": 2\n  },\n  \"http2Enabled\": false,\n  \"subscriptionIdentityHeadersEnabled\": false,\n  \"autoDeleteWithTopicEnabled\": false,\n  \"createdAt\": 1579507131.238,\n  \"modifiedAt\": 1672140855.813\n}"
+                }
+              ]
+            },
+            {
+              "name": "pl.allegro.public.group.DummyEvent$barbaz-service",
+              "inconsistentMetadata": [
+                {
+                  "datacenter": "DC1",
+                  "content": "{\n      \"id\": \"barbaz-service\",\n      \"topicName\": \"pl.allegro.public.group.DummyEvent\",\n      \"name\": \"barbaz-service\",\n      \"endpoint\": \"service://barbaz-service/events/dummy-event\",\n      \"state\": \"SUSPENDED\",\n      \"description\": \"Another test Hermes endpoint\",\n      \"subscriptionPolicy\": {\n        \"messageTtl\": 60,\n        \"messageBackoff\": 100,\n        \"requestTimeout\": 1000,\n        \"socketTimeout\": 0,\n        \"retryClientErrors\": true,\n        \"backoffMaxIntervalMillis\": 600000,\n        \"batchSize\": 42,\n        \"batchTime\": 500,\n        \"batchVolume\": 1024\n      },\n      \"trackingEnabled\": false,\n      \"trackingMode\": \"trackingOff\",\n      \"owner\": {\n        \"source\": \"Service Catalog\",\n        \"id\": \"42\"\n      },\n      \"monitoringDetails\": {\n        \"severity\": \"NON_IMPORTANT\",\n        \"reaction\": \"\"\n      },\n      \"contentType\": \"JSON\",\n      \"deliveryType\": \"BATCH\",\n      \"filters\": [\n        {\n          \"type\": \"avropath\",\n          \"path\": \"foobar\",\n          \"matcher\": \"^FOO_BAR$|^BAZ_BAR$\",\n          \"matchingStrategy\": \"any\"\n        }\n      ],\n      \"mode\": \"ANYCAST\",\n      \"headers\": [],\n      \"endpointAddressResolverMetadata\": {},\n      \"http2Enabled\": false,\n      \"subscriptionIdentityHeadersEnabled\": false,\n      \"autoDeleteWithTopicEnabled\": false,\n      \"createdAt\": 1579507131.238,\n      \"modifiedAt\": 1672140855.813\n    }"
+                },
+                {
+                  "datacenter": "DC2",
+                  "content": "{\n      \"id\": \"barbaz-service\",\n      \"topicName\": \"pl.allegro.public.group.DummyEvent\",\n      \"name\": \"barbaz-service\",\n      \"endpoint\": \"service://barbaz-service/events/I_AM_DIFFERENT\",\n      \"state\": \"SUSPENDED\",\n      \"description\": \"Another test Hermes endpoint\",\n      \"subscriptionPolicy\": {\n        \"messageTtl\": 60,\n        \"messageBackoff\": 100,\n        \"requestTimeout\": 1000,\n        \"socketTimeout\": 0,\n        \"retryClientErrors\": true,\n        \"backoffMaxIntervalMillis\": 600000,\n        \"batchSize\": 42,\n        \"batchTime\": 500,\n        \"batchVolume\": 1024\n      },\n      \"trackingEnabled\": false,\n      \"trackingMode\": \"trackingOff\",\n      \"owner\": {\n        \"source\": \"Service Catalog\",\n        \"id\": \"42\"\n      },\n      \"monitoringDetails\": {\n        \"severity\": \"NON_IMPORTANT\",\n        \"reaction\": \"\"\n      },\n      \"contentType\": \"JSON\",\n      \"deliveryType\": \"BATCH\",\n      \"filters\": [\n        {\n          \"type\": \"avropath\",\n          \"path\": \"foobar\",\n          \"matcher\": \"^FOO_BAR$|^BAZ_BAR$\",\n          \"matchingStrategy\": \"any\"\n        }\n      ],\n      \"mode\": \"ANYCAST\",\n      \"headers\": [],\n      \"endpointAddressResolverMetadata\": {},\n      \"http2Enabled\": false,\n      \"subscriptionIdentityHeadersEnabled\": false,\n      \"autoDeleteWithTopicEnabled\": false,\n      \"createdAt\": 1579507131.238,\n      \"modifiedAt\": 1672140855.813\n    }"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "inconsistentGroups2": [
+    {
+      "name": "pl.allegro.public.group2",
+      "inconsistentMetadata": [
+        {
+          "datacenter": "DC1",
+          "content": "{\n\"name\": \"group2\"}"
+        },
+        {
+          "datacenter": "DC2"
+        }
+      ],
+      "inconsistentTopics": [
+        {
+          "name": "pl.allegro.public.group.DummyEvent",
+          "inconsistentMetadata": [
+            {
+              "datacenter": "DC1",
+              "content": "{\n\"name\": \"dummyEvent\"}"
+            },
+            {
+              "datacenter": "DC2"
+            }
+          ],
+          "inconsistentSubscriptions": []
+        }
+      ]
+    }
+  ],
   "topicNames": [
     "pl.allegro.public.offer.product.ProductEventV1",
     "pl.allegro.public.offer.product.ProductEventV2",
@@ -17,11 +99,13 @@
     "pl.allegro.public.offer.OfferEventV3",
     "pl.allegro.public.order.OrderEventV1",
     "pl.allegro.public.order.OrderEventV2",
-    "pl.allegro.public.user.UserCreatedEvent",
-    "pl.allegro.public.user.UserChangedEvent",
     "pl.allegro.public.group.DummyEvent",
     "pl.allegro.public.admin.AdminOfferActionEvent",
     "pl.allegro.public.admin.AdminOrderActionEvent"
+  ],
+  "roles": [
+    "any",
+    "admin"
   ],
   "offlineClientsSource": {
     "source": "https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik"
@@ -33,11 +117,11 @@
   ],
   "readinessDatacenters": [
     {
-      "datacenter":  "DC1",
+      "datacenter": "DC1",
       "isReady": true
     },
     {
-      "datacenter":  "DC2",
+      "datacenter": "DC2",
       "isReady": false
     }
   ],
@@ -50,8 +134,7 @@
         "consumersNumber": 4
       }
     },
-    "subscriptionConstraints":
-    {
+    "subscriptionConstraints": {
       "pl.group.Topic$subscription": {
         "consumersNumber": 6
       },
@@ -268,7 +351,7 @@
         "requestTimeout": 1000,
         "socketTimeout": 0,
         "sendingDelay": 0,
-        "backoffMultiplier": 1.0,
+        "backoffMultiplier": 1,
         "backoffMaxIntervalInSec": 600,
         "retryClientErrors": true,
         "backoffMaxIntervalMillis": 600000
@@ -277,7 +360,7 @@
       "trackingMode": "trackingOff",
       "owner": {
         "source": "Service Catalog",
-        "id": "42"
+        "id": "41"
       },
       "monitoringDetails": {
         "severity": "NON_IMPORTANT",
@@ -342,7 +425,7 @@
       "trackingMode": "trackingOff",
       "owner": {
         "source": "Service Catalog",
-        "id": "42"
+        "id": "41"
       },
       "monitoringDetails": {
         "severity": "NON_IMPORTANT",
@@ -467,7 +550,7 @@
   "console": {
     "console": {
       "title": "hermes console",
-      "footer": "",
+      "contactLink": "https://google.com",
       "environmentName": "LOCAL",
       "criticalEnvironment": false
     },
@@ -539,19 +622,24 @@
       "removeSchema": false,
       "schemaIdAwareSerializationEnabled": false,
       "avroContentTypeMetadataRequired": true,
-      "contentTypes": [{
-        "value": "AVRO",
-        "label": "AVRO"
-      }, {
-        "value": "JSON",
-        "label": "JSON"
-      }],
+      "contentTypes": [
+        {
+          "value": "AVRO",
+          "label": "AVRO"
+        },
+        {
+          "value": "JSON",
+          "label": "JSON"
+        }
+      ],
       "readOnlyModeEnabled": false,
       "allowedTopicLabels": [],
-      "retentionUnits": [{
-        "value": "DAYS",
-        "label": "DAYS"
-      }],
+      "retentionUnits": [
+        {
+          "value": "DAYS",
+          "label": "DAYS"
+        }
+      ],
       "offlineRetransmissionEnabled": false,
       "offlineRetransmissionDescription": "Offline retransmission"
     },
@@ -573,13 +661,16 @@
         },
         "deliveryType": "SERIAL"
       },
-      "deliveryTypes": [{
-        "value": "SERIAL",
-        "label": "SERIAL"
-      }, {
-        "value": "BATCH",
-        "label": "BATCH"
-      }]
+      "deliveryTypes": [
+        {
+          "value": "SERIAL",
+          "label": "SERIAL"
+        },
+        {
+          "value": "BATCH",
+          "label": "BATCH"
+        }
+      ]
     },
     "consistency": {
       "maxGroupBatchSize": 10

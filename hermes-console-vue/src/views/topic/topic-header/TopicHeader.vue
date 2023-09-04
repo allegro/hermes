@@ -1,14 +1,29 @@
 <script setup lang="ts">
+  import { copyToClipboard } from '@/utils/copy-utils';
+  import {
+    isSubscriptionOwnerOrAdmin,
+    isTopicOwnerOrAdmin,
+  } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import { useFavorites } from '@/store/favorites/useFavorites';
+  import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Owner } from '@/api/owner';
+  import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';
+
+  const favorites = useFavorites();
 
   const props = defineProps<{
     topic: TopicWithSchema;
     owner: Owner;
+    roles: Role[] | undefined;
   }>();
 
   const configStore = useAppConfigStore();
+
+  const emit = defineEmits<{
+    remove: [];
+  }>();
 </script>
 
 <template>
@@ -17,11 +32,44 @@
       <p class="text-overline">{{ $t('topicView.header.topic') }}</p>
       <div class="d-flex justify-space-between">
         <p class="text-h4 font-weight-bold">{{ props.topic.name }}</p>
-        <v-tooltip :text="$t('topicView.header.actions.copyName')">
-          <template v-slot:activator="{ props }">
-            <v-btn icon="mdi-content-copy" variant="plain" v-bind="props" />
-          </template>
-        </v-tooltip>
+        <div>
+          <v-tooltip :text="$t('topicView.header.actions.copyName')">
+            <template v-slot:activator="{ props }">
+              <v-btn
+                icon="mdi-content-copy"
+                variant="plain"
+                v-bind="props"
+                @click="copyToClipboard(topic.name)"
+              />
+            </template>
+          </v-tooltip>
+          <span v-if="favorites.topics.includes(topic.name)">
+            <v-tooltip
+              :text="$t('topicView.header.actions.removeFromFavorites')"
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  icon="mdi-star"
+                  variant="plain"
+                  v-bind="props"
+                  @click="favorites.removeTopic(topic.name)"
+                />
+              </template>
+            </v-tooltip>
+          </span>
+          <span v-if="!favorites.topics.includes(topic.name)">
+            <v-tooltip :text="$t('topicView.header.actions.addToFavorites')">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  icon="mdi-star-outline"
+                  variant="plain"
+                  v-bind="props"
+                  @click="favorites.addTopic(topic.name)"
+                />
+              </template>
+            </v-tooltip>
+          </span>
+        </div>
       </div>
     </v-card-item>
 
@@ -43,24 +91,38 @@
           {{ $t('topicView.header.owner') }} {{ props.owner.name }}
         </v-btn>
       </div>
-      <div>
+      <div class="d-flex flex-row">
+        <tooltip-icon
+          v-if="!isSubscriptionOwnerOrAdmin(roles)"
+          :content="$t('topicView.header.unauthorizedTooltip')"
+        />
         <v-btn
-          :disabled="configStore.appConfig.topic.readOnlyModeEnabled"
+          :disabled="
+            configStore.loadedConfig.topic.readOnlyModeEnabled ||
+            !isTopicOwnerOrAdmin(roles)
+          "
           prepend-icon="mdi-pencil"
           >{{ $t('topicView.header.actions.edit') }}
         </v-btn>
-        <v-btn prepend-icon="mdi-content-copy"
+        <v-btn
+          prepend-icon="mdi-content-copy"
+          :disabled="!isTopicOwnerOrAdmin(roles)"
           >{{ $t('topicView.header.actions.clone') }}
         </v-btn>
         <v-btn
           v-if="
-            configStore.appConfig.topic.offlineRetransmissionEnabled &&
-            topic.offlineStorage.enabled
+            configStore.loadedConfig.topic.offlineRetransmissionEnabled &&
+            topic.offlineStorage.enabled &&
+            isTopicOwnerOrAdmin(roles)
           "
           prepend-icon="mdi-transmission-tower"
           >{{ $t('topicView.header.actions.offlineRetransmission') }}
         </v-btn>
-        <v-btn color="red" prepend-icon="mdi-delete"
+        <v-btn
+          color="red"
+          prepend-icon="mdi-delete"
+          @click="emit('remove')"
+          :disabled="!isTopicOwnerOrAdmin(roles)"
           >{{ $t('topicView.header.actions.remove') }}
         </v-btn>
       </div>

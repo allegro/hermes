@@ -1,4 +1,5 @@
 import { beforeEach } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { dummyConsumerGroups } from '@/dummy/consumerGroups';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
@@ -11,6 +12,7 @@ vi.mock('@/composables/consumer-groups/use-consumer-groups/useConsumerGroups');
 
 const useConsumerGroupsStub: UseConsumerGroups = {
   consumerGroups: ref(dummyConsumerGroups),
+  moveOffsets: () => {},
   loading: ref(false),
   error: ref({
     fetchConsumerGroups: null,
@@ -19,8 +21,9 @@ const useConsumerGroupsStub: UseConsumerGroups = {
 
 describe('ConsumerGroupsView', () => {
   beforeEach(async () => {
+    setActivePinia(createPinia());
     await router.push(
-      '/groups/pl.allegro.public.group' +
+      '/ui/groups/pl.allegro.public.group' +
         '/topics/pl.allegro.public.group.DummyEvent' +
         '/subscriptions/foobar-service',
     );

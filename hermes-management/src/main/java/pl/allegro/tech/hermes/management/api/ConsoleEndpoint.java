@@ -24,6 +24,7 @@ public class ConsoleEndpoint {
     @Path("/console")
     @Produces("application/javascript")
     @ApiOperation(value = "Hermes console configuration", httpMethod = HttpMethod.GET)
+    @Deprecated
     public String getConfiguration() {
         return service.getConfiguration();
     }

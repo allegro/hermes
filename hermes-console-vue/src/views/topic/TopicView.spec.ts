@@ -1,30 +1,44 @@
 import { beforeEach, describe, expect } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyAppConfig } from '@/dummy/app-config';
 import {
   dummyOfflineClientsSource,
+  dummyOwner,
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
-  dummyTopicOwner,
 } from '@/dummy/topic';
+import { dummyRoles } from '@/dummy/roles';
 import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
+import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
+import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
 import router from '@/router';
 import TopicView from '@/views/topic/TopicView.vue';
+import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 import type { UseTopic } from '@/composables/topic/use-topic/useTopic';
 
 vi.mock('@/composables/topic/use-topic/useTopic');
+vi.mock('@/composables/roles/use-roles/useRoles');
+
+const useRolesStub: UseRoles = {
+  roles: ref(dummyRoles),
+  loading: ref(false),
+  error: ref({
+    fetchRoles: null,
+  }),
+};
 
 const useTopicMock: UseTopic = {
   topic: ref(dummyTopic),
-  owner: ref(dummyTopicOwner),
+  owner: ref(dummyOwner),
   messages: ref(dummyTopicMessagesPreview),
   metrics: ref(dummyTopicMetrics),
   subscriptions: ref([dummySubscription, secondDummySubscription]),
@@ -38,12 +52,13 @@ const useTopicMock: UseTopic = {
     fetchSubscriptions: null,
     fetchOfflineClientsSource: null,
   }),
-  fetchTopic: () => Promise.resolve(),
   fetchOfflineClientsSource: () => Promise.resolve(),
+  removeTopic: () => Promise.resolve(true),
 };
 
 describe('TopicView', () => {
   beforeEach(async () => {
+    setActivePinia(createPinia());
     await router.push(
       `/ui/groups/pl.allegro.public.group` + `/topics/${dummyTopic.name}`,
     );
@@ -52,6 +67,7 @@ describe('TopicView', () => {
   it('should call useTopic composable with correct topic name on render', () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     render(TopicView, { testPinia: createTestingPiniaWithState() });
@@ -61,24 +77,14 @@ describe('TopicView', () => {
     expect(useTopic).toHaveBeenCalledWith(dummyTopic.name);
   });
 
-  it('should fetch topic on render', () => {
-    // given
-    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
-    const fetchTopicSpy = vi.spyOn(useTopicMock, 'fetchTopic');
-
-    // when
-    render(TopicView, { testPinia: createTestingPiniaWithState() });
-
-    // then
-    expect(fetchTopicSpy).toHaveBeenCalledOnce();
-  });
-
   it('should render all view boxes', () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce({
       ...useTopicMock,
       offlineClientsSource: ref(dummyOfflineClientsSource),
     });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
     const expectedTitles = [
       'topicView.header.topic',
       'topicView.metrics.title',
@@ -103,6 +109,7 @@ describe('TopicView', () => {
   it('should not render messages preview when they are disabled in app config', () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByText } = render(TopicView, {
@@ -128,9 +135,29 @@ describe('TopicView', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('should not render messages preview when unauthorized', () => {
+    // given
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce({
+      ...useRolesStub,
+      roles: ref([]),
+    });
+
+    // when
+    const { queryByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(
+      queryByText('topicView.messagesPreview.title'),
+    ).not.toBeInTheDocument();
+  });
+
   it('should not render offline clients when they are disabled in app config', () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByText } = render(TopicView, {
@@ -171,6 +198,7 @@ describe('TopicView', () => {
         },
       }),
     });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByText } = render(TopicView, {
@@ -197,6 +225,7 @@ describe('TopicView', () => {
         fetchOfflineClientsSource: null,
       }),
     });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { getByText } = render(TopicView, {
@@ -210,6 +239,7 @@ describe('TopicView', () => {
   it('should not render error message when topic data was fetched successfully', () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByText } = render(TopicView, {
@@ -228,6 +258,7 @@ describe('TopicView', () => {
       ...useTopicMock,
       loading: ref(true),
     });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByTestId } = render(TopicView, {
@@ -241,6 +272,7 @@ describe('TopicView', () => {
   it('should hide spinner when topic data is fetched', () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByTestId } = render(TopicView, {
@@ -249,5 +281,25 @@ describe('TopicView', () => {
 
     // then
     expect(queryByTestId('loading-spinner')).not.toBeInTheDocument();
+  });
+
+  it('should show confirmation dialog on remove button click', async () => {
+    // given
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(getByText('topicView.header.actions.remove'));
+
+    // then
+    expect(
+      getByText('topicView.confirmationDialog.remove.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('topicView.confirmationDialog.remove.text'),
+    ).toBeInTheDocument();
   });
 });
