@@ -1,13 +1,15 @@
+import { beforeEach } from 'vitest';
+import { createTestingPinia } from '@pinia/testing';
 import { describe, expect } from 'vitest';
 import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
 import { render } from '@/utils/test-utils';
+import { setActivePinia } from 'pinia';
+import router from '@/router';
 import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
 import userEvent from '@testing-library/user-event';
-import {beforeEach} from "vitest";
-import router from "@/router";
 
 describe('SubscriptionsList', () => {
   const props = {
@@ -16,10 +18,15 @@ describe('SubscriptionsList', () => {
     subscriptions: [dummySubscription, secondDummySubscription],
   };
 
+  const pinia = createTestingPinia({
+    fakeApp: true,
+  });
+
   beforeEach(async () => {
-    await router.push(
-        `/ui/groups/${props.groupId}/topics/${props.topicName}`,
-    );
+    beforeEach(() => {
+      setActivePinia(pinia);
+    });
+    await router.push(`/ui/groups/${props.groupId}/topics/${props.topicName}`);
   });
 
   it('should render proper heading', () => {

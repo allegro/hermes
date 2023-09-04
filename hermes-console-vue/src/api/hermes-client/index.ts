@@ -30,7 +30,6 @@ import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { Role } from '@/api/role';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
-import type { Subscription } from '@/api/subscription';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 
