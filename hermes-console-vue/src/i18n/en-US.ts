@@ -607,6 +607,14 @@ const en_US = {
       },
     },
   },
+  offlineRetransmission: {
+    title: 'Offline retransmission',
+    subtitle:
+      'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes.',
+    targetTopic: 'Target topic',
+    startTimestamp: 'Start timestamp',
+    endTimestamp: 'End timestamp',
+  },
   notifications: {
     subscriptionOffsets: {
       move: {
@@ -686,6 +694,14 @@ const en_US = {
           failure:
             'Failed to delete constraint for subscription: “{subscriptionFqn}“',
         },
+      },
+    },
+    offlineRetransmission: {
+      create: {
+        success:
+          'Successfully created retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
+        failure:
+          'Failed to create retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
       },
     },
   },
