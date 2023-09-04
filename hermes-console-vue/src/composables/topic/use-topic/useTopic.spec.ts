@@ -54,37 +54,20 @@ describe('useTopic', () => {
     server.listen();
 
     // when
-    const {
-      topic,
-      owner,
-      metrics,
-      messages,
-      subscriptions,
-      loading,
-      error,
-      fetchTopic,
-    } = useTopic(topicName);
-    const topicPromise = fetchTopic();
-
-    // then: loading state was indicated
-    expect(topic.value).toBeUndefined();
-    expect(owner.value).toBeUndefined();
-    expect(metrics.value).toBeUndefined();
-    expect(messages.value).toBeUndefined();
-    expect(subscriptions.value).toBeUndefined();
-    expectNoErrors(error.value);
-    expect(loading.value).toBeTruthy();
+    const { topic, owner, metrics, messages, subscriptions, loading, error } =
+      useTopic(topicName);
 
     // and: correct data was returned
-    await topicPromise;
-    expect(topic.value).toEqual(dummyTopic);
-    expect(owner.value).toEqual(dummyOwner);
-    expect(metrics.value).toEqual(dummyTopicMetrics);
-    expect(messages.value).toEqual(dummyTopicMessagesPreview);
-    expect(subscriptions.value).toEqual([
-      dummySubscription,
-      secondDummySubscription,
-    ]);
+    await waitFor(() => {
+      expect(topic.value).toEqual(dummyTopic);
+      expect(owner.value).toEqual(dummyOwner);
+      expect(metrics.value).toEqual(dummyTopicMetrics);
+      expect(messages.value).toEqual(dummyTopicMessagesPreview);
+      expect(subscriptions.value).toEqual([
+        dummySubscription,
+        secondDummySubscription,
+      ]);
+    });
 
     // and: correct loading and error states were indicated
     expect(loading.value).toBeFalsy();
@@ -167,27 +150,19 @@ describe('useTopic', () => {
       server.listen();
 
       // when
-      const {
-        topic,
-        owner,
-        metrics,
-        messages,
-        subscriptions,
-        loading,
-        error,
-        fetchTopic,
-      } = useTopic(topicName);
-      const topicPromise = fetchTopic();
+      const { topic, owner, metrics, messages, subscriptions, loading, error } =
+        useTopic(topicName);
 
       // then
-      await topicPromise;
-      expect(topic.value).toEqual(expectedTopic);
-      expect(owner.value).toEqual(expectedOwner);
-      expect(messages.value).toEqual(expectedMessages);
-      expect(metrics.value).toEqual(expectedMetrics);
-      expect(subscriptions.value).toEqual(expectedSubscriptions);
-      expect(loading.value).toBeFalsy();
-      expectErrors(error.value, expectedErrors);
+      await waitFor(() => {
+        expect(topic.value).toEqual(expectedTopic);
+        expect(owner.value).toEqual(expectedOwner);
+        expect(messages.value).toEqual(expectedMessages);
+        expect(metrics.value).toEqual(expectedMetrics);
+        expect(subscriptions.value).toEqual(expectedSubscriptions);
+        expect(loading.value).toBeFalsy();
+        expectErrors(error.value, expectedErrors);
+      });
     },
   );
 

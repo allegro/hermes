@@ -1,9 +1,15 @@
+import { beforeEach } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import { dummyGroupInconsistency } from '@/dummy/groupInconsistency';
 import { render } from '@/utils/test-utils';
 import InconsistentGroupsListing from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentGroupsListing.vue';
 import router from '@/router';
 
 describe('InconsistentGroupListing', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia());
+  });
+
   it('should render inconsistent groups table', async () => {
     // given
     const group = 'pl.allegro.public.group';

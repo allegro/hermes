@@ -523,7 +523,7 @@
   "console": {
     "console": {
       "title": "hermes console",
-      "footer": "",
+      "contactLink": "https://google.com",
       "environmentName": "LOCAL",
       "criticalEnvironment": false
     },

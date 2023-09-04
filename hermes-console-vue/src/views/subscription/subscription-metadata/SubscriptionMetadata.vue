@@ -1,11 +1,16 @@
 <script setup lang="ts">
+  import { copyToClipboard } from '@/utils/copy-utils';
   import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
   import { Owner } from '@/api/owner';
   import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
+  import { subscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
+  import { useFavorites } from '@/store/favorites/useFavorites';
   import { useRoute } from 'vue-router';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Subscription } from '@/api/subscription';
+
+  const favorites = useFavorites();
 
   const props = defineProps<{
     subscription: Subscription;
@@ -28,15 +33,88 @@
       <p class="text-overline">
         {{ $t('subscription.subscriptionMetadata.subscription') }}
       </p>
-      <p class="text-h4 font-weight-bold">
-        {{ props.subscription.name }}
-        <v-chip
-          :color="props.subscription.state === State.ACTIVE ? 'green' : 'red'"
-          size="small"
-        >
-          {{ props.subscription.state }}
-        </v-chip>
-      </p>
+      <div class="d-flex justify-space-between">
+        <p class="text-h4 font-weight-bold">
+          {{ props.subscription.name }}
+          <v-chip
+            :color="props.subscription.state === State.ACTIVE ? 'green' : 'red'"
+            size="small"
+          >
+            {{ props.subscription.state }}
+          </v-chip>
+        </p>
+        <div>
+          <v-tooltip
+            :text="$t('subscription.subscriptionMetadata.actions.copyName')"
+          >
+            <template v-slot:activator="{ props }">
+              <v-btn
+                icon="mdi-content-copy"
+                variant="plain"
+                v-bind="props"
+                @click="copyToClipboard(subscription.name)"
+              />
+            </template>
+          </v-tooltip>
+          <span
+            v-if="
+              favorites.subscriptions.includes(
+                subscriptionFqn(subscription.topicName, subscription.name),
+              )
+            "
+          >
+            <v-tooltip
+              :text="
+                $t(
+                  'subscription.subscriptionMetadata.actions.removeFromFavorites',
+                )
+              "
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  icon="mdi-star"
+                  variant="plain"
+                  v-bind="props"
+                  @click="
+                    favorites.removeSubscription(
+                      subscription.topicName,
+                      subscription.name,
+                    )
+                  "
+                />
+              </template>
+            </v-tooltip>
+          </span>
+          <span
+            v-if="
+              !favorites.subscriptions.includes(
+                subscriptionFqn(subscription.topicName, subscription.name),
+              )
+            "
+          >
+            <v-tooltip
+              :text="
+                $t('subscription.subscriptionMetadata.actions.addToFavorites')
+              "
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  icon="mdi-star-outline"
+                  variant="plain"
+                  v-bind="props"
+                  @click="
+                    favorites.addSubscription(
+                      subscription.topicName,
+                      subscription.name,
+                    )
+                  "
+                />
+              </template>
+            </v-tooltip>
+          </span>
+        </div>
+      </div>
+
       <p class="text-subtitle-1">
         {{ props.subscription.endpoint }}
       </p>

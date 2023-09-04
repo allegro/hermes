@@ -1,7 +1,14 @@
 <script setup lang="ts">
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+
+  const configStore = useAppConfigStore();
+
   const links: { label: string; href: string }[] = [
     { label: 'read the docs', href: 'https://hermes-pubsub.readthedocs.io/' },
-    { label: 'contact', href: '/' },
+    {
+      label: 'contact',
+      href: `${configStore.loadedConfig.console.contactLink}`,
+    },
   ];
 </script>
 

@@ -3,7 +3,7 @@ import type { AppConfiguration } from '@/api/app-configuration';
 export const dummyAppConfig: AppConfiguration = {
   console: {
     title: 'hermes console',
-    footer: '',
+    contactLink: '',
     environmentName: 'local',
     criticalEnvironment: false,
   },

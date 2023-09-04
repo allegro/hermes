@@ -2,6 +2,8 @@ const en_US = {
   homeView: {
     links: {
       console: 'Console',
+      favoriteTopics: 'Favorite topics',
+      favoriteSubscriptions: 'Favorite subs',
       runtime: 'Runtime',
       statistics: 'Stats',
       search: 'Search',
@@ -12,6 +14,28 @@ const en_US = {
   header: {
     signIn: 'Sign in',
     logout: 'Logout',
+  },
+  favorites: {
+    breadcrumbs: {
+      home: 'home',
+      topics: 'favorite topics',
+      subscriptions: 'favorite subscriptions',
+    },
+    topics: {
+      heading: 'Favorite topics',
+      actions: {
+        search: 'Search favorite topics...',
+      },
+    },
+    subscriptions: {
+      index: '#',
+      name: 'Qualified subscription name',
+      appliedFilter: '(applied filter: “{filter}”)',
+      heading: 'Favorite subscriptions',
+      actions: {
+        search: 'Search favorite subscriptions...',
+      },
+    },
   },
   confirmationDialog: {
     confirm: 'Confirm',
@@ -256,6 +280,7 @@ const en_US = {
       },
     },
     header: {
+      unauthorizedTooltip: "You don't have permissions to manage this topic",
       topic: 'TOPIC',
       owner: 'OWNER:',
       actions: {
@@ -264,6 +289,8 @@ const en_US = {
         offlineRetransmission: 'Offline retransmission',
         remove: 'Remove',
         copyName: 'Copy topic name',
+        addToFavorites: 'Add topic to favorites',
+        removeFromFavorites: 'Remove topic from favorites',
       },
     },
     metrics: {
@@ -523,7 +550,8 @@ const en_US = {
     subscriptionMetadata: {
       subscription: 'Subscription',
       owners: 'OWNER:',
-      unauthorizedTooltip: 'Sign in to edit the subscription',
+      unauthorizedTooltip:
+        "You don't have permissions to manage this subscription",
       actions: {
         diagnostics: 'Diagnostics',
         suspend: 'Suspend',
@@ -531,6 +559,9 @@ const en_US = {
         edit: 'Edit',
         clone: 'Clone',
         remove: 'Remove',
+        copyName: 'Copy subscription name',
+        addToFavorites: 'Add subscription to favorites',
+        removeFromFavorites: 'Remove subscription from favorites',
       },
     },
     undeliveredMessagesCard: {

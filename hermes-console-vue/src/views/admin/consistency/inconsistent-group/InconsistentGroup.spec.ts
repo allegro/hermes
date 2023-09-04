@@ -1,4 +1,6 @@
+import { beforeEach } from 'vitest';
 import { consistencyStoreState } from '@/dummy/store';
+import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import {
   dummyGroupInconsistency,
@@ -9,6 +11,10 @@ import InconsistentGroup from '@/views/admin/consistency/inconsistent-group/Inco
 import router from '@/router';
 
 describe('InconsistentGroup', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia());
+  });
+
   it('should render inconsistent topics table', async () => {
     //given
     const group = 'pl.allegro.public.group';
