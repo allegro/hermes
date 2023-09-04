@@ -1,9 +1,16 @@
+import type { ComputedRef } from 'vue/dist/vue';
 import type { FieldValidator } from '@/utils/validators';
 import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
 import type { OwnerSource } from '@/api/owner';
 import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
+import type { Ref } from 'vue';
+import type { SelectFieldOption } from '@/components/select-field/types';
 
-export interface UseFormSubscription {}
+export interface UseFormSubscription {
+  form: Ref<SubscriptionForm>;
+  validators: FormValidators;
+  dataSources: DataSources;
+}
 
 export interface SubscriptionForm {
   name: string;
@@ -65,14 +72,27 @@ export interface FormValidators {
   monitoringSeverity: FieldValidator<string>[];
 }
 
-export interface DataSources {
-  contentTypes: any;
-  deliveryTypes: any;
-  deliveryModes: any;
-  monitoringSeverities: any;
-  messageDeliveryTrackingModes: any;
+export interface RawDataSources {
+  allContentTypes: (SelectFieldOption & {
+    unsupportedDeliveryTypes: string[];
+  })[];
+  deliveryTypes: SelectFieldOption[];
+  deliveryModes: SelectFieldOption[];
+  monitoringSeverities: SelectFieldOption[];
+  messageDeliveryTrackingModes: SelectFieldOption[];
   fetchedOwnerSources: any;
-  ownerSources: any;
-  owners: any;
-  loadingOwners: any;
+  ownerSources: Ref<SelectFieldOption[]>;
+  owners: Ref<SelectFieldOption[]>;
+  loadingOwners: Ref<boolean>;
+}
+
+export interface DataSources {
+  contentTypes: ComputedRef<SelectFieldOption[]>;
+  deliveryTypes: SelectFieldOption[];
+  deliveryModes: SelectFieldOption[];
+  monitoringSeverities: SelectFieldOption[];
+  messageDeliveryTrackingModes: SelectFieldOption[];
+  ownerSources: ComputedRef<SelectFieldOption<OwnerSource>[]>;
+  owners: Ref<SelectFieldOption[]>;
+  loadingOwners: Ref<boolean>;
 }

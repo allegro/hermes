@@ -1,46 +1,29 @@
 import { AxiosError } from 'axios';
-import { computed, ref, watch } from 'vue';
-import {
-  fetchOwnersSources,
-  hermesClient,
-  searchOwners,
-} from '@/api/hermes-client';
-import {
-  getDataSources,
-  useFormSubscription,
-} from '@/composables/subscription/use-form-subscription/useFormSubscription';
+import { hermesClient, searchOwners } from '@/api/hermes-client';
 import { parseFormToRequestBody } from '@/composables/subscription/use-create-subscription/form-mapper';
+import { ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+import { useFormSubscription } from '@/composables/subscription/use-form-subscription/useFormSubscription';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-import type { AxiosResponse } from 'axios';
 import type { CreateSubscriptionFormRequestBody } from '@/api/subscription';
 import type {
   DataSources,
   SubscriptionForm,
+} from '@/composables/subscription/use-form-subscription/types';
+import type { Ref } from 'vue';
+import type {
   UseCreateSubscription,
   UseCreateSubscriptionErrors,
 } from '@/composables/subscription/use-create-subscription/types';
 
 export function useCreateSubscription(topic: string): UseCreateSubscription {
-  const { loadedConfig } = useAppConfigStore();
   const errors = ref<UseCreateSubscriptionErrors>({
     fetchOwnerSources: null,
     fetchOwners: null,
   });
-  const rawDataSources = getDataSources();
-  const initialFormState = createInitialFormState(rawDataSources);
-  const { form, validators } = useFormSubscription(initialFormState);
-  const dataSources: DataSources = {
-    ...rawDataSources,
-    contentTypes: computed(() =>
-      rawDataSources.contentTypes.filter(
-        (contentType) =>
-          !contentType.unsupportedDeliveryTypes.includes(
-            form.value.deliveryType,
-          ),
-      ),
-    ),
-  };
+  const { form, validators, dataSources } = useFormSubscription();
+  initializeForm(form, dataSources);
   const searchTimeout = ref();
   watch(
     () => form.value.ownerSearch,
@@ -66,13 +49,6 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
       }, 500);
     },
   );
-  watch(
-    () => form.value.deliveryType,
-    () => {
-      form.value.contentType = '';
-    },
-  );
-  const validators = formValidators(form);
 
   const creatingSubscription = ref(false);
 
@@ -92,9 +68,8 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
       creatingSubscription.value = false;
     }
 
-    let response: AxiosResponse<void, any> | null;
     try {
-      response = await hermesClient.createSubscription(topic, requestBody!!);
+      await hermesClient.createSubscription(topic, requestBody!!);
     } catch (e: any) {
       const notificationsStore = useNotificationsStore();
       const text =
@@ -119,9 +94,9 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
   };
 }
 
-function createInitialFormState(dataSources: DataSources): SubscriptionForm {
-  const { loadedConfig } = useAppConfigStore();
-  return {
+function initializeForm(form: Ref<SubscriptionForm>, dataSources: DataSources) {
+  const { loadedConfig } = storeToRefs(useAppConfigStore());
+  form.value = {
     name: '',
     endpoint: '',
     description: '',
@@ -129,19 +104,19 @@ function createInitialFormState(dataSources: DataSources): SubscriptionForm {
     owner: '',
     ownerSearch: '',
     contentType: '',
-    deliveryType: loadedConfig.subscription.defaults.deliveryType,
+    deliveryType: loadedConfig.value.subscription.defaults.deliveryType,
     mode: dataSources.deliveryModes[0].value,
     subscriptionPolicy: {
       rateLimit: null,
       inflightMessageTTL:
-        loadedConfig.subscription.defaults.subscriptionPolicy.messageTtl ||
-        3600,
+        loadedConfig.value.subscription.defaults.subscriptionPolicy
+          .messageTtl || 3600,
       retryBackoff: 1000,
       retryBackoffMultiplier: 1.0,
       sendingDelay: 0,
       requestTimeout:
-        loadedConfig.subscription.defaults.subscriptionPolicy.requestTimeout ||
-        1000,
+        loadedConfig.value.subscription.defaults.subscriptionPolicy
+          .requestTimeout || 1000,
       batchSize: null,
       batchTime: null,
       batchVolume: null,

@@ -2,22 +2,43 @@ import { computed, ref } from 'vue';
 import { fetchOwnersSources } from '@/api/hermes-client';
 import { matchRegex, max, min, required } from '@/utils/validators';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+import { watch } from 'vue';
 import type {
-  DataSources,
   FormValidators,
+  RawDataSources,
   SubscriptionForm,
+  UseFormSubscription,
 } from '@/composables/subscription/use-form-subscription/types';
 import type { OwnerSource } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { SelectFieldOption } from '@/components/select-field/types';
 
-export function useFormSubscription(initialFormState: SubscriptionForm) {
-  const form = ref(initialFormState);
+export function useFormSubscription(): UseFormSubscription {
+  const form = createEmptyForm();
   const validators = formValidators(form);
+  const rawDataSources = getRawDataSources();
+  const dataSources = {
+    ...rawDataSources,
+    contentTypes: computed(() =>
+      rawDataSources.allContentTypes.filter(
+        (contentType) =>
+          !contentType.unsupportedDeliveryTypes.includes(
+            form.value.deliveryType,
+          ),
+      ),
+    ),
+  };
+  watch(
+    () => form.value.deliveryType,
+    () => {
+      form.value.contentType = '';
+    },
+  );
 
   return {
     form,
     validators,
+    dataSources,
   };
 }
 
@@ -49,9 +70,9 @@ function formValidators(form: Ref<SubscriptionForm>): FormValidators {
   };
 }
 
-export function getDataSources(): DataSources {
+function getRawDataSources(): RawDataSources {
   const configStore = useAppConfigStore();
-  const contentTypes = [
+  const allContentTypes = [
     { title: 'JSON', value: 'JSON', unsupportedDeliveryTypes: [] },
     {
       title: 'AVRO (not supported in BATCH delivery mode)',
@@ -96,7 +117,7 @@ export function getDataSources(): DataSources {
   const loadingOwners = ref(false);
 
   return {
-    contentTypes,
+    allContentTypes,
     deliveryTypes,
     deliveryModes,
     monitoringSeverities,
@@ -106,4 +127,40 @@ export function getDataSources(): DataSources {
     owners,
     loadingOwners,
   };
+}
+
+function createEmptyForm(): Ref<SubscriptionForm> {
+  return ref({
+    name: '',
+    endpoint: '',
+    description: '',
+    ownerSource: null,
+    owner: '',
+    ownerSearch: '',
+    contentType: '',
+    deliveryType: '',
+    mode: '',
+    subscriptionPolicy: {
+      rateLimit: null,
+      inflightMessageTTL: 3600,
+      retryBackoff: 1000,
+      retryBackoffMultiplier: 1.0,
+      sendingDelay: 0,
+      requestTimeout: 1000,
+      batchSize: null,
+      batchTime: null,
+      batchVolume: null,
+    },
+    retryOn4xx: false,
+    messageDeliveryTrackingMode: '',
+    monitoringDetails: {
+      severity: '',
+      reaction: '',
+    },
+    deliverUsingHttp2: false,
+    attachSubscriptionIdentityHeaders: false,
+    deleteSubscriptionAutomatically: false,
+    pathFilters: [],
+    headerFilters: [],
+  });
 }

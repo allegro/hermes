@@ -1,10 +1,9 @@
-import type { ComputedRef, Ref } from 'vue';
 import type {
+  DataSources,
   FormValidators,
   SubscriptionForm,
 } from '@/composables/subscription/use-form-subscription/types';
-import type { OwnerSource } from '@/api/owner';
-import type { SelectFieldOption } from '@/components/select-field/types';
+import type { Ref } from 'vue';
 
 export interface UseCreateSubscription {
   form: Ref<SubscriptionForm>;
@@ -18,15 +17,4 @@ export interface UseCreateSubscription {
 export interface UseCreateSubscriptionErrors {
   fetchOwnerSources: Error | null;
   fetchOwners: Error | null;
-}
-
-export interface DataSources {
-  contentTypes: ComputedRef<SelectFieldOption[]>;
-  deliveryTypes: SelectFieldOption[];
-  deliveryModes: SelectFieldOption[];
-  monitoringSeverities: SelectFieldOption[];
-  messageDeliveryTrackingModes: SelectFieldOption[];
-  ownerSources: ComputedRef<SelectFieldOption<OwnerSource>[]>;
-  owners: Ref<SelectFieldOption[]>;
-  loadingOwners: Ref<boolean>;
 }
