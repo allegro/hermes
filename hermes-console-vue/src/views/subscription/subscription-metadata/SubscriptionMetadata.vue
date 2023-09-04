@@ -1,10 +1,10 @@
 <script setup lang="ts">
+  import { copyToClipboard } from '@/utils/copy-utils';
   import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
   import { Owner } from '@/api/owner';
   import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
   import { subscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
-  import { unsecuredCopyToClipboard } from '@/utils/copy-utils';
   import { useFavorites } from '@/store/favorites/useFavorites';
   import { useRoute } from 'vue-router';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
@@ -25,14 +25,6 @@
     suspend: [];
     activate: [];
   }>();
-
-  const copyToClipboard = (content: string) => {
-    if (window.isSecureContext && navigator.clipboard) {
-      navigator.clipboard.writeText(content);
-    } else {
-      unsecuredCopyToClipboard(content);
-    }
-  };
 </script>
 
 <template>

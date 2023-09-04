@@ -1,9 +1,9 @@
 <script setup lang="ts">
+  import { copyToClipboard } from '@/utils/copy-utils';
   import {
     isSubscriptionOwnerOrAdmin,
     isTopicOwnerOrAdmin,
   } from '@/utils/roles-util';
-  import { unsecuredCopyToClipboard } from '@/utils/copy-utils';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useFavorites } from '@/store/favorites/useFavorites';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
@@ -24,14 +24,6 @@
   const emit = defineEmits<{
     remove: [];
   }>();
-
-  const copyToClipboard = (content: string) => {
-    if (window.isSecureContext && navigator.clipboard) {
-      navigator.clipboard.writeText(content);
-    } else {
-      unsecuredCopyToClipboard(content);
-    }
-  };
 </script>
 
 <template>

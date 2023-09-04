@@ -1,4 +1,12 @@
-export function unsecuredCopyToClipboard(text: string) {
+export const copyToClipboard = (content: string) => {
+  if (window.isSecureContext && navigator.clipboard) {
+    navigator.clipboard.writeText(content);
+  } else {
+    unsecuredCopyToClipboard(content);
+  }
+};
+
+function unsecuredCopyToClipboard(text: string) {
   const textArea = document.createElement('textarea');
   textArea.value = text;
   document.body.appendChild(textArea);
