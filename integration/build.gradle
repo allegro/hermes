@@ -10,7 +10,6 @@ project.configurations {
         transitive = true
         visible = true
     }
-    alpnboot
 }
 
 dependencies {
@@ -41,8 +40,6 @@ dependencies {
     integration(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
-
-    integration group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
 }
 
 project.sourceSets {
