@@ -32,7 +32,7 @@
           :label="$t('offlineRetransmission.targetTopic')"
           type="text"
           v-model="targetTopic"
-          data-testid="offlineRetransmissionTopicNameInput"
+          data-testid="offlineRetransmissionTargetTopicNameInput"
         >
         </v-text-field>
       </v-card-item>

@@ -1,7 +1,5 @@
 import { afterEach, describe } from 'vitest';
-import {
-  createRetransmissionTaskHandler,
-} from '@/mocks/handlers';
+import { createRetransmissionTaskHandler } from '@/mocks/handlers';
 import { createTestingPinia } from '@pinia/testing';
 import {
   expectNotificationDispatched,
