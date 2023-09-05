@@ -358,6 +358,7 @@ const en_US = {
     },
     subscriptions: {
       title: 'Subscriptions',
+      create: 'Create subscription',
     },
     errorMessage: {
       topicFetchFailed: 'Could not fetch {topicName} topic details',
@@ -610,6 +611,9 @@ const en_US = {
     },
   },
   notifications: {
+    form: {
+      validationError: 'Some fields are not valid',
+    },
     subscriptionOffsets: {
       move: {
         success: 'Moved offsets for subscription {subscriptionName}',
@@ -651,6 +655,10 @@ const en_US = {
       },
     },
     subscription: {
+      create: {
+        success: 'Subscription {subscriptionName} successfully created',
+        failure: "Couldn't create subscription {subscriptionName}",
+      },
       delete: {
         success: 'Subscription {subscriptionName} successfully deleted',
         failure: "Couldn't delete subscription {subscriptionName}",

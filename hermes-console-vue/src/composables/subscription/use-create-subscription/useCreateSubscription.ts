@@ -5,6 +5,7 @@ import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 import { useFormSubscription } from '@/composables/subscription/use-form-subscription/useFormSubscription';
+import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { CreateSubscriptionFormRequestBody } from '@/api/subscription';
 import type {
@@ -18,6 +19,8 @@ import type {
 } from '@/composables/subscription/use-create-subscription/types';
 
 export function useCreateSubscription(topic: string): UseCreateSubscription {
+  const notificationsStore = useNotificationsStore();
+
   const errors = ref<UseCreateSubscriptionErrors>({
     fetchOwnerSources: null,
     fetchOwners: null,
@@ -52,36 +55,44 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
 
   const creatingSubscription = ref(false);
 
-  async function createSubscription() {
+  async function createSubscription(): Promise<boolean> {
     creatingSubscription.value = true;
     let requestBody: CreateSubscriptionFormRequestBody | null = null;
 
     try {
       requestBody = parseFormToRequestBody(topic, form.value);
     } catch (e) {
-      const notificationsStore = useNotificationsStore();
       notificationsStore.dispatchNotification({
         title: 'Failed creating subscription',
         text: 'Error parsing form data',
         type: 'error',
       });
       creatingSubscription.value = false;
+      return false;
     }
 
     try {
       await hermesClient.createSubscription(topic, requestBody!!);
+      notificationsStore.dispatchNotification({
+        text: useGlobalI18n().t('notifications.subscription.create.success', {
+          subscriptionName: form.value.name,
+        }),
+        type: 'success',
+      });
+      return true;
     } catch (e: any) {
-      const notificationsStore = useNotificationsStore();
       const text =
         e instanceof AxiosError ? e.message : 'Unknown error occurred';
       notificationsStore.dispatchNotification({
-        title: 'Failed creating subscription',
+        title: useGlobalI18n().t('notifications.subscription.create.failure'),
         text,
         type: 'error',
       });
     } finally {
       creatingSubscription.value = false;
     }
+
+    return false;
   }
 
   return {

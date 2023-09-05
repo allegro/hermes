@@ -11,7 +11,7 @@ export interface UseCreateSubscription {
   dataSources: DataSources;
   creatingSubscription: Ref<boolean>;
   errors: Ref<UseCreateSubscriptionErrors>;
-  createSubscription: () => Promise<void>;
+  createSubscription: () => Promise<boolean>;
 }
 
 export interface UseCreateSubscriptionErrors {

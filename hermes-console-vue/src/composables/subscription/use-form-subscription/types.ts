@@ -81,7 +81,7 @@ export interface RawDataSources {
   monitoringSeverities: SelectFieldOption[];
   messageDeliveryTrackingModes: SelectFieldOption[];
   fetchedOwnerSources: any;
-  ownerSources: Ref<SelectFieldOption[]>;
+  ownerSources: ComputedRef<SelectFieldOption<OwnerSource>[]>;
   owners: Ref<SelectFieldOption[]>;
   loadingOwners: Ref<boolean>;
 }

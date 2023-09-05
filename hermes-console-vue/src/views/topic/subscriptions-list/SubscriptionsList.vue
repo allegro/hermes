@@ -1,8 +1,11 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
   import { State } from '@/api/subscription';
+  import { useRouter } from 'vue-router';
   import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
   import type { Subscription } from '@/api/subscription';
+
+  const router = useRouter();
 
   const props = defineProps<{
     groupId: string;
@@ -34,6 +37,11 @@
   function hideSubscriptionForm() {
     showSubscriptionCreationForm.value = false;
   }
+  function pushToSubscription(subscription: string) {
+    router.push({
+      path: `/ui/groups/${props.groupId}/topics/${props.topicName}/subscriptions/${subscription}`,
+    });
+  }
 </script>
 
 <template>
@@ -52,10 +60,11 @@
           >
             <template #activator>
               <v-btn
-                icon="mdi-plus"
+                prepend-icon="mdi-plus"
                 density="comfortable"
                 @click="showSubscriptionForm()"
-              ></v-btn>
+                >{{ $t('topicView.subscriptions.create') }}</v-btn
+              >
             </template>
             <v-card>
               <v-card-title>
@@ -65,6 +74,7 @@
                 <SubscriptionForm
                   operation="add"
                   :topic="props.topicName"
+                  @created="pushToSubscription"
                   @cancel="hideSubscriptionForm()"
                 />
               </v-card-text>

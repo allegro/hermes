@@ -21,7 +21,7 @@
   "/stats": "/stats",
   "/roles": "/roles",
   "/roles/topics/:id": "/roles",
-  "/roles/topics/:topicName/subscriptions/:id": "/roles"
+  "/roles/topics/:topicName/subscriptions/:id": "/roles",
   "/owners/sources": "/ownerSources",
   "/owners/sources/*?search=:searchPhrase": "/topicsOwners?name_like=:searchPhrase"
 }

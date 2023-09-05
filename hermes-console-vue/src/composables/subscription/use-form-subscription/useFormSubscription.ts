@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { DeliveryType } from '@/api/subscription';
 import { fetchOwnersSources } from '@/api/hermes-client';
 import { matchRegex, max, min, required } from '@/utils/validators';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
@@ -59,7 +60,7 @@ function formValidators(form: Ref<SubscriptionForm>): FormValidators {
     requestTimeout: [
       required(),
       min(0),
-      max(form.value.deliveryType === 'SERIAL' ? 10000 : 1000000),
+      max(form.value.deliveryType === DeliveryType.BATCH ? 1000000 : 10000),
     ],
     sendingDelay: [required(), min(0), max(5000)],
     inflightMessageTTL: [required(), min(0), max(7200)],
