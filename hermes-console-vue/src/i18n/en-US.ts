@@ -612,8 +612,8 @@ const en_US = {
     subtitle:
       'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes.',
     targetTopic: 'Target topic',
-    startTimestamp: 'Start timestamp',
-    endTimestamp: 'End timestamp',
+    startTimestamp: 'Start timestamp (UTC)',
+    endTimestamp: 'End timestamp (UTC)',
   },
   notifications: {
     subscriptionOffsets: {

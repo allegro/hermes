@@ -4,11 +4,13 @@ import { useNotificationsStore } from '@/store/app-notifications/useAppNotificat
 import type { OfflineRetransmissionTask } from '@/api/offline-retransmission';
 
 export interface UseOfflineRetransmission {
-  retransmit: (task: OfflineRetransmissionTask) => void;
+  retransmit: (task: OfflineRetransmissionTask) => Promise<boolean>;
 }
 
 export function useOfflineRetransmission(): UseOfflineRetransmission {
-  const retransmit = async (task: OfflineRetransmissionTask) => {
+  const retransmit = async (
+    task: OfflineRetransmissionTask,
+  ): Promise<boolean> => {
     const notificationsStore = useNotificationsStore();
     try {
       await createRetransmissionTask(task);
@@ -18,8 +20,9 @@ export function useOfflineRetransmission(): UseOfflineRetransmission {
           { sourceTopic: task.sourceTopic, targetTopic: task.targetTopic },
         ),
         text: '',
-        type: 'error',
+        type: 'success',
       });
+      return true;
     } catch (e) {
       await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t(
@@ -29,6 +32,7 @@ export function useOfflineRetransmission(): UseOfflineRetransmission {
         text: (e as Error).message,
         type: 'error',
       });
+      return false;
     }
   };
   return {
