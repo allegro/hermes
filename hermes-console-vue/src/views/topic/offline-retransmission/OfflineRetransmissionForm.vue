@@ -14,8 +14,8 @@
     emit(
       'retransmit',
       targetTopic.value,
-      startTimestamp.value,
-      endTimestamp.value,
+      `${startTimestamp.value}Z`,
+      `${endTimestamp.value}Z`,
     );
   };
 </script>

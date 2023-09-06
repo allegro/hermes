@@ -49,8 +49,8 @@ describe('OfflineRetransmissionForm', () => {
       expect(retransmitEvents).toHaveLength(1);
       expect(retransmitEvents[0]).toEqual([
         'target.topic',
-        '2023-11-10T10:00:00',
-        '2023-11-19T10:00:00',
+        '2023-11-10T10:00:00Z',
+        '2023-11-19T10:00:00Z',
       ]);
     });
   });
