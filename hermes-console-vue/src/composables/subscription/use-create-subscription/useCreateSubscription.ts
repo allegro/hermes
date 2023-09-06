@@ -27,6 +27,12 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
   });
   const { form, validators, dataSources } = useFormSubscription();
   initializeForm(form, dataSources);
+  watch(
+    () => form.value.deliveryType,
+    () => {
+      form.value.contentType = '';
+    },
+  );
   const searchTimeout = ref();
   watch(
     () => form.value.ownerSearch,
@@ -99,13 +105,16 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
     form,
     validators,
     dataSources,
-    creatingSubscription,
+    creatingOrUpdatingSubscription: creatingSubscription,
     errors,
-    createSubscription,
+    createOrUpdateSubscription: createSubscription,
   };
 }
 
-function initializeForm(form: Ref<SubscriptionForm>, dataSources: DataSources) {
+function initializeForm(
+  form: Ref<SubscriptionForm>,
+  dataSources: DataSources,
+): void {
   const { loadedConfig } = storeToRefs(useAppConfigStore());
   form.value = {
     name: '',

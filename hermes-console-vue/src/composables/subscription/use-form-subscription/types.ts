@@ -1,4 +1,4 @@
-import type { ComputedRef } from 'vue/dist/vue';
+import type { ComputedRef } from 'vue';
 import type { FieldValidator } from '@/utils/validators';
 import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
 import type { OwnerSource } from '@/api/owner';

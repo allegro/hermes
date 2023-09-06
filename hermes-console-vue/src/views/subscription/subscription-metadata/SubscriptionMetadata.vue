@@ -2,11 +2,13 @@
   import { copyToClipboard } from '@/utils/copy-utils';
   import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
   import { Owner } from '@/api/owner';
+  import { ref } from 'vue';
   import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
   import { subscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
   import { useFavorites } from '@/store/favorites/useFavorites';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
+  import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Subscription } from '@/api/subscription';
 
@@ -20,15 +22,53 @@
 
   const route = useRoute();
 
+  const router = useRouter();
+
   const emit = defineEmits<{
     remove: [];
     suspend: [];
     activate: [];
   }>();
+
+  const showSubscriptionEditForm = ref(false);
+  function showSubscriptionForm() {
+    showSubscriptionEditForm.value = true;
+  }
+  function hideSubscriptionForm() {
+    showSubscriptionEditForm.value = false;
+  }
+
+  function refreshPage() {
+    router.go(0);
+  }
 </script>
 
 <template>
   <v-card density="compact">
+    <div class="d-flex justify-end mr-4 mb-1">
+      <v-dialog
+        v-model="showSubscriptionEditForm"
+        min-width="800"
+        :persistent="true"
+      >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5"
+              >Edit subscription {{ subscription.name }}</span
+            >
+          </v-card-title>
+          <v-card-text>
+            <SubscriptionForm
+              operation="edit"
+              :subscription="subscription"
+              :topic="subscription.topicName"
+              @created="refreshPage"
+              @cancel="hideSubscriptionForm()"
+            />
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </div>
     <v-card-item>
       <p class="text-overline">
         {{ $t('subscription.subscriptionMetadata.subscription') }}
@@ -173,6 +213,7 @@
         <v-btn
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           prepend-icon="mdi-pencil"
+          @click="showSubscriptionForm"
         >
           {{ $t('subscription.subscriptionMetadata.actions.edit') }}
         </v-btn>

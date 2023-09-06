@@ -659,6 +659,10 @@ const en_US = {
         success: 'Subscription {subscriptionName} successfully created',
         failure: "Couldn't create subscription {subscriptionName}",
       },
+      edit: {
+        success: 'Subscription {subscriptionName} successfully updated',
+        failure: "Couldn't update subscription {subscriptionName}",
+      },
       delete: {
         success: 'Subscription {subscriptionName} successfully deleted',
         failure: "Couldn't delete subscription {subscriptionName}",

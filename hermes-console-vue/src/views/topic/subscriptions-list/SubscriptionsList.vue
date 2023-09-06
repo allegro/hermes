@@ -73,6 +73,7 @@
               <v-card-text>
                 <SubscriptionForm
                   operation="add"
+                  :subscription="null"
                   :topic="props.topicName"
                   @created="pushToSubscription"
                   @cancel="hideSubscriptionForm()"

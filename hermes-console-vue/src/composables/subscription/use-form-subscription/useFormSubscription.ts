@@ -3,7 +3,6 @@ import { DeliveryType } from '@/api/subscription';
 import { fetchOwnersSources } from '@/api/hermes-client';
 import { matchRegex, max, min, required } from '@/utils/validators';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-import { watch } from 'vue';
 import type {
   FormValidators,
   RawDataSources,
@@ -29,12 +28,6 @@ export function useFormSubscription(): UseFormSubscription {
       ),
     ),
   };
-  watch(
-    () => form.value.deliveryType,
-    () => {
-      form.value.contentType = '';
-    },
-  );
 
   return {
     form,

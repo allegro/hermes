@@ -7,16 +7,16 @@ import type {
 } from '@/api/subscription';
 import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
 import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
-import type { SubscriptionForm } from '@/composables/subscription/use-create-subscription/types';
+import type { SubscriptionForm } from '@/composables/subscription/use-form-subscription/types';
 
 export function parseFormToRequestBody(
   topic: string,
   form: SubscriptionForm,
 ): CreateSubscriptionFormRequestBody {
-  const pathFilters = form.pathFilters.map((filter) =>
+  const pathFilters = form.pathFilters.map((filter: PathFilter) =>
     mapPathFilter(form.contentType, filter),
   );
-  const headerFilters = form.headerFilters.map((filter) =>
+  const headerFilters = form.headerFilters.map((filter: HeaderFilter) =>
     mapHeaderFilter(filter),
   );
   return {

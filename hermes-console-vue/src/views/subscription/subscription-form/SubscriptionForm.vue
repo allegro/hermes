@@ -2,6 +2,7 @@
   import { computed, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateSubscription } from '@/composables/subscription/use-create-subscription/useCreateSubscription';
+  import { useEditSubscription } from '@/composables/subscription/use-edit-subscription/useEditSubscription';
   import { useGlobalI18n } from '@/i18n';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -9,13 +10,16 @@
   import SubscriptionHeaderFilters from '@/views/subscription/subscription-form/subscription-header-filters/SubscriptionHeaderFilters.vue';
   import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
   import TextField from '@/components/text-field/TextField.vue';
+  import type { Subscription } from '@/api/subscription';
 
   const props = defineProps<{
     topic: string;
+    subscription: Subscription | null;
     operation: 'add' | 'edit';
   }>();
   const emit = defineEmits<{
     created: [subscription: string];
+    updated: [subscription: string];
     cancel: [];
   }>();
   const configStore = useAppConfigStore();
@@ -25,9 +29,12 @@
     form,
     validators,
     dataSources,
-    creatingSubscription,
-    createSubscription,
-  } = useCreateSubscription(props.topic);
+    creatingOrUpdatingSubscription,
+    createOrUpdateSubscription,
+  } =
+    props.operation === 'add'
+      ? useCreateSubscription(props.topic)
+      : useEditSubscription(props.topic, props.subscription!!);
   const showHighRequestTimeoutAlert = computed(
     () =>
       form.value.subscriptionPolicy.requestTimeout >=
@@ -50,10 +57,11 @@
     () => form.value.messageDeliveryTrackingMode === 'trackingAll',
   );
   const isFormValid = ref(false);
+
   async function submit() {
     if (isFormValid.value) {
-      const isSubscriptionCreated = await createSubscription();
-      if (isSubscriptionCreated) {
+      const isOperationSucceeded = await createOrUpdateSubscription();
+      if (isOperationSucceeded) {
         emit('created', form.value.name);
       }
     } else {
@@ -339,7 +347,7 @@
       <v-btn
         variant="outlined"
         color="primary"
-        :disabled="creatingSubscription"
+        :disabled="creatingOrUpdatingSubscription"
         @click="$emit('cancel')"
         >{{ $t('subscriptionForm.actions.cancel') }}
       </v-btn>
@@ -347,7 +355,7 @@
         type="submit"
         variant="flat"
         color="primary"
-        :loading="creatingSubscription"
+        :loading="creatingOrUpdatingSubscription"
         >{{
           props.operation === 'add'
             ? $t('subscriptionForm.actions.create')

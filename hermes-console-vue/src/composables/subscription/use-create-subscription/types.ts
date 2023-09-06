@@ -9,9 +9,9 @@ export interface UseCreateSubscription {
   form: Ref<SubscriptionForm>;
   validators: FormValidators;
   dataSources: DataSources;
-  creatingSubscription: Ref<boolean>;
+  creatingOrUpdatingSubscription: Ref<boolean>;
   errors: Ref<UseCreateSubscriptionErrors>;
-  createSubscription: () => Promise<boolean>;
+  createOrUpdateSubscription: () => Promise<boolean>;
 }
 
 export interface UseCreateSubscriptionErrors {

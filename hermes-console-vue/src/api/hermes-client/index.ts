@@ -49,6 +49,23 @@ export class HermesClient {
       },
     });
   }
+
+  editSubscription(
+    topic: string,
+    subscription: string,
+    requestBody: CreateSubscriptionFormRequestBody,
+  ): ResponsePromise<void> {
+    return axios.put(
+      `/topics/${topic}/subscriptions/${subscription}`,
+      requestBody,
+      {
+        headers: {
+          [acceptHeader]: applicationJsonMediaType,
+          [contentTypeHeader]: applicationJsonMediaType,
+        },
+      },
+    );
+  }
 }
 
 export const hermesClient = new HermesClient();
