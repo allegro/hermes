@@ -38,9 +38,10 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
     public MonitoringMetricsContainer readMetrics(String query) {
         try {
             PrometheusResponse response = queryPrometheus(query);
+            Preconditions.checkNotNull(response, "Prometheus response is null");
             Preconditions.checkState(response.isSuccess(), "Prometheus response does not contain valid data");
 
-            Map<String, List<PrometheusResponse.Result>> metricsGroupedByName = groupMetricsByName(response);
+            Map<String, List<PrometheusResponse.VectorResult>> metricsGroupedByName = groupMetricsByName(response);
             return produceMetricsContainer(metricsGroupedByName);
         } catch (Exception exception) {
             logger.warn("Unable to read from Prometheus...", exception);
@@ -56,24 +57,43 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
         return response.getBody();
     }
 
-    private static Map<String, List<PrometheusResponse.Result>> groupMetricsByName(PrometheusResponse response) {
+    private static Map<String, List<PrometheusResponse.VectorResult>> groupMetricsByName(PrometheusResponse response) {
         return response.data().results().stream()
-                .map(RestTemplatePrometheusClient::remapNames)
+                .map(RestTemplatePrometheusClient::renameStatusCodesMetricsNames)
                 .collect(Collectors.groupingBy(r -> r.metricName().name()));
     }
 
-    private static MonitoringMetricsContainer produceMetricsContainer(Map<String, List<PrometheusResponse.Result>> metricsGroupedByName) {
+    private static MonitoringMetricsContainer produceMetricsContainer(
+            Map<String, List<PrometheusResponse.VectorResult>> metricsGroupedByName) {
         MonitoringMetricsContainer metricsContainer = MonitoringMetricsContainer.createEmpty();
 
-        Stream<Pair<String, Double>> metricsSummedByName = metricsGroupedByName.entrySet().stream()
-                .map(RestTemplatePrometheusClient::sumResults);
-        metricsSummedByName.forEach(pair -> metricsContainer.addMetricValue(
+        Stream<Pair<String, Double>> metricsSummedByStatusCodeFamily = metricsGroupedByName.entrySet().stream()
+                .map(RestTemplatePrometheusClient::sumMetricsWithTheSameName);
+
+        metricsSummedByStatusCodeFamily.forEach(pair -> metricsContainer.addMetricValue(
                 pair.getKey(),
                 MetricDecimalValue.of(pair.getValue().toString())));
         return metricsContainer;
     }
 
-    private static PrometheusResponse.Result remapNames(PrometheusResponse.Result r) {
+    private static PrometheusResponse.VectorResult renameStatusCodesMetricsNames(PrometheusResponse.VectorResult r) {
+        /*
+       Renames any metric containing status_code tag to the <metric_name>_2xx/3xx/4xx/5xx> metric name. For example:
+       VectorResult(
+           metricName=MetricName(
+               name=hermes_consumers_subscription_http_status_codes_total,
+               statusCode=Optional[200]),
+           vector=[...]
+        )
+        ---->
+        VectorResult(
+           metricName=MetricName(
+               name=hermes_consumers_subscription_http_status_codes_total_2xx,
+               statusCode=Optional[200]),
+           vector=[...]
+        )
+        It allows then to sum metrics accordingly to the status code family.
+         */
         String suffix = "";
         if (r.metricName().is2xxStatusCode()) {
             suffix = "_2xx";
@@ -85,11 +105,15 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
         return r.renameMetric(r.metricName().name() + suffix);
     }
 
-    private static Pair<String, Double> sumResults(Map.Entry<String, List<PrometheusResponse.Result>> e) {
+    /*
+    We have to sum some metrics on the client side because Prometheus does not support this kind of aggregation when using
+    query for multiple __name__ metrics.
+     */
+    private static Pair<String, Double> sumMetricsWithTheSameName(Map.Entry<String, List<PrometheusResponse.VectorResult>> e) {
         return Pair.of(
                 e.getKey(),
                 e.getValue().stream()
-                        .map(PrometheusResponse.Result::getValue)
+                        .map(PrometheusResponse.VectorResult::getValue)
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .mapToDouble(d -> d).sum());

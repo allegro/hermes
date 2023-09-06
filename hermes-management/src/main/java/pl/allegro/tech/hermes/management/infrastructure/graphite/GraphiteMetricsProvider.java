@@ -5,7 +5,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscriptionMetricsProvider;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringTopicMetricsProvider;
-import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
 import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
@@ -25,11 +24,11 @@ public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsPro
     private static final String TOPIC_THROUGHPUT_PATTERN = "sumSeries(%s.producer.*.throughput.%s.%s.m1_rate)";
 
     private final GraphiteClient graphiteClient;
-    private final MetricsPaths metricsPaths;
+    private final String prefix;
 
-    public GraphiteMetricsProvider(GraphiteClient graphiteClient, MetricsPaths metricsPaths) {
+    public GraphiteMetricsProvider(GraphiteClient graphiteClient, String prefix) {
         this.graphiteClient = graphiteClient;
-        this.metricsPaths = metricsPaths;
+        this.prefix = prefix;
     }
 
     @Override
@@ -73,44 +72,34 @@ public class GraphiteMetricsProvider implements MonitoringSubscriptionMetricsPro
     }
 
     private String metricPath(SubscriptionName name) {
-        return String.format(SUBSCRIPTION_RATE_PATTERN,
-                metricsPaths.prefix(), subscriptionNameToPath(name)
+        return String.format(SUBSCRIPTION_RATE_PATTERN, prefix, subscriptionNameToPath(name)
         );
     }
 
     private String metricPath(String pattern, TopicName topicName) {
-        return String.format(pattern, metricsPaths.prefix(), escapeDots(topicName.getGroupName()),
+        return String.format(pattern, prefix, escapeDots(topicName.getGroupName()),
                 escapeDots(topicName.getName()));
     }
 
     private String metricPathThroughput(SubscriptionName name) {
-        return String.format(SUBSCRIPTION_THROUGHPUT_PATTERN,
-                metricsPaths.prefix(), subscriptionNameToPath(name)
-        );
+        return String.format(SUBSCRIPTION_THROUGHPUT_PATTERN, prefix, subscriptionNameToPath(name));
     }
 
     private String metricPathHttpStatuses(SubscriptionName name, String statusCodeClass) {
-        return String.format(SUBSCRIPTION_HTTP_STATUSES_PATTERN,
-                metricsPaths.prefix(), subscriptionNameToPath(name), statusCodeClass
-        );
+        return String.format(SUBSCRIPTION_HTTP_STATUSES_PATTERN, prefix, subscriptionNameToPath(name), statusCodeClass);
     }
 
     private String metricPathTimeouts(SubscriptionName name) {
-        return String.format(SUBSCRIPTION_ERROR_TIMEOUT_PATTERN,
-                metricsPaths.prefix(), subscriptionNameToPath(name)
+        return String.format(SUBSCRIPTION_ERROR_TIMEOUT_PATTERN, prefix, subscriptionNameToPath(name)
         );
     }
 
     private String metricPathOtherErrors(SubscriptionName name) {
-        return String.format(SUBSCRIPTION_ERROR_OTHER_PATTERN,
-                metricsPaths.prefix(), subscriptionNameToPath(name)
-        );
+        return String.format(SUBSCRIPTION_ERROR_OTHER_PATTERN, prefix, subscriptionNameToPath(name));
     }
 
     private String metricPathBatchRate(SubscriptionName name) {
-        return String.format(SUBSCRIPTION_BATCH_RATE_PATTERN,
-                metricsPaths.prefix(), subscriptionNameToPath(name)
-        );
+        return String.format(SUBSCRIPTION_BATCH_RATE_PATTERN, prefix, subscriptionNameToPath(name));
     }
 
     private String subscriptionNameToPath(SubscriptionName name) {

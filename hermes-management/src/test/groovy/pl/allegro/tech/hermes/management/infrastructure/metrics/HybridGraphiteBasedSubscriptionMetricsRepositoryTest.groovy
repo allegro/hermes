@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetricsProvider
-import pl.allegro.tech.hermes.management.stub.MetricsPaths
 import spock.lang.Specification
 
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
@@ -17,15 +16,13 @@ class HybridGraphiteBasedSubscriptionMetricsRepositoryTest extends Specification
 
     private GraphiteClient client = Stub(GraphiteClient)
 
-    private MetricsPaths paths = new MetricsPaths("stats")
-
     private SummedSharedCounter summedSharedCounter = Stub(SummedSharedCounter)
 
     private ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes")
 
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
-    private GraphiteMetricsProvider graphiteMetricsProvider = new GraphiteMetricsProvider(client, paths);
+    private GraphiteMetricsProvider graphiteMetricsProvider = new GraphiteMetricsProvider(client, "stats");
 
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(graphiteMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)

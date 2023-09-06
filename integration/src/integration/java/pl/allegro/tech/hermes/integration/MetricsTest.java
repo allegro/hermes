@@ -142,7 +142,7 @@ public class MetricsTest extends IntegrationTest {
         operations.buildTopic("metricGroup", "topic");
         graphiteServer.expectMetric(metricNameWithPrefix("producer.*.ack-leader.latency.metricGroup.topic.count"), 1);
 
-        // whenx
+        // when
         assertThat(publisher.publish("metricGroup.topic", TestMessage.simple().body()).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         // then

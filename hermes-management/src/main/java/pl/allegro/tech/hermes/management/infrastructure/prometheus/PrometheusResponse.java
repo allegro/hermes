@@ -14,25 +14,29 @@ record PrometheusResponse(@JsonProperty("status") String status,
     }
 
     record Data(@JsonProperty("resultType") String resultType,
-                @JsonProperty("result") List<Result> results) {
+                @JsonProperty("result") List<VectorResult> results) {
         boolean isVector() {
             return resultType.equals("vector");
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record Result(
+    record VectorResult(
             @JsonProperty("metric") MetricName metricName,
-            @JsonProperty("value") List<String> values) {
+            @JsonProperty("value") List<String> vector) {
+
+        private static final int VALID_VECTOR_LENGTH = 2;
+        private static final int SCALAR_INDEX_VALUE = 1;
+
         Optional<Double> getValue() {
-            if (values.size() != 2) {
+            if (vector.size() != VALID_VECTOR_LENGTH) {
                 return Optional.empty();
             }
-            return Optional.of(Double.parseDouble(values.get(1)));
+            return Optional.of(Double.parseDouble(vector.get(SCALAR_INDEX_VALUE)));
         }
 
-        Result renameMetric(String newMetricName) {
-            return new Result(new MetricName(newMetricName, metricName.statusCode), values);
+        VectorResult renameMetric(String newMetricName) {
+            return new VectorResult(new MetricName(newMetricName, metricName.statusCode), vector);
         }
     }
 

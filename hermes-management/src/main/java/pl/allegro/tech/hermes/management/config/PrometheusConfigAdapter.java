@@ -14,7 +14,7 @@ public class PrometheusConfigAdapter implements PrometheusConfig {
 
     @Override
     public boolean descriptions() {
-        return prometheusReporterProperties.isDescriptions();
+        return prometheusReporterProperties.getDescriptions();
     }
 
     @Override

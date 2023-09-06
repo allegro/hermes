@@ -21,7 +21,6 @@ import pl.allegro.tech.hermes.management.infrastructure.prometheus.CachingPromet
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusMetricsProvider;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient;
-import pl.allegro.tech.hermes.management.stub.MetricsPaths;
 
 import java.net.URI;
 
@@ -32,14 +31,9 @@ public class ExternalMonitoringConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "graphite.client.enabled", havingValue = "true")
-    public GraphiteMetricsProvider graphiteMetricsProvider(GraphiteClient graphiteClient, MetricsPaths paths) {
-        return new GraphiteMetricsProvider(graphiteClient, paths);
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "graphite.client.enabled", havingValue = "true")
-    public MetricsPaths metricsPaths(GraphiteMonitoringMetricsProperties graphiteClientProperties) {
-        return new MetricsPaths(graphiteClientProperties.getPrefix());
+    public GraphiteMetricsProvider graphiteMetricsProvider(GraphiteClient graphiteClient,
+                                                           GraphiteMonitoringMetricsProperties properties) {
+        return new GraphiteMetricsProvider(graphiteClient, properties.getPrefix());
     }
 
     @Bean

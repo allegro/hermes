@@ -203,7 +203,7 @@ public class ListUnhealthySubscriptionsForOwnerBasedOnGraphiteTest extends Integ
     @Test
     public void shouldReportAllUnhealthySubscriptionsForEmptyOwnerSource() {
         // given
-        Topic topic = apiOperations.buildTopic(randomTopic("groupFirst", "topicFirt").build());
+        Topic topic = apiOperations.buildTopic(randomTopic("groupFirst", "topicFirst").build());
         createSubscriptionForOwner(topic, "ownedSubscription1", "Team A");
         final Subscription subscription = createSubscriptionForOwner(topic, "ownedSubscription2", "Team A");
 
