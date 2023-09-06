@@ -12,10 +12,10 @@ vi.mock('@/composables/constraints/use-constraints/useConstraints');
 const useConstraintsStub: UseConstraints = {
   topicConstraints: ref(dummyConstraints.topicConstraints),
   subscriptionConstraints: ref(dummyConstraints.subscriptionConstraints),
-  upsertTopicConstraint: () => Promise.resolve(),
-  upsertSubscriptionConstraint: () => Promise.resolve(),
-  deleteTopicConstraint: () => Promise.resolve(),
-  deleteSubscriptionConstraint: () => Promise.resolve(),
+  upsertTopicConstraint: () => Promise.resolve(true),
+  upsertSubscriptionConstraint: () => Promise.resolve(true),
+  deleteTopicConstraint: () => Promise.resolve(true),
+  deleteSubscriptionConstraint: () => Promise.resolve(true),
   loading: ref(false),
   error: ref({
     fetchConstraints: null,

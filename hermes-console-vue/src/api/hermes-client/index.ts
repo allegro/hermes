@@ -343,11 +343,11 @@ export function switchReadiness(
 
 export function upsertTopicConstraint(
   topicName: string,
-  constraint: Constraint,
+  constraints: Constraint,
 ): ResponsePromise<void> {
   const body: TopicConstraint = {
     topicName: topicName,
-    constraint: constraint,
+    constraints: constraints,
   };
   return axios.put(`/workload-constraints/topic`, body, {
     headers: { 'Content-Type': 'application/json' },
@@ -362,11 +362,11 @@ export function deleteTopicConstraint(
 
 export function upsertSubscriptionConstraint(
   subscriptionName: string,
-  constraint: Constraint,
+  constraints: Constraint,
 ): ResponsePromise<void> {
   const body: SubscriptionConstraint = {
     subscriptionName: subscriptionName,
-    constraint: constraint,
+    constraints: constraints,
   };
   return axios.put(`/workload-constraints/subscription`, body, {
     headers: { 'Content-Type': 'application/json' },
