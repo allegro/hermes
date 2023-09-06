@@ -133,6 +133,7 @@
             isTopicOwnerOrAdmin(roles)
           "
           prepend-icon="mdi-transmission-tower"
+          data-testid="offlineRetransmissionButton"
           >{{ $t('topicView.header.actions.offlineRetransmission') }}
           <OfflineRetransmissionDialog @retransmit="onRetransmit">
           </OfflineRetransmissionDialog>

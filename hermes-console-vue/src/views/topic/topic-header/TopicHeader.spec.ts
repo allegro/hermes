@@ -9,7 +9,18 @@ import { dummyOwner, dummyTopic } from '@/dummy/topic';
 import { dummyRoles } from '@/dummy/roles';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
+import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
 import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
+import userEvent from '@testing-library/user-event';
+import type { UseOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
+
+const useOfflineRetransmissionStub: UseOfflineRetransmission = {
+  retransmit: () => Promise.resolve(true),
+};
+
+vi.mock(
+  '@/composables/topic/use-offline-retransmission/useOfflineRetransmission',
+);
 
 describe('TopicHeader', () => {
   const props = {
@@ -71,6 +82,27 @@ describe('TopicHeader', () => {
     expect(
       queryByText('topicView.header.actions.addToFavorites'),
     ).not.toBeInTheDocument();
+  });
+
+  it('should open offline retransmission dialog when user clicks offline retransmission button', async () => {
+    vi.mocked(useOfflineRetransmission).mockReturnValueOnce(
+      useOfflineRetransmissionStub,
+    );
+    const user = userEvent.setup();
+
+    // when
+    const { getByTestId, queryByText } = render(TopicHeader, {
+      props,
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: appConfigStoreState,
+        },
+      }),
+    });
+
+    // then
+    await user.click(getByTestId('offlineRetransmissionButton'));
+    expect(queryByText('offlineRetransmission.title')).toBeVisible();
   });
 
   it.each([
