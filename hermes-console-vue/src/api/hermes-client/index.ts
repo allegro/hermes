@@ -21,6 +21,7 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
+import type { OfflineRetransmissionTask } from '@/api/offline-retransmission';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { Role } from '@/api/role';
@@ -328,6 +329,12 @@ export function deleteSubscriptionConstraint(
 
 export function createGroup(group: Group): ResponsePromise<void> {
   return axios.post(`/groups`, group, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export function createRetransmissionTask(task: OfflineRetransmissionTask) {
+  return axios.post(`/offline-retransmission/tasks`, task, {
     headers: { 'Content-Type': 'application/json' },
   });
 }

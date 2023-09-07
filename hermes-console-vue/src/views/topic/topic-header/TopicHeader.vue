@@ -6,6 +6,8 @@
   } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useFavorites } from '@/store/favorites/useFavorites';
+  import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
+  import OfflineRetransmissionDialog from '@/views/topic/offline-retransmission/OfflineRetransmissionDialog.vue';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Owner } from '@/api/owner';
   import type { Role } from '@/api/role';
@@ -24,6 +26,21 @@
   const emit = defineEmits<{
     remove: [];
   }>();
+
+  const offlineRentramission = useOfflineRetransmission();
+
+  const onRetransmit = (
+    targetTopic: string,
+    startTimestamp: string,
+    endTimestamp: string,
+  ) => {
+    offlineRentramission.retransmit({
+      sourceTopic: props.topic.name,
+      targetTopic,
+      startTimestamp,
+      endTimestamp,
+    });
+  };
 </script>
 
 <template>
@@ -116,7 +133,10 @@
             isTopicOwnerOrAdmin(roles)
           "
           prepend-icon="mdi-transmission-tower"
+          data-testid="offlineRetransmissionButton"
           >{{ $t('topicView.header.actions.offlineRetransmission') }}
+          <OfflineRetransmissionDialog @retransmit="onRetransmit">
+          </OfflineRetransmissionDialog>
         </v-btn>
         <v-btn
           color="red"
