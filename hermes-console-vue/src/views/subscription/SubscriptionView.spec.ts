@@ -41,6 +41,8 @@ const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   removeSubscription: () => Promise.resolve(true),
   suspendSubscription: () => Promise.resolve(true),
   activateSubscription: () => Promise.resolve(true),
+  retransmitMessages: () => Promise.resolve(true),
+  skipAllMessages: () => Promise.resolve(true),
 };
 
 vi.mock('@/composables/roles/use-roles/useRoles');

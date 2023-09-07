@@ -375,6 +375,14 @@ const en_US = {
         title: 'Confirm subscription activation',
         text: 'Are you sure you want to activate subscription {subscriptionId}',
       },
+      retransmit: {
+        title: 'Confirm subscription messages retransmission',
+        text: 'This action will re-send all messages on subscription “{subscriptionFqn}“ from {fromDate} (UTC). Do you want to continue?',
+      },
+      skipAllMessages: {
+        title: 'Confirm skipping all offsets',
+        text: 'This action will skip all undelivered messages for subscription: “{subscriptionFqn}“ . Do you want to continue?',
+      },
     },
     connectionError: {
       title: 'Connection error',
@@ -439,6 +447,11 @@ const en_US = {
     },
     manageMessagesCard: {
       title: 'Manage subscription messages',
+      retransmitTitle: 'Retransmit messages from the past',
+      retransmitStartTimestampLabel: 'Retransmit since timestamp (UTC)',
+      retransmitButton: 'Retransmit',
+      skipAllMessagesTitle: 'Skip all messages',
+      skipAllMessagesButton: 'Skip messages',
     },
     metricsCard: {
       title: 'Subscription metrics',
@@ -668,6 +681,18 @@ const en_US = {
       activate: {
         success: 'Subscription {subscriptionName} successfully activated',
         failure: "Couldn't activate subscription {subscriptionName}",
+      },
+      retransmit: {
+        success:
+          'Successfully retransmitted messages on subscription: “{subscriptionName}“',
+        failure:
+          "Couldn't retransmit messages on subscription: “{subscriptionName}“",
+      },
+      skipAllMessages: {
+        success:
+          'Successfully skipped all messages on subscription: “{subscriptionName}“',
+        failure:
+          "Couldn't skip all messages on subscription: “{subscriptionName}“",
       },
     },
     constraints: {

@@ -24,6 +24,7 @@ import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { OfflineRetransmissionTask } from '@/api/offline-retransmission';
 import type { Owner } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios/axios-utils';
+import type { RetransmissionDate } from '@/api/OffsetRetransmissionDate';
 import type { Role } from '@/api/role';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
@@ -331,6 +332,20 @@ export function createGroup(group: Group): ResponsePromise<void> {
   return axios.post(`/groups`, group, {
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+export function retransmitSubscriptionMessages(
+  topicName: string,
+  subscriptionName: string,
+  retransmissionDate: RetransmissionDate,
+) {
+  return axios.put(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/retransmission`,
+    retransmissionDate,
+    {
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
 }
 
 export function createRetransmissionTask(task: OfflineRetransmissionTask) {

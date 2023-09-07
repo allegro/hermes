@@ -1,16 +1,6 @@
 import { afterEach } from 'vitest';
-import { createTestingPinia } from '@pinia/testing';
 import {
-  dummySubscription,
-  dummySubscriptionHealth,
-  dummySubscriptionMetrics,
-} from '@/dummy/subscription';
-import { expect } from 'vitest';
-import {
-  expectNotificationDispatched,
-  notificationStoreSpy,
-} from '@/utils/test-utils';
-import {
+  createRetransmissionHandler,
   fetchSubscriptionErrorHandler,
   fetchSubscriptionHealthErrorHandler,
   fetchSubscriptionLastUndeliveredMessageErrorHandler,
@@ -22,6 +12,17 @@ import {
   subscriptionStateHandler,
   successfulSubscriptionHandlers,
 } from '@/mocks/handlers';
+import { createTestingPinia } from '@pinia/testing';
+import {
+  dummySubscription,
+  dummySubscriptionHealth,
+  dummySubscriptionMetrics,
+} from '@/dummy/subscription';
+import { expect } from 'vitest';
+import {
+  expectNotificationDispatched,
+  notificationStoreSpy,
+} from '@/utils/test-utils';
 import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';
 import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
@@ -328,6 +329,122 @@ describe('useSubscription', () => {
       expectNotificationDispatched(notificationStore, {
         type: 'error',
         title: 'notifications.subscription.activate.failure',
+      });
+    });
+  });
+
+  it('should show message that retransmission was successful', async () => {
+    // given
+    server.use(
+      createRetransmissionHandler({
+        topicName: dummySubscription.topicName,
+        subscriptionName: dummySubscription.name,
+        statusCode: 200,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { retransmitMessages } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await retransmitMessages(new Date().toISOString());
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        title: 'notifications.subscription.retransmit.success',
+      });
+    });
+  });
+
+  it('should show message that retransmission was unsuccessful', async () => {
+    // given
+    server.use(
+      createRetransmissionHandler({
+        topicName: dummySubscription.topicName,
+        subscriptionName: dummySubscription.name,
+        statusCode: 500,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { retransmitMessages } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await retransmitMessages(new Date().toISOString());
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.subscription.retransmit.failure',
+      });
+    });
+  });
+
+  it('should show message that skipping all messages was successful', async () => {
+    // given
+    server.use(
+      createRetransmissionHandler({
+        topicName: dummySubscription.topicName,
+        subscriptionName: dummySubscription.name,
+        statusCode: 200,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { skipAllMessages } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await skipAllMessages();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        title: 'notifications.subscription.skipAllMessages.success',
+      });
+    });
+  });
+
+  it('should show message that skipping all messages was unsuccessful', async () => {
+    // given
+    server.use(
+      createRetransmissionHandler({
+        topicName: dummySubscription.topicName,
+        subscriptionName: dummySubscription.name,
+        statusCode: 500,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { skipAllMessages } = useSubscription(
+      dummySubscription.topicName,
+      dummySubscription.name,
+    );
+
+    // when
+    await skipAllMessages();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        title: 'notifications.subscription.skipAllMessages.failure',
       });
     });
   });

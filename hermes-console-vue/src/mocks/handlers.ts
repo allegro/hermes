@@ -798,3 +798,19 @@ export const createRetransmissionTaskHandler = ({
   rest.post(`${url}/offline-retransmission/tasks`, (req, res, ctx) => {
     return res(ctx.status(statusCode), ctx.json(undefined));
   });
+
+export const createRetransmissionHandler = ({
+  statusCode,
+  topicName,
+  subscriptionName,
+}: {
+  statusCode: number;
+  topicName: string;
+  subscriptionName: string;
+}) =>
+  rest.put(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/retransmission`,
+    (req, res, ctx) => {
+      return res(ctx.status(statusCode), ctx.json(undefined));
+    },
+  );
