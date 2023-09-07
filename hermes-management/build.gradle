@@ -29,7 +29,7 @@ dependencies {
     }
 
     implementation group: 'commons-jxpath', name: 'commons-jxpath', version: '1.3'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+    implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.2.1'
 
     api group: 'org.javers', name: 'javers-core', version: '5.2.5'
 
@@ -55,7 +55,10 @@ task buildHermesConsole(type: Exec) {
 
 task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
     from '../hermes-console/dist/static'
-    into(sourceSets.main.output.resourcesDir.path + '/static')
+    def staticDirectory = sourceSets.main.output.resourcesDir.path + '/static'
+    // remove previous static dir if exists and start with clear setup
+    delete staticDirectory
+    into(staticDirectory)
 }
 
 tasks.register('prepareIndexTemplate') {

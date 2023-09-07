@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.frontend.services;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class HealthCheckService {

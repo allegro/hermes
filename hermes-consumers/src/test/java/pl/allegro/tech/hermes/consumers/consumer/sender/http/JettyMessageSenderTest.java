@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import com.codahale.metrics.MetricRegistry;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.AfterClass;
@@ -9,7 +8,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration;
@@ -24,8 +22,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeaders
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
+import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.util.Collections;
@@ -35,9 +33,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static java.lang.String.format;
-import static javax.ws.rs.core.Response.Status.ACCEPTED;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.TEST_MESSAGE_CONTENT;
 import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage;
@@ -67,12 +65,7 @@ public class JettyMessageSenderTest {
         client = consumerConfiguration.http1SerialClient(
                 new HttpClientsFactory(
                         new InstrumentedExecutorServiceFactory(
-                                new ThreadPoolMetrics(
-                                    new HermesMetrics(
-                                            new MetricRegistry(),
-                                            new PathsCompiler("localhost")
-                                    )
-                                )
+                                new ThreadPoolMetrics(TestMetricsFacadeFactory.create())
                         ),
                         sslContextFactoryProvider),
                 new Http1ClientProperties()
@@ -202,12 +195,12 @@ public class JettyMessageSenderTest {
         HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender());
 
         JettyMessageSender messageSender =
-            new JettyMessageSender(httpRequestFactory, address, new HermesHeadersProvider(Collections.singleton(
-                new AuthHeadersProvider(
-                    new Http1HeadersProvider(),
-                    () -> Optional.of("Basic Auth Hello!")
-                ))
-            ), new DefaultSendingResultHandlers());
+                new JettyMessageSender(httpRequestFactory, address, new HermesHeadersProvider(Collections.singleton(
+                        new AuthHeadersProvider(
+                                new Http1HeadersProvider(),
+                                () -> Optional.of("Basic Auth Hello!")
+                        ))
+                ), new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -229,7 +222,7 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.setDelay(500);
 
         JettyMessageSender messageSender =
-            new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
+                new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -251,7 +244,7 @@ public class JettyMessageSenderTest {
         remoteServiceEndpoint.setDelay(200);
 
         JettyMessageSender messageSender =
-            new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
+                new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 

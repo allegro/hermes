@@ -3,8 +3,9 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 
 import java.util.Optional;
 
@@ -16,7 +17,9 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     private final MaxRateRegistry registry;
     private final MaxRateSupervisor maxRateSupervisor;
     private final SendCounters sendCounters;
-    private final SubscriptionMetrics metrics;
+    private final MetricsFacade metrics;
+    private final HermesCounter fetchFailuresCounter;
+    private final HermesCounter historyUpdateFailuresCounter;
     private final double minSignificantChange;
     private final int historyLimit;
     private volatile double maxRate;
@@ -27,7 +30,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
                               MaxRateSupervisor maxRateSupervisor,
                               Subscription subscription,
                               SendCounters sendCounters,
-                              SubscriptionMetrics metrics,
+                              MetricsFacade metrics,
                               double initialMaxRate,
                               double minSignificantChange,
                               int historyLimit) {
@@ -36,6 +39,8 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
         this.maxRateSupervisor = maxRateSupervisor;
         this.sendCounters = sendCounters;
         this.metrics = metrics;
+        this.fetchFailuresCounter = metrics.maxRate().fetchFailuresCounter(subscription.getQualifiedName());
+        this.historyUpdateFailuresCounter = metrics.maxRate().historyUpdateFailuresCounter(subscription.getQualifiedName());
         this.minSignificantChange = minSignificantChange;
         this.historyLimit = historyLimit;
         this.maxRate = initialMaxRate;
@@ -61,7 +66,7 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
                 previousRecordedRate = usedRate;
             } catch (Exception e) {
                 logger.warn("Encountered problem updating max rate for {}", consumer, e);
-                metrics.rateHistoryFailuresCounter().inc();
+                historyUpdateFailuresCounter.increment();
             }
         }
     }
@@ -75,15 +80,15 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
             return registry.getMaxRate(consumer);
         } catch (Exception e) {
             logger.warn("Encountered problem fetching max rate for {}", consumer);
-            metrics.maxRateFetchFailuresCounter().inc();
+            fetchFailuresCounter.increment();
             return Optional.empty();
         }
     }
 
     public void start() {
         maxRateSupervisor.register(this);
-        metrics.registerMaxRateGauge(this::get);
-        metrics.registerRateGauge(sendCounters::getRate);
+        metrics.maxRate().registerCalculatedRateGauge(consumer.getSubscription(), this, NegotiatedMaxRateProvider::get);
+        metrics.maxRate().registerActualRateGauge(consumer.getSubscription(), sendCounters, SendCounters::getRate);
     }
 
     public void shutdown() {

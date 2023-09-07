@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.codahale.metrics.Timer;
 import com.github.rholder.retry.Attempt;
 import com.github.rholder.retry.RetryListener;
 import com.github.rholder.retry.Retryer;
@@ -12,6 +11,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchReceiver;
@@ -25,6 +25,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.io.IOException;
@@ -55,7 +56,8 @@ public class BatchConsumer implements Consumer {
 
     private volatile boolean consuming = true;
 
-    private final SubscriptionMetrics metrics;
+    private final MetricsFacade metricsFacade;
+    private final BatchConsumerMetrics metrics;
     private MessageBatchReceiver receiver;
 
     public BatchConsumer(ReceiverFactory messageReceiverFactory,
@@ -64,7 +66,7 @@ public class BatchConsumer implements Consumer {
                          OffsetQueue offsetQueue,
                          MessageConverterResolver messageConverterResolver,
                          CompositeMessageContentWrapper compositeMessageContentWrapper,
-                         SubscriptionMetrics metrics,
+                         MetricsFacade metricsFacade,
                          Trackers trackers,
                          Subscription subscription,
                          Topic topic,
@@ -77,7 +79,8 @@ public class BatchConsumer implements Consumer {
         this.subscription = subscription;
         this.useTopicMessageSize = useTopicMessageSize;
         this.loadRecorder = loadRecorder;
-        this.metrics = metrics;
+        this.metricsFacade = metricsFacade;
+        this.metrics = new BatchConsumerMetrics(metricsFacade, subscription.getQualifiedName());
         this.messageConverterResolver = messageConverterResolver;
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.topic = topic;
@@ -106,7 +109,7 @@ public class BatchConsumer implements Consumer {
             });
 
             result.getDiscarded().forEach(m -> {
-                metrics.markDiscarded(m);
+                metrics.markDiscarded();
                 trackers.get(subscription).logDiscarded(m, "too large");
             });
         } finally {
@@ -132,20 +135,20 @@ public class BatchConsumer implements Consumer {
                 subscription,
                 new BatchConsumerRateLimiter(),
                 loadRecorder,
-                metrics
+                metricsFacade
         );
 
         logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());
         this.receiver = new MessageBatchReceiver(
                 receiver,
                 batchFactory,
-                metrics,
                 messageConverterResolver,
                 compositeMessageContentWrapper,
                 topic,
                 trackers,
                 loadRecorder
         );
+        metrics.initialize();
     }
 
     @Override
@@ -226,6 +229,7 @@ public class BatchConsumer implements Consumer {
 
     private void markSendingResult(MessageBatch batch, MessageSendingResult result) {
         if (result.succeeded()) {
+            metrics.recordAttemptAsFinished(batch.getMessageCount());
             metrics.markSuccess(batch, result);
             batch.getMessagesMetadata().forEach(
                     m -> trackers.get(subscription).logSent(m, result.getHostname())
@@ -243,7 +247,8 @@ public class BatchConsumer implements Consumer {
     }
 
     private void deliver(Runnable signalsInterrupt, MessageBatch batch, Retryer<MessageSendingResult> retryer) {
-        try (Timer.Context timer = metrics.subscriptionLatencyTimer().time()) {
+        metrics.recordAttempt(batch.getMessageCount());
+        try (HermesTimerContext ignored = metrics.latencyTimer().time()) {
             retryer.call(() -> {
                 loadRecorder.recordSingleOperation();
                 signalsInterrupt.run();
@@ -256,6 +261,7 @@ public class BatchConsumer implements Consumer {
             });
         } catch (Exception e) {
             logger.error("Batch was rejected [batch_id={}, subscription={}].", batch.getId(), subscription.getQualifiedName(), e);
+            metrics.recordAttemptAsFinished(batch.getMessageCount());
             metrics.markDiscarded(batch);
             batch.getMessagesMetadata().forEach(m -> trackers.get(subscription).logDiscarded(m, e.getMessage()));
         }

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
-import com.codahale.metrics.Gauge;
 import com.sun.management.OperatingSystemMXBean;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
@@ -9,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -58,7 +57,7 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
                                              Duration interval,
                                              ExecutorServiceFactory executorServiceFactory,
                                              Clock clock,
-                                             HermesMetrics metrics,
+                                             MetricsFacade metrics,
                                              int consumerLoadEncoderBufferSizeBytes) {
         this.curator = curator;
         this.zookeeperPaths = zookeeperPaths;
@@ -70,8 +69,8 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
         this.decoder = new ConsumerNodeLoadDecoder(subscriptionIds);
         this.executor = executorServiceFactory.createSingleThreadScheduledExecutor("consumer-node-load-reporter-%d");
         this.lastReset = clock.millis();
-        metrics.registerGauge("consumer-workload.weighted.load.ops", (Gauge<Double>) () -> currentOperationsPerSecond);
-        metrics.registerGauge("consumer-workload.weighted.load.cpu-utilization", (Gauge<Double>) () -> cpuUtilization);
+        metrics.workload().registerOperationsPerSecondGauge(this, registry -> registry.currentOperationsPerSecond);
+        metrics.workload().registerCpuUtilizationGauge(this, registry -> registry.cpuUtilization);
         if (platformMXBean.getProcessCpuLoad() < 0d) {
             logger.warn("Process CPU load is not available.");
         }

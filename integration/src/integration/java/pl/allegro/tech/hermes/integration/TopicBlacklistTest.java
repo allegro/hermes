@@ -1,16 +1,16 @@
 package pl.allegro.tech.hermes.integration;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.Arrays;
-import javax.ws.rs.core.Response;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.OK;
 import static pl.allegro.tech.hermes.api.BlacklistStatus.BLACKLISTED;
 import static pl.allegro.tech.hermes.api.BlacklistStatus.NOT_BLACKLISTED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;

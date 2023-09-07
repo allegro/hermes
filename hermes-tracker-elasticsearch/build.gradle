@@ -4,7 +4,7 @@ plugins {
 dependencies {
     implementation project(':hermes-common')
     implementation project(':hermes-tracker')
-    implementation 'org.slf4j:slf4j-api:1.7.12'
+    implementation 'org.slf4j:slf4j-api:2.0.4'
     api group: 'org.elasticsearch.client', name: 'transport', version: '6.8.12'
 
     testImplementation project(path: ":hermes-tracker", configuration: "testArtifacts")

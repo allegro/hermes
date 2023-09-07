@@ -24,7 +24,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
+import static jakarta.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 

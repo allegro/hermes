@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
@@ -52,7 +52,7 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                                           Retransmitter retransmitter,
                                           UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                           SubscriptionRepository subscriptionRepository,
-                                          HermesMetrics metrics,
+                                          MetricsFacade metrics,
                                           ConsumerMonitor monitor,
                                           Clock clock,
                                           Duration commitOffsetPeriod) {

@@ -13,10 +13,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.PathContext;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_ALL_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.ACK_LEADER_BUFFER_TOTAL_BYTES;
 import static pl.allegro.tech.hermes.common.metric.Histograms.INFLIGHT_TIME;
 import static pl.allegro.tech.hermes.common.metric.Meters.ERRORS_HTTP_BY_CODE;
 import static pl.allegro.tech.hermes.common.metric.Meters.ERRORS_HTTP_BY_FAMILY;
@@ -96,10 +92,6 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.INFLIGHT_REQUESTS), gauge);
     }
 
-    public void registerConsumersThreadGauge(Gauge<Integer> gauge) {
-        metricRegistry.register(metricRegistryName(Gauges.THREADS), gauge);
-    }
-
     public void registerMessageRepositorySizeGauge(Gauge<Integer> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.BACKUP_STORAGE_SIZE), gauge);
     }
@@ -148,20 +140,12 @@ public class HermesMetrics {
         executorCounter(Gauges.TASKS_REJECTED_COUNT, executorName).inc();
     }
 
-    public void incrementInflightCounter(SubscriptionName subscription) {
-        getInflightCounter(subscription).inc();
+    public void registerInflightGauge(SubscriptionName subscription, Gauge<?> gauge) {
+        registerGauge(metricRegistryName(Gauges.INFLIGHT, subscription.getTopicName(), subscription.getName()), gauge);
     }
 
-    public void decrementInflightCounter(SubscriptionName subscription) {
-        getInflightCounter(subscription).dec();
-    }
-
-    public void decrementInflightCounter(SubscriptionName subscription, int size) {
-        getInflightCounter(subscription).dec(size);
-    }
-
-    public void unregisterInflightCounter(SubscriptionName subscription) {
-        unregister(Counters.INFLIGHT, subscription);
+    public void unregisterInflightGauge(SubscriptionName subscription) {
+        unregister(Gauges.INFLIGHT, subscription);
     }
 
     public static void close(Timer.Context... timers) {
@@ -170,24 +154,6 @@ public class HermesMetrics {
                 timer.close();
             }
         }
-    }
-
-    public double getBufferTotalBytes() {
-        return getDoubleValue(ACK_LEADER_BUFFER_TOTAL_BYTES)
-                + getDoubleValue(ACK_ALL_BUFFER_TOTAL_BYTES);
-    }
-
-    public double getBufferAvailablesBytes() {
-        return getDoubleValue(ACK_LEADER_BUFFER_AVAILABLE_BYTES)
-                + getDoubleValue(ACK_ALL_BUFFER_AVAILABLE_BYTES);
-    }
-
-    private double getDoubleValue(String gauge) {
-        return (double) metricRegistry.getGauges().get(pathCompiler.compile(gauge)).getValue();
-    }
-
-    private Counter getInflightCounter(SubscriptionName subscription) {
-        return counter(Counters.INFLIGHT, subscription.getTopicName(), subscription.getName());
     }
 
     public void registerGauge(String name, Gauge<?> gauge) {
@@ -266,7 +232,7 @@ public class HermesMetrics {
         unregister(INFLIGHT_TIME, subscription);
     }
 
-    public void registerConsumerHttpAnswer(SubscriptionName subscription, int statusCode) {
+    public void registerConsumerHttpAnswer(SubscriptionName subscription, int statusCode, long count) {
         PathContext pathContext = pathContext()
                 .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
                 .withTopic(escapeDots(subscription.getTopicName().getName()))
@@ -274,8 +240,8 @@ public class HermesMetrics {
                 .withHttpCode(statusCode)
                 .withHttpCodeFamily(httpStatusFamily(statusCode))
                 .build();
-        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_FAMILY, pathContext)).mark();
-        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_CODE, pathContext)).mark();
+        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_FAMILY, pathContext)).mark(count);
+        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_CODE, pathContext)).mark(count);
     }
 
     public void unregisterStatusMeters(SubscriptionName subscription) {

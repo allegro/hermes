@@ -36,7 +36,7 @@ public class WebClientHermesSender implements HermesSender, ReactiveHermesSender
                         .switchIfEmpty(NO_BODY)
                         .map(body -> hermesResponse(message)
                                 .withBody(body)
-                                .withHttpStatus(response.rawStatusCode())
+                                .withHttpStatus(response.statusCode().value())
                                 .withHeaderSupplier(header ->
                                         convertToCaseInsensitiveMap(response.headers().asHttpHeaders().toSingleValueMap()).get(header))
                                 .build()));

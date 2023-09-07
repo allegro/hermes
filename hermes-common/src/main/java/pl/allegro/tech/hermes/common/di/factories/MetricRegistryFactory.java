@@ -12,12 +12,11 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
+import jakarta.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricRegistryWithHdrHistogramReservoir;
-import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
-import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 
 import java.net.InetSocketAddress;
@@ -26,25 +25,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Named;
 
 public class MetricRegistryFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricRegistryFactory.class);
     private final MetricRegistryParameters metricRegistryParameters;
     private final GraphiteParameters graphiteParameters;
-    private final CounterStorage counterStorage;
     private final InstanceIdResolver instanceIdResolver;
     private final String moduleName;
 
     public MetricRegistryFactory(MetricRegistryParameters metricRegistryParameters,
                                  GraphiteParameters graphiteParameters,
-                                 CounterStorage counterStorage,
                                  InstanceIdResolver instanceIdResolver,
                                  @Named("moduleName") String moduleName) {
         this.metricRegistryParameters = metricRegistryParameters;
         this.graphiteParameters = graphiteParameters;
-        this.counterStorage = counterStorage;
         this.instanceIdResolver = instanceIdResolver;
         this.moduleName = moduleName;
     }
@@ -73,14 +68,6 @@ public class MetricRegistryFactory {
                     metricRegistryParameters.getReportPeriod().toSeconds(), TimeUnit.SECONDS
             );
         }
-
-        if (metricRegistryParameters.isZookeeperReporterEnabled()) {
-            new ZookeeperCounterReporter(registry, counterStorage, graphiteParameters.getPrefix()).start(
-                    metricRegistryParameters.getReportPeriod().toSeconds(),
-                    TimeUnit.SECONDS
-            );
-        }
-
         registerJvmMetrics(registry);
 
         return registry;

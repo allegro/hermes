@@ -1,12 +1,13 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
@@ -36,25 +37,27 @@ public class FrontendServerConfiguration {
     @Bean(initMethod = "start", destroyMethod = "stop")
     public HermesServer hermesServer(HermesServerProperties hermesServerProperties,
                                      SslProperties sslProperties,
-                                     HermesMetrics hermesMetrics,
+                                     MetricsFacade metricsFacade,
                                      HttpHandler publishingHandler,
                                      DefaultReadinessChecker defaultReadinessChecker,
                                      DefaultMessagePreviewPersister defaultMessagePreviewPersister,
                                      ThroughputLimiter throughputLimiter,
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider,
-                                     TopicLoadingProperties topicLoadingProperties) {
+                                     TopicLoadingProperties topicLoadingProperties,
+                                     PrometheusMeterRegistry prometheusMeterRegistry) {
         return new HermesServer(
                 sslProperties,
                 hermesServerProperties,
-                hermesMetrics,
+                metricsFacade,
                 publishingHandler,
                 defaultReadinessChecker,
                 defaultMessagePreviewPersister,
                 throughputLimiter,
                 topicMetadataLoadingJob,
                 topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
-                sslContextFactoryProvider);
+                sslContextFactoryProvider,
+                prometheusMeterRegistry);
     }
 
     @Bean

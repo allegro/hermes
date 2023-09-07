@@ -1,13 +1,19 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import pl.allegro.tech.hermes.api.TopicName
+import spock.lang.Shared
 import spock.lang.Specification
 
 class CounterMatcherTest extends Specification {
 
+    @Shared
+    def meterRegistry = new SimpleMeterRegistry()
+
     def "should match topic published"() {
         given:
-        def counterName = "published.lagMetricGroup.topic"
-        def counterMatcher = new CounterMatcher(counterName)
+        def counter = meterRegistry.counter("topic.published", "group", "lagMetricGroup", "topic", "topic")
+        def counterMatcher = new CounterMatcher(counter, "")
 
         when:
         def isTopic = counterMatcher.isTopicPublished()
@@ -15,13 +21,14 @@ class CounterMatcherTest extends Specification {
 
         then:
         isTopic
-        topicName == "lagMetricGroup.topic"
+        topicName == new TopicName("lagMetricGroup", "topic")
     }
 
     def "should match subscription delivered"() {
         given:
-        def counterName = "delivered.lagMetricGroup.topic.subscription"
-        def counterMatcher = new CounterMatcher(counterName)
+        def counter = meterRegistry.counter("subscription.delivered", "group", "lagMetricGroup",
+                "topic", "topic", "subscription", "subscription")
+        def counterMatcher = new CounterMatcher(counter, "")
 
         when:
         def isSubscription = counterMatcher.isSubscriptionDelivered()
@@ -30,14 +37,15 @@ class CounterMatcherTest extends Specification {
 
         then:
         isSubscription
-        topicName == "lagMetricGroup.topic"
+        topicName == new TopicName("lagMetricGroup", "topic")
         subscriptionName == "subscription"
     }
 
     def "should match subscription discarded"() {
         given:
-        def counterName = "discarded.lagMetricGroup.topic.subscription"
-        def counterMatcher = new CounterMatcher(counterName)
+        def counter = meterRegistry.counter("subscription.discarded", "group", "lagMetricGroup",
+                "topic", "topic", "subscription", "subscription")
+        def counterMatcher = new CounterMatcher(counter, "")
 
         when:
         def isSubscription = counterMatcher.isSubscriptionDiscarded()
@@ -46,7 +54,7 @@ class CounterMatcherTest extends Specification {
 
         then:
         isSubscription
-        topicName == "lagMetricGroup.topic"
+        topicName == new TopicName("lagMetricGroup", "topic")
         subscriptionName == "subscription"
     }
 }

@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import com.codahale.metrics.MetricRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -13,6 +15,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties;
 import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
@@ -20,6 +23,7 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,7 +56,9 @@ public class KafkaBrokerMessageProducerTest {
     private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties);
 
     @Mock
-    private HermesMetrics hermesMetrics;
+    private HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
+
+    private final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
 
     @Mock
     private KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
@@ -63,10 +69,10 @@ public class KafkaBrokerMessageProducerTest {
 
     @Before
     public void before() {
-        cachedTopic = new CachedTopic(TOPIC, hermesMetrics, kafkaNamesMapper.toKafkaTopics(TOPIC));
+        cachedTopic = new CachedTopic(TOPIC, metricsFacade, kafkaNamesMapper.toKafkaTopics(TOPIC));
         MessageToKafkaProducerRecordConverter messageConverter =
             new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
-        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, hermesMetrics, messageConverter);
+        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
     }
 
     @After
@@ -125,7 +131,8 @@ public class KafkaBrokerMessageProducerTest {
     public void shouldUseEveryoneConfirmProducerForTopicWithAckAll() {
         //given
         Topic topic = topic("group.all").withAck(Topic.Ack.ALL).build();
-        CachedTopic cachedTopic = new CachedTopic(topic, hermesMetrics, kafkaNamesMapper.toKafkaTopics(topic));
+        CachedTopic cachedTopic = new CachedTopic(topic, metricsFacade,
+                kafkaNamesMapper.toKafkaTopics(topic));
 
         //when
         producer.send(MESSAGE, cachedTopic, new DoNothing());

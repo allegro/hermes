@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.management;
 
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -12,7 +13,6 @@ import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
 
 import java.time.Instant;
 import java.util.List;
-import javax.ws.rs.core.Response;
 
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 

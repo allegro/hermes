@@ -1,14 +1,10 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset
 
-import com.codahale.metrics.MetricRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
-import pl.allegro.tech.hermes.metrics.PathsCompiler
+import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory
 import spock.lang.Shared
 import spock.lang.Specification
-
-import java.time.Duration
 
 class OffsetCommitterTest extends Specification {
 
@@ -18,10 +14,7 @@ class OffsetCommitterTest extends Specification {
     @Shared
     KafkaTopicName KAFKA_TOPIC_NAME = KafkaTopicName.valueOf("group_topic")
 
-    private OffsetQueue queue = new OffsetQueue(
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
-            200_000
-    )
+    private OffsetQueue queue = new OffsetQueue(TestMetricsFacadeFactory.create(), 200_000)
 
     private MockMessageCommitter messageCommitter = new MockMessageCommitter()
 
@@ -32,8 +25,8 @@ class OffsetCommitterTest extends Specification {
     def setup() {
         state = new ConsumerPartitionAssignmentState()
         def commitInterval = 10
-        committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval,
-                new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")))
+
+        committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval, TestMetricsFacadeFactory.create())
     }
 
     def "should not commit offsets with negative values"() {

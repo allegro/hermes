@@ -2,10 +2,10 @@ package pl.allegro.tech.hermes.integration.test;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.pubsub.v1.PubsubMessage;
+import jakarta.ws.rs.core.Response;
 import org.assertj.core.api.Assertions;
 
 import javax.jms.Message;
-import javax.ws.rs.core.Response;
 
 public final class HermesAssertions extends Assertions {
 

@@ -64,8 +64,14 @@ of a specific type.
 - `<T> void jsonMessagesOnTopicAs(String topicName, int count, Class<T> clazz)` - expects particular number of
 JSON messages on a given topic.
 
+- `<T> void jsonMessagesOnTopicAs(String topicName, int count, Class<T> clazz, Predicate<T> predicate)` - expects particular number of
+JSON messages on a given topic and matching given predicate.
+
 - `<T> void avroMessagesOnTopic(String topicName, int count, Schema schema)` - expects particular number of
 Avro messages on a given topic.
+
+- `<T> void avroMessagesOnTopic(String topicName, int count, Schema schema, Class<T> clazz, Predicate<T> predicate)` - expects particular number of
+Avro messages on a given topic and matching given predicate.
 
 ##### HermesMockQuery
 

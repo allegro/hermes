@@ -1,14 +1,16 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 import org.apache.avro.Schema;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.schema.AvroCompiledSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaRepositoryFactory;
@@ -22,8 +24,6 @@ import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceRes
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
 import java.net.URI;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -49,14 +49,14 @@ public class SchemaConfiguration {
 
     @Bean
     public RawSchemaClient rawSchemaClient(KafkaClustersProperties kafkaClustersProperties,
-                                           HermesMetrics hermesMetrics,
+                                           MetricsFacade metricsFacade,
                                            ObjectMapper objectMapper,
                                            SchemaRepositoryInstanceResolver resolver,
                                            SchemaProperties schemaProperties) {
         return new RawSchemaClientFactory(
                 kafkaClustersProperties.getNamespace(),
                 kafkaClustersProperties.getNamespaceSeparator(),
-                hermesMetrics,
+                metricsFacade,
                 objectMapper,
                 resolver,
                 schemaProperties.getRepository().isSubjectSuffixEnabled(),

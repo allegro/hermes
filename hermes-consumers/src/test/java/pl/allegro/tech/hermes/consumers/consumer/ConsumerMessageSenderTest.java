@@ -1,16 +1,13 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Meters;
-import pl.allegro.tech.hermes.common.metric.Timers;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.common.metric.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
@@ -21,6 +18,9 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.NoOpConsumerNodeLoadRegistry;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.nio.charset.StandardCharsets;
@@ -67,26 +67,30 @@ public class ConsumerMessageSenderTest {
     private SerialConsumerRateLimiter rateLimiter;
 
     @Mock
-    private HermesMetrics hermesMetrics;
+    private HermesTimer consumerLatencyTimer;
 
     @Mock
-    private Timer consumerLatencyTimer;
+    private HermesTimerContext consumerLatencyTimerContext;
 
     @Mock
-    private Timer.Context consumerLatencyTimerContext;
+    private HermesCounter failedMeter;
 
     @Mock
-    private Meter failedMeter;
-
-    @Mock
-    private Meter errors;
+    private HermesCounter errors;
 
     private AdjustableSemaphore inflightSemaphore;
 
     private ConsumerMessageSender sender;
 
+    @Mock
+    private SubscriptionMetrics subscriptionMetrics;
+
+    @Mock
+    private MetricsFacade metricsFacade;
+
     @Before
     public void setUp() {
+        when(metricsFacade.subscriptions()).thenReturn(subscriptionMetrics);
         setUpMetrics(subscription);
         setUpMetrics(subscriptionWith4xxRetry);
         inflightSemaphore = new AdjustableSemaphore(0);
@@ -94,12 +98,10 @@ public class ConsumerMessageSenderTest {
     }
 
     private void setUpMetrics(Subscription subscription) {
-        when(hermesMetrics.timer(Timers.SUBSCRIPTION_LATENCY, subscription.getTopicName(), subscription.getName()))
-                .thenReturn(consumerLatencyTimer);
-        when(hermesMetrics.consumerErrorsOtherMeter(subscription.getQualifiedName())).thenReturn(errors);
+        when(metricsFacade.subscriptions().latency(subscription.getQualifiedName())).thenReturn(consumerLatencyTimer);
+        when(metricsFacade.subscriptions().otherErrorsCounter(subscription.getQualifiedName())).thenReturn(errors);
         when(consumerLatencyTimer.time()).thenReturn(consumerLatencyTimerContext);
-        when(hermesMetrics.meter(Meters.FAILED_METER_SUBSCRIPTION, subscription.getTopicName(), subscription.getName()))
-                .thenReturn(failedMeter);
+        when(metricsFacade.subscriptions().failuresCounter(subscription.getQualifiedName())).thenReturn(failedMeter);
     }
 
     @Test
@@ -393,7 +395,7 @@ public class ConsumerMessageSenderTest {
                 rateLimiter,
                 Executors.newSingleThreadExecutor(),
                 () -> inflightSemaphore.release(),
-                new SubscriptionMetrics(hermesMetrics, subscription.getQualifiedName()),
+                metricsFacade,
                 ASYNC_TIMEOUT_MS,
                 new FutureAsyncTimeout(Executors.newSingleThreadScheduledExecutor()),
                 Clock.systemUTC(),
@@ -417,7 +419,7 @@ public class ConsumerMessageSenderTest {
     }
 
     private void verifyLatencyTimersCountedTimes(Subscription subscription, int timeCount, int closeCount) {
-        verify(hermesMetrics, times(1)).timer(Timers.SUBSCRIPTION_LATENCY, subscription.getTopicName(), subscription.getName());
+        verify(metricsFacade.subscriptions(), times(1)).latency(subscription.getQualifiedName());
         verify(consumerLatencyTimer, times(timeCount)).time();
         verify(consumerLatencyTimerContext, times(closeCount)).close();
     }

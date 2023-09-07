@@ -11,7 +11,7 @@ dependencies {
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey
     api group: 'commons-io', name: 'commons-io', version: '2.4'
-    api group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: versions.wiremock
+    api group: 'org.wiremock', name: 'wiremock-standalone', version: versions.wiremock
     api (group: 'org.apache.curator', name: 'curator-test', version: versions.curator) {
         exclude module: 'slf4j-log4j12'
         exclude module: 'log4j'
@@ -33,6 +33,9 @@ dependencies {
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
     implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
+
+    //TODO: remove after migrating from apache oltu
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
 
     implementation group: 'org.apache.oltu.oauth2', name: 'org.apache.oltu.oauth2.authzserver', version: '1.0.2'
     implementation group: 'org.apache.oltu.oauth2', name: 'org.apache.oltu.oauth2.resourceserver', version: '1.0.2'

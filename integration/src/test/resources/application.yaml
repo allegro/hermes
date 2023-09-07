@@ -60,9 +60,6 @@ management:
   endpoints:
     web:
       base-path: /status
-  server:
-    servlet:
-      context-path: /
 
 spring.groovy.template.check-template-location: false
 
@@ -97,3 +94,13 @@ subscription:
       ownerId: 'subscriberAllowedToAccessAnyTopic'
       protocols:
         - http
+
+frontend:
+  metrics:
+    metric-registry:
+      graphiteReporterEnabled: true
+
+consumer:
+  metrics:
+    metric-registry:
+      graphiteReporterEnabled: true

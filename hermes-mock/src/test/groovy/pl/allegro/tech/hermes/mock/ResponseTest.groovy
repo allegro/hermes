@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.mock
 
-import org.apache.http.HttpStatus
 import pl.allegro.tech.hermes.mock.exchange.Response
 import spock.lang.Specification
+import wiremock.org.apache.hc.core5.http.HttpStatus;
 
 import static pl.allegro.tech.hermes.mock.exchange.Response.Builder.aResponse
 

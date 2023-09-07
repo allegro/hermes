@@ -1,19 +1,17 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
-import com.codahale.metrics.MetricRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.TestSubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.concurrent.ManuallyTriggeredScheduledExecutorService;
 import pl.allegro.tech.hermes.test.helper.concurrent.TestExecutorServiceFactory;
+import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory;
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock;
 import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 
@@ -44,7 +42,7 @@ public class ZookeeperConsumerNodeLoadRegistryTest extends ZookeeperBaseTest {
             Duration.ofMillis(50),
             new TestExecutorServiceFactory(scheduledExecutorService),
             clock,
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host")),
+            TestMetricsFacadeFactory.create(),
             100_000
     );
 

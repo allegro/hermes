@@ -1,45 +1,43 @@
 package pl.allegro.tech.hermes.common.metric.executor;
 
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class ThreadPoolMetrics {
 
-    private final HermesMetrics hermesMetrics;
+    private final MetricsFacade metricsFacade;
 
-    public ThreadPoolMetrics(HermesMetrics hermesMetrics) {
-        this.hermesMetrics = hermesMetrics;
+    public ThreadPoolMetrics(MetricsFacade metricsFacade) {
+        this.metricsFacade = metricsFacade;
     }
 
     public void createGauges(
-            String threadPoolName,
-            ThreadPoolExecutor executor,
-            BlockingQueue<Runnable> queue) {
+            String executorName,
+            ThreadPoolExecutor executor) {
 
-        hermesMetrics.registerThreadPoolCapacity(threadPoolName, executor::getPoolSize);
-        hermesMetrics.registerThreadPoolActiveThreads(threadPoolName, executor::getActiveCount);
-        hermesMetrics.registerThreadPoolUtilization(threadPoolName,
-                () -> (double) executor.getActiveCount() / (double) executor.getPoolSize()
+        metricsFacade.executor().registerThreadPoolCapacity(executorName, executor, ThreadPoolExecutor::getPoolSize);
+        metricsFacade.executor().registerThreadPoolActiveThreads(executorName, executor, ThreadPoolExecutor::getActiveCount);
+        metricsFacade.executor().registerThreadPoolUtilization(executorName, executor,
+                e -> (double) e.getActiveCount() / (double) e.getPoolSize()
         );
-        hermesMetrics.registerThreadPoolTaskQueueCapacity(threadPoolName,
-                () -> {
-                    int qCapacity = queue.size() + queue.remainingCapacity();
+        metricsFacade.executor().registerThreadPoolTaskQueueCapacity(executorName, executor,
+                e -> {
+                    int qCapacity = e.getQueue().size() + e.getQueue().remainingCapacity();
                     // overflow in case of unbounded queue, set queueCapacity to Integer.MAX_VALUE
                     return qCapacity < 0 ? Integer.MAX_VALUE : qCapacity;
                 });
-        hermesMetrics.registerThreadPoolTaskQueued(threadPoolName, queue::size);
-        hermesMetrics.registerThreadPoolTaskQueueUtilization(threadPoolName,
-                () -> {
-                    int calculatedCapacity = queue.size() + queue.remainingCapacity();
+        metricsFacade.executor().registerThreadPoolTaskQueued(executorName, executor, e -> e.getQueue().size());
+        metricsFacade.executor().registerThreadPoolTaskQueueUtilization(executorName, executor,
+                e -> {
+                    int calculatedCapacity = e.getQueue().size() + e.getQueue().remainingCapacity();
                     int queueCapacity = calculatedCapacity < 0 ? Integer.MAX_VALUE : calculatedCapacity;
-                    return (double) queue.size() / (double) queueCapacity;
+                    return (double) e.getQueue().size() / (double) queueCapacity;
                 });
     }
 
     public void markRequestRejected(String executorName) {
-        hermesMetrics.incrementThreadPoolTaskRejectedCount(executorName);
+        metricsFacade.executor().incrementRequestRejectedCounter(executorName);
     }
 
 }
