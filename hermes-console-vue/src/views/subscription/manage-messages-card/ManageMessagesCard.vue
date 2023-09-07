@@ -3,7 +3,6 @@
   import { subscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
-  import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
 
   const { t } = useI18n();
