@@ -63,6 +63,13 @@ server.post('/offline-retransmission/tasks', (req, res) => {
   res.sendStatus(200);
 });
 
+server.put(
+  '/topics/:topic/subscriptions/:subscroption/retransmission',
+  (req, res) => {
+    res.sendStatus(200);
+  },
+);
+
 const router = jsonServer.router('json-server/db.json');
 server.use(router);
 

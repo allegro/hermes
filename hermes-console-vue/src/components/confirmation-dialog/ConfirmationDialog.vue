@@ -18,7 +18,7 @@
   <v-dialog width="100%" min-width="30%">
     <v-form>
       <v-card>
-        <v-card-title v-if="title">
+        <v-card-title v-if="title" class="text-wrap">
           {{ props.title }}
         </v-card-title>
         <v-card-text v-if="text">

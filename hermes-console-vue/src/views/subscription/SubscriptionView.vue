@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
+  import { topicQualifiedName } from '@/utils/topic-utils/topic-utils';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
@@ -38,6 +39,8 @@
     removeSubscription,
     suspendSubscription,
     activateSubscription,
+    retransmitMessages,
+    skipAllMessages,
   } = useSubscription(topicId, subscriptionId);
 
   const roles = useRoles(topicId, subscriptionId)?.roles;
@@ -98,6 +101,10 @@
       router.go(0);
     }
   }
+
+  const onRetransmit = async (fromDate: string) => {
+    await retransmitMessages(fromDate);
+  };
 
   const breadcrumbsItems = [
     {
@@ -191,7 +198,13 @@
             :subscription-metrics="subscriptionMetrics"
           />
           <service-response-metrics />
-          <manage-messages-card v-if="isSubscriptionOwnerOrAdmin(roles)" />
+          <manage-messages-card
+            v-if="isSubscriptionOwnerOrAdmin(roles)"
+            :topic="topicQualifiedName(groupId, topicId)"
+            :subscription="subscriptionId"
+            @retransmit="onRetransmit"
+            @skipAllMessages="skipAllMessages"
+          />
         </v-col>
         <v-col md="6">
           <properties-card v-if="subscription" :subscription="subscription" />
