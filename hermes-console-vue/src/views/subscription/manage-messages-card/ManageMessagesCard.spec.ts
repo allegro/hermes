@@ -1,5 +1,4 @@
-import { appConfigStoreState } from '@/dummy/store';
-import { createTestingPinia } from '@pinia/testing';
+import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummySubscription } from '@/dummy/subscription';
 import { dummyTopic } from '@/dummy/topic';
 import { render } from '@/utils/test-utils';
@@ -17,11 +16,7 @@ describe('ManageMessagesCard', () => {
         topic: dummyTopic.name,
         subscription: dummySubscription.name,
       },
-      testPinia: createTestingPinia({
-        initialState: {
-          appConfig: appConfigStoreState,
-        },
-      }),
+      testPinia: createTestingPiniaWithState(),
     });
     await user.click(getByTestId('retransmitButton'));
 
@@ -40,11 +35,7 @@ describe('ManageMessagesCard', () => {
         topic: dummyTopic.name,
         subscription: dummySubscription.name,
       },
-      testPinia: createTestingPinia({
-        initialState: {
-          appConfig: appConfigStoreState,
-        },
-      }),
+      testPinia: createTestingPiniaWithState(),
     });
     await user.click(getByTestId('skipAllMessagesButton'));
 
