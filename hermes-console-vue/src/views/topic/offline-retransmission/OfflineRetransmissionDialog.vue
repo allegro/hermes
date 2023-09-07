@@ -21,6 +21,7 @@
 <template>
   <v-dialog
     activator="parent"
+    persistent
     width="100%"
     min-width="50%"
     v-model="showDialog"
