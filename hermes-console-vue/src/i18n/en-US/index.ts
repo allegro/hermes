@@ -613,6 +613,7 @@ const en_US = {
   notifications: {
     form: {
       validationError: 'Some fields are not valid',
+      parseError: 'Error parsing form data',
     },
     subscriptionOffsets: {
       move: {

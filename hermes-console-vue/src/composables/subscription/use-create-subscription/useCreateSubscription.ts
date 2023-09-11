@@ -1,6 +1,9 @@
 import { AxiosError } from 'axios';
-import { hermesClient, searchOwners } from '@/api/hermes-client';
-import { parseFormToRequestBody } from '@/composables/subscription/use-create-subscription/form-mapper';
+import {
+  createSubscription as doCreateSubscription,
+  searchOwners,
+} from '@/api/hermes-client';
+import { parseFormToRequestBody } from '@/composables/subscription/use-form-subscription/form-mapper';
 import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
@@ -69,8 +72,8 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
       requestBody = parseFormToRequestBody(topic, form.value);
     } catch (e) {
       notificationsStore.dispatchNotification({
-        title: 'Failed creating subscription',
-        text: 'Error parsing form data',
+        title: useGlobalI18n().t('notifications.subscription.create.failure'),
+        text: useGlobalI18n().t('notifications.form.parseError'),
         type: 'error',
       });
       creatingSubscription.value = false;
@@ -78,7 +81,7 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
     }
 
     try {
-      await hermesClient.createSubscription(topic, requestBody!!);
+      await doCreateSubscription(topic, requestBody!!);
       notificationsStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.create.success', {
           subscriptionName: form.value.name,

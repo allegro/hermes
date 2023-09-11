@@ -37,39 +37,6 @@ const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';
 const applicationJsonMediaType = 'application/json';
 
-export class HermesClient {
-  createSubscription(
-    topic: string,
-    requestBody: CreateSubscriptionFormRequestBody,
-  ): ResponsePromise<void> {
-    return axios.post(`/topics/${topic}/subscriptions`, requestBody, {
-      headers: {
-        [acceptHeader]: applicationJsonMediaType,
-        [contentTypeHeader]: applicationJsonMediaType,
-      },
-    });
-  }
-
-  editSubscription(
-    topic: string,
-    subscription: string,
-    requestBody: CreateSubscriptionFormRequestBody,
-  ): ResponsePromise<void> {
-    return axios.put(
-      `/topics/${topic}/subscriptions/${subscription}`,
-      requestBody,
-      {
-        headers: {
-          [acceptHeader]: applicationJsonMediaType,
-          [contentTypeHeader]: applicationJsonMediaType,
-        },
-      },
-    );
-  }
-}
-
-export const hermesClient = new HermesClient();
-
 export function fetchTopic(
   topicName: string,
 ): ResponsePromise<TopicWithSchema> {
@@ -386,4 +353,33 @@ export function createGroup(group: Group): ResponsePromise<void> {
   return axios.post(`/groups`, group, {
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+export function createSubscription(
+  topic: string,
+  requestBody: CreateSubscriptionFormRequestBody,
+): ResponsePromise<void> {
+  return axios.post(`/topics/${topic}/subscriptions`, requestBody, {
+    headers: {
+      [acceptHeader]: applicationJsonMediaType,
+      [contentTypeHeader]: applicationJsonMediaType,
+    },
+  });
+}
+
+export function editSubscription(
+  topic: string,
+  subscription: string,
+  requestBody: CreateSubscriptionFormRequestBody,
+): ResponsePromise<void> {
+  return axios.put(
+    `/topics/${topic}/subscriptions/${subscription}`,
+    requestBody,
+    {
+      headers: {
+        [acceptHeader]: applicationJsonMediaType,
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    },
+  );
 }

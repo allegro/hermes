@@ -64,6 +64,11 @@ export const fetchOwnerHandler = ({ owner = dummyOwner }: { owner?: Owner }) =>
     },
   );
 
+export const fetchOwnerSourcesHandler = (body: any) =>
+  rest.get(`${url}/owners/sources`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(body));
+  });
+
 export const fetchOwnerErrorHandler = ({
   owner,
   errorCode = 500,
@@ -773,6 +778,39 @@ export const deleteSubscriptionConstraintHandler = ({
     `${url}/workload-constraints/subscription/${topicName}/${subscriptionName}`,
     (req, res, ctx) => {
       return res(ctx.status(statusCode), ctx.json(undefined));
+    },
+  );
+
+export const createSubscriptionHandler = (topic: string) =>
+  rest.post(`${url}/topics/${topic}/subscriptions`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(undefined));
+  });
+
+export const createSubscriptionErrorHandler = (
+  topic: string,
+  errorCode: number,
+) =>
+  rest.post(`${url}/topics/${topic}/subscriptions`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const editSubscriptionHandler = (topic: string, subscription: string) =>
+  rest.put(
+    `${url}/topics/${topic}/subscriptions/${subscription}`,
+    (req, res, ctx) => {
+      return res(ctx.status(200), ctx.json(undefined));
+    },
+  );
+
+export const editSubscriptionErrorHandler = (
+  topic: string,
+  subscription: string,
+  errorCode: number,
+) =>
+  rest.put(
+    `${url}/topics/${topic}/subscriptions/${subscription}`,
+    (req, res, ctx) => {
+      return res(ctx.status(errorCode), ctx.json(undefined));
     },
   );
 

@@ -1,8 +1,12 @@
 import { AxiosError } from 'axios';
 import { DeliveryType } from '@/api/subscription';
-import { fetchOwner, hermesClient, searchOwners } from '@/api/hermes-client';
+import {
+  editSubscription as doEditSubscription,
+  fetchOwner,
+  searchOwners,
+} from '@/api/hermes-client';
 import { v4 as generateUUID } from 'uuid';
-import { parseFormToRequestBody } from '@/composables/subscription/use-create-subscription/form-mapper';
+import { parseFormToRequestBody } from '@/composables/subscription/use-form-subscription/form-mapper';
 import { ref, watch } from 'vue';
 import { useFormSubscription } from '@/composables/subscription/use-form-subscription/useFormSubscription';
 import { useGlobalI18n } from '@/i18n';
@@ -80,8 +84,8 @@ export function useEditSubscription(
       requestBody = parseFormToRequestBody(topic, form.value);
     } catch (e) {
       notificationsStore.dispatchNotification({
-        title: 'Failed creating subscription',
-        text: 'Error parsing form data',
+        title: useGlobalI18n().t('notifications.subscription.edit.failure'),
+        text: useGlobalI18n().t('notifications.form.parseError'),
         type: 'error',
       });
       updatingSubscription.value = false;
@@ -89,11 +93,7 @@ export function useEditSubscription(
     }
 
     try {
-      await hermesClient.editSubscription(
-        topic,
-        subscription.name,
-        requestBody!!,
-      );
+      await doEditSubscription(topic, subscription.name, requestBody!!);
       notificationsStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.edit.success', {
           subscriptionName: form.value.name,
