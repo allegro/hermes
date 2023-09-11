@@ -640,7 +640,7 @@
           "label": "DAYS"
         }
       ],
-      "offlineRetransmissionEnabled": false,
+      "offlineRetransmissionEnabled": true,
       "offlineRetransmissionDescription": "Offline retransmission"
     },
     "subscription": {

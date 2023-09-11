@@ -7,6 +7,7 @@ import {
   fetchSubscriptionLastUndeliveredMessage as getSubscriptionLastUndeliveredMessage,
   fetchSubscriptionMetrics as getSubscriptionMetrics,
   fetchSubscriptionUndeliveredMessages as getSubscriptionUndeliveredMessages,
+  retransmitSubscriptionMessages,
   suspendSubscription as suspend,
 } from '@/api/hermes-client';
 import { ref } from 'vue';
@@ -31,6 +32,8 @@ export interface UseSubscription {
   removeSubscription: () => Promise<boolean>;
   suspendSubscription: () => Promise<boolean>;
   activateSubscription: () => Promise<boolean>;
+  retransmitMessages: (from: string) => Promise<boolean>;
+  skipAllMessages: () => Promise<boolean>;
 }
 
 export interface UseSubscriptionsErrors {
@@ -209,6 +212,70 @@ export function useSubscription(
     }
   };
 
+  const retransmitMessages = async (from: string): Promise<boolean> => {
+    try {
+      await retransmitSubscriptionMessages(topicName, subscriptionName, {
+        retransmissionDate: from,
+      });
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t(
+          'notifications.subscription.retransmit.success',
+          {
+            subscriptionName,
+          },
+        ),
+        text: '',
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t(
+          'notifications.subscription.retransmit.failure',
+          {
+            subscriptionName,
+          },
+        ),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
+  const skipAllMessages = async (): Promise<boolean> => {
+    const tomorrowDate = new Date();
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+    try {
+      await retransmitSubscriptionMessages(topicName, subscriptionName, {
+        retransmissionDate: tomorrowDate.toISOString(),
+      });
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t(
+          'notifications.subscription.skipAllMessages.success',
+          {
+            subscriptionName,
+          },
+        ),
+        text: '',
+        type: 'success',
+      });
+      return true;
+    } catch (e) {
+      notificationStore.dispatchNotification({
+        title: useGlobalI18n().t(
+          'notifications.subscription.skipAllMessages.failure',
+          {
+            subscriptionName,
+          },
+        ),
+        text: (e as Error).message,
+        type: 'error',
+      });
+      return false;
+    }
+  };
+
   fetchSubscription();
 
   return {
@@ -223,5 +290,7 @@ export function useSubscription(
     removeSubscription,
     suspendSubscription,
     activateSubscription,
+    retransmitMessages,
+    skipAllMessages,
   };
 }

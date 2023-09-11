@@ -827,3 +827,28 @@ export const createGroupErrorHandler = ({
   rest.post(`${url}/groups`, (req, res, ctx) => {
     return res(ctx.status(errorCode), ctx.json(undefined));
   });
+
+export const createRetransmissionTaskHandler = ({
+  statusCode,
+}: {
+  statusCode: number;
+}) =>
+  rest.post(`${url}/offline-retransmission/tasks`, (req, res, ctx) => {
+    return res(ctx.status(statusCode), ctx.json(undefined));
+  });
+
+export const createRetransmissionHandler = ({
+  statusCode,
+  topicName,
+  subscriptionName,
+}: {
+  statusCode: number;
+  topicName: string;
+  subscriptionName: string;
+}) =>
+  rest.put(
+    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/retransmission`,
+    (req, res, ctx) => {
+      return res(ctx.status(statusCode), ctx.json(undefined));
+    },
+  );
