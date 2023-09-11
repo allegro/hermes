@@ -7,7 +7,7 @@ import {
   dummyDataSources,
   dummyInitializedSubscriptionForm,
   dummySubscriptionFormValidator,
-} from '@/dummy/form';
+} from '@/dummy/subscription-form';
 import { dummyOwner } from '@/dummy/topic';
 import { dummySubscription } from '@/dummy/subscription';
 import { expect } from 'vitest';

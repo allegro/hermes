@@ -9,7 +9,7 @@ import {
   dummyOwnerSources,
   dummySubscriptionForm,
   dummySubscriptionFormValidator,
-} from '@/dummy/form';
+} from '@/dummy/subscription-form';
 import { fetchOwnerSourcesHandler } from '@/mocks/handlers';
 import { setActivePinia } from 'pinia';
 import { setupServer } from 'msw/node';

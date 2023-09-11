@@ -1,6 +1,6 @@
 import { afterEach } from 'vitest';
 import { createTestingPiniaWithState } from '@/dummy/store';
-import { dummyOwnerSources } from '@/dummy/form';
+import { dummyOwnerSources } from '@/dummy/subscription-form';
 import { dummySubscription } from '@/dummy/subscription';
 import { expect } from 'vitest';
 import {

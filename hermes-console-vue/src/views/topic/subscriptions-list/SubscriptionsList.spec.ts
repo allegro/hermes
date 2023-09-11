@@ -6,7 +6,7 @@ import {
   dummyDataSources,
   dummyInitializedSubscriptionForm,
   dummySubscriptionFormValidator,
-} from '@/dummy/form';
+} from '@/dummy/subscription-form';
 import {
   dummySubscription,
   secondDummySubscription,

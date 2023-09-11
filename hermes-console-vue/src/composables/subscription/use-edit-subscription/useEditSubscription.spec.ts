@@ -3,7 +3,7 @@ import { createTestingPiniaWithState } from '@/dummy/store';
 import {
   dummyInitializedEditSubscriptionForm,
   dummyOwnerSources,
-} from '@/dummy/form';
+} from '@/dummy/subscription-form';
 import { dummySubscription } from '@/dummy/subscription';
 import {
   editSubscriptionErrorHandler,
