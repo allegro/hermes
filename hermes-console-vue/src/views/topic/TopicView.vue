@@ -131,10 +131,9 @@
       />
 
       <subscriptions-list
-        v-if="subscriptions"
         :groupId="groupId"
         :topic-name="topicName"
-        :subscriptions="subscriptions"
+        :subscriptions="subscriptions ? subscriptions : null"
       />
 
       <offline-clients

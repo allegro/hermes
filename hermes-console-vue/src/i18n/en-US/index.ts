@@ -551,6 +551,7 @@ const en_US = {
       groups: 'groups',
     },
     subscriptionMetadata: {
+      editSubscription: 'Edit subscription {subscriptionName}',
       subscription: 'Subscription',
       owners: 'OWNER:',
       unauthorizedTooltip:

@@ -1,6 +1,9 @@
+import { computed, ref } from 'vue';
 import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyOwner } from '@/dummy/topic';
 import { dummySubscription } from '@/dummy/subscription';
 import { matchRegex, max, min, required } from '@/utils/validators';
+import type { DataSources } from '@/composables/subscription/use-form-subscription/types';
 
 export const dummySubscriptionForm = {
   name: '',
@@ -98,6 +101,27 @@ export const dummyMessageDeliveryTrackingModes = [
   { title: 'Track message discarding only', value: 'discardedOnly' },
   { title: 'Track everything', value: 'trackingAll' },
 ];
+
+export const dummyDataSources: DataSources = {
+  contentTypes: computed(() => dummyContentTypes),
+  deliveryModes: dummyDeliveryModes,
+  deliveryTypes: dummyContentTypes,
+  monitoringSeverities: dummyMonitoringSeverities,
+  messageDeliveryTrackingModes: dummyMessageDeliveryTrackingModes,
+  ownerSources: computed(() =>
+    dummyOwnerSources
+      .filter((source) => !source.deprecated)
+      .map((source) => {
+        return { title: source.name, value: source };
+      }),
+  ),
+  owners: ref(
+    [dummyOwner].map((source) => {
+      return { title: source.name, value: source.id };
+    }),
+  ),
+  loadingOwners: ref(false),
+};
 
 export const dummyInitializedSubscriptionForm = {
   name: '',

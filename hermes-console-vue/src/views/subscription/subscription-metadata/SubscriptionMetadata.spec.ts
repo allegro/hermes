@@ -3,13 +3,36 @@ import {
   createTestingPiniaWithState,
 } from '@/dummy/store';
 import { createTestingPinia } from '@pinia/testing';
+import {
+  dummyDataSources,
+  dummyInitializedSubscriptionForm,
+  dummySubscriptionFormValidator,
+} from '@/dummy/form';
 import { dummyOwner } from '@/dummy/topic';
 import { dummySubscription } from '@/dummy/subscription';
 import { expect } from 'vitest';
+import { fireEvent } from '@testing-library/vue';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
 import { State } from '@/api/subscription';
+import { useEditSubscription } from '@/composables/subscription/use-edit-subscription/useEditSubscription';
 import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
+import type { UseEditSubscription } from '@/composables/subscription/use-edit-subscription/types';
+
+vi.mock('@/composables/subscription/use-edit-subscription/useEditSubscription');
+
+const useCreateSubscriptionStub: UseEditSubscription = {
+  form: ref(dummyInitializedSubscriptionForm),
+  validators: dummySubscriptionFormValidator,
+  dataSources: dummyDataSources,
+  createOrUpdateSubscription: () => Promise.resolve(true),
+  creatingOrUpdatingSubscription: ref(false),
+  errors: ref({
+    fetchOwners: null,
+    fetchOwnerSources: null,
+  }),
+};
 
 describe('SubscriptionMetadata', () => {
   it('should render subscription metadata box', () => {
@@ -253,5 +276,37 @@ describe('SubscriptionMetadata', () => {
     expect(
       queryByText('subscription.subscriptionMetadata.actions.suspend'),
     ).toBeVisible();
+  });
+
+  it('should show edit subscription dialog on button click', async () => {
+    // given
+    const props = {
+      subscription: {
+        ...dummySubscription,
+        name: 'subscription-name',
+        endpoint: 'service://subscription-name/dummy',
+        description: 'some description',
+      },
+      owner: dummyOwner,
+      roles: [Role.SUBSCRIPTION_OWNER, Role.ADMIN],
+    };
+    vi.mocked(useEditSubscription).mockReturnValueOnce(
+      useCreateSubscriptionStub,
+    );
+
+    // when
+    const { getByText } = render(SubscriptionMetadata, {
+      testPinia: createTestingPiniaWithState(),
+      props,
+    });
+    await fireEvent.click(
+      getByText('subscription.subscriptionMetadata.actions.edit'),
+    );
+
+    // then
+    expect(
+      getByText('subscription.subscriptionMetadata.editSubscription'),
+    ).toBeInTheDocument();
+    expect(getByText('subscriptionForm.actions.update')).toBeInTheDocument();
   });
 });

@@ -10,7 +10,7 @@
   const props = defineProps<{
     groupId: string;
     topicName: string;
-    subscriptions: Subscription[];
+    subscriptions: Subscription[] | null;
   }>();
 
   const statusTextColor: Record<State, String> = {
@@ -20,7 +20,7 @@
   };
 
   const subscriptionItems = computed(() =>
-    props.subscriptions.map((subscription) => {
+    props.subscriptions?.map((subscription) => {
       const currentUrl = window.location.href;
       return {
         name: subscription.name,
@@ -48,7 +48,7 @@
   <v-expansion-panels>
     <v-expansion-panel
       :title="`${$t('topicView.subscriptions.title')} (${
-        props.subscriptions.length
+        props.subscriptions?.length
       })`"
     >
       <v-expansion-panel-text class="d-flex flex-row subscriptions-panel">
@@ -68,7 +68,9 @@
             </template>
             <v-card>
               <v-card-title>
-                <span class="text-h5">Create subscription</span>
+                <span class="text-h5">{{
+                  $t('topicView.subscriptions.create')
+                }}</span>
               </v-card-title>
               <v-card-text>
                 <SubscriptionForm

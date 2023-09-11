@@ -7,10 +7,13 @@
   import { State } from '@/api/subscription';
   import { subscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
   import { useFavorites } from '@/store/favorites/useFavorites';
+  import { useI18n } from 'vue-i18n';
   import { useRoute, useRouter } from 'vue-router';
   import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Subscription } from '@/api/subscription';
+
+  const { t } = useI18n();
 
   const favorites = useFavorites();
 
@@ -53,9 +56,13 @@
       >
         <v-card>
           <v-card-title>
-            <span class="text-h5"
-              >Edit subscription {{ subscription.name }}</span
-            >
+            <span class="text-h5">
+              {{
+                t('subscription.subscriptionMetadata.editSubscription', {
+                  subscriptionName: subscription.name,
+                })
+              }}
+            </span>
           </v-card-title>
           <v-card-text>
             <SubscriptionForm
