@@ -57,12 +57,14 @@ function mapSerialSubscriptionPolicy(
 ): SerialSubscriptionPolicyJson {
   return {
     backoffMaxIntervalInSec: 600,
-    backoffMultiplier: form.subscriptionPolicy.retryBackoffMultiplier,
-    messageBackoff: form.subscriptionPolicy.retryBackoff,
-    messageTtl: form.subscriptionPolicy.inflightMessageTTL,
-    rate: form.subscriptionPolicy.rateLimit!!,
-    requestTimeout: form.subscriptionPolicy.requestTimeout,
-    sendingDelay: form.subscriptionPolicy.sendingDelay,
+    backoffMultiplier: parseFloat(
+      String(form.subscriptionPolicy.retryBackoffMultiplier),
+    ),
+    messageBackoff: parseFloat(String(form.subscriptionPolicy.retryBackoff)),
+    messageTtl: parseFloat(String(form.subscriptionPolicy.inflightMessageTTL)),
+    rate: parseFloat(String(form.subscriptionPolicy.rateLimit!!)),
+    requestTimeout: parseFloat(String(form.subscriptionPolicy.requestTimeout)),
+    sendingDelay: parseFloat(String(form.subscriptionPolicy.sendingDelay)),
     retryClientErrors: form.retryOn4xx,
   };
 }
@@ -71,13 +73,13 @@ function mapBatchSerialSubscriptionPolicy(
   form: SubscriptionForm,
 ): BatchSubscriptionPolicyJson {
   return {
-    messageTtl: form.subscriptionPolicy.inflightMessageTTL,
+    messageTtl: parseFloat(String(form.subscriptionPolicy.inflightMessageTTL)),
     retryClientsErrors: form.retryOn4xx,
-    messageBackoff: form.subscriptionPolicy.retryBackoff,
-    requestTimeout: form.subscriptionPolicy.requestTimeout,
-    batchSize: form.subscriptionPolicy.batchSize!!,
-    batchTime: form.subscriptionPolicy.batchTime!!,
-    batchVolume: form.subscriptionPolicy.batchVolume!!,
+    messageBackoff: parseFloat(String(form.subscriptionPolicy.retryBackoff)),
+    requestTimeout: parseFloat(String(form.subscriptionPolicy.requestTimeout)),
+    batchSize: parseFloat(String(form.subscriptionPolicy.batchSize!!)),
+    batchTime: parseFloat(String(form.subscriptionPolicy.batchTime!!)),
+    batchVolume: parseFloat(String(form.subscriptionPolicy.batchVolume!!)),
   };
 }
 
