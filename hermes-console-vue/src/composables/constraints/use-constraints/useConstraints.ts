@@ -68,7 +68,10 @@ export function useConstraints(): UseConstraints {
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.constraints.topic.created.failure',
@@ -76,7 +79,7 @@ export function useConstraints(): UseConstraints {
             topicName,
           },
         ),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;
@@ -100,7 +103,10 @@ export function useConstraints(): UseConstraints {
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.constraints.topic.deleted.failure',
@@ -108,7 +114,7 @@ export function useConstraints(): UseConstraints {
             topicName,
           },
         ),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
     }
@@ -135,7 +141,10 @@ export function useConstraints(): UseConstraints {
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.constraints.subscription.created.failure',
@@ -143,7 +152,7 @@ export function useConstraints(): UseConstraints {
             subscriptionFqn,
           },
         ),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;
@@ -171,7 +180,10 @@ export function useConstraints(): UseConstraints {
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.constraints.subscription.deleted.failure',
@@ -179,7 +191,7 @@ export function useConstraints(): UseConstraints {
             subscriptionFqn,
           },
         ),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;

@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import {
   editSubscription as doEditSubscription,
   fetchOwner,
@@ -96,8 +95,9 @@ export function useEditSubscription(
       });
       return true;
     } catch (e: any) {
-      const text =
-        e instanceof AxiosError ? e.message : 'Unknown error occurred';
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationsStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.subscription.edit.failure'),
         text,

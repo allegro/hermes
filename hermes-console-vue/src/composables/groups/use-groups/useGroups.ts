@@ -84,12 +84,15 @@ export function useGroups(): UseGroups {
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.group.delete.failure', {
           groupId,
         }),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;
@@ -107,12 +110,15 @@ export function useGroups(): UseGroups {
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.group.create.failure', {
           groupId,
         }),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;

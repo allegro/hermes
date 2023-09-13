@@ -153,12 +153,15 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.subscription.delete.failure', {
           subscriptionName,
         }),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;
@@ -175,12 +178,15 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.subscription.suspend.failure', {
           subscriptionName,
         }),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;
@@ -197,7 +203,10 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.subscription.activate.failure',
@@ -205,7 +214,7 @@ export function useSubscription(
             subscriptionName,
           },
         ),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;
@@ -228,7 +237,10 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.subscription.retransmit.failure',
@@ -236,7 +248,7 @@ export function useSubscription(
             subscriptionName,
           },
         ),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;
@@ -261,7 +273,10 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.subscription.skipAllMessages.failure',
@@ -269,7 +284,7 @@ export function useSubscription(
             subscriptionName,
           },
         ),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;

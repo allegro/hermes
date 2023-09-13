@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import {
   createSubscription as doCreateSubscription,
   searchOwners,
@@ -90,8 +89,9 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
       });
       return true;
     } catch (e: any) {
-      const text =
-        e instanceof AxiosError ? e.message : 'Unknown error occurred';
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationsStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.subscription.create.failure'),
         text,

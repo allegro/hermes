@@ -55,12 +55,15 @@ export function useReadiness(): UseReadiness {
         type: 'success',
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
+      const text = e.response?.data?.message
+        ? e.response.data.message
+        : 'Unknown error occurred';
       notificationStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.readiness.switch.failure', {
           datacenter,
         }),
-        text: (e as Error).message,
+        text,
         type: 'error',
       });
       return false;
