@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { copyToClipboard } from '@/utils/copy-utils';
+  import { download } from '@/utils/download-utils';
   import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
   import { Owner } from '@/api/owner';
   import { ref } from 'vue';
@@ -43,6 +44,14 @@
 
   function refreshPage() {
     router.go(0);
+  }
+
+  function exportSubscription() {
+    download(
+      JSON.stringify(props.subscription),
+      `${props.subscription.name}.json`,
+      'application/json',
+    );
   }
 </script>
 
@@ -226,9 +235,10 @@
         </v-btn>
         <v-btn
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
-          prepend-icon="mdi-content-copy"
+          prepend-icon="mdi-export"
+          @click="exportSubscription"
         >
-          {{ $t('subscription.subscriptionMetadata.actions.clone') }}
+          {{ $t('subscription.subscriptionMetadata.actions.export') }}
         </v-btn>
         <v-btn
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"

@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { DeliveryType } from '@/api/subscription';
 import { fetchOwnersSources } from '@/api/hermes-client';
+import { v4 as generateUUID } from 'uuid';
 import { matchRegex, max, min, required } from '@/utils/validators';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 import type {
@@ -9,7 +10,13 @@ import type {
   SubscriptionForm,
   UseFormSubscription,
 } from '@/composables/subscription/use-form-subscription/types';
+import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
+import type {
+  MessageFilterSpecification,
+  Subscription,
+} from '@/api/subscription';
 import type { OwnerSource } from '@/api/owner';
+import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
 import type { Ref } from 'vue';
 import type { SelectFieldOption } from '@/components/select-field/types';
 
@@ -157,4 +164,89 @@ function createEmptyForm(): Ref<SubscriptionForm> {
     pathFilters: [],
     headerFilters: [],
   });
+}
+
+export function initializeFulfilledForm(
+  form: Ref<SubscriptionForm>,
+  subscription: Subscription,
+): void {
+  form.value = {
+    name: subscription.name,
+    endpoint: subscription.endpoint,
+    description: subscription.description,
+    ownerSource: null,
+    owner: subscription.owner.id,
+    ownerSearch: '',
+    contentType: subscription.contentType,
+    deliveryType: subscription.deliveryType,
+    mode: subscription.mode,
+    subscriptionPolicy: {
+      rateLimit:
+        subscription.deliveryType === DeliveryType.SERIAL
+          ? subscription.subscriptionPolicy.rate
+          : null,
+      inflightMessageTTL: subscription.subscriptionPolicy.messageTtl,
+      retryBackoff: subscription.subscriptionPolicy.messageBackoff,
+      retryBackoffMultiplier:
+        subscription.deliveryType === DeliveryType.SERIAL
+          ? subscription.subscriptionPolicy.backoffMultiplier
+          : 1.0,
+      sendingDelay:
+        subscription.deliveryType === DeliveryType.SERIAL
+          ? subscription.subscriptionPolicy.sendingDelay
+          : 0,
+      requestTimeout: subscription.subscriptionPolicy.requestTimeout,
+      batchSize:
+        subscription.deliveryType === DeliveryType.BATCH
+          ? subscription.subscriptionPolicy.batchSize
+          : null,
+      batchTime:
+        subscription.deliveryType === DeliveryType.BATCH
+          ? subscription.subscriptionPolicy.batchTime
+          : null,
+      batchVolume:
+        subscription.deliveryType === DeliveryType.BATCH
+          ? subscription.subscriptionPolicy.batchVolume
+          : null,
+    },
+    retryOn4xx: subscription.subscriptionPolicy.retryClientErrors,
+    messageDeliveryTrackingMode: subscription.trackingMode,
+    monitoringDetails: {
+      severity: subscription.monitoringDetails.severity,
+      reaction: subscription.monitoringDetails.reaction,
+    },
+    deliverUsingHttp2: subscription.http2Enabled,
+    attachSubscriptionIdentityHeaders:
+      subscription.subscriptionIdentityHeadersEnabled,
+    deleteSubscriptionAutomatically: subscription.autoDeleteWithTopicEnabled,
+    pathFilters: mapToPathFilter(subscription.filters),
+    headerFilters: mapToHeaderFilter(subscription.filters),
+  };
+}
+
+function mapToHeaderFilter(
+  filters: MessageFilterSpecification,
+): HeaderFilter[] {
+  return filters
+    .filter((filter: MessageFilterSpecification) => filter.type === 'header')
+    .map((filter: MessageFilterSpecification) => {
+      return {
+        id: generateUUID(),
+        headerName: filter.header,
+        matcher: filter.matcher,
+      };
+    });
+}
+
+function mapToPathFilter(filters: MessageFilterSpecification): PathFilter[] {
+  return filters
+    .filter((filter: MessageFilterSpecification) => filter.type !== 'header')
+    .map((filter: MessageFilterSpecification) => {
+      return {
+        id: generateUUID(),
+        path: filter.path,
+        matcher: filter.matcher,
+        matchingStrategy: filter.matchingStrategy,
+      };
+    });
 }

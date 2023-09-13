@@ -574,7 +574,7 @@ const en_US = {
         suspend: 'Suspend',
         activate: 'Activate',
         edit: 'Edit',
-        clone: 'Clone',
+        export: 'Export',
         remove: 'Remove',
         copyName: 'Copy subscription name',
         addToFavorites: 'Add subscription to favorites',

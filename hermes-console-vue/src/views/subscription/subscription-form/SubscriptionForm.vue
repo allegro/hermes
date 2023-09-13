@@ -1,5 +1,7 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
+  import { fetchOwner } from '@/api/hermes-client';
+  import { initializeFulfilledForm } from '@/composables/subscription/use-form-subscription/useFormSubscription';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateSubscription } from '@/composables/subscription/use-create-subscription/useCreateSubscription';
   import { useEditSubscription } from '@/composables/subscription/use-edit-subscription/useEditSubscription';
@@ -58,6 +60,32 @@
   );
   const isFormValid = ref(false);
 
+  const importedFile = ref(null);
+
+  function importFormData() {
+    if (importedFile.value) {
+      let reader = new FileReader();
+
+      reader.readAsText(importedFile.value[0]);
+
+      reader.onload = function () {
+        const subscription = JSON.parse(<string>reader.result);
+        initializeFulfilledForm(form, subscription);
+        form.value.ownerSource = dataSources.ownerSources.value.find(
+          (ownerSource) => ownerSource.value.name === subscription.owner.source,
+        )?.value!!;
+        fetchOwner(subscription.owner.id)
+          .then((owner) => owner.data)
+          .then(
+            (owner) =>
+              (dataSources.owners.value = [
+                { title: owner.name, value: owner.id },
+              ]),
+          );
+      };
+    }
+  }
+
   async function submit() {
     if (isFormValid.value) {
       const isOperationSucceeded = await createOrUpdateSubscription();
@@ -75,6 +103,14 @@
 </script>
 
 <template>
+  <v-file-input
+    v-if="operation === 'add'"
+    :label="$t('subscriptionForm.actions.import')"
+    variant="outlined"
+    accept=".json"
+    v-model="importedFile"
+    @change="importFormData"
+  ></v-file-input>
   <v-form
     v-model="isFormValid"
     @submit.prevent="submit()"

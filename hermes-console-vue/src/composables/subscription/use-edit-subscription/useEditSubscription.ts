@@ -1,11 +1,10 @@
 import { AxiosError } from 'axios';
-import { DeliveryType } from '@/api/subscription';
 import {
   editSubscription as doEditSubscription,
   fetchOwner,
   searchOwners,
 } from '@/api/hermes-client';
-import { v4 as generateUUID } from 'uuid';
+import { initializeFulfilledForm } from '@/composables/subscription/use-form-subscription/useFormSubscription';
 import { parseFormToRequestBody } from '@/composables/subscription/use-form-subscription/form-mapper';
 import { ref, watch } from 'vue';
 import { useFormSubscription } from '@/composables/subscription/use-form-subscription/useFormSubscription';
@@ -13,13 +12,8 @@ import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type {
   CreateSubscriptionFormRequestBody,
-  MessageFilterSpecification,
   Subscription,
 } from '@/api/subscription';
-import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
-import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
-import type { Ref } from 'vue';
-import type { SubscriptionForm } from '@/composables/subscription/use-form-subscription/types';
 import type { UseCreateSubscriptionErrors } from '@/composables/subscription/use-create-subscription/types';
 import type { UseEditSubscription } from '@/composables/subscription/use-edit-subscription/types';
 
@@ -34,7 +28,7 @@ export function useEditSubscription(
     fetchOwners: null,
   });
   const { form, validators, dataSources } = useFormSubscription();
-  initializeForm(form, subscription);
+  initializeFulfilledForm(form, subscription);
   const searchTimeout = ref();
   watch(
     () => form.value.ownerSearch,
@@ -124,89 +118,4 @@ export function useEditSubscription(
     errors,
     createOrUpdateSubscription: editSubscription,
   };
-}
-
-export function initializeForm(
-  form: Ref<SubscriptionForm>,
-  subscription: Subscription,
-): void {
-  form.value = {
-    name: subscription.name,
-    endpoint: subscription.endpoint,
-    description: subscription.description,
-    ownerSource: null,
-    owner: subscription.owner.id,
-    ownerSearch: '',
-    contentType: subscription.contentType,
-    deliveryType: subscription.deliveryType,
-    mode: subscription.mode,
-    subscriptionPolicy: {
-      rateLimit:
-        subscription.deliveryType === DeliveryType.SERIAL
-          ? subscription.subscriptionPolicy.rate
-          : null,
-      inflightMessageTTL: subscription.subscriptionPolicy.messageTtl,
-      retryBackoff: subscription.subscriptionPolicy.messageBackoff,
-      retryBackoffMultiplier:
-        subscription.deliveryType === DeliveryType.SERIAL
-          ? subscription.subscriptionPolicy.backoffMultiplier
-          : 1.0,
-      sendingDelay:
-        subscription.deliveryType === DeliveryType.SERIAL
-          ? subscription.subscriptionPolicy.sendingDelay
-          : 0,
-      requestTimeout: subscription.subscriptionPolicy.requestTimeout,
-      batchSize:
-        subscription.deliveryType === DeliveryType.BATCH
-          ? subscription.subscriptionPolicy.batchSize
-          : null,
-      batchTime:
-        subscription.deliveryType === DeliveryType.BATCH
-          ? subscription.subscriptionPolicy.batchTime
-          : null,
-      batchVolume:
-        subscription.deliveryType === DeliveryType.BATCH
-          ? subscription.subscriptionPolicy.batchVolume
-          : null,
-    },
-    retryOn4xx: subscription.subscriptionPolicy.retryClientErrors,
-    messageDeliveryTrackingMode: subscription.trackingMode,
-    monitoringDetails: {
-      severity: subscription.monitoringDetails.severity,
-      reaction: subscription.monitoringDetails.reaction,
-    },
-    deliverUsingHttp2: subscription.http2Enabled,
-    attachSubscriptionIdentityHeaders:
-      subscription.subscriptionIdentityHeadersEnabled,
-    deleteSubscriptionAutomatically: subscription.autoDeleteWithTopicEnabled,
-    pathFilters: mapToPathFilter(subscription.filters),
-    headerFilters: mapToHeaderFilter(subscription.filters),
-  };
-}
-
-function mapToHeaderFilter(
-  filters: MessageFilterSpecification,
-): HeaderFilter[] {
-  return filters
-    .filter((filter: MessageFilterSpecification) => filter.type === 'header')
-    .map((filter: MessageFilterSpecification) => {
-      return {
-        id: generateUUID(),
-        headerName: filter.header,
-        matcher: filter.matcher,
-      };
-    });
-}
-
-function mapToPathFilter(filters: MessageFilterSpecification): PathFilter[] {
-  return filters
-    .filter((filter: MessageFilterSpecification) => filter.type !== 'header')
-    .map((filter: MessageFilterSpecification) => {
-      return {
-        id: generateUUID(),
-        path: filter.path,
-        matcher: filter.matcher,
-        matchingStrategy: filter.matchingStrategy,
-      };
-    });
 }

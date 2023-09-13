@@ -112,6 +112,7 @@ const messages = {
     create: 'Create subscription',
     update: 'Update subscription',
     cancel: 'Cancel',
+    import: 'Import (complete the fields)',
   },
 };
 

@@ -221,7 +221,7 @@ describe('SubscriptionMetadata', () => {
       ),
     ).toBeDisabled();
     expect(
-      getByText('subscription.subscriptionMetadata.actions.clone').closest(
+      getByText('subscription.subscriptionMetadata.actions.export').closest(
         'button',
       ),
     ).toBeDisabled();
