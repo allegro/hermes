@@ -154,7 +154,6 @@
     </div>
 
     <select-field
-      v-if="props.operation === 'add' || isBatchDeliveryTypeSelected"
       v-model="form.deliveryType"
       :rules="validators.deliveryType"
       :label="$t('subscriptionForm.fields.deliveryType.label')"
