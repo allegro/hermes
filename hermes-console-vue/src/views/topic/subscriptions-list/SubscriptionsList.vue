@@ -10,7 +10,7 @@
   const props = defineProps<{
     groupId: string;
     topicName: string;
-    subscriptions: Subscription[] | null;
+    subscriptions: Subscription[];
   }>();
 
   const statusTextColor: Record<State, String> = {
@@ -78,7 +78,7 @@
                   :subscription="null"
                   :topic="props.topicName"
                   @created="pushToSubscription"
-                  @cancel="hideSubscriptionForm()"
+                  @cancel="hideSubscriptionForm"
                 />
               </v-card-text>
             </v-card>

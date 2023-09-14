@@ -10,6 +10,7 @@ import {
   retransmitSubscriptionMessages,
   suspendSubscription as suspend,
 } from '@/api/hermes-client';
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -73,7 +74,10 @@ export function useSubscription(
       await fetchSubscriptionInfo();
       if (subscription.value) {
         await Promise.allSettled([
-          fetchSubscriptionOwner(subscription.value.owner.id),
+          fetchSubscriptionOwner(
+            subscription.value.owner.id,
+            subscription.value.owner.source,
+          ),
           fetchSubscriptionMetrics(),
           fetchSubscriptionHealth(),
           fetchSubscriptionUndeliveredMessages(),
@@ -95,9 +99,12 @@ export function useSubscription(
     }
   };
 
-  const fetchSubscriptionOwner = async (ownerId: string) => {
+  const fetchSubscriptionOwner = async (
+    ownerId: string,
+    ownerSource: string,
+  ) => {
     try {
-      owner.value = (await getOwner(ownerId)).data;
+      owner.value = (await getOwner(ownerId, ownerSource)).data;
     } catch (e) {
       error.value.fetchOwner = e as Error;
     }
@@ -154,16 +161,13 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.subscription.delete.failure', {
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.subscription.delete.failure', {
           subscriptionName,
         }),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -179,16 +183,13 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.subscription.suspend.failure', {
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.subscription.suspend.failure', {
           subscriptionName,
         }),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -204,19 +205,13 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.subscription.activate.failure',
-          {
-            subscriptionName,
-          },
-        ),
-        text,
-        type: 'error',
-      });
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.subscription.activate.failure', {
+          subscriptionName,
+        }),
+      );
       return false;
     }
   };
@@ -238,19 +233,13 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.subscription.retransmit.failure',
-          {
-            subscriptionName,
-          },
-        ),
-        text,
-        type: 'error',
-      });
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.subscription.retransmit.failure', {
+          subscriptionName,
+        }),
+      );
       return false;
     }
   };
@@ -274,19 +263,16 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t(
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t(
           'notifications.subscription.skipAllMessages.failure',
           {
             subscriptionName,
           },
         ),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };

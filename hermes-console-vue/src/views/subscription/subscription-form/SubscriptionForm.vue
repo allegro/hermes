@@ -1,11 +1,10 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
-  import { fetchOwner } from '@/api/hermes-client';
-  import { initializeFulfilledForm } from '@/composables/subscription/use-form-subscription/useFormSubscription';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateSubscription } from '@/composables/subscription/use-create-subscription/useCreateSubscription';
   import { useEditSubscription } from '@/composables/subscription/use-edit-subscription/useEditSubscription';
   import { useGlobalI18n } from '@/i18n';
+  import { useImportSubscription } from '@/composables/subscription/use-import-subscription/useImportSubscription';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
@@ -37,6 +36,7 @@
     props.operation === 'add'
       ? useCreateSubscription(props.topic)
       : useEditSubscription(props.topic, props.subscription!!);
+  const { importFormData } = useImportSubscription();
   const showHighRequestTimeoutAlert = computed(
     () =>
       form.value.subscriptionPolicy.requestTimeout >=
@@ -62,28 +62,8 @@
 
   const importedFile = ref(null);
 
-  function importFormData() {
-    if (importedFile.value) {
-      let reader = new FileReader();
-
-      reader.readAsText(importedFile.value[0]);
-
-      reader.onload = function () {
-        const subscription = JSON.parse(<string>reader.result);
-        initializeFulfilledForm(form, subscription);
-        form.value.ownerSource = dataSources.ownerSources.value.find(
-          (ownerSource) => ownerSource.value.name === subscription.owner.source,
-        )?.value!!;
-        fetchOwner(subscription.owner.id)
-          .then((owner) => owner.data)
-          .then(
-            (owner) =>
-              (dataSources.owners.value = [
-                { title: owner.name, value: owner.id },
-              ]),
-          );
-      };
-    }
+  function importForm() {
+    importFormData(importedFile, form, dataSources);
   }
 
   async function submit() {
@@ -109,7 +89,7 @@
     variant="outlined"
     accept=".json"
     v-model="importedFile"
-    @change="importFormData"
+    @change="importForm"
   ></v-file-input>
   <v-form
     v-model="isFormValid"
@@ -174,7 +154,7 @@
     </div>
 
     <select-field
-      v-if="!(isSerialDeliveryTypeSelected && props.operation === 'edit')"
+      v-if="props.operation === 'add' || isBatchDeliveryTypeSelected"
       v-model="form.deliveryType"
       :rules="validators.deliveryType"
       :label="$t('subscriptionForm.fields.deliveryType.label')"

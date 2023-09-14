@@ -8,6 +8,7 @@ import {
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
 } from '@/api/hermes-client';
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -68,7 +69,7 @@ export function useTopic(topicName: string): UseTopic {
       await fetchTopicInfo();
       if (topic.value) {
         await Promise.allSettled([
-          fetchTopicOwner(topic.value.owner.id),
+          fetchTopicOwner(topic.value.owner.id, topic.value.owner.source),
           fetchTopicMessagesPreview(),
           fetchTopicMetrics(),
           fetchSubscriptions(),
@@ -87,9 +88,9 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
-  const fetchTopicOwner = async (ownerId: string) => {
+  const fetchTopicOwner = async (ownerId: string, ownerSource: string) => {
     try {
-      owner.value = (await getTopicOwner(ownerId)).data;
+      owner.value = (await getTopicOwner(ownerId, ownerSource)).data;
     } catch (e) {
       error.value.fetchOwner = e as Error;
     }
@@ -158,16 +159,13 @@ export function useTopic(topicName: string): UseTopic {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.topic.delete.failure', {
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.topic.delete.failure', {
           topicName,
         }),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };

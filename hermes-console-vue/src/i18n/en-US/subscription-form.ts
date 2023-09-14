@@ -86,7 +86,7 @@ const messages = {
     monitoringReaction: {
       label: 'Monitoring reaction',
       placeholder:
-        'information for monitoring how to react when the subscription becomes unhealthy (e.g. team name or Pager Duty ID)',
+        'how to react when the subscription becomes unhealthy (e.g. team name or Pager Duty ID)',
     },
     deliverUsingHttp2: {
       label: 'Deliver using http/2',
@@ -112,7 +112,7 @@ const messages = {
     create: 'Create subscription',
     update: 'Update subscription',
     cancel: 'Cancel',
-    import: 'Import (complete the fields)',
+    import: 'Import from file',
   },
 };
 

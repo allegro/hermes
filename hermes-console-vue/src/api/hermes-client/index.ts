@@ -45,8 +45,11 @@ export function fetchTopic(
   return axios.get<TopicWithSchema>(`/topics/${topicName}`);
 }
 
-export function fetchOwner(ownerId: string): ResponsePromise<Owner> {
-  return axios.get<Owner>(`/owners/sources/Service Catalog/${ownerId}`);
+export function fetchOwner(
+  ownerId: string,
+  source: string,
+): ResponsePromise<Owner> {
+  return axios.get<Owner>(`/owners/sources/${source}/${ownerId}`);
 }
 
 export function fetchOwnersSources(): ResponsePromise<OwnerSource[]> {
@@ -58,10 +61,6 @@ export function searchOwners(
   searchPhrase: string,
 ): ResponsePromise<Owner[]> {
   return axios.get<Owner[]>(`/owners/sources/${source}?search=${searchPhrase}`);
-}
-
-export function fetchTopicOwner(ownerId: string): ResponsePromise<Owner> {
-  return axios.get<Owner>(`/owners/sources/Service Catalog/${ownerId}`);
 }
 
 export function fetchTopicMessagesPreview(

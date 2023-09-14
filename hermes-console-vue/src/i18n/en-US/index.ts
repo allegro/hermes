@@ -633,6 +633,7 @@ const en_US = {
     endTimestamp: 'End timestamp (UTC)',
   },
   notifications: {
+    unknownError: 'Unknown error occurred',
     form: {
       validationError: 'Some fields are not valid',
       parseError: 'Error parsing form data',

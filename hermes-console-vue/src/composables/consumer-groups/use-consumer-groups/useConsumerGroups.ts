@@ -1,3 +1,4 @@
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
 import {
   fetchConsumerGroups as getConsumerGroups,
   moveSubscriptionOffsets,
@@ -57,19 +58,13 @@ export function useConsumerGroups(
         type: 'success',
       });
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.subscriptionOffsets.move.failure',
-          {
-            subscriptionName,
-          },
-        ),
-        text,
-        type: 'error',
-      });
+      dispatchAxiosErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t('notifications.subscriptionOffsets.move.failure', {
+          subscriptionName,
+        }),
+      );
     }
   };
 

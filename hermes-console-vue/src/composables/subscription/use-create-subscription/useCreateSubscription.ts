@@ -1,12 +1,13 @@
-import {
-  createSubscription as doCreateSubscription,
-  searchOwners,
-} from '@/api/hermes-client';
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { createSubscription as doCreateSubscription } from '@/api/hermes-client';
 import { parseFormToRequestBody } from '@/composables/subscription/use-form-subscription/form-mapper';
 import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-import { useFormSubscription } from '@/composables/subscription/use-form-subscription/useFormSubscription';
+import {
+  useFormSubscription,
+  watchOwnerSearch,
+} from '@/composables/subscription/use-form-subscription/useFormSubscription';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { CreateSubscriptionFormRequestBody } from '@/api/subscription';
@@ -35,31 +36,7 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
       form.value.contentType = '';
     },
   );
-  const searchTimeout = ref();
-  watch(
-    () => form.value.ownerSearch,
-    async (searchingPhrase) => {
-      const selectedOwnerSource = form.value.ownerSource;
-      if (!selectedOwnerSource || !searchingPhrase) {
-        return;
-      }
-      clearTimeout(searchTimeout.value);
-      searchTimeout.value = setTimeout(async () => {
-        try {
-          dataSources.loadingOwners.value = true;
-          dataSources.owners.value = (
-            await searchOwners(selectedOwnerSource.name, searchingPhrase)
-          ).data.map((source) => {
-            return { title: source.name, value: source.id };
-          });
-        } catch (e) {
-          errors.value.fetchOwners = e as Error;
-        } finally {
-          dataSources.loadingOwners.value = false;
-        }
-      }, 500);
-    },
-  );
+  watchOwnerSearch(form, dataSources, errors);
 
   const creatingSubscription = ref(false);
 
@@ -89,14 +66,11 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.subscription.create.failure'),
-        text,
-        type: 'error',
-      });
+      dispatchAxiosErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t('notifications.subscription.create.failure'),
+      );
     } finally {
       creatingSubscription.value = false;
     }

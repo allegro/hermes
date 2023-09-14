@@ -133,7 +133,7 @@
       <subscriptions-list
         :groupId="groupId"
         :topic-name="topicName"
-        :subscriptions="subscriptions ? subscriptions : null"
+        :subscriptions="subscriptions ? subscriptions : []"
       />
 
       <offline-clients

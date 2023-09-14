@@ -1,9 +1,12 @@
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
 import {
   editSubscription as doEditSubscription,
   fetchOwner,
-  searchOwners,
 } from '@/api/hermes-client';
-import { initializeFulfilledForm } from '@/composables/subscription/use-form-subscription/useFormSubscription';
+import {
+  initializeFullyFilledForm,
+  watchOwnerSearch,
+} from '@/composables/subscription/use-form-subscription/useFormSubscription';
 import { parseFormToRequestBody } from '@/composables/subscription/use-form-subscription/form-mapper';
 import { ref, watch } from 'vue';
 import { useFormSubscription } from '@/composables/subscription/use-form-subscription/useFormSubscription';
@@ -27,32 +30,9 @@ export function useEditSubscription(
     fetchOwners: null,
   });
   const { form, validators, dataSources } = useFormSubscription();
-  initializeFulfilledForm(form, subscription);
-  const searchTimeout = ref();
-  watch(
-    () => form.value.ownerSearch,
-    async (searchingPhrase) => {
-      const selectedOwnerSource = form.value.ownerSource;
-      if (!selectedOwnerSource || !searchingPhrase) {
-        return;
-      }
-      clearTimeout(searchTimeout.value);
-      searchTimeout.value = setTimeout(async () => {
-        try {
-          dataSources.loadingOwners.value = true;
-          dataSources.owners.value = (
-            await searchOwners(selectedOwnerSource.name, searchingPhrase)
-          ).data.map((source) => {
-            return { title: source.name, value: source.id };
-          });
-        } catch (e) {
-          errors.value.fetchOwners = e as Error;
-        } finally {
-          dataSources.loadingOwners.value = false;
-        }
-      }, 500);
-    },
-  );
+  initializeFullyFilledForm(form, subscription);
+
+  watchOwnerSearch(form, dataSources, errors);
 
   watch(dataSources.ownerSources, (ownerSources) => {
     form.value.ownerSource = ownerSources.find(
@@ -60,7 +40,7 @@ export function useEditSubscription(
     )?.value!!;
   });
 
-  fetchOwner(subscription.owner.id)
+  fetchOwner(subscription.owner.id, subscription.owner.source)
     .then((owner) => owner.data)
     .then(
       (owner) =>
@@ -95,14 +75,11 @@ export function useEditSubscription(
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.subscription.edit.failure'),
-        text,
-        type: 'error',
-      });
+      dispatchAxiosErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t('notifications.subscription.edit.failure'),
+      );
     } finally {
       updatingSubscription.value = false;
     }

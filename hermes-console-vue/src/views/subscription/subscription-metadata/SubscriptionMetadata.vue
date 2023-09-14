@@ -79,7 +79,7 @@
               :subscription="subscription"
               :topic="subscription.topicName"
               @created="refreshPage"
-              @cancel="hideSubscriptionForm()"
+              @cancel="hideSubscriptionForm"
             />
           </v-card-text>
         </v-card>

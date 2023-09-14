@@ -1,10 +1,12 @@
 import { computed, ref } from 'vue';
 import { DeliveryType } from '@/api/subscription';
-import { fetchOwnersSources } from '@/api/hermes-client';
+import { fetchOwnersSources, searchOwners } from '@/api/hermes-client';
 import { v4 as generateUUID } from 'uuid';
 import { matchRegex, max, min, required } from '@/utils/validators';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+import { watch } from 'vue';
 import type {
+  DataSources,
   FormValidators,
   RawDataSources,
   SubscriptionForm,
@@ -19,6 +21,7 @@ import type { OwnerSource } from '@/api/owner';
 import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
 import type { Ref } from 'vue';
 import type { SelectFieldOption } from '@/components/select-field/types';
+import type { UseCreateSubscriptionErrors } from '@/composables/subscription/use-create-subscription/types';
 
 export function useFormSubscription(): UseFormSubscription {
   const form = createEmptyForm();
@@ -166,7 +169,7 @@ function createEmptyForm(): Ref<SubscriptionForm> {
   });
 }
 
-export function initializeFulfilledForm(
+export function initializeFullyFilledForm(
   form: Ref<SubscriptionForm>,
   subscription: Subscription,
 ): void {
@@ -249,4 +252,36 @@ function mapToPathFilter(filters: MessageFilterSpecification): PathFilter[] {
         matchingStrategy: filter.matchingStrategy,
       };
     });
+}
+
+export function watchOwnerSearch(
+  form: Ref<SubscriptionForm>,
+  dataSources: DataSources,
+  errors: Ref<UseCreateSubscriptionErrors>,
+) {
+  const searchTimeout = ref();
+  watch(
+    () => form.value.ownerSearch,
+    async (searchingPhrase) => {
+      const selectedOwnerSource = form.value.ownerSource;
+      if (!selectedOwnerSource || !searchingPhrase) {
+        return;
+      }
+      clearTimeout(searchTimeout.value);
+      searchTimeout.value = setTimeout(async () => {
+        try {
+          dataSources.loadingOwners.value = true;
+          dataSources.owners.value = (
+            await searchOwners(selectedOwnerSource.name, searchingPhrase)
+          ).data.map((source) => {
+            return { title: source.name, value: source.id };
+          });
+        } catch (e) {
+          errors.value.fetchOwners = e as Error;
+        } finally {
+          dataSources.loadingOwners.value = false;
+        }
+      }, 500);
+    },
+  );
 }

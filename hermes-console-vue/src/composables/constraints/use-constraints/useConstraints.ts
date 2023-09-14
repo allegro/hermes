@@ -6,6 +6,7 @@ import {
   upsertSubscriptionConstraint,
   upsertTopicConstraint,
 } from '@/api/hermes-client';
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
 import { parseSubscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -69,19 +70,13 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.constraints.topic.created.failure',
-          {
-            topicName,
-          },
-        ),
-        text,
-        type: 'error',
-      });
+      dispatchAxiosErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t('notifications.constraints.topic.created.failure', {
+          topicName,
+        }),
+      );
       return false;
     }
   };
@@ -104,19 +99,13 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.constraints.topic.deleted.failure',
-          {
-            topicName,
-          },
-        ),
-        text,
-        type: 'error',
-      });
+      dispatchAxiosErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t('notifications.constraints.topic.deleted.failure', {
+          topicName,
+        }),
+      );
     }
     return false;
   };
@@ -142,19 +131,16 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
+      dispatchAxiosErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t(
           'notifications.constraints.subscription.created.failure',
           {
             subscriptionFqn,
           },
         ),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -181,19 +167,16 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
+      dispatchAxiosErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t(
           'notifications.constraints.subscription.deleted.failure',
           {
             subscriptionFqn,
           },
         ),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };

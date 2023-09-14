@@ -4,6 +4,7 @@ import {
   removeGroup as deleteGroup,
   fetchGroupNames as getGroupNames,
 } from '@/api/hermes-client';
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
 import { fetchTopicNames as getTopicNames } from '@/api/hermes-client';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -85,16 +86,13 @@ export function useGroups(): UseGroups {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.group.delete.failure', {
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.group.delete.failure', {
           groupId,
         }),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -111,16 +109,13 @@ export function useGroups(): UseGroups {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.group.create.failure', {
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.group.create.failure', {
           groupId,
         }),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };

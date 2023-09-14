@@ -3,6 +3,7 @@ import {
   removeInconsistentTopic as deleteInconsistentTopic,
   fetchInconsistentTopics as getInconsistentTopics,
 } from '@/api/hermes-client';
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { Ref } from 'vue';
@@ -56,19 +57,13 @@ export function useInconsistentTopics(): UseInconsistentTopics {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.inconsistentTopic.delete.failure',
-          {
-            topic,
-          },
-        ),
-        text,
-        type: 'error',
-      });
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.inconsistentTopic.delete.failure', {
+          topic,
+        }),
+      );
       return false;
     }
   };

@@ -1,3 +1,4 @@
+import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
 import {
   fetchReadiness as getReadiness,
   switchReadiness,
@@ -56,16 +57,13 @@ export function useReadiness(): UseReadiness {
       });
       return true;
     } catch (e: any) {
-      const text = e.response?.data?.message
-        ? e.response.data.message
-        : 'Unknown error occurred';
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.readiness.switch.failure', {
+      dispatchAxiosErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.readiness.switch.failure', {
           datacenter,
         }),
-        text,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
