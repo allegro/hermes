@@ -1,5 +1,5 @@
 import { createRetransmissionTask } from '@/api/hermes-client';
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { OfflineRetransmissionTask } from '@/api/offline-retransmission';
@@ -25,7 +25,7 @@ export function useOfflineRetransmission(): UseOfflineRetransmission {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t(

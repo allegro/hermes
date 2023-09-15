@@ -1,4 +1,4 @@
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import {
   fetchReadiness as getReadiness,
   switchReadiness,
@@ -57,7 +57,7 @@ export function useReadiness(): UseReadiness {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.readiness.switch.failure', {

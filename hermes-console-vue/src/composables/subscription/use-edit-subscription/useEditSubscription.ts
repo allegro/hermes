@@ -1,4 +1,4 @@
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import {
   editSubscription as doEditSubscription,
   fetchOwner,
@@ -75,7 +75,7 @@ export function useEditSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.subscription.edit.failure'),

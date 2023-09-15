@@ -1,4 +1,4 @@
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { createSubscription as doCreateSubscription } from '@/api/hermes-client';
 import { parseFormToRequestBody } from '@/composables/subscription/use-form-subscription/form-mapper';
 import { ref, watch } from 'vue';
@@ -66,7 +66,7 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.subscription.create.failure'),

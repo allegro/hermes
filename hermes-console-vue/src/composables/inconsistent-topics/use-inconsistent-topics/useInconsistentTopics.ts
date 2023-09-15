@@ -3,7 +3,7 @@ import {
   removeInconsistentTopic as deleteInconsistentTopic,
   fetchInconsistentTopics as getInconsistentTopics,
 } from '@/api/hermes-client';
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { Ref } from 'vue';
@@ -57,7 +57,7 @@ export function useInconsistentTopics(): UseInconsistentTopics {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.inconsistentTopic.delete.failure', {

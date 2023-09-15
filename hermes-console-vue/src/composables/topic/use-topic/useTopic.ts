@@ -8,7 +8,7 @@ import {
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
 } from '@/api/hermes-client';
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -159,7 +159,7 @@ export function useTopic(topicName: string): UseTopic {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.topic.delete.failure', {

@@ -10,7 +10,7 @@ import {
   retransmitSubscriptionMessages,
   suspendSubscription as suspend,
 } from '@/api/hermes-client';
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -161,7 +161,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.delete.failure', {
@@ -183,7 +183,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.suspend.failure', {
@@ -205,7 +205,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.activate.failure', {
@@ -233,7 +233,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.retransmit.failure', {
@@ -263,7 +263,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t(

@@ -6,7 +6,7 @@ import {
   upsertSubscriptionConstraint,
   upsertTopicConstraint,
 } from '@/api/hermes-client';
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { parseSubscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -70,7 +70,7 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.constraints.topic.created.failure', {
@@ -99,7 +99,7 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.constraints.topic.deleted.failure', {
@@ -131,7 +131,7 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t(
@@ -167,7 +167,7 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t(

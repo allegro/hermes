@@ -1,4 +1,4 @@
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import {
   fetchConsumerGroups as getConsumerGroups,
   moveSubscriptionOffsets,
@@ -58,7 +58,7 @@ export function useConsumerGroups(
         type: 'success',
       });
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.subscriptionOffsets.move.failure', {

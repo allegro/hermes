@@ -4,7 +4,7 @@ import {
   removeGroup as deleteGroup,
   fetchGroupNames as getGroupNames,
 } from '@/api/hermes-client';
-import { dispatchAxiosErrorNotification } from '@/utils/notification-utils';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { fetchTopicNames as getTopicNames } from '@/api/hermes-client';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -86,7 +86,7 @@ export function useGroups(): UseGroups {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.group.delete.failure', {
@@ -109,7 +109,7 @@ export function useGroups(): UseGroups {
       });
       return true;
     } catch (e: any) {
-      dispatchAxiosErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.group.create.failure', {
