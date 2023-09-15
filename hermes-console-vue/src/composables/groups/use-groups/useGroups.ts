@@ -4,6 +4,7 @@ import {
   removeGroup as deleteGroup,
   fetchGroupNames as getGroupNames,
 } from '@/api/hermes-client';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { fetchTopicNames as getTopicNames } from '@/api/hermes-client';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -84,14 +85,14 @@ export function useGroups(): UseGroups {
         type: 'success',
       });
       return true;
-    } catch (e) {
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.group.delete.failure', {
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.group.delete.failure', {
           groupId,
         }),
-        text: (e as Error).message,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -107,14 +108,14 @@ export function useGroups(): UseGroups {
         type: 'success',
       });
       return true;
-    } catch (e) {
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.group.create.failure', {
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.group.create.failure', {
           groupId,
         }),
-        text: (e as Error).message,
-        type: 'error',
-      });
+      );
       return false;
     }
   };

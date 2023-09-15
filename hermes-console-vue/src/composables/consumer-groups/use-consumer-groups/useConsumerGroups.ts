@@ -1,3 +1,4 @@
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import {
   fetchConsumerGroups as getConsumerGroups,
   moveSubscriptionOffsets,
@@ -56,17 +57,14 @@ export function useConsumerGroups(
         text: '',
         type: 'success',
       });
-    } catch (e) {
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.subscriptionOffsets.move.failure',
-          {
-            subscriptionName,
-          },
-        ),
-        text: (e as Error).message,
-        type: 'error',
-      });
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t('notifications.subscriptionOffsets.move.failure', {
+          subscriptionName,
+        }),
+      );
     }
   };
 

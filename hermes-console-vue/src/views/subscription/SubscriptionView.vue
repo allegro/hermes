@@ -17,7 +17,6 @@
   import MetricsCard from '@/views/subscription/metrics-card/MetricsCard.vue';
   import PropertiesCard from '@/views/subscription/properties-card/PropertiesCard.vue';
   import ServiceResponseMetrics from '@/views/subscription/service-response-metrics/ServiceResponseMetrics.vue';
-  import ShowEventTrace from '@/views/subscription/show-event-trace/ShowEventTrace.vue';
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
@@ -220,11 +219,6 @@
             "
             :last-undelivered="subscriptionLastUndeliveredMessage"
           />
-        </v-col>
-        <v-col md="6">
-          <show-event-trace
-            v-if="isSubscriptionOwnerOrAdmin(roles)"
-          /><!-- v-if="subscription?.trackingEnabled" -->
         </v-col>
       </v-row>
 

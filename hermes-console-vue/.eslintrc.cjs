@@ -32,6 +32,9 @@ module.exports = {
   },
   parserOptions: {
     ecmaVersion: 'latest',
+    ecmaFeatures: {
+      jsx: false,
+    },
   },
   plugins: ['prettier', 'vue', 'sort-imports-es6-autofix'],
   rules: {

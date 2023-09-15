@@ -10,6 +10,7 @@ import {
   retransmitSubscriptionMessages,
   suspendSubscription as suspend,
 } from '@/api/hermes-client';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -73,7 +74,10 @@ export function useSubscription(
       await fetchSubscriptionInfo();
       if (subscription.value) {
         await Promise.allSettled([
-          fetchSubscriptionOwner(subscription.value.owner.id),
+          fetchSubscriptionOwner(
+            subscription.value.owner.id,
+            subscription.value.owner.source,
+          ),
           fetchSubscriptionMetrics(),
           fetchSubscriptionHealth(),
           fetchSubscriptionUndeliveredMessages(),
@@ -95,9 +99,12 @@ export function useSubscription(
     }
   };
 
-  const fetchSubscriptionOwner = async (ownerId: string) => {
+  const fetchSubscriptionOwner = async (
+    ownerId: string,
+    ownerSource: string,
+  ) => {
     try {
-      owner.value = (await getOwner(ownerId)).data;
+      owner.value = (await getOwner(ownerId, ownerSource)).data;
     } catch (e) {
       error.value.fetchOwner = e as Error;
     }
@@ -153,14 +160,14 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.subscription.delete.failure', {
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.subscription.delete.failure', {
           subscriptionName,
         }),
-        text: (e as Error).message,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -175,14 +182,14 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.subscription.suspend.failure', {
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.subscription.suspend.failure', {
           subscriptionName,
         }),
-        text: (e as Error).message,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -197,17 +204,14 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.subscription.activate.failure',
-          {
-            subscriptionName,
-          },
-        ),
-        text: (e as Error).message,
-        type: 'error',
-      });
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.subscription.activate.failure', {
+          subscriptionName,
+        }),
+      );
       return false;
     }
   };
@@ -228,17 +232,14 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.subscription.retransmit.failure',
-          {
-            subscriptionName,
-          },
-        ),
-        text: (e as Error).message,
-        type: 'error',
-      });
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.subscription.retransmit.failure', {
+          subscriptionName,
+        }),
+      );
       return false;
     }
   };
@@ -261,17 +262,17 @@ export function useSubscription(
         type: 'success',
       });
       return true;
-    } catch (e) {
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t(
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t(
           'notifications.subscription.skipAllMessages.failure',
           {
             subscriptionName,
           },
         ),
-        text: (e as Error).message,
-        type: 'error',
-      });
+      );
       return false;
     }
   };

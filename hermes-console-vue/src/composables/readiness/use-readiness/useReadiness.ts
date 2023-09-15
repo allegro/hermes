@@ -1,3 +1,4 @@
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import {
   fetchReadiness as getReadiness,
   switchReadiness,
@@ -55,14 +56,14 @@ export function useReadiness(): UseReadiness {
         type: 'success',
       });
       return true;
-    } catch (e) {
-      notificationStore.dispatchNotification({
-        title: useGlobalI18n().t('notifications.readiness.switch.failure', {
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.readiness.switch.failure', {
           datacenter,
         }),
-        text: (e as Error).message,
-        type: 'error',
-      });
+      );
       return false;
     }
   };

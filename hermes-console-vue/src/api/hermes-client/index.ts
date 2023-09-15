@@ -11,6 +11,10 @@ import type {
   TopicConstraint,
 } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
+import type {
+  CreateSubscriptionFormRequestBody,
+  Subscription,
+} from '@/api/subscription';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
@@ -22,15 +26,18 @@ import type {
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { OfflineRetransmissionTask } from '@/api/offline-retransmission';
-import type { Owner } from '@/api/owner';
+import type { Owner, OwnerSource } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { RetransmissionDate } from '@/api/OffsetRetransmissionDate';
 import type { Role } from '@/api/role';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
-import type { Subscription } from '@/api/subscription';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
+
+const acceptHeader = 'Accept';
+const contentTypeHeader = 'Content-Type';
+const applicationJsonMediaType = 'application/json';
 
 export function fetchTopic(
   topicName: string,
@@ -38,8 +45,22 @@ export function fetchTopic(
   return axios.get<TopicWithSchema>(`/topics/${topicName}`);
 }
 
-export function fetchOwner(ownerId: string): ResponsePromise<Owner> {
-  return axios.get<Owner>(`/owners/sources/Service Catalog/${ownerId}`);
+export function fetchOwner(
+  ownerId: string,
+  source: string,
+): ResponsePromise<Owner> {
+  return axios.get<Owner>(`/owners/sources/${source}/${ownerId}`);
+}
+
+export function fetchOwnersSources(): ResponsePromise<OwnerSource[]> {
+  return axios.get<OwnerSource[]>(`/owners/sources`);
+}
+
+export function searchOwners(
+  source: string,
+  searchPhrase: string,
+): ResponsePromise<Owner[]> {
+  return axios.get<Owner[]>(`/owners/sources/${source}?search=${searchPhrase}`);
 }
 
 export function fetchTopicMessagesPreview(
@@ -189,6 +210,7 @@ export function fetchInconsistentTopics(): ResponsePromise<string[]> {
 export function fetchTopicNames(): ResponsePromise<string[]> {
   return axios.get<string[]>('/topics');
 }
+
 export function fetchGroupNames(): ResponsePromise<string[]> {
   return axios.get<string[]>('/groups');
 }
@@ -289,11 +311,11 @@ export function switchReadiness(
 
 export function upsertTopicConstraint(
   topicName: string,
-  constraint: Constraint,
+  constraints: Constraint,
 ): ResponsePromise<void> {
   const body: TopicConstraint = {
     topicName: topicName,
-    constraint: constraint,
+    constraints: constraints,
   };
   return axios.put(`/workload-constraints/topic`, body, {
     headers: { 'Content-Type': 'application/json' },
@@ -308,11 +330,11 @@ export function deleteTopicConstraint(
 
 export function upsertSubscriptionConstraint(
   subscriptionName: string,
-  constraint: Constraint,
+  constraints: Constraint,
 ): ResponsePromise<void> {
   const body: SubscriptionConstraint = {
     subscriptionName: subscriptionName,
-    constraint: constraint,
+    constraints: constraints,
   };
   return axios.put(`/workload-constraints/subscription`, body, {
     headers: { 'Content-Type': 'application/json' },
@@ -352,4 +374,33 @@ export function createRetransmissionTask(task: OfflineRetransmissionTask) {
   return axios.post(`/offline-retransmission/tasks`, task, {
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+export function createSubscription(
+  topic: string,
+  requestBody: CreateSubscriptionFormRequestBody,
+): ResponsePromise<void> {
+  return axios.post(`/topics/${topic}/subscriptions`, requestBody, {
+    headers: {
+      [acceptHeader]: applicationJsonMediaType,
+      [contentTypeHeader]: applicationJsonMediaType,
+    },
+  });
+}
+
+export function editSubscription(
+  topic: string,
+  subscription: string,
+  requestBody: CreateSubscriptionFormRequestBody,
+): ResponsePromise<void> {
+  return axios.put(
+    `/topics/${topic}/subscriptions/${subscription}`,
+    requestBody,
+    {
+      headers: {
+        [acceptHeader]: applicationJsonMediaType,
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    },
+  );
 }

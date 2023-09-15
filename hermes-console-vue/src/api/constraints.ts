@@ -9,10 +9,10 @@ export interface Constraint {
 
 export interface SubscriptionConstraint {
   subscriptionName: string;
-  constraint: Constraint;
+  constraints: Constraint;
 }
 
 export interface TopicConstraint {
   topicName: string;
-  constraint: Constraint;
+  constraints: Constraint;
 }

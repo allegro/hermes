@@ -1,11 +1,41 @@
+import { beforeEach } from 'vitest';
+import { createTestingPinia } from '@pinia/testing';
+import { createTestingPiniaWithState } from '@/dummy/store';
 import { describe, expect } from 'vitest';
+import {
+  dummyDataSources,
+  dummyInitializedSubscriptionForm,
+  dummySubscriptionFormValidator,
+} from '@/dummy/subscription-form';
 import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
+import { fireEvent } from '@testing-library/vue';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
+import { setActivePinia } from 'pinia';
+import { useCreateSubscription } from '@/composables/subscription/use-create-subscription/useCreateSubscription';
+import router from '@/router';
 import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
 import userEvent from '@testing-library/user-event';
+import type { UseCreateSubscription } from '@/composables/subscription/use-create-subscription/types';
+
+vi.mock(
+  '@/composables/subscription/use-create-subscription/useCreateSubscription',
+);
+
+const useCreateSubscriptionStub: UseCreateSubscription = {
+  form: ref(dummyInitializedSubscriptionForm),
+  validators: dummySubscriptionFormValidator,
+  dataSources: dummyDataSources,
+  createOrUpdateSubscription: () => Promise.resolve(true),
+  creatingOrUpdatingSubscription: ref(false),
+  errors: ref({
+    fetchOwners: null,
+    fetchOwnerSources: null,
+  }),
+};
 
 describe('SubscriptionsList', () => {
   const props = {
@@ -13,6 +43,17 @@ describe('SubscriptionsList', () => {
     topicName: 'pl.allegro.DummyTopic',
     subscriptions: [dummySubscription, secondDummySubscription],
   };
+
+  const pinia = createTestingPinia({
+    fakeApp: true,
+  });
+
+  beforeEach(async () => {
+    beforeEach(() => {
+      setActivePinia(pinia);
+    });
+    await router.push(`/ui/groups/${props.groupId}/topics/${props.topicName}`);
+  });
 
   it('should render proper heading', () => {
     // when
@@ -37,4 +78,25 @@ describe('SubscriptionsList', () => {
       );
     },
   );
+
+  it('should show create subscription dialog on button click', async () => {
+    // given
+    vi.mocked(useCreateSubscription).mockReturnValueOnce(
+      useCreateSubscriptionStub,
+    );
+
+    // when
+    const { getByText, getAllByText } = render(SubscriptionsList, {
+      testPinia: createTestingPiniaWithState(),
+      props,
+    });
+    await fireEvent.click(getByText('topicView.subscriptions.title (2)'));
+    await fireEvent.click(getByText('topicView.subscriptions.create'));
+
+    // then
+    expect(
+      getAllByText('topicView.subscriptions.create')[0],
+    ).toBeInTheDocument();
+    expect(getByText('subscriptionForm.actions.create')).toBeInTheDocument();
+  });
 });

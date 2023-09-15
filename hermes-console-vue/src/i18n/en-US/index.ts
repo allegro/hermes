@@ -1,3 +1,5 @@
+import subscriptionForm from '@/i18n/en-US/subscription-form';
+
 const en_US = {
   homeView: {
     links: {
@@ -356,6 +358,7 @@ const en_US = {
     },
     subscriptions: {
       title: 'Subscriptions',
+      create: 'Create subscription',
     },
     errorMessage: {
       topicFetchFailed: 'Could not fetch {topicName} topic details',
@@ -561,6 +564,7 @@ const en_US = {
       groups: 'groups',
     },
     subscriptionMetadata: {
+      editSubscription: 'Edit subscription {subscriptionName}',
       subscription: 'Subscription',
       owners: 'OWNER:',
       unauthorizedTooltip:
@@ -570,7 +574,7 @@ const en_US = {
         suspend: 'Suspend',
         activate: 'Activate',
         edit: 'Edit',
-        clone: 'Clone',
+        export: 'Export',
         remove: 'Remove',
         copyName: 'Copy subscription name',
         addToFavorites: 'Add subscription to favorites',
@@ -629,6 +633,11 @@ const en_US = {
     endTimestamp: 'End timestamp (UTC)',
   },
   notifications: {
+    unknownError: 'Unknown error occurred',
+    form: {
+      validationError: 'Some fields are not valid',
+      parseError: 'Error parsing form data',
+    },
     subscriptionOffsets: {
       move: {
         success: 'Moved offsets for subscription {subscriptionName}',
@@ -670,6 +679,14 @@ const en_US = {
       },
     },
     subscription: {
+      create: {
+        success: 'Subscription {subscriptionName} successfully created',
+        failure: "Couldn't create subscription {subscriptionName}",
+      },
+      edit: {
+        success: 'Subscription {subscriptionName} successfully updated',
+        failure: "Couldn't update subscription {subscriptionName}",
+      },
       delete: {
         success: 'Subscription {subscriptionName} successfully deleted',
         failure: "Couldn't delete subscription {subscriptionName}",
@@ -730,6 +747,7 @@ const en_US = {
       },
     },
   },
+  subscriptionForm,
 };
 
 export default en_US;

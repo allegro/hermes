@@ -6,6 +6,7 @@ import {
   upsertSubscriptionConstraint,
   upsertTopicConstraint,
 } from '@/api/hermes-client';
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { parseSubscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
@@ -68,17 +69,14 @@ export function useConstraints(): UseConstraints {
         type: 'success',
       });
       return true;
-    } catch (e) {
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.constraints.topic.created.failure',
-          {
-            topicName,
-          },
-        ),
-        text: (e as Error).message,
-        type: 'error',
-      });
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t('notifications.constraints.topic.created.failure', {
+          topicName,
+        }),
+      );
       return false;
     }
   };
@@ -100,17 +98,14 @@ export function useConstraints(): UseConstraints {
         type: 'success',
       });
       return true;
-    } catch (e) {
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
-          'notifications.constraints.topic.deleted.failure',
-          {
-            topicName,
-          },
-        ),
-        text: (e as Error).message,
-        type: 'error',
-      });
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t('notifications.constraints.topic.deleted.failure', {
+          topicName,
+        }),
+      );
     }
     return false;
   };
@@ -135,17 +130,17 @@ export function useConstraints(): UseConstraints {
         type: 'success',
       });
       return true;
-    } catch (e) {
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t(
           'notifications.constraints.subscription.created.failure',
           {
             subscriptionFqn,
           },
         ),
-        text: (e as Error).message,
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -171,17 +166,17 @@ export function useConstraints(): UseConstraints {
         type: 'success',
       });
       return true;
-    } catch (e) {
-      await notificationsStore.dispatchNotification({
-        title: useGlobalI18n().t(
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationsStore,
+        useGlobalI18n().t(
           'notifications.constraints.subscription.deleted.failure',
           {
             subscriptionFqn,
           },
         ),
-        text: (e as Error).message,
-        type: 'error',
-      });
+      );
       return false;
     }
   };

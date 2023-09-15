@@ -4,7 +4,6 @@
   import AppNotificationProvider from '@/components/app-notification/AppNotificationProvider.vue';
   import ConsoleFooter from '@/components/console-footer/ConsoleFooter.vue';
   import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
-  import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
   const configStore = useAppConfigStore();
   configStore.loadConfig();
@@ -12,18 +11,17 @@
 
 <template>
   <v-app class="fill-height">
-    <div v-if="configStore.appConfig">
+    <div v-if="configStore.loadedConfig">
       <console-header />
 
       <v-main class="main">
         <app-notification-provider>
-          <RouterView />
+          <router-view />
         </app-notification-provider>
       </v-main>
 
       <console-footer />
     </div>
-    <loading-spinner v-else />
   </v-app>
 </template>
 

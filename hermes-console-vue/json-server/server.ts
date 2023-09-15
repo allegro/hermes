@@ -23,6 +23,14 @@ server.post('/topics/*/subscriptions/*/moveOffsetsToTheEnd', (req, res) => {
   res.sendStatus(200);
 });
 
+server.post('/topicSubscriptions', (req, res) => {
+  res.sendStatus(200);
+});
+
+server.put('/subscriptions/:id', (req, res) => {
+  res.sendStatus(200);
+});
+
 server.delete('/groups/:group', (req, res) => {
   res.sendStatus(200);
 });

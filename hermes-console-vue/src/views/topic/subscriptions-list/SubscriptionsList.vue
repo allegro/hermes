@@ -1,7 +1,11 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { State } from '@/api/subscription';
+  import { useRouter } from 'vue-router';
+  import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
   import type { Subscription } from '@/api/subscription';
+
+  const router = useRouter();
 
   const props = defineProps<{
     groupId: string;
@@ -16,7 +20,7 @@
   };
 
   const subscriptionItems = computed(() =>
-    props.subscriptions.map((subscription) => {
+    props.subscriptions?.map((subscription) => {
       const currentUrl = window.location.href;
       return {
         name: subscription.name,
@@ -26,16 +30,61 @@
       };
     }),
   );
+  const showSubscriptionCreationForm = ref(false);
+  function showSubscriptionForm() {
+    showSubscriptionCreationForm.value = true;
+  }
+  function hideSubscriptionForm() {
+    showSubscriptionCreationForm.value = false;
+  }
+  function pushToSubscription(subscription: string) {
+    router.push({
+      path: `/ui/groups/${props.groupId}/topics/${props.topicName}/subscriptions/${subscription}`,
+    });
+  }
 </script>
 
 <template>
   <v-expansion-panels>
     <v-expansion-panel
       :title="`${$t('topicView.subscriptions.title')} (${
-        props.subscriptions.length
+        props.subscriptions?.length
       })`"
     >
-      <v-expansion-panel-text class="subscriptions-panel">
+      <v-expansion-panel-text class="d-flex flex-row subscriptions-panel">
+        <div class="d-flex justify-end mr-4 mb-1">
+          <v-dialog
+            v-model="showSubscriptionCreationForm"
+            min-width="800"
+            :persistent="true"
+          >
+            <template #activator>
+              <v-btn
+                prepend-icon="mdi-plus"
+                density="comfortable"
+                @click="showSubscriptionForm()"
+                >{{ $t('topicView.subscriptions.create') }}</v-btn
+              >
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="text-h5">{{
+                  $t('topicView.subscriptions.create')
+                }}</span>
+              </v-card-title>
+              <v-card-text>
+                <SubscriptionForm
+                  operation="add"
+                  :subscription="null"
+                  :topic="props.topicName"
+                  @created="pushToSubscription"
+                  @cancel="hideSubscriptionForm"
+                />
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+        </div>
+
         <v-list open-strategy="single">
           <v-list-item
             v-for="subscription in subscriptionItems"
