@@ -46,3 +46,9 @@ jobs:
           name: ${{ matrix.tasks.name }}-test-report
           path: '**/build/test-results/**/TEST-*.xml'
           retention-days: 90
+      - name: Generate test summary
+        uses: test-summary/action@v2
+        if: success() || failure()
+        with:
+          paths: '**/build/test-results/**/TEST-*.xml'
+          show: fail, skip
