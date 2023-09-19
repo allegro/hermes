@@ -31,6 +31,14 @@ server.put('/subscriptions/:id', (req, res) => {
   res.sendStatus(200);
 });
 
+server.post('/topicNames', (req, res) => {
+  res.sendStatus(200);
+});
+
+server.put('/topics/:id', (req, res) => {
+  res.sendStatus(200);
+});
+
 server.delete('/groups/:group', (req, res) => {
   res.sendStatus(200);
 });

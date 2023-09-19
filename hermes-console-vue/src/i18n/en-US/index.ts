@@ -1,4 +1,5 @@
 import subscriptionForm from '@/i18n/en-US/subscription-form';
+import topicForm from '@/i18n/en-US/topic-form';
 
 const en_US = {
   homeView: {
@@ -220,6 +221,7 @@ const en_US = {
   },
   groups: {
     actions: {
+      createTopic: 'Create Topic',
       remove: 'Remove',
       create: 'New Group',
       search: 'search…',
@@ -282,12 +284,13 @@ const en_US = {
       },
     },
     header: {
+      editTopic: 'Edit topic: {topicName}',
       unauthorizedTooltip: "You don't have permissions to manage this topic",
       topic: 'TOPIC',
       owner: 'OWNER:',
       actions: {
         edit: 'Edit',
-        clone: 'Clone',
+        export: 'Export',
         offlineRetransmission: 'Offline retransmission',
         remove: 'Remove',
         copyName: 'Copy topic name',
@@ -667,6 +670,14 @@ const en_US = {
       },
     },
     topic: {
+      edit: {
+        success: 'Topic {topicName} successfully updated',
+        failure: "Couldn't update topic {topicName}",
+      },
+      create: {
+        success: 'Topic {topicName} successfully created',
+        failure: "Couldn't create topic {topicName}",
+      },
       delete: {
         success: 'Topic {topicName} successfully deleted',
         failure: "Couldn't delete topic {topicName}",
@@ -748,6 +759,7 @@ const en_US = {
     },
   },
   subscriptionForm,
+  topicForm,
 };
 
 export default en_US;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed } from 'vue';
-  import { isAdmin } from '@/utils/roles-util';
+  import { isAdmin, isAny } from '@/utils/roles-util';
   import { ref } from 'vue';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useGroups } from '@/composables/groups/use-groups/useGroups';
@@ -11,6 +11,7 @@
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupTopicsListing from '@/views/group-topics/group-topics-listing/GroupTopicsListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
+  import TopicForm from '@/views/topic/topic-form/TopicForm.vue';
 
   const router = useRouter();
   const params = router.currentRoute.value.params as Record<string, string>;
@@ -44,6 +45,20 @@
     if (isGroupRemoved) {
       router.push({ path: `/ui/groups` });
     }
+  }
+
+  const showTopicCreationForm = ref(false);
+  function showTopicForm() {
+    showTopicCreationForm.value = true;
+  }
+  function hideTopicForm() {
+    showTopicCreationForm.value = false;
+  }
+
+  function pushToTopic(topic: string) {
+    router.push({
+      path: `/ui/groups/${groupId}/topics/${topic}`,
+    });
   }
 
   const breadcrumbsItems = [
@@ -103,6 +118,36 @@
             >
               {{ $t('groups.actions.remove') }}
             </v-btn>
+            <v-dialog
+              v-model="showTopicCreationForm"
+              min-width="800"
+              :persistent="true"
+            >
+              <template #activator>
+                <v-btn
+                  :disabled="!isAny(roles)"
+                  prepend-icon="mdi-plus"
+                  density="comfortable"
+                  @click="showTopicForm()"
+                  >{{ $t('groups.actions.createTopic') }}</v-btn
+                >
+              </template>
+              <v-card>
+                <v-card-title>
+                  <span class="text-h5">{{
+                    $t('groups.actions.createTopic')
+                  }}</span>
+                </v-card-title>
+                <v-card-text>
+                  <TopicForm
+                    operation="add"
+                    :topic="null"
+                    @created="pushToTopic"
+                    @cancel="hideTopicForm"
+                  />
+                </v-card-text>
+              </v-card>
+            </v-dialog>
           </v-card-actions>
         </v-card>
       </v-col>

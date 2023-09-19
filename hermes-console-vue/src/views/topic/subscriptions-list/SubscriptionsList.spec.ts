@@ -7,6 +7,7 @@ import {
   dummyInitializedSubscriptionForm,
   dummySubscriptionFormValidator,
 } from '@/dummy/subscription-form';
+import { dummyRoles } from '@/dummy/roles';
 import {
   dummySubscription,
   secondDummySubscription,
@@ -42,6 +43,7 @@ describe('SubscriptionsList', () => {
     groupId: 'pl.allegro',
     topicName: 'pl.allegro.DummyTopic',
     subscriptions: [dummySubscription, secondDummySubscription],
+    roles: dummyRoles,
   };
 
   const pinia = createTestingPinia({
@@ -49,9 +51,7 @@ describe('SubscriptionsList', () => {
   });
 
   beforeEach(async () => {
-    beforeEach(() => {
-      setActivePinia(pinia);
-    });
+    setActivePinia(pinia);
     await router.push(`/ui/groups/${props.groupId}/topics/${props.topicName}`);
   });
 

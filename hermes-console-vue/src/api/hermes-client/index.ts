@@ -34,6 +34,7 @@ import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
+import type { TopicForm } from '@/composables/topic/use-form-topic/types';
 
 const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';
@@ -403,4 +404,41 @@ export function editSubscription(
       },
     },
   );
+}
+
+export function createTopic(topicForm: TopicForm): ResponsePromise<void> {
+  const parsedRequestBody = parseTopicForm(topicForm);
+  return axios.post(`/topics`, parsedRequestBody, {
+    headers: {
+      [acceptHeader]: applicationJsonMediaType,
+      [contentTypeHeader]: applicationJsonMediaType,
+    },
+  });
+}
+
+export function editTopic(topicForm: TopicForm): ResponsePromise<void> {
+  const parsedRequestBody = parseTopicForm(topicForm);
+  return axios.put(`/topics/${topicForm.name}`, parsedRequestBody, {
+    headers: {
+      [acceptHeader]: applicationJsonMediaType,
+      [contentTypeHeader]: applicationJsonMediaType,
+    },
+  });
+}
+
+function parseTopicForm(topicForm: TopicForm) {
+  delete topicForm.ownerSearch;
+  delete topicForm.offlineStorage.retentionTime.retentionUnit;
+  delete topicForm.retentionTime.infinite;
+  const parsedRequestBody = {
+    ...topicForm,
+    owner: { source: topicForm.ownerSource?.name, id: topicForm.owner },
+    auth: {
+      ...topicForm.auth,
+      publishers: topicForm.auth.publishers.split(','),
+    },
+  };
+  // @ts-ignore
+  delete parsedRequestBody.ownerSource;
+  return parsedRequestBody;
 }

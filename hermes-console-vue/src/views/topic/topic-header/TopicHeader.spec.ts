@@ -130,7 +130,7 @@ describe('TopicHeader', () => {
           getByText('topicView.header.actions.edit').closest('button'),
         ).toBeDisabled();
         expect(
-          getByText('topicView.header.actions.clone').closest('button'),
+          getByText('topicView.header.actions.export').closest('button'),
         ).toBeDisabled();
         expect(
           getByText('topicView.header.actions.remove').closest('button'),
@@ -140,7 +140,7 @@ describe('TopicHeader', () => {
           getByText('topicView.header.actions.edit').closest('button'),
         ).toBeEnabled();
         expect(
-          getByText('topicView.header.actions.clone').closest('button'),
+          getByText('topicView.header.actions.export').closest('button'),
         ).toBeEnabled();
         expect(
           getByText('topicView.header.actions.remove').closest('button'),
