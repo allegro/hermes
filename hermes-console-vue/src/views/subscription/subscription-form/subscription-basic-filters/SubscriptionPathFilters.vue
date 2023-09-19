@@ -36,7 +36,6 @@
 </script>
 
 <template>
-  <span class="text-subtitle-1 mb-2">Filters</span>
   <path-filter-row
     v-for="filter in props.modelValue"
     :key="filter.id"

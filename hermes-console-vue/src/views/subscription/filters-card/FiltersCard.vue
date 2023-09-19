@@ -1,9 +1,27 @@
 <script setup lang="ts">
+  import { v4 as generateUUID } from 'uuid';
+  import { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
+  import SubscriptionPathFiltersDebug from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFiltersDebug.vue';
   import type { MessageFilterSpecification } from '@/api/subscription';
 
   const props = defineProps<{
-    filters?: MessageFilterSpecification[];
+    topic: string;
+    filters: MessageFilterSpecification[];
   }>();
+  const pathFilters = (filters: MessageFilterSpecification[]): PathFilter[] => {
+    return filters.filter((f) => f.type !== 'header').map((f) => mapFilter(f));
+  };
+
+  const mapFilter = (
+    messageFilterSpec: MessageFilterSpecification,
+  ): PathFilter => {
+    return {
+      id: generateUUID(),
+      path: messageFilterSpec.path,
+      matcher: messageFilterSpec.matcher,
+      matchingStrategy: messageFilterSpec.matchingStrategy,
+    };
+  };
 </script>
 
 <template>
@@ -44,9 +62,11 @@
       </tbody>
     </v-table>
     <template #actions>
-      <v-btn prepend-icon="mdi-console-line">
-        {{ $t('subscription.filtersCard.debug') }}
-      </v-btn>
+      <subscription-path-filters-debug
+        :topic="props.topic"
+        :model-value="pathFilters(props.filters)"
+        :edit-enabled="false"
+      />
     </template>
   </v-card>
 </template>

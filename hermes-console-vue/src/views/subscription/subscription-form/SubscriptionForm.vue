@@ -10,6 +10,7 @@
   import SelectField from '@/components/select-field/SelectField.vue';
   import SubscriptionHeaderFilters from '@/views/subscription/subscription-form/subscription-header-filters/SubscriptionHeaderFilters.vue';
   import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
+  import SubscriptionPathFiltersDebug from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFiltersDebug.vue';
   import TextField from '@/components/text-field/TextField.vue';
   import type { Subscription } from '@/api/subscription';
 
@@ -303,7 +304,20 @@
     />
 
     <v-divider />
-
+    <v-row>
+      <v-col>
+        <span class="text-subtitle-1 mb-2">{{
+          $t('subscriptionForm.sections.filters.heading')
+        }}</span>
+      </v-col>
+      <v-col class="text-right">
+        <subscription-path-filters-debug
+          :topic="props.topic"
+          v-model="form.pathFilters"
+          :edit-enabled="true"
+        />
+      </v-col>
+    </v-row>
     <subscription-path-filters v-model="form.pathFilters" />
 
     <v-divider class="mb-4" />
