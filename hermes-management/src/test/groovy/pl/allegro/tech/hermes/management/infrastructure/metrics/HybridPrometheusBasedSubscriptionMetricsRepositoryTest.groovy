@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient
-import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusMetricsProvider
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.VictoriaMetricsMetricsProvider
 import spock.lang.Specification
 
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
@@ -22,7 +22,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
 
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
-    private PrometheusMetricsProvider prometheusMetricsProvider = new PrometheusMetricsProvider(client, "hermes_consumers", "hermes_frontend");
+    private VictoriaMetricsMetricsProvider prometheusMetricsProvider = new VictoriaMetricsMetricsProvider(client, "hermes_consumers", "hermes_frontend");
 
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)

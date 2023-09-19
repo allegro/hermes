@@ -19,8 +19,8 @@ import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetrics
 import pl.allegro.tech.hermes.management.infrastructure.graphite.RestTemplateGraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.CachingPrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient;
-import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusMetricsProvider;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient;
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.VictoriaMetricsMetricsProvider;
 
 import java.net.URI;
 
@@ -52,9 +52,9 @@ public class ExternalMonitoringConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
-    public PrometheusMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient,
-                                                               PrometheusMonitoringClientProperties properties) {
-        return new PrometheusMetricsProvider(prometheusClient,
+    public VictoriaMetricsMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient,
+                                                                    PrometheusMonitoringClientProperties properties) {
+        return new VictoriaMetricsMetricsProvider(prometheusClient,
                 properties.getConsumersMetricsPrefix(), properties.getFrontendMetricsPrefix());
     }
 

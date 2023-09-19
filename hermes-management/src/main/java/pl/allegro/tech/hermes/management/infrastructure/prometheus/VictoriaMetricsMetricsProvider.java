@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
+public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
 
     private static final String SUBSCRIPTION_DELIVERED = "subscription_delivered_total";
     private static final String SUBSCRIPTION_TIMEOUTS = "subscription_timeouts_total";
@@ -32,8 +32,8 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
     private final String topicMetricsToQuery;
     private final PrometheusClient prometheusClient;
 
-    public PrometheusMetricsProvider(PrometheusClient prometheusClient, String consumersMetricsPrefix,
-                                     String frontendMetricsPrefix) {
+    public VictoriaMetricsMetricsProvider(PrometheusClient prometheusClient, String consumersMetricsPrefix,
+                                          String frontendMetricsPrefix) {
         this.prometheusClient = prometheusClient;
         this.consumersMetricsPrefix = consumersMetricsPrefix.isEmpty() ? "" : consumersMetricsPrefix + "_";
         this.frontendMetricsPrefix = frontendMetricsPrefix.isEmpty() ? "" : frontendMetricsPrefix + "_";

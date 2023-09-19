@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient
-import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusMetricsProvider
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.VictoriaMetricsMetricsProvider
 import spock.lang.Specification
 
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
@@ -20,7 +20,7 @@ class HybridPrometheusBasedTopicMetricsRepositoryTest extends Specification {
 
     private SubscriptionRepository subscriptionRepository = Mock(SubscriptionRepository)
 
-    private PrometheusMetricsProvider prometheusMetricsProvider = new PrometheusMetricsProvider(client,
+    private VictoriaMetricsMetricsProvider prometheusMetricsProvider = new VictoriaMetricsMetricsProvider(client,
             "hermes_consumers", "hermes_frontend")
 
     private HybridTopicMetricsRepository repository = new HybridTopicMetricsRepository(prometheusMetricsProvider,
