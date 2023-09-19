@@ -340,10 +340,6 @@ public class SubscriptionService {
         }
     }
 
-    private CompletableFuture<List<Subscription>> getOwnerSubscriptions(OwnerId ownerId) {
-        return CompletableFuture.supplyAsync(() -> getForOwnerId(ownerId));
-    }
-
     private List<CompletableFuture<UnhealthySubscription>> filterSubscriptions(Collection<Subscription> subscriptions,
                                                                                boolean respectMonitoringSeverity,
                                                                                List<String> subscriptionNames,

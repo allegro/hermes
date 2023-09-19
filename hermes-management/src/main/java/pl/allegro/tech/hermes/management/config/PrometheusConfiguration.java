@@ -8,7 +8,9 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 @EnableConfigurationProperties(MicrometerRegistryProperties.class)
 public class PrometheusConfiguration {
 
@@ -22,17 +24,16 @@ public class PrometheusConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    PrometheusConfig prometheusConfig(PrometheusProperties properties) {
+    public PrometheusConfig prometheusConfig(PrometheusProperties properties) {
         return new PrometheusConfigAdapter(properties);
     }
 
-
-    static class PrometheusMeterRegistryFactory {
+    public static class PrometheusMeterRegistryFactory {
         private final MicrometerRegistryProperties parameters;
         private final PrometheusConfig prometheusConfig;
         private final String prefix;
 
-        PrometheusMeterRegistryFactory(MicrometerRegistryProperties properties,
+        public PrometheusMeterRegistryFactory(MicrometerRegistryProperties properties,
                                        PrometheusConfig prometheusConfig,
                                        String prefix) {
             this.parameters = properties;
@@ -40,13 +41,13 @@ public class PrometheusConfiguration {
             this.prefix = prefix + "_";
         }
 
-        PrometheusMeterRegistry provide() {
+        public PrometheusMeterRegistry provide() {
             PrometheusMeterRegistry meterRegistry = new PrometheusMeterRegistry(prometheusConfig);
             applyFilters(meterRegistry);
             return meterRegistry;
         }
 
-        void applyFilters(PrometheusMeterRegistry meterRegistry) {
+        private void applyFilters(PrometheusMeterRegistry meterRegistry) {
             meterRegistry.config().meterFilter(new MeterFilter() {
                 @Override
                 public Meter.Id map(Meter.Id id) {

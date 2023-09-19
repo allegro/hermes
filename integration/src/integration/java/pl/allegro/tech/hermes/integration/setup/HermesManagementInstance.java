@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.slf4j.Logger;
 import pl.allegro.tech.hermes.integration.helper.Waiter;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.endpoint.BrokerOperations;
@@ -18,12 +17,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static org.slf4j.LoggerFactory.getLogger;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesManagementInstance {
-
-    private static final Logger logger = getLogger(HermesManagementInstance.class);
 
     private final HermesAPIOperations operations;
 
@@ -49,6 +45,7 @@ public class HermesManagementInstance {
         private boolean uncleanLeaderElectionEnabled = false;
         private String schemaRegistry;
         private boolean avroContentTypeMetadataRequired = true;
+        private boolean graphiteExternalMetricsStorage = false;
 
         public Starter port(int port) {
             this.port = port;
@@ -78,6 +75,11 @@ public class HermesManagementInstance {
 
         public Starter addKafkaCluster(String dc, String connectionString) {
             kafkaClusters.add(new ClusterInfo(dc, connectionString));
+            return this;
+        }
+
+        public Starter withGraphiteExternalStorageEnabled() {
+            this.graphiteExternalMetricsStorage = true;
             return this;
         }
 
@@ -119,6 +121,9 @@ public class HermesManagementInstance {
             args.add("--topic.uncleanLeaderElectionEnabled=" + uncleanLeaderElectionEnabled);
             args.add("--topic.avroContentTypeMetadataRequired=" + avroContentTypeMetadataRequired);
             args.add("--schema.repository.serverUrl=" + schemaRegistry);
+
+            args.add("--graphite.client.enabled=" + graphiteExternalMetricsStorage);
+            args.add("--prometheus.client.enabled=" + !graphiteExternalMetricsStorage);
             HermesManagement.main(args.toArray(new String[0]));
         }
 
