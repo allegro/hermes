@@ -42,4 +42,5 @@ public class Gauges {
     public static final String TASK_QUEUED = EXECUTORS + EXECUTOR_NAME + ".task-queue-size";
     public static final String TASKS_QUEUE_UTILIZATION = EXECUTORS + EXECUTOR_NAME + ".task-queue-utilization";
     public static final String TASKS_REJECTED_COUNT = EXECUTORS + EXECUTOR_NAME + "task-rejected";
+    public static final String INFLIGHT = "inflight." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".count";
 }

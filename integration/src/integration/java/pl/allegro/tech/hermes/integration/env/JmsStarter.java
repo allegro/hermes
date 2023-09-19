@@ -23,5 +23,4 @@ public class JmsStarter implements Starter<EmbeddedJMS> {
     public EmbeddedJMS instance() {
         return jmsServer;
     }
-
 }

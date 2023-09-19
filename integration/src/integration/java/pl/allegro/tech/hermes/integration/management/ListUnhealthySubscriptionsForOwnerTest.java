@@ -15,7 +15,8 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusTopicResponse;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static pl.allegro.tech.hermes.api.MonitoringDetails.Severity;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
-import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
+import static pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder.builder;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
@@ -31,12 +32,12 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
 
-    private GraphiteEndpoint graphiteEndpoint;
-    private Client httpClient = ClientBuilder.newClient();
+    private PrometheusEndpoint prometheusEndpoint;
+    private final Client httpClient = ClientBuilder.newClient();
 
     @BeforeMethod
     public void initializeAlways() {
-        graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
+        prometheusEndpoint = new PrometheusEndpoint(SharedServices.services().prometheusHttpMock());
     }
 
     @Test
@@ -58,17 +59,14 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         createSubscriptionForOwner(topic, "ownedSubscription1", "Team A");
         final Subscription subscription = createSubscriptionForOwner(topic, "ownedSubscription2", "Team A");
         createSubscriptionForOwner(topic, "ownedSubscription3", "Team B");
-
-        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic, "ownedSubscription1")).withRate(100).withStatusRate(500, 0).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic, "ownedSubscription2")).withRate(50).withStatusRate(500, 11).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic, "ownedSubscription3")).withRate(100).withStatusRate(500, 0).build()
-        );
+        PrometheusTopicResponse topicStub = new PrometheusTopicResponse(100, 50, 0);
+        prometheusEndpoint.returnTopicMetrics(topic, topicStub);
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription1",
+                builder().withRate(100).withRatedStatusCode("500", 0).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription2",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription3",
+                builder().withRate(100).withRatedStatusCode("500", 0).build());
 
         // then
         assertThat(listUnhealthySubscriptionsForOwner("Team A")).containsOnly(
@@ -95,29 +93,22 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         final Subscription subscription5 = createSubscriptionForOwner(topic2, "ownedSubscription5", "Team B");
         final Subscription subscription6 = createSubscriptionForOwner(topic3, "ownedSubscription6", "Team B");
 
-        graphiteEndpoint.returnMetricForTopic(topic1.getName().getGroupName(), topic1.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetricForTopic(topic2.getName().getGroupName(), topic2.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetricForTopic(topic3.getName().getGroupName(), topic3.getName().getName(), 100, 50);
+        prometheusEndpoint.returnTopicMetrics(topic1, new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnTopicMetrics(topic2, new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnTopicMetrics(topic3, new PrometheusTopicResponse(100, 50, 0));
 
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic1, "ownedSubscription1")).withRate(100).withStatusRate(500, 0).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic2, "ownedSubscription2")).withRate(50).withStatusRate(500, 11).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic3, "ownedSubscription3")).withRate(50).withStatusRate(500, 11).build()
-        );
-
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic1, "ownedSubscription4")).withRate(100).withStatusRate(500, 0).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic2, "ownedSubscription5")).withRate(50).withStatusRate(500, 11).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic3, "ownedSubscription6")).withRate(50).withStatusRate(500, 11).build()
-        );
+        prometheusEndpoint.returnSubscriptionMetrics(topic1, "ownedSubscription1",
+                builder().withRate(100).withRatedStatusCode("500", 0).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic2, "ownedSubscription2",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic3, "ownedSubscription3",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic1, "ownedSubscription4",
+                builder().withRate(100).withRatedStatusCode("500", 0).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic2, "ownedSubscription5",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic3, "ownedSubscription6",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
 
         // then
         assertThat(listUnhealthySubscriptionsForOwner("Team A", Lists.asList(), Lists.asList("group.topic2"))).containsOnly(
@@ -170,13 +161,11 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         createSubscriptionForOwner(topic, "ownedSubscription1", "Team A");
         final Subscription subscription = createSubscriptionForOwner(topic, "ownedSubscription2", "Team A");
 
-        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic, "ownedSubscription1")).withRate(100).withStatusRate(500, 0).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic, "ownedSubscription2")).withRate(50).withStatusRate(500, 11).build()
-        );
+        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription1",
+                builder().withRate(100).withRatedStatusCode("500", 0).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription2",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
 
         // then
         assertThat(listAllUnhealthySubscriptions()).containsOnly(
@@ -197,16 +186,13 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         final Subscription subscription2 = createSubscriptionForOwner(topic, "ownedSubscription2", "Team A", Severity.IMPORTANT);
         final Subscription subscription3 = createSubscriptionForOwner(topic, "ownedSubscription3", "Team A", Severity.NON_IMPORTANT);
 
-        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 100, 50);
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic, "ownedSubscription1")).withRate(50).withStatusRate(500, 11).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic, "ownedSubscription2")).withRate(50).withStatusRate(500, 11).build()
-        );
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub(subName(topic, "ownedSubscription3")).withRate(50).withStatusRate(500, 11).build()
-        );
+        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(100, 50, 0));
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription1",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription2",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "ownedSubscription3",
+                builder().withRate(50).withRatedStatusCode("500", 11).build());
 
         // then
         assertThat(listUnhealthySubscriptionsDisrespectingSeverity("Team A")).contains(
@@ -232,10 +218,10 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("group", "topic").build());
         createSubscriptionForOwner(topic, "ownedSubscription1", "Team A", Severity.CRITICAL);
-        int graphiteDelay = 1000;
-        graphiteEndpoint.returnMetricWithDelay(subscriptionMetricsStub(subName(topic, "ownedSubscription1"))
-                .withRate(50)
-                .withStatusRate(200, 11).build(), graphiteDelay);
+        int prometheusDelay = 1000;
+
+        prometheusEndpoint.returnSubscriptionMetricsWithDelay(topic, "ownedSubscription1",
+                builder().withRate(50).withRatedStatusCode("500", 11).build(), prometheusDelay);
 
         // when
         long start = System.currentTimeMillis();
@@ -244,7 +230,7 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
 
         // then
         assertThat(thrown).isInstanceOf(InternalServerErrorException.class);
-        assertThat(end - start < graphiteDelay);
+        assertThat(end - start < prometheusDelay);
 
     }
 
@@ -312,7 +298,7 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
                                                       List<String> subscriptionNames, List<String> qualifiedTopicNames) {
         return management.unhealthyEndpoint()
                 .listUnhealthy(ownerSourceName, ownerId, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
-                .readEntity(new GenericType<List<UnhealthySubscription>>() {
+                .readEntity(new GenericType<>() {
                 });
     }
 
@@ -348,9 +334,5 @@ public class ListUnhealthySubscriptionsForOwnerTest extends IntegrationTest {
                 .queryParam("qualifiedTopicNames", (Object[]) qualifiedTopicNames.toArray(new String[0]))
                 .request(TEXT_PLAIN)
                 .get(String.class);
-    }
-
-    private String subName(Topic topic, String rawSubscriptionName) {
-        return topic.getQualifiedName() + "." + rawSubscriptionName;
     }
 }

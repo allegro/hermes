@@ -1,108 +1,99 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricFilter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.ScheduledReporter;
-import com.codahale.metrics.Timer;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.search.Search;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.Meters;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 
-import java.util.SortedMap;
+import java.util.Collection;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
-
-public class ZookeeperCounterReporter extends ScheduledReporter {
-
-    private static final String ZOOKEEPER_REPORTER_NAME = "zookeeper-reporter";
-    private static final TimeUnit RATE_UNIT = TimeUnit.SECONDS;
-    private static final TimeUnit DURATION_UNIT = TimeUnit.MILLISECONDS;
+public class ZookeeperCounterReporter {
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperCounterReporter.class);
 
     private final CounterStorage counterStorage;
+    private final String metricsSearchPrefix;
+    private final MeterRegistry meterRegistry;
 
-    public ZookeeperCounterReporter(MetricRegistry registry,
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder()
+                    .setNameFormat("zookeeper-reporter-scheduled-executor-%d")
+                    .setDaemon(true)
+                    .build());
+
+    public ZookeeperCounterReporter(MeterRegistry registry,
                                     CounterStorage counterStorage,
-                                    String graphitePrefix
-    ) {
-        super(
-                registry,
-                ZOOKEEPER_REPORTER_NAME,
-                new ZookeeperMetricsFilter(graphitePrefix),
-                RATE_UNIT,
-                DURATION_UNIT
-        );
+                                    String metricsSearchPrefix) {
+        this.meterRegistry = registry;
         this.counterStorage = counterStorage;
+        this.metricsSearchPrefix = metricsSearchPrefix;
     }
 
-    @Override
-    public void report(SortedMap<String, Gauge> gauges,
-                       SortedMap<String, Counter> counters,
-                       SortedMap<String, Histogram> histograms,
-                       SortedMap<String, Meter> meters,
-                       SortedMap<String, Timer> timers) {
-
-        counters.forEach(this::reportCounter);
-
-        meters
-                .entrySet()
-                .stream()
-                .filter(meterEntry -> meterEntry.getKey().startsWith(Meters.THROUGHPUT_BYTES))
-                .forEach(meterEntry -> reportVolumeCounter(meterEntry.getKey(), meterEntry.getValue().getCount()));
+    public void start(long period, TimeUnit unit) {
+        scheduledExecutorService.scheduleWithFixedDelay(this::report, 0, period, unit);
     }
 
-    private void reportVolumeCounter(String metricName, long value) {
-        CounterMatcher matcher = new CounterMatcher(metricName);
+    public void report() {
+        try {
+            Collection<Counter> counters = Search.in(meterRegistry).counters();
+            counters.forEach(counter -> {
+                CounterMatcher matcher = new CounterMatcher(counter, metricsSearchPrefix);
+                reportCounter(matcher);
+                reportVolumeCounter(matcher);
+            });
+        } catch (RuntimeException ex) {
+            logger.error("Error during reporting metrics to Zookeeper...", ex);
+        }
+    }
+
+    private void reportVolumeCounter(CounterMatcher matcher) {
         if (matcher.isTopicThroughput()) {
             counterStorage.incrementVolumeCounter(
                     escapedTopicName(matcher.getTopicName()),
-                    value
+                    matcher.getValue()
             );
         } else if (matcher.isSubscriptionThroughput()) {
             counterStorage.incrementVolumeCounter(
                     escapedTopicName(matcher.getTopicName()),
                     escapeMetricsReplacementChar(matcher.getSubscriptionName()),
-                    value
+                    matcher.getValue()
             );
         }
     }
 
-    private void reportCounter(String counterName, Counter counter) {
-        if (counter.getCount() == 0) {
+    private void reportCounter(CounterMatcher matcher) {
+        if (matcher.getValue() == 0) {
             return;
         }
-
-        CounterMatcher matcher = new CounterMatcher(counterName);
-        long value = counter.getCount();
 
         if (matcher.isTopicPublished()) {
             counterStorage.setTopicPublishedCounter(
                     escapedTopicName(matcher.getTopicName()),
-                    value
+                    matcher.getValue()
             );
         } else if (matcher.isSubscriptionDelivered()) {
             counterStorage.setSubscriptionDeliveredCounter(
                     escapedTopicName(matcher.getTopicName()),
                     escapeMetricsReplacementChar(matcher.getSubscriptionName()),
-                    value
+                    matcher.getValue()
             );
         } else if (matcher.isSubscriptionDiscarded()) {
             counterStorage.setSubscriptionDiscardedCounter(
                     escapedTopicName(matcher.getTopicName()),
                     escapeMetricsReplacementChar(matcher.getSubscriptionName()),
-                    value
+                    matcher.getValue()
             );
         }
     }
 
-    private static TopicName escapedTopicName(String qualifiedTopicName) {
-        TopicName topicName = fromQualifiedName(qualifiedTopicName);
+    private static TopicName escapedTopicName(TopicName topicName) {
         return new TopicName(
                 escapeMetricsReplacementChar(topicName.getGroupName()),
                 topicName.getName()
@@ -111,19 +102,5 @@ public class ZookeeperCounterReporter extends ScheduledReporter {
 
     private static String escapeMetricsReplacementChar(String value) {
         return value.replaceAll(HermesMetrics.REPLACEMENT_CHAR, "\\.");
-    }
-
-    private static final class ZookeeperMetricsFilter implements MetricFilter {
-        private final String offsetPrefix;
-
-        private ZookeeperMetricsFilter(String graphitePrefix) {
-            offsetPrefix = graphitePrefix + "." + "consumer.offset";
-        }
-
-        @Override
-        public boolean matches(String name, Metric metric) {
-            return (metric instanceof Counter && !name.startsWith(offsetPrefix))
-                    || (metric instanceof Meter && name.startsWith(Meters.THROUGHPUT_BYTES + "."));
-        }
     }
 }

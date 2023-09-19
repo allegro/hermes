@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -40,14 +41,14 @@ public class RestTemplateGraphiteClient implements GraphiteClient {
     }
 
     @Override
-    public GraphiteMetrics readMetrics(String... metricPaths) {
+    public MonitoringMetricsContainer readMetrics(String... metricPaths) {
         try {
-            GraphiteMetrics response = new GraphiteMetrics();
-            queryGraphite(metricPaths).stream().forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
+            MonitoringMetricsContainer response = MonitoringMetricsContainer.createEmpty();
+            queryGraphite(metricPaths).forEach(metric -> response.addMetricValue(metric.getTarget(), getFirstValue(metric)));
             return response;
         } catch (Exception exception) {
             logger.warn("Unable to read from Graphite: {}", getRootCauseMessage(exception));
-            return GraphiteMetrics.unavailable(metricPaths);
+            return MonitoringMetricsContainer.unavailable();
         }
     }
 

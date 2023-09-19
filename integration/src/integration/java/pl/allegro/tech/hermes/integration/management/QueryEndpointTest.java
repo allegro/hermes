@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.integration.IntegrationTest;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -28,7 +28,7 @@ import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
-import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
+import static pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder.builder;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
@@ -40,12 +40,12 @@ public class QueryEndpointTest extends IntegrationTest {
 
     private RemoteServiceEndpoint remoteService;
 
-    private GraphiteEndpoint graphiteEndpoint;
+    private PrometheusEndpoint prometheusEndpoint;
 
     @BeforeClass
     public void initialize() {
         remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
-        graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
+        prometheusEndpoint = new PrometheusEndpoint(SharedServices.services().prometheusHttpMock());
     }
 
     @AfterClass
@@ -234,16 +234,10 @@ public class QueryEndpointTest extends IntegrationTest {
         String queryGetSubscriptionsMetricsWithLagNegative = "{\"query\": {\"lag\": {\"lt\": 0}}}";
         String queryGetSubscriptionsMetricsWithVolume = "{\"query\": {\"volume\": {\"gt\": -1}}}";
 
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("subscriptionsMetricsTestGroup1.topic.subscription1")
-                .withRate(100)
-                .withThroughput(0)
-                .build()
-        );
-        graphiteEndpoint.returnMetric(subscriptionMetricsStub("subscriptionsMetricsTestGroup2.topic.subscription2")
-                .withRate(40)
-                .withThroughput(10)
-                .build()
-        );
+        prometheusEndpoint.returnSubscriptionMetrics(topic1, "subscription1", builder()
+                .withRate(100).withThroughput(0).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic2, "subscription2", builder()
+                .withRate(40).withThroughput(10).build());
 
         wait.until(() -> {
             // when
@@ -276,11 +270,12 @@ public class QueryEndpointTest extends IntegrationTest {
         String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
         String queryGetSubscriptionsMetricsWithPositiveRate = "{\"query\": {\"rate\": {\"gt\": 0}}}";
 
-        int graphiteResponseDelay = 10 * 60 * 1000;
-        graphiteEndpoint.returnMetricWithDelay(subscriptionMetricsStub("unavailableMetricsGroup.topic.subscription")
+        int prometheusResponseDelay = 10 * 60 * 1000;
+        prometheusEndpoint.returnSubscriptionMetricsWithDelay(topic, "subscription",
+                builder()
                 .withRate(100)
                 .build(),
-                graphiteResponseDelay
+                prometheusResponseDelay
         );
 
         wait.until(() -> {

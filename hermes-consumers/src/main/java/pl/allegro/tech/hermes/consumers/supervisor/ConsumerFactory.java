@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.consumers.supervisor;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.BatchConsumer;
@@ -11,7 +10,6 @@ import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
@@ -32,8 +30,7 @@ public class ConsumerFactory {
     private final ConsumerRateLimitSupervisor consumerRateLimitSupervisor;
     private final OutputRateCalculatorFactory outputRateCalculatorFactory;
     private final ReceiverFactory messageReceiverFactory;
-    private final HermesMetrics hermesMetrics;
-    private final MetricsFacade metricsFacade;
+    private final MetricsFacade metrics;
     private final CommonConsumerParameters commonConsumerParameters;
     private final Trackers trackers;
     private final OffsetQueue offsetQueue;
@@ -48,8 +45,7 @@ public class ConsumerFactory {
     private final SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry;
 
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
-                           HermesMetrics hermesMetrics,
-                           MetricsFacade metricsFacade,
+                           MetricsFacade metrics,
                            CommonConsumerParameters commonConsumerParameters,
                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                            OutputRateCalculatorFactory outputRateCalculatorFactory,
@@ -65,8 +61,7 @@ public class ConsumerFactory {
                            Clock clock,
                            SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry) {
         this.messageReceiverFactory = messageReceiverFactory;
-        this.hermesMetrics = hermesMetrics;
-        this.metricsFacade = metricsFacade;
+        this.metrics = metrics;
         this.commonConsumerParameters = commonConsumerParameters;
         this.consumerRateLimitSupervisor = consumerRateLimitSupervisor;
         this.outputRateCalculatorFactory = outputRateCalculatorFactory;
@@ -86,7 +81,6 @@ public class ConsumerFactory {
     public Consumer createConsumer(Subscription subscription) {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
         SubscriptionLoadRecorder loadRecorder = subscriptionLoadRecordersRegistry.register(subscription.getQualifiedName());
-        SubscriptionMetrics metrics = new SubscriptionMetrics(hermesMetrics, subscription.getQualifiedName(), metricsFacade);
         if (subscription.isBatchSubscription()) {
             return new BatchConsumer(messageReceiverFactory,
                     batchSenderFactory.create(subscription),

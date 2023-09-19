@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.receiver;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 
@@ -12,6 +12,6 @@ public interface ReceiverFactory {
                                           Subscription subscription,
                                           ConsumerRateLimiter consumerRateLimiter,
                                           SubscriptionLoadRecorder subscriptionLoadRecorder,
-                                          SubscriptionMetrics metrics);
+                                          MetricsFacade metrics);
 
 }

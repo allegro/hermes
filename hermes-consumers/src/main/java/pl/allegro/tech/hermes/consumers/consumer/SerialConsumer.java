@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
@@ -30,7 +31,7 @@ public class SerialConsumer implements Consumer {
     private static final Logger logger = LoggerFactory.getLogger(SerialConsumer.class);
 
     private final ReceiverFactory messageReceiverFactory;
-    private final SubscriptionMetrics metrics;
+    private final MetricsFacade metrics;
     private final SerialConsumerRateLimiter rateLimiter;
     private final Trackers trackers;
     private final MessageConverterResolver messageConverterResolver;
@@ -50,7 +51,7 @@ public class SerialConsumer implements Consumer {
     private MessageReceiver messageReceiver;
 
     public SerialConsumer(ReceiverFactory messageReceiverFactory,
-                          SubscriptionMetrics metrics,
+                          MetricsFacade metrics,
                           Subscription subscription,
                           SerialConsumerRateLimiter rateLimiter,
                           ConsumerMessageSenderFactory consumerMessageSenderFactory,
@@ -129,7 +130,6 @@ public class SerialConsumer implements Consumer {
                 message.getPartitionAssignmentTerm())
         );
 
-        metrics.markAttempt();
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
 
         sender.sendAsync(message);
@@ -159,7 +159,7 @@ public class SerialConsumer implements Consumer {
         rateLimiter.shutdown();
         loadRecorder.shutdown();
         consumerAuthorizationHandler.removeSubscriptionHandler(subscription.getQualifiedName());
-        metrics.shutdown();
+        metrics.unregisterAllMetricsRelatedTo(subscription.getQualifiedName());
     }
 
     @Override

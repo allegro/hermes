@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import pl.allegro.tech.hermes.integration.env.EnvironmentAware;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
-public class GraphiteEndpoint implements EnvironmentAware {
+public class GraphiteEndpoint {
 
     private static final String TIMESTAMP = "1396860420";
 
@@ -50,15 +49,6 @@ public class GraphiteEndpoint implements EnvironmentAware {
                         .withBody(response)));
     }
 
-    public void returnServerErrorForAllTopics() {
-        graphiteListener.register(get(urlMatching(TOPIC_URL_PATTERN))
-                .willReturn(aResponse()
-                        .withStatus(500)
-                        .withHeader("Content-Type", "application/json")
-                )
-        );
-    }
-
     public void returnMetric(SubscriptionMetricsStubDefinition metricsStubDefinition) {
         graphiteListener.register(get(urlMatching(metricsStubDefinition.toUrlPattern()))
                 .willReturn(aResponse()
@@ -76,45 +66,23 @@ public class GraphiteEndpoint implements EnvironmentAware {
                         .withBody(metricsStubDefinition.toBody())));
     }
 
-    private static class GraphiteStubResponse {
-        private final String target;
-        private final List<List<Object>> datapoints;
-
-        private GraphiteStubResponse(String target, List<List<Object>> datapoints) {
-            this.target = target;
-            this.datapoints = datapoints;
-        }
-
-        public String getTarget() {
-            return target;
-        }
-
-        public List<List<Object>> getDatapoints() {
-            return datapoints;
-        }
+    private record GraphiteStubResponse(String target, List<List<Object>> datapoints) {
     }
 
-    private static class SubscriptionMetricsStubDefinition {
-        private final String subscription;
-        private final List<GraphiteStubResponse> responseBody;
-
-        private SubscriptionMetricsStubDefinition(String subscription, List<GraphiteStubResponse> responseBody) {
-            this.subscription = subscription;
-            this.responseBody = responseBody;
-        }
+    private record SubscriptionMetricsStubDefinition(String subscription, List<GraphiteStubResponse> responseBody) {
 
         private String toUrlPattern() {
-            return "/.*sumSeries%28stats.tech.hermes\\.consumer\\.%2A\\.meter\\." + subscription + "\\.m1_rate%29.*";
-        }
+                return "/.*sumSeries%28stats.tech.hermes\\.consumer\\.%2A\\.meter\\." + subscription + "\\.m1_rate%29.*";
+            }
 
-        private String toBody() {
-            try {
-                return new ObjectMapper().writeValueAsString(responseBody);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+            private String toBody() {
+                try {
+                    return new ObjectMapper().writeValueAsString(responseBody);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
-    }
 
     public static class SubscriptionMetricsStubDefinitionBuilder {
         private final String subscription;
@@ -126,12 +94,6 @@ public class GraphiteEndpoint implements EnvironmentAware {
 
         public SubscriptionMetricsStubDefinitionBuilder withRate(int rate) {
             String target = "sumSeries(stats.tech.hermes.consumer.*.meter." + subscription + ".m1_rate)";
-            response.add(new GraphiteStubResponse(target, dataPointOf(rate)));
-            return this;
-        }
-
-        public SubscriptionMetricsStubDefinitionBuilder withThroughput(int rate) {
-            String target = "sumSeries(stats.tech.hermes.consumer.*.throughput." + subscription + ".m1_rate)";
             response.add(new GraphiteStubResponse(target, dataPointOf(rate)));
             return this;
         }

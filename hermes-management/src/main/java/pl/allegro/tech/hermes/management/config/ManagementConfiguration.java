@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,8 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
-import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
-import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
@@ -32,7 +28,6 @@ import java.time.Clock;
 @Configuration
 @EnableConfigurationProperties({
         TopicProperties.class,
-        MetricsProperties.class,
         HttpClientProperties.class,
         ConsistencyCheckerProperties.class,
         PrometheusProperties.class,
@@ -64,20 +59,6 @@ public class ManagementConfiguration {
     @ConditionalOnMissingBean
     public MetricRegistry metricRegistry() {
         return new MetricRegistry();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryParameters micrometerRegistryParameters,
-                                                      PrometheusConfig prometheusConfig) {
-        return new PrometheusMeterRegistryFactory(micrometerRegistryParameters,
-                prometheusConfig, "hermes-management").provide();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    PrometheusConfig prometheusConfig(PrometheusProperties properties) {
-        return new PrometheusConfigAdapter(properties);
     }
 
     @Bean

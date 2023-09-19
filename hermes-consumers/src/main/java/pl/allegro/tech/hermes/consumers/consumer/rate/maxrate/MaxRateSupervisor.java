@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
@@ -30,7 +30,7 @@ public class MaxRateSupervisor implements Runnable {
                              MaxRateRegistry maxRateRegistry,
                              ConsumerNodesRegistry consumerNodesRegistry,
                              SubscriptionsCache subscriptionsCache,
-                             HermesMetrics metrics,
+                             MetricsFacade metrics,
                              Clock clock) {
         this.maxRateRegistry = maxRateRegistry;
         this.selfUpdateInterval = maxRateParameters.getUpdateInterval();
