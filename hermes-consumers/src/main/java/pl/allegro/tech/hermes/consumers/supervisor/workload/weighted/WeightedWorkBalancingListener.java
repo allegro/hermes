@@ -21,14 +21,14 @@ public class WeightedWorkBalancingListener implements BalancingListener {
     private final ConsumerNodeLoadRegistry consumerNodeLoadRegistry;
     private final SubscriptionProfileRegistry subscriptionProfileRegistry;
     private final CurrentLoadProvider currentLoadProvider;
-    private final WeightedWorkloadMetrics weightedWorkloadMetrics;
+    private final WeightedWorkloadMetricsReporter weightedWorkloadMetrics;
     private final SubscriptionProfilesCalculator subscriptionProfilesCalculator;
     private final Clock clock;
 
     public WeightedWorkBalancingListener(ConsumerNodeLoadRegistry consumerNodeLoadRegistry,
                                          SubscriptionProfileRegistry subscriptionProfileRegistry,
                                          CurrentLoadProvider currentLoadProvider,
-                                         WeightedWorkloadMetrics weightedWorkloadMetrics,
+                                         WeightedWorkloadMetricsReporter weightedWorkloadMetrics,
                                          Clock clock,
                                          Duration weightWindowSize) {
         this.consumerNodeLoadRegistry = consumerNodeLoadRegistry;

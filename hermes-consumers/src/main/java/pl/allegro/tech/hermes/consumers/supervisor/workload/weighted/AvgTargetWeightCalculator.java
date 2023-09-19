@@ -7,9 +7,9 @@ import static java.util.stream.Collectors.toMap;
 
 public class AvgTargetWeightCalculator implements TargetWeightCalculator {
 
-    private final WeightedWorkloadMetrics metrics;
+    private final WeightedWorkloadMetricsReporter metrics;
 
-    public AvgTargetWeightCalculator(WeightedWorkloadMetrics metrics) {
+    public AvgTargetWeightCalculator(WeightedWorkloadMetricsReporter metrics) {
         this.metrics = metrics;
     }
 

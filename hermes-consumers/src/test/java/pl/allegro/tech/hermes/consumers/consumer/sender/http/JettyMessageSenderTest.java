@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import com.codahale.metrics.MetricRegistry;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -10,8 +8,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
-import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration;
@@ -26,8 +22,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpHeaders
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
+import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.util.Collections;
@@ -69,15 +65,7 @@ public class JettyMessageSenderTest {
         client = consumerConfiguration.http1SerialClient(
                 new HttpClientsFactory(
                         new InstrumentedExecutorServiceFactory(
-                                new ThreadPoolMetrics(
-                                        new MetricsFacade(
-                                                new SimpleMeterRegistry(),
-                                                new HermesMetrics(
-                                                        new MetricRegistry(),
-                                                        new PathsCompiler("localhost")
-                                                )
-                                        )
-                                )
+                                new ThreadPoolMetrics(TestMetricsFacadeFactory.create())
                         ),
                         sslContextFactoryProvider),
                 new Http1ClientProperties()

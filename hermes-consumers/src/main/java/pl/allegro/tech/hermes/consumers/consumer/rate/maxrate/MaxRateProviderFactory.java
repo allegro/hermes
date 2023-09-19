@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.base.Preconditions;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.consumers.consumer.SubscriptionMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 public class MaxRateProviderFactory {
@@ -24,12 +24,12 @@ public class MaxRateProviderFactory {
         };
     }
 
-    public MaxRateProvider create(Subscription subscription, SendCounters sendCounters, SubscriptionMetrics metrics) {
+    public MaxRateProvider create(Subscription subscription, SendCounters sendCounters, MetricsFacade metrics) {
         return providerCreator.create(subscription, sendCounters, metrics);
     }
 
     private interface Creator {
-        MaxRateProvider create(Subscription subscription, SendCounters sendCounters, SubscriptionMetrics metrics);
+        MaxRateProvider create(Subscription subscription, SendCounters sendCounters, MetricsFacade metrics);
     }
 
     private void checkNegotiatedSettings(double minSignificantChange, double busyTolerance) {

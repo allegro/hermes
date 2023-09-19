@@ -30,6 +30,8 @@ public interface EnvironmentAware {
 
     int GRAPHITE_HTTP_SERVER_PORT = 18089;
 
+    int PROMETHEUS_HTTP_SERVER_PORT = 18090;
+
     int GRAPHITE_SERVER_PORT = 18023;
 
     int OAUTH_SERVER_PORT = 19999;

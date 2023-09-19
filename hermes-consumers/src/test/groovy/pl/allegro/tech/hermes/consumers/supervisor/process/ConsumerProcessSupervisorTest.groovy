@@ -3,11 +3,15 @@ package pl.allegro.tech.hermes.consumers.supervisor.process
 import com.codahale.metrics.MetricRegistry
 import com.jayway.awaitility.Awaitility
 import com.jayway.awaitility.core.ConditionFactory
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.search.Search
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService
 import pl.allegro.tech.hermes.metrics.PathsCompiler
@@ -47,7 +51,9 @@ class ConsumerProcessSupervisorTest extends Specification {
     ]
 
     ConsumerProcessSupervisor supervisor
-    HermesMetrics metrics
+    MeterRegistry meterRegistry = new SimpleMeterRegistry()
+    MetricRegistry metricRegistry = new MetricRegistry()
+    MetricsFacade metrics
     ConsumerStub consumer
 
     Clock clock
@@ -64,7 +70,10 @@ class ConsumerProcessSupervisorTest extends Specification {
                 return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
         }
 
-        metrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))
+        metrics = new MetricsFacade(
+                meterRegistry,
+                new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
+        )
 
         supervisor = new ConsumerProcessSupervisor(
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
@@ -166,7 +175,13 @@ class ConsumerProcessSupervisorTest extends Specification {
 
         then:
         signalsToDrop.forEach {
-            assert metrics.counter("supervisor.signal.dropped." + it.type.name()).getCount() == 1
+            String signal = it.type.name()
+            assert metricRegistry.counter("supervisor.signal.dropped." + signal).getCount() == 1
+            assert Search.in(meterRegistry)
+                    .name {it.startsWith("signals.dropped")}
+                    .tag("signal", signal)
+                    .counters()
+                    .size() == 1
         }
     }
 

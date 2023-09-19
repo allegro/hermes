@@ -1,68 +1,92 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
+import io.micrometer.core.instrument.Counter;
+import pl.allegro.tech.hermes.api.TopicName;
+
 import java.util.Optional;
+
+import static pl.allegro.tech.hermes.common.metric.SubscriptionMetrics.SubscriptionMetricsNames;
+import static pl.allegro.tech.hermes.common.metric.TopicMetrics.TopicMetricsNames;
 
 class CounterMatcher {
 
-    private static final int TOPIC_METRICS_PARTS = 3;
-    private static final int SUBSCRIPTION_METRIC_PARTS = 4;
+    private static final String GROUP_TAG_NAME = "group";
+    private static final String TOPIC_TAG_NAME = "topic";
+    private static final String SUBSCRIPTION_TAG_NAME = "subscription";
 
-    private final String counterName;
-    private String topicName;
+    private final Counter counter;
+    private final String metricSearchPrefix;
+    private TopicName topicName;
+    private long value;
     private Optional<String> subscription;
-    private int metricParts;
 
-    public CounterMatcher(String counterName) {
-        this.counterName = counterName;
-        parseCounter(counterName);
+    public CounterMatcher(Counter counter, String metricSearchPrefix) {
+        this.counter = counter;
+        this.metricSearchPrefix = metricSearchPrefix;
+        parseCounter(this.counter);
     }
 
-    private void parseCounter(String counterName) {
-        String[] splitted = counterName.split("\\.");
-        metricParts = splitted.length;
+    private void parseCounter(Counter counter) {
         if (isTopicPublished() || isTopicThroughput()) {
-            topicName = splitted[splitted.length - 2] + "." + splitted[splitted.length - 1];
+            topicName = new TopicName(counter.getId().getTag(GROUP_TAG_NAME), counter.getId().getTag(TOPIC_TAG_NAME));
             subscription = Optional.empty();
         } else if (
                 isSubscriptionDelivered()
                         || isSubscriptionThroughput()
                         || isSubscriptionDiscarded()
                         || isSubscriptionFiltered()
-                ) {
-            subscription = Optional.of(splitted[splitted.length - 1]);
-            topicName = splitted[splitted.length - 3] + "." + splitted[splitted.length - 2];
+        ) {
+            topicName = new TopicName(counter.getId().getTag(GROUP_TAG_NAME), counter.getId().getTag(TOPIC_TAG_NAME));
+            subscription = Optional.of(counter.getId().getTag(SUBSCRIPTION_TAG_NAME));
         }
+        value = (long) counter.count();
     }
 
     public boolean isTopicPublished() {
-        return counterName.startsWith("published.");
+        return isTopicCounter() && nameEquals(TopicMetricsNames.TOPIC_PUBLISHED);
     }
 
     public boolean isTopicThroughput() {
-        return metricParts == TOPIC_METRICS_PARTS && counterName.startsWith("throughput.");
+        return isTopicCounter() && nameEquals(TopicMetricsNames.TOPIC_THROUGHPUT);
     }
 
     public boolean isSubscriptionThroughput() {
-        return metricParts == SUBSCRIPTION_METRIC_PARTS && counterName.startsWith("throughput.");
+        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_THROUGHPUT);
     }
 
     public boolean isSubscriptionDelivered() {
-        return counterName.startsWith("delivered.");
+        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_DELIVERED);
     }
 
     public boolean isSubscriptionDiscarded() {
-        return counterName.startsWith("discarded.");
+        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_DISCARDED);
     }
 
     public boolean isSubscriptionFiltered() {
-        return counterName.startsWith("filtered.");
+        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_FILTERED_OUT);
     }
 
-    public String getTopicName() {
+    public TopicName getTopicName() {
         return topicName;
     }
 
     public String getSubscriptionName() {
         return subscription.orElse("");
+    }
+
+    public long getValue() {
+        return value;
+    }
+
+    private boolean isTopicCounter() {
+        return counter.getId().getTag(TOPIC_TAG_NAME) != null;
+    }
+
+    private boolean isSubscriptionCounter() {
+        return counter.getId().getTag(SUBSCRIPTION_TAG_NAME) != null;
+    }
+
+    private boolean nameEquals(String name) {
+        return counter.getId().getName().equals(metricSearchPrefix + name);
     }
 }

@@ -18,7 +18,7 @@ public class PrometheusProperties {
         this.step = step;
     }
 
-    public boolean isDescriptions() {
+    public boolean getDescriptions() {
         return this.descriptions;
     }
 

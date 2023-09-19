@@ -11,7 +11,7 @@ dependencies {
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey
     api group: 'commons-io', name: 'commons-io', version: '2.4'
-    api group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: versions.wiremock
+    api group: 'org.wiremock', name: 'wiremock-standalone', version: versions.wiremock
     api (group: 'org.apache.curator', name: 'curator-test', version: versions.curator) {
         exclude module: 'slf4j-log4j12'
         exclude module: 'log4j'

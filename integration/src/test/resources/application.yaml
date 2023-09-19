@@ -45,11 +45,15 @@ storage:
 auth:
   oauthServerUrl: http://localhost:19999
 
-metrics:
-  graphiteHttpUri: http://localhost:18089/
-
 graphite:
   client:
+    enabled: false
+    cacheTtlSeconds: 1
+    externalMonitoringUrl: http://localhost:18089/
+
+prometheus:
+  client:
+    enabled: true
     cacheTtlSeconds: 1
 
 spring:

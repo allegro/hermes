@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
@@ -59,15 +60,24 @@ public class ConsumerMessageSenderFactory {
                                         OffsetQueue offsetQueue,
                                         InflightsPool inflight,
                                         SubscriptionLoadRecorder subscriptionLoadRecorder,
-                                        SubscriptionMetrics metrics) {
+                                        MetricsFacade metrics) {
 
         List<SuccessHandler> successHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
-                new DefaultSuccessHandler(offsetQueue, metrics, trackers));
+                new DefaultSuccessHandler(offsetQueue, metrics, trackers, subscription.getQualifiedName()));
 
         List<ErrorHandler> errorHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
-                new DefaultErrorHandler(offsetQueue, metrics, undeliveredMessageLog, clock, trackers, kafkaClusterName));
+                new DefaultErrorHandler(
+                        offsetQueue,
+                        metrics,
+                        undeliveredMessageLog,
+                        clock,
+                        trackers,
+                        kafkaClusterName,
+                        subscription.getQualifiedName()
+                )
+        );
 
         return new ConsumerMessageSender(subscription,
                 messageSenderFactory,

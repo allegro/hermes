@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
@@ -26,7 +26,6 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFac
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -98,7 +97,7 @@ public class ConsumerConfiguration {
                                                MaxRateRegistry maxRateRegistry,
                                                ConsumerNodesRegistry consumerNodesRegistry,
                                                SubscriptionsCache subscriptionsCache,
-                                               HermesMetrics metrics,
+                                               MetricsFacade metrics,
                                                Clock clock) {
         return new MaxRateSupervisor(
                 maxRateProperties,
@@ -112,7 +111,7 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public OffsetQueue offsetQueue(HermesMetrics metrics,
+    public OffsetQueue offsetQueue(MetricsFacade metrics,
                                    CommitOffsetProperties commitOffsetProperties) {
         return new OffsetQueue(metrics, commitOffsetProperties.getQueuesSize());
     }
@@ -142,10 +141,10 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public MessageBatchFactory messageBatchFactory(HermesMetrics hermesMetrics,
+    public MessageBatchFactory messageBatchFactory(MetricsFacade metrics,
                                                    Clock clock,
                                                    BatchProperties batchProperties) {
-        return new ByteBufferMessageBatchFactory(batchProperties.getPoolableSize(), batchProperties.getMaxPoolSize(), clock, hermesMetrics);
+        return new ByteBufferMessageBatchFactory(batchProperties.getPoolableSize(), batchProperties.getMaxPoolSize(), clock, metrics);
     }
 
     @Bean

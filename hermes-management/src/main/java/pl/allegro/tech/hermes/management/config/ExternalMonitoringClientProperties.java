@@ -1,9 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-@ConfigurationProperties("graphite.client")
-public class GraphiteClientProperties {
+public class ExternalMonitoringClientProperties {
 
     private int connectionTimeoutMillis = 1000;
 
@@ -16,6 +13,8 @@ public class GraphiteClientProperties {
     private int cacheTtlSeconds = 55;
 
     private int cacheSize = 100_000;
+
+    private String externalMonitoringUrl = "http://localhost:18090";
 
     public int getConnectionTimeoutMillis() {
         return connectionTimeoutMillis;
@@ -63,5 +62,13 @@ public class GraphiteClientProperties {
 
     public void setMaxConnectionsPerRoute(int maxConnectionsPerRoute) {
         this.maxConnectionsPerRoute = maxConnectionsPerRoute;
+    }
+
+    public String getExternalMonitoringUrl() {
+        return externalMonitoringUrl;
+    }
+
+    public void setExternalMonitoringUrl(String externalMonitoringUrl) {
+        this.externalMonitoringUrl = externalMonitoringUrl;
     }
 }
