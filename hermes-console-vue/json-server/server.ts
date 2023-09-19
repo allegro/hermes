@@ -1,6 +1,7 @@
 const topics = require('./topics.json');
 const subscriptions = require('./subscriptions.json');
 const routes = require('./routes.json');
+const filterDebug = require('./filter-debug.json');
 
 const jsonServer = require('json-server');
 const server = jsonServer.create();
@@ -77,6 +78,10 @@ server.put(
     res.sendStatus(200);
   },
 );
+
+server.post('/filters/:topic', (req, res) => {
+  res.jsonp(filterDebug);
+});
 
 const router = jsonServer.router('json-server/db.json');
 server.use(router);

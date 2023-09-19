@@ -19,6 +19,10 @@ import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
+  MessageFiltersVerification,
+  MessageFiltersVerificationResponse,
+} from '@/api/message-filters-verification';
+import type {
   MessagePreview,
   Topic,
   TopicMetrics,
@@ -396,6 +400,22 @@ export function editSubscription(
   return axios.put(
     `/topics/${topic}/subscriptions/${subscription}`,
     requestBody,
+    {
+      headers: {
+        [acceptHeader]: applicationJsonMediaType,
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    },
+  );
+}
+
+export function verifyFilters(
+  topic: string,
+  verification: MessageFiltersVerification,
+): ResponsePromise<MessageFiltersVerificationResponse> {
+  return axios.post<MessageFiltersVerificationResponse>(
+    `/filters/${topic}`,
+    verification,
     {
       headers: {
         [acceptHeader]: applicationJsonMediaType,

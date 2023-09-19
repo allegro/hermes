@@ -746,8 +746,22 @@ const en_US = {
           'Failed to create retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
       },
     },
+    subscriptionFiltersDebug: {
+      failure: 'Failed to verify filters',
+    },
   },
   subscriptionForm,
+  filterDebug: {
+    title: 'Debug subscription filters',
+    cancelButton: 'Cancel',
+    saveButton: 'Update subscription filters',
+    verifyButton: 'Verify',
+    placeholder: 'Paste your JSON message here...',
+    debugButton: 'Debug filters',
+    matched: 'Matched',
+    notMatched: 'Not Matched',
+    error: 'Error',
+  },
 };
 
 export default en_US;
