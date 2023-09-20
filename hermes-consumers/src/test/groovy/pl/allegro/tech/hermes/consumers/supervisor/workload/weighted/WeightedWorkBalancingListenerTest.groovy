@@ -2,8 +2,11 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted
 
 import com.codahale.metrics.MetricFilter
 import com.codahale.metrics.MetricRegistry
+import io.micrometer.core.instrument.search.Search
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkDistributionChanges
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock
@@ -23,7 +26,13 @@ class WeightedWorkBalancingListenerTest extends Specification {
     def weightWindowSize = Duration.ofMinutes(1)
     def currentLoadProvider = new CurrentLoadProvider()
     def metricsRegistry = new MetricRegistry()
-    def metrics = new WeightedWorkloadMetrics(new HermesMetrics(metricsRegistry, new PathsCompiler("host")))
+    def meterRegistry = new SimpleMeterRegistry()
+    def metrics = new WeightedWorkloadMetricsReporter(
+            new MetricsFacade(
+                    meterRegistry,
+                    new HermesMetrics(metricsRegistry, new PathsCompiler("host"))
+            )
+    )
 
     @Subject
     def listener = new WeightedWorkBalancingListener(
@@ -173,6 +182,8 @@ class WeightedWorkBalancingListenerTest extends Specification {
         then:
         metricsRegistry.getGauges(MetricFilter.contains(".c2.")).size() == 1
         metricsRegistry.getGauges(MetricFilter.contains(".c1.")).size() == 0
+        Search.in(meterRegistry).tag("consumer-id", "c2").gauges().size() == 1
+        Search.in(meterRegistry).tag("consumer-id", "c1").gauges().size() == 0
     }
 
     def "should unregister workload metrics when the consumer is no longer a leader"() {
@@ -185,6 +196,7 @@ class WeightedWorkBalancingListenerTest extends Specification {
 
         then:
         metricsRegistry.getGauges().size() == 0
+        Search.in(meterRegistry).gauges().size() == 0
     }
 
     private static SubscriptionName subscription(String name) {

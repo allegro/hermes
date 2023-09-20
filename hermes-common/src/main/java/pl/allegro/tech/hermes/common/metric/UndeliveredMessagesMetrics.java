@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
+import pl.allegro.tech.hermes.metrics.DefaultHermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
@@ -26,7 +27,7 @@ public class UndeliveredMessagesMetrics {
     }
 
     public HermesHistogram undeliveredMessagesSizeHistogram() {
-        return HermesHistogram.of(
+        return DefaultHermesHistogram.of(
                 DistributionSummary.builder("undelivered-messages.persisted.message-size.bytes")
                         .register(meterRegistry),
                 hermesMetrics.histogram(PERSISTED_UNDELIVERED_MESSAGE_SIZE)

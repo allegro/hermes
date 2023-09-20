@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.TargetWeightCalculationStrategy.UnknownTargetWeightCalculationStrategyException;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties.WeightedWorkBalancingProperties;
@@ -54,7 +53,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.Subscriptio
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.TargetWeightCalculator;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWorkBalancer;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWorkBalancingListener;
-import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWorkloadMetrics;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWorkloadMetricsReporter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ZookeeperConsumerNodeLoadRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ZookeeperSubscriptionProfileRegistry;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -91,7 +90,7 @@ public class SupervisorConfiguration {
                                                  SubscriptionsCache subscriptionsCache,
                                                  ConsumersSupervisor supervisor,
                                                  ZookeeperAdminCache adminCache,
-                                                 HermesMetrics metrics,
+                                                 MetricsFacade metrics,
                                                  WorkloadProperties workloadProperties,
                                                  KafkaClustersProperties kafkaClustersProperties,
                                                  WorkloadConstraintsRepository workloadConstraintsRepository,
@@ -153,7 +152,7 @@ public class SupervisorConfiguration {
                                                              DatacenterNameProvider datacenterNameProvider,
                                                              ExecutorServiceFactory executorServiceFactory,
                                                              Clock clock,
-                                                             HermesMetrics metrics) {
+                                                             MetricsFacade metrics) {
         switch (workloadProperties.getWorkBalancingStrategy()) {
             case SELECTIVE:
                 return new NoOpConsumerNodeLoadRegistry();
@@ -179,15 +178,15 @@ public class SupervisorConfiguration {
 
     @Bean
     public TargetWeightCalculator targetWeightCalculator(WorkloadProperties workloadProperties,
-                                                         WeightedWorkloadMetrics weightedWorkloadMetrics,
+                                                         WeightedWorkloadMetricsReporter metricsReporter,
                                                          Clock clock) {
         WeightedWorkBalancingProperties weightedWorkBalancing = workloadProperties.getWeightedWorkBalancing();
         switch (weightedWorkBalancing.getTargetWeightCalculationStrategy()) {
             case AVG:
-                return new AvgTargetWeightCalculator(weightedWorkloadMetrics);
+                return new AvgTargetWeightCalculator(metricsReporter);
             case SCORING:
                 return new ScoringTargetWeightCalculator(
-                        weightedWorkloadMetrics,
+                        metricsReporter,
                         clock,
                         weightedWorkBalancing.getWeightWindowSize(),
                         weightedWorkBalancing.getScoringGain()
@@ -202,7 +201,7 @@ public class SupervisorConfiguration {
                                                SubscriptionProfileRegistry subscriptionProfileRegistry,
                                                WorkloadProperties workloadProperties,
                                                CurrentLoadProvider currentLoadProvider,
-                                               WeightedWorkloadMetrics weightedWorkloadMetrics,
+                                               WeightedWorkloadMetricsReporter weightedWorkloadMetrics,
                                                Clock clock) {
         switch (workloadProperties.getWorkBalancingStrategy()) {
             case SELECTIVE:
@@ -227,8 +226,8 @@ public class SupervisorConfiguration {
     }
 
     @Bean
-    public WeightedWorkloadMetrics weightedWorkloadMetrics(HermesMetrics hermesMetrics) {
-        return new WeightedWorkloadMetrics(hermesMetrics);
+    public WeightedWorkloadMetricsReporter weightedWorkloadMetrics(MetricsFacade metrics) {
+        return new WeightedWorkloadMetricsReporter(metrics);
     }
 
     @Bean
@@ -260,8 +259,7 @@ public class SupervisorConfiguration {
 
     @Bean
     public ConsumerFactory consumerFactory(ReceiverFactory messageReceiverFactory,
-                                           HermesMetrics hermesMetrics,
-                                           MetricsFacade metricsFacade,
+                                           MetricsFacade metrics,
                                            CommonConsumerProperties commonConsumerProperties,
                                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                                            OutputRateCalculatorFactory outputRateCalculatorFactory,
@@ -278,8 +276,7 @@ public class SupervisorConfiguration {
                                            SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry) {
         return new ConsumerFactory(
                 messageReceiverFactory,
-                hermesMetrics,
-                metricsFacade,
+                metrics,
                 commonConsumerProperties,
                 consumerRateLimitSupervisor,
                 outputRateCalculatorFactory,
@@ -299,8 +296,8 @@ public class SupervisorConfiguration {
 
     @Bean
     public ConsumersExecutorService consumersExecutorService(CommonConsumerProperties commonConsumerProperties,
-                                                             HermesMetrics hermesMetrics) {
-        return new ConsumersExecutorService(commonConsumerProperties.getThreadPoolSize(), hermesMetrics);
+                                                             MetricsFacade metrics) {
+        return new ConsumersExecutorService(commonConsumerProperties.getThreadPoolSize(), metrics);
     }
 
     @Bean
@@ -312,26 +309,25 @@ public class SupervisorConfiguration {
                                                               Retransmitter retransmitter,
                                                               UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                                               SubscriptionRepository subscriptionRepository,
-                                                              HermesMetrics metrics,
-                                                              MetricsFacade metricsFacade,
+                                                              MetricsFacade metrics,
                                                               ConsumerMonitor monitor,
                                                               Clock clock,
                                                               CommitOffsetProperties commitOffsetProperties) {
         return new NonblockingConsumersSupervisor(commonConsumerProperties, executor, consumerFactory, offsetQueue,
                 consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
-                subscriptionRepository, metrics, metricsFacade, monitor, clock, commitOffsetProperties.getPeriod());
+                subscriptionRepository, metrics, monitor, clock, commitOffsetProperties.getPeriod());
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public ConsumersRuntimeMonitor consumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
                                                            WorkloadSupervisor workloadSupervisor,
-                                                           HermesMetrics hermesMetrics,
+                                                           MetricsFacade metrics,
                                                            SubscriptionsCache subscriptionsCache,
                                                            WorkloadProperties workloadProperties) {
         return new ConsumersRuntimeMonitor(
                 consumerSupervisor,
                 workloadSupervisor,
-                hermesMetrics,
+                metrics,
                 subscriptionsCache,
                 workloadProperties.getMonitorScanInterval()
         );

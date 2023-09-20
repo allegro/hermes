@@ -5,8 +5,7 @@ import org.eclipse.jetty.client.DuplexConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.MultiplexConnectionPool;
-import pl.allegro.tech.hermes.common.metric.Gauges;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.Queue;
 import java.util.function.Function;
@@ -14,7 +13,7 @@ import java.util.stream.Stream;
 
 public class HttpClientsWorkloadReporter {
 
-    private final HermesMetrics metrics;
+    private final MetricsFacade metrics;
     private final HttpClient http1SerialClient;
     private final HttpClient http1BatchClient;
     private final Http2ClientHolder http2ClientHolder;
@@ -22,7 +21,7 @@ public class HttpClientsWorkloadReporter {
     private final boolean isConnectionPoolMonitoringEnabled;
 
     public HttpClientsWorkloadReporter(
-            HermesMetrics metrics,
+            MetricsFacade metrics,
             HttpClient http1SerialClient,
             HttpClient http1BatchClient,
             Http2ClientHolder http2ClientHolder,
@@ -47,50 +46,75 @@ public class HttpClientsWorkloadReporter {
     }
 
     private void registerRequestQueueSizeGauges() {
-        metrics.registerConsumerSenderRequestQueueSize(this::getQueuesSize);
-        metrics.registerConsumerSenderHttp1SerialClientRequestQueueSize(this::getHttp1SerialClientQueueSize);
-        metrics.registerConsumerSenderHttp1BatchClientRequestQueueSize(this::getHttp1BatchClientQueueSize);
-        metrics.registerConsumerSenderHttp2RequestQueueSize(this::getHttp2SerialClientQueueSize);
+        metrics.consumerSender()
+                .registerRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getQueuesSize);
+        metrics.consumerSender()
+                .registerHttp1SerialClientRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp1SerialQueueSize);
+        metrics.consumerSender()
+                .registerHttp1BatchClientRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp1BatchQueueSize);
+        metrics.consumerSender()
+                .registerHttp2RequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getHttp2SerialQueueSize);
     }
 
     private void registerConnectionGauges() {
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_ACTIVE_CONNECTIONS, () ->
-                getHttp1ActiveConnectionsCount.apply(http1SerialClient));
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_IDLE_CONNECTIONS, () ->
-                getHttp1IdleConnectionsCount.apply(http1SerialClient));
-
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_ACTIVE_CONNECTIONS, () ->
-                getHttp1ActiveConnectionsCount.apply(http1BatchClient));
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_IDLE_CONNECTIONS, () ->
-                getHttp1IdleConnectionsCount.apply(http1BatchClient));
-
-
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_CONNECTIONS, () ->
-                http2ClientHolder.getHttp2Client()
-                        .map(getHttp2ConnectionsCount)
-                        .orElse(0));
-        metrics.registerGauge(Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_PENDING_CONNECTIONS, () ->
-                http2ClientHolder.getHttp2Client()
-                        .map(getHttp2PendingConnectionsCount)
-                        .orElse(0));
+        metrics.consumerSender()
+                .registerHttp1SerialClientActiveConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1SerialActiveConnections);
+        metrics.consumerSender()
+                .registerHttp1SerialClientIdleConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1SerialIdleConnections);
+        metrics.consumerSender()
+                .registerHttp1BatchClientActiveConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1BatchActiveConnections);
+        metrics.consumerSender()
+                .registerHttp1BatchClientIdleConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp1BatchIdleConnections);
+        metrics.consumerSender()
+                .registerHttp2SerialClientConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp2SerialConnections);
+        metrics.consumerSender()
+                .registerHttp2SerialClientPendingConnectionsGauge(this, HttpClientsWorkloadReporter::getHttp2SerialPendingConnections);
     }
 
     int getQueuesSize() {
-        return getHttp1SerialClientQueueSize() + getHttp1BatchClientQueueSize() + getHttp2SerialClientQueueSize();
+        return getHttp1SerialQueueSize() + getHttp1BatchQueueSize() + getHttp2SerialQueueSize();
     }
 
-    int getHttp1SerialClientQueueSize() {
+    int getHttp1SerialQueueSize() {
         return getQueueSize.apply(http1SerialClient);
     }
 
-    int getHttp1BatchClientQueueSize() {
+    int getHttp1BatchQueueSize() {
         return getQueueSize.apply(http1BatchClient);
     }
 
 
-    int getHttp2SerialClientQueueSize() {
+    int getHttp2SerialQueueSize() {
         return http2ClientHolder.getHttp2Client()
                 .map(getQueueSize)
+                .orElse(0);
+    }
+
+    private int getHttp1SerialActiveConnections() {
+        return getHttp1ActiveConnectionsCount.apply(http1SerialClient);
+    }
+
+    private int getHttp1SerialIdleConnections() {
+        return getHttp1IdleConnectionsCount.apply(http1SerialClient);
+    }
+
+    private int getHttp1BatchActiveConnections() {
+        return getHttp1ActiveConnectionsCount.apply(http1BatchClient);
+    }
+
+    private int getHttp1BatchIdleConnections() {
+        return getHttp1IdleConnectionsCount.apply(http1BatchClient);
+    }
+
+    private int getHttp2SerialConnections() {
+        return http2ClientHolder.getHttp2Client()
+                .map(getHttp2ConnectionsCount)
+                .orElse(0);
+    }
+
+    private int getHttp2SerialPendingConnections() {
+        return http2ClientHolder.getHttp2Client()
+                .map(getHttp2PendingConnectionsCount)
                 .orElse(0);
     }
 

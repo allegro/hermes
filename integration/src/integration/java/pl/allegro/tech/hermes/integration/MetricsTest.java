@@ -13,7 +13,8 @@ import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.frontend.config.GraphiteProperties;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
-import pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint;
+import pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusTopicResponse;
 import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
 import pl.allegro.tech.hermes.integration.shame.Unreliable;
 import pl.allegro.tech.hermes.test.helper.endpoint.RemoteServiceEndpoint;
@@ -27,13 +28,13 @@ import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static java.lang.Integer.MAX_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
-import static pl.allegro.tech.hermes.integration.helper.GraphiteEndpoint.subscriptionMetricsStub;
+import static pl.allegro.tech.hermes.integration.helper.PrometheusEndpoint.PrometheusSubscriptionResponseBuilder.builder;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
 
 public class MetricsTest extends IntegrationTest {
 
-    private GraphiteEndpoint graphiteEndpoint;
+    private PrometheusEndpoint prometheusEndpoint;
 
     private RemoteServiceEndpoint remoteService;
 
@@ -43,7 +44,7 @@ public class MetricsTest extends IntegrationTest {
 
     @BeforeMethod
     public void initializeAlways() {
-        this.graphiteEndpoint = new GraphiteEndpoint(SharedServices.services().graphiteHttpMock());
+        this.prometheusEndpoint = new PrometheusEndpoint(SharedServices.services().prometheusHttpMock());
         this.remoteService = new RemoteServiceEndpoint(SharedServices.services().serviceMock());
         this.graphiteServer = SharedServices.services().graphiteMock();
         this.graphiteProperties = new GraphiteProperties();
@@ -55,7 +56,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("group", "topic_metrics").build());
         operations.createSubscription(topic, "subscription", remoteService.getUrl());
-        graphiteEndpoint.returnMetricForTopic(topic.getName().getGroupName(), topic.getName().getName(), 10, 15);
+        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(10, 15, 0));
 
         remoteService.expectMessages(TestMessage.simple().body());
         assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
@@ -67,8 +68,8 @@ public class MetricsTest extends IntegrationTest {
             TopicMetrics metrics = management.topic().getMetrics(topic.getQualifiedName());
 
             // then
-            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("10"));
-            assertThat(metrics.getDeliveryRate()).isEqualTo(MetricDecimalValue.of("15"));
+            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("10.0"));
+            assertThat(metrics.getDeliveryRate()).isEqualTo(MetricDecimalValue.of("15.0"));
             assertThat(metrics.getPublished()).isEqualTo(1);
             assertThat(metrics.getVolume()).isGreaterThan(1);
         });
@@ -80,8 +81,7 @@ public class MetricsTest extends IntegrationTest {
         // given
         Topic topic = operations.buildTopic(randomTopic("pl.group", "topic").build());
         operations.createSubscription(topic, "subscription", remoteService.getUrl());
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub("pl_group." + topic.getName().getName() + ".subscription").withRate(15).build());
+        prometheusEndpoint.returnSubscriptionMetrics(topic, "subscription", builder().withRate(15).build());
 
         remoteService.expectMessages(TestMessage.simple().body());
         assertThat(publisher.publish(topic.getQualifiedName(), TestMessage.simple().body()).getStatus())
@@ -93,7 +93,7 @@ public class MetricsTest extends IntegrationTest {
             SubscriptionMetrics metrics = management.subscription().getMetrics(topic.getQualifiedName(), "subscription");
 
             // then
-            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15"));
+            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15.0"));
             assertThat(metrics.getDelivered()).isEqualTo(1);
             assertThat(metrics.getDiscarded()).isEqualTo(0);
             assertThat(metrics.getVolume()).isGreaterThan(1);
@@ -122,18 +122,16 @@ public class MetricsTest extends IntegrationTest {
     public void shouldReadSubscriptionDeliveryRate() {
         // given
         Topic topic = operations.buildTopic("pl.allegro.tech.hermes", "topic");
-        operations.createSubscription(topic, "pl.allegro.tech.hermes.subscription", remoteService.getUrl());
-        graphiteEndpoint.returnMetric(
-                subscriptionMetricsStub("pl_allegro_tech_hermes.topic.pl_allegro_tech_hermes_subscription").withRate(15).build()
-        );
+        String subscriptionName = "pl.allegro.tech.hermes.subscription";
+        operations.createSubscription(topic, subscriptionName, remoteService.getUrl());
+        prometheusEndpoint.returnSubscriptionMetrics(topic, subscriptionName, builder().withRate(15).build());
 
         wait.until(() -> {
             // when
-            SubscriptionMetrics metrics = management.subscription().getMetrics("pl.allegro.tech.hermes.topic",
-                    "pl.allegro.tech.hermes.subscription");
+            SubscriptionMetrics metrics = management.subscription().getMetrics("pl.allegro.tech.hermes.topic", subscriptionName);
 
             // then
-            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15"));
+            assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15.0"));
         });
     }
 

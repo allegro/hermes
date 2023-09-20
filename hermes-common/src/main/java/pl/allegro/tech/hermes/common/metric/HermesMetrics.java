@@ -92,10 +92,6 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.INFLIGHT_REQUESTS), gauge);
     }
 
-    public void registerConsumersThreadGauge(Gauge<Integer> gauge) {
-        metricRegistry.register(metricRegistryName(Gauges.THREADS), gauge);
-    }
-
     public void registerMessageRepositorySizeGauge(Gauge<Integer> gauge) {
         metricRegistry.register(metricRegistryName(Gauges.BACKUP_STORAGE_SIZE), gauge);
     }
@@ -144,20 +140,12 @@ public class HermesMetrics {
         executorCounter(Gauges.TASKS_REJECTED_COUNT, executorName).inc();
     }
 
-    public void incrementInflightCounter(SubscriptionName subscription) {
-        getInflightCounter(subscription).inc();
+    public void registerInflightGauge(SubscriptionName subscription, Gauge<?> gauge) {
+        registerGauge(metricRegistryName(Gauges.INFLIGHT, subscription.getTopicName(), subscription.getName()), gauge);
     }
 
-    public void decrementInflightCounter(SubscriptionName subscription) {
-        getInflightCounter(subscription).dec();
-    }
-
-    public void decrementInflightCounter(SubscriptionName subscription, int size) {
-        getInflightCounter(subscription).dec(size);
-    }
-
-    public void unregisterInflightCounter(SubscriptionName subscription) {
-        unregister(Counters.INFLIGHT, subscription);
+    public void unregisterInflightGauge(SubscriptionName subscription) {
+        unregister(Gauges.INFLIGHT, subscription);
     }
 
     public static void close(Timer.Context... timers) {
@@ -166,10 +154,6 @@ public class HermesMetrics {
                 timer.close();
             }
         }
-    }
-
-    private Counter getInflightCounter(SubscriptionName subscription) {
-        return counter(Counters.INFLIGHT, subscription.getTopicName(), subscription.getName());
     }
 
     public void registerGauge(String name, Gauge<?> gauge) {
@@ -248,7 +232,7 @@ public class HermesMetrics {
         unregister(INFLIGHT_TIME, subscription);
     }
 
-    public void registerConsumerHttpAnswer(SubscriptionName subscription, int statusCode) {
+    public void registerConsumerHttpAnswer(SubscriptionName subscription, int statusCode, long count) {
         PathContext pathContext = pathContext()
                 .withGroup(escapeDots(subscription.getTopicName().getGroupName()))
                 .withTopic(escapeDots(subscription.getTopicName().getName()))
@@ -256,8 +240,8 @@ public class HermesMetrics {
                 .withHttpCode(statusCode)
                 .withHttpCodeFamily(httpStatusFamily(statusCode))
                 .build();
-        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_FAMILY, pathContext)).mark();
-        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_CODE, pathContext)).mark();
+        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_FAMILY, pathContext)).mark(count);
+        metricRegistry.meter(pathCompiler.compile(ERRORS_HTTP_BY_CODE, pathContext)).mark(count);
     }
 
     public void unregisterStatusMeters(SubscriptionName subscription) {

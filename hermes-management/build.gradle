@@ -55,7 +55,10 @@ task buildHermesConsole(type: Exec) {
 
 task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
     from '../hermes-console/dist/static'
-    into(sourceSets.main.output.resourcesDir.path + '/static')
+    def staticDirectory = sourceSets.main.output.resourcesDir.path + '/static'
+    // remove previous static dir if exists and start with clear setup
+    delete staticDirectory
+    into(staticDirectory)
 }
 
 tasks.register('prepareIndexTemplate') {

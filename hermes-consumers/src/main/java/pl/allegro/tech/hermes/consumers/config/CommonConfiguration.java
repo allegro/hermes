@@ -244,17 +244,16 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public MetricsFacade micrometerHermesMetrics(MeterRegistry metricRegistry, HermesMetrics hermesMetrics) {
-        return new MetricsFacade(metricRegistry, hermesMetrics);
+    public MetricsFacade metricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+        return new MetricsFacade(meterRegistry, hermesMetrics);
     }
 
     @Bean
     public MetricRegistry metricRegistry(MetricsProperties metricsProperties,
                                          GraphiteProperties graphiteProperties,
-                                         CounterStorage counterStorage,
                                          InstanceIdResolver instanceIdResolver,
                                          @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(metricsProperties, graphiteProperties, counterStorage, instanceIdResolver, moduleName)
+        return new MetricRegistryFactory(metricsProperties, graphiteProperties, instanceIdResolver, moduleName)
                 .provide();
     }
 
@@ -265,9 +264,10 @@ public class CommonConfiguration {
 
     @Bean
     public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryParameters micrometerRegistryParameters,
-                                                      PrometheusConfig prometheusConfig) {
+                                                      PrometheusConfig prometheusConfig,
+                                                      CounterStorage counterStorage) {
         return new PrometheusMeterRegistryFactory(micrometerRegistryParameters,
-                prometheusConfig, "hermes-consumers").provide();
+                prometheusConfig, counterStorage, "hermes-consumers").provide();
     }
 
     @Bean

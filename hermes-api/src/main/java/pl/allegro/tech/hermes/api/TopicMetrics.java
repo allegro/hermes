@@ -69,7 +69,7 @@ public class TopicMetrics {
     }
 
     public static class Builder {
-        private TopicMetrics topicMetrics;
+        private final TopicMetrics topicMetrics;
 
         public Builder() {
             topicMetrics = new TopicMetrics();

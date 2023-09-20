@@ -3,8 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.metric.Gauges;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache;
 
@@ -21,7 +20,6 @@ class MaxRateCalculator {
     private final SubscriptionsCache subscriptionsCache;
     private final MaxRateBalancer balancer;
     private final MaxRateRegistry maxRateRegistry;
-    private final HermesMetrics metrics;
     private final Clock clock;
 
     private volatile long lastUpdateDurationMillis = 0;
@@ -30,16 +28,14 @@ class MaxRateCalculator {
                       SubscriptionsCache subscriptionsCache,
                       MaxRateBalancer balancer,
                       MaxRateRegistry maxRateRegistry,
-                      HermesMetrics metrics,
+                      MetricsFacade metrics,
                       Clock clock) {
         this.clusterAssignmentCache = clusterAssignmentCache;
         this.subscriptionsCache = subscriptionsCache;
         this.balancer = balancer;
         this.maxRateRegistry = maxRateRegistry;
-        this.metrics = metrics;
         this.clock = clock;
-
-        metrics.registerGauge(Gauges.MAX_RATE_CALCULATION_DURATION, () -> lastUpdateDurationMillis);
+        metrics.maxRate().registerCalculationDurationInMillisGauge(this, calculator -> calculator.lastUpdateDurationMillis);
     }
 
     void calculate() {

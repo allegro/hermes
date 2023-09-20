@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.client.HttpDestination
 import org.eclipse.jetty.client.HttpExchange
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import spock.lang.Specification
 
 import java.util.concurrent.LinkedBlockingQueue
@@ -33,7 +33,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
         http2Client.getDestinations() >> [http2Destination]
 
         def reporter = new HttpClientsWorkloadReporter(
-                Mock(HermesMetrics),
+                Mock(MetricsFacade),
                 http1Client,
                 http1BatchClient,
                 new Http2ClientHolder(http2Client),
@@ -42,9 +42,9 @@ class HttpClientsWorkloadReporterTest extends Specification {
 
         expect:
         reporter.queuesSize == 8
-        reporter.http1SerialClientQueueSize == 3
-        reporter.http1BatchClientQueueSize == 2
-        reporter.http2SerialClientQueueSize == 3
+        reporter.http1SerialQueueSize == 3
+        reporter.http1BatchQueueSize == 2
+        reporter.http2SerialQueueSize == 3
     }
 
     def "should return sum of http/1 serial client destinations"() {
@@ -60,12 +60,12 @@ class HttpClientsWorkloadReporterTest extends Specification {
         def http1BatchClient = Mock(HttpClient)
         http1BatchClient.getDestinations() >> []
 
-        def reporter = new HttpClientsWorkloadReporter(Mock(HermesMetrics), http1Client, http1BatchClient, new Http2ClientHolder(null), true, false)
+        def reporter = new HttpClientsWorkloadReporter(Mock(MetricsFacade), http1Client, http1BatchClient, new Http2ClientHolder(null), true, false)
 
         expect:
         reporter.queuesSize == 3
-        reporter.http1SerialClientQueueSize == 3
-        reporter.http1BatchClientQueueSize == 0
-        reporter.http2SerialClientQueueSize == 0
+        reporter.http1SerialQueueSize == 3
+        reporter.http1BatchQueueSize == 0
+        reporter.http2SerialQueueSize == 0
     }
 }

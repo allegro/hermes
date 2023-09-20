@@ -8,7 +8,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokensLoader;
@@ -61,7 +61,7 @@ public class OAuthConfiguration {
     public OAuthAccessTokensLoader oAuthAccessTokensLoader(SubscriptionRepository subscriptionRepository,
                                                            OAuthProviderRepository oAuthProviderRepository,
                                                            OAuthClient oAuthClient,
-                                                           HermesMetrics metrics) {
+                                                           MetricsFacade metrics) {
         return new OAuthAccessTokensLoader(subscriptionRepository, oAuthProviderRepository, oAuthClient, metrics);
     }
 

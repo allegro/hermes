@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.test.helper.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
+import jakarta.ws.rs.client.ClientRequestContext;
+import java.util.function.Function;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.proxy.WebResourceFactory;
@@ -25,10 +27,8 @@ import pl.allegro.tech.hermes.consumers.ConsumerEndpoint;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Function;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import jakarta.ws.rs.client.WebTarget;
 
@@ -164,11 +164,6 @@ public class Hermes {
 
     public OfflineRetransmissionEndpoint createOfflineRetransmissionEndpoint() {
         return createProxy(url, OfflineRetransmissionEndpoint.class, managementConfig);
-    }
-
-    public AsyncMessagePublisher createAsyncMessagePublisher() {
-        String resource = TopicEndpoint.class.getAnnotation(Path.class).value();
-        return new AsyncMessagePublisher(getClientBuilder(publisherConfig).build().target(url).path(resource));
     }
 
     public WebTarget createWebTargetForPublishing() {

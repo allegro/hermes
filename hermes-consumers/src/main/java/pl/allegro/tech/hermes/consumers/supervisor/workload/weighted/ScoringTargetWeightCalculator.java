@@ -17,13 +17,16 @@ public class ScoringTargetWeightCalculator implements TargetWeightCalculator {
     private static final double MIN_SCORE = 0.01d;
     private static final double MAX_SCORE = 1.0d;
 
-    private final WeightedWorkloadMetrics metrics;
+    private final WeightedWorkloadMetricsReporter metrics;
     private final Clock clock;
     private final Duration scoringWindowSize;
     private final double scoringGain;
     private final Map<String, ExponentiallyWeightedMovingAverage> scores = new HashMap<>();
 
-    public ScoringTargetWeightCalculator(WeightedWorkloadMetrics metrics, Clock clock, Duration scoringWindowSize, double scoringGain) {
+    public ScoringTargetWeightCalculator(WeightedWorkloadMetricsReporter metrics,
+                                         Clock clock,
+                                         Duration scoringWindowSize,
+                                         double scoringGain) {
         this.metrics = metrics;
         this.clock = clock;
         this.scoringWindowSize = scoringWindowSize;

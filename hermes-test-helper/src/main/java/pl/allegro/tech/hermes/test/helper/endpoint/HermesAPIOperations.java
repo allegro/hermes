@@ -177,10 +177,6 @@ public class HermesAPIOperations {
         return endpoints.subscription().updateState(topic.getQualifiedName(), subscription, Subscription.State.SUSPENDED);
     }
 
-    public Response activateSubscription(Topic topic, String subscription) {
-        return endpoints.subscription().updateState(topic.getQualifiedName(), subscription, Subscription.State.ACTIVE);
-    }
-
     public void updateSubscription(String group, String topic, String subscription, PatchData patch) {
         String qualifiedTopicName = group + "." + topic;
 

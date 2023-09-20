@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.admin.AdminOperationsCallback;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
@@ -53,7 +53,7 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
                               ExecutorService assignmentExecutor,
                               WorkBalancingParameters workBalancingParameters,
                               String kafkaClusterName,
-                              HermesMetrics metrics,
+                              MetricsFacade metrics,
                               WorkloadConstraintsRepository workloadConstraintsRepository,
                               WorkBalancer workBalancer,
                               BalancingListener balancingListener) {
