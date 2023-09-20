@@ -98,6 +98,11 @@ const messages = {
       label: 'Delete the subscription automatically',
     },
   },
+  sections: {
+    filters: {
+      heading: 'Message content filters',
+    },
+  },
   warnings: {
     highRequestTimeout: {
       title: 'High request timeout',

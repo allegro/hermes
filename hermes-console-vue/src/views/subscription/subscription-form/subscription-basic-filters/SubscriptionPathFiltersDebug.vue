@@ -88,7 +88,7 @@
 </script>
 <template>
   <v-col class="md-4 text-right">
-    <v-btn color="green" @click="onDebugOpen">
+    <v-btn color="green" @click="onDebugOpen" prepend-icon="mdi-console">
       {{ $t('filterDebug.debugButton') }}</v-btn
     >
     <v-dialog width="100%" min-width="50%" v-model="dialogVisible">
@@ -112,7 +112,7 @@
             :type="alert.type"
           ></console-alert>
         </v-card-item>
-        <v-card-item class="mt-4">
+        <v-card-item>
           <subscription-path-filters v-model="debugFilters" />
         </v-card-item>
         <v-card-item class="text-right mb-4">

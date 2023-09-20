@@ -305,8 +305,10 @@
 
     <v-divider />
     <v-row>
-      <v-col md="3">
-        <span class="text-subtitle-1 mb-2">Filters</span>
+      <v-col>
+        <span class="text-subtitle-1 mb-2">{{
+          $t('subscriptionForm.sections.filters.heading')
+        }}</span>
       </v-col>
       <v-col class="text-right">
         <subscription-path-filters-debug
