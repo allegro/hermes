@@ -12,6 +12,7 @@
 
   const props = defineProps<{
     topic: string;
+    editEnabled: boolean;
     modelValue: PathFilter[];
   }>();
   const { t } = useI18n();
@@ -116,7 +117,12 @@
           <subscription-path-filters v-model="debugFilters" />
         </v-card-item>
         <v-card-item class="text-right mb-4">
-          <v-btn color="primary" class="mr-4" @click="onSave">
+          <v-btn
+            color="primary"
+            class="mr-4"
+            @click="onSave"
+            v-if="editEnabled"
+          >
             {{ $t('filterDebug.saveButton') }}
           </v-btn>
           <v-btn color="orange" @click="onCancel">{{

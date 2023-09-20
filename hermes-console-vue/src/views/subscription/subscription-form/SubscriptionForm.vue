@@ -314,6 +314,7 @@
         <subscription-path-filters-debug
           :topic="props.topic"
           v-model="form.pathFilters"
+          :edit-enabled="true"
         />
       </v-col>
     </v-row>

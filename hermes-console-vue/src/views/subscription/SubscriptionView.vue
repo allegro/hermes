@@ -226,7 +226,8 @@
         <v-col md="12">
           <filters-card
             v-if="subscription && subscription?.filters.length > 0"
-            :filters="subscription?.filters"
+            :filters="subscription?.filters!!"
+            :topic="topicQualifiedName(groupId, topicId)"
           />
           <headers-card
             v-if="!!subscription && subscription.headers.length > 0"
