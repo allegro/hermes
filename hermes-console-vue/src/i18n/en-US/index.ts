@@ -756,7 +756,7 @@ const en_US = {
     cancelButton: 'Cancel',
     saveButton: 'Update subscription filters',
     verifyButton: 'Verify',
-    placeholder: 'Paste your JSON message here...',
+    placeholder: 'Paste your message here...',
     debugButton: 'Debug filters',
     matched: 'Matched',
     notMatched: 'Not Matched',
