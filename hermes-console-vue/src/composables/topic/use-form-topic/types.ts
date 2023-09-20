@@ -13,7 +13,7 @@ export interface UseFormTopic {
 export interface TopicForm {
   name: string;
   description: string;
-  ownerSource: OwnerSource | null;
+  ownerSource?: OwnerSource | null;
   owner: string;
   ownerSearch?: string;
   auth: FormAuthPolicy;
@@ -24,7 +24,7 @@ export interface TopicForm {
   contentType: string;
   maxMessageSize: number;
   ack: string;
-  schema: string;
+  schema?: string;
 }
 
 export interface FormAuthPolicy {

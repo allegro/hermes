@@ -13,6 +13,7 @@
 
   const props = defineProps<{
     topic: TopicWithSchema | null;
+    group: string | null;
     operation: 'add' | 'edit';
   }>();
   const emit = defineEmits<{
@@ -30,7 +31,7 @@
     creatingOrUpdatingTopic,
     createOrUpdateTopic,
   } =
-    props.operation === 'add' ? useCreateTopic() : useEditTopic(props.topic!!);
+    props.operation === 'add' ? useCreateTopic(props.group!!) : useEditTopic(props.topic!!);
   const { importFormData } = useImportTopic();
 
   const ownerSelectorPlaceholder = computed(

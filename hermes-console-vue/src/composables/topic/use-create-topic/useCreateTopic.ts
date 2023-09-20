@@ -16,7 +16,7 @@ import type {
   UseCreateTopicErrors,
 } from '@/composables/topic/use-create-topic/types';
 
-export function useCreateTopic(): UseCreateTopic {
+export function useCreateTopic(group: string): UseCreateTopic {
   const notificationsStore = useNotificationsStore();
 
   const errors = ref<UseCreateTopicErrors>({
@@ -33,7 +33,7 @@ export function useCreateTopic(): UseCreateTopic {
     creatingTopic.value = true;
 
     try {
-      await doCreateTopic(form.value);
+      await doCreateTopic(form.value, group);
       notificationsStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.topic.create.success', {
           topicName: form.value.name,

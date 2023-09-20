@@ -141,6 +141,7 @@
                 <v-card-text>
                   <TopicForm
                     operation="add"
+                    :group="groupId"
                     :topic="null"
                     @created="pushToTopic"
                     @cancel="hideTopicForm"

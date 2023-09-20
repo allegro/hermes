@@ -406,8 +406,8 @@ export function editSubscription(
   );
 }
 
-export function createTopic(topicForm: TopicForm): ResponsePromise<void> {
-  const parsedRequestBody = parseTopicForm(topicForm);
+export function createTopic(topicForm: TopicForm, group: string): ResponsePromise<void> {
+  const parsedRequestBody = parseTopicForm(topicForm, group);
   return axios.post(`/topics`, parsedRequestBody, {
     headers: {
       [acceptHeader]: applicationJsonMediaType,
@@ -417,7 +417,7 @@ export function createTopic(topicForm: TopicForm): ResponsePromise<void> {
 }
 
 export function editTopic(topicForm: TopicForm): ResponsePromise<void> {
-  const parsedRequestBody = parseTopicForm(topicForm);
+  const parsedRequestBody = parseTopicForm(topicForm, null);
   return axios.put(`/topics/${topicForm.name}`, parsedRequestBody, {
     headers: {
       [acceptHeader]: applicationJsonMediaType,
@@ -426,10 +426,17 @@ export function editTopic(topicForm: TopicForm): ResponsePromise<void> {
   });
 }
 
-function parseTopicForm(topicForm: TopicForm) {
+function parseTopicForm(topicForm: TopicForm, group: string | null) {
   delete topicForm.ownerSearch;
+  console.log(group)
   delete topicForm.offlineStorage.retentionTime.retentionUnit;
   delete topicForm.retentionTime.infinite;
+  if (topicForm.contentType !== 'AVRO') {
+    delete topicForm.schema
+  }
+  if(group) {
+    topicForm.name = `${group}.${topicForm.name}`
+  }
   const parsedRequestBody = {
     ...topicForm,
     owner: { source: topicForm.ownerSource?.name, id: topicForm.owner },
@@ -438,7 +445,6 @@ function parseTopicForm(topicForm: TopicForm) {
       publishers: topicForm.auth.publishers.split(','),
     },
   };
-  // @ts-ignore
   delete parsedRequestBody.ownerSource;
   return parsedRequestBody;
 }

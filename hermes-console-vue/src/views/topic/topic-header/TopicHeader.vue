@@ -90,6 +90,7 @@
             <TopicForm
               operation="edit"
               :topic="topic"
+              :group="null"
               @created="refreshPage"
               @cancel="hideTopicForm"
             />
