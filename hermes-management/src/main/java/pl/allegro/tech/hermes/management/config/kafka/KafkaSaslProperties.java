@@ -61,6 +61,9 @@ public class KafkaSaslProperties {
     }
 
     public String getJaasConfig() {
+        if (jaasConfig != null) {
+            return jaasConfig;
+        }
         return loginModule + " required\n"
                 + "username=\"" + username + "\"\n"
                 + "password=\"" + password + "\";";
