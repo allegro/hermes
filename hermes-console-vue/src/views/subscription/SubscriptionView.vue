@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
-  import { topicQualifiedName } from '@/utils/topic-utils/topic-utils';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
@@ -199,7 +198,7 @@
           <service-response-metrics />
           <manage-messages-card
             v-if="isSubscriptionOwnerOrAdmin(roles)"
-            :topic="topicQualifiedName(groupId, topicId)"
+            :topic="topicId"
             :subscription="subscriptionId"
             @retransmit="onRetransmit"
             @skipAllMessages="skipAllMessages"
@@ -227,7 +226,7 @@
           <filters-card
             v-if="subscription && subscription?.filters.length > 0"
             :filters="subscription?.filters!!"
-            :topic="topicQualifiedName(groupId, topicId)"
+            :topic="topicId"
           />
           <headers-card
             v-if="!!subscription && subscription.headers.length > 0"

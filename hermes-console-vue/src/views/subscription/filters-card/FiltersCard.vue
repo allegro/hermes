@@ -8,8 +8,8 @@
     topic: string;
     filters: MessageFilterSpecification[];
   }>();
-  const copy = (filters: MessageFilterSpecification[]): PathFilter[] => {
-    return filters.map((f) => mapFilter(f));
+  const pathFilters = (filters: MessageFilterSpecification[]): PathFilter[] => {
+    return filters.filter((f) => f.type !== 'header').map((f) => mapFilter(f));
   };
 
   const mapFilter = (
@@ -64,7 +64,7 @@
     <template #actions>
       <subscription-path-filters-debug
         :topic="props.topic"
-        :model-value="copy(props.filters)"
+        :model-value="pathFilters(props.filters)"
         :edit-enabled="false"
       />
     </template>

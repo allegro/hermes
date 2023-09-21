@@ -747,7 +747,13 @@ const en_US = {
       },
     },
     subscriptionFiltersDebug: {
-      failure: 'Failed to verify filters',
+      fetchTopicContentType: {
+        failure:
+          'Failed to fetch content type for topic: “{topicName}“. Filter debugging not possible.',
+      },
+      verification: {
+        failure: 'Failed to verify filters',
+      },
     },
   },
   subscriptionForm,

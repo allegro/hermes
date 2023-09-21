@@ -2,20 +2,24 @@
   import { computed, ComputedRef, Ref, ref } from 'vue';
   import { v4 as generateUUID } from 'uuid';
   import { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
-  import { useI18n } from 'vue-i18n';
+  import { useGlobalI18n } from '@/i18n';
+  import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import { useSubscriptionFiltersDebug } from '@/composables/subscription/use-subscription-filters-debug/useSubscriptionFiltersDebug';
   import { VerificationStatus } from '@/api/message-filters-verification';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
-
-  const dialogVisible = ref(false);
+  import type { ContentType } from '@/api/content-type';
 
   const props = defineProps<{
     topic: string;
     editEnabled: boolean;
     modelValue: PathFilter[];
   }>();
-  const { t } = useI18n();
+  const notificationStore = useNotificationsStore();
+  const { t } = useGlobalI18n();
+
+  const dialogVisible = ref(false);
+  const topicContentType: Ref<ContentType | undefined> = ref();
 
   const copy = (pathFilter: PathFilter): PathFilter => {
     return {
@@ -30,14 +34,28 @@
     props.modelValue.map((v) => copy(v)),
   );
 
-  const { status, errorMessage, verify } = useSubscriptionFiltersDebug();
+  const { status, errorMessage, verify, fetchContentType } =
+    useSubscriptionFiltersDebug();
 
   const message = ref('');
 
   const emit = defineEmits(['update:modelValue']);
 
-  const onDebugOpen = () => {
-    dialogVisible.value = true;
+  const onDebugOpen = async () => {
+    const result = await fetchContentType(props.topic);
+    if (result.error != null) {
+      notificationStore.dispatchNotification({
+        title: t(
+          'notifications.subscriptionFiltersDebug.fetchTopicContentType.failure',
+          { topicName: props.topic },
+        ),
+        text: '',
+        type: 'error',
+      });
+    } else {
+      topicContentType.value = result.contentType!!;
+      dialogVisible.value = true;
+    }
   };
 
   const onCancel = () => {
@@ -50,7 +68,12 @@
   };
 
   const onVerify = () => {
-    verify(props.topic, debugFilters.value, message.value);
+    verify(
+      props.topic,
+      debugFilters.value,
+      message.value,
+      topicContentType.value!!,
+    );
   };
 
   interface VerificationAlert {

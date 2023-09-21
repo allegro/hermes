@@ -1,8 +1,8 @@
-import type { MessageFilterSpecification } from '@/api/subscription';
+import type { PathFilterJson } from '@/api/subscription';
 
 export interface MessageFiltersVerification {
   message: string;
-  filters: MessageFilterSpecification[];
+  filters: PathFilterJson[];
 }
 
 export enum VerificationStatus {
