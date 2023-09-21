@@ -366,6 +366,7 @@ export function retransmitSubscriptionMessages(
     retransmissionDate,
     {
       headers: { 'Content-Type': 'application/json' },
+      timeout: 60 * 1000,
     },
   );
 }
