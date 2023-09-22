@@ -13,4 +13,6 @@ public interface KafkaParameters {
     String getPassword();
 
     String getBrokerList();
+
+    String getJaasConfig();
 }

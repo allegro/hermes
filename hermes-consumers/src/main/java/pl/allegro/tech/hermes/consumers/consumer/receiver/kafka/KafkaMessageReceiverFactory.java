@@ -171,11 +171,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         if (kafkaAuthorizationParameters.isEnabled()) {
             props.put(SASL_MECHANISM, kafkaAuthorizationParameters.getMechanism());
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaAuthorizationParameters.getProtocol());
-            props.put(SASL_JAAS_CONFIG,
-                    "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
-                            + "username=\"" + kafkaAuthorizationParameters.getUsername() + "\"\n"
-                            + "password=\"" + kafkaAuthorizationParameters.getPassword() + "\";"
-            );
+            props.put(SASL_JAAS_CONFIG, kafkaAuthorizationParameters.getJaasConfig());
         }
     }
 

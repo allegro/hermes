@@ -7,6 +7,8 @@ public class KafkaAuthorizationProperties {
     private String protocol = "SASL_PLAINTEXT";
     private String username = "username";
     private String password = "password";
+    private String loginModule = "org.apache.kafka.common.security.plain.PlainLoginModule";
+    private String jaasConfig;
 
     public boolean isEnabled() {
         return enabled;
@@ -46,5 +48,21 @@ public class KafkaAuthorizationProperties {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getLoginModule() {
+        return loginModule;
+    }
+
+    public void setLoginModule(String loginModule) {
+        this.loginModule = loginModule;
+    }
+
+    public String getJaasConfig() {
+        return jaasConfig;
+    }
+
+    public void setJaasConfig(String jaasConfig) {
+        this.jaasConfig = jaasConfig;
     }
 }

@@ -71,4 +71,15 @@ public class KafkaProperties implements KafkaParameters {
     public void setAdminRequestTimeout(Duration adminRequestTimeout) {
         this.adminRequestTimeout = adminRequestTimeout;
     }
+
+
+    @Override
+    public String getJaasConfig() {
+        if (authorization.getJaasConfig() != null) {
+            return authorization.getJaasConfig();
+        }
+        return authorization.getLoginModule() + " required\n"
+                + "username=\"" + authorization.getUsername() + "\"\n"
+                + "password=\"" + authorization.getPassword() + "\";";
+    }
 }

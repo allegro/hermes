@@ -70,4 +70,14 @@ public class KafkaProperties implements KafkaParameters {
     public void setBrokerList(String brokerList) {
         this.brokerList = brokerList;
     }
+
+    @Override
+    public String getJaasConfig() {
+        if (authorization.getJaasConfig() != null) {
+            return authorization.getJaasConfig();
+        }
+        return authorization.getLoginModule() + " required\n"
+                + "username=\"" + authorization.getUsername() + "\"\n"
+                + "password=\"" + authorization.getPassword() + "\";";
+    }
 }
