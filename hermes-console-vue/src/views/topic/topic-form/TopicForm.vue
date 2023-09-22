@@ -13,7 +13,7 @@
 
   const props = defineProps<{
     topic: TopicWithSchema | null;
-    group: string | null;
+    group: string | null | undefined;
     operation: 'add' | 'edit';
   }>();
   const emit = defineEmits<{
@@ -31,7 +31,9 @@
     creatingOrUpdatingTopic,
     createOrUpdateTopic,
   } =
-    props.operation === 'add' ? useCreateTopic(props.group!!) : useEditTopic(props.topic!!);
+    props.operation === 'add'
+      ? useCreateTopic(props.group!!)
+      : useEditTopic(props.topic!!);
   const { importFormData } = useImportTopic();
 
   const ownerSelectorPlaceholder = computed(
@@ -266,11 +268,16 @@
 
     <v-divider />
 
+    <!--      text not in i18n because of a problem with escaping characters-->
     <console-alert
       style="white-space: pre"
       v-if="showAvroAlert"
       :title="$t('topicForm.info.avro.title')"
-      :text="$t('topicForm.info.avro.text')"
+      text='{
+    "name": "__metadata", "default": null,
+    "type": ["null", {"type": "map", "values": "string"}],
+    "doc": "Field used in Hermes internals to propagate metadata"
+}'
       type="info"
       class="mb-4"
     />

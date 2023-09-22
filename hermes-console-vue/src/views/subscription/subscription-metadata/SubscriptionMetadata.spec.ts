@@ -22,7 +22,7 @@ import type { UseEditSubscription } from '@/composables/subscription/use-edit-su
 
 vi.mock('@/composables/subscription/use-edit-subscription/useEditSubscription');
 
-const useCreateSubscriptionStub: UseEditSubscription = {
+const useEditSubscriptionStub: UseEditSubscription = {
   form: ref(dummyInitializedSubscriptionForm),
   validators: dummySubscriptionFormValidator,
   dataSources: dummyDataSources,
@@ -290,9 +290,7 @@ describe('SubscriptionMetadata', () => {
       owner: dummyOwner,
       roles: [Role.SUBSCRIPTION_OWNER, Role.ADMIN],
     };
-    vi.mocked(useEditSubscription).mockReturnValueOnce(
-      useCreateSubscriptionStub,
-    );
+    vi.mocked(useEditSubscription).mockReturnValueOnce(useEditSubscriptionStub);
 
     // when
     const { getByText } = render(SubscriptionMetadata, {

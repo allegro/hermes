@@ -406,7 +406,10 @@ export function editSubscription(
   );
 }
 
-export function createTopic(topicForm: TopicForm, group: string): ResponsePromise<void> {
+export function createTopic(
+  topicForm: TopicForm,
+  group: string,
+): ResponsePromise<void> {
   const parsedRequestBody = parseTopicForm(topicForm, group);
   return axios.post(`/topics`, parsedRequestBody, {
     headers: {
@@ -428,14 +431,13 @@ export function editTopic(topicForm: TopicForm): ResponsePromise<void> {
 
 function parseTopicForm(topicForm: TopicForm, group: string | null) {
   delete topicForm.ownerSearch;
-  console.log(group)
   delete topicForm.offlineStorage.retentionTime.retentionUnit;
   delete topicForm.retentionTime.infinite;
   if (topicForm.contentType !== 'AVRO') {
-    delete topicForm.schema
+    delete topicForm.schema;
   }
-  if(group) {
-    topicForm.name = `${group}.${topicForm.name}`
+  if (group) {
+    topicForm.name = `${group}.${topicForm.name}`;
   }
   const parsedRequestBody = {
     ...topicForm,

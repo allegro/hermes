@@ -53,12 +53,6 @@ const messages = {
   info: {
     avro: {
       title: 'Schema must contain an additional field for internal use:',
-      text:
-        '{\n' +
-        '    "name": "__metadata", "default": null,\n' +
-        '    "type": ["null", {"type": "map", "values": "string"}],\n' +
-        '    "doc": "Field used in Hermes internals to propagate metadata"\n' +
-        '}',
     },
   },
   actions: {

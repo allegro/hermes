@@ -5,13 +5,22 @@ import {
 import { createTestingPinia } from '@pinia/testing';
 import { describe, expect } from 'vitest';
 import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyDataSources } from '@/dummy/topic-form';
+import {
+  dummyInitializedTopicForm,
+  dummyTopicFormValidator,
+} from '@/dummy/topic-form';
 import { dummyOwner, dummyTopic } from '@/dummy/topic';
 import { dummyRoles } from '@/dummy/roles';
+import { fireEvent } from '@testing-library/vue';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
+import { useEditTopic } from '@/composables/topic/use-edit-topic/useEditTopic';
 import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
 import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
 import userEvent from '@testing-library/user-event';
+import type { UseEditTopic } from '@/composables/topic/use-edit-topic/types';
 import type { UseOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
 
 const useOfflineRetransmissionStub: UseOfflineRetransmission = {
@@ -21,6 +30,20 @@ const useOfflineRetransmissionStub: UseOfflineRetransmission = {
 vi.mock(
   '@/composables/topic/use-offline-retransmission/useOfflineRetransmission',
 );
+
+vi.mock('@/composables/topic/use-edit-topic/useEditTopic');
+
+const useEditTopicStub: UseEditTopic = {
+  form: ref(dummyInitializedTopicForm),
+  validators: dummyTopicFormValidator,
+  dataSources: dummyDataSources,
+  createOrUpdateTopic: () => Promise.resolve(true),
+  creatingOrUpdatingTopic: ref(false),
+  errors: ref({
+    fetchOwners: null,
+    fetchOwnerSources: null,
+  }),
+};
 
 describe('TopicHeader', () => {
   const props = {
@@ -249,4 +272,20 @@ describe('TopicHeader', () => {
       }
     },
   );
+
+  it('should show edit topic dialog on button click', async () => {
+    // given
+    vi.mocked(useEditTopic).mockReturnValueOnce(useEditTopicStub);
+
+    // when
+    const { getByText } = render(TopicHeader, {
+      testPinia: createTestingPiniaWithState(),
+      props,
+    });
+    await fireEvent.click(getByText('topicView.header.actions.edit'));
+
+    // then
+    expect(getByText('topicView.header.editTopic')).toBeInTheDocument();
+    expect(getByText('topicForm.actions.update')).toBeInTheDocument();
+  });
 });

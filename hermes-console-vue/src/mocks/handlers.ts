@@ -794,6 +794,16 @@ export const createSubscriptionErrorHandler = (
     return res(ctx.status(errorCode), ctx.json(undefined));
   });
 
+export const createTopicHandler = () =>
+  rest.post(`${url}/topics`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(undefined));
+  });
+
+export const createTopicErrorHandler = (errorCode: number) =>
+  rest.post(`${url}/topics`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
 export const editSubscriptionHandler = (topic: string, subscription: string) =>
   rest.put(
     `${url}/topics/${topic}/subscriptions/${subscription}`,
@@ -813,6 +823,16 @@ export const editSubscriptionErrorHandler = (
       return res(ctx.status(errorCode), ctx.json(undefined));
     },
   );
+
+export const editTopicHandler = (topic: string) =>
+  rest.put(`${url}/topics/${topic}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(undefined));
+  });
+
+export const editTopicErrorHandler = (topic: string, errorCode: number) =>
+  rest.put(`${url}/topics/${topic}`, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
 
 export const createGroupHandler = ({ group }: { group: Group }) =>
   rest.post(`${url}/groups`, (req, res, ctx) => {
