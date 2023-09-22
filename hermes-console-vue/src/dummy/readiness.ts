@@ -3,10 +3,10 @@ import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 export const dummyDatacentersReadiness: DatacenterReadiness[] = [
   {
     datacenter: 'DC1',
-    isReady: true,
+    status: 'READY',
   },
   {
     datacenter: 'DC2',
-    isReady: false,
+    status: 'NOT_READY',
   },
 ];

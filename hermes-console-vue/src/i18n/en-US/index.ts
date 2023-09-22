@@ -207,7 +207,7 @@ const en_US = {
     turnOff: 'turn off',
     index: '#',
     datacenter: 'Datacenter',
-    isReady: 'Is ready',
+    status: 'Status',
     control: 'Control',
     breadcrumbs: {
       home: 'home',

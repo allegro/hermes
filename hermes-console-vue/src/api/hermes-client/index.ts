@@ -106,6 +106,11 @@ export function suspendSubscription(
   return axios.put(
     `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
     State.SUSPENDED,
+    {
+      headers: {
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    },
   );
 }
 
@@ -116,6 +121,11 @@ export function activateSubscription(
   return axios.put(
     `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
     State.ACTIVE,
+    {
+      headers: {
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    },
   );
 }
 
@@ -304,8 +314,10 @@ export function switchReadiness(
       isReady: desiredState,
     }),
     {
-      'Content-Type': 'application/json',
-    } as AxiosRequestConfig,
+      headers: {
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    },
   );
 }
 
