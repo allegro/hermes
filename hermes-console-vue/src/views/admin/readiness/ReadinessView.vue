@@ -101,7 +101,7 @@
               <tr>
                 <th class="text-left">{{ $t('readiness.index') }}</th>
                 <th class="text-left">{{ $t('readiness.datacenter') }}</th>
-                <th class="text-left">{{ $t('readiness.isReady') }}</th>
+                <th class="text-left">{{ $t('readiness.status') }}</th>
                 <th class="text-left">{{ $t('readiness.control') }}</th>
               </tr>
             </thead>
@@ -109,29 +109,25 @@
               <tr v-for="(item, index) in datacentersReadiness" :key="index">
                 <td>{{ index + 1 }}</td>
                 <td>{{ item.datacenter }}</td>
-                <td>{{ item.isReady }}</td>
+                <td>{{ item.status }}</td>
                 <td class="w-0">
                   <v-btn
                     variant="text"
-                    v-if="!item.isReady"
+                    v-if="item.status == 'NOT_READY'"
                     prepend-icon="mdi-console-line"
                     color="green"
                     block
-                    @click="
-                      openSwitchReadinessDialog(item.datacenter, item.isReady)
-                    "
+                    @click="openSwitchReadinessDialog(item.datacenter, false)"
                   >
                     {{ $t('readiness.turnOn') }}</v-btn
                   >
                   <v-btn
                     variant="text"
-                    v-if="item.isReady"
+                    v-if="item.status == 'READY'"
                     prepend-icon="mdi-console-line"
                     color="red"
                     block
-                    @click="
-                      openSwitchReadinessDialog(item.datacenter, item.isReady)
-                    "
+                    @click="openSwitchReadinessDialog(item.datacenter, true)"
                   >
                     {{ $t('readiness.turnOff') }}</v-btn
                   >
