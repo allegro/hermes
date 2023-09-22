@@ -16,7 +16,7 @@
 
 <template>
   <v-dialog width="100%" min-width="30%">
-    <v-form>
+    <v-form @submit.prevent>
       <v-card>
         <v-card-title v-if="title" class="text-wrap">
           {{ props.title }}
