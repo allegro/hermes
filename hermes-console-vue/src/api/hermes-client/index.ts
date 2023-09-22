@@ -15,7 +15,10 @@ import type {
   CreateSubscriptionFormRequestBody,
   Subscription,
 } from '@/api/subscription';
-import type { DatacenterReadiness } from '@/api/datacenter-readiness';
+import type {
+  DatacenterReadiness,
+  Readiness,
+} from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
@@ -306,19 +309,13 @@ export function removeInconsistentTopic(topic: string): ResponsePromise<void> {
 
 export function switchReadiness(
   datacenter: string,
-  desiredState: boolean,
+  readiness: Readiness,
 ): ResponsePromise<void> {
-  return axios.post(
-    `/readiness/datacenters/${datacenter}`,
-    qs.stringify({
-      isReady: desiredState,
-    }),
-    {
-      headers: {
-        [contentTypeHeader]: applicationJsonMediaType,
-      },
+  return axios.post(`/readiness/datacenters/${datacenter}`, readiness, {
+    headers: {
+      [contentTypeHeader]: applicationJsonMediaType,
     },
-  );
+  });
 }
 
 export function upsertTopicConstraint(
