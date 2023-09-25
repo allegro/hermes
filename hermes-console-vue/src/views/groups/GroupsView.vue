@@ -1,7 +1,9 @@
 <script setup lang="ts">
+  import { isAny } from '@/utils/roles-util';
   import { ref } from 'vue';
   import { useGroups } from '@/composables/groups/use-groups/useGroups';
   import { useI18n } from 'vue-i18n';
+  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useRouter } from 'vue-router';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupForm from '@/views/groups/group-form/GroupForm.vue';
@@ -11,6 +13,8 @@
   const { groups, loading, error, createGroup } = useGroups();
   const { t } = useI18n();
   const router = useRouter();
+
+  const roles = useRoles(null, null)?.roles;
 
   const filter = ref<string>();
   const createGroupDialogOpen = ref(false);
@@ -59,6 +63,7 @@
           color="secondary"
           block
           @click="createGroupDialogOpen = true"
+          v-if="isAny(roles)"
         >
           {{ t('groups.actions.create') }}
         </v-btn>
