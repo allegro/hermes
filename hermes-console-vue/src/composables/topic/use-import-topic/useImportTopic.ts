@@ -1,5 +1,6 @@
 import { fetchOwner } from '@/api/hermes-client';
 import { initializeFullyFilledForm } from '@/composables/topic/use-form-topic/useFormTopic';
+import { topicName } from '@/utils/topic-utils/topic-utils';
 import type {
   DataSources,
   TopicForm,
@@ -27,6 +28,7 @@ export function useImportTopic(): UseImportTopic {
       reader.onload = function () {
         const topic = JSON.parse(<string>reader.result);
         initializeFullyFilledForm(form, topic);
+        form.value.name = topicName(form.value.name);
         form.value.ownerSource = dataSources.ownerSources.value.find(
           (ownerSource: { value: { name: any } }) =>
             ownerSource.value.name === topic.owner.source,
