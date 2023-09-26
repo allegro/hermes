@@ -20,6 +20,7 @@ import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
+import type { MessageFiltersVerificationResponse } from '@/api/message-filters-verification';
 import type {
   MessagePreview,
   Topic,
@@ -872,3 +873,23 @@ export const createRetransmissionHandler = ({
       return res(ctx.status(statusCode), ctx.json(undefined));
     },
   );
+
+export const subscriptionFilterVerificationHandler = ({
+  topicName,
+  response,
+}: {
+  topicName: string;
+  response: MessageFiltersVerificationResponse;
+}) =>
+  rest.post(`${url}/filters/${topicName}`, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(response));
+  });
+
+export const subscriptionFilterVerificationErrorHandler = ({
+  topicName,
+}: {
+  topicName: string;
+}) =>
+  rest.post(`${url}/filters/${topicName}`, (req, res, ctx) => {
+    return res(ctx.status(500), ctx.json(undefined));
+  });

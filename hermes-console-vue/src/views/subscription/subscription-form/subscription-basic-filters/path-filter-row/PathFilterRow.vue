@@ -20,7 +20,7 @@
 </script>
 
 <template>
-  <v-row>
+  <v-row class="mt-0">
     <v-col>
       <text-field
         :model-value="props.path"
