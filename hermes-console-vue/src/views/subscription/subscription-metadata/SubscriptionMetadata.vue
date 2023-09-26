@@ -108,7 +108,11 @@
                 icon="mdi-content-copy"
                 variant="plain"
                 v-bind="props"
-                @click="copyToClipboard(subscription.name)"
+                @click="
+                  copyToClipboard(
+                    subscriptionFqn(subscription.topicName, subscription.name),
+                  )
+                "
               />
             </template>
           </v-tooltip>

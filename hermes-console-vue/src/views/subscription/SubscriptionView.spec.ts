@@ -76,7 +76,6 @@ describe('SubscriptionView', () => {
     // then
     const cardTitles = [
       'subscription.metricsCard.title',
-      'subscription.serviceResponseMetrics.title',
       'subscription.manageMessagesCard.title',
       'subscription.propertiesCard.title',
       'subscription.lastUndeliveredMessage.title',
@@ -103,7 +102,6 @@ describe('SubscriptionView', () => {
     // then
     const visibleCardTitles = [
       'subscription.metricsCard.title',
-      'subscription.serviceResponseMetrics.title',
       'subscription.propertiesCard.title',
       'subscription.filtersCard.title',
       'subscription.headersCard.title',

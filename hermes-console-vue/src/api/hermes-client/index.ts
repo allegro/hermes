@@ -15,7 +15,10 @@ import type {
   CreateSubscriptionFormRequestBody,
   Subscription,
 } from '@/api/subscription';
-import type { DatacenterReadiness } from '@/api/datacenter-readiness';
+import type {
+  DatacenterReadiness,
+  Readiness,
+} from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
@@ -107,6 +110,11 @@ export function suspendSubscription(
   return axios.put(
     `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
     State.SUSPENDED,
+    {
+      headers: {
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    },
   );
 }
 
@@ -117,6 +125,11 @@ export function activateSubscription(
   return axios.put(
     `/topics/${topicName}/subscriptions/${subscriptionName}/state`,
     State.ACTIVE,
+    {
+      headers: {
+        [contentTypeHeader]: applicationJsonMediaType,
+      },
+    },
   );
 }
 
@@ -297,17 +310,13 @@ export function removeInconsistentTopic(topic: string): ResponsePromise<void> {
 
 export function switchReadiness(
   datacenter: string,
-  desiredState: boolean,
+  readiness: Readiness,
 ): ResponsePromise<void> {
-  return axios.post(
-    `/readiness/datacenters/${datacenter}`,
-    qs.stringify({
-      isReady: desiredState,
-    }),
-    {
-      'Content-Type': 'application/json',
-    } as AxiosRequestConfig,
-  );
+  return axios.post(`/readiness/datacenters/${datacenter}`, readiness, {
+    headers: {
+      [contentTypeHeader]: applicationJsonMediaType,
+    },
+  });
 }
 
 export function upsertTopicConstraint(
@@ -367,6 +376,7 @@ export function retransmitSubscriptionMessages(
     retransmissionDate,
     {
       headers: { 'Content-Type': 'application/json' },
+      timeout: 60 * 1000,
     },
   );
 }

@@ -16,7 +16,6 @@
   import ManageMessagesCard from '@/views/subscription/manage-messages-card/ManageMessagesCard.vue';
   import MetricsCard from '@/views/subscription/metrics-card/MetricsCard.vue';
   import PropertiesCard from '@/views/subscription/properties-card/PropertiesCard.vue';
-  import ServiceResponseMetrics from '@/views/subscription/service-response-metrics/ServiceResponseMetrics.vue';
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
@@ -196,7 +195,6 @@
             v-if="subscriptionMetrics"
             :subscription-metrics="subscriptionMetrics"
           />
-          <service-response-metrics />
           <manage-messages-card
             v-if="isSubscriptionOwnerOrAdmin(roles)"
             :topic="topicQualifiedName(groupId, topicId)"
@@ -204,14 +202,6 @@
             @retransmit="onRetransmit"
             @skipAllMessages="skipAllMessages"
           />
-        </v-col>
-        <v-col md="6">
-          <properties-card v-if="subscription" :subscription="subscription" />
-        </v-col>
-      </v-row>
-
-      <v-row dense>
-        <v-col md="6">
           <last-undelivered-message
             v-if="
               subscriptionLastUndeliveredMessage &&
@@ -219,6 +209,9 @@
             "
             :last-undelivered="subscriptionLastUndeliveredMessage"
           />
+        </v-col>
+        <v-col md="6">
+          <properties-card v-if="subscription" :subscription="subscription" />
         </v-col>
       </v-row>
 

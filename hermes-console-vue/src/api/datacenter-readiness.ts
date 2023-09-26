@@ -1,6 +1,6 @@
 export interface DatacenterReadiness {
   datacenter: string;
-  isReady: boolean;
+  status: 'READY' | 'NOT_READY' | 'UNDEFINED';
 }
 
 export interface Readiness {
