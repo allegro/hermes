@@ -2,7 +2,7 @@ export interface NotificationConfig {
   title?: string;
   text: string;
   duration?: number;
-  autoClose?: boolean;
+  persistent?: boolean;
   type: NotificationType;
 }
 
@@ -13,6 +13,8 @@ export interface Notification {
   title?: string;
   text: string;
   type: NotificationType;
+  duration?: number;
+  persistent?: boolean;
 }
 
 export interface NotificationsState {

@@ -13,12 +13,20 @@ export const useNotificationsStore = defineStore('notifications', {
     };
   },
   actions: {
-    async dispatchNotification({ title, text, type }: NotificationConfig) {
+    async dispatchNotification({
+      title,
+      text,
+      type,
+      duration,
+      persistent,
+    }: NotificationConfig) {
       const notification: Notification = {
         id: generateUUID(),
         title,
         text,
         type,
+        duration,
+        persistent,
       };
       this.notifications.push(notification);
     },
