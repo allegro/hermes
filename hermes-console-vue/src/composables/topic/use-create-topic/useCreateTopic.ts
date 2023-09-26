@@ -34,7 +34,7 @@ export function useCreateTopic(group: string): UseCreateTopic {
 
     try {
       await doCreateTopic(form.value, group);
-      notificationsStore.dispatchNotification({
+      await notificationsStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.topic.create.success', {
           topicName: form.value.name,
         }),
@@ -42,7 +42,7 @@ export function useCreateTopic(group: string): UseCreateTopic {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.topic.create.failure'),

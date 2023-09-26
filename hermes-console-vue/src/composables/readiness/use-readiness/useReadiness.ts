@@ -49,7 +49,7 @@ export function useReadiness(): UseReadiness {
   ): Promise<boolean> => {
     try {
       await switchReadiness(datacenter, desiredState);
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.readiness.switch.success', {
           datacenter,
         }),
@@ -57,7 +57,7 @@ export function useReadiness(): UseReadiness {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.readiness.switch.failure', {

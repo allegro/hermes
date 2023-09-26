@@ -45,7 +45,7 @@ export function useEditTopic(topic: TopicWithSchema): UseEditTopic {
 
     try {
       await doEditTopic(form.value);
-      notificationsStore.dispatchNotification({
+      await notificationsStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.topic.edit.success', {
           topicName: form.value.name,
         }),
@@ -53,7 +53,7 @@ export function useEditTopic(topic: TopicWithSchema): UseEditTopic {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.topic.edit.failure'),

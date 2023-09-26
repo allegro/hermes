@@ -261,6 +261,7 @@
     <text-field
       v-if="isStoreOfflineSelected && !isStoreOfflineInfiniteSelected"
       v-model.number="form.offlineStorage.retentionTime.duration"
+      :rules="validators.offlineRetentionTime"
       type="number"
       :label="$t('topicForm.fields.retentionTime.duration')"
       :suffix="$t('topicForm.fields.retentionTime.days')"

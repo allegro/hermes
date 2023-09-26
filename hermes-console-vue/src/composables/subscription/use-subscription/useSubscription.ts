@@ -153,7 +153,7 @@ export function useSubscription(
   const removeSubscription = async (): Promise<boolean> => {
     try {
       await deleteSubscription(topicName, subscriptionName);
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.delete.success', {
           subscriptionName,
         }),
@@ -161,7 +161,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.delete.failure', {
@@ -175,7 +175,7 @@ export function useSubscription(
   const suspendSubscription = async (): Promise<boolean> => {
     try {
       await suspend(topicName, subscriptionName);
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.suspend.success', {
           subscriptionName,
         }),
@@ -183,7 +183,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.suspend.failure', {
@@ -197,7 +197,7 @@ export function useSubscription(
   const activateSubscription = async (): Promise<boolean> => {
     try {
       await activate(topicName, subscriptionName);
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.activate.success', {
           subscriptionName,
         }),
@@ -205,7 +205,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.activate.failure', {
@@ -221,7 +221,7 @@ export function useSubscription(
       await retransmitSubscriptionMessages(topicName, subscriptionName, {
         retransmissionDate: from,
       });
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.subscription.retransmit.success',
           {
@@ -233,7 +233,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.retransmit.failure', {
@@ -251,7 +251,7 @@ export function useSubscription(
       await retransmitSubscriptionMessages(topicName, subscriptionName, {
         retransmissionDate: tomorrowDate.toISOString(),
       });
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.subscription.skipAllMessages.success',
           {
@@ -263,7 +263,7 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t(

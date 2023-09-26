@@ -47,7 +47,7 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
     try {
       requestBody = parseFormToRequestBody(topic, form.value);
     } catch (e) {
-      notificationsStore.dispatchNotification({
+      await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.subscription.create.failure'),
         text: useGlobalI18n().t('notifications.form.parseError'),
         type: 'error',
@@ -58,7 +58,7 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
 
     try {
       await doCreateSubscription(topic, requestBody!!);
-      notificationsStore.dispatchNotification({
+      await notificationsStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.create.success', {
           subscriptionName: form.value.name,
         }),
@@ -66,7 +66,7 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.subscription.create.failure'),

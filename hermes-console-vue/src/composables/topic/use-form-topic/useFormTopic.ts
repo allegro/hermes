@@ -41,6 +41,7 @@ function formValidators(): FormValidators {
     contentType: [required()],
     retentionTimeDuration: [required(), min(0), max(7)],
     maxMessageSize: [required(), min(0)],
+    offlineRetentionTime: [required(), min(0)],
   };
 }
 
