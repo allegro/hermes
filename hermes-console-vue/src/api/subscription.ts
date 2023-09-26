@@ -107,7 +107,7 @@ interface HeaderFilterJson {
   matcher: string;
 }
 
-interface PathFilterJson {
+export interface PathFilterJson {
   type: string;
   path: string;
   matcher: string;
