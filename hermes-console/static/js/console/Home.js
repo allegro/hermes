@@ -4,5 +4,8 @@ home.controller('HomeController', ['$scope', 'DASHBOARD_CONFIG', function($scope
 
     $scope.statsDashboard = config.metrics;
     $scope.docs = config.docs;
-
+    $scope.costs = {
+        detailsUrl: window.config.costs.globalDetailsUrl,
+        enabled:  window.config.costs.enabled
+    };
 }]);
