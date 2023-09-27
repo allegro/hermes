@@ -1,6 +1,12 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
 import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheus.PrometheusConfig;
@@ -31,6 +37,7 @@ public class PrometheusMeterRegistryFactory {
         if (parameters.zookeeperReporterEnabled()) {
             registerZookeeperReporter(meterRegistry);
         }
+        registerJvmMetrics(meterRegistry);
         return meterRegistry;
     }
 
@@ -54,5 +61,13 @@ public class PrometheusMeterRegistryFactory {
     private void registerZookeeperReporter(PrometheusMeterRegistry meterRegistry) {
         new ZookeeperCounterReporter(meterRegistry, counterStorage, prefix)
                 .start(parameters.zookeeperReportPeriod().toSeconds(), TimeUnit.SECONDS);
+    }
+
+    private void registerJvmMetrics(MeterRegistry meterRegistry) {
+        new JvmMemoryMetrics().bindTo(meterRegistry);
+        new JvmGcMetrics().bindTo(meterRegistry);
+        new JvmThreadMetrics().bindTo(meterRegistry);
+        new FileDescriptorMetrics().bindTo(meterRegistry);
+//        new ExecutorServiceMetrics()
     }
 }
