@@ -66,6 +66,5 @@ public class PrometheusMeterRegistryFactory {
         new JvmMemoryMetrics().bindTo(meterRegistry);
         new JvmGcMetrics().bindTo(meterRegistry);
         new JvmThreadMetrics().bindTo(meterRegistry);
-        new FileDescriptorMetrics().bindTo(meterRegistry);
     }
 }
