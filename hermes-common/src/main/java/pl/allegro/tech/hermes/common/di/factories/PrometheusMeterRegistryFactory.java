@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.common.di.factories;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
@@ -68,6 +67,5 @@ public class PrometheusMeterRegistryFactory {
         new JvmGcMetrics().bindTo(meterRegistry);
         new JvmThreadMetrics().bindTo(meterRegistry);
         new FileDescriptorMetrics().bindTo(meterRegistry);
-//        new ExecutorServiceMetrics()
     }
 }
