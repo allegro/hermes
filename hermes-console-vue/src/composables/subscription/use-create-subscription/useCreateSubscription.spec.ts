@@ -3,6 +3,8 @@ import {
   createSubscriptionErrorHandler,
   createSubscriptionHandler,
   fetchOwnerSourcesHandler,
+  fetchTopicErrorHandler,
+  fetchTopicHandler,
 } from '@/mocks/handlers';
 import { createTestingPiniaWithState } from '@/dummy/store';
 import {
@@ -10,6 +12,7 @@ import {
   dummyOwnerSources,
 } from '@/dummy/subscription-form';
 import { dummySubscription } from '@/dummy/subscription';
+import { dummyTopic } from '@/dummy/topic';
 import {
   expectNotificationDispatched,
   notificationStoreSpy,
@@ -23,7 +26,12 @@ import { waitFor } from '@testing-library/vue';
 vi.mock('@/composables/subscription/use-form-subscription/form-mapper');
 
 describe('useCreateSubscription', () => {
-  const server = setupServer(fetchOwnerSourcesHandler(dummyOwnerSources));
+  const server = setupServer(
+    fetchOwnerSourcesHandler(dummyOwnerSources),
+    fetchTopicHandler({
+      topic: dummyTopic,
+    }),
+  );
 
   beforeEach(() => {
     setActivePinia(createTestingPiniaWithState());
@@ -115,6 +123,35 @@ describe('useCreateSubscription', () => {
       expectNotificationDispatched(notificationStore, {
         text: 'notifications.subscription.create.success',
         type: 'success',
+      });
+    });
+  });
+
+  it('should dispatch notification about fetch topic content type error', async () => {
+    //given
+    // @ts-ignore
+    vi.mocked(parseFormToRequestBody).mockReturnValueOnce(null);
+    server.use(
+      createSubscriptionHandler(dummySubscription.topicName),
+      fetchTopicErrorHandler({
+        topicName: dummySubscription.topicName,
+        errorCode: 500,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+    const { createOrUpdateSubscription } = useCreateSubscription(
+      dummySubscription.topicName,
+    );
+
+    // when
+    await createOrUpdateSubscription();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        text: 'notifications.form.fetchTopicContentTypeError',
+        type: 'error',
       });
     });
   });

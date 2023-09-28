@@ -38,27 +38,27 @@ const toFiltersJSON = (
   };
 };
 
+export async function fetchContentType(
+  topicName: string,
+): Promise<FetchTopicContentType> {
+  try {
+    const topicContentType = (await fetchTopic(topicName)).data.contentType;
+    return {
+      contentType: topicContentType,
+      error: null,
+    };
+  } catch (e: any) {
+    return {
+      contentType: undefined,
+      error: e as Error,
+    };
+  }
+}
+
 export function useSubscriptionFiltersDebug(): UseSubscriptionFiltersDebug {
   const notificationStore = useNotificationsStore();
   const status: Ref<VerificationStatus | undefined> = ref();
   const errorMessage: Ref<string | undefined> = ref();
-
-  const fetchContentType = async (
-    topicName: string,
-  ): Promise<FetchTopicContentType> => {
-    try {
-      const topicContentType = (await fetchTopic(topicName)).data.contentType;
-      return {
-        contentType: topicContentType,
-        error: null,
-      };
-    } catch (e: any) {
-      return {
-        contentType: undefined,
-        error: e as Error,
-      };
-    }
-  };
 
   const verify = async (
     topicName: string,

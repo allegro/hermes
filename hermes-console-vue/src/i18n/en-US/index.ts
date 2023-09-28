@@ -640,6 +640,7 @@ const en_US = {
     form: {
       validationError: 'Some fields are not valid',
       parseError: 'Error parsing form data',
+      fetchTopicContentTypeError: 'Error fetching topic content type',
     },
     subscriptionOffsets: {
       move: {

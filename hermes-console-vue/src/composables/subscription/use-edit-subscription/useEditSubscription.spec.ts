@@ -5,11 +5,14 @@ import {
   dummyOwnerSources,
 } from '@/dummy/subscription-form';
 import { dummySubscription } from '@/dummy/subscription';
+import { dummyTopic } from '@/dummy/topic';
 import {
   editSubscriptionErrorHandler,
   editSubscriptionHandler,
   fetchOwnerHandler,
   fetchOwnerSourcesHandler,
+  fetchTopicErrorHandler,
+  fetchTopicHandler,
 } from '@/mocks/handlers';
 import {
   expectNotificationDispatched,
@@ -27,6 +30,9 @@ describe('useEditSubscription', () => {
   const server = setupServer(
     fetchOwnerSourcesHandler(dummyOwnerSources),
     fetchOwnerHandler({}),
+    fetchTopicHandler({
+      topic: dummyTopic,
+    }),
   );
 
   beforeEach(() => {
@@ -141,6 +147,39 @@ describe('useEditSubscription', () => {
       expectNotificationDispatched(notificationStore, {
         text: 'notifications.subscription.edit.success',
         type: 'success',
+      });
+    });
+  });
+
+  it('should dispatch notification about fetchTopicContentType error', async () => {
+    //given
+    // @ts-ignore
+    vi.mocked(parseFormToRequestBody).mockReturnValueOnce(null);
+    server.use(
+      editSubscriptionHandler(
+        dummySubscription.topicName,
+        dummySubscription.name,
+      ),
+      fetchTopicErrorHandler({
+        topicName: dummySubscription.topicName,
+        errorCode: 500,
+      }),
+    );
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+    const { createOrUpdateSubscription } = useEditSubscription(
+      dummySubscription.topicName,
+      dummySubscription,
+    );
+
+    // when
+    await createOrUpdateSubscription();
+
+    // then
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        text: 'notifications.form.fetchTopicContentTypeError',
+        type: 'error',
       });
     });
   });

@@ -12,9 +12,10 @@ import type { SubscriptionForm } from '@/composables/subscription/use-form-subsc
 export function parseFormToRequestBody(
   topic: string,
   form: SubscriptionForm,
+  topicContentType: string,
 ): CreateSubscriptionFormRequestBody {
   const pathFilters = form.pathFilters.map((filter: PathFilter) =>
-    mapPathFilter(form.contentType, filter),
+    mapPathFilter(topicContentType, filter),
   );
   const headerFilters = form.headerFilters.map((filter: HeaderFilter) =>
     mapHeaderFilter(filter),

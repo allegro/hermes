@@ -1,5 +1,6 @@
 import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { createSubscription as doCreateSubscription } from '@/api/hermes-client';
+import { fetchContentType } from '@/composables/subscription/use-subscription-filters-debug/useSubscriptionFiltersDebug';
 import { parseFormToRequestBody } from '@/composables/subscription/use-form-subscription/form-mapper';
 import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
@@ -44,8 +45,25 @@ export function useCreateSubscription(topic: string): UseCreateSubscription {
     creatingSubscription.value = true;
     let requestBody: CreateSubscriptionFormRequestBody | null = null;
 
+    const topicContentType = await fetchContentType(topic);
+
+    if (topicContentType.error) {
+      await notificationsStore.dispatchNotification({
+        title: useGlobalI18n().t('notifications.subscription.create.failure'),
+        text: useGlobalI18n().t(
+          'notifications.form.fetchTopicContentTypeError',
+        ),
+        type: 'error',
+      });
+      return false;
+    }
+
     try {
-      requestBody = parseFormToRequestBody(topic, form.value);
+      requestBody = parseFormToRequestBody(
+        topic,
+        form.value,
+        topicContentType.contentType!!,
+      );
     } catch (e) {
       await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.subscription.create.failure'),
