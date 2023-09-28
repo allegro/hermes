@@ -22,7 +22,6 @@ export function useFormTopic(): UseFormTopic {
   const rawDataSources = getRawDataSources();
   const dataSources = {
     ...rawDataSources,
-    contentTypes: computed(() => rawDataSources.allContentTypes),
   };
 
   return {
@@ -55,7 +54,7 @@ function getRawDataSources(): RawDataSources {
     { title: 'DAYS', value: 'DAYS' },
     { title: 'HOURS', value: 'HOURS' },
   ];
-  const allContentTypes = configStore.loadedConfig.topic.contentTypes.map(
+  const contentTypes = configStore.loadedConfig.topic.contentTypes.map(
     (contentType) => {
       return { title: contentType.label, value: contentType.value };
     },
@@ -75,7 +74,7 @@ function getRawDataSources(): RawDataSources {
   const loadingOwners = ref(false);
 
   return {
-    allContentTypes,
+    contentTypes,
     ackModes,
     retentionUnits,
     fetchedOwnerSources,
@@ -150,7 +149,7 @@ export function initializeFullyFilledForm(
     },
     trackingEnabled: topic.trackingEnabled,
     contentType: topic.contentType,
-    maxMessageSize: topic.maxMessageSize ? topic.maxMessageSize : 10240,
+    maxMessageSize: topic.maxMessageSize!!,
     ack: topic.ack,
     schema: topic.schema ? topic.schema : '',
   };

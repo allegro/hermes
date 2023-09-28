@@ -16,6 +16,8 @@ import type {
   UseCreateTopicErrors,
 } from '@/composables/topic/use-create-topic/types';
 
+export const defaultMaxMessageSize = 10240;
+
 export function useCreateTopic(group: string): UseCreateTopic {
   const notificationsStore = useNotificationsStore();
 
@@ -98,7 +100,7 @@ function initializeForm(form: Ref<TopicForm>): void {
     },
     trackingEnabled: false,
     contentType: loadedConfig.value.topic.defaults.contentType,
-    maxMessageSize: 10240,
+    maxMessageSize: defaultMaxMessageSize,
     ack: loadedConfig.value.topic.defaults.ack,
     schema: '',
   };

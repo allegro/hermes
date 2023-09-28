@@ -1,3 +1,4 @@
+import { parseTopicForm } from '@/composables/topic/use-form-topic/parser';
 import { State } from '@/api/subscription';
 import axios from '@/utils/axios/axios-instance';
 import qs from 'query-string';
@@ -441,28 +442,6 @@ export function editTopic(topicForm: TopicForm): ResponsePromise<void> {
       [contentTypeHeader]: applicationJsonMediaType,
     },
   });
-}
-
-function parseTopicForm(topicForm: TopicForm, group: string | null) {
-  delete topicForm.ownerSearch;
-  delete topicForm.offlineStorage.retentionTime.retentionUnit;
-  delete topicForm.retentionTime.infinite;
-  if (topicForm.contentType !== 'AVRO') {
-    delete topicForm.schema;
-  }
-  if (group) {
-    topicForm.name = `${group}.${topicForm.name}`;
-  }
-  const parsedRequestBody = {
-    ...topicForm,
-    owner: { source: topicForm.ownerSource?.name, id: topicForm.owner },
-    auth: {
-      ...topicForm.auth,
-      publishers: topicForm.auth.publishers.split(','),
-    },
-  };
-  delete parsedRequestBody.ownerSource;
-  return parsedRequestBody;
 }
 
 export function verifyFilters(

@@ -50,7 +50,7 @@ describe('useFormTopic', () => {
 
     // then
     await waitFor(() => {
-      expect(JSON.stringify(dataSources.contentTypes.value)).toMatchObject(
+      expect(JSON.stringify(dataSources.contentTypes)).toMatchObject(
         JSON.stringify(dummyContentTypes),
       );
       expect(JSON.stringify(dataSources.ackModes)).toMatchObject(

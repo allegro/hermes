@@ -56,7 +56,7 @@ export interface FormValidators {
 }
 
 export interface RawDataSources {
-  allContentTypes: SelectFieldOption[];
+  contentTypes: SelectFieldOption[];
   ackModes: SelectFieldOption[];
   retentionUnits: SelectFieldOption[];
   fetchedOwnerSources: any;
@@ -66,7 +66,7 @@ export interface RawDataSources {
 }
 
 export interface DataSources {
-  contentTypes: ComputedRef<SelectFieldOption[]>;
+  contentTypes: SelectFieldOption[];
   ackModes: SelectFieldOption[];
   retentionUnits: SelectFieldOption[];
   ownerSources: ComputedRef<SelectFieldOption<OwnerSource>[]>;

@@ -13,7 +13,7 @@
 
   const props = defineProps<{
     topic: TopicWithSchema | null;
-    group: string | null | undefined;
+    group: string | null;
     operation: 'add' | 'edit';
   }>();
   const emit = defineEmits<{
@@ -226,7 +226,7 @@
     <select-field
       v-model="form.contentType"
       :label="$t('topicForm.fields.contentType')"
-      :items="dataSources.contentTypes.value"
+      :items="dataSources.contentTypes"
     />
 
     <text-field

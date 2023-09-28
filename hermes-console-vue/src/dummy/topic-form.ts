@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { defaultMaxMessageSize } from '@/composables/topic/use-create-topic/useCreateTopic';
 import { dummyAppConfig } from '@/dummy/app-config';
 import { dummyOwner, dummyTopic } from '@/dummy/topic';
 import { matchRegex, max, min, required } from '@/utils/validators';
@@ -73,7 +74,7 @@ export const dummyOwnerSources = [
 ];
 
 export const dummyDataSources: DataSources = {
-  contentTypes: computed(() => dummyContentTypes),
+  contentTypes: dummyContentTypes,
   ackModes: dummyAckModes,
   retentionUnits: dummyRetentionUnits,
   ownerSources: computed(() =>
@@ -121,7 +122,7 @@ export const dummyInitializedTopicForm = {
   },
   trackingEnabled: false,
   contentType: dummyAppConfig.topic.defaults.contentType,
-  maxMessageSize: 10240,
+  maxMessageSize: defaultMaxMessageSize,
   ack: dummyAppConfig.topic.defaults.ack,
   schema: '',
 };
@@ -155,7 +156,7 @@ export const dummyInitializedEditTopicForm = {
   },
   trackingEnabled: dummyTopic.trackingEnabled,
   contentType: dummyTopic.contentType,
-  maxMessageSize: dummyTopic.maxMessageSize ? dummyTopic.maxMessageSize : 10240,
+  maxMessageSize: dummyTopic.maxMessageSize!!,
   ack: dummyTopic.ack,
   schema: dummyTopic.schema ? dummyTopic.schema : '',
 };
