@@ -1,6 +1,6 @@
 import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { createSubscription as doCreateSubscription } from '@/api/hermes-client';
-import { fetchContentType } from '@/composables/subscription/use-subscription-filters-debug/useSubscriptionFiltersDebug';
+import { fetchContentType } from '@/composables/topic/use-topic/useTopic';
 import { parseFormToRequestBody } from '@/composables/subscription/use-form-subscription/form-mapper';
 import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';

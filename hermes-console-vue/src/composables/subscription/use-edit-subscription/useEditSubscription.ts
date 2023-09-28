@@ -3,7 +3,7 @@ import {
   editSubscription as doEditSubscription,
   fetchOwner,
 } from '@/api/hermes-client';
-import { fetchContentType } from '@/composables/subscription/use-subscription-filters-debug/useSubscriptionFiltersDebug';
+import { fetchContentType } from '@/composables/topic/use-topic/useTopic';
 import {
   initializeFullyFilledForm,
   watchOwnerSearch,
