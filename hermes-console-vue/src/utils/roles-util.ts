@@ -1,5 +1,12 @@
 import { Role } from '@/api/role';
 
+export function isAny(roles: Role[] | undefined): boolean {
+  if (roles) {
+    return roles.includes(Role.ANY);
+  }
+  return false;
+}
+
 export function isAdmin(roles: Role[] | undefined): boolean {
   if (roles) {
     return roles.includes(Role.ADMIN);

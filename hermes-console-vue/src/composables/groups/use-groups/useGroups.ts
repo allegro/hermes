@@ -78,7 +78,7 @@ export function useGroups(): UseGroups {
   const removeGroup = async (groupId: string): Promise<boolean> => {
     try {
       await deleteGroup(groupId);
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.group.delete.success', {
           groupId,
         }),
@@ -86,7 +86,7 @@ export function useGroups(): UseGroups {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.group.delete.failure', {
@@ -100,7 +100,7 @@ export function useGroups(): UseGroups {
   const doCreateGroup = async (groupId: string): Promise<boolean> => {
     try {
       await createGroup({ groupName: groupId });
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.group.create.success', {
           groupId,
         }),
@@ -109,7 +109,7 @@ export function useGroups(): UseGroups {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.group.create.failure', {

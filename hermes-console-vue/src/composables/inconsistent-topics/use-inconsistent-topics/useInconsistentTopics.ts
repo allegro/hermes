@@ -46,7 +46,7 @@ export function useInconsistentTopics(): UseInconsistentTopics {
   const removeInconsistentTopic = async (topic: string): Promise<boolean> => {
     try {
       await deleteInconsistentTopic(topic);
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         text: useGlobalI18n().t(
           'notifications.inconsistentTopic.delete.success',
           {
@@ -57,7 +57,7 @@ export function useInconsistentTopics(): UseInconsistentTopics {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.inconsistentTopic.delete.failure', {

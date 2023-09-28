@@ -1,17 +1,40 @@
+import { createTestingPinia } from '@pinia/testing';
 import { createTestingPiniaWithState } from '@/dummy/store';
+import {
+  dummyDataSources,
+  dummyInitializedTopicForm,
+  dummyTopicFormValidator,
+} from '@/dummy/topic-form';
 import { dummyGroups } from '@/dummy/groups';
 import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
+import { setActivePinia } from 'pinia';
+import { useCreateTopic } from '@/composables/topic/use-create-topic/useCreateTopic';
 import { useGroups } from '@/composables/groups/use-groups/useGroups';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import GroupTopicsView from '@/views/group-topics/GroupTopicsView.vue';
+import type { UseCreateTopic } from '@/composables/topic/use-create-topic/types';
 import type { UseGroups } from '@/composables/groups/use-groups/useGroups';
 import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 
 vi.mock('@/composables/groups/use-groups/useGroups');
 vi.mock('@/composables/roles/use-roles/useRoles');
+
+vi.mock('@/composables/topic/use-create-topic/useCreateTopic');
+
+const useCreateTopicStub: UseCreateTopic = {
+  form: ref(dummyInitializedTopicForm),
+  validators: dummyTopicFormValidator,
+  dataSources: dummyDataSources,
+  createOrUpdateTopic: () => Promise.resolve(true),
+  creatingOrUpdatingTopic: ref(false),
+  errors: ref({
+    fetchOwners: null,
+    fetchOwnerSources: null,
+  }),
+};
 
 const useGroupsStub: UseGroups = {
   groups: ref(dummyGroups),
@@ -21,6 +44,7 @@ const useGroupsStub: UseGroups = {
     fetchGroupNames: null,
   }),
   removeGroup: () => Promise.resolve(true),
+  createGroup: () => Promise.resolve(true),
 };
 
 const useRolesStub: UseRoles = {
@@ -32,6 +56,16 @@ const useRolesStub: UseRoles = {
 };
 
 describe('GroupTopicsView', () => {
+  const pinia = createTestingPinia({
+    fakeApp: true,
+  });
+
+  beforeEach(async () => {
+    beforeEach(() => {
+      setActivePinia(pinia);
+    });
+  });
+
   it('should render if data was successfully fetched', () => {
     // given
     vi.mocked(useGroups).mockReturnValueOnce(useGroupsStub);
@@ -130,5 +164,22 @@ describe('GroupTopicsView', () => {
     expect(
       getByText('groups.confirmationDialog.remove.text'),
     ).toBeInTheDocument();
+  });
+
+  it('should show create topic dialog on button click', async () => {
+    // given
+    vi.mocked(useGroups).mockReturnValueOnce(useGroupsStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useCreateTopic).mockReturnValueOnce(useCreateTopicStub);
+
+    // when
+    const { getByText, getAllByText } = render(GroupTopicsView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+    await fireEvent.click(getByText('groups.actions.createTopic'));
+
+    // then
+    expect(getAllByText('groups.actions.createTopic')[0]).toBeInTheDocument();
+    expect(getByText('topicForm.actions.create')).toBeInTheDocument();
   });
 });

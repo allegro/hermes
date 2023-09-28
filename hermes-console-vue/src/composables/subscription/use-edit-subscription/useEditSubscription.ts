@@ -56,7 +56,7 @@ export function useEditSubscription(
     try {
       requestBody = parseFormToRequestBody(topic, form.value);
     } catch (e) {
-      notificationsStore.dispatchNotification({
+      await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.subscription.edit.failure'),
         text: useGlobalI18n().t('notifications.form.parseError'),
         type: 'error',
@@ -67,7 +67,7 @@ export function useEditSubscription(
 
     try {
       await doEditSubscription(topic, subscription.name, requestBody!!);
-      notificationsStore.dispatchNotification({
+      await notificationsStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.edit.success', {
           subscriptionName: form.value.name,
         }),
@@ -75,7 +75,7 @@ export function useEditSubscription(
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.subscription.edit.failure'),

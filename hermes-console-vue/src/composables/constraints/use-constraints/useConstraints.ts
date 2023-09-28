@@ -70,7 +70,7 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.constraints.topic.created.failure', {
@@ -99,7 +99,7 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.constraints.topic.deleted.failure', {
@@ -131,7 +131,7 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t(
@@ -167,7 +167,7 @@ export function useConstraints(): UseConstraints {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t(

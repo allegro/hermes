@@ -1,3 +1,4 @@
+import { parseTopicForm } from '@/composables/topic/use-form-topic/parser';
 import { State } from '@/api/subscription';
 import axios from '@/utils/axios/axios-instance';
 import qs from 'query-string';
@@ -41,6 +42,7 @@ import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
+import type { TopicForm } from '@/composables/topic/use-form-topic/types';
 
 const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';
@@ -417,6 +419,29 @@ export function editSubscription(
       },
     },
   );
+}
+
+export function createTopic(
+  topicForm: TopicForm,
+  group: string,
+): ResponsePromise<void> {
+  const parsedRequestBody = parseTopicForm(topicForm, group);
+  return axios.post(`/topics`, parsedRequestBody, {
+    headers: {
+      [acceptHeader]: applicationJsonMediaType,
+      [contentTypeHeader]: applicationJsonMediaType,
+    },
+  });
+}
+
+export function editTopic(topicForm: TopicForm): ResponsePromise<void> {
+  const parsedRequestBody = parseTopicForm(topicForm, null);
+  return axios.put(`/topics/${topicForm.name}`, parsedRequestBody, {
+    headers: {
+      [acceptHeader]: applicationJsonMediaType,
+      [contentTypeHeader]: applicationJsonMediaType,
+    },
+  });
 }
 
 export function verifyFilters(

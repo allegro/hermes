@@ -1,5 +1,7 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
+  import { isAny } from '@/utils/roles-util';
+  import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
   import { useRouter } from 'vue-router';
   import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
@@ -11,6 +13,7 @@
     groupId: string;
     topicName: string;
     subscriptions: Subscription[];
+    roles: Role[] | undefined;
   }>();
 
   const statusTextColor: Record<State, String> = {
@@ -48,7 +51,7 @@
   <v-expansion-panels>
     <v-expansion-panel
       :title="`${$t('topicView.subscriptions.title')} (${
-        props.subscriptions?.length
+        subscriptions?.length
       })`"
     >
       <v-expansion-panel-text class="d-flex flex-row subscriptions-panel">
@@ -60,6 +63,7 @@
           >
             <template #activator>
               <v-btn
+                :disabled="!isAny(roles)"
                 prepend-icon="mdi-plus"
                 density="comfortable"
                 @click="showSubscriptionForm()"

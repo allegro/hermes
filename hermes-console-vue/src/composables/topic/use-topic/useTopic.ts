@@ -151,7 +151,7 @@ export function useTopic(topicName: string): UseTopic {
   const removeTopic = async (): Promise<boolean> => {
     try {
       await deleteTopic(topicName);
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.topic.delete.success', {
           topicName,
         }),
@@ -159,7 +159,7 @@ export function useTopic(topicName: string): UseTopic {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.topic.delete.failure', {

@@ -134,6 +134,7 @@
         :groupId="groupId"
         :topic-name="topicName"
         :subscriptions="subscriptions ? subscriptions : []"
+        :roles="roles"
       />
 
       <offline-clients

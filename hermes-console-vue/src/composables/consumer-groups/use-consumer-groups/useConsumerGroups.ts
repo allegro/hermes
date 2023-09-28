@@ -58,7 +58,7 @@ export function useConsumerGroups(
         type: 'success',
       });
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.subscriptionOffsets.move.failure', {

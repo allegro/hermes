@@ -1,5 +1,6 @@
 import { Ack } from '@/api/topic';
 import { ContentType } from '@/api/content-type';
+import { defaultMaxMessageSize } from '@/composables/topic/use-create-topic/useCreateTopic';
 import type {
   MessagePreview,
   TopicMetrics,
@@ -27,7 +28,7 @@ export const dummyTopic: TopicWithSchema = {
   migratedFromJsonType: false,
   schemaIdAwareSerializationEnabled: false,
   contentType: ContentType.AVRO,
-  maxMessageSize: 10240,
+  maxMessageSize: defaultMaxMessageSize,
   auth: {
     publishers: [],
     enabled: false,

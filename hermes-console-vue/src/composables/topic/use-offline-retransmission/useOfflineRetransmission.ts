@@ -25,7 +25,7 @@ export function useOfflineRetransmission(): UseOfflineRetransmission {
       });
       return true;
     } catch (e: any) {
-      dispatchErrorNotification(
+      await dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t(

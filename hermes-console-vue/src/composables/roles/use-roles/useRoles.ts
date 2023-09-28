@@ -34,7 +34,7 @@ export function useRoles(
       ).data;
     } catch (e) {
       error.value.fetchRoles = e as Error;
-      notificationStore.dispatchNotification({
+      await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.roles.fetch.failure'),
         type: 'warning',
       });

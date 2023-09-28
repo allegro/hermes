@@ -1,19 +1,28 @@
 <script setup lang="ts">
   import { copyToClipboard } from '@/utils/copy-utils';
+  import { download } from '@/utils/download-utils';
   import {
     isSubscriptionOwnerOrAdmin,
     isTopicOwnerOrAdmin,
   } from '@/utils/roles-util';
+  import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useFavorites } from '@/store/favorites/useFavorites';
+  import { useI18n } from 'vue-i18n';
   import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
+  import { useRouter } from 'vue-router';
   import OfflineRetransmissionDialog from '@/views/topic/offline-retransmission/OfflineRetransmissionDialog.vue';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
+  import TopicForm from '@/views/topic/topic-form/TopicForm.vue';
   import type { Owner } from '@/api/owner';
   import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';
 
   const favorites = useFavorites();
+
+  const router = useRouter();
+
+  const { t } = useI18n();
 
   const props = defineProps<{
     topic: TopicWithSchema;
@@ -41,10 +50,54 @@
       endTimestamp,
     });
   };
+
+  const showTopicEditForm = ref(false);
+  function showTopicForm() {
+    showTopicEditForm.value = true;
+  }
+  function hideTopicForm() {
+    showTopicEditForm.value = false;
+  }
+
+  function refreshPage() {
+    router.go(0);
+  }
+
+  function exportTopic() {
+    download(
+      JSON.stringify(props.topic),
+      `${props.topic.name.replace('.', '_')}.json`,
+      'application/json',
+    );
+  }
 </script>
 
 <template>
   <v-card density="compact">
+    <div class="d-flex justify-end mr-4 mb-1">
+      <v-dialog v-model="showTopicEditForm" min-width="800" :persistent="true">
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">
+              {{
+                t('topicView.header.editTopic', {
+                  topicName: topic.name,
+                })
+              }}
+            </span>
+          </v-card-title>
+          <v-card-text>
+            <TopicForm
+              operation="edit"
+              :topic="topic"
+              :group="null"
+              @created="refreshPage"
+              @cancel="hideTopicForm"
+            />
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </div>
     <v-card-item>
       <p class="text-overline">{{ $t('topicView.header.topic') }}</p>
       <div class="d-flex justify-space-between">
@@ -119,12 +172,14 @@
             !isTopicOwnerOrAdmin(roles)
           "
           prepend-icon="mdi-pencil"
+          @click="showTopicForm"
           >{{ $t('topicView.header.actions.edit') }}
         </v-btn>
         <v-btn
-          prepend-icon="mdi-content-copy"
+          prepend-icon="mdi-export"
           :disabled="!isTopicOwnerOrAdmin(roles)"
-          >{{ $t('topicView.header.actions.clone') }}
+          @click="exportTopic"
+          >{{ $t('topicView.header.actions.export') }}
         </v-btn>
         <v-btn
           v-if="
