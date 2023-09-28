@@ -3,6 +3,7 @@ import {
   editSubscription as doEditSubscription,
   fetchOwner,
 } from '@/api/hermes-client';
+import { fetchContentType } from '@/composables/topic/use-topic/useTopic';
 import {
   initializeFullyFilledForm,
   watchOwnerSearch,
@@ -53,8 +54,25 @@ export function useEditSubscription(
     updatingSubscription.value = true;
     let requestBody: CreateSubscriptionFormRequestBody | null = null;
 
+    const topicContentType = await fetchContentType(topic);
+
+    if (topicContentType.error) {
+      await notificationsStore.dispatchNotification({
+        title: useGlobalI18n().t('notifications.subscription.create.failure'),
+        text: useGlobalI18n().t(
+          'notifications.form.fetchTopicContentTypeError',
+        ),
+        type: 'error',
+      });
+      return false;
+    }
+
     try {
-      requestBody = parseFormToRequestBody(topic, form.value);
+      requestBody = parseFormToRequestBody(
+        topic,
+        form.value,
+        topicContentType.contentType!!,
+      );
     } catch (e) {
       await notificationsStore.dispatchNotification({
         title: useGlobalI18n().t('notifications.subscription.edit.failure'),

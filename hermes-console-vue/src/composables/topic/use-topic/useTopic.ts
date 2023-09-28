@@ -1,5 +1,6 @@
 import {
   removeTopic as deleteTopic,
+  fetchTopic,
   fetchOfflineClientsSource as getOfflineClientsSource,
   fetchTopic as getTopic,
   fetchTopicMessagesPreview as getTopicMessagesPreview,
@@ -12,6 +13,7 @@ import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
+import type { ContentType } from '@/api/content-type';
 import type {
   MessagePreview,
   TopicMetrics,
@@ -184,4 +186,26 @@ export function useTopic(topicName: string): UseTopic {
     fetchOfflineClientsSource,
     removeTopic,
   };
+}
+
+export interface FetchTopicContentType {
+  contentType: ContentType | undefined;
+  error: Error | null;
+}
+
+export async function fetchContentType(
+  topicName: string,
+): Promise<FetchTopicContentType> {
+  try {
+    const topicContentType = (await fetchTopic(topicName)).data.contentType;
+    return {
+      contentType: topicContentType,
+      error: null,
+    };
+  } catch (e: any) {
+    return {
+      contentType: undefined,
+      error: e as Error,
+    };
+  }
 }

@@ -1,10 +1,12 @@
 import { ContentType } from '@/api/content-type';
 import { dispatchErrorNotification } from '@/utils/notification-utils';
-import { fetchTopic, verifyFilters } from '@/api/hermes-client';
+import { fetchContentType } from '@/composables/topic/use-topic/useTopic';
 import { ref } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import { VerificationStatus } from '@/api/message-filters-verification';
+import { verifyFilters } from '@/api/hermes-client';
+import type { FetchTopicContentType } from '@/composables/topic/use-topic/useTopic';
 import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
 import type { PathFilterJson } from '@/api/subscription';
 import type { Ref } from 'vue';
@@ -19,11 +21,6 @@ export interface UseSubscriptionFiltersDebug {
     message: string,
     topicContentType: ContentType,
   ) => Promise<void>;
-}
-
-export interface FetchTopicContentType {
-  contentType: ContentType | undefined;
-  error: Error | null;
 }
 
 const toFiltersJSON = (
@@ -42,23 +39,6 @@ export function useSubscriptionFiltersDebug(): UseSubscriptionFiltersDebug {
   const notificationStore = useNotificationsStore();
   const status: Ref<VerificationStatus | undefined> = ref();
   const errorMessage: Ref<string | undefined> = ref();
-
-  const fetchContentType = async (
-    topicName: string,
-  ): Promise<FetchTopicContentType> => {
-    try {
-      const topicContentType = (await fetchTopic(topicName)).data.contentType;
-      return {
-        contentType: topicContentType,
-        error: null,
-      };
-    } catch (e: any) {
-      return {
-        contentType: undefined,
-        error: e as Error,
-      };
-    }
-  };
 
   const verify = async (
     topicName: string,
