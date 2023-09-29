@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaPartitionLeaderLoadingJob;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.DefaultReadinessChecker;
@@ -45,7 +46,9 @@ public class FrontendServerConfiguration {
                                      TopicMetadataLoadingJob topicMetadataLoadingJob,
                                      SslContextFactoryProvider sslContextFactoryProvider,
                                      TopicLoadingProperties topicLoadingProperties,
-                                     PrometheusMeterRegistry prometheusMeterRegistry) {
+                                     PrometheusMeterRegistry prometheusMeterRegistry,
+                                     KafkaPartitionLeaderLoadingJob kafkaPartitionLeaderLoadingJob,
+                                     BrokerLatencyReporterProperties brokerLatencyReporterProperties) {
         return new HermesServer(
                 sslProperties,
                 hermesServerProperties,
@@ -57,7 +60,10 @@ public class FrontendServerConfiguration {
                 topicMetadataLoadingJob,
                 topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
                 sslContextFactoryProvider,
-                prometheusMeterRegistry);
+                prometheusMeterRegistry,
+                kafkaPartitionLeaderLoadingJob,
+                brokerLatencyReporterProperties.isPerBrokerLatencyReportingEnabled()
+                );
     }
 
     @Bean
