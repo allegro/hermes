@@ -7,6 +7,7 @@ import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
 import org.xnio.SslClientAuthMode;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaPartitionLeaderLoadingJob;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
@@ -38,6 +39,8 @@ public class HermesServer {
     private final PrometheusMeterRegistry prometheusMeterRegistry;
     private Undertow undertow;
     private HermesShutdownHandler gracefulShutdown;
+    private final KafkaPartitionLeaderLoadingJob kafkaPartitionLeaderLoadingJob;
+    private final boolean kafkaPartitionLeaderLoadingJobEnabled;
 
     public HermesServer(
             SslParameters sslParameters,
@@ -50,7 +53,9 @@ public class HermesServer {
             TopicMetadataLoadingJob topicMetadataLoadingJob,
             boolean topicMetadataLoadingJobEnabled,
             SslContextFactoryProvider sslContextFactoryProvider,
-            PrometheusMeterRegistry prometheusMeterRegistry) {
+            PrometheusMeterRegistry prometheusMeterRegistry,
+            KafkaPartitionLeaderLoadingJob kafkaLeaderRegistryLoadingJob,
+            boolean kafkaPartitionLeaderLoadingJobEnabled) {
 
         this.sslParameters = sslParameters;
         this.hermesServerParameters = hermesServerParameters;
@@ -64,6 +69,8 @@ public class HermesServer {
         this.topicMetadataLoadingJobEnabled = topicMetadataLoadingJobEnabled;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
         this.throughputLimiter = throughputLimiter;
+        this.kafkaPartitionLeaderLoadingJob = kafkaLeaderRegistryLoadingJob;
+        this.kafkaPartitionLeaderLoadingJobEnabled = kafkaPartitionLeaderLoadingJobEnabled;
     }
 
     public void start() {
@@ -74,6 +81,11 @@ public class HermesServer {
         if (topicMetadataLoadingJobEnabled) {
             topicMetadataLoadingJob.start();
         }
+
+        if (kafkaPartitionLeaderLoadingJobEnabled) {
+            kafkaPartitionLeaderLoadingJob.start();
+        }
+
         healthCheckService.startup();
         readinessChecker.start();
     }
@@ -101,6 +113,11 @@ public class HermesServer {
         if (topicMetadataLoadingJobEnabled) {
             topicMetadataLoadingJob.stop();
         }
+
+        if (kafkaPartitionLeaderLoadingJobEnabled) {
+            kafkaPartitionLeaderLoadingJob.stop();
+        }
+
         readinessChecker.stop();
     }
 

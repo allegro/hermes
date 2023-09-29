@@ -42,6 +42,7 @@ public class MetricsFacade {
     private final ConsumerSenderMetrics consumerSenderMetrics;
     private final OffsetCommitsMetrics offsetCommitsMetrics;
     private final MaxRateMetrics maxRateMetrics;
+    private final BrokerMetrics brokerMetrics;
 
     public MetricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
         this.meterRegistry = meterRegistry;
@@ -60,6 +61,7 @@ public class MetricsFacade {
         this.consumerSenderMetrics = new ConsumerSenderMetrics(hermesMetrics, meterRegistry);
         this.offsetCommitsMetrics = new OffsetCommitsMetrics(hermesMetrics, meterRegistry);
         this.maxRateMetrics = new MaxRateMetrics(hermesMetrics, meterRegistry);
+        this.brokerMetrics = new BrokerMetrics(meterRegistry);
     }
 
     public TopicMetrics topics() {
@@ -117,6 +119,8 @@ public class MetricsFacade {
     public MaxRateMetrics maxRate() {
         return maxRateMetrics;
     }
+
+    public BrokerMetrics broker() { return brokerMetrics;}
 
     public void unregisterAllMetricsRelatedTo(SubscriptionName subscription) {
         Collection<Meter> meters = Search.in(meterRegistry)

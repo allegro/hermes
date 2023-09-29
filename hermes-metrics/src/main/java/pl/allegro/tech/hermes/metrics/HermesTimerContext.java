@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Timer;
 
 import java.io.Closeable;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public class HermesTimerContext implements Closeable {
@@ -26,8 +27,13 @@ public class HermesTimerContext implements Closeable {
 
     @Override
     public void close() {
+        closeAndGet();
+    }
+
+    public Duration closeAndGet() {
         long amount = clock.monotonicTime() - startNanos;
         graphiteTimer.update(amount, TimeUnit.NANOSECONDS);
         micrometerTimer.record(amount, TimeUnit.NANOSECONDS);
+        return Duration.ofNanos(amount);
     }
 }

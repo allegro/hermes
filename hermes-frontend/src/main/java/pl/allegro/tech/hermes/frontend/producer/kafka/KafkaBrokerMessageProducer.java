@@ -98,10 +98,10 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
             if (e == null) {
-                callback.onPublished(message, topic);
+                callback.onPublished(message, topic, recordMetadata);
                 producers.maybeRegisterNodeMetricsGauges(metricsFacade);
             } else {
-                callback.onUnpublished(message, topic, e);
+                callback.onUnpublished(message, topic, recordMetadata, e);
             }
         }
     }

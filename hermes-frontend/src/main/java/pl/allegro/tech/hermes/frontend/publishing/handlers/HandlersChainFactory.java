@@ -8,6 +8,7 @@ import io.undertow.server.HttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
@@ -32,12 +33,14 @@ public class HandlersChainFactory {
     private final ThroughputLimiter throughputLimiter;
     private final Optional<AuthenticationConfiguration> authenticationConfiguration;
     private final HandlersChainParameters handlersChainParameters;
+    private final BrokerLatencyReporter brokerLatencyReporter;
 
     public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                 MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                 BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                 ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authenticationConfiguration,
-                                boolean messagePreviewEnabled, HandlersChainParameters handlersChainParameters) {
+                                boolean messagePreviewEnabled, HandlersChainParameters handlersChainParameters,
+                                BrokerLatencyReporter brokerLatencyReporter) {
         this.topicsCache = topicsCache;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
@@ -48,10 +51,11 @@ public class HandlersChainFactory {
         this.throughputLimiter = throughputLimiter;
         this.authenticationConfiguration = authenticationConfiguration;
         this.handlersChainParameters = handlersChainParameters;
+        this.brokerLatencyReporter = brokerLatencyReporter;
     }
 
     public HttpHandler provide() {
-        HttpHandler publishing = new PublishingHandler(brokerMessageProducer, messageErrorProcessor, messageEndProcessor);
+        HttpHandler publishing = new PublishingHandler(brokerMessageProducer, messageErrorProcessor, messageEndProcessor, brokerLatencyReporter);
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
         HttpHandler timeoutHandler = new TimeoutHandler(messageEndProcessor, messageErrorProcessor);
         HttpHandler handlerAfterRead = previewEnabled ? new PreviewHandler(messageCreateHandler, previewLog) : messageCreateHandler;

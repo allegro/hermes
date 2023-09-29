@@ -2,8 +2,10 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
@@ -20,12 +22,14 @@ class PublishingHandler implements HttpHandler {
     private final BrokerMessageProducer brokerMessageProducer;
     private final MessageErrorProcessor messageErrorProcessor;
     private final MessageEndProcessor messageEndProcessor;
+    private final BrokerLatencyReporter brokerBrokerLatencyReporter;
 
     PublishingHandler(BrokerMessageProducer brokerMessageProducer, MessageErrorProcessor messageErrorProcessor,
-                      MessageEndProcessor messageEndProcessor) {
+                      MessageEndProcessor messageEndProcessor, BrokerLatencyReporter brokerLatencyReporter) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
+        this.brokerBrokerLatencyReporter = brokerLatencyReporter;
     }
 
     @Override
@@ -51,9 +55,9 @@ class PublishingHandler implements HttpHandler {
 
             // called from kafka producer thread
             @Override
-            public void onPublished(Message message, Topic topic) {
+            public void onPublished(Message message, Topic topic, RecordMetadata recordMetadata) {
                 exchange.getConnection().getWorker().execute(() -> {
-                    brokerLatencyTimers.close();
+                    brokerBrokerLatencyReporter.report(message, recordMetadata, brokerLatencyTimers);
                     if (messageState.setSentToKafka()) {
                         attachment.removeTimeout();
                         messageEndProcessor.sent(exchange, attachment);
@@ -63,14 +67,25 @@ class PublishingHandler implements HttpHandler {
                 });
             }
 
+            @Override
+            public void onPublished(Message message, Topic topic) {
+                onPublished(message, topic, null);
+            }
+
+
             // in most cases this method should be called from worker thread,
             // therefore there is no need to switch it to another worker thread
             @Override
-            public void onUnpublished(Message message, Topic topic, Exception exception) {
+            public void onUnpublished(Message message, Topic topic, RecordMetadata recordMetadata, Exception exception) {
                 messageState.setErrorInSendingToKafka();
-                brokerLatencyTimers.close();
+                brokerBrokerLatencyReporter.report(message, recordMetadata, brokerLatencyTimers);
                 attachment.removeTimeout();
                 handleNotPublishedMessage(exchange, topic, attachment.getMessageId(), exception);
+            }
+
+            @Override
+            public void onUnpublished(Message message, Topic topic, Exception exception) {
+                onUnpublished(message, topic, null, exception);
             }
         });
 
