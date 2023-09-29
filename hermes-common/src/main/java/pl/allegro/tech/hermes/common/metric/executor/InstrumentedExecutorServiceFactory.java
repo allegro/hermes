@@ -11,6 +11,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+
 public class InstrumentedExecutorServiceFactory {
 
     private final ThreadPoolMetrics threadPoolMetrics;
@@ -21,8 +22,12 @@ public class InstrumentedExecutorServiceFactory {
     }
 
     public ExecutorService getExecutorService(String name, int size, boolean monitoringEnabled) {
+        return getExecutorService(name, size, monitoringEnabled, Integer.MAX_VALUE);
+    }
+
+    public ExecutorService getExecutorService(String name, int size, boolean monitoringEnabled, int queueCapacity) {
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-executor-%d").build();
-        ThreadPoolExecutor executor = newFixedThreadPool(name, size, threadFactory);
+        ThreadPoolExecutor executor = newFixedThreadPool(name, size, threadFactory, queueCapacity);
         executor.prestartAllCoreThreads();
 
         if (monitoringEnabled) {
@@ -51,23 +56,21 @@ public class InstrumentedExecutorServiceFactory {
         threadPoolMetrics.createGauges(threadPoolName, executor);
     }
 
-
     /**
-     * Copy of {@link java.util.concurrent.Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)}.
+     * Copy of {@link java.util.concurrent.Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)}
+     * with configurable queue capacity.
      */
-    private ThreadPoolExecutor newFixedThreadPool(String executorName, int size, ThreadFactory threadFactory) {
+    private ThreadPoolExecutor newFixedThreadPool(String executorName, int size, ThreadFactory threadFactory, int queueCapacity) {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 size,
                 size,
                 0L,
                 TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(),
+                new LinkedBlockingQueue<>(queueCapacity),
                 threadFactory,
                 getMeteredRejectedExecutionHandler(executorName)
         );
-
         return executor;
-
     }
 
     RejectedExecutionHandler getMeteredRejectedExecutionHandler(String executorName) {

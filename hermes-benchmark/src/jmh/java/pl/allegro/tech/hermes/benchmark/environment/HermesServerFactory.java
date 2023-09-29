@@ -107,7 +107,7 @@ class HermesServerFactory {
                 throughputLimiter,
                 null,
                 false,
-                handlersChainProperties
+                handlersChainProperties, null
         ).provide();
     }
 }
