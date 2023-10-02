@@ -10,6 +10,8 @@
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
   import type { TopicWithSchema } from '@/api/Topic';
+  import { VAceEditor } from 'vue3-ace-editor';
+  import '../../../config/ace-config';
 
   const props = defineProps<{
     topic: TopicWithSchema | null;
@@ -68,6 +70,14 @@
   const showTrackingAlert = computed(() => form.value.trackingEnabled);
 
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
+
+  const beautify = () => {
+    console.log(form.value.schema);
+    const obj_message = JSON.parse(form.value.schema || '');
+    if (obj_message !== undefined) {
+      form.value.schema = JSON.stringify(obj_message, null, 4);
+    }
+  };
 
   async function submit() {
     if (isFormValid.value) {
@@ -283,11 +293,20 @@
       class="mb-4"
     />
 
-    <v-textarea
-      v-model="form.schema"
-      v-if="isAvroContentTypeSelected"
-      :label="$t('topicForm.fields.schema')"
-    />
+    <div v-if="isAvroContentTypeSelected">
+      <p class="v-label">{{ t('topicForm.fields.schema') }}</p>
+      <v-ace-editor
+        v-model:value="form.schema"
+        lang="json"
+        theme="github"
+        style="height: 300px"
+        :options="{ useWorker: true }"
+        class="my-3"
+      />
+      <v-btn @click="beautify" variant="outlined" color="primary">
+        {{ t('topicForm.fields.beautify') }}
+      </v-btn>
+    </div>
 
     <div class="d-flex justify-end column-gap-2 mt-4">
       <v-btn

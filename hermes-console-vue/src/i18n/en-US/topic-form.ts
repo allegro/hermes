@@ -39,6 +39,7 @@ const messages = {
     },
     storeOffline: 'Store offline',
     schema: 'Avro schema',
+    beautify: 'Beautify',
   },
   warnings: {
     highRequestTimeout: {
