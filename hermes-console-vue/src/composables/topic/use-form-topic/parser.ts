@@ -44,7 +44,9 @@ export function parseTopicForm(
     owner: { source: topicForm.ownerSource?.name, id: topicForm.owner },
     auth: {
       ...topicForm.auth,
-      publishers: topicForm.auth.publishers.split(','),
+      publishers: topicForm.auth.publishers
+        ? topicForm.auth.publishers.replace(' ', '').split(',')
+        : [],
     },
   };
   delete parsedRequestBody.ownerSource;

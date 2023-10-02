@@ -21,6 +21,10 @@
   function onGroupClick(groupName: string) {
     router.push({ path: `/ui/groups/${groupName}` });
   }
+
+  function onGroupBlankClick(groupName: string) {
+    window.open(`${router.currentRoute.value.path}/${groupName}`, '_blank');
+  }
 </script>
 
 <template>
@@ -38,7 +42,10 @@
           v-for="(group, index) in filteredGroups"
           :key="group.name"
           class="groups-table__row"
-          @click="onGroupClick(group.name)"
+          @click.exact="onGroupClick(group.name)"
+          @click.ctrl="onGroupBlankClick(group.name)"
+          @click.meta="onGroupBlankClick(group.name)"
+          @contextmenu="onGroupBlankClick(group.name)"
         >
           <td class="text-medium-emphasis">
             {{ index + 1 }}
