@@ -11,7 +11,7 @@
   import TextField from '@/components/text-field/TextField.vue';
   import type { TopicWithSchema } from '@/api/Topic';
   import { VAceEditor } from 'vue3-ace-editor';
-  import '../../../config/ace-config';
+  import '@/config/ace-config';
 
   const props = defineProps<{
     topic: TopicWithSchema | null;
@@ -72,7 +72,6 @@
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
 
   const beautify = () => {
-    console.log(form.value.schema);
     const obj_message = JSON.parse(form.value.schema || '');
     if (obj_message !== undefined) {
       form.value.schema = JSON.stringify(obj_message, null, 4);

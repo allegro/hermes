@@ -17,7 +17,7 @@
     "dev-server": "node json-server/server.ts"
   },
   "dependencies": {
-    "ace-builds": "^1.28.0",
+    "ace-builds": "1.28.0",
     "axios": "1.4.0",
     "base64-arraybuffer": "1.0.2",
     "jwt-decode": "3.1.2",
