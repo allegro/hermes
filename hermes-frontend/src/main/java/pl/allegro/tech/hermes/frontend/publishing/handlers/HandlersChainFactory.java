@@ -55,7 +55,8 @@ public class HandlersChainFactory {
     }
 
     public HttpHandler provide() {
-        HttpHandler publishing = new PublishingHandler(brokerMessageProducer, messageErrorProcessor, messageEndProcessor, brokerLatencyReporter);
+        HttpHandler publishing = new PublishingHandler(brokerMessageProducer, messageErrorProcessor,
+                messageEndProcessor, brokerLatencyReporter);
         HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
         HttpHandler timeoutHandler = new TimeoutHandler(messageEndProcessor, messageErrorProcessor);
         HttpHandler handlerAfterRead = previewEnabled ? new PreviewHandler(messageCreateHandler, previewLog) : messageCreateHandler;

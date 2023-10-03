@@ -13,6 +13,9 @@ import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.integration.test.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
@@ -38,8 +41,7 @@ public class BrokerLatencyReportingTest extends IntegrationTest {
         frontendStarter.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontendStarter.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, true);
         frontendStarter.overrideProperty(FrontendConfigurationProperties.GRAPHITE_PORT, 18023);
-        frontendStarter.overrideProperty(FrontendConfigurationProperties.BROKER_LATENCY_ENABLED, true);
-        frontendStarter.overrideProperty(FrontendConfigurationProperties.KAFKA_PARTITION_LEADER_REFRESH_INTERVAL, "1s");
+        frontendStarter.overrideProperty(FrontendConfigurationProperties.BROKER_LATENCY_REPORTER_ENABLED, true);
         frontendStarter.start();
 
         publisher = new HermesPublisher(FRONTEND_URL);
@@ -63,10 +65,18 @@ public class BrokerLatencyReportingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(CREATED);
         wait.until(() -> {
-                    String metricsResponse = client.target(FRONTEND_URL + "/status/prometheus").request().get(String.class);
-                    System.out.println(metricsResponse);
-                    assertThat(metricsResponse).contains("hermes_frontend_broker_latency_seconds_count{broker=\"localhost\",} 1.0");
-                }
-        );
+            Double metricValue = getMetricValue("hermes_frontend_broker_latency_seconds_count{ack=\"LEADER\",it cbroker=\"localhost\",")
+                    .orElse(0.0);
+            assertThat(metricValue).isGreaterThan(0.0d);
+        }, 5);
+    }
+
+    private Optional<Double> getMetricValue(String metricPrefix) {
+        String metricsResponse = client.target(FRONTEND_URL + "/status/prometheus").request().get(String.class);
+        return Arrays.stream(metricsResponse.split("\n"))
+                .filter(metricName -> metricName.startsWith(metricPrefix))
+                .findFirst()
+                .map(line -> line.split(" ")[1]) // metrics have format "<metric_name> <metric_value>"
+                .map(Double::valueOf);
     }
 }

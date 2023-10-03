@@ -4,27 +4,38 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "frontend.broker-latency.reporter")
+@ConfigurationProperties(prefix = "frontend.broker-latency-reporter")
 public class BrokerLatencyReporterProperties {
-    private boolean perBrokerLatencyReportingEnabled;
-    private Duration kafkaPartitionLeaderRefreshInterval = Duration.ofMinutes(5);
+    private boolean enabled;
     private Duration slowResponseLoggingThreshold = Duration.ofMillis(100);
 
+    private int threadPoolSize = 8;
 
-    public boolean isPerBrokerLatencyReportingEnabled() {
-        return perBrokerLatencyReportingEnabled;
+    private int threadPoolQueueCapacity = 1_000_000;
+
+
+    public int getThreadPoolSize() {
+        return threadPoolSize;
     }
 
-    public void setPerBrokerLatencyReportingEnabled(boolean perBrokerLatencyReportingEnabled) {
-        this.perBrokerLatencyReportingEnabled = perBrokerLatencyReportingEnabled;
+    public void setThreadPoolSize(int threadPoolSize) {
+        this.threadPoolSize = threadPoolSize;
     }
 
-    public Duration getKafkaPartitionLeaderRefreshInterval() {
-        return kafkaPartitionLeaderRefreshInterval;
+    public int getThreadPoolQueueCapacity() {
+        return threadPoolQueueCapacity;
     }
 
-    public void setKafkaPartitionLeaderRefreshInterval(Duration kafkaPartitionLeaderRefreshInterval) {
-        this.kafkaPartitionLeaderRefreshInterval = kafkaPartitionLeaderRefreshInterval;
+    public void setThreadPoolQueueCapacity(int threadPoolQueueCapacity) {
+        this.threadPoolQueueCapacity = threadPoolQueueCapacity;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Duration getSlowResponseLoggingThreshold() {

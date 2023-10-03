@@ -120,7 +120,9 @@ public class MetricsFacade {
         return maxRateMetrics;
     }
 
-    public BrokerMetrics broker() { return brokerMetrics;}
+    public BrokerMetrics broker() {
+        return brokerMetrics;
+    }
 
     public void unregisterAllMetricsRelatedTo(SubscriptionName subscription) {
         Collection<Meter> meters = Search.in(meterRegistry)

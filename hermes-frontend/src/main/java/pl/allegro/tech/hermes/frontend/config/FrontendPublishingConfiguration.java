@@ -49,7 +49,8 @@ public class FrontendPublishingConfiguration {
                                    MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                    ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig,
-                                   MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties, BrokerLatencyReporter brokerLatencyReporter) {
+                                   MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties,
+                                   BrokerLatencyReporter brokerLatencyReporter) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,
                 brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(),
                 handlersChainProperties, brokerLatencyReporter).provide();

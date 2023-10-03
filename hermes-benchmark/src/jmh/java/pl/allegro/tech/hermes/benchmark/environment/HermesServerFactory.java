@@ -75,8 +75,7 @@ class HermesServerFactory {
                 null,
                 false,
                 null,
-                null,
-                null, false);
+                null);
     }
 
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,

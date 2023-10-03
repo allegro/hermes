@@ -27,13 +27,17 @@ public class HermesTimerContext implements Closeable {
 
     @Override
     public void close() {
-        closeAndGet();
+        reportTimer();
     }
 
     public Duration closeAndGet() {
+        return Duration.ofNanos(reportTimer());
+    }
+
+    private long reportTimer() {
         long amount = clock.monotonicTime() - startNanos;
         graphiteTimer.update(amount, TimeUnit.NANOSECONDS);
         micrometerTimer.record(amount, TimeUnit.NANOSECONDS);
-        return Duration.ofNanos(amount);
+        return amount;
     }
 }
