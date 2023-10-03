@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import '@/config/ace-config';
   import { computed, onMounted, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateTopic } from '@/composables/topic/use-create-topic/useCreateTopic';
@@ -7,11 +8,10 @@
   import { useImportTopic } from '@/composables/topic/use-import-topic/useImportTopic';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import { useTheme } from 'vuetify';
+  import { VAceEditor } from 'vue3-ace-editor';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
-  import { VAceEditor } from 'vue3-ace-editor';
-  import '@/config/ace-config';
   import type { TopicWithSchema } from '@/api/Topic';
 
   const theme = useTheme();
