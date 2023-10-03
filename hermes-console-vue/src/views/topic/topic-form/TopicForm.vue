@@ -10,9 +10,9 @@
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
-  import type { TopicWithSchema } from '@/api/Topic';
   import { VAceEditor } from 'vue3-ace-editor';
   import '@/config/ace-config';
+  import type { TopicWithSchema } from '@/api/Topic';
 
   const theme = useTheme();
   const props = defineProps<{
@@ -78,7 +78,7 @@
       const obj_message = JSON.parse(form.value.schema || '');
       form.value.schema = JSON.stringify(obj_message, null, 4);
     } catch (e) {
-      console.warn("Cannot auto format code - incorrect json");
+      console.warn('Cannot auto format code - incorrect json');
     }
   };
 
