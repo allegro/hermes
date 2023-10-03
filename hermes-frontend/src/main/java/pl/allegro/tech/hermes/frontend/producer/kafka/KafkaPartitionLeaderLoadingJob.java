@@ -27,7 +27,7 @@ public class KafkaPartitionLeaderLoadingJob {
     private ScheduledFuture<?> job;
 
     public void start() {
-        job = executorService.scheduleAtFixedRate(partitionLeaderRegistry::updateLeaders, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
+        job = executorService.scheduleAtFixedRate(partitionLeaderRegistry::updateLeaders, 0L, interval.toSeconds(), TimeUnit.SECONDS);
     }
 
     public void stop() throws InterruptedException {

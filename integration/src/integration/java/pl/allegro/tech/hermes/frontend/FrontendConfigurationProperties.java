@@ -31,4 +31,7 @@ public class FrontendConfigurationProperties {
     public static String ZOOKEEPER_CONNECTION_STRING = "frontend.zookeeper.clusters.[0].connectionString";
     public static String KAFKA_PRODUCER_METADATA_MAX_AGE = "frontend.kafka.producer.metadataMaxAge";
     public static String KAFKA_BROKER_LIST = "frontend.kafka.clusters.[0].brokerList";
+    public static String BROKER_LATENCY_ENABLED = "frontend.broker-latency.reporter.perBrokerLatencyReportingEnabled";
+    public static String KAFKA_PARTITION_LEADER_REFRESH_INTERVAL = "frontend.broker-latency.reporter.kafkaPartitionLeaderRefreshInterval";
+
 }

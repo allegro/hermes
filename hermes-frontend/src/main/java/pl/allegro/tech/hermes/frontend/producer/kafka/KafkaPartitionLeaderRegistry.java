@@ -8,8 +8,8 @@ import org.apache.kafka.common.TopicPartitionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -40,14 +40,15 @@ public class KafkaPartitionLeaderRegistry {
         return Map.entry(new TopicPartition(topic.name(), partition.partition()), partition.leader().host());
     }
 
-    private List<String> getTopicNames() {
+    private List<String> getKafkaTopicNames() {
         return topicsCache.getTopics().stream().map(
-                CachedTopic::getQualifiedName
+                cachedTopic -> cachedTopic.getKafkaTopics().getPrimary().name().asString()
         ).collect(Collectors.toList());
     }
 
     public void updateLeaders() {
-        List<String> topicNames = getTopicNames();
+        long start = System.nanoTime();
+        List<String> topicNames = getKafkaTopicNames();
         DescribeTopicsResult result = adminClient.describeTopics(topicNames);
         try {
             Collection<TopicDescription> topics = result.all().get().values();
@@ -59,6 +60,9 @@ public class KafkaPartitionLeaderRegistry {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
             logger.warn("Failed to update leader registry. Broker latency metrics may be incorrect", e);
+        } finally {
+            long durationMillis = Duration.ofNanos(System.nanoTime() - start).toMillis();
+            logger.info("Updated leader metadata in: {} ms", durationMillis);
         }
     }
 }
