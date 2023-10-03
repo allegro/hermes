@@ -77,12 +77,20 @@
 
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
 
+  const showNotificationError = () => {
+    notificationStore.dispatchNotification({
+      title: t('notifications.form.validationError'),
+      text: '',
+      type: 'error',
+    });
+  };
+
   const beautify = () => {
     try {
       const obj_message = JSON.parse(form.value.schema || '');
       form.value.schema = JSON.stringify(obj_message, null, 4);
     } catch (e) {
-      console.warn('Cannot auto format code - incorrect json');
+      showNotificationError();
     }
   };
 
@@ -93,11 +101,7 @@
         emit('created', form.value.name);
       }
     } else {
-      notificationStore.dispatchNotification({
-        title: t('notifications.form.validationError'),
-        text: '',
-        type: 'error',
-      });
+      showNotificationError();
     }
   }
 </script>
