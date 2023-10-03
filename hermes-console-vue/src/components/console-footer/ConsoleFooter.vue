@@ -21,6 +21,7 @@
         variant="text"
         class="mx-2"
         rounded="xl"
+        target="_blank"
         :href="link.href"
       >
         {{ link.label }}

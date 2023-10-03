@@ -358,6 +358,7 @@ const en_US = {
     },
     schema: {
       title: 'Message schema',
+      copy: 'Copy to clipboard',
     },
     subscriptions: {
       title: 'Subscriptions',
@@ -636,6 +637,10 @@ const en_US = {
     endTimestamp: 'End timestamp (UTC)',
   },
   notifications: {
+    copy: {
+      success: 'Successfully copied content',
+      error: 'Failed to copy content',
+    },
     unknownError: 'Unknown error occurred',
     form: {
       validationError: 'Some fields are not valid',

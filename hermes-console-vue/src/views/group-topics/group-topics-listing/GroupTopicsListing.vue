@@ -23,6 +23,14 @@
       path: `/ui/groups/${props.group?.name}/topics/${topicName}`,
     });
   }
+
+  function onTopicBlankClick(topicName: string) {
+    console.log(router.currentRoute.value.path);
+    window.open(
+      `${router.currentRoute.value.path}/topics/${topicName}`,
+      '_blank',
+    );
+  }
 </script>
 
 <template>
@@ -39,7 +47,10 @@
           v-for="(topic, index) in filteredTopics"
           :key="topic"
           class="topics-table__row"
-          @click="onTopicClick(topic)"
+          @click.exact="onTopicClick(topic)"
+          @click.meta="onTopicBlankClick(topic)"
+          @click.ctrl="onTopicBlankClick(topic)"
+          @contextmenu="onTopicBlankClick(topic)"
         >
           <td class="text-medium-emphasis">
             {{ index + 1 }}

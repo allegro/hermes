@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { copyToClipboard } from '@/utils/copy-utils';
+
   const props = defineProps<{
     schema: string;
   }>();
@@ -8,6 +10,9 @@
   <v-expansion-panels>
     <v-expansion-panel :title="$t('topicView.schema.title')">
       <v-expansion-panel-text>
+        <v-btn @click="copyToClipboard(props.schema)">{{
+          $t('topicView.schema.copy')
+        }}</v-btn>
         <pre>
           <v-code class="raw-schema-snippet">{{ JSON.parse(props.schema) }}</v-code>
         </pre>
