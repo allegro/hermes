@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, onMounted, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateTopic } from '@/composables/topic/use-create-topic/useCreateTopic';
   import { useEditTopic } from '@/composables/topic/use-edit-topic/useEditTopic';
@@ -15,6 +15,10 @@
   import type { TopicWithSchema } from '@/api/Topic';
 
   const theme = useTheme();
+  const isMounted = ref(false);
+  onMounted(() => {
+    isMounted.value = true;
+  });
   const props = defineProps<{
     topic: TopicWithSchema | null;
     group: string | null;
@@ -298,7 +302,7 @@
 
     <div
       style="border: 1px solid #777777; padding: 10px"
-      v-if="isAvroContentTypeSelected"
+      v-if="isAvroContentTypeSelected && isMounted"
     >
       <p class="v-label">{{ t('topicForm.fields.schema') }}</p>
       <v-ace-editor
