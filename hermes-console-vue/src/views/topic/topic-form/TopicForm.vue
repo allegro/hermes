@@ -6,6 +6,7 @@
   import { useGlobalI18n } from '@/i18n';
   import { useImportTopic } from '@/composables/topic/use-import-topic/useImportTopic';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
+  import { useTheme } from 'vuetify';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
@@ -13,6 +14,7 @@
   import { VAceEditor } from 'vue3-ace-editor';
   import '@/config/ace-config';
 
+  const theme = useTheme();
   const props = defineProps<{
     topic: TopicWithSchema | null;
     group: string | null;
@@ -72,10 +74,10 @@
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
 
   const beautify = () => {
-    const obj_message = JSON.parse(form.value.schema || '');
-    if (obj_message !== undefined) {
+    try {
+      const obj_message = JSON.parse(form.value.schema || '');
       form.value.schema = JSON.stringify(obj_message, null, 4);
-    }
+    } catch (_) {}
   };
 
   async function submit() {
@@ -292,12 +294,15 @@
       class="mb-4"
     />
 
-    <div v-if="isAvroContentTypeSelected">
+    <div
+      style="border: 1px solid #777777; padding: 10px"
+      v-if="isAvroContentTypeSelected"
+    >
       <p class="v-label">{{ t('topicForm.fields.schema') }}</p>
       <v-ace-editor
         v-model:value="form.schema"
         lang="json"
-        theme="github"
+        :theme="theme.global.name.value === 'light' ? 'github' : 'monokai'"
         style="height: 300px"
         :options="{ useWorker: true }"
         class="my-3"
