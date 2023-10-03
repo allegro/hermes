@@ -77,7 +77,9 @@
     try {
       const obj_message = JSON.parse(form.value.schema || '');
       form.value.schema = JSON.stringify(obj_message, null, 4);
-    } catch (_) {}
+    } catch (e) {
+      console.warn("Cannot auto format code - incorrect json");
+    }
   };
 
   async function submit() {
