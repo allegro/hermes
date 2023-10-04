@@ -17,6 +17,7 @@
     "dev-server": "node json-server/server.ts"
   },
   "dependencies": {
+    "ace-builds": "1.28.0",
     "axios": "1.4.0",
     "base64-arraybuffer": "1.0.2",
     "jwt-decode": "3.1.2",
@@ -27,6 +28,7 @@
     "vue": "3.3.4",
     "vue-i18n": "9.2.2",
     "vue-router": "4.2.2",
+    "vue3-ace-editor": "2.2.3",
     "vuetify": "3.3.2"
   },
   "devDependencies": {
