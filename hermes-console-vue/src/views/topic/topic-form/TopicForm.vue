@@ -77,10 +77,10 @@
 
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
 
-  const showNotificationError = () => {
+  const showNotificationError = (notificationText: string = '') => {
     notificationStore.dispatchNotification({
       title: t('notifications.form.validationError'),
-      text: '',
+      text: notificationText,
       type: 'error',
     });
   };
@@ -90,7 +90,7 @@
       const obj_message = JSON.parse(form.value.schema || '');
       form.value.schema = JSON.stringify(obj_message, null, 4);
     } catch (e) {
-      showNotificationError();
+      showNotificationError(t('notifications.form.beautifyError'));
     }
   };
 

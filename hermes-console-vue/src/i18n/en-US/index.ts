@@ -638,6 +638,7 @@ const en_US = {
   notifications: {
     unknownError: 'Unknown error occurred',
     form: {
+      beautifyError: 'Failed to beatify schema',
       validationError: 'Some fields are not valid',
       parseError: 'Error parsing form data',
       fetchTopicContentTypeError: 'Error fetching topic content type',
