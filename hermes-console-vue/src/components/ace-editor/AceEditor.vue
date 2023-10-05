@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import '@/config/ace-config';
+  import '@/components/ace-editor/ace-config';
   import { defineProps } from 'vue';
   import { useTheme } from 'vuetify';
   import { VAceEditor } from 'vue3-ace-editor';
