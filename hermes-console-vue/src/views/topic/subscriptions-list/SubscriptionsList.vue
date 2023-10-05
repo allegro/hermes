@@ -8,7 +8,7 @@
   import type { Subscription } from '@/api/subscription';
 
   const router = useRouter();
-  const filter = ref<string>("");
+  const filter = ref<string>('');
 
   const props = defineProps<{
     groupId: string;
@@ -24,18 +24,20 @@
   };
 
   const subscriptionItems = computed(() =>
-    props.subscriptions?.map((subscription) => {
-      const currentUrl = window.location.href;
-      if (subscription.name.toLowerCase().includes(filter.value)) {
-        return {  
-          name: subscription.name,
-          color: statusTextColor[subscription.state],
-          statusText: subscription.state,
-          href: `${currentUrl}/subscriptions/${subscription.name}`,
-        };
-      }
-      return null;
-      }).filter(Boolean),
+    props.subscriptions
+      ?.map((subscription) => {
+        const currentUrl = window.location.href;
+        if (subscription.name.toLowerCase().includes(filter.value)) {
+          return {
+            name: subscription.name,
+            color: statusTextColor[subscription.state],
+            statusText: subscription.state,
+            href: `${currentUrl}/subscriptions/${subscription.name}`,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean),
   );
   const showSubscriptionCreationForm = ref(false);
   function showSubscriptionForm() {
@@ -66,14 +68,14 @@
             :persistent="true"
           >
             <template #activator>
-            <v-text-field
-                  single-line
-                  :label="$t('topicView.subscriptions.search')"
-                  density="compact"
-                  style="height:30px; margin-right: 20px;"
-                  v-model="filter"
-                  prepend-inner-icon="mdi-magnify"
-                />
+              <v-text-field
+                single-line
+                :label="$t('topicView.subscriptions.search')"
+                density="compact"
+                style="height: 30px; margin-right: 20px"
+                v-model="filter"
+                prepend-inner-icon="mdi-magnify"
+              />
               <v-btn
                 :disabled="!isAny(roles)"
                 prepend-icon="mdi-plus"
