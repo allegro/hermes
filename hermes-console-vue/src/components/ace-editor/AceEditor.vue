@@ -32,13 +32,13 @@
 
 <template>
   <div style="border: 1px solid #777777; padding: 10px">
-    <p v-if="label" class="v-label">{{ label }}</p>
+    <p v-if="label" class="v-label">{{ props.label }}</p>
     <v-ace-editor
       :value="modelValue"
       @update:value="$emit('update:modelValue', $event)"
       lang="json"
       :theme="theme.global.name.value === 'light' ? 'github' : 'monokai'"
-      :placeholder="placeholder"
+      :placeholder="props.placeholder"
       :options="{ useWorker: true }"
       style="height: 300px"
       class="my-3"
@@ -48,3 +48,11 @@
     </v-btn>
   </div>
 </template>
+
+<style lang="scss">
+  .ace_placeholder {
+    color: #777;
+    position: inherit;
+    z-index: 1;
+  }
+</style>
