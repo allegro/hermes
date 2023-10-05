@@ -6,6 +6,7 @@
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import { useSubscriptionFiltersDebug } from '@/composables/subscription/use-subscription-filters-debug/useSubscriptionFiltersDebug';
   import { VerificationStatus } from '@/api/message-filters-verification';
+  import AceEditor from "@/components/ace-editor/AceEditor.vue";
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
   import type { ContentType } from '@/api/content-type';
@@ -123,10 +124,10 @@
       <v-card>
         <v-card-title>{{ $t('filterDebug.title') }}</v-card-title>
         <v-card-item>
-          <v-textarea
-            :placeholder="$t('filterDebug.placeholder')"
-            v-model="message"
-          ></v-textarea>
+          <AceEditor
+            v-model:model-value="message"
+           :placeholder="$t('filterDebug.placeholder')"
+          />
         </v-card-item>
         <v-card-item class="text-right">
           <v-btn color="green" @click="onVerify">

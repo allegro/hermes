@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import '@/config/ace-config';
   import { computed, onMounted, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateTopic } from '@/composables/topic/use-create-topic/useCreateTopic';
@@ -8,7 +7,7 @@
   import { useImportTopic } from '@/composables/topic/use-import-topic/useImportTopic';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import { useTheme } from 'vuetify';
-  import { VAceEditor } from 'vue3-ace-editor';
+  import AceEditor from '@/components/ace-editor/AceEditor.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
@@ -304,23 +303,11 @@
       class="mb-4"
     />
 
-    <div
-      style="border: 1px solid #777777; padding: 10px"
+    <AceEditor
       v-if="isAvroContentTypeSelected && isMounted"
-    >
-      <p class="v-label">{{ t('topicForm.fields.schema') }}</p>
-      <v-ace-editor
-        v-model:value="form.schema"
-        lang="json"
-        :theme="theme.global.name.value === 'light' ? 'github' : 'monokai'"
-        style="height: 300px"
-        :options="{ useWorker: true }"
-        class="my-3"
-      />
-      <v-btn @click="beautify" variant="outlined" color="primary">
-        {{ t('topicForm.fields.beautify') }}
-      </v-btn>
-    </div>
+      v-model:model-value="form.schema"
+      :label="t('topicForm.fields.schema')"
+    />
 
     <div class="d-flex justify-end column-gap-2 mt-4">
       <v-btn
