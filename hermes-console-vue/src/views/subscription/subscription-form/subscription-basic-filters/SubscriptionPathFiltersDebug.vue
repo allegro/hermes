@@ -6,7 +6,7 @@
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import { useSubscriptionFiltersDebug } from '@/composables/subscription/use-subscription-filters-debug/useSubscriptionFiltersDebug';
   import { VerificationStatus } from '@/api/message-filters-verification';
-  import AceEditor from "@/components/ace-editor/AceEditor.vue";
+  import AceEditor from '@/components/ace-editor/AceEditor.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
   import type { ContentType } from '@/api/content-type';
@@ -126,7 +126,7 @@
         <v-card-item>
           <AceEditor
             v-model:model-value="message"
-           :placeholder="$t('filterDebug.placeholder')"
+            :placeholder="$t('filterDebug.placeholder')"
           />
         </v-card-item>
         <v-card-item class="text-right">
