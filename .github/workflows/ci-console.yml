@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Run frontend tests
-        run: yarn && yarn test:unit
       - name: Run linter
         run: yarn lint
+      - name: Run frontend tests
+        run: yarn && yarn test:unit
