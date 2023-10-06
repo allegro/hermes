@@ -6,18 +6,12 @@
   import { useGlobalI18n } from '@/i18n';
   import { useImportTopic } from '@/composables/topic/use-import-topic/useImportTopic';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-  import { useTheme } from 'vuetify';
   import AceEditor from '@/components/ace-editor/AceEditor.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
   import type { TopicWithSchema } from '@/api/Topic';
 
-  const theme = useTheme();
-  const isMounted = ref(false);
-  onMounted(() => {
-    isMounted.value = true;
-  });
   const props = defineProps<{
     topic: TopicWithSchema | null;
     group: string | null;
@@ -76,23 +70,6 @@
 
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
 
-  const showNotificationError = (notificationText: string = '') => {
-    notificationStore.dispatchNotification({
-      title: t('notifications.form.validationError'),
-      text: notificationText,
-      type: 'error',
-    });
-  };
-
-  const beautify = () => {
-    try {
-      const obj_message = JSON.parse(form.value.schema || '');
-      form.value.schema = JSON.stringify(obj_message, null, 4);
-    } catch (e) {
-      showNotificationError(t('notifications.form.beautifyError'));
-    }
-  };
-
   async function submit() {
     if (isFormValid.value) {
       const isOperationSucceeded = await createOrUpdateTopic();
@@ -100,7 +77,11 @@
         emit('created', form.value.name);
       }
     } else {
-      showNotificationError();
+      notificationStore.dispatchNotification({
+        title: t('notifications.form.validationError'),
+        text: '',
+        type: 'error',
+      });
     }
   }
 </script>
@@ -304,7 +285,7 @@
     />
 
     <AceEditor
-      v-if="isAvroContentTypeSelected && isMounted"
+      v-if="isAvroContentTypeSelected"
       v-model:model-value="form.schema"
       :label="t('topicForm.fields.schema')"
     />
