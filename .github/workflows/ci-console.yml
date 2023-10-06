@@ -18,6 +18,6 @@ jobs:
         with:
           node-version: 18
       - name: Run linter
-        run: yarn lint
+        run: yarn && yarn lint
       - name: Run frontend tests
-        run: yarn && yarn test:unit
+        run: yarn test:unit
