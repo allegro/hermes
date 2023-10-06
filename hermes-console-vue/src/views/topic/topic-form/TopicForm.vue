@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateTopic } from '@/composables/topic/use-create-topic/useCreateTopic';
   import { useEditTopic } from '@/composables/topic/use-edit-topic/useEditTopic';
