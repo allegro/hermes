@@ -1,24 +1,17 @@
 <script setup lang="ts">
-  import '@/config/ace-config';
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateTopic } from '@/composables/topic/use-create-topic/useCreateTopic';
   import { useEditTopic } from '@/composables/topic/use-edit-topic/useEditTopic';
   import { useGlobalI18n } from '@/i18n';
   import { useImportTopic } from '@/composables/topic/use-import-topic/useImportTopic';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-  import { useTheme } from 'vuetify';
-  import { VAceEditor } from 'vue3-ace-editor';
+  import AceEditor from '@/components/ace-editor/AceEditor.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
   import type { TopicWithSchema } from '@/api/Topic';
 
-  const theme = useTheme();
-  const isMounted = ref(false);
-  onMounted(() => {
-    isMounted.value = true;
-  });
   const props = defineProps<{
     topic: TopicWithSchema | null;
     group: string | null;
@@ -77,23 +70,6 @@
 
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
 
-  const showNotificationError = (notificationText: string = '') => {
-    notificationStore.dispatchNotification({
-      title: t('notifications.form.validationError'),
-      text: notificationText,
-      type: 'error',
-    });
-  };
-
-  const beautify = () => {
-    try {
-      const obj_message = JSON.parse(form.value.schema || '');
-      form.value.schema = JSON.stringify(obj_message, null, 4);
-    } catch (e) {
-      showNotificationError(t('notifications.form.beautifyError'));
-    }
-  };
-
   async function submit() {
     if (isFormValid.value) {
       const isOperationSucceeded = await createOrUpdateTopic();
@@ -101,7 +77,11 @@
         emit('created', form.value.name);
       }
     } else {
-      showNotificationError();
+      notificationStore.dispatchNotification({
+        title: t('notifications.form.validationError'),
+        text: '',
+        type: 'error',
+      });
     }
   }
 </script>
@@ -304,23 +284,11 @@
       class="mb-4"
     />
 
-    <div
-      style="border: 1px solid #777777; padding: 10px"
-      v-if="isAvroContentTypeSelected && isMounted"
-    >
-      <p class="v-label">{{ t('topicForm.fields.schema') }}</p>
-      <v-ace-editor
-        v-model:value="form.schema"
-        lang="json"
-        :theme="theme.global.name.value === 'light' ? 'github' : 'monokai'"
-        style="height: 300px"
-        :options="{ useWorker: true }"
-        class="my-3"
-      />
-      <v-btn @click="beautify" variant="outlined" color="primary">
-        {{ t('topicForm.fields.beautify') }}
-      </v-btn>
-    </div>
+    <AceEditor
+      v-if="isAvroContentTypeSelected"
+      v-model:model-value="form.schema"
+      :label="t('topicForm.fields.schema')"
+    />
 
     <div class="d-flex justify-end column-gap-2 mt-4">
       <v-btn
