@@ -363,6 +363,7 @@ const en_US = {
     subscriptions: {
       title: 'Subscriptions',
       create: 'Create subscription',
+      search: 'Search...',
     },
     errorMessage: {
       topicFetchFailed: 'Could not fetch {topicName} topic details',
