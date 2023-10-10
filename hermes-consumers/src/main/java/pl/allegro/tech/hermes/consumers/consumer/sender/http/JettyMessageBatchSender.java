@@ -4,6 +4,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
@@ -28,6 +30,8 @@ import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SUBSCRIP
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
 
 public class JettyMessageBatchSender implements MessageBatchSender {
+
+    private static final Logger logger = LoggerFactory.getLogger(JettyMessageBatchSender.class);
 
     private final BatchHttpRequestFactory requestFactory;
     private final EndpointAddressResolver resolver;
@@ -64,6 +68,10 @@ public class JettyMessageBatchSender implements MessageBatchSender {
             ContentResponse response = request.send();
             return resultHandlers.handleSendingResultForBatch(response);
         } catch (TimeoutException | ExecutionException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+                logger.info("Restoring interrupted status", e);
+            }
             throw new HttpBatchSenderException("Failed to send message batch", e);
         }
     }
