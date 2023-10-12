@@ -2,6 +2,7 @@ import { beforeEach } from 'vitest';
 import { computed, ref } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPiniaWithState } from '@/dummy/store';
+import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import { dummyOwner } from '@/dummy/topic';
 import {
   dummySubscription,
@@ -14,10 +15,12 @@ import { fireEvent } from '@testing-library/vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
 import { State } from '@/api/subscription';
+import { useMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import router from '@/router';
 import SubscriptionView from '@/views/subscription/SubscriptionView.vue';
+import type { UseMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 
 vi.mock('@/composables/subscription/use-subscription/useSubscription');
@@ -55,6 +58,16 @@ const useRolesStub: UseRoles = {
   }),
 };
 
+vi.mock('@/composables/metrics/use-metrics/useMetrics');
+
+const useMetricsStub: UseMetrics = {
+  dashboardUrl: ref(dummyMetricsDashboardUrl.url),
+  loading: ref(false),
+  error: ref({
+    fetchDashboardUrl: null,
+  }),
+};
+
 describe('SubscriptionView', () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
@@ -69,9 +82,12 @@ describe('SubscriptionView', () => {
     // given
     vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
-    const { getByText } = render(SubscriptionView);
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     const cardTitles = [
@@ -95,9 +111,12 @@ describe('SubscriptionView', () => {
       ...useRolesStub,
       roles: ref([]),
     });
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
-    const { queryByText, getByText } = render(SubscriptionView);
+    const { queryByText, getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     const visibleCardTitles = [
@@ -123,9 +142,12 @@ describe('SubscriptionView', () => {
     // given
     vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
-    const { getByText } = render(SubscriptionView);
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(
@@ -142,9 +164,12 @@ describe('SubscriptionView', () => {
       ...useSubscriptionStub,
       loading: computed(() => true),
     });
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
-    const { queryByTestId } = render(SubscriptionView);
+    const { queryByTestId } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
@@ -157,9 +182,12 @@ describe('SubscriptionView', () => {
       ...useSubscriptionStub,
       loading: computed(() => false),
     });
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
-    const { queryByTestId } = render(SubscriptionView);
+    const { queryByTestId } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
@@ -180,9 +208,12 @@ describe('SubscriptionView', () => {
         fetchSubscriptionLastUndeliveredMessage: null,
       }),
     });
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
-    const { queryByText } = render(SubscriptionView);
+    const { queryByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
@@ -196,9 +227,12 @@ describe('SubscriptionView', () => {
       ...useSubscriptionStub,
       loading: computed(() => false),
     });
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
-    const { queryByText } = render(SubscriptionView);
+    const { queryByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     expect(vi.mocked(useSubscription)).toHaveBeenCalledOnce();
@@ -211,6 +245,7 @@ describe('SubscriptionView', () => {
     // given
     vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
     const { getByText } = render(SubscriptionView, {
@@ -233,6 +268,7 @@ describe('SubscriptionView', () => {
     // given
     vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
     const { getByText } = render(SubscriptionView, {
@@ -261,6 +297,7 @@ describe('SubscriptionView', () => {
       }),
     });
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
     const { getByText } = render(SubscriptionView, {

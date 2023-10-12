@@ -193,6 +193,8 @@
           <metrics-card
             v-if="subscriptionMetrics"
             :subscription-metrics="subscriptionMetrics"
+            :topic-name="topicId"
+            :subscription-name="subscriptionId"
           />
           <manage-messages-card
             v-if="isSubscriptionOwnerOrAdmin(roles)"

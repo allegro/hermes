@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
+  import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
   import KeyValueCard from '@/components/key-value-card/KeyValueCard.vue';
   import KeyValueCardItem from '@/components/key-value-card/key-value-card-item/KeyValueCardItem.vue';
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
@@ -13,7 +13,7 @@
   <key-value-card :title="$t('subscription.lastUndeliveredMessage.title')">
     <key-value-card-item
       :name="$t('subscription.lastUndeliveredMessage.time')"
-      :value="formatTimestamp(props.lastUndelivered.timestamp)"
+      :value="formatTimestampMillis(props.lastUndelivered.timestamp)"
     />
     <key-value-card-item
       :name="$t('subscription.lastUndeliveredMessage.reason')"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
+  import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
   import type { SentMessageTrace } from '@/api/subscription-undelivered';
 
   const props = defineProps<{
@@ -44,7 +44,7 @@
           <td>{{ message.messageId }}</td>
           <td>{{ message.status }}</td>
           <td>{{ message.reason }}</td>
-          <td>{{ formatTimestamp(message.timestamp) }}</td>
+          <td>{{ formatTimestampMillis(message.timestamp) }}</td>
           <td>
             <v-btn
               density="compact"

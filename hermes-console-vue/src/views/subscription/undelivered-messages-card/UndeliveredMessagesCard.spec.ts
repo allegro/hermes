@@ -1,5 +1,5 @@
 import { dummyUndeliveredMessages } from '@/dummy/subscription';
-import { formatTimestamp } from '@/utils/date-formatter/date-formatter';
+import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
 import { render } from '@/utils/test-utils';
 import { within } from '@testing-library/vue';
 import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
@@ -26,7 +26,7 @@ describe('UndeliveredMessagesCard', () => {
     // then
     props.undeliveredMessages.forEach((message, index) => {
       const row = getByText(index + 1).closest('tr')!;
-      const expectedTimestamp = formatTimestamp(message.timestamp);
+      const expectedTimestamp = formatTimestampMillis(message.timestamp);
 
       expect(within(row).getByText(message.status)).toBeVisible();
       expect(within(row).getByText(message.reason)).toBeVisible();

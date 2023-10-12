@@ -17,6 +17,7 @@ import { rest } from 'msw';
 import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { ConstraintsConfig } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
+import type { DashboardUrl } from '@/composables/metrics/use-metrics/useMetrics';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
@@ -546,6 +547,28 @@ export const fetchRolesHandler = ({
   });
 
 export const fetchRolesErrorHandler = ({
+  errorCode = 500,
+  path,
+}: {
+  errorCode?: number;
+  path: string;
+}) =>
+  rest.get(path, (req, res, ctx) => {
+    return res(ctx.status(errorCode), ctx.json(undefined));
+  });
+
+export const fetchMetricsDashboardUrlHandler = ({
+  dashboardUrl,
+  path,
+}: {
+  dashboardUrl: DashboardUrl;
+  path: string;
+}) =>
+  rest.get(path, (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(dashboardUrl));
+  });
+
+export const fetchMetricsDashboardUrlErrorHandler = ({
   errorCode = 500,
   path,
 }: {

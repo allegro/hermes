@@ -299,6 +299,7 @@ const en_US = {
       },
     },
     metrics: {
+      dashboard: 'DASHBOARD',
       title: 'Metrics',
       rate: 'Rate',
       deliveryRate: 'Delivery rate',
@@ -464,6 +465,7 @@ const en_US = {
     metricsCard: {
       title: 'Subscription metrics',
       deliveryRate: 'Delivery rate',
+      dashboard: 'DASHBOARD',
       subscriberLatency: 'Subscriber latency',
       delivered: 'Delivered',
       discarded: 'Discarded',
@@ -638,6 +640,9 @@ const en_US = {
     endTimestamp: 'End timestamp (UTC)',
   },
   notifications: {
+    dashboardUrl: {
+      error: 'Failed to fetch dashboard url',
+    },
     copy: {
       success: 'Successfully copied content',
       error: 'Failed to copy content',

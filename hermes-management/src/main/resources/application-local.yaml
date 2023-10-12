@@ -5,10 +5,7 @@ console:
     metrics: http://localhost:8082
     docs: http://hermes-pubsub.rtfd.org
   metrics:
-    type: graphite
-    graphite:
-      url: localhost:8082
-      prefix: hermes
+    fetchingDashboardUrlEnabled: false
   auth:
     oauth:
       enabled: false
