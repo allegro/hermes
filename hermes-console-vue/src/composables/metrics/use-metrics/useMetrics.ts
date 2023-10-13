@@ -19,7 +19,7 @@ export interface UseMetricsErrors {
 }
 
 export function useMetrics(
-  topicName: string | null,
+  topicName: string,
   subscriptionName: string | null,
 ): UseMetrics {
   const notificationStore = useNotificationsStore();
@@ -55,11 +55,8 @@ export function useMetrics(
   };
 }
 
-function buildPath(
-  topicName: string | null,
-  subscriptionName: string | null,
-): string {
-  if (topicName && subscriptionName) {
+function buildPath(topicName: string, subscriptionName: string | null): string {
+  if (subscriptionName) {
     return `/dashboards/topics/${topicName}/subscriptions/${subscriptionName}`;
   }
   return `/dashboards/topics/${topicName}`;
