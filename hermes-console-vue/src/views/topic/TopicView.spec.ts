@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import {
   dummyOfflineClientsSource,
   dummyOwner,
@@ -18,10 +19,12 @@ import {
 import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
+import { useMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
 import router from '@/router';
 import TopicView from '@/views/topic/TopicView.vue';
+import type { UseMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 import type { UseTopic } from '@/composables/topic/use-topic/useTopic';
 
@@ -56,9 +59,20 @@ const useTopicMock: UseTopic = {
   removeTopic: () => Promise.resolve(true),
 };
 
+vi.mock('@/composables/metrics/use-metrics/useMetrics');
+
+const useMetricsStub: UseMetrics = {
+  dashboardUrl: ref(dummyMetricsDashboardUrl.url),
+  loading: ref(false),
+  error: ref({
+    fetchDashboardUrl: null,
+  }),
+};
+
 describe('TopicView', () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
     await router.push(
       `/ui/groups/pl.allegro.public.group` + `/topics/${dummyTopic.name}`,
     );
