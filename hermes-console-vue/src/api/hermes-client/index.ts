@@ -16,6 +16,7 @@ import type {
   CreateSubscriptionFormRequestBody,
   Subscription,
 } from '@/api/subscription';
+import type { DashboardUrl } from '@/composables/metrics/use-metrics/use-metrics';
 import type {
   DatacenterReadiness,
   Readiness,
@@ -276,6 +277,10 @@ export function querySubscriptions(
 
 export function fetchRoles(path: string): ResponsePromise<Role[]> {
   return axios.get<Role[]>(path);
+}
+
+export function fetchDashboardUrl(path: string): ResponsePromise<DashboardUrl> {
+  return axios.get<DashboardUrl>(path);
 }
 
 export function moveSubscriptionOffsets(

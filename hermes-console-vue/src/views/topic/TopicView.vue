@@ -115,7 +115,11 @@
       />
 
       <div class="topic-view__upper_panel">
-        <metrics-list v-if="metrics" :metrics="metrics" />
+        <metrics-list
+          v-if="metrics"
+          :metrics="metrics"
+          :topic-name="topicName"
+        />
         <properties-list v-if="topic" :topic="topic" />
       </div>
 

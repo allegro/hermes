@@ -101,7 +101,12 @@
     <v-card-item>
       <p class="text-overline">{{ $t('topicView.header.topic') }}</p>
       <div class="d-flex justify-space-between">
-        <p class="text-h4 font-weight-bold">{{ props.topic.name }}</p>
+        <p
+          class="text-h4 font-weight-bold"
+          style="word-wrap: break-word; max-width: 90%"
+        >
+          {{ props.topic.name }}
+        </p>
         <div>
           <v-tooltip :text="$t('topicView.header.actions.copyName')">
             <template v-slot:activator="{ props }">

@@ -26,7 +26,7 @@ describe('LastUndeliveredMessage', () => {
     const timeRow = getByText(
       'subscription.lastUndeliveredMessage.time',
     ).closest('tr')!;
-    expect(within(timeRow).getByText('2009-02-13 23:31:30')).toBeVisible();
+    expect(within(timeRow).getByText('2023-10-12 13:20:36')).toBeVisible();
   });
 
   it('should render last undelivered message reason', () => {

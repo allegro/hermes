@@ -37,13 +37,7 @@ export interface SimpleDiscoveryConfiguration {
 }
 
 export interface MetricsConfiguration {
-  type: string;
-  graphite: GraphiteMetricsConfiguration;
-}
-
-export interface GraphiteMetricsConfiguration {
-  url: string;
-  prefix: string;
+  fetchingDashboardUrlEnabled: boolean;
 }
 
 export interface AuthConfiguration {

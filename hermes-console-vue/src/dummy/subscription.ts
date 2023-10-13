@@ -104,7 +104,7 @@ export const dummySubscriptionHealth: SubscriptionHealth = {
 };
 
 export const dummyUndeliveredMessage: SentMessageTrace = {
-  timestamp: 1234567890,
+  timestamp: 1697116836211,
   subscription: 'foobar-service',
   topicName: 'pl.allegro.public.group.DummyEvent',
   status: SentMessageTraceStatus.DISCARDED,

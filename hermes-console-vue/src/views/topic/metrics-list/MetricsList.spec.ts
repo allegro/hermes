@@ -1,16 +1,35 @@
+import { createTestingPiniaWithState } from '@/dummy/store';
 import { describe, expect } from 'vitest';
-import { dummyTopicMetrics } from '@/dummy/topic';
+import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
+import { dummyTopic, dummyTopicMetrics } from '@/dummy/topic';
+import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
+import { useMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import { within } from '@testing-library/vue';
 import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
+import type { UseMetrics } from '@/composables/metrics/use-metrics/useMetrics';
+
+vi.mock('@/composables/metrics/use-metrics/useMetrics');
+
+const useMetricsStub: UseMetrics = {
+  dashboardUrl: ref(dummyMetricsDashboardUrl.url),
+  loading: ref(false),
+  error: ref({
+    fetchDashboardUrl: null,
+  }),
+};
 
 describe('MetricsList', () => {
   it('should render proper heading', () => {
     // given
-    const props = { metrics: dummyTopicMetrics };
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const props = { metrics: dummyTopicMetrics, topicName: dummyTopic.name };
 
     // when
-    const { getByText } = render(MetricsList, { props });
+    const { getByText } = render(MetricsList, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     const row = getByText('topicView.metrics.title')!;
@@ -25,10 +44,14 @@ describe('MetricsList', () => {
     { property: 'topicView.metrics.messageSize', value: '?' },
   ])('should render all metrics properties %s', ({ property, value }) => {
     // given
-    const props = { metrics: dummyTopicMetrics };
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const props = { metrics: dummyTopicMetrics, topicName: dummyTopic.name };
 
     // when
-    const { getByText } = render(MetricsList, { props });
+    const { getByText } = render(MetricsList, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
 
     // then
     const row = getByText(property).closest('tr')!;

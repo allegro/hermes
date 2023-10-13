@@ -213,44 +213,14 @@ public class ConsoleProperties {
     }
 
     public static final class Metrics {
-        private String type = "graphite";
-        private Graphite graphite = new Graphite();
+        private boolean fetchingDashboardUrlEnabled = false;
 
-        public String getType() {
-            return type;
+        public boolean isFetchingDashboardUrlEnabled() {
+            return fetchingDashboardUrlEnabled;
         }
 
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public Graphite getGraphite() {
-            return graphite;
-        }
-
-        public void setGraphite(Graphite graphite) {
-            this.graphite = graphite;
-        }
-    }
-
-    public static final class Graphite {
-        private String url = "localhost:8082";
-        private String prefix = "hermes";
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public void setPrefix(String prefix) {
-            this.prefix = prefix;
+        public void setFetchingDashboardUrlEnabled(boolean fetchingDashboardUrlEnabled) {
+            this.fetchingDashboardUrlEnabled = fetchingDashboardUrlEnabled;
         }
     }
 

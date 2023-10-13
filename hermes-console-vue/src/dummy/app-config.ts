@@ -20,11 +20,7 @@ export const dummyAppConfig: AppConfiguration = {
     },
   },
   metrics: {
-    type: 'graphite',
-    graphite: {
-      url: '',
-      prefix: '',
-    },
+    fetchingDashboardUrlEnabled: true,
   },
   auth: {
     oauth: {

@@ -21,6 +21,8 @@
     "pl.allegro.public.group2",
     "pl.allegro.public.admin2"
   ],
+  "topicDashboardUrl": {"url": "https://www.google.com/search?q=topic"},
+  "subscriptionDashboardUrl": {"url": "https://www.google.com/search?q=subscription" },
   "inconsistentGroups": [
     {
       "name": "pl.allegro.public.group",
@@ -528,7 +530,7 @@
   "subscriptionUndeliveredMessages": [
     {
       "id": "foobar-service",
-      "timestamp": 1234567890,
+      "timestamp": 1697101948083,
       "subscription": "foobar-service",
       "topicName": "pl.allegro.public.group.DummyEvent",
       "status": "DISCARDED",
@@ -540,7 +542,7 @@
     },
     {
       "id": "foobar-service",
-      "timestamp": 9876543210,
+      "timestamp": 1697101948083,
       "subscription": "foobar-service",
       "topicName": "pl.allegro.public.group.DummyEvent",
       "status": "DISCARDED",
@@ -571,11 +573,7 @@
       }
     },
     "metrics": {
-      "type": "graphite",
-      "graphite": {
-        "url": "localhost:8082",
-        "prefix": "hermes"
-      }
+      "fetchingDashboardUrlEnabled": true
     },
     "auth": {
       "oauth": {
