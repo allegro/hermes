@@ -59,7 +59,6 @@ allprojects {
             wiremock          : '3.0.1',
             spock             : '2.4-M1-groovy-4.0',
             groovy            : '4.0.12',
-            alpn_api          : '1.1.2.v20150522',
             avro              : '1.9.1',
             json2avro         : '0.2.14',
             okhttp            : '3.9.1',
