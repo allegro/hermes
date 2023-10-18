@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
+  import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
 
-const props = defineProps<{
-  name: string;
-  nameHref?: string;
-  value?: any;
-  tooltip?: string;
-}>();
+  const props = defineProps<{
+    name: string;
+    nameHref?: string;
+    value?: any;
+    tooltip?: string;
+  }>();
 </script>
 
 <template>
@@ -19,10 +19,10 @@ const props = defineProps<{
       <div class="d-flex">
         {{ props.value }}
         <tooltip-icon
-            class="ml-auto"
-            data-testid="tooltip-icon"
-            v-if="props.tooltip"
-            :content="props.tooltip"
+          class="ml-auto"
+          data-testid="tooltip-icon"
+          v-if="props.tooltip"
+          :content="props.tooltip"
         />
       </div>
     </td>
@@ -30,7 +30,7 @@ const props = defineProps<{
 </template>
 
 <style scoped lang="scss">
-.v-table > .v-table__wrapper > table > tbody > tr > th.user-select-text {
-  user-select: text;
-}
+  .v-table > .v-table__wrapper > table > tbody > tr > th.user-select-text {
+    user-select: text;
+  }
 </style>
