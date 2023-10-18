@@ -11,7 +11,7 @@
 
 <template>
   <tr>
-    <th class="text-body-2 font-weight-light">
+    <th class="text-body-2 font-weight-light user-select-text">
       <a v-if="nameHref" :href="nameHref">{{ props.name }}</a>
       <span v-else>{{ props.name }}</span>
     </th>
@@ -29,4 +29,8 @@
   </tr>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  .v-table > .v-table__wrapper > table > tbody > tr > th.user-select-text {
+    user-select: text;
+  }
+</style>
