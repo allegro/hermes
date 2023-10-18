@@ -20,10 +20,6 @@ dependencies {
     implementation group: 'commons-io', name: 'commons-io', version: '2.4'
     implementation group: 'net.jodah', name: 'failsafe', version: versions.failsafe
 
-    compileOnly group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
-
-    testImplementation group: 'org.eclipse.jetty.alpn', name: 'alpn-api', version: versions.alpn_api
-
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
 
