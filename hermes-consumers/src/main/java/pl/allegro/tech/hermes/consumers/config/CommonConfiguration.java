@@ -40,7 +40,6 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
-import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilters;
@@ -165,15 +164,9 @@ public class CommonConfiguration {
         return new ZookeeperUndeliveredMessageLog(zookeeper, paths, mapper, metricsFacade);
     }
 
-
     @Bean
-    public ThreadPoolMetrics threadPoolMetrics(MetricsFacade metricsFacade) {
-        return new ThreadPoolMetrics(metricsFacade);
-    }
-
-    @Bean
-    public InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory(ThreadPoolMetrics threadPoolMetrics) {
-        return new InstrumentedExecutorServiceFactory(threadPoolMetrics);
+    public InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory(MetricsFacade metricsFacade) {
+        return new InstrumentedExecutorServiceFactory(metricsFacade);
     }
 
     @Bean
