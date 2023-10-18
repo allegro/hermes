@@ -29,4 +29,13 @@ public class Timers {
     public static final String CONSUMER_IDLE_TIME = "idle-time." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
 
     public static final String OAUTH_PROVIDER_TOKEN_REQUEST_LATENCY = "oauth.provider." + OAUTH_PROVIDER_NAME + ".token-request-latency";
+
+    public static final String CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_REQUEST_QUEUE_WAITING_TIME =
+            "http-clients.serial.http1.request-queue-waiting-time";
+    public static final String CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_REQUEST_PROCESSING_TIME =
+            "http-clients.serial.http1.request-processing-time";
+    public static final String CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_REQUEST_QUEUE_WAITING_TIME =
+            "http-clients.serial.http2.request-queue-waiting-time";
+    public static final String CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_REQUEST_PROCESSING_TIME =
+            "http-clients.serial.http2.request-processing-time";
 }

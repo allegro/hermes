@@ -197,8 +197,9 @@ public class ConsumerSenderConfiguration {
 
     @Bean
     public HttpClientsFactory httpClientsFactory(InstrumentedExecutorServiceFactory executorFactory,
-                                                 SslContextFactoryProvider sslContextFactoryProvider) {
-        return new HttpClientsFactory(executorFactory, sslContextFactoryProvider);
+                                                 SslContextFactoryProvider sslContextFactoryProvider,
+                                                 MetricsFacade metricsFacade) {
+        return new HttpClientsFactory(executorFactory, sslContextFactoryProvider, metricsFacade.consumerSender());
     }
 
     @Bean

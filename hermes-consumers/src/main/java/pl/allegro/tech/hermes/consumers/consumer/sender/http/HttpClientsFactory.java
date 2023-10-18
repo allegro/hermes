@@ -6,6 +6,7 @@ import org.eclipse.jetty.http2.client.HTTP2Client;
 import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.HttpCookieStore;
+import pl.allegro.tech.hermes.common.metric.ConsumerSenderMetrics;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -15,11 +16,17 @@ public class HttpClientsFactory {
     private final InstrumentedExecutorServiceFactory executorFactory;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
+    private final ConsumerSenderMetrics consumerSenderMetrics;
+
+
     public HttpClientsFactory(
             InstrumentedExecutorServiceFactory executorFactory,
-            SslContextFactoryProvider sslContextFactoryProvider) {
+            SslContextFactoryProvider sslContextFactoryProvider,
+            ConsumerSenderMetrics consumerSenderMetrics
+    ) {
         this.executorFactory = executorFactory;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
+        this.consumerSenderMetrics = consumerSenderMetrics;
     }
 
     public HttpClient createClientForHttp1(String name, Http1ClientParameters http1ClientParameters) {
@@ -40,6 +47,14 @@ public class HttpClientsFactory {
         client.setIdleTimeout(http1ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(http1ClientParameters.isFollowRedirectsEnabled());
         client.setConnectTimeout(http1ClientParameters.getConnectionTimeout().toMillis());
+        if (http1ClientParameters.isRequestProcessingMonitoringEnabled()) {
+            client.getRequestListeners().add(
+                    new JettyHttpClientMetrics(
+                            consumerSenderMetrics.http1SerialClientRequestQueueWaitingTimer(),
+                            consumerSenderMetrics.http1SerialClientRequestProcessingTimer()
+                    )
+            );
+        }
         return client;
     }
 
@@ -48,7 +63,7 @@ public class HttpClientsFactory {
         sslContextFactoryProvider.provideSslContextFactory()
                 .ifPresentOrElse(clientConnector::setSslContextFactory,
                         () -> {
-                            throw new  IllegalStateException("Cannot create http/2 client due to lack of ssl context factory");
+                            throw new IllegalStateException("Cannot create http/2 client due to lack of ssl context factory");
                         });
         HTTP2Client http2Client = new HTTP2Client(clientConnector);
 
@@ -66,6 +81,14 @@ public class HttpClientsFactory {
         client.setIdleTimeout(http2ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(http2ClientParameters.isFollowRedirectsEnabled());
         client.setConnectTimeout(http2ClientParameters.getConnectionTimeout().toMillis());
+        if (http2ClientParameters.isRequestProcessingMonitoringEnabled()) {
+            client.getRequestListeners().add(
+                    new JettyHttpClientMetrics(
+                            consumerSenderMetrics.http2SerialClientRequestQueueWaitingTimer(),
+                            consumerSenderMetrics.http2SerialClientRequestProcessingTimer()
+                    )
+            );
+        }
         return client;
     }
 }

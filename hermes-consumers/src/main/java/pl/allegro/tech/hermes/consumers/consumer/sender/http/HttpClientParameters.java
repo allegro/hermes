@@ -15,4 +15,6 @@ public interface HttpClientParameters {
         int getMaxRequestsQueuedPerDestination();
 
         Duration getConnectionTimeout();
+
+        boolean isRequestProcessingMonitoringEnabled();
 }
