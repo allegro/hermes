@@ -2,7 +2,10 @@ package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.ToDoubleFunction;
 
 public class ExecutorMetrics {
@@ -12,6 +15,14 @@ public class ExecutorMetrics {
     public ExecutorMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
         this.hermesMetrics = hermesMetrics;
         this.meterRegistry = meterRegistry;
+    }
+
+    public ExecutorService monitor(ExecutorService executorService, String executorName) {
+        return ExecutorServiceMetrics.monitor(meterRegistry, executorService, executorName);
+    }
+
+    public ScheduledExecutorService monitor(ScheduledExecutorService scheduledExecutorService, String executorName) {
+        return ExecutorServiceMetrics.monitor(meterRegistry, scheduledExecutorService, executorName);
     }
 
     public <T> void registerThreadPoolCapacity(String executorName, T stateObj, ToDoubleFunction<T> f) {
@@ -43,12 +54,6 @@ public class ExecutorMetrics {
         hermesMetrics.registerThreadPoolTaskQueueUtilization(executorName, () -> f.applyAsDouble(stateObj));
         registerMicrometerGauge("executors.task-queue-utilization", executorName, stateObj, f);
     }
-
-    public void incrementRequestRejectedCounter(String executorName) {
-        hermesMetrics.incrementThreadPoolTaskRejectedCount(executorName);
-        meterRegistry.counter("executors.task-rejected", Tags.of("executor_name", executorName)).increment();
-    }
-
 
     private <T> void registerMicrometerGauge(String name, String executorName, T stateObj, ToDoubleFunction<T> f) {
         meterRegistry.gauge(name, Tags.of("executor_name", executorName), stateObj, f);

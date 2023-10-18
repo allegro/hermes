@@ -9,7 +9,6 @@ import org.eclipse.jetty.client.HttpClient
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
-import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration
 import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties
@@ -32,7 +31,6 @@ class HttpClientConnectionMonitoringTest extends Specification {
     HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
     MetricsFacade metrics = new MetricsFacade(meterRegistry, hermesMetrics)
-    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(metrics)
 
     def setupSpec() {
         port = Ports.nextAvailable()
@@ -45,7 +43,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
         SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties())
         ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
         client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
-                new InstrumentedExecutorServiceFactory(threadPoolMetrics),
+                new InstrumentedExecutorServiceFactory(metrics),
                 sslContextFactoryProvider), new Http1ClientProperties()
         )
         batchClient = Mock(HttpClient)
