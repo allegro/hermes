@@ -11,7 +11,7 @@ class DirectCompiledSchemaRepositoryTest extends Specification {
     static final SchemaVersion v1 = SchemaVersion.valueOf(1)
     static final SchemaId id1 = SchemaId.valueOf(13)
 
-    def rawSchemaClient = Stub(RawSchemaClient)
+    def rawSchemaClient = Stub(RawSchemaAdminClient)
     def schemaCompiler = {
         it.value().toUpperCase()
     }

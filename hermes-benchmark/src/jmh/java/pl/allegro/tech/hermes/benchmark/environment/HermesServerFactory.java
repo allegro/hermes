@@ -30,7 +30,7 @@ import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectSchemaVersionsRepository;
-import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.RawSchemaAdminClient;
 import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -55,11 +55,16 @@ class HermesServerFactory {
         MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
         TopicsCache topicsCache = new InMemoryTopicsCache(metricsFacade, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
-        RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
+        RawSchemaAdminClient rawSchemaAdminClient = new InMemorySchemaAdminClient(topic.getName(), loadMessageResource("schema"), 1, 1);
         Trackers trackers = new Trackers(Collections.emptyList());
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
-        HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache,
-            brokerMessageProducer, rawSchemaClient, trackers, avroMessageContentWrapper);
+        HttpHandler httpHandler = provideHttpHandler(
+            throughputLimiter,
+            topicsCache,
+            brokerMessageProducer,
+            rawSchemaAdminClient,
+            trackers, 
+            avroMessageContentWrapper);
         SslProperties sslProperties = new SslProperties();
         HermesServerProperties hermesServerProperties = new HermesServerProperties();
         hermesServerProperties.setGracefulShutdownEnabled(false);
@@ -79,8 +84,8 @@ class HermesServerFactory {
     }
 
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,
-        TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
-        RawSchemaClient rawSchemaClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
+                                                  TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
+                                                  RawSchemaAdminClient rawSchemaAdminClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
         HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
@@ -94,8 +99,8 @@ class HermesServerFactory {
                         new MessageValidators(Collections.emptyList()),
                         new MessageContentTypeEnforcer(),
                         new SchemaRepository(
-                                new DirectSchemaVersionsRepository(rawSchemaClient),
-                                new DirectCompiledSchemaRepository<>(rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler())
+                                new DirectSchemaVersionsRepository(rawSchemaAdminClient),
+                                new DirectCompiledSchemaRepository<>(rawSchemaAdminClient, SchemaCompilersFactory.avroSchemaCompiler())
                         ),
                         new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter()),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),

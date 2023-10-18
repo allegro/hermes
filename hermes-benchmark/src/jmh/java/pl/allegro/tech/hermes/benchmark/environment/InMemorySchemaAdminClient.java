@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.RawSchemaAdminClient;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class InMemorySchemaClient implements RawSchemaClient {
+public class InMemorySchemaAdminClient implements RawSchemaAdminClient {
 
     private final TopicName schemaTopicName;
     private final RawSchemaWithMetadata rawSchemaWithMetadata;
 
-    public InMemorySchemaClient(TopicName schemaTopicName, String schemaSource, int id, int version) {
+    public InMemorySchemaAdminClient(TopicName schemaTopicName, String schemaSource, int id, int version) {
         this.schemaTopicName = schemaTopicName;
         rawSchemaWithMetadata = RawSchemaWithMetadata.of(schemaSource, id, version);
     }

@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.common.schema;
 
-import pl.allegro.tech.hermes.api.RawSchema;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -10,19 +12,15 @@ import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-
 public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
-    private final RawSchemaClient rawSchemaClient;
     private final MetricsFacade metricsFacade;
+    protected final RawSchemaClient rawSchemaClient;
 
     public ReadMetricsTrackingRawSchemaClient(
-            RawSchemaClient rawSchemaClient,
-            MetricsFacade metricsFacade) {
-        this.rawSchemaClient = rawSchemaClient;
+            MetricsFacade metricsFacade,
+            RawSchemaClient rawSchemaClient) {
         this.metricsFacade = metricsFacade;
+        this.rawSchemaClient = rawSchemaClient;
     }
 
     @Override
@@ -45,30 +43,15 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
         return timedVersions(() -> rawSchemaClient.getVersions(topic));
     }
 
-    @Override
-    public void registerSchema(TopicName topic, RawSchema rawSchema) {
-        rawSchemaClient.registerSchema(topic, rawSchema);
-    }
-
-    @Override
-    public void deleteAllSchemaVersions(TopicName topic) {
-        rawSchemaClient.deleteAllSchemaVersions(topic);
-    }
-
-    @Override
-    public void validateSchema(TopicName topic, RawSchema rawSchema) {
-        rawSchemaClient.validateSchema(topic, rawSchema);
-    }
-
-    private <T> T timedSchema(Supplier<? extends T> callable) {
+    protected <T> T timedSchema(Supplier<? extends T> callable) {
         return timed(callable, metricsFacade.schemaClient().schemaTimer());
     }
 
-    private <T> T timedVersions(Supplier<? extends T> callable) {
+    protected <T> T timedVersions(Supplier<? extends T> callable) {
         return timed(callable, metricsFacade.schemaClient().versionsTimer());
     }
 
-    private <T> T timed(Supplier<? extends T> callable, HermesTimer timer) {
+    protected <T> T timed(Supplier<? extends T> callable, HermesTimer timer) {
         try (HermesTimerContext time = timer.time()) {
             return callable.get();
         }
