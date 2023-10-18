@@ -116,6 +116,7 @@ public class ConsumerProcess implements Runnable {
                 case STOP:
                     logger.info("Stopping main loop for consumer {}. {}", signal.getTarget(), signal.getLogWithIdAndType());
                     this.running = false;
+                    stop();
                     break;
                 case RETRANSMIT:
                     retransmit(signal);
