@@ -244,13 +244,13 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should delete all schema versions"() {
         given:
-        wireMock.stubFor(WireMock.delete(versionsUrl(topicName, subjectNamingStrategy)).willReturn(okResponse()))
+        wireMock.stubFor(WireMock.delete(deleteUrl(topicName, subjectNamingStrategy)).willReturn(okResponse()))
 
         when:
         client.deleteAllSchemaVersions(topicName)
 
         then:
-        wireMock.verify(1, deleteRequestedFor(versionsUrl(topicName, subjectNamingStrategy)))
+        wireMock.verify(1, deleteRequestedFor(deleteUrl(topicName, subjectNamingStrategy)))
 
         where:
         client << clients
@@ -407,6 +407,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     private UrlPattern versionsUrl(TopicName topic, SubjectNamingStrategy subjectNamingStrategy) {
         urlEqualTo("/subjects/${subjectNamingStrategy.apply(topic)}/versions")
+    }
+
+    private UrlPattern deleteUrl(TopicName topic, SubjectNamingStrategy subjectNamingStrategy) {
+        urlEqualTo("/subjects/${subjectNamingStrategy.apply(topic)}")
     }
 
     private UrlPattern schemaVersionUrl(TopicName topic, int version, SubjectNamingStrategy subjectNamingStrategy) {

@@ -30,7 +30,7 @@ import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
 /**
  * This implementation of RawSchemaClient is compatible with Confluent Schema Registry API
- * except for the deleteAllSchemaVersions and validation endpoint which are not fully supported by the Confluent project.
+ * except for the validation endpoint which is not fully supported by the Confluent project.
  */
 public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
@@ -48,7 +48,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     public SchemaRegistryRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
                                          ObjectMapper objectMapper,
                                          SubjectNamingStrategy subjectNamingStrategy) {
-        this(schemaRepositoryInstanceResolver, objectMapper, false, "versions", subjectNamingStrategy);
+        this(schemaRepositoryInstanceResolver, objectMapper, false, "", subjectNamingStrategy);
     }
 
     public SchemaRegistryRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
