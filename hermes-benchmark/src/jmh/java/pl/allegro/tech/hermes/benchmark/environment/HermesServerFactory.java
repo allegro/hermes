@@ -55,7 +55,12 @@ class HermesServerFactory {
         MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
         TopicsCache topicsCache = new InMemoryTopicsCache(metricsFacade, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
-        RawSchemaAdminClient rawSchemaAdminClient = new InMemorySchemaAdminClient(topic.getName(), loadMessageResource("schema"), 1, 1);
+        RawSchemaAdminClient rawSchemaAdminClient = new InMemorySchemaAdminClient(
+            topic.getName(),
+            loadMessageResource("schema"),
+            1,
+            1
+        );
         Trackers trackers = new Trackers(Collections.emptyList());
         AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
         HttpHandler httpHandler = provideHttpHandler(
@@ -85,7 +90,8 @@ class HermesServerFactory {
 
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,
                                                   TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
-                                                  RawSchemaAdminClient rawSchemaAdminClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
+                                                  RawSchemaAdminClient rawSchemaAdminClient, Trackers trackers,
+                                                  AvroMessageContentWrapper avroMessageContentWrapper) {
         HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
@@ -100,9 +106,15 @@ class HermesServerFactory {
                         new MessageContentTypeEnforcer(),
                         new SchemaRepository(
                                 new DirectSchemaVersionsRepository(rawSchemaAdminClient),
-                                new DirectCompiledSchemaRepository<>(rawSchemaAdminClient, SchemaCompilersFactory.avroSchemaCompiler())
+                                new DirectCompiledSchemaRepository<>(
+                                    rawSchemaAdminClient,
+                                    SchemaCompilersFactory.avroSchemaCompiler()
+                                )
                         ),
-                        new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter()),
+                        new DefaultHeadersPropagator(
+                            headerPropagationProperties.isEnabled(), 
+                            headerPropagationProperties.getAllowFilter()
+                        ),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
                         Clock.systemDefaultZone(),
                         schemaProperties.isIdHeaderEnabled()

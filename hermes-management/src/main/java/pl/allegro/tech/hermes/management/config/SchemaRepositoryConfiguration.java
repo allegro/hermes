@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
-import java.net.URI;
 import org.apache.avro.Schema;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -29,6 +28,8 @@ import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
 import pl.allegro.tech.hermes.schema.confluent.SchemaRegistryRawSchemaAdminClient;
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
+
+import java.net.URI;
 
 import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName;
 
@@ -70,8 +71,10 @@ public class SchemaRepositoryConfiguration {
             ObjectMapper objectMapper,
             SubjectNamingStrategy subjectNamingStrategy
     ) {
-        return new SchemaRegistryRawSchemaAdminClient(schemaRepositoryInstanceResolver, objectMapper,
-                                                      schemaRepositoryProperties.isValidationEnabled(), schemaRepositoryProperties.getDeleteSchemaPathSuffix(),
+        return new SchemaRegistryRawSchemaAdminClient(schemaRepositoryInstanceResolver, 
+                                                      objectMapper,
+                                                      schemaRepositoryProperties.isValidationEnabled(),
+                                                      schemaRepositoryProperties.getDeleteSchemaPathSuffix(),
                                                       subjectNamingStrategy);
     }
 

@@ -3,12 +3,6 @@ package pl.allegro.tech.hermes.schema.confluent;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.RawSchema;
@@ -21,8 +15,15 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
- * This implementation of RawSchemaClient is compatible with Confluent Schema Registry API
+ * This implementation of RawSchemaClient is compatible with Confluent Schema Registry API.
  */
 public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 

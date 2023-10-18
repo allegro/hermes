@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.schema;
 
-import java.util.List;
-import java.util.Optional;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface RawSchemaClient {
 
