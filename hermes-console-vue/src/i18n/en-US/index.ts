@@ -358,8 +358,10 @@ const en_US = {
       title: 'Offline clients',
     },
     schema: {
-      title: 'Message schema',
       copy: 'Copy to clipboard',
+      default: 'Default',
+      showRawSchema: 'Show raw schema',
+      title: 'Message schema',
     },
     subscriptions: {
       title: 'Subscriptions',
