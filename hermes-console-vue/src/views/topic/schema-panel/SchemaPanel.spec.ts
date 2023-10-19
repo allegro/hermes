@@ -15,7 +15,7 @@ describe('SchemaPanel', () => {
     expect(getByText('topicView.schema.title')).toBeVisible();
   });
 
-  it('should render avro json schema', async () => {
+  it('should render avro formatted schema', async () => {
     // given
     const { getByText, container } = render(SchemaPanel, { props });
 
@@ -27,7 +27,7 @@ describe('SchemaPanel', () => {
     expect(codeElement).toBeVisible();
   });
 
-  it('should render avro formatted schema', async () => {
+  it('should render avro json schema', async () => {
     // given
     const { getByText, container } = render(SchemaPanel, { props });
 
