@@ -61,12 +61,13 @@ public class JmsConsumingTest extends IntegrationTest {
         // when
         Response response = client
                 .request()
-                .header("Trace-Id", traceId)
+                .header("trace-id", traceId)
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        assertThat(jmsEndpoint.waitAndGetLastMessage()).assertStringProperty("TraceId", traceId);
+        Message lastMessage = jmsEndpoint.waitAndGetLastMessage();
+        assertThat(lastMessage).assertStringProperty("traceid", traceId);
     }
 
     @Test
@@ -80,7 +81,7 @@ public class JmsConsumingTest extends IntegrationTest {
         Topic topic = operations.buildTopic(randomTopic("publishJmsGroupWithTrace", "topic").build());
         operations.createSubscription(topic, "subscription", jmsEndpointAddress(JMS_TOPIC_NAME));
         jmsEndpoint.expectMessages(TestMessage.of("hello", "world"));
-        Invocation.Builder request = createRequestWithTraceHeaders(FRONTEND_URL, topic.getQualifiedName(), trace);;
+        Invocation.Builder request = createRequestWithTraceHeaders(FRONTEND_URL, topic.getQualifiedName(), trace);
 
         // when
         Response response = request.post(Entity.entity(message, MediaType.APPLICATION_JSON));
@@ -88,11 +89,12 @@ public class JmsConsumingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
         Message lastMessage = jmsEndpoint.waitAndGetLastMessage();
-        assertThat(lastMessage).assertStringProperty("TraceId", trace.getTraceId())
-                .assertStringProperty("SpanId", trace.getSpanId())
-                .assertStringProperty("ParentSpanId", trace.getParentSpanId())
-                .assertStringProperty("TraceSampled", trace.getTraceSampled())
-                .assertStringProperty("TraceReported", trace.getTraceReported());
+        assertThat(lastMessage)
+                .assertStringProperty("traceid", trace.getTraceId())
+                .assertStringProperty("spanid", trace.getSpanId())
+                .assertStringProperty("parentspanid", trace.getParentSpanId())
+                .assertStringProperty("tracesampled", trace.getTraceSampled())
+                .assertStringProperty("tracereported", trace.getTraceReported());
     }
 
     private String jmsEndpointAddress(String topicName) {

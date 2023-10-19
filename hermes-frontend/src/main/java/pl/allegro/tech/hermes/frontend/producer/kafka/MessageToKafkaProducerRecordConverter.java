@@ -42,7 +42,7 @@ public class MessageToKafkaProducerRecordConverter {
             }
         });
 
-        message.getHTTPHeaders().forEach((name, value) -> headers.add(kafkaHeaderFactory.httpHeader(name, value)));
+        kafkaHeaderFactory.setHTTPHeadersIfEnabled(headers, message.getHTTPHeaders());
 
         return headers;
     }

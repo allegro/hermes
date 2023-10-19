@@ -12,10 +12,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.HTTPHeadersPropagationAsKafkaHeadersProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties;
 import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
@@ -48,13 +50,16 @@ public class KafkaBrokerMessageProducerTest {
     private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
     private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
     private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
+    private final HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties =
+        new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties();
     private final KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties();
     private final Producers producers =
         new Producers(leaderConfirmsProducer, everyoneConfirmProducer, kafkaProducerProperties.isReportNodeMetricsEnabled());
 
     private KafkaBrokerMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
-    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties);
+    private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties,
+        httpHeadersPropagationAsKafkaHeadersProperties);
 
     @Mock
     private HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));

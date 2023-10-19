@@ -277,12 +277,12 @@ public class PublishingTest extends IntegrationTest {
         // when
         Response response = client
                 .request()
-                .header("Trace-Id", traceId)
+                .header("trace-id", traceId)
                 .post(Entity.entity(message, MediaType.APPLICATION_JSON));
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", traceId);
+        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("trace-id", traceId);
     }
 
     @Test
@@ -381,7 +381,7 @@ public class PublishingTest extends IntegrationTest {
 
         Subscription subscription = SubscriptionBuilder.subscription(topic, "subscription")
                 .withEndpoint(remoteService.getUrl())
-                .withHeader("Trace-Id", "defaultValue")
+                .withHeader("trace-id", "defaultValue")
                 .build();
         operations.createSubscription(topic, subscription);
         remoteService.expectMessages(message);
@@ -390,12 +390,12 @@ public class PublishingTest extends IntegrationTest {
         // when
         Response response = client
                 .request()
-                .header("Trace-Id", "valueFromRequest")
+                .header("trace-id", "valueFromRequest")
                 .post(Entity.entity(message, MediaType.TEXT_PLAIN));
 
         // then
         assertThat(response).hasStatus(Response.Status.CREATED);
-        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("Trace-Id", "valueFromRequest");
+        assertThat(remoteService.waitAndGetLastRequest()).hasHeaderValue("trace-id", "valueFromRequest");
     }
 
     @Test

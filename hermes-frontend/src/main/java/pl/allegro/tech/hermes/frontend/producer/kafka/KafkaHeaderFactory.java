@@ -3,16 +3,24 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import com.google.common.primitives.Ints;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
+import pl.allegro.tech.hermes.common.kafka.HTTPHeadersPropagationAsKafkaHeadersProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaHeaderNameParameters;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 public class KafkaHeaderFactory {
 
     private final KafkaHeaderNameParameters kafkaHeaderNameParameters;
+    private final boolean isHTTPHeadersPropagationAsKafkaHeadersEnabled;
+    private final String httpHeaderPrefix;
 
-    public KafkaHeaderFactory(KafkaHeaderNameParameters kafkaHeaderNameParameters) {
+    public KafkaHeaderFactory(KafkaHeaderNameParameters kafkaHeaderNameParameters,
+                              HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties) {
         this.kafkaHeaderNameParameters = kafkaHeaderNameParameters;
+        this.isHTTPHeadersPropagationAsKafkaHeadersEnabled = httpHeadersPropagationAsKafkaHeadersProperties.isEnabled();
+        this.httpHeaderPrefix = httpHeadersPropagationAsKafkaHeadersProperties.getPrefix();
     }
 
     Header messageId(String messageId) {
@@ -27,7 +35,13 @@ public class KafkaHeaderFactory {
         return new RecordHeader(kafkaHeaderNameParameters.getSchemaId(), Ints.toByteArray(schemaId));
     }
 
-    Header httpHeader(String name, String value) {
-        return new RecordHeader(name, value.getBytes(StandardCharsets.UTF_8));
+    void setHTTPHeadersIfEnabled(List<Header> headers, Map<String, String> httpHeaders) {
+        if (isHTTPHeadersPropagationAsKafkaHeadersEnabled) {
+            httpHeaders.forEach((name, value) -> headers.add(createHttpHeader(name, value)));
+        }
+    }
+
+    private Header createHttpHeader(String name, String value) {
+        return new RecordHeader(httpHeaderPrefix + name, value.getBytes(StandardCharsets.UTF_8));
     }
 }
