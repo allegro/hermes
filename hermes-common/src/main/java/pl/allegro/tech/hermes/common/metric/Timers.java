@@ -38,4 +38,8 @@ public class Timers {
             "http-clients.serial.http2.request-queue-waiting-time";
     public static final String CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_REQUEST_PROCESSING_TIME =
             "http-clients.serial.http2.request-processing-time";
+    public static final String CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_REQUEST_QUEUE_WAITING_TIME =
+            "http-clients.batch.http1.request-queue-waiting-time";
+    public static final String CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_REQUEST_PROCESSING_TIME =
+            "http-clients.batch.http1.request-processing-time";
 }

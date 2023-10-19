@@ -75,6 +75,13 @@ public class ConsumerSenderMetrics {
         );
     }
 
+    public HermesTimer http1BatchClientRequestQueueWaitingTimer() {
+        return HermesTimer.from(
+                meterRegistry.timer(Timers.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_REQUEST_QUEUE_WAITING_TIME),
+                hermesMetrics.timer(Timers.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_REQUEST_QUEUE_WAITING_TIME)
+        );
+    }
+
     public HermesTimer http2SerialClientRequestQueueWaitingTimer() {
         return HermesTimer.from(
                 meterRegistry.timer(Timers.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_REQUEST_QUEUE_WAITING_TIME),
@@ -86,6 +93,13 @@ public class ConsumerSenderMetrics {
         return HermesTimer.from(
                 meterRegistry.timer(Timers.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_REQUEST_PROCESSING_TIME),
                 hermesMetrics.timer(Timers.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_REQUEST_PROCESSING_TIME)
+        );
+    }
+
+    public HermesTimer http1BatchClientRequestProcessingTimer() {
+        return HermesTimer.from(
+                meterRegistry.timer(Timers.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_REQUEST_PROCESSING_TIME),
+                hermesMetrics.timer(Timers.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_REQUEST_PROCESSING_TIME)
         );
     }
 

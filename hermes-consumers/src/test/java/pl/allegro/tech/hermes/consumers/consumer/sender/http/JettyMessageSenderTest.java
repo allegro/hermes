@@ -70,8 +70,9 @@ public class JettyMessageSenderTest {
                         new InstrumentedExecutorServiceFactory(
                                 new ThreadPoolMetrics(TestMetricsFacadeFactory.create())
                         ),
-                        sslContextFactoryProvider, metricsFacade.consumerSender()),
-                new Http1ClientProperties()
+                        sslContextFactoryProvider),
+                new Http1ClientProperties(),
+                metricsFacade
         );
         client.start();
     }

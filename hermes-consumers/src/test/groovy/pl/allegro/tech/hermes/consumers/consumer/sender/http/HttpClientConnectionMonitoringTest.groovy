@@ -46,7 +46,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
         ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
         client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
                 new InstrumentedExecutorServiceFactory(threadPoolMetrics),
-                sslContextFactoryProvider, metrics.consumerSender()), new Http1ClientProperties()
+                sslContextFactoryProvider), new Http1ClientProperties(), metrics
         )
         batchClient = Mock(HttpClient)
         client.start()

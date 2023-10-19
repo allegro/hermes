@@ -16,17 +16,12 @@ public class HttpClientsFactory {
     private final InstrumentedExecutorServiceFactory executorFactory;
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
-    private final ConsumerSenderMetrics consumerSenderMetrics;
-
-
     public HttpClientsFactory(
             InstrumentedExecutorServiceFactory executorFactory,
-            SslContextFactoryProvider sslContextFactoryProvider,
-            ConsumerSenderMetrics consumerSenderMetrics
+            SslContextFactoryProvider sslContextFactoryProvider
     ) {
         this.executorFactory = executorFactory;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
-        this.consumerSenderMetrics = consumerSenderMetrics;
     }
 
     public HttpClient createClientForHttp1(String name, Http1ClientParameters http1ClientParameters) {
@@ -47,14 +42,6 @@ public class HttpClientsFactory {
         client.setIdleTimeout(http1ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(http1ClientParameters.isFollowRedirectsEnabled());
         client.setConnectTimeout(http1ClientParameters.getConnectionTimeout().toMillis());
-        if (http1ClientParameters.isRequestProcessingMonitoringEnabled()) {
-            client.getRequestListeners().add(
-                    new JettyHttpClientMetrics(
-                            consumerSenderMetrics.http1SerialClientRequestQueueWaitingTimer(),
-                            consumerSenderMetrics.http1SerialClientRequestProcessingTimer()
-                    )
-            );
-        }
         return client;
     }
 
@@ -81,14 +68,6 @@ public class HttpClientsFactory {
         client.setIdleTimeout(http2ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(http2ClientParameters.isFollowRedirectsEnabled());
         client.setConnectTimeout(http2ClientParameters.getConnectionTimeout().toMillis());
-        if (http2ClientParameters.isRequestProcessingMonitoringEnabled()) {
-            client.getRequestListeners().add(
-                    new JettyHttpClientMetrics(
-                            consumerSenderMetrics.http2SerialClientRequestQueueWaitingTimer(),
-                            consumerSenderMetrics.http2SerialClientRequestProcessingTimer()
-                    )
-            );
-        }
         return client;
     }
 }
