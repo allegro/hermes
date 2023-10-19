@@ -12,14 +12,26 @@ var subscriptions = angular.module('hermes.subscription', [
 
 subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'SubscriptionHealth', 'SubscriptionMetrics',
     'TopicRepository', 'TopicMetrics', '$scope', '$location', '$stateParams', '$uibModal', '$q', 'ConfirmationModal',
-    'toaster', 'PasswordService', 'MessagePreviewModal', 'FiltersDebuggerModalFactory', 'SUBSCRIPTION_CONFIG',
+    'toaster', 'PasswordService', 'MessagePreviewModal', 'FiltersDebuggerModalFactory', 'SUBSCRIPTION_CONFIG', '$sce',
     function (subscriptionRepository, subscriptionHealth, subscriptionMetrics, topicRepository, topicMetrics,
               $scope, $location, $stateParams, $modal, $q, confirmationModal, toaster, passwordService,
-              messagePreviewModal, filtersDebuggerModal, config) {
+              messagePreviewModal, filtersDebuggerModal, config, $sce) {
         var groupName = $scope.groupName = $stateParams.groupName;
         var topicName = $scope.topicName = $stateParams.topicName;
         var subscriptionName = $scope.subscriptionName = $stateParams.subscriptionName;
         $scope.config = config;
+        $scope.costs = {
+            enabled: window.config.costs.enabled,
+            iframeUrl: $sce.trustAsResourceUrl(resolveCostsUrl(window.config.costs.subscriptionIframeUrl)),
+            detailsUrl: resolveCostsUrl(window.config.costs.subscriptionDetailsUrl)
+        };
+
+        function resolveCostsUrl(template) {
+            if (template) {
+                return template.replace('{{topic_name}}', topicName).replace('{{subscription_name}}', subscriptionName);
+            }
+            return template;
+        }
 
         function getUndelivered() {
             subscriptionRepository.undelivered(topicName, subscriptionName).$promise
@@ -276,8 +288,8 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                 });
         };
         $scope.skipMessages = function (){
-            tommorowDate = new Date()
-            tommorowDate.setDate(tommorowDate.getDate() + 1)
+            tommorowDate = new Date();
+            tommorowDate.setDate(tommorowDate.getDate() + 1);
 
             confirmationModal.open({
                 action: 'Skip messages',
@@ -299,7 +311,7 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
                     });
             });
 
-        }
+        };
         $scope.debugFilters = function () {
             filtersDebuggerModal.open(topicName, $scope.subscription.filters, $scope.topicContentType)
                 .then(function (result) {
@@ -311,6 +323,9 @@ subscriptions.controller('SubscriptionController', ['SubscriptionRepository', 'S
 
         $scope.trackingModeName = {"trackingOff": "No tracking", "discardedOnly": "Track message discarding only", "trackingAll": "Track everything"};
 
+        $scope.goToCostDetails = function () {
+            window.open($scope.costs.detailsUrl, '_blank');
+        };
     }]);
 
 subscriptions.controller('SubscriptionEditController', ['SubscriptionRepository', '$scope', '$uibModalInstance', 'subscription',

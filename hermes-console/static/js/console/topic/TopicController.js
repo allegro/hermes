@@ -27,6 +27,18 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
         $scope.showHeadersFilter = subscriptionConfig.showHeadersFilter;
         $scope.offlineRetransmissionEnabled = topicConfig.offlineRetransmissionEnabled;
         $scope.iframeSource = "";
+        $scope.costs = {
+            enabled: window.config.costs.enabled,
+            iframeUrl: $sce.trustAsResourceUrl(resolveCostsUrl(window.config.costs.topicIframeUrl)),
+            detailsUrl: resolveCostsUrl(window.config.costs.topicDetailsUrl)
+        };
+
+        function resolveCostsUrl(template) {
+            if (template) {
+                return template.replace('{{topic_name}}', topicName);
+            }
+            return template;
+        }
 
         topicRepository.get(topicName).then(function(topicWithSchema) {
             $scope.topic = topicWithSchema;
@@ -287,6 +299,10 @@ topics.controller('TopicController', ['TOPIC_CONFIG', 'TopicRepository', 'TopicM
                     }
                 }
             });
+        };
+
+        $scope.goToCostDetails = function () {
+            window.open($scope.costs.detailsUrl, '_blank');
         };
     }]);
 
