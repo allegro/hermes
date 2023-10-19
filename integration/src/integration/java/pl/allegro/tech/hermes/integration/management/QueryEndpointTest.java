@@ -132,6 +132,7 @@ public class QueryEndpointTest extends IntegrationTest {
                 {"{\"query\": {\"or\": [{\"name\": \"subscription1\"}, {\"endpoint\": \"http://endpoint1\"}]}}", asList(1, 3)},
                 {"{\"query\": {\"owner.id\": \"Team Alpha\"}}", asList(4)},
                 {"{\"query\": {\"owner.id\": {\"like\": \".*Alph.*\"}}}", asList(4)},
+                {"{\"query\": {\"endpoint\": \".*password.*\"}}", asList()},
         };
     }
 
@@ -147,13 +148,13 @@ public class QueryEndpointTest extends IntegrationTest {
                 topic, enrichSubscription(subscription(topic.getName(), "subscription2"), "http://endpoint2")
         );
         Subscription subscription3 = operations.createSubscription(
-                topic, enrichSubscription(subscription(topic.getName(), "subTestScription3"), "http://endpoint1")
+                topic, enrichSubscription(subscription(topic.getName(), "subTestScription3"), "http://login:password@endpoint1")
         );
         Subscription subscription4 = operations.createSubscription(topic, enrichSubscription(subscription(topic.getName(), "subscription4")
                 .withOwner(new OwnerId("Plaintext", "Team Alpha")), "http://endpoint2")
         );
 
-        List<Subscription> subscriptions = asList(subscription1, subscription2, subscription3, subscription4);
+        List<Subscription> subscriptions = asList(subscription1, subscription2, subscription3.anonymize(), subscription4);
 
         // when
         List<Subscription> found = management.query().querySubscriptions(query);
