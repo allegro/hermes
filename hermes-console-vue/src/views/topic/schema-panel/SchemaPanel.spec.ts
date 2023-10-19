@@ -15,12 +15,25 @@ describe('SchemaPanel', () => {
     expect(getByText('topicView.schema.title')).toBeVisible();
   });
 
-  it('should render schema', async () => {
+  it('should render avro formatted schema', async () => {
     // given
     const { getByText, container } = render(SchemaPanel, { props });
 
     // when
     await userEvent.click(getByText('topicView.schema.title'));
+    const codeElement = container.querySelector('.avro-schema')!!;
+
+    // then
+    expect(codeElement).toBeVisible();
+  });
+
+  it('should render avro json schema', async () => {
+    // given
+    const { getByText, container } = render(SchemaPanel, { props });
+
+    // when
+    await userEvent.click(getByText('topicView.schema.title'));
+    await userEvent.click(getByText('topicView.schema.showRawSchema'));
     const codeElement = container.querySelector('.v-code')!!;
 
     // then
