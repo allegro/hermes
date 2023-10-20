@@ -21,7 +21,7 @@ class HybridPrometheusBasedTopicMetricsRepositoryTest extends Specification {
     private SubscriptionRepository subscriptionRepository = Mock(SubscriptionRepository)
 
     private VictoriaMetricsMetricsProvider prometheusMetricsProvider = new VictoriaMetricsMetricsProvider(client,
-            "hermes_consumers", "hermes_frontend")
+            "hermes_consumers", "hermes_frontend", "service='hermes'")
 
     private HybridTopicMetricsRepository repository = new HybridTopicMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, subscriptionRepository)
@@ -31,7 +31,7 @@ class HybridPrometheusBasedTopicMetricsRepositoryTest extends Specification {
         String query = "sum by (__name__, group, topic) (irate({__name__=~'hermes_frontend_topic_requests_total" +
                 "|hermes_consumers_subscription_delivered_total" +
                 "|hermes_frontend_topic_throughput_bytes_total', group='group', " +
-                "topic='topic'}[1m]) keep_metric_names)"
+                "topic='topic', service='hermes'}[1m]) keep_metric_names)"
         TopicName topic = new TopicName('group', 'topic')
 
         client.readMetrics(query) >> MonitoringMetricsContainer.createEmpty()
