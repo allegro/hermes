@@ -22,7 +22,8 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
 
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
-    private VictoriaMetricsMetricsProvider prometheusMetricsProvider = new VictoriaMetricsMetricsProvider(client, "hermes_consumers", "hermes_frontend");
+    private VictoriaMetricsMetricsProvider prometheusMetricsProvider = new VictoriaMetricsMetricsProvider(
+            client, "hermes_consumers", "hermes_frontend", "service=~'hermes'");
 
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)
@@ -34,7 +35,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
             "|hermes_consumers_subscription_other_errors_total" +
             "|hermes_consumers_subscription_batches_total" +
             "|hermes_consumers_subscription_http_status_codes_total'," +
-            "group='group',topic='topic',subscription='subscription'}[1m]) keep_metric_names)"
+            "group='group',topic='topic',subscription='subscription', service=~'hermes'}[1m]) keep_metric_names)"
 
     def "should read subscription metrics from multiple places"() {
         given:
