@@ -591,7 +591,7 @@ describe('PropertiesCard', () => {
     // then
     const row = getByText('Supported metadata').closest('tr')!;
     expect(row).toBeVisible();
-    expect(within(row).getByText('false')).toBeVisible();
+    expect(within(row).getByText('true')).toBeVisible();
   });
 
   it('should render additional unsupported properties', () => {

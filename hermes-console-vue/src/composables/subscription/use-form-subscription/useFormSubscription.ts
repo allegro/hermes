@@ -12,6 +12,7 @@ import type {
   SubscriptionForm,
   UseFormSubscription,
 } from '@/composables/subscription/use-form-subscription/types';
+import type { EndpointAddressResolverMetadata } from '@/api/subscription';
 import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
 import type {
   MessageFilterSpecification,
@@ -133,6 +134,35 @@ function getRawDataSources(): RawDataSources {
   };
 }
 
+function getEndpointAddressResolverDefaultValues(): Record<string, any> {
+  const configStore = useAppConfigStore();
+  const defaults: Record<string, any> = {};
+  for (const [propertyName, value] of Object.entries(
+    configStore.appConfig!.subscription.endpointAddressResolverMetadata,
+  )) {
+    if (value.type == 'boolean') {
+      defaults[propertyName] = false;
+    }
+  }
+  return defaults;
+}
+
+function getEndpointAddressResolverValues(
+  metadata: EndpointAddressResolverMetadata,
+): Record<string, any> {
+  const mergedMetadata: Record<string, any> = {};
+  for (const [propertyName, defaultValue] of Object.entries(
+    getEndpointAddressResolverDefaultValues(),
+  )) {
+    if (metadata[propertyName] !== undefined) {
+      mergedMetadata[propertyName] = metadata[propertyName];
+    } else {
+      mergedMetadata[propertyName] = defaultValue;
+    }
+  }
+  return mergedMetadata;
+}
+
 function createEmptyForm(): Ref<SubscriptionForm> {
   return ref({
     name: '',
@@ -166,6 +196,7 @@ function createEmptyForm(): Ref<SubscriptionForm> {
     deleteSubscriptionAutomatically: false,
     pathFilters: [],
     headerFilters: [],
+    endpointAddressResolverMetadata: getEndpointAddressResolverDefaultValues(),
   });
 }
 
@@ -224,6 +255,9 @@ export function initializeFullyFilledForm(
     deleteSubscriptionAutomatically: subscription.autoDeleteWithTopicEnabled,
     pathFilters: mapToPathFilter(subscription.filters),
     headerFilters: mapToHeaderFilter(subscription.filters),
+    endpointAddressResolverMetadata: getEndpointAddressResolverValues(
+      subscription.endpointAddressResolverMetadata,
+    ),
   };
 }
 

@@ -1,4 +1,5 @@
 import type { ComputedRef } from 'vue';
+import type { EndpointAddressResolverMetadata } from '@/api/subscription';
 import type { FieldValidator } from '@/utils/validators';
 import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
 import type { OwnerSource } from '@/api/owner';
@@ -31,6 +32,7 @@ export interface SubscriptionForm {
   deleteSubscriptionAutomatically: boolean;
   pathFilters: PathFilter[];
   headerFilters: HeaderFilter[];
+  endpointAddressResolverMetadata: EndpointAddressResolverMetadata;
 }
 
 export interface FormSubscriptionPolicy {

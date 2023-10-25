@@ -12,6 +12,7 @@
   import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
   import SubscriptionPathFiltersDebug from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFiltersDebug.vue';
   import TextField from '@/components/text-field/TextField.vue';
+  import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Subscription } from '@/api/subscription';
 
   const props = defineProps<{
@@ -371,6 +372,23 @@
       density="comfortable"
       hide-details
     />
+
+    <div
+      v-for="([propertyName, propertyValue]) in Object.entries(configStore.appConfig!.subscription.endpointAddressResolverMetadata)"
+      :key="propertyName"
+      class="d-flex flex-row"
+    >
+      <v-switch
+        v-model="form.endpointAddressResolverMetadata[propertyName]"
+        inset
+        :label="propertyValue.title"
+        v-if="propertyValue.type == 'boolean'"
+        color="success"
+        density="comfortable"
+        hide-details
+      />
+      <tooltip-icon :content="propertyValue.hint" />
+    </div>
 
     <div class="d-flex justify-end column-gap-2 mt-4">
       <v-btn
