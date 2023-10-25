@@ -37,6 +37,9 @@ export const dummySubscriptionForm = {
   deleteSubscriptionAutomatically: false,
   pathFilters: [],
   headerFilters: [],
+  endpointAddressResolverMetadata: {
+    supportedMetadata: false,
+  },
 };
 
 export const dummySubscriptionFormValidator = {
@@ -159,6 +162,9 @@ export const dummyInitializedSubscriptionForm = {
   deleteSubscriptionAutomatically: false,
   pathFilters: [],
   headerFilters: [],
+  endpointAddressResolverMetadata: {
+    supportedMetadata: false,
+  },
 };
 
 export const dummyInitializedEditSubscriptionForm = {
@@ -192,4 +198,7 @@ export const dummyInitializedEditSubscriptionForm = {
   deleteSubscriptionAutomatically: dummySubscription.autoDeleteWithTopicEnabled,
   pathFilters: [],
   headerFilters: [],
+  endpointAddressResolverMetadata: {
+    supportedMetadata: true,
+  },
 };

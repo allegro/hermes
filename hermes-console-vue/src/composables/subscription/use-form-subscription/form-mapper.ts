@@ -41,7 +41,7 @@ export function parseFormToRequestBody(
     },
     subscriptionPolicy: mapSubscriptionPolicy(form),
     trackingMode: form.messageDeliveryTrackingMode,
-    endpointAddressResolverMetadata: {},
+    endpointAddressResolverMetadata: form.endpointAddressResolverMetadata,
     subscriptionIdentityHeadersEnabled: form.attachSubscriptionIdentityHeaders,
     autoDeleteWithTopicEnabled: form.deleteSubscriptionAutomatically,
   };

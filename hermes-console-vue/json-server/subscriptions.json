@@ -56,7 +56,7 @@
       }
     ],
     "endpointAddressResolverMetadata": {
-      "additionalMetadata": false,
+      "additionalMetadata": true,
       "nonSupportedProperty": 2
     },
     "http2Enabled": false,

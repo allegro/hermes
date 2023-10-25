@@ -148,5 +148,6 @@ function initializeForm(
     deleteSubscriptionAutomatically: false,
     pathFilters: [],
     headerFilters: [],
+    endpointAddressResolverMetadata: form.value.endpointAddressResolverMetadata,
   };
 }
