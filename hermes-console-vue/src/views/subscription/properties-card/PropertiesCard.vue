@@ -190,6 +190,7 @@
       :key="property.key"
       :name="property.title"
       :value="property.value"
+      :tooltip="property.hint"
     />
 
     <key-value-card-item

@@ -387,7 +387,7 @@
         density="comfortable"
         hide-details
       />
-      <tooltip-icon :content="propertyValue.hint" />
+      <tooltip-icon :content="propertyValue.hint" class="align-self-center" />
     </div>
 
     <div class="d-flex justify-end column-gap-2 mt-4">
