@@ -24,10 +24,17 @@ public class TopicStats {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         TopicStats that = (TopicStats) o;
-        return topicCount == that.topicCount && ackAllTopicCount == that.ackAllTopicCount && trackingEnabledTopicCount == that.trackingEnabledTopicCount && avroTopicCount == that.avroTopicCount;
+        return topicCount == that.topicCount
+                && ackAllTopicCount == that.ackAllTopicCount
+                && trackingEnabledTopicCount == that.trackingEnabledTopicCount
+                && avroTopicCount == that.avroTopicCount;
     }
 
     @Override
@@ -37,12 +44,12 @@ public class TopicStats {
 
     @Override
     public String toString() {
-        return "TopicStats{" +
-                "topicCount=" + topicCount +
-                ", ackAllTopicCount=" + ackAllTopicCount +
-                ", trackingEnabledTopicCount=" + trackingEnabledTopicCount +
-                ", avroTopicCount=" + avroTopicCount +
-                '}';
+        return "TopicStats{"
+                + "topicCount=" + topicCount
+                + ", ackAllTopicCount=" + ackAllTopicCount
+                + ", trackingEnabledTopicCount=" + trackingEnabledTopicCount
+                + ", avroTopicCount=" + avroTopicCount
+                + '}';
     }
 
     public long getTopicCount() {
