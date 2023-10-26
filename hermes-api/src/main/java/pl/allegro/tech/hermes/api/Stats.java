@@ -10,7 +10,10 @@ public class Stats {
     private final SubscriptionStats subscriptionStats;
 
     @JsonCreator
-    public Stats(@JsonProperty("topicStats") TopicStats topicStats, @JsonProperty("subscriptionStats") SubscriptionStats subscriptionStats) {
+    public Stats(
+            @JsonProperty("topicStats")
+            TopicStats topicStats,
+            @JsonProperty("subscriptionStats") SubscriptionStats subscriptionStats) {
         this.topicStats = topicStats;
         this.subscriptionStats = subscriptionStats;
     }
@@ -25,8 +28,12 @@ public class Stats {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Stats stats = (Stats) o;
         return Objects.equals(topicStats, stats.topicStats) && Objects.equals(subscriptionStats, stats.subscriptionStats);
     }
@@ -38,9 +45,9 @@ public class Stats {
 
     @Override
     public String toString() {
-        return "Stats{" +
-                "topicStats=" + topicStats +
-                ", subscriptionStats=" + subscriptionStats +
-                '}';
+        return "Stats{"
+                + "topicStats=" + topicStats
+                + ", subscriptionStats=" + subscriptionStats
+                + '}';
     }
 }

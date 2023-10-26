@@ -35,10 +35,16 @@ public class SubscriptionStats {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SubscriptionStats that = (SubscriptionStats) o;
-        return subscriptionCount == that.subscriptionCount && trackingEnabledSubscriptionCount == that.trackingEnabledSubscriptionCount && avroSubscriptionCount == that.avroSubscriptionCount;
+        return subscriptionCount == that.subscriptionCount
+                && trackingEnabledSubscriptionCount == that.trackingEnabledSubscriptionCount
+                && avroSubscriptionCount == that.avroSubscriptionCount;
     }
 
     @Override
@@ -48,10 +54,10 @@ public class SubscriptionStats {
 
     @Override
     public String toString() {
-        return "SubscriptionStats{" +
-                "subscriptionCount=" + subscriptionCount +
-                ", trackingEnabledSubscriptionCount=" + trackingEnabledSubscriptionCount +
-                ", avroSubscriptionCount=" + avroSubscriptionCount +
-                '}';
+        return "SubscriptionStats{"
+                + "subscriptionCount=" + subscriptionCount
+                + ", trackingEnabledSubscriptionCount=" + trackingEnabledSubscriptionCount
+                + ", avroSubscriptionCount=" + avroSubscriptionCount
+                + '}';
     }
 }
