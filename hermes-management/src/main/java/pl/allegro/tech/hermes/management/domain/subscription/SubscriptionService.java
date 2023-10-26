@@ -291,6 +291,7 @@ public class SubscriptionService {
                 .map(Topic::getName)
                 .map(this::listSubscriptions)
                 .flatMap(List::stream)
+                .map(Subscription::anonymize)
                 .collect(toList());
     }
 

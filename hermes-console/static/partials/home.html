@@ -5,9 +5,14 @@
     </div>
 
     <div class="row" style="margin-bottom: 2em;">
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-{{costs.enabled ? 3 : 6}} col-md-offset-3">
             <a class="btn btn-main btn-block" ng-href="#/groups">
                 <i class="fa fa-cogs"></i> Console
+            </a>
+        </div>
+        <div class="col-md-3" ng-if="costs.enabled">
+            <a class="btn btn-main btn-block" ng-href="{{costs.detailsUrl}}" target="_blank">
+                <i class="fa fa-money"></i> Costs
             </a>
         </div>
     </div>

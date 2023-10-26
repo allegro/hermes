@@ -25,6 +25,7 @@ public class ConsoleProperties {
     private SubscriptionView subscription = new SubscriptionView();
     private ConsistencyView consistency = new ConsistencyView();
     private GroupView group = new GroupView();
+    private Costs costs = new Costs();
 
     public Dashboard getDashboard() {
         return dashboard;
@@ -80,6 +81,14 @@ public class ConsoleProperties {
 
     public void setGroup(GroupView group) {
         this.group = group;
+    }
+
+    public Costs getCosts() {
+        return costs;
+    }
+
+    public void setCosts(Costs costs) {
+        this.costs = costs;
     }
 
     public static final class Console {
@@ -820,6 +829,63 @@ public class ConsoleProperties {
 
         public void setMaxGroupBatchSize(int maxGroupBatchSize) {
             this.maxGroupBatchSize = maxGroupBatchSize;
+        }
+    }
+
+    public static final class Costs {
+        private boolean enabled = false;
+        private String globalDetailsUrl = "";
+        private String topicIframeUrl = "";
+        private String topicDetailsUrl = "";
+        private String subscriptionIframeUrl = "";
+        private String subscriptionDetailsUrl = "";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getTopicIframeUrl() {
+            return topicIframeUrl;
+        }
+
+        public void setTopicIframeUrl(String topicIframeUrl) {
+            this.topicIframeUrl = topicIframeUrl;
+        }
+
+        public String getGlobalDetailsUrl() {
+            return globalDetailsUrl;
+        }
+
+        public void setGlobalDetailsUrl(String globalDetailsUrl) {
+            this.globalDetailsUrl = globalDetailsUrl;
+        }
+
+        public String getTopicDetailsUrl() {
+            return topicDetailsUrl;
+        }
+
+        public void setTopicDetailsUrl(String topicDetailsUrl) {
+            this.topicDetailsUrl = topicDetailsUrl;
+        }
+
+        public String getSubscriptionIframeUrl() {
+            return subscriptionIframeUrl;
+        }
+
+        public void setSubscriptionIframeUrl(String subscriptionIframeUrl) {
+            this.subscriptionIframeUrl = subscriptionIframeUrl;
+        }
+
+        public String getSubscriptionDetailsUrl() {
+            return subscriptionDetailsUrl;
+        }
+
+        public void setSubscriptionDetailsUrl(String subscriptionDetailsUrl) {
+            this.subscriptionDetailsUrl = subscriptionDetailsUrl;
         }
     }
 }

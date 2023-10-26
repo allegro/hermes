@@ -99,6 +99,19 @@
                     <p><strong><a ng-href="{{metricsUrls.networkErrors}}">Other network errors</a></strong></p>
                 </div>
             </div>
+
+            <div class="panel panel-info" ng-if="costs.enabled">
+                <div class="panel-heading">
+                    <div class="pull-right">
+                        <button class="btn btn-primary btn-xs" ng-click="goToCostDetails()">Go to details</button>
+                    </div>
+                    <h3 class="panel-title">Costs</h3>
+                </div>
+                <div class="panel-body">
+                    <iframe height="100%" width="100%" style="border: none;" ng-src="{{costs.iframeUrl}}"></iframe>
+                </div>
+            </div>
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Manage subscription messages</h3>
