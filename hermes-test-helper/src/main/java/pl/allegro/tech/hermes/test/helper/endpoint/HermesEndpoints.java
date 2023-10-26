@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.endpoints.OwnerEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.QueryEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.ReadinessEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SchemaEndpoint;
+import pl.allegro.tech.hermes.api.endpoints.StatsEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.SubscriptionOwnershipEndpoint;
 import pl.allegro.tech.hermes.api.endpoints.TopicEndpoint;
@@ -55,6 +56,8 @@ public class HermesEndpoints {
 
     private final OfflineRetransmissionEndpoint offlineRetransmissionEndpoint;
 
+    private final StatsEndpoint statsEndpoint;
+
     public HermesEndpoints(Hermes hermes) {
         this.groupEndpoint = hermes.createGroupEndpoint();
         this.topicEndpoint = hermes.createTopicEndpoint();
@@ -72,6 +75,7 @@ public class HermesEndpoints {
         this.readinessEndpoint = hermes.createReadinessEndpoint();
         this.offlineRetransmissionEndpoint = hermes.createOfflineRetransmissionEndpoint();
         this.allTopicClientsEndpoint = hermes.createAllTopicClientsEndpoint();
+        this.statsEndpoint = hermes.createStatsEndpoint();
     }
 
     public HermesEndpoints(String hermesFrontendUrl, String consumerUrl) {
@@ -155,5 +159,7 @@ public class HermesEndpoints {
     public OfflineRetransmissionEndpoint offlineRetransmission() {
         return offlineRetransmissionEndpoint;
     }
+
+    public StatsEndpoint statsEndpoint() { return statsEndpoint; }
 }
 
