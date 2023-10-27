@@ -9,7 +9,7 @@ import static java.lang.Integer.parseInt;
 
 public class Retry implements IRetryAnalyzer {
     private int retryCount = 0;
-    private static final int maxRetryCount = parseInt(System.getProperty("tests.retry.count", "2"));
+    private static final int maxRetryCount = parseInt(System.getProperty("tests.retry.count", "0"));
     private static final Logger logger = LoggerFactory.getLogger(Retry.class);
 
     @Override

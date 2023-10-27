@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
@@ -60,7 +60,7 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
         }
     }
 
-    @AfterSuite
+    @AfterClass
     public void afterSuite() {
         auditEvents.stop();
     }

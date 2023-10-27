@@ -34,6 +34,7 @@ public class GroupManagementTest extends IntegrationTest {
         operations.createGroup("anotherExampleGroup");
 
         //when
+        // TODO move to operations
         management.group().delete("anotherExampleGroup");
 
         //then
@@ -111,6 +112,7 @@ public class GroupManagementTest extends IntegrationTest {
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
+        // TODO add await
         assertThat(management.group().list()).doesNotContain("removeGroup");
     }
 

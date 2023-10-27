@@ -20,7 +20,7 @@
 
     <logger name="org.mortbay.log" level="info" />
 
-    <root level="info">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 

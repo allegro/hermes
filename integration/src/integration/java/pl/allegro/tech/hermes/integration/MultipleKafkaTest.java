@@ -40,7 +40,7 @@ public class MultipleKafkaTest extends IntegrationTest {
                 .addKafkaCluster(DC1, kafkaClusterOne.getBootstrapServersForExternalClients())
                 .addKafkaCluster(DC2, kafkaClusterTwo.getBootstrapServersForExternalClients())
                 .addZookeeperCluster(DC1, hermesZookeeperOne.getConnectionString())
-                .addZookeeperCluster(DC2, hermesZookeeperTwo.getConnectionString())
+//                .addZookeeperCluster(DC2, hermesZookeeperTwo.getConnectionString())
                 .replicationFactor(kafkaClusterOne.getAllBrokers().size())
                 .uncleanLeaderElectionEnabled(false)
                 .start();
@@ -82,7 +82,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         consumers.overrideProperty(
                 ConsumerConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients()
         );
-        consumers.overrideProperty(ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
+//        consumers.overrideProperty(ConsumerConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
         consumers.overrideProperty(ConsumerConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         consumers.overrideProperty(ConsumerConfigurationProperties.KAFKA_CLUSTER_NAME, SECONDARY_KAFKA_CLUSTER_NAME);
         consumers.overrideProperty(CONSUMER_HEALTH_CHECK_PORT, 7454);
@@ -100,7 +100,7 @@ public class MultipleKafkaTest extends IntegrationTest {
         frontend.overrideProperty(
                 FrontendConfigurationProperties.KAFKA_BROKER_LIST, kafkaClusterTwo.getBootstrapServersForExternalClients()
         );
-        frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
+//        frontend.overrideProperty(FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING, hermesZookeeperTwo.getConnectionString());
         frontend.overrideProperty(FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
         frontend.overrideProperty(FrontendConfigurationProperties.METRICS_GRAPHITE_REPORTER_ENABLED, false);
         frontend.overrideProperty(FrontendConfigurationProperties.METRICS_ZOOKEEPER_REPORTER_ENABLED, false);

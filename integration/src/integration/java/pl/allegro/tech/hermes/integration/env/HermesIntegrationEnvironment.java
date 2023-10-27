@@ -47,7 +47,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     public static final KafkaContainerCluster kafkaClusterOne = new KafkaContainerCluster(NUMBER_OF_BROKERS_PER_CLUSTER);
     public static final KafkaContainerCluster kafkaClusterTwo = new KafkaContainerCluster(NUMBER_OF_BROKERS_PER_CLUSTER);
     public static final ZookeeperContainer hermesZookeeperOne = new ZookeeperContainer("ZookeeperContainerOne");
-    public static final ZookeeperContainer hermesZookeeperTwo = new ZookeeperContainer();
+//    public static final ZookeeperContainer hermesZookeeperTwo = new ZookeeperContainer();
     public static final GooglePubSubContainer googlePubSubEmulator = new GooglePubSubContainer();
     public static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
             .withKafkaCluster(kafkaClusterOne);
@@ -76,7 +76,7 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     @BeforeSuite
     public void prepareEnvironment(ITestContext context) {
         try {
-            Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne, hermesZookeeperTwo, googlePubSubEmulator)
+            Stream.of(kafkaClusterOne, kafkaClusterTwo, hermesZookeeperOne/*, hermesZookeeperTwo*/, googlePubSubEmulator)
                     .parallel()
                     .forEach(Startable::start);
 
@@ -145,9 +145,9 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     }
 
     private void initializeRootPathInZookeeperTwo() throws Exception {
-        try (CuratorFramework curatorFramework = startZookeeperClient(hermesZookeeperTwo.getConnectionString())) {
-            curatorFramework.create().creatingParentsIfNeeded().forPath("/hermes/groups");
-        }
+//        try (CuratorFramework curatorFramework = startZookeeperClient(hermesZookeeperTwo.getConnectionString())) {
+//            curatorFramework.create().creatingParentsIfNeeded().forPath("/hermes/groups");
+//        }
     }
 
     @AfterSuite(alwaysRun = true)
