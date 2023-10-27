@@ -108,6 +108,7 @@ public class GroupManagementTest extends IntegrationTest {
 
         // when
         Response response = management.group().delete("removeGroup");
+        wait.untilGroupRemoved("removeGroup");
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);

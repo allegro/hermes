@@ -135,10 +135,11 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldRemoveTopic() {
         // given
         operations.createGroup("removeTopicGroup");
-        operations.createTopic("removeTopicGroup", "topic");
+        Topic topic = operations.createTopic("removeTopicGroup", "topic");
 
         // when
         Response response = management.topic().remove("removeTopicGroup.topic");
+        wait.untilTopicRemoved(topic);
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);
@@ -149,11 +150,12 @@ public class TopicManagementTest extends IntegrationTest {
     public void shouldUnblacklistTopicWhileDeleting() {
         // given
         operations.createGroup("removeTopicGroup");
-        operations.createTopic("removeTopicGroup", "blacklistedTopic");
+        Topic topic = operations.createTopic("removeTopicGroup", "blacklistedTopic");
         management.blacklist().blacklistTopics(Collections.singletonList("removeTopicGroup.blacklistedTopic"));
 
         // when
         Response response = management.topic().remove("removeTopicGroup.blacklistedTopic");
+        wait.untilTopicRemoved(topic);
 
         // then
         assertThat(response).hasStatus(Response.Status.OK);

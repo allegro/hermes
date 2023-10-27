@@ -39,6 +39,12 @@ public class Waiter {
         );
     }
 
+    public void untilGroupRemoved(String group) {
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+                !endpoints.group().list().contains(group)
+        );
+    }
+
     public void untilTopicCreated(Topic topic) {
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
                 endpoints.findTopics(topic, topic.isTrackingEnabled()).contains(topic.getQualifiedName())

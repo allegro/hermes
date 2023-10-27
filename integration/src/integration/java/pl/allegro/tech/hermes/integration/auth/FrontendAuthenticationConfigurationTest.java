@@ -65,6 +65,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     @BeforeMethod
     public void after() {
         operations.buildTopic("someGroup", "topicWithAuthorization");
+
     }
 
     @AfterClass
@@ -76,6 +77,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     public void shouldAuthenticateUsingBasicAuth() {
         //given
         Map<String, String> headers = getHeadersWithAuthentication(USERNAME, PASSWORD);
+        operations.buildTopic("someGroup", "topicWithAuthorization");
 
         //when
         Response response = publisher.publish("someGroup.topicWithAuthorization", MESSAGE, headers);
