@@ -13,7 +13,10 @@ public class FrontendRoutesFilter extends OncePerRequestFilter {
     private final String frontendEndpoint = "/";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
         if (request.getRequestURI().startsWith("/ui")) {
             RequestDispatcher rd = request.getRequestDispatcher(frontendEndpoint);
             rd.forward(request, response);

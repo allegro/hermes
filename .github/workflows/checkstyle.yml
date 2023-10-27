@@ -22,7 +22,8 @@ jobs:
           java-version: 17
           distribution: 'temurin'
       - name: Run check style
-        run: ./gradlew --continue clean checkstyleMain checkstyleTest checkstyleIntegration checkstyleJmh -PmaxCheckstyleWarnings=0
+        # ignore lengthy console setup tasks
+        run: ./gradlew --continue clean checkstyleMain checkstyleTest checkstyleIntegration checkstyleJmh -PmaxCheckstyleWarnings=0 -x attachHermesConsole -x prepareIndexTemplate
       - name: Run reviewdog
         if: ${{ success() || failure() }}
         env:

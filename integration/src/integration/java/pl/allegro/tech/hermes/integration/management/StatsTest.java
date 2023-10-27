@@ -35,9 +35,12 @@ public class StatsTest extends IntegrationTest {
         TopicWithSchema topic2 = operations.createTopic(topic(group, name(), Topic.Ack.LEADER, ContentType.JSON, false));
         operations.createTopic(topic(group, name(), Topic.Ack.ALL, ContentType.JSON, true));
 
-        operations.createSubscription(topic1.getTopic(), subscription(topic1.getName(), name(), ContentType.AVRO, TrackingMode.TRACKING_OFF));
-        operations.createSubscription(topic2.getTopic(), subscription(topic2.getName(), name(), ContentType.JSON, TrackingMode.TRACK_ALL));
-        operations.createSubscription(topic2.getTopic(), subscription(topic2.getName(), name(), ContentType.AVRO, TrackingMode.TRACKING_OFF));
+        operations.createSubscription(topic1.getTopic(),
+                subscription(topic1.getName(), name(), ContentType.AVRO, TrackingMode.TRACKING_OFF));
+        operations.createSubscription(topic2.getTopic(),
+                subscription(topic2.getName(), name(), ContentType.JSON, TrackingMode.TRACK_ALL));
+        operations.createSubscription(topic2.getTopic(),
+                subscription(topic2.getName(), name(), ContentType.AVRO, TrackingMode.TRACKING_OFF));
 
         // when then
         Assertions.assertThat(management.statsEndpoint().getStats()).isEqualTo(new Stats(
