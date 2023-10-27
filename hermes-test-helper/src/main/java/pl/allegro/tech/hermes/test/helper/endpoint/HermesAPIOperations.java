@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
+import jakarta.ws.rs.core.Response;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Group;
@@ -15,10 +16,10 @@ import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
-import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 import static jakarta.ws.rs.core.Response.Status.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
@@ -37,6 +38,9 @@ public class HermesAPIOperations {
         this.wait = wait;
     }
 
+    public void createGroup(Group group) {
+        createGroup(group.getGroupName());
+    }
     public void createGroup(String group) {
         if (endpoints.group().list().contains(group)) {
             return;
@@ -44,6 +48,16 @@ public class HermesAPIOperations {
         assertThat(endpoints.group().create(new Group(group)).getStatus()).isEqualTo(CREATED.getStatusCode());
 
         wait.untilGroupCreated(group);
+    }
+
+    public void removeGroup(Group group) {
+        assertThat(endpoints.group().delete(group.getGroupName()).getStatus()).isEqualTo(OK.getStatusCode());
+
+        wait.untilGroupRemoved(group.getGroupName());
+    }
+
+    public void updateGroup(Group group) {
+        assertThat(endpoints.group().update(group.getGroupName(), group).getStatus()).isEqualTo(NO_CONTENT.getStatusCode());
     }
 
     public TopicWithSchema createTopic(String group, String topic) {

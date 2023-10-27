@@ -4,9 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
+import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.integration.env.HermesIntegrationEnvironment;
 import pl.allegro.tech.hermes.integration.env.SharedServices;
 import pl.allegro.tech.hermes.integration.helper.AuditEventEndpoint;
@@ -55,12 +56,13 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
         try {
             removeSubscriptions(management, wait);
             removeTopics(management, wait);
+            removeGroups(management);
         } catch (RuntimeException e) {
             logger.error("Error while removing topics and subscriptions", e);
         }
     }
 
-    @AfterSuite
+    @AfterClass
     public void afterSuite() {
         auditEvents.stop();
     }
@@ -86,6 +88,12 @@ public class IntegrationTest extends HermesIntegrationEnvironment {
                 logger.warn("Could not remove topic {}. Received {} http status. Reason {}",
                         topic.getQualifiedName(), response.getStatus(), response.readEntity(String.class));
             }
+        });
+    }
+
+    protected void removeGroups(HermesEndpoints management) {
+        management.group().list().forEach(group -> {
+            operations.removeGroup(new Group(group));
         });
     }
 }

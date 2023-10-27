@@ -78,7 +78,8 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
         }
     }
 
-    private void ensureGroupIsEmpty(String groupName) {
+    @Override
+    public void ensureGroupIsEmpty(String groupName) {
         if (!childrenOf(paths.topicsPath(groupName)).isEmpty()) {
             throw new GroupNotEmptyException(groupName);
         }

@@ -31,4 +31,9 @@ public class GroupValidator {
             throw new GroupAlreadyExistsException(toCheck.getGroupName());
         }
     }
+
+    public void checkRemove(String toCheck) {
+        repository.ensureGroupExists(toCheck);
+        repository.ensureGroupIsEmpty(toCheck);
+    }
 }

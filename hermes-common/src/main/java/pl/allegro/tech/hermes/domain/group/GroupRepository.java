@@ -10,6 +10,8 @@ public interface GroupRepository {
 
     void ensureGroupExists(String groupName);
 
+    void ensureGroupIsEmpty(String groupName);
+
     void createGroup(Group group);
 
     void updateGroup(Group group);
