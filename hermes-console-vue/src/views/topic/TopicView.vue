@@ -8,6 +8,7 @@
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
+  import CostsCard from '@/components/costs-card/CostsCard.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
@@ -81,6 +82,15 @@
       router.push({ path: `/ui/groups/${groupId}` });
     }
   }
+
+  function resolveCostsUrl(url?: string): string {
+    return url?.replace('{{topic_name}}', topicName) ?? '';
+  }
+
+  const costs = {
+    iframeUrl: resolveCostsUrl(configStore.appConfig?.costs.topicIframeUrl),
+    detailsUrl: resolveCostsUrl(configStore.appConfig?.costs.topicDetailsUrl),
+  };
 </script>
 
 <template>
@@ -114,14 +124,23 @@
         @remove="openRemoveDialog"
       />
 
-      <div class="topic-view__upper_panel">
-        <metrics-list
-          v-if="metrics"
-          :metrics="metrics"
-          :topic-name="topicName"
-        />
-        <properties-list v-if="topic" :topic="topic" />
-      </div>
+      <v-row dense>
+        <v-col md="6" class="d-flex flex-column row-gap-2">
+          <metrics-list
+            v-if="metrics"
+            :metrics="metrics"
+            :topic-name="topicName"
+          />
+          <costs-card
+            v-if="configStore.appConfig?.costs.enabled"
+            :iframe-url="costs.iframeUrl"
+            :details-url="costs.detailsUrl"
+          />
+        </v-col>
+        <v-col md="6">
+          <properties-list v-if="topic" :topic="topic" />
+        </v-col>
+      </v-row>
 
       <schema-panel v-if="topic" :schema="topic.schema" />
 
