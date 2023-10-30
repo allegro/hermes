@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.integration;
 
 import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.test.helper.endpoint.JerseyClientFactory;
+import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +24,11 @@ public class HealthCheckTest extends AbstractFrontendShutdownTest {
 
         // then
         await().atMost(5, TimeUnit.SECONDS).until(() -> assertThat(client.request().get()).hasStatus(SERVICE_UNAVAILABLE));
-    }
 
+        // and when
+        Response response = publisher.publish("topic", TestMessage.of("hello", "world").body());
+
+        // then
+        assertThat(response).hasStatus(Response.Status.SERVICE_UNAVAILABLE);
+    }
 }
