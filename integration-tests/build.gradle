@@ -1,8 +1,13 @@
 dependencies {
     testImplementation project(':hermes-common')
     testImplementation project(':hermes-test-helper')
+    testImplementation project(':hermes-management')
+    testImplementation project(':hermes-consumers')
+    testImplementation project(':hermes-frontend')
 
     testImplementation group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
+    testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
+
 
     // TODO: check how to setup junit properly
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
