@@ -76,6 +76,10 @@ public class SubscriptionBuilder {
         this.name = subscriptionName;
     }
 
+    public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName) {
+        return new SubscriptionBuilder(topicName, "");
+    }
+
     public static SubscriptionBuilder subscription(SubscriptionName subscriptionName) {
         return new SubscriptionBuilder(subscriptionName.getTopicName(), subscriptionName.getName());
     }
