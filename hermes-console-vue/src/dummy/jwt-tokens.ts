@@ -1,0 +1,4 @@
+export const dummyValidToken: string =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZXhwIjoxOTk2MjM5MDIyfQ.3CP-EemSMKu8O2cZNJCAT4PUCiolDcHIx3Du7EpR8EY';
+export const dummyExpiredToken: string =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZXhwIjoxOTYyMzkwMjJ9.dqPw8DoRNgDoV68oprIwJG6546VccGfnoPgyMOGT8yQ';

@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'application'
+    id "com.github.node-gradle.node" version "2.2.4"
 }
 
 mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
@@ -48,13 +49,24 @@ dependencies {
     testImplementation group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
 }
 
-task buildHermesConsole(type: Exec) {
-    workingDir '../hermes-console'
-    commandLine './package.sh'
+node {
+    version = '20.4.0'
+    distBaseUrl = 'https://nodejs.org/dist'
+    download = true
+    workDir = file("${project.buildDir}/nodejs")
+    npmWorkDir = file("${project.buildDir}/npm")
+    nodeModulesDir = file("${project.rootDir}/hermes-console-vue")
+}
+
+yarnSetup.dependsOn(nodeSetup)
+yarn.dependsOn(npmSetup)
+
+task buildHermesConsole(type: YarnTask, dependsOn: yarn) {
+    args = ['build-only']
 }
 
 task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
-    from '../hermes-console/dist/static'
+    from '../hermes-console-vue/dist'
     def staticDirectory = sourceSets.main.output.resourcesDir.path + '/static'
     // remove previous static dir if exists and start with clear setup
     delete staticDirectory

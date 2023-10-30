@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -14,6 +15,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
+import pl.allegro.tech.hermes.api.TopicStats;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
@@ -306,6 +308,14 @@ public class TopicService {
                 .collect(toList());
         return query.filter(getTopicsMetrics(filteredNames))
                 .collect(toList());
+    }
+
+    public TopicStats getStats() {
+        List<Topic> topics = getAllTopics();
+        long ackAllTopicCount = topics.stream().filter(t -> t.getAck() == Topic.Ack.ALL).count();
+        long trackingEnabledTopicCount = topics.stream().filter(Topic::isTrackingEnabled).count();
+        long avroTopicCount = topics.stream().filter(t -> t.getContentType() == AVRO).count();
+        return new TopicStats(topics.size(), ackAllTopicCount, trackingEnabledTopicCount, avroTopicCount);
     }
 
     private void ensureTopicDoesNotExist(Topic topic) {
