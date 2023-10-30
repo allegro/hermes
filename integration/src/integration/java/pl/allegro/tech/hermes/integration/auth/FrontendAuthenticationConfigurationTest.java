@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration.auth;
 
+import com.jayway.awaitility.Duration;
 import io.undertow.util.StatusCodes;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
@@ -78,7 +80,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         Map<String, String> headers = getHeadersWithAuthentication(USERNAME, PASSWORD);
 
         //when
-        Response response = publisher.publish("someGroup.topicWithAuthorization", MESSAGE, headers);
+        Response response = waitUntilTopicCreatedAndPublish(headers);
 
         //then
         logger.info("Expecting SUCCESSFUL status. Actual {}", response.getStatusInfo().getStatusCode());
@@ -91,7 +93,7 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
         Map<String, String> headers = getHeadersWithAuthentication(USERNAME, "someInvalidPassword");
 
         //when
-        Response response = publisher.publish("someGroup.topicWithAuthorization", MESSAGE, headers);
+        Response response = waitUntilTopicCreatedAndPublish(headers);
 
         //then
         assertThat(response.getStatus()).isEqualTo(StatusCodes.UNAUTHORIZED);
@@ -100,10 +102,19 @@ public class FrontendAuthenticationConfigurationTest extends IntegrationTest {
     @Test
     public void shouldNotAuthenticateUserWithoutCredentials() {
         //when
-        Response response = publisher.publish("someGroup.topicWithAuthorization", MESSAGE);
+        Response response = waitUntilTopicCreatedAndPublish(Collections.emptyMap());
 
         //then
         assertThat(response.getStatus()).isEqualTo(StatusCodes.UNAUTHORIZED);
+    }
+
+    // We have to wait for the frontend to refresh the cache for topics
+    private Response waitUntilTopicCreatedAndPublish(Map<String, String> headers) {
+        wait.awaitAtMost(Duration.FIVE_SECONDS)
+                .until(() -> publisher.publish("someGroup.topicWithAuthorization", MESSAGE, headers)
+                        .getStatusInfo().getStatusCode() != 404);
+
+        return publisher.publish("someGroup.topicWithAuthorization", MESSAGE, headers);
     }
 
     private static void loadCredentials() throws IOException {
