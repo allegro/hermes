@@ -25,7 +25,7 @@ public class HermesManagementExtension implements BeforeAllCallback {
 
     private int port;
     private final List<HermesManagementExtension.ClusterInfo> kafkaClusters = new ArrayList<>();
-    private final List<HermesManagementExtension.ClusterInfo> zkClusters = new ArrayList<>();
+    private List<HermesManagementExtension.ClusterInfo> zkClusters = new ArrayList<>();
 
     private ZookeeperExtension zookeeperExtension;
 
@@ -35,7 +35,7 @@ public class HermesManagementExtension implements BeforeAllCallback {
     private boolean avroContentTypeMetadataRequired;
     private boolean graphiteExternalMetricsStorage;
 
-    private HermesManagementExtension(int port, int replicationFactor, boolean uncleanLeaderElectionEnabled, String schemaRegistry, boolean avroContentTypeMetadataRequired, boolean graphiteExternalMetricsStorage, ZookeeperExtension zookeeperExtension) {
+    private HermesManagementExtension(int port, int replicationFactor, boolean uncleanLeaderElectionEnabled, String schemaRegistry, boolean avroContentTypeMetadataRequired, boolean graphiteExternalMetricsStorage, ZookeeperExtension zookeeperExtension, List<HermesManagementExtension.ClusterInfo> zkClusters) {
         this.port = port;
         this.replicationFactor = replicationFactor;
         this.uncleanLeaderElectionEnabled = uncleanLeaderElectionEnabled;
@@ -43,6 +43,7 @@ public class HermesManagementExtension implements BeforeAllCallback {
         this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
         this.graphiteExternalMetricsStorage = graphiteExternalMetricsStorage;
         this.zookeeperExtension = zookeeperExtension;
+        this.zkClusters = zkClusters;
     }
 
     @Override
@@ -175,7 +176,8 @@ public class HermesManagementExtension implements BeforeAllCallback {
                     this.schemaRegistry,
                     this.avroContentTypeMetadataRequired,
                     this.graphiteExternalMetricsStorage,
-                    this.zookeeperExtension);
+                    this.zookeeperExtension,
+                    this.zkClusters);
         }
     }
 

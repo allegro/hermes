@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.KafkaExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.ZookeeperExtension;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
+import pl.allegro.tech.hermes.test.helper.endpoint.HermesEndpoints;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import static jakarta.ws.rs.core.Response.Status.CREATED;
@@ -38,10 +39,12 @@ public class PublishingAndConsumingTest {
             .uncleanLeaderElectionEnabled(false)
             .build();
 
+    private static HermesEndpoints managementEndpoint = new HermesEndpoints("http://localhost:18082/", "http://localhost:18082/");
+
     public static HermesConsumersInstance consumersStarter = new HermesConsumersInstance();
 
     public static HermesFrontendInstance frontendStarter = HermesFrontendInstance.withCommonIntegrationTestConfig(18080);
-    private final HermesTestClient hermesTestClient = new HermesTestClient();
+    private final HermesTestClient hermesTestClient = new HermesTestClient(managementEndpoint, "http://localhost:18080/");
     private final TestSubscribers subscribers = new TestSubscribers();
 
     @BeforeAll
