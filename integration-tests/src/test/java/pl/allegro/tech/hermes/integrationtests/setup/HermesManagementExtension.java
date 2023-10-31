@@ -139,24 +139,19 @@ public class HermesManagementExtension implements BeforeAllCallback {
             return this;
         }
 
-
-        public HermesManagementExtension.Builder replicationFactor(int replicationFactor) {
-            this.replicationFactor = replicationFactor;
-            return this;
-        }
-
         public HermesManagementExtension.Builder uncleanLeaderElectionEnabled(boolean enabled) {
             this.uncleanLeaderElectionEnabled = enabled;
             return this;
         }
 
-        public HermesManagementExtension.Builder addZookeeperCluster(String dc, String connectionString) {
-            zkClusters.add(new ClusterInfo(dc, connectionString));
+        public HermesManagementExtension.Builder addZookeeperCluster(String dc, ZookeeperExtension zookeeperExtension) {
+            zkClusters.add(new ClusterInfo(dc, zookeeperExtension.hermesZookeeperOne.getConnectionString()));
             return this;
         }
 
-        public HermesManagementExtension.Builder addKafkaCluster(String dc, String connectionString) {
-            kafkaClusters.add(new ClusterInfo(dc, connectionString));
+        public HermesManagementExtension.Builder addKafkaCluster(String dc, KafkaExtension kafkaExtension) {
+            kafkaClusters.add(new ClusterInfo(dc, kafkaExtension.kafkaCluster.getBootstrapServersForExternalClients()));
+            this.replicationFactor = kafkaExtension.kafkaCluster.getAllBrokers().size();
             return this;
         }
 

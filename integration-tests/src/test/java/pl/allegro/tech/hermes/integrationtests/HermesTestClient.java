@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import jakarta.ws.rs.core.Response;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 
@@ -18,4 +19,9 @@ public class HermesTestClient {
     public void createSubscription(Topic topic, Subscription subscription) {
 
     }
+
+    public Response publish(String qualifiedName, String body) {
+        return null;
+    }
+
 }

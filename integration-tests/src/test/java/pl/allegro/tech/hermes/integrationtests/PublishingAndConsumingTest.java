@@ -10,9 +10,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersInstance;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendInstance;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
+import pl.allegro.tech.hermes.integrationtests.setup.KafkaExtension;
+import pl.allegro.tech.hermes.integrationtests.setup.ZookeeperExtension;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
-import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
-import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.stream.Stream;
@@ -22,17 +22,18 @@ import static pl.allegro.tech.hermes.integrationtests.HermesAssertions.assertTha
 
 public class PublishingAndConsumingTest {
 
-    public static final KafkaContainerCluster kafkaCluster = new KafkaContainerCluster(1);
-
-    public static final ZookeeperContainer hermesZookeeperOne = new ZookeeperContainer("ZookeeperContainerOne");
+    @RegisterExtension
+    private static KafkaExtension kafka = new KafkaExtension();
 
     @RegisterExtension
-    private final HermesManagementExtension managemet = HermesManagementExtension
+    private static ZookeeperExtension zookeeper = new ZookeeperExtension();
+
+    @RegisterExtension
+    private static HermesManagementExtension managemet = HermesManagementExtension
             .builder()
             .port(18082)
-            .addKafkaCluster("dc", kafkaCluster.getBootstrapServersForExternalClients())
-            .addZookeeperCluster("dc", hermesZookeeperOne.getConnectionString())
-            .replicationFactor(kafkaCluster.getAllBrokers().size())
+            .addKafkaCluster("dc", kafka)
+            .addZookeeperCluster("dc", zookeeper)
             .uncleanLeaderElectionEnabled(false)
             .build();
 
@@ -40,26 +41,22 @@ public class PublishingAndConsumingTest {
 
     public static HermesFrontendInstance frontendStarter = HermesFrontendInstance.withCommonIntegrationTestConfig(18080);
     private final HermesTestClient hermesTestClient = new HermesTestClient();
-    private final TestPublisher publisher = new TestPublisher();
     private final TestSubscribers subscribers = new TestSubscribers();
 
     @BeforeAll
     public static void setup() throws Exception {
-        Stream.of(kafkaCluster, hermesZookeeperOne)
-                .parallel()
-                .forEach(Startable::start);
         consumersStarter.overrideProperty(
-                "consumer.kafka.clusters.[0].brokerList", kafkaCluster.getBootstrapServersForExternalClients()
+                "consumer.kafka.clusters.[0].brokerList", kafka.kafkaCluster.getBootstrapServersForExternalClients()
         );
         consumersStarter.overrideProperty(
-                "consumer.zookeeper.clusters.[0].connectionString", hermesZookeeperOne.getConnectionString()
+                "consumer.zookeeper.clusters.[0].connectionString", zookeeper.hermesZookeeperOne.getConnectionString()
         );
         consumersStarter.start();
         frontendStarter.overrideProperty(
-                "frontend.kafka.clusters.[0].brokerList", kafkaCluster.getBootstrapServersForExternalClients()
+                "frontend.kafka.clusters.[0].brokerList", kafka.kafkaCluster.getBootstrapServersForExternalClients()
         );
         frontendStarter.overrideProperty(
-                "frontend.zookeeper.clusters.[0].connectionString", hermesZookeeperOne.getConnectionString()
+                "frontend.zookeeper.clusters.[0].connectionString", zookeeper.hermesZookeeperOne.getConnectionString()
         );
         frontendStarter.start();
     }
@@ -74,7 +71,7 @@ public class PublishingAndConsumingTest {
 
         // when
         // TODO: consider publisher.publish(topic, message);
-        Response response = publisher.publish(topic.getQualifiedName(), message.body());
+        Response response = hermesTestClient.publish(topic.getQualifiedName(), message.body());
 
         // then
         assertThat(response).hasStatus(CREATED);
@@ -92,7 +89,7 @@ public class PublishingAndConsumingTest {
         hermesTestClient.createRandomSubscription(topic, subscriber2.getEndpoint());
 
         // when
-        publisher.publish(topic.getQualifiedName(), message.body());
+        hermesTestClient.publish(topic.getQualifiedName(), message.body());
 
         // then
         subscriber1.waitUntilReceived(message.body());
@@ -112,7 +109,7 @@ public class PublishingAndConsumingTest {
         hermesTestClient.createSubscription(topic, subscription);
 
         // when
-        publisher.publish(topic.getQualifiedName(), message.body());
+        hermesTestClient.publish(topic.getQualifiedName(), message.body());
 
         // then
         subscriber.waitUntilRequestReceived(request -> {
