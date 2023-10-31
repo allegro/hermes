@@ -2,6 +2,7 @@ import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { createTopic as doCreateTopic } from '@/api/hermes-client';
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { topicName } from '@/utils/topic-utils/topic-utils';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 import {
   useFormTopic,
@@ -49,6 +50,7 @@ export function useCreateTopic(group: string): UseCreateTopic {
         notificationsStore,
         useGlobalI18n().t('notifications.topic.create.failure'),
       );
+      form.value.name = topicName(form.value.name);
     } finally {
       creatingTopic.value = false;
     }
