@@ -23,6 +23,9 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.client.Hermes.getClientBuilder;
 import static pl.allegro.tech.hermes.test.helper.client.Hermes.getDefaultPublisherConfig;
 
+
+// TODO remove hermesEndpoint mechanism and dependency to the hermes-api.endpoint module, and pl.allegro.tech.hermes.test.helper.client.Hermes
+// TODO use WebTestClient instead, which will be an abstraction for all hermes modules in HermesTestClient.class - https://docs.spring.io/spring-framework/reference/testing/webtestclient.html
 public class HermesTestClient {
 
     protected final HermesEndpoints endpoints;
