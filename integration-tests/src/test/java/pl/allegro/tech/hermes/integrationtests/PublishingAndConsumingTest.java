@@ -3,12 +3,13 @@ package pl.allegro.tech.hermes.integrationtests;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersInstance;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendInstance;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementInstance;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
@@ -24,11 +25,21 @@ public class PublishingAndConsumingTest {
     public static final KafkaContainerCluster kafkaCluster = new KafkaContainerCluster(1);
 
     public static final ZookeeperContainer hermesZookeeperOne = new ZookeeperContainer("ZookeeperContainerOne");
-    public static HermesManagementInstance managementStarter;
+
+    @RegisterExtension
+    private final HermesManagementExtension managemet = HermesManagementExtension
+            .builder()
+            .port(18082)
+            .addKafkaCluster("dc", kafkaCluster.getBootstrapServersForExternalClients())
+            .addZookeeperCluster("dc", hermesZookeeperOne.getConnectionString())
+            .replicationFactor(kafkaCluster.getAllBrokers().size())
+            .uncleanLeaderElectionEnabled(false)
+            .build();
+
     public static HermesConsumersInstance consumersStarter = new HermesConsumersInstance();
 
     public static HermesFrontendInstance frontendStarter = HermesFrontendInstance.withCommonIntegrationTestConfig(18080);
-    private final HermesManagementOperations operations = new HermesManagementOperations();
+    private final HermesTestClient hermesTestClient = new HermesTestClient();
     private final TestPublisher publisher = new TestPublisher();
     private final TestSubscribers subscribers = new TestSubscribers();
 
@@ -37,13 +48,6 @@ public class PublishingAndConsumingTest {
         Stream.of(kafkaCluster, hermesZookeeperOne)
                 .parallel()
                 .forEach(Startable::start);
-        managementStarter = HermesManagementInstance.starter()
-                .port(18082)
-                .addKafkaCluster("dc", kafkaCluster.getBootstrapServersForExternalClients())
-                .addZookeeperCluster("dc", hermesZookeeperOne.getConnectionString())
-                .replicationFactor(kafkaCluster.getAllBrokers().size())
-                .uncleanLeaderElectionEnabled(false)
-                .start();
         consumersStarter.overrideProperty(
                 "consumer.kafka.clusters.[0].brokerList", kafkaCluster.getBootstrapServersForExternalClients()
         );
@@ -64,8 +68,8 @@ public class PublishingAndConsumingTest {
     public void shouldPublishAndConsumeMessage() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
-        Topic topic = operations.createRandomTopic();
-        operations.createRandomSubscription(topic, subscriber.getEndpoint());
+        Topic topic = hermesTestClient.createRandomTopic();
+        hermesTestClient.createRandomSubscription(topic, subscriber.getEndpoint());
         TestMessage message = TestMessage.of("hello", "world");
 
         // when
@@ -81,11 +85,11 @@ public class PublishingAndConsumingTest {
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
         TestMessage message = TestMessage.of("hello", "world");
-        Topic topic = operations.createRandomTopic();
+        Topic topic = hermesTestClient.createRandomTopic();
         TestSubscriber subscriber1 = subscribers.createSubscriber();
         TestSubscriber subscriber2 = subscribers.createSubscriber();
-        operations.createRandomSubscription(topic, subscriber1.getEndpoint());
-        operations.createRandomSubscription(topic, subscriber2.getEndpoint());
+        hermesTestClient.createRandomSubscription(topic, subscriber1.getEndpoint());
+        hermesTestClient.createRandomSubscription(topic, subscriber2.getEndpoint());
 
         // when
         publisher.publish(topic.getQualifiedName(), message.body());
@@ -99,13 +103,13 @@ public class PublishingAndConsumingTest {
     public void shouldPassSubscriptionFixedHeaders() {
         // given
         TestMessage message = TestMessage.of("hello", "world");
-        Topic topic = operations.createRandomTopic();
+        Topic topic = hermesTestClient.createRandomTopic();
         TestSubscriber subscriber = subscribers.createSubscriber();
         Subscription subscription = SubscriptionBuilder.subscriptionWithRandomName(topic.getName())
                 .withEndpoint(subscriber.getEndpoint())
                 .withHeader("MY-HEADER", "myHeader123")
                 .build();
-        operations.createSubscription(topic, subscription);
+        hermesTestClient.createSubscription(topic, subscription);
 
         // when
         publisher.publish(topic.getQualifiedName(), message.body());
