@@ -26,24 +26,29 @@ public class HermesManagementExtension implements BeforeAllCallback {
     private int port;
     private final List<HermesManagementExtension.ClusterInfo> kafkaClusters = new ArrayList<>();
     private final List<HermesManagementExtension.ClusterInfo> zkClusters = new ArrayList<>();
+
+    private ZookeeperExtension zookeeperExtension;
+
     private final int replicationFactor;
     private boolean uncleanLeaderElectionEnabled;
     private String schemaRegistry;
     private boolean avroContentTypeMetadataRequired;
     private boolean graphiteExternalMetricsStorage;
 
-    private HermesManagementExtension(int port, int replicationFactor, boolean uncleanLeaderElectionEnabled, String schemaRegistry, boolean avroContentTypeMetadataRequired, boolean graphiteExternalMetricsStorage) {
+    private HermesManagementExtension(int port, int replicationFactor, boolean uncleanLeaderElectionEnabled, String schemaRegistry, boolean avroContentTypeMetadataRequired, boolean graphiteExternalMetricsStorage, ZookeeperExtension zookeeperExtension) {
         this.port = port;
         this.replicationFactor = replicationFactor;
         this.uncleanLeaderElectionEnabled = uncleanLeaderElectionEnabled;
         this.schemaRegistry = schemaRegistry;
         this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
         this.graphiteExternalMetricsStorage = graphiteExternalMetricsStorage;
+        this.zookeeperExtension = zookeeperExtension;
     }
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         try {
+            zkClusters.get(0).setConnectionString(zookeeperExtension.hermesZookeeperOne.getConnectionString());
             startManagement();
             HermesAPIOperations operations = setupOperations(startZookeeperClient());
             waitUntilManagementIsInReadWriteMode(operations);
@@ -123,6 +128,8 @@ public class HermesManagementExtension implements BeforeAllCallback {
         private int port = Ports.nextAvailable();
         private final List<HermesManagementExtension.ClusterInfo> kafkaClusters = new ArrayList<>();
         private final List<HermesManagementExtension.ClusterInfo> zkClusters = new ArrayList<>();
+
+        private ZookeeperExtension zookeeperExtension;
         private int replicationFactor = 1;
         private boolean uncleanLeaderElectionEnabled = false;
         private String schemaRegistry;
@@ -145,7 +152,8 @@ public class HermesManagementExtension implements BeforeAllCallback {
         }
 
         public HermesManagementExtension.Builder addZookeeperCluster(String dc, ZookeeperExtension zookeeperExtension) {
-            zkClusters.add(new ClusterInfo(dc, zookeeperExtension.hermesZookeeperOne.getConnectionString()));
+            zkClusters.add(new ClusterInfo(dc, ""));
+            this.zookeeperExtension = zookeeperExtension;
             return this;
         }
 
@@ -166,13 +174,14 @@ public class HermesManagementExtension implements BeforeAllCallback {
                     this.uncleanLeaderElectionEnabled,
                     this.schemaRegistry,
                     this.avroContentTypeMetadataRequired,
-                    this.graphiteExternalMetricsStorage);
+                    this.graphiteExternalMetricsStorage,
+                    this.zookeeperExtension);
         }
     }
 
     private static class ClusterInfo {
         private final String dc;
-        private final String connectionString;
+        private String connectionString;
 
         private ClusterInfo(String dc, String connectionString) {
             this.dc = dc;
@@ -185,6 +194,10 @@ public class HermesManagementExtension implements BeforeAllCallback {
 
         public String getConnectionString() {
             return connectionString;
+        }
+
+        public void setConnectionString(String connectionString) {
+            this.connectionString = connectionString;
         }
     }
 }

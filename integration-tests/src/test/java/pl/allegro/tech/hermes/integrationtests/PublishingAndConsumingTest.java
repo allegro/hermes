@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests;
 
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.testcontainers.lifecycle.Startable;
@@ -15,8 +16,6 @@ import pl.allegro.tech.hermes.integrationtests.setup.ZookeeperExtension;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import java.util.stream.Stream;
-
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static pl.allegro.tech.hermes.integrationtests.HermesAssertions.assertThat;
 
@@ -25,9 +24,11 @@ public class PublishingAndConsumingTest {
     @RegisterExtension
     private static KafkaExtension kafka = new KafkaExtension();
 
+    @Order(1)
     @RegisterExtension
     private static ZookeeperExtension zookeeper = new ZookeeperExtension();
 
+    @Order(2)
     @RegisterExtension
     private static HermesManagementExtension managemet = HermesManagementExtension
             .builder()
