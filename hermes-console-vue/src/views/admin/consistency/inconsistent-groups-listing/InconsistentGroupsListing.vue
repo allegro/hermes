@@ -14,7 +14,9 @@
 
   const filteredGroups = computed(() => {
     return props.inconsistentGroups.filter(
-      (group) => !props.filter || group.name.includes(props.filter),
+      (group) =>
+        !props.filter ||
+        group.name.toLowerCase().includes(props.filter.toLowerCase()),
     );
   });
 

@@ -25,26 +25,29 @@ describe('ConstraintsListing', () => {
     });
   });
 
-  it('should render inconsistent topics listing with a filter applied', () => {
-    // given
-    const props = {
-      inconsistentTopics: dummyInconsistentTopics,
-      filter: 'Dummy',
-    };
+  it.each(['dummy', 'Dummy', 'DUMMY'])(
+    'should render inconsistent topics listing with a filter applied (case-insensitive, filter: %s)',
+    (filter: string) => {
+      // given
+      const props = {
+        inconsistentTopics: dummyInconsistentTopics,
+        filter,
+      };
 
-    // when
-    const inconsistentTopic = render(InconsistentTopicsListing, { props })
-      .getAllByText(/Dummy/)
-      .map((inconsistentTopic) => inconsistentTopic.closest('tr'));
+      // when
+      const inconsistentTopic = render(InconsistentTopicsListing, { props })
+        .getAllByText(/Dummy/)
+        .map((inconsistentTopic) => inconsistentTopic.closest('tr'));
 
-    // then
-    expect(inconsistentTopic).toHaveLength(1);
-    expect(
-      within(inconsistentTopic[0]!).getByText(
-        'consistency.inconsistentTopics.actions.delete',
-      ),
-    ).toBeVisible();
-  });
+      // then
+      expect(inconsistentTopic).toHaveLength(1);
+      expect(
+        within(inconsistentTopic[0]!).getByText(
+          'consistency.inconsistentTopics.actions.delete',
+        ),
+      ).toBeVisible();
+    },
+  );
 
   it('should render inconsistent topics listing with a filter applied (no results)', () => {
     // given

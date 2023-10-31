@@ -17,5 +17,5 @@ export interface InconsistentSubscription {
 
 export interface InconsistentMedata {
   datacenter: string;
-  content: string | undefined;
+  content?: string;
 }

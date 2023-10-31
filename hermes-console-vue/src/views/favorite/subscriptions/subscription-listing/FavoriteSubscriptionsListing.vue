@@ -18,7 +18,9 @@
 
   const filteredSubscriptions = computed(() => {
     return (props.subscriptions ?? []).filter(
-      (subscription) => !props.filter || subscription.includes(props.filter),
+      (subscription) =>
+        !props.filter ||
+        subscription.toLowerCase().includes(props.filter.toLowerCase()),
     );
   });
 

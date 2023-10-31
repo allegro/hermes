@@ -25,27 +25,30 @@
 
   const subscriptionItems = computed(() =>
     props.subscriptions
+      ?.filter((subscription) =>
+        subscription.name.toLowerCase().includes(filter.value.toLowerCase()),
+      )
       ?.map((subscription) => {
         const currentUrl = window.location.href;
-        if (subscription.name.toLowerCase().includes(filter.value)) {
-          return {
-            name: subscription.name,
-            color: statusTextColor[subscription.state],
-            statusText: subscription.state,
-            href: `${currentUrl}/subscriptions/${subscription.name}`,
-          };
-        }
-        return null;
-      })
-      .filter(Boolean),
+        return {
+          name: subscription.name,
+          color: statusTextColor[subscription.state],
+          statusText: subscription.state,
+          href: `${currentUrl}/subscriptions/${subscription.name}`,
+        };
+      }),
   );
+
   const showSubscriptionCreationForm = ref(false);
+
   function showSubscriptionForm() {
     showSubscriptionCreationForm.value = true;
   }
+
   function hideSubscriptionForm() {
     showSubscriptionCreationForm.value = false;
   }
+
   function pushToSubscription(subscription: string) {
     router.push({
       path: `/ui/groups/${props.groupId}/topics/${props.topicName}/subscriptions/${subscription}`,
@@ -111,9 +114,9 @@
           >
             <v-list-item-title>{{ subscription.name }}</v-list-item-title>
             <template v-slot:append>
-              <v-chip size="small" :color="subscription.color">{{
-                subscription.statusText
-              }}</v-chip>
+              <v-chip size="small" :color="subscription.color"
+                >{{ subscription.statusText }}
+              </v-chip>
             </template>
           </v-list-item>
         </v-list>
