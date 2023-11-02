@@ -8,7 +8,9 @@ dependencies {
     testImplementation group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
     testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testImplementation group: 'org.springframework', name: 'spring-test', version: '6.0.13'
+    implementation group: 'org.springframework', name: 'spring-webflux', version: '6.0.13'
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
+    testImplementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.0'
 
 
     // TODO: check how to setup junit properly
