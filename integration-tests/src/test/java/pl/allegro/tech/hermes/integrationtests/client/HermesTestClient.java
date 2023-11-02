@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.client;
 
 import jakarta.ws.rs.core.Response;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.api.Topic;
@@ -28,6 +29,17 @@ public class HermesTestClient {
 
     // TODO: should replace this name with createTopicWithRandomName?
     // TODO: Include human-readable name. It can be a prefix provided by the developer or test method name.
+
+    public Group createRandomGroup() {
+        return createGroup(UUID.randomUUID().toString());
+    }
+
+    public Group createGroup(String groupName) {
+        Group group = Group.from(groupName);
+        managementTestClient.createGroup(group);
+        return group;
+    }
+
     public Topic createRandomTopic() {
         String topicName = UUID.randomUUID().toString();
         String groupName = UUID.randomUUID().toString();
@@ -37,15 +49,17 @@ public class HermesTestClient {
 
     public Topic createTopic(String groupName, String topicName) {
         Topic topic = topic(groupName, topicName).build();
-
-
-//        managementWebClient.post().uri(TOPIC_PATH)
-//                .body(TopicWithSchema.topicWithSchema(topic), TopicWithSchema.class)
-//                .exchange()
-//                .expectStatus()
-//                .is2xxSuccessful();
-
+        managementTestClient.createTopic(topic);
         return topic;
+    }
+
+    public Topic createRandomTopicWithGroup() {
+        return createTopicWithGroup(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+    }
+
+    public Topic createTopicWithGroup(String groupName, String topicName) {
+        createGroup(groupName);
+        return createTopic(groupName, topicName);
     }
 
     public void createRandomSubscription(Topic topic, String endpoint) {

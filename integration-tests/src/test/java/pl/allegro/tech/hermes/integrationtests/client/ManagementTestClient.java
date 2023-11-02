@@ -3,16 +3,20 @@ package pl.allegro.tech.hermes.integrationtests.client;
 import com.jayway.awaitility.Duration;
 import jakarta.ws.rs.core.UriBuilder;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 
-import java.util.UUID;
+import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 class ManagementTestClient {
-    private static String TOPIC_PATH = "/topics";
+    private static final String TOPICS_PATH = "/topics";
+
+    private static final String TOPIC_PATH = "/topics/{topicName}";
+
+    private static final String GROUPS_PATH = "/groups";
 
     private final WebTestClient webTestClient;
 
@@ -23,19 +27,14 @@ class ManagementTestClient {
                 .build();
     }
 
-    public Topic createRandomTopic() {
-        String topicName = UUID.randomUUID().toString();
-        String groupName = UUID.randomUUID().toString();
-
-        return createTopic(groupName, topicName);
+    public void createTopic(Topic topic) {
+        sendCreateTopicRequest(topic);
+        waitUntilTopicCreated(topic);
     }
 
-    public Topic createTopic(String groupName, String topicName) {
-        Topic topic = topic(groupName, topicName).build();
-        sendCreateTopicRequest(topic);
-
-        waitUntilTopicCreated(topic);
-        return topic;
+    public void createGroup(Group group) {
+        sendCreateGroupRequest(group);
+        waitUntilGroupCreated(group);
     }
 
     public Topic getTopic(String groupName, String topicName) {
@@ -53,13 +52,21 @@ class ManagementTestClient {
 
     private WebTestClient.ResponseSpec getSingleTopic(String topicQualifiedName) {
         return webTestClient.get().uri(UriBuilder
-                        .fromPath("topics/{topicName}")
+                        .fromPath(TOPIC_PATH)
                         .build(topicQualifiedName))
                 .exchange();
     }
 
+    private List<String> getGroups() {
+        return webTestClient.get().uri(GROUPS_PATH)
+                .exchange()
+                .expectBodyList(String.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
     private void sendCreateTopicRequest(Topic topic) {
-        webTestClient.post().uri(TOPIC_PATH)
+        webTestClient.post().uri(TOPICS_PATH)
                 .body(TopicWithSchema.topicWithSchema(topic), TopicWithSchema.class)
                 .exchange()
                 .expectStatus()
@@ -71,5 +78,18 @@ class ManagementTestClient {
                 .until(() -> getSingleTopic(topic.getQualifiedName())
                         .expectStatus()
                         .is2xxSuccessful());
+    }
+
+    private void sendCreateGroupRequest(Group group) {
+        webTestClient.post().uri(GROUPS_PATH)
+                .body(group, Group.class)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful();
+    }
+
+    private void waitUntilGroupCreated(Group group) {
+        waitAtMost(Duration.TEN_SECONDS)
+                .until(() -> getGroups().contains(group.getGroupName()));
     }
 }
