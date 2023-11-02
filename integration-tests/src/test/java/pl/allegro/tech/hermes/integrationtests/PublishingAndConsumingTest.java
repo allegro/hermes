@@ -1,18 +1,12 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import jakarta.ws.rs.core.Response;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.client.HermesTestClient;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersInstance;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendInstance;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
-import pl.allegro.tech.hermes.integrationtests.setup.KafkaExtension;
-import pl.allegro.tech.hermes.integrationtests.setup.ZookeeperExtension;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
@@ -24,47 +18,12 @@ import static pl.allegro.tech.hermes.integrationtests.HermesAssertions.assertTha
 public class PublishingAndConsumingTest {
 
     @RegisterExtension
-    private static KafkaExtension kafka = new KafkaExtension();
-
-    @Order(1)
-    @RegisterExtension
-    private static ZookeeperExtension zookeeper = new ZookeeperExtension();
-
-    @Order(2)
-    @RegisterExtension
-    private static HermesManagementExtension managemet = HermesManagementExtension
-            .builder()
-            .port(18082)
-            .addKafkaCluster("dc", kafka)
-            .addZookeeperCluster("dc", zookeeper)
-            .uncleanLeaderElectionEnabled(false)
-            .build();
+    public static final HermesExtension hermes = new HermesExtension();
 
     @RegisterExtension
-    private static TestSubscribersExtension subscribers = new TestSubscribersExtension();
+    public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
-    public static HermesConsumersInstance consumersStarter = new HermesConsumersInstance();
-
-    public static HermesFrontendInstance frontendStarter = HermesFrontendInstance.withCommonIntegrationTestConfig(18080);
-    private final HermesTestClient hermesTestClient = new HermesTestClient("http://localhost:18082", "http://localhost:18080/");
-
-    @BeforeAll
-    public static void setup() throws Exception {
-        consumersStarter.overrideProperty(
-                "consumer.kafka.clusters.[0].brokerList", kafka.kafkaCluster.getBootstrapServersForExternalClients()
-        );
-        consumersStarter.overrideProperty(
-                "consumer.zookeeper.clusters.[0].connectionString", zookeeper.hermesZookeeperOne.getConnectionString()
-        );
-        consumersStarter.start();
-        frontendStarter.overrideProperty(
-                "frontend.kafka.clusters.[0].brokerList", kafka.kafkaCluster.getBootstrapServersForExternalClients()
-        );
-        frontendStarter.overrideProperty(
-                "frontend.zookeeper.clusters.[0].connectionString", zookeeper.hermesZookeeperOne.getConnectionString()
-        );
-        frontendStarter.start();
-    }
+    private final HermesTestClient hermesTestClient = new HermesTestClient(hermes.getManagementUrl(), hermes.getFrontendUrl());
 
     @Test
     public void shouldPublishAndConsumeMessage() {
