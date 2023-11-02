@@ -13,6 +13,8 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendInstance;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.KafkaExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.ZookeeperExtension;
+import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
+import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -38,11 +40,13 @@ public class PublishingAndConsumingTest {
             .uncleanLeaderElectionEnabled(false)
             .build();
 
+    @RegisterExtension
+    private static TestSubscribersExtension subscribers = new TestSubscribersExtension();
+
     public static HermesConsumersInstance consumersStarter = new HermesConsumersInstance();
 
     public static HermesFrontendInstance frontendStarter = HermesFrontendInstance.withCommonIntegrationTestConfig(18080);
     private final HermesTestClient hermesTestClient = new HermesTestClient("http://localhost:18082", "http://localhost:18080/");
-    private final TestSubscribers subscribers = new TestSubscribers();
 
     @BeforeAll
     public static void setup() throws Exception {
