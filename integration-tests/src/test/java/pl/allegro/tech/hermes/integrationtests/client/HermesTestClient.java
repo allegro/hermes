@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests.client;
 
 import com.jayway.awaitility.Duration;
-import jakarta.ws.rs.core.Response;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -107,14 +106,14 @@ public class HermesTestClient {
     }
 
     // PUBLISH
-    public WebTestClient.ResponseSpec publishResponse(String topicQualifiedName, String body) {
+    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body) {
         return waitUntilPublished(topicQualifiedName, body);
     }
 
     // be aware that this method is not waiting for cache refresh in frontends
-    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
-        return frontendTestClient.publish(topicQualifiedName, body);
-    }
+//    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
+//        return frontendTestClient.publish(topicQualifiedName, body);
+//    }
 
     private Group createGroupAndWait(Group group) {
         if (groupExists(group)) {

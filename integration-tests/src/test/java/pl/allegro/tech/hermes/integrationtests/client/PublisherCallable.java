@@ -19,7 +19,7 @@ final class PublisherCallable {
     }
 
     public WebTestClient.ResponseSpec call() {
-        this.response = hermesTestClient.publishResponse(this.topicQualifiedName, this.body);
+        this.response = hermesTestClient.publishUntilSuccess(this.topicQualifiedName, this.body);
 
         return response;
     }
