@@ -103,6 +103,11 @@ frontend:
   metrics:
     metric-registry:
       graphiteReporterEnabled: true
+  http:
+    headers:
+      propagationEnabled: true
+      allowedSet: trace-id, span-id, parent-span-id, trace-sampled, trace-reported
+      additionalAllowedSetToLog: client-name
 
 consumer:
   metrics:

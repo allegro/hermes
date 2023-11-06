@@ -1,25 +1,30 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
+import pl.allegro.tech.hermes.common.kafka.HTTPHeadersPropagationAsKafkaHeadersProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaHeaderNameParameters;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 public class KafkaHeaderFactory {
 
     private final KafkaHeaderNameParameters kafkaHeaderNameParameters;
+    private final boolean isHTTPHeadersPropagationAsKafkaHeadersEnabled;
+    private final String httpHeaderPrefix;
 
-    public KafkaHeaderFactory(KafkaHeaderNameParameters kafkaHeaderNameParameters) {
+    public KafkaHeaderFactory(KafkaHeaderNameParameters kafkaHeaderNameParameters,
+                              HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties) {
         this.kafkaHeaderNameParameters = kafkaHeaderNameParameters;
+        this.isHTTPHeadersPropagationAsKafkaHeadersEnabled = httpHeadersPropagationAsKafkaHeadersProperties.isEnabled();
+        this.httpHeaderPrefix = httpHeadersPropagationAsKafkaHeadersProperties.getPrefix();
     }
 
     Header messageId(String messageId) {
         return new RecordHeader(kafkaHeaderNameParameters.getMessageId(), messageId.getBytes());
-    }
-
-    Header timestamp(long timestamp) {
-        return new RecordHeader(kafkaHeaderNameParameters.getTimestamp(), Longs.toByteArray(timestamp));
     }
 
     Header schemaVersion(int schemaVersion) {
@@ -28,5 +33,15 @@ public class KafkaHeaderFactory {
 
     Header schemaId(int schemaId) {
         return new RecordHeader(kafkaHeaderNameParameters.getSchemaId(), Ints.toByteArray(schemaId));
+    }
+
+    void setHTTPHeadersIfEnabled(List<Header> headers, Map<String, String> httpHeaders) {
+        if (isHTTPHeadersPropagationAsKafkaHeadersEnabled) {
+            httpHeaders.forEach((name, value) -> headers.add(createHttpHeader(name, value)));
+        }
+    }
+
+    private Header createHttpHeader(String name, String value) {
+        return new RecordHeader(httpHeaderPrefix + name, value.getBytes(StandardCharsets.UTF_8));
     }
 }

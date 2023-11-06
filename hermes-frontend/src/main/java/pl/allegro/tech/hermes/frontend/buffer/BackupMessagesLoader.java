@@ -189,12 +189,12 @@ public class BackupMessagesLoader {
 
     private Message createAvroMessage(BackupMessage backupMessage, CompiledSchema<Schema> schema) {
         return new AvroMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), schema,
-                backupMessage.getPartitionKey());
+                backupMessage.getPartitionKey(), backupMessage.getPropagatedHTTPHeaders());
     }
 
     private Message createJsonMessage(BackupMessage backupMessage) {
         return new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(),
-                backupMessage.getPartitionKey());
+                backupMessage.getPartitionKey(), backupMessage.getPropagatedHTTPHeaders());
     }
 
     private boolean sendMessageIfNeeded(Message message, String topicQualifiedName, Optional<CachedTopic> cachedTopic, String contextName) {
