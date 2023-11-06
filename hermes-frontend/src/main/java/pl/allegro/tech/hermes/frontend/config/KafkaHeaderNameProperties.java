@@ -8,8 +8,6 @@ public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
 
     private String messageId = "id";
 
-    private String timestamp = "ts";
-
     private String schemaVersion = "sv";
 
     private String schemaId = "sid";
@@ -21,15 +19,6 @@ public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
 
     public void setMessageId(String messageId) {
         this.messageId = messageId;
-    }
-
-    @Override
-    public String getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
     }
 
     @Override

@@ -27,6 +27,7 @@ import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -61,6 +62,10 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
                 "java.security.auth.login.config",
                 HermesIntegrationEnvironment.class.getClassLoader().getResource("kafka_server_jaas.conf").getPath()
         );
+
+        // Set English locale as default one for integration tests as on environment with different locale some
+        // integration tests don't pass.
+        Locale.setDefault(new Locale("en", "US"));
     }
 
     static {
