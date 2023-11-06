@@ -111,7 +111,7 @@ public class PublishingAndConsumingTest {
                 .withEndpoint(subscriber.getEndpoint())
                 .withHeader("MY-HEADER", "myHeader123")
                 .build();
-        hermesTestClient.createSubscription(topic, subscription);
+        hermesTestClient.createSubscription(subscription);
 
         // when
         hermesTestClient.publish(topic.getQualifiedName(), message.body());
