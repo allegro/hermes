@@ -38,7 +38,6 @@ import java.util.Optional;
 @EnableConfigurationProperties({
         ThroughputProperties.class,
         MessagePreviewProperties.class,
-        HeaderPropagationProperties.class,
         HandlersChainProperties.class,
         SchemaProperties.class
 })
@@ -95,8 +94,8 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public HeadersPropagator defaultHeadersPropagator(HeaderPropagationProperties headerPropagationProperties) {
-        return new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter());
+    public HeadersPropagator defaultHeadersPropagator(HTTPHeadersProperties httpHeadersProperties) {
+        return new DefaultHeadersPropagator(httpHeadersProperties);
     }
 
     @Bean

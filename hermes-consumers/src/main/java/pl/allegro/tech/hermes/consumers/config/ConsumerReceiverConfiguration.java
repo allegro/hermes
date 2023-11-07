@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.config;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.common.kafka.HTTPHeadersPropagationAsKafkaHeadersProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -27,7 +28,8 @@ import java.time.Clock;
         KafkaConsumerProperties.class,
         KafkaClustersProperties.class,
         CommonConsumerProperties.class,
-        KafkaHeaderNameProperties.class
+        KafkaHeaderNameProperties.class,
+        ConsumerHTTPHeadersPropagationAsKafkaHeadersProperties.class
 })
 public class ConsumerReceiverConfiguration {
 
@@ -78,7 +80,9 @@ public class ConsumerReceiverConfiguration {
     }
 
     @Bean
-    public KafkaHeaderExtractor kafkaHeaderExtractor(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
-        return new KafkaHeaderExtractor(kafkaHeaderNameProperties);
+    public KafkaHeaderExtractor kafkaHeaderExtractor(
+        KafkaHeaderNameProperties kafkaHeaderNameProperties,
+        HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties) {
+        return new KafkaHeaderExtractor(kafkaHeaderNameProperties, httpHeadersPropagationAsKafkaHeadersProperties);
     }
 }
