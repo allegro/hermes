@@ -99,4 +99,34 @@ describe('SubscriptionsList', () => {
     ).toBeInTheDocument();
     expect(getByText('subscriptionForm.actions.create')).toBeInTheDocument();
   });
+
+  it.each(['foobar', 'FOOBAR', 'FooBar'])(
+    'should render subscription list and apply a filter (case-insensitive, filter: %s)',
+    async (filter: string) => {
+      // given
+      const { getByText, getByLabelText, queryByText } = render(
+        SubscriptionsList,
+        {
+          props,
+        },
+      );
+
+      // when
+      await fireEvent.click(getByText('topicView.subscriptions.title (2)'));
+
+      // then
+      expect(queryByText('foobar-service')).toBeInTheDocument();
+      expect(queryByText('bazbar-service')).toBeInTheDocument();
+
+      // when
+      await fireEvent.update(
+        getByLabelText('topicView.subscriptions.search'),
+        filter,
+      );
+
+      // then
+      expect(queryByText('foobar-service')).toBeInTheDocument();
+      expect(queryByText('bazbar-service')).not.toBeInTheDocument();
+    },
+  );
 });

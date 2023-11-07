@@ -21,21 +21,24 @@ describe('GroupTopicsListing', () => {
     });
   });
 
-  it('should render group topics listing with a filter applied', () => {
-    // given
-    const props = {
-      group: dummyGroup,
-      filter: 'V1',
-    };
+  it.each(['v1', 'V1', 'productevent', 'ProductEvent', 'PRODUCTEVENT'])(
+    'should render group topics listing with a filter applied (case-insensitive, filter: %s)',
+    (filter: string) => {
+      // given
+      const props = {
+        group: dummyGroup,
+        filter,
+      };
 
-    // when
-    const topics = render(GroupTopicsListing, { props })
-      .getAllByText(/ProductEventV1/)
-      .map((topic) => topic.closest('tr'));
+      // when
+      const topics = render(GroupTopicsListing, { props })
+        .getAllByText(/ProductEventV1/)
+        .map((topic) => topic.closest('tr'));
 
-    // then
-    expect(topics).toHaveLength(1);
-  });
+      // then
+      expect(topics).toHaveLength(1);
+    },
+  );
 
   it('should render group topics listing with a filter applied (no results)', () => {
     // given

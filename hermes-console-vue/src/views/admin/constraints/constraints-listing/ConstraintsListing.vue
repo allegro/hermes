@@ -18,7 +18,9 @@
   const filteredConstraints = computed(() =>
     Object.fromEntries(
       Object.entries(props.constraints).filter(
-        ([name]) => !props.filter || name.indexOf(props.filter) !== -1,
+        ([name]) =>
+          !props.filter ||
+          name.toLowerCase().includes(props.filter.toLowerCase()),
       ),
     ),
   );

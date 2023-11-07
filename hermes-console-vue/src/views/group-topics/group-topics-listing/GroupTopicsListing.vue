@@ -14,7 +14,9 @@
 
   const filteredTopics = computed(() => {
     return (props.group?.topics ?? []).filter(
-      (topic) => !props.filter || topic.includes(props.filter),
+      (topic) =>
+        !props.filter ||
+        topic.toLowerCase().includes(props.filter.toLowerCase()),
     );
   });
 

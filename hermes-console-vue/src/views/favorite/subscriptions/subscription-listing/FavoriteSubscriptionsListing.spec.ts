@@ -29,21 +29,24 @@ describe('FavoriteSubscriptionsListing', () => {
     });
   });
 
-  it('should render listing with a filter applied', () => {
-    // given
-    const props = {
-      subscriptions: dummySubscriptions,
-      filter: 'fo',
-    };
+  it.each(['fo', 'Fo', 'FO'])(
+    'should render listing with a filter applied (case-insensitive, filter: %s)',
+    (filter: string) => {
+      // given
+      const props = {
+        subscriptions: dummySubscriptions,
+        filter,
+      };
 
-    // when
-    const subscriptions = render(FavoriteSubscriptionsListing, { props })
-      .getAllByText(/foo/)
-      .map((subscription) => subscription.closest('tr'));
+      // when
+      const subscriptions = render(FavoriteSubscriptionsListing, { props })
+        .getAllByText(/foo/)
+        .map((subscription) => subscription.closest('tr'));
 
-    // then
-    expect(subscriptions).toHaveLength(1);
-  });
+      // then
+      expect(subscriptions).toHaveLength(1);
+    },
+  );
 
   it('should render listing with a filter applied (no results)', () => {
     // given
