@@ -94,6 +94,20 @@
       </v-col>
     </v-row>
 
+    <v-row justify="center" v-if="configStore.loadedConfig.costs.enabled">
+      <v-col cols="6">
+        <v-btn
+          color="primary"
+          block
+          :href="configStore.loadedConfig.costs.globalDetailsUrl"
+          target="_blank"
+        >
+          <v-icon left icon="mdi-currency-usd"></v-icon>
+          <span class="ml-1">{{ $t('homeView.links.costs') }}</span>
+        </v-btn>
+      </v-col>
+    </v-row>
+
     <v-row justify="center" v-if="isAdmin(roles)">
       <v-col cols="6">
         <v-btn color="secondary" block>

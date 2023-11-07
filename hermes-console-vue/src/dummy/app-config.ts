@@ -124,4 +124,12 @@ export const dummyAppConfig: AppConfiguration = {
   group: {
     nonAdminCreationEnabled: true,
   },
+  costs: {
+    enabled: true,
+    globalDetailsUrl: '',
+    topicIframeUrl: '',
+    topicDetailsUrl: '',
+    subscriptionIframeUrl: '',
+    subscriptionDetailsUrl: '',
+  },
 };

@@ -679,6 +679,14 @@
     },
     "group": {
       "nonAdminCreationEnabled": false
+    },
+    "costs": {
+      "enabled": true,
+      "globalDetailsUrl": "",
+      "topicIframeUrl": "",
+      "topicDetailsUrl": "",
+      "subscriptionIframeUrl": "",
+      "subscriptionDetailsUrl": ""
     }
   },
   "stats": {
