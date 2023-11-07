@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
@@ -7,6 +8,7 @@
   import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
+  import CostsCard from '@/components/costs-card/CostsCard.vue';
   import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
   import HeadersCard from '@/views/subscription/headers-card/HeadersCard.vue';
   import HealthProblemsAlerts from '@/views/subscription/health-problems-alerts/HealthProblemsAlerts.vue';
@@ -124,6 +126,25 @@
       title: subscriptionId,
     },
   ];
+
+  const configStore = useAppConfigStore();
+
+  function resolveCostsUrl(url?: string): string {
+    return (
+      url
+        ?.replace('{{topic_name}}', topicId)
+        .replace('{{subscription_name}}', subscriptionId) ?? ''
+    );
+  }
+
+  const costs = {
+    iframeUrl: resolveCostsUrl(
+      configStore.appConfig?.costs.subscriptionIframeUrl,
+    ),
+    detailsUrl: resolveCostsUrl(
+      configStore.appConfig?.costs.subscriptionDetailsUrl,
+    ),
+  };
 </script>
 
 <template>
@@ -195,6 +216,11 @@
             :subscription-metrics="subscriptionMetrics"
             :topic-name="topicId"
             :subscription-name="subscriptionId"
+          />
+          <costs-card
+            v-if="configStore.appConfig?.costs.enabled"
+            :iframe-url="costs.iframeUrl"
+            :details-url="costs.detailsUrl"
           />
           <manage-messages-card
             v-if="isSubscriptionOwnerOrAdmin(roles)"

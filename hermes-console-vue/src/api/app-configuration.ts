@@ -9,6 +9,7 @@ export interface AppConfiguration {
   subscription: SubscriptionViewConfiguration;
   consistency: ConsistencyViewConfiguration;
   group: GroupViewConfiguration;
+  costs: CostsConfiguration;
 }
 
 export interface ConsoleConfiguration {
@@ -152,4 +153,13 @@ export interface ConsistencyViewConfiguration {
 
 export interface GroupViewConfiguration {
   nonAdminCreationEnabled: boolean;
+}
+
+export interface CostsConfiguration {
+  enabled: boolean;
+  globalDetailsUrl: string;
+  topicIframeUrl: string;
+  topicDetailsUrl: string;
+  subscriptionIframeUrl: string;
+  subscriptionDetailsUrl: string;
 }

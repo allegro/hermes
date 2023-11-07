@@ -102,6 +102,7 @@ describe('TopicView', () => {
     const expectedTitles = [
       'topicView.header.topic',
       'topicView.metrics.title',
+      'costsCard.title',
       'topicView.properties.title',
       'topicView.messagesPreview.title',
       'topicView.schema.title',
@@ -195,6 +196,35 @@ describe('TopicView', () => {
     expect(
       queryByText('topicView.offlineClients.title'),
     ).not.toBeInTheDocument();
+  });
+
+  it('should not render costs card when it is disabled in app config', () => {
+    // given
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { queryByText } = render(TopicView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: {
+            appConfig: {
+              ...dummyAppConfig,
+              costs: {
+                enabled: false,
+              },
+            },
+            loading: false,
+            error: {
+              loadConfig: null,
+            },
+          },
+        },
+      }),
+    });
+
+    // then
+    expect(queryByText('costsCard.title')).not.toBeInTheDocument();
   });
 
   it('should not render offline clients when topic has disabled offline storage', () => {

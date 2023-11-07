@@ -11,6 +11,7 @@ const en_US = {
       statistics: 'Stats',
       search: 'Search',
       documentation: 'Docs',
+      costs: 'Costs',
       adminTools: 'Admin tools',
     },
   },
@@ -794,6 +795,10 @@ const en_US = {
     matched: 'Matched',
     notMatched: 'Not Matched',
     error: 'Error',
+  },
+  costsCard: {
+    title: 'Costs',
+    detailsButton: 'DASHBOARD',
   },
 };
 
