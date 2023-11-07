@@ -1,10 +1,14 @@
 package pl.allegro.tech.hermes.integrationtests.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -21,11 +25,17 @@ class ManagementTestClient {
 
     private final WebTestClient webTestClient;
 
+    private final String managementContailerUrl;
+
+    private final ObjectMapper objectMapper;
+
     public ManagementTestClient(String managementContainerUrl) {
+        this.managementContailerUrl = managementContainerUrl;
         this.webTestClient = WebTestClient
                 .bindToServer()
                 .baseUrl(managementContainerUrl)
                 .build();
+        this.objectMapper = new ObjectMapper();
     }
 
     public WebTestClient.ResponseSpec createGroup(Group group) {
@@ -33,11 +43,13 @@ class ManagementTestClient {
     }
 
     protected List<String> getGroups() {
-        return webTestClient.get().uri(GROUPS_PATH)
+        String jsonString = webTestClient.get().uri(GROUPS_PATH)
                 .exchange()
-                .expectBodyList(String.class)
+                .expectBody(String.class)
                 .returnResult()
                 .getResponseBody();
+
+        return mapStringJsonToListOfString(jsonString);
     }
 
     public WebTestClient.ResponseSpec createTopic(TopicWithSchema topicWithSchema) {
@@ -57,36 +69,48 @@ class ManagementTestClient {
     }
 
     private WebTestClient.ResponseSpec getSingleTopic(String topicQualifiedName) {
-        return webTestClient.get().uri(UriBuilder
-                        .fromPath(TOPIC_PATH)
-                        .build(topicQualifiedName))
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContailerUrl)
+                                .path(TOPIC_PATH)
+                                .build(topicQualifiedName))
                 .exchange();
     }
 
     private WebTestClient.ResponseSpec getSingleSubscription(String topicQualifiedName, String subscriptionName) {
         return webTestClient.get().uri(UriBuilder
-                        .fromPath(SUBSCRIPTION_PATH)
+                        .fromUri(managementContailerUrl)
+                        .path(SUBSCRIPTION_PATH)
                         .build(topicQualifiedName, subscriptionName))
                 .exchange();
     }
 
     private WebTestClient.ResponseSpec sendCreateTopicRequest(TopicWithSchema topicWithSchema) {
         return webTestClient.post().uri(TOPICS_PATH)
-                .body(topicWithSchema, TopicWithSchema.class)
+                .body(Mono.just(topicWithSchema), TopicWithSchema.class)
                 .exchange();
     }
 
     private WebTestClient.ResponseSpec sendCreateSubscriptionRequest(String topicQualifiedName, Subscription subscription) {
         return webTestClient.post().uri(UriBuilder
-                        .fromPath(SUBSCRIPTIONS_PATH)
+                        .fromUri(managementContailerUrl)
+                        .path(SUBSCRIPTIONS_PATH)
                         .build(topicQualifiedName))
-                .body(subscription, Subscription.class)
+                .body(Mono.just(subscription), Subscription.class)
                 .exchange();
     }
 
     private WebTestClient.ResponseSpec sendCreateGroupRequest(Group group) {
         return webTestClient.post().uri(GROUPS_PATH)
-                .body(group, Group.class)
+                .body(Mono.just(group), Group.class)
                 .exchange();
+    }
+
+    private List<String> mapStringJsonToListOfString(String jsonString) {
+        try {
+            return objectMapper.readValue(jsonString, new TypeReference<List<String>>() {
+            });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

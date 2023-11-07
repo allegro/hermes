@@ -165,7 +165,7 @@ public class HermesTestClient {
     }
 
     private WebTestClient.ResponseSpec waitUntilPublished(String topicQualifiedName, String body) {
-        PublisherCallable publisherCallable = new PublisherCallable(this, topicQualifiedName, body);
+        PublisherCallable publisherCallable = new PublisherCallable(frontendTestClient, topicQualifiedName, body);
         waitAtMost(Duration.TEN_SECONDS)
                 .until(() -> publisherCallable.call().expectStatus().is2xxSuccessful());
         return publisherCallable.getResponse();

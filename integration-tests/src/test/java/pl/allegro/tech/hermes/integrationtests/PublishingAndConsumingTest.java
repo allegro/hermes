@@ -29,7 +29,8 @@ public class PublishingAndConsumingTest {
     public void shouldPublishAndConsumeMessage() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
-        Topic topic = hermesTestClient.createTopic(topic("pl.allegro.testTopic1").build());
+        hermesTestClient.createGroup("testGroup");
+        Topic topic = hermesTestClient.createTopic(topic("testGroup", "testTopic1").build());
         hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber.getEndpoint()).build());
         TestMessage message = TestMessage.of("hello", "world");
 

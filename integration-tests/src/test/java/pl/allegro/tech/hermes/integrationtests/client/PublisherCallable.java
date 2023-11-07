@@ -6,20 +6,20 @@ final class PublisherCallable {
 
     private WebTestClient.ResponseSpec response;
 
-    private final HermesTestClient hermesTestClient;
+    private final FrontendTestClient frontendTestClient;
 
     private final String topicQualifiedName;
 
     private final String body;
 
-    public PublisherCallable(HermesTestClient hermesTestClient, String topicQualifiedName, String body) {
-        this.hermesTestClient = hermesTestClient;
+    public PublisherCallable(FrontendTestClient frontendTestClient, String topicQualifiedName, String body) {
+        this.frontendTestClient = frontendTestClient;
         this.topicQualifiedName = topicQualifiedName;
         this.body = body;
     }
 
     public WebTestClient.ResponseSpec call() {
-        this.response = hermesTestClient.publishUntilSuccess(this.topicQualifiedName, this.body);
+        this.response = frontendTestClient.publish(this.topicQualifiedName, this.body);
 
         return response;
     }
