@@ -70,6 +70,11 @@ public class HermesTestClient {
         return createTopic(groupName, topicName);
     }
 
+    public Topic createGroupAndTopic(Topic topic) {
+        createGroup(topic.getName().getGroupName());
+        return createTopic(topic);
+    }
+
     public Topic getTopic(String topicQualifiedName) {
         return getTopicResponse(topicQualifiedName)
                 .expectStatus()

@@ -29,9 +29,8 @@ public class PublishingAndConsumingTest {
     public void shouldPublishAndConsumeMessage() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
-        hermesTestClient.createGroup("testGroup");
-        Topic topic = hermesTestClient.createTopic(topic("testGroup", "testTopic1").build());
-        hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber.getEndpoint()).build());
+        Topic topic = hermesTestClient.createGroupAndTopic(topic("testGroup", "testTopic1").build());
+        hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription1", "http://webhook.allegrogroup.com/562426be-ee54-4384-a48b-0599b63924c2").build());
         TestMessage message = TestMessage.of("hello", "world");
 
         // when
@@ -45,7 +44,7 @@ public class PublishingAndConsumingTest {
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
         TestMessage message = TestMessage.of("hello", "world");
-        Topic topic = hermesTestClient.createTopic(topic("pl.allegro.testTopic2").build());
+        Topic topic = hermesTestClient.createGroupAndTopic(topic("pl.allegro.testTopic2").build());
         TestSubscriber subscriber1 = subscribers.createSubscriber();
         TestSubscriber subscriber2 = subscribers.createSubscriber();
         hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber1.getEndpoint()).build());
@@ -63,7 +62,7 @@ public class PublishingAndConsumingTest {
     public void shouldPassSubscriptionFixedHeaders() {
         // given
         TestMessage message = TestMessage.of("hello", "world");
-        Topic topic = hermesTestClient.createTopic(topic("pl.allegro.testTopic3").build());
+        Topic topic = hermesTestClient.createGroupAndTopic(topic("pl.allegro.testTopic3").build());
         TestSubscriber subscriber = subscribers.createSubscriber();
         Subscription subscription = SubscriptionBuilder.subscriptionWithRandomName(topic.getName())
                 .withEndpoint(subscriber.getEndpoint())
