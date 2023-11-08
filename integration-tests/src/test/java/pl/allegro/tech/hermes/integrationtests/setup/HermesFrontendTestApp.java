@@ -21,7 +21,7 @@ class HermesFrontendTestApp implements HermesTestApp {
     @Override
     public void start() {
         app.run(
-                "--server.port=" + port,
+                "--frontend.server.port=" + port,
                 "--frontend.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
                 "--frontend.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString()
         );
