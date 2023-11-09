@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.lifecycle.Startable;
+import pl.allegro.tech.hermes.integrationtests.client.HermesTestClient;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
@@ -15,6 +16,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     private static final HermesConsumersTestApp consumers = new HermesConsumersTestApp(hermesZookeeper, kafka);
     private static final HermesManagementTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka);
     private static final HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka);
+    private final HermesTestClient hermesTestClient = new HermesTestClient(this.getManagementUrl(), this.getFrontendUrl());
 
     private static boolean started = false;
 
@@ -33,6 +35,10 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
         Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::stop);
         started = false;
+    }
+
+    public HermesTestClient api() {
+        return hermesTestClient;
     }
 
     public String getManagementUrl() {

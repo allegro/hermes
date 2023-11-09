@@ -23,18 +23,16 @@ public class PublishingAndConsumingTest {
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
-    private final HermesTestClient hermesTestClient = new HermesTestClient(hermes.getManagementUrl(), hermes.getFrontendUrl());
-
     @Test
     public void shouldPublishAndConsumeMessage() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
-        Topic topic = hermesTestClient.createGroupAndTopic(topic("testGroup", "testTopic1").build());
-        hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber.getEndpoint()).build());
+        Topic topic = hermes.api().createGroupAndTopic(topic("testGroup", "testTopic1").build());
+        hermes.api().createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber.getEndpoint()).build());
         TestMessage message = TestMessage.of("hello", "world");
 
         // when
-        hermesTestClient.publishUntilSuccess(topic.getQualifiedName(), message.body());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
 
         // then
         subscriber.waitUntilReceived(message.body());
@@ -44,14 +42,14 @@ public class PublishingAndConsumingTest {
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
         TestMessage message = TestMessage.of("hello", "world");
-        Topic topic = hermesTestClient.createGroupAndTopic(topic("pl.allegro.testTopic2").build());
+        Topic topic = hermes.api().createGroupAndTopic(topic("pl.allegro.testTopic2").build());
         TestSubscriber subscriber1 = subscribers.createSubscriber();
         TestSubscriber subscriber2 = subscribers.createSubscriber();
-        hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber1.getEndpoint()).build());
-        hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription2", subscriber2.getEndpoint()).build());
+        hermes.api().createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber1.getEndpoint()).build());
+        hermes.api().createSubscription(subscription(topic.getQualifiedName(), "subscription2", subscriber2.getEndpoint()).build());
 
         // when
-        hermesTestClient.publishUntilSuccess(topic.getQualifiedName(), message.body());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
 
         // then
         subscriber1.waitUntilReceived(message.body());
@@ -62,16 +60,16 @@ public class PublishingAndConsumingTest {
     public void shouldPassSubscriptionFixedHeaders() {
         // given
         TestMessage message = TestMessage.of("hello", "world");
-        Topic topic = hermesTestClient.createGroupAndTopic(topic("pl.allegro.testTopic3").build());
+        Topic topic = hermes.api().createGroupAndTopic(topic("pl.allegro.testTopic3").build());
         TestSubscriber subscriber = subscribers.createSubscriber();
         Subscription subscription = SubscriptionBuilder.subscriptionWithRandomName(topic.getName())
                 .withEndpoint(subscriber.getEndpoint())
                 .withHeader("MY-HEADER", "myHeader123")
                 .build();
-        hermesTestClient.createSubscription(subscription);
+        hermes.api().createSubscription(subscription);
 
         // when
-        hermesTestClient.publishUntilSuccess(topic.getQualifiedName(), message.body());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
 
         // then
         subscriber.waitUntilRequestReceived(request -> {

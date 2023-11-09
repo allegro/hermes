@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, integration_tests_framework ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, integration_tests_framework ]
 
 jobs:
   build:
