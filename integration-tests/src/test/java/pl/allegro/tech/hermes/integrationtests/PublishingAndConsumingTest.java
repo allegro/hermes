@@ -30,7 +30,7 @@ public class PublishingAndConsumingTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermesTestClient.createGroupAndTopic(topic("testGroup", "testTopic1").build());
-        hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription1", "http://webhook.allegrogroup.com/562426be-ee54-4384-a48b-0599b63924c2").build());
+        hermesTestClient.createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber.getEndpoint()).build());
         TestMessage message = TestMessage.of("hello", "world");
 
         // when

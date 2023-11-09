@@ -6,6 +6,8 @@ import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
+import java.time.Duration;
+
 class HermesConsumersTestApp implements HermesTestApp {
 
     private final ZookeeperContainer hermesZookeeper;
@@ -23,7 +25,9 @@ class HermesConsumersTestApp implements HermesTestApp {
         app.run(
                 "--server.port=" + port,
                 "--consumer.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
-                "--consumer.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString()
+                "--consumer.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
+                "--consumer.backgroundSupervisor.interval=" + Duration.ofMillis(100),
+                "--consumer.workload.rebalanceInterval=" + Duration.ofSeconds(1)
         );
     }
 

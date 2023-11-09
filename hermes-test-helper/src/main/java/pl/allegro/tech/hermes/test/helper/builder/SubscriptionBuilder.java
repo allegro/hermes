@@ -21,6 +21,7 @@ import pl.allegro.tech.hermes.api.TrackingMode;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class SubscriptionBuilder {
 
@@ -77,7 +78,7 @@ public class SubscriptionBuilder {
     }
 
     public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName) {
-        return new SubscriptionBuilder(topicName, "");
+        return new SubscriptionBuilder(topicName, UUID.randomUUID().toString());
     }
 
     public static SubscriptionBuilder subscription(SubscriptionName subscriptionName) {
