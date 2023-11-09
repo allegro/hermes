@@ -131,6 +131,8 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
 
     @Override
     public List<String> listSubscriptionNames(TopicName topicName) {
+        topicRepository.ensureTopicExists(topicName);
+
         return childrenOf(paths.subscriptionsPath(topicName));
     }
 

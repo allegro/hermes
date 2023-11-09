@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Collections.emptyMap;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @Fork(1)
@@ -63,7 +64,7 @@ public class MessageRepositoryBenchmark {
         private Message generateMessage() {
             byte[] messageContent = UUID.randomUUID().toString().getBytes();
             String id = MessageIdGenerator.generate();
-            return new JsonMessage(id, messageContent, System.currentTimeMillis(), "partition-key");
+            return new JsonMessage(id, messageContent, System.currentTimeMillis(), "partition-key", emptyMap());
         }
 
         private File prepareFile() throws IOException {
@@ -109,7 +110,8 @@ public class MessageRepositoryBenchmark {
                     topic.getQualifiedName(),
                     message.getPartitionKey(),
                     null,
-                    null);
+                    null,
+                    emptyMap());
             map.put(message.getId(), entryValue);
         }
 

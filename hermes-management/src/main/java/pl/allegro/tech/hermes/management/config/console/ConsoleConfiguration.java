@@ -2,18 +2,27 @@ package pl.allegro.tech.hermes.management.config.console;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.management.domain.console.ConsoleConfigurationRepository;
 import pl.allegro.tech.hermes.management.infrastructure.console.ClasspathFileConsoleConfigurationRepository;
+import pl.allegro.tech.hermes.management.infrastructure.console.FrontendRoutesFilter;
 import pl.allegro.tech.hermes.management.infrastructure.console.HttpConsoleConfigurationRepository;
 import pl.allegro.tech.hermes.management.infrastructure.console.SpringConfigConsoleConfigurationRepository;
 
 @Configuration
 @EnableConfigurationProperties({ConsoleConfigProperties.class, ConsoleProperties.class})
 public class ConsoleConfiguration {
+
+    @Bean
+    FilterRegistrationBean<FrontendRoutesFilter> frontendRoutesFilter() {
+        FilterRegistrationBean<FrontendRoutesFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new FrontendRoutesFilter());
+        return registrationBean;
+    }
 
     @Bean
     ConsoleConfigurationRepository consoleConfigurationRepository(
