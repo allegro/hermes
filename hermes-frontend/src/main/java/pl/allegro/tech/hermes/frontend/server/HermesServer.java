@@ -6,18 +6,13 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.RequestDumpingHandler;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.xnio.SslClientAuthMode;
-import org.xnio.channels.BoundChannel;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
-import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.List;
 
 import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
@@ -161,21 +156,11 @@ public class HermesServer {
     }
 
     @VisibleForTesting
-    @SuppressWarnings("unchecked")
     public int getPort() {
-        Field channelsField = FieldUtils.getDeclaredField(Undertow.class, "channels", true);
-        try {
-            List<BoundChannel> channels = (List<BoundChannel>) channelsField.get(undertow);
-            if (channels.size() != 1) {
-                throw new IllegalStateException("Unexpected number of ports: " + channels.size());
-            }
-            SocketAddress socketAddress = channels.get(0).getLocalAddress();
-            if (socketAddress instanceof InetSocketAddress inetSocketAddress) {
-                return inetSocketAddress.getPort();
-            }
-            throw new IllegalStateException("Unexpected SocketAddress implementation: " + socketAddress.getClass());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("Cannot get server port", e);
-        }
+        InetSocketAddress socketAddress = (InetSocketAddress) undertow.getListenerInfo().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No port available yet."))
+                .getAddress();
+        return socketAddress.getPort();
     }
 }
