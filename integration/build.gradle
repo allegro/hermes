@@ -63,7 +63,7 @@ project.sourceSets {
 
 tasks.getByName('processIntegrationResources').doFirst() { duplicatesStrategy(DuplicatesStrategy.EXCLUDE) }
 
-task integrationTest(type: Test) {
+task deprecatedIntegrationTest(type: Test) {
     logging.captureStandardOutput LogLevel.INFO
 
     def args = []

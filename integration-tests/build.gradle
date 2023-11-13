@@ -1,3 +1,9 @@
+repositories {
+    mavenCentral()
+    maven { url 'https://repository.jboss.org/nexus/content/groups/public' }
+}
+
+
 dependencies {
     testImplementation project(':hermes-common')
     testImplementation project(':hermes-test-helper')
@@ -19,4 +25,44 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.1'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.9.1'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.1'
+}
+
+def integrationTest = sourceSets.create('integrationTest')
+
+configurations[integrationTest.implementationConfigurationName].extendsFrom(configurations.testImplementation)
+configurations[integrationTest.runtimeOnlyConfigurationName].extendsFrom(configurations.testRuntimeOnly)
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.register('integrationTest', Test) {
+    logging.captureStandardOutput LogLevel.INFO
+
+    def args = []
+    if (project.hasProperty('tests.timeout.multiplier')) {
+        args += "-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"
+    }
+
+    if (project.hasProperty("confluentImagesTag")) {
+        args += "-DconfluentImagesTag=${project.property("confluentImagesTag")}"
+    }
+
+    args += chronicleMapJvmArgs
+
+    jvmArgs = args
+    minHeapSize "2000m"
+    maxHeapSize "3500m"
+
+    group = 'Verification'
+    description = 'Runs the integration tests.'
+    useJUnitPlatform()
+
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = configurations[integrationTest.runtimeClasspathConfigurationName] + integrationTest.output
+
+    testLogging {
+        exceptionFormat = 'full'
+        events "passed", "skipped", "failed", "standardError", "standardOut"
+    }
 }
