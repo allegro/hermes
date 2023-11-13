@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.integrationtests.setup;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.core.env.Environment;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
-import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,7 +19,7 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 
 class HermesManagementTestApp implements HermesTestApp {
 
-    private final int port = Ports.nextAvailable();
+    private int port = -1;
     private final ZookeeperContainer hermesZookeeper;
     private final KafkaContainerCluster kafka;
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesManagement.class);
@@ -32,7 +32,7 @@ class HermesManagementTestApp implements HermesTestApp {
     @Override
     public void start() {
         app.run(
-                "--server.port=" + port,
+                "--server.port=0",
                 "--storage.clusters[0].datacenter=dc",
                 "--storage.clusters[0].clusterName=zk",
                 "--storage.clusters[0].connectionString=" + hermesZookeeper.getConnectionString(),
@@ -44,13 +44,18 @@ class HermesManagementTestApp implements HermesTestApp {
                 "--topic.replicationFactor=1",
                 "--topic.uncleanLeaderElectionEnabled=false"
         );
+        String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
+        if (localServerPort == null) {
+            throw new IllegalStateException("Cannot get hermes-management port");
+        }
+        port = Integer.parseInt(localServerPort);
         waitUntilReady();
     }
 
     private void waitUntilReady() {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("http://localhost:" + port + "/mode"))
+                    .uri(new URI("http://localhost:" + getPort() + "/mode"))
                     .GET()
                     .build();
             HttpClient httpClient = HttpClient.newHttpClient();
@@ -68,10 +73,12 @@ class HermesManagementTestApp implements HermesTestApp {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     int getPort() {
+        if (port == -1) {
+            throw new IllegalStateException("hermes-management port hasn't been initialized");
+        }
         return port;
     }
 
