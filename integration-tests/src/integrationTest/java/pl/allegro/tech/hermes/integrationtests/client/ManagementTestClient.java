@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import reactor.core.publisher.Mono;
 
@@ -25,12 +27,12 @@ class ManagementTestClient {
 
     private final WebTestClient webTestClient;
 
-    private final String managementContailerUrl;
+    private final String managementContainerUrl;
 
     private final ObjectMapper objectMapper;
 
     public ManagementTestClient(String managementContainerUrl) {
-        this.managementContailerUrl = managementContainerUrl;
+        this.managementContainerUrl = managementContainerUrl;
         this.webTestClient = WebTestClient
                 .bindToServer()
                 .baseUrl(managementContainerUrl)
@@ -64,13 +66,22 @@ class ManagementTestClient {
         return sendCreateSubscriptionRequest(topicQualifiedName, subscription);
     }
 
+    public WebTestClient.ResponseSpec updateSubscription(Topic topic, String subscription, PatchData patch) {
+        return webTestClient.put().uri(UriBuilder
+                .fromUri(managementContainerUrl)
+                .path(SUBSCRIPTION_PATH)
+                .build(topic.getQualifiedName(), subscription))
+            .body(Mono.just(patch), PatchData.class)
+            .exchange();
+    }
+
     public WebTestClient.ResponseSpec getSubscription(String topicQualifiedName, String subscriptionName) {
         return getSingleSubscription(topicQualifiedName, subscriptionName);
     }
 
     private WebTestClient.ResponseSpec getSingleTopic(String topicQualifiedName) {
         return webTestClient.get().uri(
-                        UriBuilder.fromUri(managementContailerUrl)
+                        UriBuilder.fromUri(managementContainerUrl)
                                 .path(TOPIC_PATH)
                                 .build(topicQualifiedName))
                 .exchange();
@@ -78,7 +89,7 @@ class ManagementTestClient {
 
     private WebTestClient.ResponseSpec getSingleSubscription(String topicQualifiedName, String subscriptionName) {
         return webTestClient.get().uri(UriBuilder
-                        .fromUri(managementContailerUrl)
+                        .fromUri(managementContainerUrl)
                         .path(SUBSCRIPTION_PATH)
                         .build(topicQualifiedName, subscriptionName))
                 .exchange();
@@ -92,7 +103,7 @@ class ManagementTestClient {
 
     private WebTestClient.ResponseSpec sendCreateSubscriptionRequest(String topicQualifiedName, Subscription subscription) {
         return webTestClient.post().uri(UriBuilder
-                        .fromUri(managementContailerUrl)
+                        .fromUri(managementContainerUrl)
                         .path(SUBSCRIPTIONS_PATH)
                         .build(topicQualifiedName))
                 .body(Mono.just(subscription), Subscription.class)
@@ -113,4 +124,5 @@ class ManagementTestClient {
             throw new RuntimeException(e);
         }
     }
+
 }

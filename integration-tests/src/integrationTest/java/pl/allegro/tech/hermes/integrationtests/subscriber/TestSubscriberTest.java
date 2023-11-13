@@ -21,7 +21,7 @@ public class TestSubscriberTest {
     static TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
     @Test
-    public void shouldSendAndAssertMessageOnOnlyOneSubscriber() throws IOException {
+    public void shouldSendAndAssertMessageOnlyOnOneSubscriber() throws IOException {
         // given
         TestSubscriber subscriber1 = subscribers.createSubscriber();
         TestSubscriber subscriber2 = subscribers.createSubscriber();

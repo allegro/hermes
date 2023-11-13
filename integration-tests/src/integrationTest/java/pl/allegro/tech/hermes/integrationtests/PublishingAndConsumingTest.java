@@ -4,12 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.integrationtests.client.HermesTestClient;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
+
+import java.time.Duration;
 
 import static pl.allegro.tech.hermes.integrationtests.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -76,5 +77,23 @@ public class PublishingAndConsumingTest {
             assertThat(request).hasHeaderValue("MY-HEADER", "myHeader123");
             assertThat(request.getHeader("Hermes-Message-Id")).isNotEmpty();
         });
+    }
+
+    @Test
+    public void shouldRetryWithDelayOnRetryAfterEndpointResponse() {
+        // given
+        Topic topic = hermes.api().createGroupAndTopic(topic("pl.allegro.topicTestingRetries").build());
+        TestMessage message = TestMessage.of("hello", "world");
+        int retryAfterSeconds = 1;
+        TestSubscriber subscriber = subscribers.createSubscriberWithRetry(message.body(), retryAfterSeconds);
+        hermes.api().createSubscription(subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build());
+
+        // when
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
+
+        // then
+        subscriber.waitUntilMessageWithHeaderReceived("Hermes-Retry-Count", "0");
+        subscriber.waitUntilMessageWithHeaderReceived("Hermes-Retry-Count", "1");
+        assertThat(subscriber.durationBetweenFirstAndLastRequest()).isGreaterThanOrEqualTo(Duration.ofSeconds(retryAfterSeconds));
     }
 }

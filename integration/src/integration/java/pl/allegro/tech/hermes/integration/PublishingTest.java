@@ -325,28 +325,6 @@ public class PublishingTest extends IntegrationTest {
     }
 
     @Test
-    public void shouldRetryWithDelayOnRetryAfterEndpointResponse() {
-        // given
-        int retryAfterSeconds = 1;
-        String message = "hello";
-        remoteService.retryMessage(message, retryAfterSeconds);
-
-        // and
-        Topic topic = operations.buildTopic(randomTopic("retryAfterTopic", "topic").build());
-        operations.createSubscription(topic, "subscription", remoteService.getUrl());
-
-        // when
-        publisher.publish(topic.getQualifiedName(), message);
-
-        // then
-        remoteService.waitUntilReceived();
-
-        assertThat(remoteService.durationBetweenFirstAndLastRequest().minusSeconds(retryAfterSeconds).isNegative()).isFalse();
-        assertThat(remoteService.receivedMessageWithHeader("Hermes-Retry-Count", "0")).isTrue();
-        assertThat(remoteService.receivedMessageWithHeader("Hermes-Retry-Count", "1")).isTrue();
-    }
-
-    @Test
     public void shouldPassSubscriptionHeaders() {
         // given
         String message = "abcd";
