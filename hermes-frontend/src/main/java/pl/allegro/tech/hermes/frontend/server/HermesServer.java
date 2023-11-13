@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -155,7 +154,6 @@ public class HermesServer {
         return hermesServerParameters.isRequestDumperEnabled();
     }
 
-    @VisibleForTesting
     public int getPort() {
         InetSocketAddress socketAddress = (InetSocketAddress) undertow.getListenerInfo().stream()
                 .findFirst()
