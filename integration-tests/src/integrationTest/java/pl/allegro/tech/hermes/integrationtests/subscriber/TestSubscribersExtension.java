@@ -6,7 +6,6 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.net.URI;
 import java.util.Map;
@@ -24,7 +23,7 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
     private final Map<String, TestSubscriber> subscribersPerPath = new ConcurrentHashMap<>();
 
     public TestSubscribersExtension() {
-        service = new WireMockServer(Ports.nextAvailable());
+        service = new WireMockServer(0);
         service.start();
         serviceUrl = URI.create("http://localhost:" + service.port());
         service.addStubMapping(
