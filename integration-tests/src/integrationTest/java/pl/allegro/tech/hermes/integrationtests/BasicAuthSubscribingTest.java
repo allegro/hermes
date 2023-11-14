@@ -27,8 +27,8 @@ public class BasicAuthSubscribingTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
 
-        Topic topic = hermes.api().createGroupAndTopic(topic("basicAuthGroup", "topic").build());
-        hermes.api().createSubscription(subscription(
+        Topic topic = hermes.initHelper().createGroupAndTopic(topic("basicAuthGroup", "topic").build());
+        hermes.initHelper().createSubscription(subscription(
             topic.getQualifiedName(),
             "subscription",
             "http://user:password@localhost:" + subscriber.getPort() + subscriber.getPath()).build());
@@ -45,8 +45,8 @@ public class BasicAuthSubscribingTest {
     @Test
     public void shouldUpdateSubscriptionUsernameAndPassword() {
         // given
-        Topic topic = hermes.api().createGroupAndTopic("basicAuthEditGroup", "topic");
-        hermes.api().createSubscription(subscription(
+        Topic topic = hermes.initHelper().createGroupAndTopic(topic("basicAuthEditGroup", "topic").build());
+        hermes.initHelper().createSubscription(subscription(
             topic.getQualifiedName(), "subscription", "http://user:password@localhost:1234").build());
 
         // when

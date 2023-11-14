@@ -87,13 +87,13 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
     }
 
     @Override
-    public void afterEach(ExtensionContext context) throws Exception {
+    public void afterEach(ExtensionContext context) {
         service.resetRequests();
         subscribersPerPath.clear();
     }
 
     @Override
-    public void afterAll(ExtensionContext context) throws Exception {
+    public void afterAll(ExtensionContext context) {
         service.stop();
     }
 }

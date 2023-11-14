@@ -18,6 +18,8 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     private static final HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka);
     private HermesTestClient hermesTestClient;
 
+    private final HermesInitHelper hermesInitHelper = new HermesInitHelper(this.getManagementUrl());
+
     private static boolean started = false;
 
     @Override
@@ -48,5 +50,9 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     private String getFrontendUrl() {
         return "http://localhost:" + frontend.getPort();
+    }
+
+    public HermesInitHelper initHelper() {
+        return hermesInitHelper;
     }
 }
