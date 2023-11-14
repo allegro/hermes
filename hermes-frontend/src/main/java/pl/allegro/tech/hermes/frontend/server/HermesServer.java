@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 
+import java.net.InetSocketAddress;
+
 import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 import static io.undertow.UndertowOptions.MAX_COOKIES;
@@ -150,5 +152,13 @@ public class HermesServer {
 
     private boolean isFrontendRequestDumperEnabled() {
         return hermesServerParameters.isRequestDumperEnabled();
+    }
+
+    public int getPort() {
+        InetSocketAddress socketAddress = (InetSocketAddress) undertow.getListenerInfo().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No port available yet."))
+                .getAddress();
+        return socketAddress.getPort();
     }
 }

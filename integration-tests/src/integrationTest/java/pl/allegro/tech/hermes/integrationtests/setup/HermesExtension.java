@@ -16,7 +16,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     private static final HermesConsumersTestApp consumers = new HermesConsumersTestApp(hermesZookeeper, kafka);
     private static final HermesManagementTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka);
     private static final HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka);
-    private final HermesTestClient hermesTestClient = new HermesTestClient(this.getManagementUrl(), this.getFrontendUrl());
+    private HermesTestClient hermesTestClient;
 
     private static boolean started = false;
 
@@ -28,6 +28,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
             Stream.of(consumers, frontend).parallel().forEach(HermesTestApp::start);
             started = true;
         }
+        hermesTestClient = new HermesTestClient(getManagementUrl(), getFrontendUrl());
     }
 
     @Override
@@ -42,11 +43,11 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         return hermesTestClient;
     }
 
-    public String getManagementUrl() {
+    private String getManagementUrl() {
         return "http://localhost:" + management.getPort();
     }
 
-    public String getFrontendUrl() {
+    private String getFrontendUrl() {
         return "http://localhost:" + frontend.getPort();
     }
 
