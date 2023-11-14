@@ -32,6 +32,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     @Override
     public void close() {
+        kafka.cutOffConnectionsBetweenBrokersAndClients();
         Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
         Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::stop);
         started = false;
@@ -47,5 +48,13 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     public String getFrontendUrl() {
         return "http://localhost:" + frontend.getPort();
+    }
+
+    public void cutOffConnectionsBetweenBrokersAndClients() {
+        kafka.cutOffConnectionsBetweenBrokersAndClients();
+    }
+
+    public void restoreConnectionsBetweenBrokersAndClients() {
+        kafka.restoreConnectionsBetweenBrokersAndClients();
     }
 }

@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.client;
 
 import com.jayway.awaitility.Duration;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
@@ -88,6 +89,35 @@ public class HermesTestClient {
         return managementTestClient.getTopic(topicQualifiedName);
     }
 
+    public void blacklistTopic(String topicQualifiedName) {
+        managementTestClient.blacklistTopic(topicQualifiedName).expectStatus().is2xxSuccessful();
+    }
+
+    public WebTestClient.ResponseSpec blacklistTopicResponse(String topicQualifiedName) {
+        return managementTestClient.blacklistTopic(topicQualifiedName);
+    }
+
+    public void unblacklistTopic(String topicQualifiedName) {
+        managementTestClient.unblacklistTopic(topicQualifiedName).expectStatus().is2xxSuccessful();
+    }
+
+    public BlacklistStatus isTopicBlacklisted(String topicQualifiedName) {
+        return managementTestClient.isTopicBlacklisted(topicQualifiedName)
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(BlacklistStatus.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    public WebTestClient.ResponseSpec unblacklistTopicResponse(String topicQualifiedName) {
+        return managementTestClient.unblacklistTopic(topicQualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec getLatestUndeliveredMessage(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.getLatestUndeliveredMessage(topicQualifiedName, subscriptionName);
+    }
+
     // SUBSCRIPTION
     public Subscription createSubscription(Subscription subscription) {
         return createSubscriptionAndWait(subscription);
@@ -116,9 +146,9 @@ public class HermesTestClient {
     }
 
     // be aware that this method is not waiting for cache refresh in frontends
-//    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
-//        return frontendTestClient.publish(topicQualifiedName, body);
-//    }
+    public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
+        return frontendTestClient.publish(topicQualifiedName, body);
+    }
 
     private Group createGroupAndWait(Group group) {
         if (groupExists(group)) {

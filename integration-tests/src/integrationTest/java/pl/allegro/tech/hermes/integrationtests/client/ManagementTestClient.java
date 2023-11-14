@@ -15,6 +15,12 @@ import java.util.List;
 class ManagementTestClient {
     private static final String TOPICS_PATH = "/topics";
 
+    private static final String BLACKLIST_TOPICS_PATH = "/blacklist/topics";
+
+    private static final String BLACKLIST_TOPIC_PATH = "/blacklist/topics/{topicName}";
+
+    private static final String LATEST_UNDELIVERED_MESSAGE = "/topics/{topicName}/subscriptions/{subscriptionName}/undelivered";
+
     private static final String TOPIC_PATH = "/topics/{topicName}";
 
     private static final String SUBSCRIPTIONS_PATH = "/topics/{topicName}/subscriptions";
@@ -25,12 +31,12 @@ class ManagementTestClient {
 
     private final WebTestClient webTestClient;
 
-    private final String managementContailerUrl;
+    private final String managementContaiNerUrl;
 
     private final ObjectMapper objectMapper;
 
     public ManagementTestClient(String managementContainerUrl) {
-        this.managementContailerUrl = managementContainerUrl;
+        this.managementContaiNerUrl = managementContainerUrl;
         this.webTestClient = WebTestClient
                 .bindToServer()
                 .baseUrl(managementContainerUrl)
@@ -68,9 +74,36 @@ class ManagementTestClient {
         return getSingleSubscription(topicQualifiedName, subscriptionName);
     }
 
+    public WebTestClient.ResponseSpec blacklistTopic(String topicQualifiedName) {
+        return webTestClient.post().uri(BLACKLIST_TOPICS_PATH)
+                .body(Mono.just(List.of(topicQualifiedName)), List.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec unblacklistTopic(String topicQualifiedName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContaiNerUrl)
+                        .path(BLACKLIST_TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec isTopicBlacklisted(String topicQualifiedName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContaiNerUrl)
+                        .path(BLACKLIST_TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getLatestUndeliveredMessage(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContaiNerUrl)
+                        .path(LATEST_UNDELIVERED_MESSAGE)
+                        .build(topicQualifiedName, subscriptionName))
+                .exchange();
+    }
+
     private WebTestClient.ResponseSpec getSingleTopic(String topicQualifiedName) {
         return webTestClient.get().uri(
-                        UriBuilder.fromUri(managementContailerUrl)
+                        UriBuilder.fromUri(managementContaiNerUrl)
                                 .path(TOPIC_PATH)
                                 .build(topicQualifiedName))
                 .exchange();
@@ -78,7 +111,7 @@ class ManagementTestClient {
 
     private WebTestClient.ResponseSpec getSingleSubscription(String topicQualifiedName, String subscriptionName) {
         return webTestClient.get().uri(UriBuilder
-                        .fromUri(managementContailerUrl)
+                        .fromUri(managementContaiNerUrl)
                         .path(SUBSCRIPTION_PATH)
                         .build(topicQualifiedName, subscriptionName))
                 .exchange();
@@ -92,7 +125,7 @@ class ManagementTestClient {
 
     private WebTestClient.ResponseSpec sendCreateSubscriptionRequest(String topicQualifiedName, Subscription subscription) {
         return webTestClient.post().uri(UriBuilder
-                        .fromUri(managementContailerUrl)
+                        .fromUri(managementContaiNerUrl)
                         .path(SUBSCRIPTIONS_PATH)
                         .build(topicQualifiedName))
                 .body(Mono.just(subscription), Subscription.class)

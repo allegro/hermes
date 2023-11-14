@@ -1,0 +1,36 @@
+package pl.allegro.tech.hermes.integrationtests;
+
+import org.junit.jupiter.api.Test;
+import com.jayway.awaitility.Duration;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
+import pl.allegro.tech.hermes.test.helper.message.TestMessage;
+
+import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+
+public class UndeliveredLogTest {
+
+    @RegisterExtension
+    public static final HermesExtension hermes = new HermesExtension();
+
+    private static final String INVALID_ENDPOINT_URL = "http://localhost:60000";
+
+    @Test
+    public void shouldLogUndeliveredMessage() {
+        // given
+        Topic topic = hermes.api().createGroupAndTopic(topic("logUndelivered", "topic").build());
+        Subscription subscription = hermes.api().createSubscription(subscription(topic.getQualifiedName(), "subscription1", INVALID_ENDPOINT_URL).build());
+
+        // when
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), TestMessage.simple().body());
+
+        // then
+        waitAtMost(Duration.TEN_SECONDS).until( () ->
+                hermes.api().getLatestUndeliveredMessage(topic.getQualifiedName(), subscription.getName()).expectStatus().is2xxSuccessful()
+        );
+    }
+}
