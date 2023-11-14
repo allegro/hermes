@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integrationtests.setup;
 
 import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.integrationtests.client.HermesTestClient;
@@ -9,7 +10,7 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.util.stream.Stream;
 
-public class HermesExtension implements BeforeAllCallback, ExtensionContext.Store.CloseableResource {
+public class HermesExtension implements BeforeAllCallback, BeforeEachCallback, ExtensionContext.Store.CloseableResource {
 
     private static final ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
     private static final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
@@ -19,6 +20,8 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     private HermesTestClient hermesTestClient;
 
     private static boolean started = false;
+
+    private ExtensionContext testContext;
 
     @Override
     public void beforeAll(ExtensionContext context) {
@@ -57,5 +60,14 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     public void restoreConnectionsBetweenBrokersAndClients() {
         kafka.restoreConnectionsBetweenBrokersAndClients();
+    }
+
+    @Override
+    public void beforeEach(ExtensionContext context) {
+        this.testContext = context;
+    }
+
+    public ExtensionContext getTestContext() {
+        return testContext;
     }
 }

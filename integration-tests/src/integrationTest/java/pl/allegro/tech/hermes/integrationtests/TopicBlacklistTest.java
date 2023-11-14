@@ -20,7 +20,7 @@ public class TopicBlacklistTest {
     @Test
     public void shouldRefuseMessageOnBlacklistedTopic() {
         // given
-        Topic topic = hermes.api().createGroupAndTopic(topic("testGroup", "testTopic11").build());
+        Topic topic = hermes.api().createGroupAndTopic(topic(hermes.getTestContext()).build());
         TestMessage message = TestMessage.of("hello", "world");
 
         // when
@@ -34,7 +34,7 @@ public class TopicBlacklistTest {
     @Test
     public void shouldAcceptMessageOnUnblacklistedTopic() {
         // given
-        Topic topic = hermes.api().createGroupAndTopic(topic("testGroup", "testTopic22").build());
+        Topic topic = hermes.api().createGroupAndTopic(topic(hermes.getTestContext()).build());
         TestMessage message = TestMessage.of("hello", "world");
         hermes.api().blacklistTopic(topic.getQualifiedName());
 
@@ -59,10 +59,11 @@ public class TopicBlacklistTest {
     @Test
     public void shouldUnBlacklistTopic() {
         // given
-        hermes.api().blacklistTopic("group.topic");
+        String topicName = hermes.getTestContext().getTestMethod().orElseThrow().getName();
+        hermes.api().blacklistTopic(topicName);
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().unblacklistTopicResponse("group.topic");
+        WebTestClient.ResponseSpec response = hermes.api().unblacklistTopicResponse(topicName);
 
         // then
         response.expectStatus().isOk();
@@ -71,7 +72,7 @@ public class TopicBlacklistTest {
     @Test
     public void shouldReportValidStatusOfTopic() {
         // given
-        Topic topic = hermes.api().createGroupAndTopic(topic("testGroup", "testTopic33").build());
+        Topic topic = hermes.api().createGroupAndTopic(topic(hermes.getTestContext()).build());
 
         // when
         hermes.api().blacklistTopic(topic.getQualifiedName());
@@ -89,7 +90,7 @@ public class TopicBlacklistTest {
     @Test
     public void shouldReturnErrorOnNonBlacklistedUnblacklist() {
         // when
-        Topic topic = hermes.api().createGroupAndTopic(topic("testGroup", "testTopic44").build());
+        Topic topic = hermes.api().createGroupAndTopic(topic(hermes.getTestContext()).build());
         WebTestClient.ResponseSpec response = hermes.api().unblacklistTopicResponse(topic.getQualifiedName());
 
         // then

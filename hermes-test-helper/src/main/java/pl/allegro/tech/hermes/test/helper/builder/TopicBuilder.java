@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
+import org.junit.jupiter.api.extension.ExtensionContext;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.OfflineRetentionTime;
 import pl.allegro.tech.hermes.api.OwnerId;
@@ -63,6 +64,10 @@ public class TopicBuilder {
 
     public static TopicBuilder topic(TopicName topicName) {
         return new TopicBuilder(topicName);
+    }
+
+    public static TopicBuilder topic(ExtensionContext context) {
+        return new TopicBuilder(new TopicName(context.getTestClass().orElseThrow().getName(), context.getTestMethod().orElseThrow().getName()));
     }
 
     public static TopicBuilder topic(String groupName, String topicName) {
