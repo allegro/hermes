@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-class ManagementTestClient {
+public class ManagementTestClient {
     private static final String TOPICS_PATH = "/topics";
 
     private static final String TOPIC_PATH = "/topics/{topicName}";
@@ -44,7 +44,7 @@ class ManagementTestClient {
         return sendCreateGroupRequest(group);
     }
 
-    protected List<String> getGroups() {
+    public List<String> getGroups() {
         String jsonString = webTestClient.get().uri(GROUPS_PATH)
                 .exchange()
                 .expectBody(String.class)
@@ -62,8 +62,8 @@ class ManagementTestClient {
         return getSingleTopic(topicQualifiedName);
     }
 
-    public WebTestClient.ResponseSpec createSubscription(String topicQualifiedName, Subscription subscription) {
-        return sendCreateSubscriptionRequest(topicQualifiedName, subscription);
+    public WebTestClient.ResponseSpec createSubscription(Subscription subscription) {
+        return sendCreateSubscriptionRequest(subscription);
     }
 
     public WebTestClient.ResponseSpec updateSubscription(Topic topic, String subscription, PatchData patch) {
@@ -101,11 +101,11 @@ class ManagementTestClient {
                 .exchange();
     }
 
-    private WebTestClient.ResponseSpec sendCreateSubscriptionRequest(String topicQualifiedName, Subscription subscription) {
+    private WebTestClient.ResponseSpec sendCreateSubscriptionRequest(Subscription subscription) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(managementContainerUrl)
                         .path(SUBSCRIPTIONS_PATH)
-                        .build(topicQualifiedName))
+                        .build(subscription.getQualifiedTopicName()))
                 .body(Mono.just(subscription), Subscription.class)
                 .exchange();
     }
