@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integrationtests.client;
 import com.jayway.awaitility.Duration;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
@@ -113,6 +114,12 @@ public class HermesTestClient {
     // PUBLISH
     public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body) {
         return waitUntilPublished(topicQualifiedName, body);
+    }
+
+    public void updateSubscription(Topic topic, String subscription, PatchData patch) {
+        managementTestClient.updateSubscription(topic, subscription, patch)
+            .expectStatus()
+            .is2xxSuccessful();
     }
 
     // be aware that this method is not waiting for cache refresh in frontends
