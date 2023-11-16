@@ -17,8 +17,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     private static final HermesManagementTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka);
     private static final HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka);
     private HermesTestClient hermesTestClient;
-
-    private final HermesInitHelper hermesInitHelper = new HermesInitHelper(this.getManagementUrl());
+    private HermesInitHelper hermesInitHelper;
 
     private static boolean started = false;
 
@@ -31,6 +30,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
             started = true;
         }
         hermesTestClient = new HermesTestClient(getManagementUrl(), getFrontendUrl());
+        hermesInitHelper = new HermesInitHelper(getManagementUrl());
     }
 
     @Override
