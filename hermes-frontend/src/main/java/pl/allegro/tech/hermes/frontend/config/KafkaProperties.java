@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
+import pl.allegro.tech.hermes.common.config.KafkaAuthenticationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 import java.time.Duration;
 
 public class KafkaProperties implements KafkaParameters {
 
-    private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
+    private KafkaAuthenticationProperties authorization = new KafkaAuthenticationProperties();
 
     private String datacenter = "dc";
 
@@ -15,11 +15,11 @@ public class KafkaProperties implements KafkaParameters {
 
     private Duration adminRequestTimeout = Duration.ofMinutes(5);
 
-    public KafkaAuthorizationProperties getAuthorization() {
+    public KafkaAuthenticationProperties getAuthorization() {
         return authorization;
     }
 
-    public void setAuthorization(KafkaAuthorizationProperties authorization) {
+    public void setAuthorization(KafkaAuthenticationProperties authorization) {
         this.authorization = authorization;
     }
 
@@ -75,11 +75,6 @@ public class KafkaProperties implements KafkaParameters {
 
     @Override
     public String getJaasConfig() {
-        if (authorization.getJaasConfig() != null) {
-            return authorization.getJaasConfig();
-        }
-        return authorization.getLoginModule() + " required\n"
-                + "username=\"" + authorization.getUsername() + "\"\n"
-                + "password=\"" + authorization.getPassword() + "\";";
+        return authorization.getJaasConfig();
     }
 }

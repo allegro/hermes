@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.common.config;
 
-public class KafkaAuthorizationProperties {
+public class KafkaAuthenticationProperties {
 
     private boolean enabled = false;
     private String mechanism = "PLAIN";
@@ -59,7 +59,12 @@ public class KafkaAuthorizationProperties {
     }
 
     public String getJaasConfig() {
-        return jaasConfig;
+        if (jaasConfig != null) {
+            return jaasConfig;
+        }
+        return loginModule + " required\n"
+                + "username=\"" + username + "\"\n"
+                + "password=\"" + password + "\";";
     }
 
     public void setJaasConfig(String jaasConfig) {

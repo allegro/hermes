@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
+import pl.allegro.tech.hermes.common.config.KafkaAuthenticationProperties;
+
 public class KafkaProperties {
 
     private String datacenter = "datacenter";
@@ -28,7 +30,7 @@ public class KafkaProperties {
 
     private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
-    private KafkaSaslProperties sasl = new KafkaSaslProperties();
+    private KafkaAuthenticationProperties sasl = new KafkaAuthenticationProperties();
 
     public static final class KafkaConsumer {
 
@@ -145,11 +147,11 @@ public class KafkaProperties {
         this.kafkaConsumer = kafkaConsumer;
     }
 
-    public KafkaSaslProperties getSasl() {
+    public KafkaAuthenticationProperties getSasl() {
         return sasl;
     }
 
-    public void setSasl(KafkaSaslProperties sasl) {
+    public void setSasl(KafkaAuthenticationProperties sasl) {
         this.sasl = sasl;
     }
 
