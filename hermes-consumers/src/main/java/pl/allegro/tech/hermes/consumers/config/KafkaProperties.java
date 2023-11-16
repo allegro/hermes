@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 public class KafkaProperties implements KafkaParameters {
 
-    private KafkaAuthenticationProperties authorization = new KafkaAuthenticationProperties();
+    private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
     private String datacenter = "dc";
 
@@ -13,12 +13,17 @@ public class KafkaProperties implements KafkaParameters {
 
     private String brokerList = "localhost:9092";
 
-    public KafkaAuthenticationProperties getAuthorization() {
-        return authorization;
+    public KafkaAuthenticationProperties getAuthentication() {
+        return authentication;
     }
 
+    @Deprecated
     public void setAuthorization(KafkaAuthenticationProperties authorization) {
-        this.authorization = authorization;
+        this.authentication = authorization;
+    }
+
+    public void setAuthentication(KafkaAuthenticationProperties authentication) {
+        this.authentication = authentication;
     }
 
     public String getDatacenter() {
@@ -39,27 +44,27 @@ public class KafkaProperties implements KafkaParameters {
 
     @Override
     public boolean isEnabled() {
-        return authorization.isEnabled();
+        return authentication.isEnabled();
     }
 
     @Override
     public String getMechanism() {
-        return authorization.getMechanism();
+        return authentication.getMechanism();
     }
 
     @Override
     public String getProtocol() {
-        return authorization.getProtocol();
+        return authentication.getProtocol();
     }
 
     @Override
     public String getUsername() {
-        return authorization.getUsername();
+        return authentication.getUsername();
     }
 
     @Override
     public String getPassword() {
-        return authorization.getPassword();
+        return authentication.getPassword();
     }
 
     @Override
@@ -73,6 +78,6 @@ public class KafkaProperties implements KafkaParameters {
 
     @Override
     public String getJaasConfig() {
-        return authorization.getJaasConfig();
+        return authentication.getJaasConfig();
     }
 }

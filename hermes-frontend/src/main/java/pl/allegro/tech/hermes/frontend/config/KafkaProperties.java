@@ -7,7 +7,7 @@ import java.time.Duration;
 
 public class KafkaProperties implements KafkaParameters {
 
-    private KafkaAuthenticationProperties authorization = new KafkaAuthenticationProperties();
+    private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
     private String datacenter = "dc";
 
@@ -15,12 +15,17 @@ public class KafkaProperties implements KafkaParameters {
 
     private Duration adminRequestTimeout = Duration.ofMinutes(5);
 
-    public KafkaAuthenticationProperties getAuthorization() {
-        return authorization;
+    public KafkaAuthenticationProperties getAuthentication() {
+        return authentication;
     }
 
+    @Deprecated
     public void setAuthorization(KafkaAuthenticationProperties authorization) {
-        this.authorization = authorization;
+        this.authentication = authorization;
+    }
+
+    public void setAuthentication(KafkaAuthenticationProperties authorization) {
+        this.authentication = authorization;
     }
 
     public String getDatacenter() {
@@ -33,27 +38,27 @@ public class KafkaProperties implements KafkaParameters {
 
     @Override
     public boolean isEnabled() {
-        return authorization.isEnabled();
+        return authentication.isEnabled();
     }
 
     @Override
     public String getMechanism() {
-        return authorization.getMechanism();
+        return authentication.getMechanism();
     }
 
     @Override
     public String getProtocol() {
-        return authorization.getProtocol();
+        return authentication.getProtocol();
     }
 
     @Override
     public String getUsername() {
-        return authorization.getUsername();
+        return authentication.getUsername();
     }
 
     @Override
     public String getPassword() {
-        return authorization.getPassword();
+        return authentication.getPassword();
     }
 
     public String getBrokerList() {
@@ -75,6 +80,6 @@ public class KafkaProperties implements KafkaParameters {
 
     @Override
     public String getJaasConfig() {
-        return authorization.getJaasConfig();
+        return authentication.getJaasConfig();
     }
 }

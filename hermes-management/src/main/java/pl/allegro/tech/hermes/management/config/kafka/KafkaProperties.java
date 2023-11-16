@@ -30,7 +30,7 @@ public class KafkaProperties {
 
     private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
-    private KafkaAuthenticationProperties sasl = new KafkaAuthenticationProperties();
+    private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
     public static final class KafkaConsumer {
 
@@ -147,12 +147,17 @@ public class KafkaProperties {
         this.kafkaConsumer = kafkaConsumer;
     }
 
-    public KafkaAuthenticationProperties getSasl() {
-        return sasl;
+    public KafkaAuthenticationProperties getAuthentication() {
+        return authentication;
     }
 
+    @Deprecated
     public void setSasl(KafkaAuthenticationProperties sasl) {
-        this.sasl = sasl;
+        this.authentication = sasl;
+    }
+
+    public void setAuthentication(KafkaAuthenticationProperties authentication) {
+        this.authentication = authentication;
     }
 
     public String getDatacenter() {
