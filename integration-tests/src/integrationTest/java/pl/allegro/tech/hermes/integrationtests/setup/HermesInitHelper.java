@@ -14,8 +14,8 @@ public class HermesInitHelper {
 
     private final ManagementTestClient managementTestClient;
 
-    public HermesInitHelper(String managementUrl) {
-        managementTestClient = new ManagementTestClient(managementUrl);
+    public HermesInitHelper(int managementPort) {
+        managementTestClient = new ManagementTestClient(managementPort);
     }
 
     public Topic createTopic(Topic topic) {

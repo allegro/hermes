@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.integrationtests.setup;
 
-interface HermesTestApp {
+public interface HermesTestApp {
 
-    void start();
+    HermesTestApp start();
 
     void stop();
+
+    int getPort();
 }

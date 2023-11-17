@@ -18,9 +18,9 @@ public class HermesTestClient {
     private final ManagementTestClient managementTestClient;
     private final FrontendTestClient frontendTestClient;
 
-    public HermesTestClient(String managementUrl, String frontendUrl) {
-        managementTestClient = new ManagementTestClient(managementUrl);
-        frontendTestClient = new FrontendTestClient(frontendUrl);
+    public HermesTestClient(int managementPort, int frontendPort) {
+        managementTestClient = new ManagementTestClient(managementPort);
+        frontendTestClient = new FrontendTestClient(frontendPort);
     }
 
     // GROUP
@@ -60,7 +60,7 @@ public class HermesTestClient {
 
     // PUBLISH
     public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body) {
-        return waitUntilPublished(topicQualifiedName, body);
+        return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
     public void updateSubscription(Topic topic, String subscription, PatchData patch) {
@@ -79,12 +79,5 @@ public class HermesTestClient {
                 .until(() -> managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
                         .expectStatus()
                         .is2xxSuccessful());
-    }
-
-    private WebTestClient.ResponseSpec waitUntilPublished(String topicQualifiedName, String body) {
-        PublisherCallable publisherCallable = new PublisherCallable(frontendTestClient, topicQualifiedName, body);
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> publisherCallable.call().expectStatus().isCreated());
-        return publisherCallable.getResponse();
     }
 }

@@ -8,20 +8,20 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.time.Duration;
 
-class HermesConsumersTestApp implements HermesTestApp {
+public class HermesConsumersTestApp implements HermesTestApp {
 
     private final ZookeeperContainer hermesZookeeper;
     private final KafkaContainerCluster kafka;
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesConsumers.class)
             .web(WebApplicationType.NONE);
 
-    HermesConsumersTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
+    public HermesConsumersTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
         this.hermesZookeeper = hermesZookeeper;
         this.kafka = kafka;
     }
 
     @Override
-    public void start() {
+    public HermesTestApp start() {
         app.run(
                 "--consumer.healthCheckPort=0",
                 "--consumer.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
@@ -29,10 +29,16 @@ class HermesConsumersTestApp implements HermesTestApp {
                 "--consumer.backgroundSupervisor.interval=" + Duration.ofMillis(100),
                 "--consumer.workload.rebalanceInterval=" + Duration.ofSeconds(1)
         );
+        return this;
     }
 
     @Override
     public void stop() {
         app.context().close();
+    }
+
+    @Override
+    public int getPort() {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

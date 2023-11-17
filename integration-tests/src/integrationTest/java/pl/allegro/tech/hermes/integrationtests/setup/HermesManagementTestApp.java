@@ -17,20 +17,20 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
-class HermesManagementTestApp implements HermesTestApp {
+public class HermesManagementTestApp implements HermesTestApp {
 
     private int port = -1;
     private final ZookeeperContainer hermesZookeeper;
     private final KafkaContainerCluster kafka;
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesManagement.class);
 
-    HermesManagementTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
+    public HermesManagementTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
         this.hermesZookeeper = hermesZookeeper;
         this.kafka = kafka;
     }
 
     @Override
-    public void start() {
+    public HermesTestApp start() {
         app.run(
                 "--server.port=0",
                 "--storage.clusters[0].datacenter=dc",
@@ -41,7 +41,7 @@ class HermesManagementTestApp implements HermesTestApp {
                 "--kafka.clusters[0].clusterName=primary",
                 "--kafka.clusters[0].bootstrapKafkaServer=" + kafka.getBootstrapServersForExternalClients(),
                 "--kafka.clusters[0].namespace=itTest",
-                "--topic.replicationFactor=1",
+                "--topic.replicationFactor=" + kafka.getAllBrokers().size(),
                 "--topic.uncleanLeaderElectionEnabled=false"
         );
         String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
@@ -50,6 +50,7 @@ class HermesManagementTestApp implements HermesTestApp {
         }
         port = Integer.parseInt(localServerPort);
         waitUntilReady();
+        return this;
     }
 
     private void waitUntilReady() {
@@ -75,7 +76,8 @@ class HermesManagementTestApp implements HermesTestApp {
         }
     }
 
-    int getPort() {
+    @Override
+    public int getPort() {
         if (port == -1) {
             throw new IllegalStateException("hermes-management port hasn't been initialized");
         }
