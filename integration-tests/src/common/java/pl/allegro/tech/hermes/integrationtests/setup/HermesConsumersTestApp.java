@@ -24,6 +24,7 @@ public class HermesConsumersTestApp implements HermesTestApp {
     public HermesTestApp start() {
         app.run(
                 "--consumer.healthCheckPort=0",
+                "--consumer.kafka.namespace=itTest",
                 "--consumer.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
                 "--consumer.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
                 "--consumer.backgroundSupervisor.interval=" + Duration.ofMillis(100),

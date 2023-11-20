@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.slow;
+package pl.allegro.tech.hermes.integrationtests;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,7 +23,7 @@ import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static pl.allegro.tech.hermes.api.Topic.Ack.ALL;
-import static pl.allegro.tech.hermes.integrationtests.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 public class KafkaReadinessCheckTest {

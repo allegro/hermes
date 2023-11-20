@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.time.Duration;
 
-import static pl.allegro.tech.hermes.integrationtests.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
