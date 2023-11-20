@@ -14,7 +14,7 @@ import java.time.Duration;
 
 import static pl.allegro.tech.hermes.integrationtests.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 public class PublishingAndConsumingTest {
 
@@ -28,7 +28,7 @@ public class PublishingAndConsumingTest {
     public void shouldPublishAndConsumeMessage() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
-        Topic topic = hermes.initHelper().createGroupAndTopic(topic("testGroup", "testTopic1").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber.getEndpoint()).build());
         TestMessage message = TestMessage.of("hello", "world");
 
@@ -43,7 +43,7 @@ public class PublishingAndConsumingTest {
     public void shouldConsumeMessagesOnMultipleSubscriptions() {
         // given
         TestMessage message = TestMessage.of("hello", "world");
-        Topic topic = hermes.initHelper().createGroupAndTopic(topic("pl.allegro.testTopic2").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestSubscriber subscriber1 = subscribers.createSubscriber();
         TestSubscriber subscriber2 = subscribers.createSubscriber();
         hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(), "subscription1", subscriber1.getEndpoint()).build());
@@ -61,7 +61,7 @@ public class PublishingAndConsumingTest {
     public void shouldPassSubscriptionFixedHeaders() {
         // given
         TestMessage message = TestMessage.of("hello", "world");
-        Topic topic = hermes.initHelper().createGroupAndTopic(topic("pl.allegro.testTopic3").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestSubscriber subscriber = subscribers.createSubscriber();
         Subscription subscription = SubscriptionBuilder.subscriptionWithRandomName(topic.getName())
                 .withEndpoint(subscriber.getEndpoint())
@@ -82,7 +82,7 @@ public class PublishingAndConsumingTest {
     @Test
     public void shouldRetryWithDelayOnRetryAfterEndpointResponse() {
         // given
-        Topic topic = hermes.initHelper().createGroupAndTopic(topic("pl.allegro.topicTestingRetries").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestMessage message = TestMessage.of("hello", "world");
         int retryAfterSeconds = 1;
         TestSubscriber subscriber = subscribers.createSubscriberWithRetry(message.body(), retryAfterSeconds);

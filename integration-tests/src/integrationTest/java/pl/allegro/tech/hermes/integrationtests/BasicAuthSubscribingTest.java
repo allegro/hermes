@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 public class BasicAuthSubscribingTest {
 
@@ -27,7 +27,7 @@ public class BasicAuthSubscribingTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
 
-        Topic topic = hermes.initHelper().createGroupAndTopic(topic("basicAuthGroup", "topic").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         hermes.initHelper().createSubscription(subscription(
             topic.getQualifiedName(),
             "subscription",
@@ -45,7 +45,7 @@ public class BasicAuthSubscribingTest {
     @Test
     public void shouldUpdateSubscriptionUsernameAndPassword() {
         // given
-        Topic topic = hermes.initHelper().createGroupAndTopic(topic("basicAuthEditGroup", "topic").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         hermes.initHelper().createSubscription(subscription(
             topic.getQualifiedName(), "subscription", "http://user:password@localhost:1234").build());
 
@@ -54,7 +54,7 @@ public class BasicAuthSubscribingTest {
             patchData().set("endpoint", "http://newuser:newpassword@localhost:1234").build());
 
         // then
-        Subscription subscription = hermes.api().getSubscription("basicAuthEditGroup.topic", "subscription");
+        Subscription subscription = hermes.api().getSubscription(topic.getQualifiedName(), "subscription");
         assertThat(subscription.getEndpoint().getUsername()).isEqualTo("newuser");
     }
 }

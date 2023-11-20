@@ -18,10 +18,12 @@ public class HermesInitHelper {
         managementTestClient = new ManagementTestClient(managementUrl);
     }
 
-    public Topic createGroupAndTopic(Topic topic) {
-        // TODO check if group exists, if not then create it. Change name to createTopic() then.
+    public Topic createTopic(Topic topic) {
         createGroup(Group.from(topic.getName().getGroupName()));
-        createTopic(topic);
+        managementTestClient.createTopic(TopicWithSchema.topicWithSchema(topic, null))
+                .expectStatus()
+                .is2xxSuccessful();
+        waitUntilTopicCreated(topic.getQualifiedName());
         return topic;
     }
 
@@ -35,13 +37,6 @@ public class HermesInitHelper {
     private void waitUntilGroupCreated(String groupName) {
         waitAtMost(Duration.TEN_SECONDS)
             .until(() -> managementTestClient.getGroups().contains(groupName));
-    }
-
-    private void createTopic(Topic topic) {
-        managementTestClient.createTopic(TopicWithSchema.topicWithSchema(topic, null))
-            .expectStatus()
-            .is2xxSuccessful();
-        waitUntilTopicCreated(topic.getQualifiedName());
     }
 
     private void waitUntilTopicCreated(String topicQualifiedName) {
