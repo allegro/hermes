@@ -29,8 +29,8 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
             Stream.of(consumers, frontend).parallel().forEach(HermesTestApp::start);
             started = true;
         }
-        hermesTestClient = new HermesTestClient(getManagementUrl(), getFrontendUrl());
-        hermesInitHelper = new HermesInitHelper(getManagementUrl());
+        hermesTestClient = new HermesTestClient(management.getPort(), frontend.getPort());
+        hermesInitHelper = new HermesInitHelper(management.getPort());
     }
 
     @Override
@@ -42,14 +42,6 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     public HermesTestClient api() {
         return hermesTestClient;
-    }
-
-    private String getManagementUrl() {
-        return "http://localhost:" + management.getPort();
-    }
-
-    private String getFrontendUrl() {
-        return "http://localhost:" + frontend.getPort();
     }
 
     public HermesInitHelper initHelper() {

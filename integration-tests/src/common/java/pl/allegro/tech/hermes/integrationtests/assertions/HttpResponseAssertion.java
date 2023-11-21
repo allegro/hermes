@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests;
+package pl.allegro.tech.hermes.integrationtests.assertions;
 
 import jakarta.ws.rs.core.Response;
 import org.assertj.core.api.AbstractAssert;

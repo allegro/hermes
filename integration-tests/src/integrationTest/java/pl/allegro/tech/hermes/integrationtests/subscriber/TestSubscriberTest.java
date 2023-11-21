@@ -12,8 +12,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import java.io.IOException;
 
 import static jakarta.ws.rs.core.Response.Status.OK;
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.integrationtests.HermesAssertions.assertThat;
+import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 
 public class TestSubscriberTest {
 
