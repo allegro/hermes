@@ -10,21 +10,32 @@ describe('InconsistentGroupListing', () => {
     setActivePinia(createPinia());
   });
 
-  it('should render inconsistent groups table', async () => {
-    // given
-    const group = 'pl.allegro.public.group';
+  it.each([
+    [null, 1],
+    ['pl.allegro.public.group', 1],
+    ['PL.ALLEGRO.PUBLIC.GROUP', 1],
+    ['public', 1],
+    ['Public', 1],
+    ['pl.allegro.internal.group', 0],
+    ['FOO', 0],
+  ])(
+    'should render inconsistent groups table with filter applied (case-insensitive, filter: %s)',
+    async (filter: string | null, expectedGroups: number) => {
+      // given
+      const group = 'pl.allegro.public.group';
 
-    // when
-    const { getByText } = render(InconsistentGroupsListing, {
-      props: {
-        filter: null,
-        inconsistentGroups: dummyGroupInconsistency,
-      },
-    });
+      // when
+      const { queryAllByText } = render(InconsistentGroupsListing, {
+        props: {
+          filter,
+          inconsistentGroups: dummyGroupInconsistency,
+        },
+      });
 
-    // then
-    expect(getByText(group)).toBeVisible();
-  });
+      // then
+      expect(queryAllByText(group).length).toBe(expectedGroups);
+    },
+  );
 
   it('should render empty groups table', async () => {
     //given

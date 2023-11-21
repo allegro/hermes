@@ -10,8 +10,6 @@ describe('ConstraintsListing', () => {
     // given
     const props = {
       constraints: dummyConstraints.topicConstraints,
-      upsertConstraint: () => {},
-      deleteConstraint: () => {},
     };
 
     // when
@@ -35,8 +33,6 @@ describe('ConstraintsListing', () => {
     // given
     const props = {
       constraints: dummyConstraints.subscriptionConstraints,
-      upsertConstraint: () => {},
-      deleteConstraint: () => {},
     };
 
     // when
@@ -56,34 +52,33 @@ describe('ConstraintsListing', () => {
     );
   });
 
-  it('should render constraints listing with a filter applied', () => {
-    // given
-    const props = {
-      constraints: dummyConstraints.topicConstraints,
-      filter: 'pl.group.Topic1',
-      upsertConstraint: () => {},
-      deleteConstraint: () => {},
-    };
+  it.each(['pl.group.Topic1', 'pl.group.topic1', 'PL.GROUP.TOPIC1'])(
+    'should render constraints listing with a filter applied (case-insensitive, filter: %s)',
+    (filter: string) => {
+      // given
+      const props = {
+        constraints: dummyConstraints.topicConstraints,
+        filter,
+      };
 
-    // when
-    const constraints = render(ConstraintsListing, { props })
-      .getAllByText(/pl\.group\.Topic1/)
-      .map((constraint) => constraint.closest('tr'));
+      // when
+      const constraints = render(ConstraintsListing, { props })
+        .getAllByText(/pl\.group\.Topic1/)
+        .map((constraint) => constraint.closest('tr'));
 
-    // then
-    expect(constraints).toHaveLength(1);
-    expect(
-      within(constraints[0]!).getByText(/consumersNumberChip 2/),
-    ).toBeVisible();
-  });
+      // then
+      expect(constraints).toHaveLength(1);
+      expect(
+        within(constraints[0]!).getByText(/consumersNumberChip 2/),
+      ).toBeVisible();
+    },
+  );
 
   it('should render constraints listing with a filter applied (no results)', () => {
     // given
     const props = {
       constraints: dummyConstraints.topicConstraints,
       filter: 'pl.group.NoExistingTopic',
-      upsertConstraint: () => {},
-      deleteConstraint: () => {},
     };
 
     // when
@@ -130,8 +125,6 @@ describe('ConstraintsListing', () => {
 
     const props = {
       constraints: dummyConstraints.topicConstraints,
-      upsertConstraint: () => {},
-      deleteConstraint: () => {},
     };
 
     const { queryByText, getByText } = render(ConstraintsListing, { props });
@@ -150,8 +143,6 @@ describe('ConstraintsListing', () => {
 
     const props = {
       constraints: dummyConstraints.subscriptionConstraints,
-      upsertConstraint: () => {},
-      deleteConstraint: () => {},
     };
 
     const { queryByText, getByText } = render(ConstraintsListing, { props });

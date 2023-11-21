@@ -9,8 +9,8 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
 import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
-import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
 import pl.allegro.tech.hermes.frontend.config.HermesServerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.config.SslProperties;
@@ -81,7 +81,7 @@ class HermesServerFactory {
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,
         TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
         RawSchemaClient rawSchemaClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
-        HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
+        HTTPHeadersProperties httpHeadersProperties = new HTTPHeadersProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
         SchemaProperties schemaProperties = new SchemaProperties();
@@ -97,7 +97,7 @@ class HermesServerFactory {
                                 new DirectSchemaVersionsRepository(rawSchemaClient),
                                 new DirectCompiledSchemaRepository<>(rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler())
                         ),
-                        new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter()),
+                        new DefaultHeadersPropagator(httpHeadersProperties),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
                         Clock.systemDefaultZone(),
                         schemaProperties.isIdHeaderEnabled()

@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
@@ -24,13 +25,13 @@ import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import java.io.File;
 import java.time.Clock;
-import java.util.Collections;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.time.Instant.now;
+import static java.util.Collections.emptyMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_BROKER_LIST;
@@ -132,9 +133,9 @@ public class MessageBufferLoadingTest extends IntegrationTest {
         String messageId = MessageIdGenerator.generate();
         long timestamp = now().toEpochMilli();
         byte[] content = wrapper.wrapJson("message".getBytes(defaultCharset()),
-                messageId, timestamp, Collections.emptyMap());
+                messageId, timestamp, emptyMap());
 
-        messageRepository.save(new JsonMessage(messageId, content, timestamp, null), topic);
+        messageRepository.save(new JsonMessage(messageId, content, timestamp, null, emptyMap()), topic);
         messageRepository.close();
 
     }

@@ -68,7 +68,7 @@ public class ChronicleMapMessageRepository implements MessageRepository {
                     new ChronicleMapEntryValue(
                             message.getData(), message.getTimestamp(), topic.getQualifiedName(),
                             message.getPartitionKey(), message.getCompiledSchema().map(v -> v.getVersion().value()).orElse(null),
-                            message.getCompiledSchema().map(v -> v.getId().value()).orElse(null)));
+                            message.getCompiledSchema().map(v -> v.getId().value()).orElse(null), message.getHTTPHeaders()));
         } finally {
             lock.unlock();
         }
@@ -92,7 +92,7 @@ public class ChronicleMapMessageRepository implements MessageRepository {
     private BackupMessage toBackupMessage(String id, ChronicleMapEntryValue entryValue) {
         return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(),
                 entryValue.getQualifiedTopicName(), entryValue.getPartitionKey(), entryValue.getSchemaVersion(),
-                entryValue.getSchemaId());
+                entryValue.getSchemaId(), entryValue.getPropagatedHttpHeaders());
     }
 
     private class LoggingMapSizePreShutdownHook implements Runnable {

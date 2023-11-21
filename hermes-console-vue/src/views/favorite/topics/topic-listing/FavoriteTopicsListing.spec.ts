@@ -27,21 +27,24 @@ describe('FavoriteTopicsListing', () => {
     });
   });
 
-  it('should render listing with a filter applied', () => {
-    // given
-    const props = {
-      topics: dummyTopics,
-      filter: 'fo',
-    };
+  it.each(['fo', 'Fo', 'FO'])(
+    'should render listing with a filter applied (case-insensitive, %s)',
+    (filter: string) => {
+      // given
+      const props = {
+        topics: dummyTopics,
+        filter,
+      };
 
-    // when
-    const topics = render(FavoriteTopicsListing, { props })
-      .getAllByText(/foobarEventV1/)
-      .map((topic) => topic.closest('tr'));
+      // when
+      const topics = render(FavoriteTopicsListing, { props })
+        .getAllByText(/foobarEventV1/)
+        .map((topic) => topic.closest('tr'));
 
-    // then
-    expect(topics).toHaveLength(1);
-  });
+      // then
+      expect(topics).toHaveLength(1);
+    },
+  );
 
   it('should render listing with a filter applied (no results)', () => {
     // given

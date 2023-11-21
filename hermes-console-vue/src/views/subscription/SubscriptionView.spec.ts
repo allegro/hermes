@@ -1,7 +1,9 @@
-import { beforeEach } from 'vitest';
+import { beforeEach, expect } from 'vitest';
 import { computed, ref } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
 import { createTestingPiniaWithState } from '@/dummy/store';
+import { dummyAppConfig } from '@/dummy/app-config';
 import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import { dummyOwner } from '@/dummy/topic';
 import {
@@ -20,6 +22,7 @@ import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import router from '@/router';
 import SubscriptionView from '@/views/subscription/SubscriptionView.vue';
+import TopicView from '@/views/topic/TopicView.vue';
 import type { UseMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 
@@ -92,6 +95,7 @@ describe('SubscriptionView', () => {
     // then
     const cardTitles = [
       'subscription.metricsCard.title',
+      'costsCard.title',
       'subscription.manageMessagesCard.title',
       'subscription.propertiesCard.title',
       'subscription.lastUndeliveredMessage.title',
@@ -314,5 +318,35 @@ describe('SubscriptionView', () => {
     expect(
       getByText('subscription.confirmationDialog.activate.text'),
     ).toBeInTheDocument();
+  });
+
+  it('should not render costs card when it is disabled in app config', () => {
+    // given
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+
+    // when
+    const { queryByText } = render(TopicView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: {
+            appConfig: {
+              ...dummyAppConfig,
+              costs: {
+                enabled: false,
+              },
+            },
+            loading: false,
+            error: {
+              loadConfig: null,
+            },
+          },
+        },
+      }),
+    });
+
+    // then
+    expect(queryByText('costsCard.title')).not.toBeInTheDocument();
   });
 });

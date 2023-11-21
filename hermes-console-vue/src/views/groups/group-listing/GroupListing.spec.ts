@@ -26,23 +26,26 @@ describe('GroupListing', () => {
     });
   });
 
-  it('should render group listing with a filter applied', () => {
-    // given
-    const props = {
-      groups: dummyGroups,
-      filter: 'pl.allegro.offer',
-    };
+  it.each(['pl.allegro.offer', 'PL.ALLEGRO.OFFER', 'Pl.Allegro.Offer'])(
+    'should render group listing with a filter applied (case-insensitive, filter: %s)',
+    (filter: string) => {
+      // given
+      const props = {
+        groups: dummyGroups,
+        filter,
+      };
 
-    // when
-    const groups = render(GroupListing, { props })
-      .getAllByText(/pl\.allegro\.offer/)
-      .map((group) => group.closest('tr'));
+      // when
+      const groups = render(GroupListing, { props })
+        .getAllByText(/pl\.allegro\.offer/)
+        .map((group) => group.closest('tr'));
 
-    // then
-    expect(groups).toHaveLength(2);
-    expect(within(groups[0]!).getByText(/topicsChip 1/)).toBeInTheDocument();
-    expect(within(groups[1]!).getByText(/topicsChip 2/)).toBeInTheDocument();
-  });
+      // then
+      expect(groups).toHaveLength(2);
+      expect(within(groups[0]!).getByText(/topicsChip 1/)).toBeInTheDocument();
+      expect(within(groups[1]!).getByText(/topicsChip 2/)).toBeInTheDocument();
+    },
+  );
 
   it('should render group listing with a filter applied (no results)', () => {
     // given
