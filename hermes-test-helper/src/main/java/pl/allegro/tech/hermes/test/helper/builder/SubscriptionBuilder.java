@@ -22,8 +22,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SubscriptionBuilder {
+
+    private static final AtomicLong sequence = new AtomicLong();
 
     private final TopicName topicName;
 
@@ -75,6 +78,10 @@ public class SubscriptionBuilder {
     private SubscriptionBuilder(TopicName topicName, String subscriptionName) {
         this.topicName = topicName;
         this.name = subscriptionName;
+    }
+
+    public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName, String endpoint) {
+        return new SubscriptionBuilder(topicName, "subscription" + sequence.incrementAndGet(), EndpointAddress.of(endpoint));
     }
 
     public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName) {

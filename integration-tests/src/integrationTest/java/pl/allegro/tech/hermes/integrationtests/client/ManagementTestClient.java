@@ -6,12 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.List;
 
 public class ManagementTestClient {
@@ -24,6 +26,14 @@ public class ManagementTestClient {
     private static final String SUBSCRIPTION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}";
 
     private static final String GROUPS_PATH = "/groups";
+
+    private static final String RETRANSMISSION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}/retransmission";
+
+    private static final String BLACKLIST_TOPICS_PATH = "/blacklist/topics";
+
+    private static final String BLACKLIST_TOPIC_PATH = "/blacklist/topics/{topicName}";
+
+    private static final String LATEST_UNDELIVERED_MESSAGE = "/topics/{topicName}/subscriptions/{subscriptionName}/undelivered";
 
     private final WebTestClient webTestClient;
 
@@ -101,6 +111,16 @@ public class ManagementTestClient {
                 .exchange();
     }
 
+    WebTestClient.ResponseSpec retransmit(String topicName, String subscriptionName, OffsetRetransmissionDate retransmissionDate) {
+        return webTestClient.mutate().responseTimeout(Duration.ofSeconds(29)).build()
+                .put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(RETRANSMISSION_PATH)
+                        .build(topicName, subscriptionName))
+                .body(Mono.just(retransmissionDate), OffsetRetransmissionDate.class)
+                .exchange();
+    }
+
     private WebTestClient.ResponseSpec sendCreateSubscriptionRequest(Subscription subscription) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(managementContainerUrl)
@@ -125,4 +145,30 @@ public class ManagementTestClient {
         }
     }
 
+    public WebTestClient.ResponseSpec blacklistTopic(String topicQualifiedName) {
+        return webTestClient.post().uri(BLACKLIST_TOPICS_PATH)
+                .body(Mono.just(List.of(topicQualifiedName)), List.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec unblacklistTopic(String topicQualifiedName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(BLACKLIST_TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec isTopicBlacklisted(String topicQualifiedName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(BLACKLIST_TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getLatestUndeliveredMessage(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(LATEST_UNDELIVERED_MESSAGE)
+                        .build(topicQualifiedName, subscriptionName))
+                .exchange();
+    }
 }

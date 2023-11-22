@@ -29,7 +29,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
             Stream.of(consumers, frontend).parallel().forEach(HermesTestApp::start);
             started = true;
         }
-        hermesTestClient = new HermesTestClient(getManagementUrl(), getFrontendUrl());
+        hermesTestClient = new HermesTestClient(getManagementUrl(), getFrontendUrl(), getConsumerUrl());
         hermesInitHelper = new HermesInitHelper(getManagementUrl());
     }
 
@@ -52,7 +52,20 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         return "http://localhost:" + frontend.getPort();
     }
 
+    private String getConsumerUrl() {
+        return "http://localhost:" + consumers.getPort();
+    }
+
+
     public HermesInitHelper initHelper() {
         return hermesInitHelper;
+    }
+
+    public void cutOffConnectionsBetweenBrokersAndClients() {
+        kafka.cutOffConnectionsBetweenBrokersAndClients();
+    }
+
+    public void restoreConnectionsBetweenBrokersAndClients() {
+        kafka.restoreConnectionsBetweenBrokersAndClients();
     }
 }

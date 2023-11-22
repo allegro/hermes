@@ -2,11 +2,16 @@ package pl.allegro.tech.hermes.integrationtests.client;
 
 import com.jayway.awaitility.Duration;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
+import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
+
+import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 
@@ -17,10 +22,12 @@ import static com.jayway.awaitility.Awaitility.waitAtMost;
 public class HermesTestClient {
     private final ManagementTestClient managementTestClient;
     private final FrontendTestClient frontendTestClient;
+    private final ConsumerTestClient consumerTestClient;
 
-    public HermesTestClient(String managementUrl, String frontendUrl) {
-        managementTestClient = new ManagementTestClient(managementUrl);
-        frontendTestClient = new FrontendTestClient(frontendUrl);
+    public HermesTestClient(String managementUrl, String frontendUrl, String consumerUrl) {
+        this.managementTestClient = new ManagementTestClient(managementUrl);
+        this.frontendTestClient = new FrontendTestClient(frontendUrl);
+        this.consumerTestClient = new ConsumerTestClient(consumerUrl);
     }
 
     // GROUP
@@ -69,10 +76,9 @@ public class HermesTestClient {
             .is2xxSuccessful();
     }
 
-    // be aware that this method is not waiting for cache refresh in frontends
-//    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
-//        return frontendTestClient.publish(topicQualifiedName, body);
-//    }
+    public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
+        return frontendTestClient.publish(topicQualifiedName, body);
+    }
 
     private void waitUntilSubscriptionCreated(String topicQualifiedName, String subscriptionName) {
         waitAtMost(Duration.TEN_SECONDS)
@@ -84,7 +90,49 @@ public class HermesTestClient {
     private WebTestClient.ResponseSpec waitUntilPublished(String topicQualifiedName, String body) {
         PublisherCallable publisherCallable = new PublisherCallable(frontendTestClient, topicQualifiedName, body);
         waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> publisherCallable.call().expectStatus().isCreated());
+                .until(() -> publisherCallable.call().expectStatus().is2xxSuccessful());
         return publisherCallable.getResponse();
+    }
+
+    public void blacklistTopic(String topicQualifiedName) {
+        managementTestClient.blacklistTopic(topicQualifiedName).expectStatus().is2xxSuccessful();
+    }
+
+    public WebTestClient.ResponseSpec blacklistTopicResponse(String topicQualifiedName) {
+        return managementTestClient.blacklistTopic(topicQualifiedName);
+    }
+
+    public void unblacklistTopic(String topicQualifiedName) {
+        managementTestClient.unblacklistTopic(topicQualifiedName).expectStatus().is2xxSuccessful();
+    }
+
+    public BlacklistStatus isTopicBlacklisted(String topicQualifiedName) {
+        return managementTestClient.isTopicBlacklisted(topicQualifiedName)
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(BlacklistStatus.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    public WebTestClient.ResponseSpec unblacklistTopicResponse(String topicQualifiedName) {
+        return managementTestClient.unblacklistTopic(topicQualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec getLatestUndeliveredMessage(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.getLatestUndeliveredMessage(topicQualifiedName, subscriptionName);
+    }
+
+    public List<RunningSubscriptionStatus> getRunningSubscriptionsStatus() {
+        return consumerTestClient.getRunningSubscriptionsStatus()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(RunningSubscriptionStatus.class)
+                .returnResult()
+                .getResponseBody();
+    }
+
+    public WebTestClient.ResponseSpec retransmit(String qualifiedName, String subscriptionName, OffsetRetransmissionDate retransmissionDate) {
+        return managementTestClient.retransmit(qualifiedName, subscriptionName, retransmissionDate);
     }
 }
