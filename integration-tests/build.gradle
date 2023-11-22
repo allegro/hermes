@@ -3,7 +3,6 @@ repositories {
     maven { url 'https://repository.jboss.org/nexus/content/groups/public' }
 }
 
-
 dependencies {
     testImplementation project(':hermes-common')
     testImplementation project(':hermes-test-helper')
@@ -19,50 +18,60 @@ dependencies {
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
     testImplementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.0'
 
-
-    // TODO: check how to setup junit properly
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.1'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.9.1'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.1'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit_jupiter
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versions.junit_jupiter
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: versions.junit_jupiter
 }
 
-def integrationTest = sourceSets.create('integrationTest')
-
-configurations[integrationTest.implementationConfigurationName].extendsFrom(configurations.testImplementation)
-configurations[integrationTest.runtimeOnlyConfigurationName].extendsFrom(configurations.testRuntimeOnly)
-
-tasks.named('test') {
-    useJUnitPlatform()
+def common = sourceSets.create('common')
+configurations.named(common.implementationConfigurationName).configure {
+    extendsFrom(configurations.testImplementation)
+}
+configurations.named(common.runtimeOnlyConfigurationName).configure {
+    extendsFrom(configurations.testRuntimeOnly)
 }
 
-tasks.register('integrationTest', Test) {
-    logging.captureStandardOutput LogLevel.INFO
+registerIntegrationTestTask('integrationTest', common)
+registerIntegrationTestTask('slowIntegrationTest', common)
 
-    def args = []
-    if (project.hasProperty('tests.timeout.multiplier')) {
-        args += "-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"
-    }
+def registerIntegrationTestTask(String name, SourceSet common) {
+    def integrationTest = sourceSets.create(name)
 
-    if (project.hasProperty("confluentImagesTag")) {
-        args += "-DconfluentImagesTag=${project.property("confluentImagesTag")}"
-    }
+    integrationTest.compileClasspath += common.output
+    integrationTest.runtimeClasspath += common.output
 
-    args += chronicleMapJvmArgs
+    configurations[integrationTest.implementationConfigurationName].extendsFrom(configurations.testImplementation)
+    configurations[integrationTest.runtimeOnlyConfigurationName].extendsFrom(configurations.testRuntimeOnly)
 
-    jvmArgs = args
-    minHeapSize "2000m"
-    maxHeapSize "3500m"
+    tasks.register(name, Test) {
+        logging.captureStandardOutput LogLevel.INFO
 
-    group = 'Verification'
-    description = 'Runs the integration tests.'
-    useJUnitPlatform()
+        def args = []
+        if (project.hasProperty('tests.timeout.multiplier')) {
+            args += "-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"
+        }
 
-    testClassesDirs = integrationTest.output.classesDirs
-    classpath = configurations[integrationTest.runtimeClasspathConfigurationName] + integrationTest.output
+        if (project.hasProperty("confluentImagesTag")) {
+            args += "-DconfluentImagesTag=${project.property("confluentImagesTag")}"
+        }
 
-    testLogging {
-        exceptionFormat = 'full'
-        events "passed", "skipped", "failed", "standardError", "standardOut"
+        args += chronicleMapJvmArgs
+
+        jvmArgs = args
+        minHeapSize "2000m"
+        maxHeapSize "3500m"
+
+        group = 'Verification'
+        description = 'Runs the integration tests.'
+        useJUnitPlatform()
+
+        testClassesDirs = integrationTest.output.classesDirs
+        classpath = configurations[integrationTest.runtimeClasspathConfigurationName] + integrationTest.output + common.output
+
+        testLogging {
+            exceptionFormat = 'full'
+            events "passed", "skipped", "failed", "standardError", "standardOut"
+        }
     }
 }

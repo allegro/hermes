@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests;
+package pl.allegro.tech.hermes.integrationtests.assertions;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import org.assertj.core.api.AbstractAssert;

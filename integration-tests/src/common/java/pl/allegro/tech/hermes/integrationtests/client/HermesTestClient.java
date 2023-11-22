@@ -24,10 +24,10 @@ public class HermesTestClient {
     private final FrontendTestClient frontendTestClient;
     private final ConsumerTestClient consumerTestClient;
 
-    public HermesTestClient(String managementUrl, String frontendUrl, String consumerUrl) {
-        this.managementTestClient = new ManagementTestClient(managementUrl);
-        this.frontendTestClient = new FrontendTestClient(frontendUrl);
-        this.consumerTestClient = new ConsumerTestClient(consumerUrl);
+    public HermesTestClient(int managementPort, int frontendPort, int consumerPort) {
+        this.managementTestClient = new ManagementTestClient(managementPort);
+        this.frontendTestClient = new FrontendTestClient(frontendPort);
+        this.consumerTestClient = new ConsumerTestClient(consumerPort);
     }
 
     // GROUP
@@ -67,7 +67,7 @@ public class HermesTestClient {
 
     // PUBLISH
     public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body) {
-        return waitUntilPublished(topicQualifiedName, body);
+        return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
     public void updateSubscription(Topic topic, String subscription, PatchData patch) {

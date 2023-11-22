@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.time.Duration;
 
-class HermesConsumersTestApp implements HermesTestApp {
+public class HermesConsumersTestApp implements HermesTestApp {
 
     private final ZookeeperContainer hermesZookeeper;
     private final KafkaContainerCluster kafka;
@@ -19,15 +19,16 @@ class HermesConsumersTestApp implements HermesTestApp {
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesConsumers.class)
             .web(WebApplicationType.NONE);
 
-    HermesConsumersTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
+    public HermesConsumersTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
         this.hermesZookeeper = hermesZookeeper;
         this.kafka = kafka;
     }
 
     @Override
-    public void start() {
+    public HermesTestApp start() {
         app.run(
                 "--consumer.healthCheckPort=0",
+                "--consumer.kafka.namespace=itTest",
                 "--consumer.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
                 "--consumer.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
                 "--consumer.backgroundSupervisor.interval=" + Duration.ofMillis(100),
@@ -35,6 +36,7 @@ class HermesConsumersTestApp implements HermesTestApp {
                 "--consumer.commit.offset.period=" + Duration.ofSeconds(1)
         );
         port = app.context().getBean(ConsumerHttpServer.class).getPort();
+        return this;
     }
 
     @Override
@@ -42,7 +44,8 @@ class HermesConsumersTestApp implements HermesTestApp {
         app.context().close();
     }
 
-    int getPort() {
+    @Override
+    public int getPort() {
         if (port == -1) {
             throw new IllegalStateException("hermes-consumers port hasn't been initialized");
         }

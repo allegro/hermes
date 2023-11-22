@@ -41,8 +41,8 @@ public class ManagementTestClient {
 
     private final ObjectMapper objectMapper;
 
-    public ManagementTestClient(String managementContainerUrl) {
-        this.managementContainerUrl = managementContainerUrl;
+    public ManagementTestClient(int managementPort) {
+        this.managementContainerUrl = "http://localhost:" + managementPort;
         this.webTestClient = WebTestClient
                 .bindToServer()
                 .baseUrl(managementContainerUrl)
