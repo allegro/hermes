@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 
 public class OfflineRetransmissionRequest {
 
-    private final static String ALTERNATE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm'Z'";
+    private static final String ALTERNATE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm'Z'";
 
     @NotEmpty
     private final String sourceTopic;
