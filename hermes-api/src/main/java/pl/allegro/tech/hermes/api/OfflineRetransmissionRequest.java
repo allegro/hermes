@@ -12,6 +12,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class OfflineRetransmissionRequest {
+
+    private final static String ALTERNATE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm'Z'";
+
     @NotEmpty
     private final String sourceTopic;
     @NotEmpty
@@ -20,8 +23,6 @@ public class OfflineRetransmissionRequest {
     private Instant startTimestamp;
     @NotNull
     private Instant endTimestamp;
-
-    private final static String ALTERNATE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm'Z'";
 
     @JsonCreator
     public OfflineRetransmissionRequest(
