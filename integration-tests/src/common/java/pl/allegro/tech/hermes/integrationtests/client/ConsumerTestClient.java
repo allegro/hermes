@@ -10,12 +10,12 @@ class ConsumerTestClient {
     private final WebTestClient webTestClient;
     private final String consumerContainerUrl;
 
-    public ConsumerTestClient(String consumerContainerUrl) {
+    public ConsumerTestClient(int consumerPort) {
+        this.consumerContainerUrl = "http://localhost:" + consumerPort;
         this.webTestClient = WebTestClient
                 .bindToServer()
                 .baseUrl(consumerContainerUrl)
                 .build();
-        this.consumerContainerUrl = consumerContainerUrl;
     }
 
     public WebTestClient.ResponseSpec getRunningSubscriptionsStatus() {

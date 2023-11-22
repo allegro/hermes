@@ -33,7 +33,7 @@ public class FrontendTestClient {
         return response.get();
     }
 
-    private WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
+    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(TOPIC_PATH)

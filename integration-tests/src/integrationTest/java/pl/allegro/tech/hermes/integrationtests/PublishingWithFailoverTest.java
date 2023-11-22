@@ -34,7 +34,7 @@ public class PublishingWithFailoverTest {
 
         //when
         hermes.cutOffConnectionsBetweenBrokersAndClients();
-        WebTestClient.ResponseSpec response = hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
+        WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message.body());
         hermes.restoreConnectionsBetweenBrokersAndClients();
 
         //then

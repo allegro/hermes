@@ -15,10 +15,6 @@ import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 
-
-// TODO remove hermesEndpoint mechanism and dependency to the hermes-api.endpoint module, and pl.allegro.tech.hermes.test.helper.client.Hermes
-// TODO use WebTestClient instead, which will be an abstraction for all hermes modules in HermesTestClient.class - https://docs.spring.io/spring-framework/reference/testing/webtestclient.html
-// TODO frontend should wait until topic/group created
 public class HermesTestClient {
     private final ManagementTestClient managementTestClient;
     private final FrontendTestClient frontendTestClient;
@@ -85,13 +81,6 @@ public class HermesTestClient {
                 .until(() -> managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
                         .expectStatus()
                         .is2xxSuccessful());
-    }
-
-    private WebTestClient.ResponseSpec waitUntilPublished(String topicQualifiedName, String body) {
-        PublisherCallable publisherCallable = new PublisherCallable(frontendTestClient, topicQualifiedName, body);
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> publisherCallable.call().expectStatus().is2xxSuccessful());
-        return publisherCallable.getResponse();
     }
 
     public void blacklistTopic(String topicQualifiedName) {
