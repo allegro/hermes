@@ -15,14 +15,12 @@ dashboard.docs    | link to documentation, available on Console home page
 
 ## Metric Store integration
 
-Hermes Console can be integrated with Metric Store. This means, that metrics shown in Console can link to actual graphs
-plotted by Metric Store. At the moment only Graphite is supported.
+Hermes console could have a button on the topics and subscriptions view that takes you to a dashboard with metrics.
+In order to make it work you have to provide an implementation of `pl.allegro.tech.hermes.management.domain.MetricsDashboardUrlService`.
 
-Option                  | Description
------------------------ | ---------------------------------------------------------------------------
-metrics.type            | type of metrics storage to link to (currently only `graphite` is supported)
-metrics.graphite.url    | URL to graphite
-metrics.graphite.prefix | prefix to graphite metrics
+ Option                              | Description                                                                      
+-------------------------------------|--------------------------------------------------------------------------------------
+ metrics.fetchingDashboardUrlEnabled | enable fetching dashboard url from hermes-management and the show referring UI button 
 
 ## Authorization
 

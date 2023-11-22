@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class OfflineRetransmissionRequest {
     @NotEmpty
@@ -15,20 +17,40 @@ public class OfflineRetransmissionRequest {
     @NotEmpty
     private final String targetTopic;
     @NotNull
-    private final Instant startTimestamp;
+    private Instant startTimestamp;
     @NotNull
-    private final Instant endTimestamp;
+    private Instant endTimestamp;
+
+    private final static String ALTERNATE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm'Z'";
 
     @JsonCreator
     public OfflineRetransmissionRequest(
             @JsonProperty("sourceTopic") String sourceTopic,
             @JsonProperty("targetTopic") String targetTopic,
-            @JsonProperty("startTimestamp") Instant startTimestamp,
-            @JsonProperty("endTimestamp") Instant endTimestamp) {
+            @JsonProperty("startTimestamp") String startTimestamp,
+            @JsonProperty("endTimestamp") String endTimestamp) {
         this.sourceTopic = sourceTopic;
         this.targetTopic = targetTopic;
-        this.startTimestamp = startTimestamp;
-        this.endTimestamp = endTimestamp;
+        initializeTimestamps(startTimestamp, endTimestamp);
+    }
+
+    private void initializeTimestamps(String startTimestamp, String endTimestamp) {
+        if (startTimestamp == null || endTimestamp == null) {
+            this.startTimestamp = null;
+            this.endTimestamp = null;
+            return;
+        }
+        try {
+            this.startTimestamp = Instant.parse(startTimestamp);
+            this.endTimestamp = Instant.parse(endTimestamp);
+        } catch (Exception e) {
+            this.startTimestamp = Instant.from(DateTimeFormatter.ofPattern(ALTERNATE_DATE_FORMAT)
+                    .withZone(ZoneId.of("UTC"))
+                    .parse(startTimestamp));
+            this.endTimestamp = Instant.from(DateTimeFormatter.ofPattern(ALTERNATE_DATE_FORMAT)
+                    .withZone(ZoneId.of("UTC"))
+                    .parse(endTimestamp));
+        }
     }
 
     public String getSourceTopic() {
