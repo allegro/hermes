@@ -36,7 +36,7 @@
         key
       ]!!;
     const value =
-      data?.options == undefined || data?.options == null
+      data?.options == undefined
         ? props.subscription.endpointAddressResolverMetadata[key]
         : data.options[props.subscription.endpointAddressResolverMetadata[key]];
     return {

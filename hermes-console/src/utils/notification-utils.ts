@@ -6,7 +6,7 @@ export function dispatchErrorNotification(
   notificationStore: any,
   title: string,
 ): void {
-  let text = '';
+  let text: string;
   if (axios.isAxiosError(err)) {
     const e = err as AxiosError;
     // @ts-ignore
