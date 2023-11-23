@@ -20,7 +20,7 @@ In order to make it work you have to provide an implementation of `pl.allegro.te
 
  Option                              | Description                                                                      
 -------------------------------------|--------------------------------------------------------------------------------------
- metrics.fetchingDashboardUrlEnabled | enable fetching dashboard url from hermes-management and the show referring UI button 
+ metrics.fetchingDashboardUrlEnabled | enable fetching dashboard url from hermes-management and show the referring UI button 
 
 ## Authorization
 
