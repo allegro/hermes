@@ -35,6 +35,8 @@ public class ManagementTestClient {
 
     private static final String LATEST_UNDELIVERED_MESSAGE = "/topics/{topicName}/subscriptions/{subscriptionName}/undelivered";
 
+    private static final String TOPIC_PREVIEW = "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
+
     private final WebTestClient webTestClient;
 
     private final String managementContainerUrl;
@@ -169,6 +171,13 @@ public class ManagementTestClient {
         return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
                         .path(LATEST_UNDELIVERED_MESSAGE)
                         .build(topicQualifiedName, subscriptionName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(TOPIC_PREVIEW)
+                        .build(qualifiedTopicName, primaryKafkaClusterName, partition, offset))
                 .exchange();
     }
 }

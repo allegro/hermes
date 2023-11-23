@@ -27,6 +27,15 @@ public class HermesInitHelper {
         return topic;
     }
 
+    public Topic createTopicWithSchema(TopicWithSchema topic) {
+        createGroup(Group.from(topic.getName().getGroupName()));
+        managementTestClient.createTopic(topic)
+                .expectStatus()
+                .is2xxSuccessful();
+        waitUntilTopicCreated(topic.getQualifiedName());
+        return topic;
+    }
+
     private void createGroup(Group group) {
         managementTestClient.createGroup(group)
             .expectStatus()

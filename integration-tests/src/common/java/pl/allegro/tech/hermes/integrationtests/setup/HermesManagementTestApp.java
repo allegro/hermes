@@ -42,6 +42,7 @@ public class HermesManagementTestApp implements HermesTestApp {
                 "--kafka.clusters[0].bootstrapKafkaServer=" + kafka.getBootstrapServersForExternalClients(),
                 "--kafka.clusters[0].namespace=itTest",
                 "--topic.replicationFactor=" + kafka.getAllBrokers().size(),
+                "--topic.partitions=" + 2,
                 "--topic.uncleanLeaderElectionEnabled=false"
         );
         String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");

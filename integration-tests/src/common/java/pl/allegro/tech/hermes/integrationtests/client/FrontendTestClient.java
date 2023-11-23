@@ -33,12 +33,28 @@ public class FrontendTestClient {
         return response.get();
     }
 
+    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, byte[] body) {
+        AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> response.set(publish(topicQualifiedName, body).expectStatus().isCreated()));
+        return response.get();
+    }
+
     WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(TOPIC_PATH)
                         .build(topicQualifiedName))
                 .body(Mono.just(body), String.class)
+                .exchange();
+    }
+
+    WebTestClient.ResponseSpec publish(String topicQualifiedName, byte[] body) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(frontendContainerUrl)
+                        .path(TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .body(Mono.just(body), byte[].class)
                 .exchange();
     }
 

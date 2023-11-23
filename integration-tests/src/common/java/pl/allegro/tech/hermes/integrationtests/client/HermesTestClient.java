@@ -66,6 +66,10 @@ public class HermesTestClient {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
+    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, byte[] body) {
+        return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
+    }
+
     public void updateSubscription(Topic topic, String subscription, PatchData patch) {
         managementTestClient.updateSubscription(topic, subscription, patch)
             .expectStatus()
@@ -123,5 +127,9 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec retransmit(String qualifiedName, String subscriptionName, OffsetRetransmissionDate retransmissionDate) {
         return managementTestClient.retransmit(qualifiedName, subscriptionName, retransmissionDate);
+    }
+
+    public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {
+        return managementTestClient.getPreview(qualifiedTopicName, primaryKafkaClusterName, partition, offset);
     }
 }
