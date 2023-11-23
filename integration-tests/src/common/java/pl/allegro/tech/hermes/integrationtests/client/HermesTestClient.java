@@ -125,8 +125,8 @@ public class HermesTestClient {
                 .getResponseBody();
     }
 
-    public WebTestClient.ResponseSpec retransmit(String qualifiedName, String subscriptionName, OffsetRetransmissionDate retransmissionDate) {
-        return managementTestClient.retransmit(qualifiedName, subscriptionName, retransmissionDate);
+    public WebTestClient.ResponseSpec retransmit(String qualifiedName, String subscriptionName, OffsetRetransmissionDate retransmissionDate, boolean dryRun) {
+        return managementTestClient.retransmit(qualifiedName, subscriptionName, retransmissionDate, dryRun);
     }
 
     public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {

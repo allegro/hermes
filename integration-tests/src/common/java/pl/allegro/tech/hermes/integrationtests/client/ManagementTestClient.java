@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.List;
 
 public class ManagementTestClient {
@@ -80,11 +79,11 @@ public class ManagementTestClient {
 
     public WebTestClient.ResponseSpec updateSubscription(Topic topic, String subscription, PatchData patch) {
         return webTestClient.put().uri(UriBuilder
-                .fromUri(managementContainerUrl)
-                .path(SUBSCRIPTION_PATH)
-                .build(topic.getQualifiedName(), subscription))
-            .body(Mono.just(patch), PatchData.class)
-            .exchange();
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTION_PATH)
+                        .build(topic.getQualifiedName(), subscription))
+                .body(Mono.just(patch), PatchData.class)
+                .exchange();
     }
 
     public WebTestClient.ResponseSpec getSubscription(String topicQualifiedName, String subscriptionName) {
@@ -113,11 +112,11 @@ public class ManagementTestClient {
                 .exchange();
     }
 
-    WebTestClient.ResponseSpec retransmit(String topicName, String subscriptionName, OffsetRetransmissionDate retransmissionDate) {
-        return webTestClient.mutate().responseTimeout(Duration.ofSeconds(29)).build()
-                .put().uri(UriBuilder
+    WebTestClient.ResponseSpec retransmit(String topicName, String subscriptionName, OffsetRetransmissionDate retransmissionDate, boolean dryRun) {
+        return webTestClient.put().uri(UriBuilder
                         .fromUri(managementContainerUrl)
                         .path(RETRANSMISSION_PATH)
+                        .queryParam("dryRun", dryRun)
                         .build(topicName, subscriptionName))
                 .body(Mono.just(retransmissionDate), OffsetRetransmissionDate.class)
                 .exchange();
@@ -178,6 +177,15 @@ public class ManagementTestClient {
         return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
                         .path(TOPIC_PREVIEW)
                         .build(qualifiedTopicName, primaryKafkaClusterName, partition, offset))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec updateTopic(String qualifiedTopicName, PatchData patch) {
+        return webTestClient.put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPIC_PATH)
+                        .build(qualifiedTopicName))
+                .body(Mono.just(patch), PatchData.class)
                 .exchange();
     }
 }

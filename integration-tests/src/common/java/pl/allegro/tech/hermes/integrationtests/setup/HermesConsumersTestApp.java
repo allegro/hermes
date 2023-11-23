@@ -30,6 +30,7 @@ public class HermesConsumersTestApp implements HermesTestApp {
                 "--consumer.healthCheckPort=0",
                 "--consumer.kafka.namespace=itTest",
                 "--consumer.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
+                "--consumer.kafka.clusters.[0].clusterName=" + "primary-dc",
                 "--consumer.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
                 "--consumer.backgroundSupervisor.interval=" + Duration.ofMillis(100),
                 "--consumer.workload.rebalanceInterval=" + Duration.ofSeconds(1),
