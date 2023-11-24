@@ -168,9 +168,9 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     private void addKafkaAuthorizationParameters(Properties props) {
-        if (kafkaParameters.isEnabled()) {
-            props.put(SASL_MECHANISM, kafkaParameters.getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getProtocol());
+        if (kafkaParameters.isAuthenticationEnabled()) {
+            props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
     }

@@ -65,9 +65,9 @@ public class KafkaMessageProducerFactory {
         props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaProducerParameters.getMetricsSampleWindow().toMillis());
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
 
-        if (kafkaParameters.isEnabled()) {
-            props.put(SASL_MECHANISM, kafkaParameters.getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getProtocol());
+        if (kafkaParameters.isAuthenticationEnabled()) {
+            props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
 

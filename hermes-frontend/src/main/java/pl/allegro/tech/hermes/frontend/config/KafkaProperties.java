@@ -15,10 +15,6 @@ public class KafkaProperties implements KafkaParameters {
 
     private Duration adminRequestTimeout = Duration.ofMinutes(5);
 
-    public KafkaAuthenticationProperties getAuthentication() {
-        return authentication;
-    }
-
     @Deprecated
     public void setAuthorization(KafkaAuthenticationProperties authorization) {
         this.authentication = authorization;
@@ -37,28 +33,18 @@ public class KafkaProperties implements KafkaParameters {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isAuthenticationEnabled() {
         return authentication.isEnabled();
     }
 
     @Override
-    public String getMechanism() {
+    public String getAuthenticationMechanism() {
         return authentication.getMechanism();
     }
 
     @Override
-    public String getProtocol() {
+    public String getAuthenticationProtocol() {
         return authentication.getProtocol();
-    }
-
-    @Override
-    public String getUsername() {
-        return authentication.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return authentication.getPassword();
     }
 
     public String getBrokerList() {

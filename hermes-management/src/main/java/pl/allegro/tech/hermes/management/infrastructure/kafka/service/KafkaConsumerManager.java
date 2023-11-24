@@ -22,12 +22,12 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 public class KafkaConsumerManager {
 
     private final KafkaNamesMapper kafkaNamesMapper;
-    private final String bootstrapKafkaServer;
+    private final String brokerList;
     private final KafkaProperties kafkaProperties;
 
-    public KafkaConsumerManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper, String bootstrapKafkaServer) {
+    public KafkaConsumerManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper, String brokerList) {
         this.kafkaNamesMapper = kafkaNamesMapper;
-        this.bootstrapKafkaServer = bootstrapKafkaServer;
+        this.brokerList = brokerList;
         this.kafkaProperties = kafkaProperties;
     }
 
@@ -38,7 +38,7 @@ public class KafkaConsumerManager {
 
     private Properties properties(ConsumerGroupId groupId) {
         Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapKafkaServer);
+        props.put(BOOTSTRAP_SERVERS_CONFIG, brokerList);
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, 5000);

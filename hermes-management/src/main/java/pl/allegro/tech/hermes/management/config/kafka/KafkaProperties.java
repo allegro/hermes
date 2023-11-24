@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
 import pl.allegro.tech.hermes.common.config.KafkaAuthenticationProperties;
+import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
-public class KafkaProperties {
+public class KafkaProperties implements KafkaParameters {
 
     private String datacenter = "datacenter";
 
     private String clusterName = "primary";
 
-    private String bootstrapKafkaServer = "localhost:9093";
+    private String brokerList = "localhost:9093";
 
     private int kafkaServerRequestTimeoutMillis = 3000;
 
@@ -31,6 +32,32 @@ public class KafkaProperties {
     private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
     private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
+
+    @Override
+    public boolean isAuthenticationEnabled() {
+        return authentication.isEnabled();
+    }
+
+    @Override
+    public String getAuthenticationMechanism() {
+        return authentication.getMechanism();
+    }
+
+    @Override
+    public String getAuthenticationProtocol() {
+        return authentication.getProtocol();
+    }
+
+    @Override
+    public String getBrokerList() {
+        return brokerList;
+    }
+
+    @Override
+    public String getJaasConfig() {
+        authentication.getJaasConfig();
+        return null;
+    }
 
     public static final class KafkaConsumer {
 
@@ -208,12 +235,13 @@ public class KafkaProperties {
         this.maxInflight = maxInflight;
     }
 
-    public String getBootstrapKafkaServer() {
-        return bootstrapKafkaServer;
+    @Deprecated
+    public void setBootstrapKafkaServer(String bootstrapKafkaServer) {
+        this.brokerList = bootstrapKafkaServer;
     }
 
-    public void setBootstrapKafkaServer(String bootstrapKafkaServer) {
-        this.bootstrapKafkaServer = bootstrapKafkaServer;
+    public void setBrokerList(String brokerList) {
+        this.brokerList = brokerList;
     }
 
     public int getKafkaServerRequestTimeoutMillis() {

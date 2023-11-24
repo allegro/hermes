@@ -43,28 +43,18 @@ public class KafkaProperties implements KafkaParameters {
     }
 
     @Override
-    public boolean isEnabled() {
+    public boolean isAuthenticationEnabled() {
         return authentication.isEnabled();
     }
 
     @Override
-    public String getMechanism() {
+    public String getAuthenticationMechanism() {
         return authentication.getMechanism();
     }
 
     @Override
-    public String getProtocol() {
+    public String getAuthenticationProtocol() {
         return authentication.getProtocol();
-    }
-
-    @Override
-    public String getUsername() {
-        return authentication.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return authentication.getPassword();
     }
 
     @Override
