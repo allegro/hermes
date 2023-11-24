@@ -9,7 +9,7 @@ public class KafkaProperties implements KafkaParameters {
 
     private String clusterName = "primary";
 
-    private String brokerList = "localhost:9093";
+    private String brokerList = "localhost:9092";
 
     private int kafkaServerRequestTimeoutMillis = 3000;
 
