@@ -41,6 +41,7 @@ public class HermesManagementTestApp implements HermesTestApp {
     @Override
     public HermesTestApp start() {
         List<String> args = new ArrayList<>();
+        args.add("--spring.profiles.active=integration");
         args.add("--server.port=0");
         args.add("--prometheus.client.enabled=true");
         args.add("--topic.partitions=2");
