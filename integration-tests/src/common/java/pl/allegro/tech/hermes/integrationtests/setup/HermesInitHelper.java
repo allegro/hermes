@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import com.jayway.awaitility.Duration;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
@@ -21,6 +22,15 @@ public class HermesInitHelper {
     public Topic createTopic(Topic topic) {
         createGroup(Group.from(topic.getName().getGroupName()));
         managementTestClient.createTopic(TopicWithSchema.topicWithSchema(topic, null))
+                .expectStatus()
+                .is2xxSuccessful();
+        waitUntilTopicCreated(topic.getQualifiedName());
+        return topic;
+    }
+
+    public Topic createTopicWithSchema(TopicWithSchema topic) {
+        createGroup(Group.from(topic.getName().getGroupName()));
+        managementTestClient.createTopic(topic)
                 .expectStatus()
                 .is2xxSuccessful();
         waitUntilTopicCreated(topic.getQualifiedName());
@@ -65,5 +75,11 @@ public class HermesInitHelper {
                     .getResponseBody();
                 assertThat(sub.getState()).isEqualTo(Subscription.State.ACTIVE);
             });
+    }
+
+    public void updateTopic(String qualifiedTopicName, PatchData patch) {
+        managementTestClient.updateTopic(qualifiedTopicName, patch)
+                .expectStatus()
+                .is2xxSuccessful();
     }
 }

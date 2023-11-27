@@ -103,4 +103,7 @@ public class TestSubscriber {
         }
     }
 
+    public void reset() {
+        this.receivedRequests.clear();
+    }
 }

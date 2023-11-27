@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
@@ -24,6 +25,16 @@ public class ManagementTestClient {
     private static final String SUBSCRIPTION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}";
 
     private static final String GROUPS_PATH = "/groups";
+
+    private static final String RETRANSMISSION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}/retransmission";
+
+    private static final String BLACKLIST_TOPICS_PATH = "/blacklist/topics";
+
+    private static final String BLACKLIST_TOPIC_PATH = "/blacklist/topics/{topicName}";
+
+    private static final String LATEST_UNDELIVERED_MESSAGE = "/topics/{topicName}/subscriptions/{subscriptionName}/undelivered";
+
+    private static final String TOPIC_PREVIEW = "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
 
     private final WebTestClient webTestClient;
 
@@ -68,11 +79,11 @@ public class ManagementTestClient {
 
     public WebTestClient.ResponseSpec updateSubscription(Topic topic, String subscription, PatchData patch) {
         return webTestClient.put().uri(UriBuilder
-                .fromUri(managementContainerUrl)
-                .path(SUBSCRIPTION_PATH)
-                .build(topic.getQualifiedName(), subscription))
-            .body(Mono.just(patch), PatchData.class)
-            .exchange();
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTION_PATH)
+                        .build(topic.getQualifiedName(), subscription))
+                .body(Mono.just(patch), PatchData.class)
+                .exchange();
     }
 
     public WebTestClient.ResponseSpec getSubscription(String topicQualifiedName, String subscriptionName) {
@@ -101,6 +112,16 @@ public class ManagementTestClient {
                 .exchange();
     }
 
+    WebTestClient.ResponseSpec retransmit(String topicName, String subscriptionName, OffsetRetransmissionDate retransmissionDate, boolean dryRun) {
+        return webTestClient.put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(RETRANSMISSION_PATH)
+                        .queryParam("dryRun", dryRun)
+                        .build(topicName, subscriptionName))
+                .body(Mono.just(retransmissionDate), OffsetRetransmissionDate.class)
+                .exchange();
+    }
+
     private WebTestClient.ResponseSpec sendCreateSubscriptionRequest(Subscription subscription) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(managementContainerUrl)
@@ -125,4 +146,46 @@ public class ManagementTestClient {
         }
     }
 
+    public WebTestClient.ResponseSpec blacklistTopic(String topicQualifiedName) {
+        return webTestClient.post().uri(BLACKLIST_TOPICS_PATH)
+                .body(Mono.just(List.of(topicQualifiedName)), List.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec unblacklistTopic(String topicQualifiedName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(BLACKLIST_TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec isTopicBlacklisted(String topicQualifiedName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(BLACKLIST_TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getLatestUndeliveredMessage(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(LATEST_UNDELIVERED_MESSAGE)
+                        .build(topicQualifiedName, subscriptionName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(TOPIC_PREVIEW)
+                        .build(qualifiedTopicName, primaryKafkaClusterName, partition, offset))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec updateTopic(String qualifiedTopicName, PatchData patch) {
+        return webTestClient.put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPIC_PATH)
+                        .build(qualifiedTopicName))
+                .body(Mono.just(patch), PatchData.class)
+                .exchange();
+    }
 }
