@@ -66,13 +66,11 @@ public class KafkaRetransmissionServiceTest {
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
-        messages.forEach(message -> hermes.api().publish(topic.getQualifiedName(), message));
-        messages.forEach(subscriber::waitUntilReceived);
+        publishAndConsumeMessages(messages, topic, subscriber);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
         final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
         Thread.sleep(1000);
-        messages2.forEach(message -> hermes.api().publish(topic.getQualifiedName(), message));
-        messages2.forEach(subscriber::waitUntilReceived);
+        publishAndConsumeMessages(messages2, topic, subscriber);
         waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
 
         // when
@@ -90,12 +88,10 @@ public class KafkaRetransmissionServiceTest {
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
         // we have 2 partitions, thus 4 messages to get 2 per partition
-        messages.forEach(message -> hermes.api().publish(topic.getQualifiedName(), message));
-        messages.forEach(subscriber::waitUntilReceived);
+        publishAndConsumeMessages(messages, topic, subscriber);
         Thread.sleep(2000);
         final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
-        messages2.forEach(message -> hermes.api().publish(topic.getQualifiedName(), message));
-        messages2.forEach(subscriber::waitUntilReceived);
+        publishAndConsumeMessages(messages2, topic, subscriber);
         waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
         subscriber.reset();
 
@@ -112,8 +108,8 @@ public class KafkaRetransmissionServiceTest {
         subscriber.noMessagesReceived();
     }
 
-    // TODO schema-registry required
-//
+//     TODO schema-registry required
+
 //    @Test
 //    public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException {
 //        // given
@@ -155,6 +151,11 @@ public class KafkaRetransmissionServiceTest {
 //        assertThat((Long) offsets.jsonPartitionOffsets.stream().mapToLong(PartitionOffset::getOffset).sum()).isEqualTo(1);
 //        assertThat((Long) offsets.avroPartitionOffsets.stream().mapToLong(PartitionOffset::getOffset).sum()).isEqualTo(0);
 //    }
+
+    private void publishAndConsumeMessages(List<String> messages, Topic topic, TestSubscriber subscriber) {
+        messages.forEach(message -> hermes.api().publish(topic.getQualifiedName(), message));
+        messages.forEach(subscriber::waitUntilReceived);
+    }
 
     public void waitUntilTopicIsUpdatedAfter(String topicQualifiedName, String subscription) {
         long currentTime = clock.millis();
