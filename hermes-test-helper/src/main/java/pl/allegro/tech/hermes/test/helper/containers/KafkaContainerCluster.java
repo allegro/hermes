@@ -155,7 +155,7 @@ public class KafkaContainerCluster implements Startable {
         proxies.forEach(proxy -> proxy.setConnectionCut(false));
     }
 
-    public void makeClusterOperational() {
+    public void startAllStoppedBrokers() {
         brokers.stream()
                 .filter(broker -> !broker.isKafkaRunning())
                 .parallel()
