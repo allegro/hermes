@@ -35,6 +35,8 @@ public class HermesFrontendTestApp implements HermesTestApp {
                 "--frontend.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
                 "--frontend.readiness.check.kafkaCheckEnabled=" + kafkaCheckEnabled,
                 "--frontend.readiness.check.enabled=true",
+                "--frontend.header.propagation.enabled=true",
+                "--frontend.header.propagation.allowFilter=" + "Trace-Id, Span-Id, Parent-Span-Id, Trace-Sampled, Trace-Reported",
                 "--frontend.kafka.producer.metadataMaxAge=" + metadataMaxAge,
                 "--frontend.readiness.check.interval=" + readinessCheckInterval
         );

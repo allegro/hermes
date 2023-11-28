@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.client;
 
 import jakarta.ws.rs.core.UriBuilder;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -55,6 +56,16 @@ public class FrontendTestClient {
                         .path(TOPIC_PATH)
                         .build(topicQualifiedName))
                 .body(Mono.just(body), byte[].class)
+                .exchange();
+    }
+
+    WebTestClient.ResponseSpec publishWithHeaders(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(frontendContainerUrl)
+                        .path(TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .headers(it -> it.addAll(headers))
+                .body(Mono.just(body), String.class)
                 .exchange();
     }
 
