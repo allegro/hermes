@@ -94,13 +94,15 @@
     <v-row>
       <loading-spinner v-if="loading" />
     </v-row>
-    <v-card class="mb-2 mt-8">
-      <TopicSearchResults v-if="topics" :topics="topics"></TopicSearchResults>
-      <SubscriptionSearchResults
-        v-if="subscriptions"
-        :subscriptions="subscriptions"
-      ></SubscriptionSearchResults>
-    </v-card>
+    <v-row dense>
+      <v-col md="12">
+        <TopicSearchResults v-if="topics" :topics="topics"></TopicSearchResults>
+        <SubscriptionSearchResults
+          v-if="subscriptions"
+          :subscriptions="subscriptions"
+        ></SubscriptionSearchResults>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

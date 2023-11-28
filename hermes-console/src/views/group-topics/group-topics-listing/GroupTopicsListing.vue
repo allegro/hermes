@@ -27,7 +27,6 @@
   }
 
   function onTopicBlankClick(topicName: string) {
-    console.log(router.currentRoute.value.path);
     window.open(
       `${router.currentRoute.value.path}/topics/${topicName}`,
       '_blank',
