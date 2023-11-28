@@ -10,10 +10,15 @@ import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
 
 public class OfflineRetransmissionRequest {
 
-    private static final String ALTERNATE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm'Z'";
+    private static final List<DateTimeFormatter> formatters = List.of(
+            DateTimeFormatter.ISO_INSTANT,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'").withZone(ZoneId.of("UTC"))
+    );
 
     @NotEmpty
     private final String sourceTopic;
@@ -41,16 +46,13 @@ public class OfflineRetransmissionRequest {
             this.endTimestamp = null;
             return;
         }
-        try {
-            this.startTimestamp = Instant.parse(startTimestamp);
-            this.endTimestamp = Instant.parse(endTimestamp);
-        } catch (Exception e) {
-            this.startTimestamp = Instant.from(DateTimeFormatter.ofPattern(ALTERNATE_DATE_FORMAT)
-                    .withZone(ZoneId.of("UTC"))
-                    .parse(startTimestamp));
-            this.endTimestamp = Instant.from(DateTimeFormatter.ofPattern(ALTERNATE_DATE_FORMAT)
-                    .withZone(ZoneId.of("UTC"))
-                    .parse(endTimestamp));
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                this.startTimestamp = formatter.parse(startTimestamp, Instant::from);
+                this.endTimestamp = formatter.parse(endTimestamp, Instant::from);
+                break;
+            } catch (DateTimeParseException ignored) {}
         }
     }
 
