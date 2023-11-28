@@ -67,13 +67,13 @@ public class HermesTestClient {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
+    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, byte[] body) {
+        return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
+    }
+
 
     public WebTestClient.ResponseSpec publishWithHeaders(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishWithHeaders(topicQualifiedName, body, headers);
-    }
-
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, byte[] body) {
-        return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
     public void updateSubscription(Topic topic, String subscription, PatchData patch) {
