@@ -52,7 +52,9 @@ public class OfflineRetransmissionRequest {
                 this.startTimestamp = formatter.parse(startTimestamp, Instant::from);
                 this.endTimestamp = formatter.parse(endTimestamp, Instant::from);
                 break;
-            } catch (DateTimeParseException ignored) {}
+            } catch (DateTimeParseException e) {
+                // ignore
+            }
         }
     }
 
