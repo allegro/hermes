@@ -17,6 +17,9 @@ dependencies {
     testImplementation group: 'org.eclipse.jetty', name: 'jetty-reactive-httpclient', version: '3.0.4'
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
     testImplementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.0'
+    testImplementation(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
+        exclude module: 'hornetq-native'
+    }
 
     testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit_jupiter
