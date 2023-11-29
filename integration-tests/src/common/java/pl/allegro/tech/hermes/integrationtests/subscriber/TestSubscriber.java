@@ -55,6 +55,10 @@ public class TestSubscriber {
         await().atMost(adjust(new Duration(DEFAULT_WAIT_TIME_IN_SEC, SECONDS))).until(() ->
             assertThat(receivedRequests.size()).isPositive());
     }
+    public void waitUntilReceived(Duration duration, int numberOfExpectedMessages) {
+        await().atMost(adjust(duration)).until(() ->
+                assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
+    }
 
     public void waitUntilRequestReceived(Consumer<LoggedRequest> requestConsumer) {
         waitUntilAnyMessageReceived();
@@ -62,6 +66,16 @@ public class TestSubscriber {
         synchronized (receivedRequests) {
             receivedRequests.forEach(requestConsumer);
         }
+    }
+
+    public void waitUntilRequestsReceived(Consumer<List<LoggedRequest>> requestsConsumer) {
+        await().atMost(adjust(new Duration(DEFAULT_WAIT_TIME_IN_SEC, SECONDS))).until(
+                () -> {
+                    synchronized (receivedRequests) {
+                        requestsConsumer.accept(receivedRequests);
+                    }
+                }
+        );
     }
 
     public void noMessagesReceived() {
@@ -97,7 +111,7 @@ public class TestSubscriber {
         }
     }
 
-    private LoggedRequest getLastReceivedRequest() {
+    public LoggedRequest getLastReceivedRequest() {
         synchronized (receivedRequests) {
             return Streams.findLast(receivedRequests.stream()).orElseThrow(NoSuchElementException::new);
         }
