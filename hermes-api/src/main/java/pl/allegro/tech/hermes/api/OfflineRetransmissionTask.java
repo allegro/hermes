@@ -21,7 +21,12 @@ public class OfflineRetransmissionTask {
             @JsonProperty("startTimestamp") Instant startTimestamp,
             @JsonProperty("endTimestamp") Instant endTimestamp,
             @JsonProperty("createdAt") Instant createdAt) {
-        this(taskId, new OfflineRetransmissionRequest(sourceTopic, targetTopic, startTimestamp, endTimestamp), createdAt);
+        this(taskId, new OfflineRetransmissionRequest(
+                        sourceTopic,
+                        targetTopic,
+                        startTimestamp.toString(),
+                        endTimestamp.toString()),
+                createdAt);
     }
 
     public OfflineRetransmissionTask(String taskId, OfflineRetransmissionRequest request, Instant createdAt) {
