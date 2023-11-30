@@ -12,39 +12,60 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesManagementTestApp implements HermesTestApp {
 
     private int port = -1;
-    private final ZookeeperContainer hermesZookeeper;
-    private final KafkaContainerCluster kafka;
+    private final Map<String, ZookeeperContainer> hermesZookeepers;
+    private final Map<String, KafkaContainerCluster> kafkaClusters;
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesManagement.class);
 
     public HermesManagementTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
-        this.hermesZookeeper = hermesZookeeper;
-        this.kafka = kafka;
+        this(Map.of(DEFAULT_DC_NAME, hermesZookeeper), Map.of(DEFAULT_DC_NAME, kafka));
+    }
+
+    public HermesManagementTestApp(Map<String, ZookeeperContainer> hermesZookeepers,
+                                   Map<String, KafkaContainerCluster> kafkaClusters) {
+        this.hermesZookeepers = hermesZookeepers;
+        this.kafkaClusters = kafkaClusters;
     }
 
     @Override
     public HermesTestApp start() {
-        app.run(
-                "--server.port=0",
-                "--storage.clusters[0].datacenter=dc",
-                "--storage.clusters[0].clusterName=zk",
-                "--storage.clusters[0].connectionString=" + hermesZookeeper.getConnectionString(),
-                "--prometheus.client.enabled=true",
-                "--kafka.clusters[0].datacenter=dc",
-                "--kafka.clusters[0].clusterName=primary",
-                "--kafka.clusters[0].bootstrapKafkaServer=" + kafka.getBootstrapServersForExternalClients(),
-                "--kafka.clusters[0].namespace=itTest",
-                "--topic.replicationFactor=" + kafka.getAllBrokers().size(),
-                "--topic.partitions=" + 2,
-                "--topic.uncleanLeaderElectionEnabled=false"
-        );
+        List<String> args = new ArrayList<>();
+        args.add("--server.port=0");
+        args.add("--prometheus.client.enabled=true");
+        args.add("--topic.partitions=2");
+        args.add("--topic.uncleanLeaderElectionEnabled=false");
+        int smallestClusterSize =  kafkaClusters.values().stream()
+                .map(cluster -> cluster.getAllBrokers().size())
+                .min(Integer::compareTo)
+                .orElse(1);
+        args.add("--topic.replicationFactor=" + smallestClusterSize);
+        int idx = 0;
+        for (Map.Entry<String, ZookeeperContainer> zk : hermesZookeepers.entrySet()) {
+            args.add("--storage.clusters[" + idx + "].datacenter=" + zk.getKey());
+            args.add("--storage.clusters[" + idx + "].clusterName=zk");
+            args.add("--storage.clusters[" + idx + "].connectionString=" + zk.getValue().getConnectionString());
+            idx++;
+        }
+        idx = 0;
+        for (Map.Entry<String, KafkaContainerCluster> kafka : kafkaClusters.entrySet()) {
+            args.add("--kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
+            args.add("--kafka.clusters[" + idx + "].clusterName=primary");
+            args.add("--kafka.clusters[" + idx + "].bootstrapKafkaServer=" + kafka.getValue().getBootstrapServersForExternalClients());
+            args.add("--kafka.clusters[" + idx + "].namespace=itTest");
+            idx++;
+        }
+        app.run(args.toArray(new String[0]));
         String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
         if (localServerPort == null) {
             throw new IllegalStateException("Cannot get hermes-management port");
