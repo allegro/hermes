@@ -1,40 +1,34 @@
-package pl.allegro.tech.hermes.integration;
+package pl.allegro.tech.hermes.integrationtests;
 
-import com.googlecode.catchexception.CatchException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.LoggerFactory;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.integration.client.SlowClient;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 
 import java.io.IOException;
 
-import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
-public class PublishingTimeoutTest extends IntegrationTest {
+public class PublishingTimeoutTest {
 
-    private SlowClient client;
-
-    @BeforeClass
-    public void initialize() {
-        this.client = new SlowClient();
-    }
+    @RegisterExtension
+    public static final HermesExtension hermes = new HermesExtension();
 
     @Test
     public void shouldHandleRequestTimeout() throws IOException, InterruptedException {
         // given
-        Topic topic = operations.buildTopic(randomTopic("timeoutGroup", "timeoutTopic").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         int clientTimeout = 5000;
         int pauseTimeBetweenChunks = 300;
         int delayBeforeSendingFirstData = 0;
 
         // when
         long start = System.currentTimeMillis();
-        String response = client.slowEvent(
-            clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topic.getQualifiedName()
-        );
+        String response = hermes.api().publishSlowly(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topic.getQualifiedName());
         long elapsed = System.currentTimeMillis() - start;
 
         //then
@@ -45,25 +39,26 @@ public class PublishingTimeoutTest extends IntegrationTest {
     @Test
     public void shouldCloseConnectionAfterSendingDelayData() throws IOException, InterruptedException {
         //given
-        Topic topic = operations.buildTopic(randomTopic("timeoutGroup", "closeConnectionTopic").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         int clientTimeout = 5000;
         int pauseTimeBetweenChunks = 0;
         int delayBeforeSendingFirstData = 3000;
 
         //when
-        catchException(client).slowEvent(
-            clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topic.getQualifiedName()
-        );
+        Exception thrown = assertThrows(Exception.class, () ->
+                hermes.api().publishSlowly(
+                        clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topic.getQualifiedName()
+                ));
 
-        //then
-        LoggerFactory.getLogger(PublishingTimeoutTest.class).error("Caught exception", CatchException.<Exception>caughtException());
-        assertThat(CatchException.<Exception>caughtException()).hasMessageContaining("Broken pipe");
+        // then
+        LoggerFactory.getLogger(PublishingTimeoutTest.class).error("Caught exception", thrown);
+        assertTrue(thrown.getMessage().contains("Broken pipe"));
     }
 
     @Test
     public void shouldHandleTimeoutForSlowRequestWithChunkedEncoding() throws IOException, InterruptedException {
         // given
-        Topic topic = operations.buildTopic(randomTopic("slowGroup", "chunkedEncoding").build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         int clientTimeout = 5000;
         int pauseTimeBetweenChunks = 300;
         int delayBeforeSendingFirstData = 0;
@@ -71,7 +66,7 @@ public class PublishingTimeoutTest extends IntegrationTest {
 
         // when
         long start = System.currentTimeMillis();
-        String response = client.slowEvent(
+        String response = hermes.api().publishSlowly(
                 clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topic.getQualifiedName(), chunkedEncoding);
         long elapsed = System.currentTimeMillis() - start;
 
@@ -79,5 +74,4 @@ public class PublishingTimeoutTest extends IntegrationTest {
         assertThat(response).contains("408 Request Time-out");
         assertThat(elapsed).isLessThan(2500);
     }
-
 }

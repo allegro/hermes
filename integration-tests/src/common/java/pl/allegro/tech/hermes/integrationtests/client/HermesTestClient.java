@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integrationtests.client;
 
 import com.jayway.awaitility.Duration;
+import jakarta.ws.rs.core.Response;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
@@ -12,7 +13,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 
@@ -62,28 +65,79 @@ public class HermesTestClient {
         return managementTestClient.getSubscription(topicQualifiedName, subscriptionName);
     }
 
+    public WebTestClient.ResponseSpec getSubscriptionMetrics(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.getSubscriptionMetrics(topicQualifiedName, subscriptionName);
+    }
+
+    public void suspendSubscription(Topic topic, String subscription) {
+        managementTestClient.updateSubscriptionState(topic, subscription, Subscription.State.SUSPENDED)
+                .expectStatus()
+                .is2xxSuccessful();
+    }
+
+    public void waitUntilSubscriptionActivated(String topicQualifiedName, String subscriptionName) {
+        waitAtMost(Duration.TEN_SECONDS)
+                .until(() -> managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
+                        .expectStatus()
+                        .is2xxSuccessful()
+                        .expectBody(Subscription.class)
+                        .returnResult().getResponseBody().getState().equals(Subscription.State.ACTIVE)
+                );
+    }
+
+    public void waitUntilSubscriptionSuspended(String topicQualifiedName, String subscriptionName) {
+        waitAtMost(Duration.TEN_SECONDS)
+                .until(() -> managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
+                        .expectStatus()
+                        .is2xxSuccessful()
+                        .expectBody(Subscription.class)
+                        .returnResult().getResponseBody().getState().equals(Subscription.State.SUSPENDED)
+                );
+    }
+
     // PUBLISH
     public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body) {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
+    }
+
+    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body, Map<String, String> headers) {
+        return frontendTestClient.publishUntilSuccess(topicQualifiedName, body, headers);
     }
 
     public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, byte[] body) {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
+    public void updateSubscription(Topic topic, String subscription, PatchData patch) {
+        managementTestClient.updateSubscription(topic, subscription, patch)
+                .expectStatus()
+                .is2xxSuccessful();
+    }
+
+    public WebTestClient.ResponseSpec publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
+        return frontendTestClient.publishUntilStatus(topicQualifiedName, body, statusCode);
+    }
 
     public WebTestClient.ResponseSpec publishWithHeaders(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishWithHeaders(topicQualifiedName, body, headers);
     }
 
-    public void updateSubscription(Topic topic, String subscription, PatchData patch) {
-        managementTestClient.updateSubscription(topic, subscription, patch)
-            .expectStatus()
-            .is2xxSuccessful();
-    }
-
     public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
         return frontendTestClient.publish(topicQualifiedName, body);
+    }
+
+    public Response publishChunked(String topicQualifiedName, String body) {
+        return frontendTestClient.publishChunked(topicQualifiedName, body);
+    }
+
+    public String publishSlowly(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData,
+                                String topicName, boolean chunkedEncoding) throws IOException, InterruptedException {
+        return frontendTestClient.publishSlowly(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, chunkedEncoding);
+    }
+
+    public String publishSlowly(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData, String topicName)
+            throws IOException, InterruptedException {
+        return publishSlowly(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, false);
     }
 
     private void waitUntilSubscriptionCreated(String topicQualifiedName, String subscriptionName) {

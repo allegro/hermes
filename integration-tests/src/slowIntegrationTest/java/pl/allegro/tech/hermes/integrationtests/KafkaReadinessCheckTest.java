@@ -128,7 +128,7 @@ public class KafkaReadinessCheckTest {
         getStatusHealth(hermesFrontend).expectStatus().is2xxSuccessful();
 
         // cleanup
-        kafka.makeClusterOperational();
+        kafka.startAllStoppedBrokers();
         hermesFrontend.stop();
     }
 

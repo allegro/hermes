@@ -29,6 +29,7 @@ public class HermesFrontendTestApp implements HermesTestApp {
     @Override
     public HermesTestApp start() {
         app.run(
+                "--spring.profiles.active=integration",
                 "--frontend.server.port=0",
                 "--frontend.kafka.namespace=itTest",
                 "--frontend.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
@@ -38,7 +39,13 @@ public class HermesFrontendTestApp implements HermesTestApp {
                 "--frontend.header.propagation.enabled=true",
                 "--frontend.header.propagation.allowFilter=" + "Trace-Id, Span-Id, Parent-Span-Id, Trace-Sampled, Trace-Reported",
                 "--frontend.kafka.producer.metadataMaxAge=" + metadataMaxAge,
-                "--frontend.readiness.check.interval=" + readinessCheckInterval
+                "--frontend.readiness.check.interval=" + readinessCheckInterval,
+                "--frontend.handlers.forceTopicMaxMessageSize=true",
+                "--frontend.throughput.type=fixed",
+                "--frontend.throughput.fixedMax=" + 50 * 1024L,
+                "--frontend.handlers.idleTimeout=" + Duration.ofSeconds(2),
+                "--frontend.header.propagation.enabled=true",
+                "--frontend.header.propagation.allowFilter=" + "Trace-Id, Span-Id, Parent-Span-Id, Trace-Sampled, Trace-Reported"
         );
         port = app.context().getBean(HermesServer.class).getPort();
         return this;
