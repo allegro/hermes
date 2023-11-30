@@ -38,16 +38,20 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
         });
     }
 
-    public TestSubscriber createSubscriber() {
-        String path = createPath();
+    public TestSubscriber createSubscriber(String endpointPathSuffix) {
+        String path = createPath(endpointPathSuffix);
         service.addStubMapping(post(urlPathEqualTo(path)).willReturn(aResponse().withStatus(OK.getStatusCode())).build());
         TestSubscriber subscriber = new TestSubscriber(createSubscriberURI(path));
         subscribersPerPath.put(path, subscriber);
         return subscriber;
     }
 
+    public TestSubscriber createSubscriber() {
+        return createSubscriber("");
+    }
+
     public TestSubscriber createSubscriberWithRetry(String message, int delay) {
-        String path = createPath();
+        String path = createPath("");
         int firstStatusCode = 503;
         int secondStatusCode = 200;
         String scenarioName = "Retrying";
@@ -78,8 +82,9 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
         return subscriber;
     }
 
-    private String createPath() {
-        return "/subscriber-" + subscriberIndex.incrementAndGet();
+    private String createPath(String pathSuffix) {
+        return "/subscriber-" + subscriberIndex.incrementAndGet() + pathSuffix;
+
     }
 
     private URI createSubscriberURI(String path) {

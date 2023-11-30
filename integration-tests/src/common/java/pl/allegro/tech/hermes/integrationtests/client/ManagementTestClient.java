@@ -24,6 +24,10 @@ public class ManagementTestClient {
 
     private static final String SUBSCRIPTION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}";
 
+    private static final String SUBSCRIPTION_STATE_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}/state";
+
+    private static final String SUBSCRIPTION_METRICS_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}/metrics";
+
     private static final String GROUPS_PATH = "/groups";
 
     private static final String RETRANSMISSION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}/retransmission";
@@ -86,8 +90,25 @@ public class ManagementTestClient {
                 .exchange();
     }
 
+    public WebTestClient.ResponseSpec updateSubscriptionState(Topic topic, String subscription, Subscription.State state) {
+        return webTestClient.put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTION_STATE_PATH)
+                        .build(topic.getQualifiedName(), subscription))
+                .body(Mono.just(state), Subscription.State.class)
+                .exchange();
+    }
+
     public WebTestClient.ResponseSpec getSubscription(String topicQualifiedName, String subscriptionName) {
         return getSingleSubscription(topicQualifiedName, subscriptionName);
+    }
+
+    public WebTestClient.ResponseSpec getSubscriptionMetrics(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTION_METRICS_PATH)
+                        .build(topicQualifiedName, subscriptionName))
+                .exchange();
     }
 
     private WebTestClient.ResponseSpec getSingleTopic(String topicQualifiedName) {
