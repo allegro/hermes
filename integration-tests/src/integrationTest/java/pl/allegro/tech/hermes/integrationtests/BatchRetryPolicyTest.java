@@ -32,12 +32,11 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 public class BatchRetryPolicyTest {
 
-    public static final String HEALTHY = "healthy";
+    private static final String HEALTHY = "healthy";
+    private static final String failedRequestBody = "{\"body\":\"failed\"}";
+    private static final String successfulRequestBody = "{\"body\":\"successful\"}";
 
-    String failedRequestBody = "{\"body\":\"failed\"}";
-    String successfulRequestBody = "{\"body\":\"successful\"}";
-
-    ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @RegisterExtension
     public static final HermesExtension hermes = new HermesExtension();
@@ -46,7 +45,7 @@ public class BatchRetryPolicyTest {
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
     @Test
-    public void shouldRetryUntilRequestSuccessfulAndSendRetryCounterInHeader() throws Throwable {
+    public void shouldRetryUntilRequestSuccessfulAndSendRetryCounterInHeader() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
