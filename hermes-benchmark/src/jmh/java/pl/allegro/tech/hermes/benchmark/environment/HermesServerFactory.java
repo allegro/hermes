@@ -4,9 +4,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.undertow.server.HttpHandler;
-import java.io.IOException;
-import java.time.Clock;
-import java.util.Collections;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -37,6 +34,10 @@ import pl.allegro.tech.hermes.schema.RawSchemaAdminClient;
 import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
+
+import java.io.IOException;
+import java.time.Clock;
+import java.util.Collections;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
