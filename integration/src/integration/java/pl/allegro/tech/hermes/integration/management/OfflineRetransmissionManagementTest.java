@@ -58,7 +58,6 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
     }
 
-
     @Test
     public void shouldReturnEmptyListIfThereAreNoTasks() {
         // expect
@@ -129,14 +128,36 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
                 sourceTopic.getQualifiedName(),
                 targetTopic.getQualifiedName(),
-                Instant.now(),
-                Instant.now().minusSeconds(1));
+                Instant.now().toString(),
+                Instant.now().minusSeconds(1).toString());
 
         Response response = management.offlineRetransmission().createRetransmissionTask(request);
         assertThat(response).containsMessage("End timestamp must be greater than start timestamp");
 
         // then
         assertThat(response).hasStatus(Response.Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void shouldNotReturnClientErrorWhenRequestingRetransmissionWithoutSeconds() {
+        // given
+        Topic sourceTopic = createTopic();
+        Topic targetTopic = createTopic();
+
+        operations.buildTopic(sourceTopic);
+        operations.buildTopic(targetTopic);
+
+        // when
+        OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
+                sourceTopic.getQualifiedName(),
+                targetTopic.getQualifiedName(),
+                "2023-09-01T00:00Z",
+                "2023-09-02T00:00Z");
+
+        Response response = management.offlineRetransmission().createRetransmissionTask(request);
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
     }
 
     @Test
@@ -226,8 +247,8 @@ public class OfflineRetransmissionManagementTest extends IntegrationTest {
         return new OfflineRetransmissionRequest(
                 sourceTopic,
                 targetTopic,
-                Instant.now().minusSeconds(1),
-                Instant.now()
+                Instant.now().minusSeconds(1).toString(),
+                Instant.now().toString()
         );
     }
 

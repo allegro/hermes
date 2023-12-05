@@ -4,13 +4,16 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.undertow.server.HttpHandler;
+import java.io.IOException;
+import java.time.Clock;
+import java.util.Collections;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
 import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
-import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
 import pl.allegro.tech.hermes.frontend.config.HermesServerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.config.SslProperties;
@@ -34,10 +37,6 @@ import pl.allegro.tech.hermes.schema.RawSchemaAdminClient;
 import pl.allegro.tech.hermes.schema.SchemaCompilersFactory;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
-
-import java.io.IOException;
-import java.time.Clock;
-import java.util.Collections;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
@@ -89,10 +88,9 @@ class HermesServerFactory {
     }
 
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,
-                                                  TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
-                                                  RawSchemaAdminClient rawSchemaAdminClient, Trackers trackers,
-                                                  AvroMessageContentWrapper avroMessageContentWrapper) {
-        HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
+        TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
+        RawSchemaAdminClient rawSchemaAdminClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
+        HTTPHeadersProperties httpHeadersProperties = new HTTPHeadersProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
         SchemaProperties schemaProperties = new SchemaProperties();
@@ -111,10 +109,7 @@ class HermesServerFactory {
                                     SchemaCompilersFactory.avroSchemaCompiler()
                                 )
                         ),
-                        new DefaultHeadersPropagator(
-                            headerPropagationProperties.isEnabled(), 
-                            headerPropagationProperties.getAllowFilter()
-                        ),
+                        new DefaultHeadersPropagator(httpHeadersProperties),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
                         Clock.systemDefaultZone(),
                         schemaProperties.isIdHeaderEnabled()

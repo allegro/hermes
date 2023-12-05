@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
+import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.config.ConsistencyCheckerProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
@@ -138,11 +139,19 @@ public class DcConsistencyService {
         Map<String, Future<List<Subscription>>> futuresPerDatacenter = new HashMap<>();
         for (DatacenterBoundRepositoryHolder<SubscriptionRepository> repositoryHolder : subscriptionRepositories) {
             Future<List<Subscription>> future = executor.submit(
-                    () -> repositoryHolder.getRepository().listSubscriptions(TopicName.fromQualifiedName(topic))
+                    () -> listSubscriptions(repositoryHolder.getRepository(), topic)
             );
             futuresPerDatacenter.put(repositoryHolder.getDatacenterName(), future);
         }
         return listCopies(futuresPerDatacenter, subscription -> subscription.getQualifiedName().getQualifiedName());
+    }
+
+    private List<Subscription> listSubscriptions(SubscriptionRepository subscriptionRepository, String topic) {
+        try {
+            return subscriptionRepository.listSubscriptions(TopicName.fromQualifiedName(topic));
+        } catch (TopicNotExistsException e) {
+            return emptyList();
+        }
     }
 
     private <T> List<MetadataCopies> listCopies(Map<String, Future<List<T>>> futuresPerDatacenter, Function<T, String> idResolver) {

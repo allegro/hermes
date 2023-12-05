@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import io.undertow.util.HeaderMap;
-import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
@@ -27,9 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Optional.of;
-import static java.util.Spliterators.spliteratorUnknownSize;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.StreamSupport.stream;
 
 public class MessageFactory {
 
@@ -92,8 +88,9 @@ public class MessageFactory {
     }
 
     private JsonMessage createJsonMessage(HeaderMap headerMap, String messageId, byte[] messageContent, long timestamp) {
-        Map<String, String> extraRequestHeaders = headersPropagator.extract(toHeadersMap(headerMap));
-        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp, extractPartitionKey(headerMap));
+        Map<String, String> extraRequestHeaders = headersPropagator.extract(headerMap);
+        JsonMessage message = new JsonMessage(messageId, messageContent, timestamp, extractPartitionKey(headerMap),
+                extraRequestHeaders);
         byte[] wrapped = messageContentWrapper
                 .wrapJson(message.getData(), message.getId(), message.getTimestamp(), extraRequestHeaders);
         return message.withDataReplaced(wrapped);
@@ -113,14 +110,15 @@ public class MessageFactory {
 
     private AvroMessage createAvroMessage(HeaderMap headerMap, Topic topic, String messageId, byte[] messageContent, long timestamp) {
         CompiledSchema<Schema> schema = getCompiledSchema(headerMap, topic);
-        Map<String, String> extraRequestHeaders = headersPropagator.extract(toHeadersMap(headerMap));
+        Map<String, String> extraRequestHeaders = headersPropagator.extract(headerMap);
 
         AvroMessage message = new AvroMessage(
                 messageId,
                 enforcer.enforceAvro(headerMap.getFirst(Headers.CONTENT_TYPE_STRING), messageContent, schema.getSchema(), topic),
                 timestamp,
                 schema,
-                extractPartitionKey(headerMap));
+                extractPartitionKey(headerMap),
+                extraRequestHeaders);
 
         validators.check(topic, message);
         byte[] wrapped = messageContentWrapper.wrapAvro(message.getData(), message.getId(), message.getTimestamp(),
@@ -163,10 +161,4 @@ public class MessageFactory {
         return headerMap.getFirst(MessageMetadataHeaders.PARTITION_KEY.getName());
     }
 
-    private static Map<String, String> toHeadersMap(HeaderMap headerMap) {
-        return stream(spliteratorUnknownSize(headerMap.iterator(), 0), false)
-                .collect(toMap(
-                        h -> h.getHeaderName().toString(),
-                        HeaderValues::getFirst));
-    }
 }

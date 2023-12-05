@@ -44,11 +44,11 @@ public class TraceContext {
     public Map<String, String> asMap() {
 
         return ImmutableMap.<String, String>builder()
-                .put("Trace-Id", traceId)
-                .put("Span-Id", spanId)
-                .put("Parent-Span-Id", parentSpanId)
-                .put("Trace-Sampled", traceSampled)
-                .put("Trace-Reported", traceReported)
+                .put("trace-id", traceId)
+                .put("span-id", spanId)
+                .put("parent-span-id", parentSpanId)
+                .put("trace-sampled", traceSampled)
+                .put("trace-reported", traceReported)
                 .build();
     }
 

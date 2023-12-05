@@ -55,7 +55,8 @@ public class ExternalMonitoringConfiguration {
     public VictoriaMetricsMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient,
                                                                     PrometheusMonitoringClientProperties properties) {
         return new VictoriaMetricsMetricsProvider(prometheusClient,
-                properties.getConsumersMetricsPrefix(), properties.getFrontendMetricsPrefix());
+                properties.getConsumersMetricsPrefix(), properties.getFrontendMetricsPrefix(),
+                properties.getAdditionalFilters());
     }
 
     @Bean
