@@ -31,17 +31,9 @@ public class HermesTestClient {
         this.consumerTestClient = new ConsumerTestClient(consumerPort);
     }
 
-    // GROUP
-
     public WebTestClient.ResponseSpec createGroup(Group group) {
         return managementTestClient.createGroup(group);
     }
-
-    public boolean groupExists(Group group) {
-        return managementTestClient.getGroups().contains(group.getGroupName());
-    }
-
-    // TOPIC
 
     public WebTestClient.ResponseSpec createTopic(TopicWithSchema topicWithSchema) {
         return managementTestClient.createTopic(topicWithSchema);
@@ -64,8 +56,6 @@ public class HermesTestClient {
                 .expectStatus()
                 .is2xxSuccessful();
     }
-
-    // SUBSCRIPTION
 
     public Subscription getSubscription(String topicQualifiedName, String subscriptionName) {
         return getSubscriptionResponse(topicQualifiedName, subscriptionName)
@@ -110,28 +100,27 @@ public class HermesTestClient {
                 );
     }
 
-    // PUBLISH
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body) {
+    public int publishUntilSuccess(String topicQualifiedName, String body) {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
-    public WebTestClient.ResponseSpec publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
+    public int publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
         return frontendTestClient.publishUntilStatus(topicQualifiedName, body, statusCode);
     }
 
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+    public int publishUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body, headers);
     }
 
-    public WebTestClient.ResponseSpec publishJSONUntilSuccess(String topicQualifiedName, String body) {
+    public int publishJSONUntilSuccess(String topicQualifiedName, String body) {
         return frontendTestClient.publishJSONUntilSuccess(topicQualifiedName, body, new HttpHeaders());
     }
 
-    public WebTestClient.ResponseSpec publishAvroUntilSuccess(String topicQualifiedName, byte[] body) {
+    public int publishAvroUntilSuccess(String topicQualifiedName, byte[] body) {
         return frontendTestClient.publishAvroUntilSuccess(topicQualifiedName, body);
     }
 
-    public WebTestClient.ResponseSpec publishAvroUntilSuccess(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+    public int publishAvroUntilSuccess(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishAvroUntilSuccess(topicQualifiedName, body, headers);
     }
 
@@ -173,13 +162,6 @@ public class HermesTestClient {
     public String publishSlowly(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData, String topicName)
             throws IOException, InterruptedException {
         return publishSlowly(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, false);
-    }
-
-    private void waitUntilSubscriptionCreated(String topicQualifiedName, String subscriptionName) {
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
-                        .expectStatus()
-                        .is2xxSuccessful());
     }
 
     public void blacklistTopic(String topicQualifiedName) {
@@ -228,4 +210,19 @@ public class HermesTestClient {
         return managementTestClient.getPreview(qualifiedTopicName, primaryKafkaClusterName, partition, offset);
     }
 
+    public WebTestClient.ResponseSpec getTopicMetrics(String qualifiedName) {
+        return managementTestClient.getTopicMetrics(qualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec listSubscriptions(String qualifiedName) {
+        return managementTestClient.listSubscriptions(qualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec listTopics(String groupName) {
+        return managementTestClient.listTopics(groupName);
+    }
+
+    public WebTestClient.ResponseSpec getConsumersMetrics() {
+        return consumerTestClient.getMetrics();
+    }
 }
