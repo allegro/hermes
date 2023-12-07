@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.integrationtests;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.http.HttpHeaders;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
@@ -17,6 +16,7 @@ import static com.google.common.collect.ImmutableMap.of;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import static pl.allegro.tech.hermes.utils.Headers.createHeaders;
 
 public class FilteringHeadersTest {
 
@@ -47,19 +47,13 @@ public class FilteringHeadersTest {
                 .build());
 
         // when
-        hermes.api().publishWithHeaders(topic.getQualifiedName(), ALICE.asJson(), createHeaders(Map.of("Trace-Id", "vte12", "Span-Id", "my-span", "Content-Type", TEXT_PLAIN))).expectStatus().is2xxSuccessful();
-        hermes.api().publishWithHeaders(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Trace-Id", "vte12"))).expectStatus().is2xxSuccessful();
-        hermes.api().publishWithHeaders(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Span-Id", "my-span"))).expectStatus().is2xxSuccessful();
-        hermes.api().publishWithHeaders(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Trace-Id", "vte12", "Span-Id", "span-1"))).expectStatus().is2xxSuccessful();
-        hermes.api().publishWithHeaders(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Trace-Id", "invalid", "Span-Id", "my-span"))).expectStatus().is2xxSuccessful();
+        hermes.api().publish(topic.getQualifiedName(), ALICE.asJson(), createHeaders(Map.of("Trace-Id", "vte12", "Span-Id", "my-span", "Content-Type", TEXT_PLAIN))).expectStatus().is2xxSuccessful();
+        hermes.api().publish(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Trace-Id", "vte12"))).expectStatus().is2xxSuccessful();
+        hermes.api().publish(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Span-Id", "my-span"))).expectStatus().is2xxSuccessful();
+        hermes.api().publish(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Trace-Id", "vte12", "Span-Id", "span-1"))).expectStatus().is2xxSuccessful();
+        hermes.api().publish(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Trace-Id", "invalid", "Span-Id", "my-span"))).expectStatus().is2xxSuccessful();
 
         // then
         subscriber.waitUntilAllReceivedStrict(Set.of(ALICE.asJson()));
-    }
-
-    private HttpHeaders createHeaders(Map<String, String> map) {
-        HttpHeaders headers = new HttpHeaders();
-        map.forEach(headers::add);
-        return headers;
     }
 }

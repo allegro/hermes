@@ -5,19 +5,21 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.client.ClientConfig;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static jakarta.ws.rs.client.ClientBuilder.newClient;
 import static org.awaitility.Awaitility.waitAtMost;
 import static org.glassfish.jersey.client.ClientProperties.REQUEST_ENTITY_PROCESSING;
 import static org.glassfish.jersey.client.RequestEntityProcessing.CHUNKED;
+import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 
 public class FrontendTestClient {
 
@@ -56,17 +58,28 @@ public class FrontendTestClient {
 
     }
 
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body, Map<String, String> headers) {
+    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
         waitAtMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> response.set(publish(topicQualifiedName, body, headers).expectStatus().isCreated()));
         return response.get();
     }
 
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, byte[] body) {
+    public WebTestClient.ResponseSpec publishJSONUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> response.set(publish(topicQualifiedName, body).expectStatus().isCreated()));
+                .untilAsserted(() -> response.set(publishJSON(topicQualifiedName, body, headers).expectStatus().isCreated()));
+        return response.get();
+    }
+
+    public WebTestClient.ResponseSpec publishAvroUntilSuccess(String topicQualifiedName, byte[] body) {
+        return publishAvroUntilSuccess(topicQualifiedName, body, new HttpHeaders());
+    }
+
+    public WebTestClient.ResponseSpec publishAvroUntilSuccess(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+        AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> response.set(publishAvro(topicQualifiedName, body, headers).expectStatus().isCreated()));
         return response.get();
     }
 
@@ -86,21 +99,34 @@ public class FrontendTestClient {
                 .exchange();
     }
 
-    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body, Map<String, String> headers) {
+    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(TOPIC_PATH)
                         .build(topicQualifiedName))
                 .body(Mono.just(body), String.class)
-                .headers(requestHeaders -> headers.forEach(requestHeaders::add))
+                .headers(requestHeaders -> requestHeaders.addAll(headers))
                 .exchange();
     }
 
-    WebTestClient.ResponseSpec publish(String topicQualifiedName, byte[] body) {
+    WebTestClient.ResponseSpec publishJSON(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(TOPIC_PATH)
                         .build(topicQualifiedName))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(body), String.class)
+                .headers(requestHeaders -> requestHeaders.addAll(headers))
+                .exchange();
+    }
+
+    WebTestClient.ResponseSpec publishAvro(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(frontendContainerUrl)
+                        .path(TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .header("Content-Type", AVRO_BINARY)
+                .headers(requestHeaders -> requestHeaders.addAll(headers))
                 .body(Mono.just(body), byte[].class)
                 .exchange();
     }

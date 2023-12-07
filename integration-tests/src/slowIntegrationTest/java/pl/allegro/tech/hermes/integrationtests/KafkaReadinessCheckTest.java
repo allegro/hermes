@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesInitHelper;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesTestApp;
 import pl.allegro.tech.hermes.test.helper.containers.BrokerId;
+import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
@@ -30,13 +31,17 @@ public class KafkaReadinessCheckTest {
 
     private static final ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
     private static final KafkaContainerCluster kafka = new KafkaContainerCluster(3);
+    private static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
+            .withKafkaCluster(kafka);
     private static Topic topic;
 
     @BeforeAll
     public static void setup() {
         Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
-        HermesTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka)
+        schemaRegistry.start();
+        HermesTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry)
                 .start();
+
         HermesInitHelper hermesInitHelper = new HermesInitHelper(management.getPort());
         topic = hermesInitHelper.createTopic(
                 topicWithRandomName()
@@ -48,7 +53,7 @@ public class KafkaReadinessCheckTest {
 
     @AfterAll
     public static void clean() {
-        Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::stop);
+        Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
     }
 
     @Test
@@ -57,7 +62,7 @@ public class KafkaReadinessCheckTest {
         kafka.cutOffConnectionsBetweenBrokersAndClients();
 
         // when
-        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka)
+        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry)
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
                 .kafkaCheckEnabled()
@@ -85,7 +90,7 @@ public class KafkaReadinessCheckTest {
         kafka.cutOffConnectionsBetweenBrokersAndClients();
 
         // when
-        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka)
+        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry)
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
                 .kafkaCheckDisabled()
@@ -109,7 +114,7 @@ public class KafkaReadinessCheckTest {
         assertThat(kafka.countUnderReplicatedPartitions() > 0).isTrue();
 
         // when
-        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka)
+        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry)
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
                 .kafkaCheckEnabled()
@@ -153,7 +158,7 @@ public class KafkaReadinessCheckTest {
         assertThat(kafka.countOfflinePartitions() > 0).isTrue();
 
         // when
-        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka)
+        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry)
                 .metadataMaxAgeInSeconds(1)
                 .readinessCheckIntervalInSeconds(1)
                 .kafkaCheckEnabled()
@@ -184,7 +189,7 @@ public class KafkaReadinessCheckTest {
     }
 
     private void publishSampleMessage(Topic topic) {
-        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka)
+        HermesTestApp hermesFrontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry)
                 .start();
         FrontendTestClient client = new FrontendTestClient(hermesFrontend.getPort());
         client.publishUntilSuccess(topic.getQualifiedName(), "message");
