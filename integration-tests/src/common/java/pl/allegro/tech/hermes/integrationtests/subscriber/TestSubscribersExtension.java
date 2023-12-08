@@ -39,16 +39,25 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
     }
 
     public TestSubscriber createSubscriber(String endpointPathSuffix) {
-        String path = createPath(endpointPathSuffix);
-        service.addStubMapping(post(urlPathEqualTo(path)).willReturn(aResponse().withStatus(OK.getStatusCode())).build());
-        TestSubscriber subscriber = new TestSubscriber(createSubscriberURI(path));
-        subscribersPerPath.put(path, subscriber);
-        return subscriber;
+        return createSubscriber(OK.getStatusCode(), endpointPathSuffix);
     }
 
     public TestSubscriber createSubscriber() {
         return createSubscriber("");
     }
+
+    public TestSubscriber createSubscriber(int statusCode) {
+        return createSubscriber(statusCode, "");
+    }
+
+    public TestSubscriber createSubscriber(int statusCode, String endpointPathSuffix) {
+        String path = createPath(endpointPathSuffix);
+        service.addStubMapping(post(urlPathEqualTo(path)).willReturn(aResponse().withStatus(statusCode)).build());
+        TestSubscriber subscriber = new TestSubscriber(createSubscriberURI(path));
+        subscribersPerPath.put(path, subscriber);
+        return subscriber;
+    }
+
 
     public TestSubscriber createSubscriberWithRetry(String message, int delay) {
         String path = createPath("");
@@ -84,7 +93,18 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
 
     private String createPath(String pathSuffix) {
         return "/subscriber-" + subscriberIndex.incrementAndGet() + pathSuffix;
+    }
 
+    public interface SubscriberScenario {
+        void apply(WireMockServer subscriber, String endpoint);
+    }
+
+    public TestSubscriber createSubscriber(SubscriberScenario scenario) {
+        String path = createPath("");
+        scenario.apply(service, path);
+        TestSubscriber subscriber = new TestSubscriber(createSubscriberURI(path));
+        subscribersPerPath.put(path, subscriber);
+        return subscriber;
     }
 
     private URI createSubscriberURI(String path) {
