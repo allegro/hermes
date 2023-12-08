@@ -55,7 +55,7 @@ node {
     download = true
     workDir = file("${project.buildDir}/nodejs")
     npmWorkDir = file("${project.buildDir}/npm")
-    nodeModulesDir = file("${project.rootDir}/hermes-console-vue")
+    nodeModulesDir = file("${project.rootDir}/hermes-console")
 }
 
 yarnSetup.dependsOn(nodeSetup)
@@ -66,7 +66,7 @@ task buildHermesConsole(type: YarnTask, dependsOn: yarn) {
 }
 
 task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
-    from '../hermes-console-vue/dist'
+    from '../hermes-console/dist'
     def staticDirectory = sourceSets.main.output.resourcesDir.path + '/static'
     // remove previous static dir if exists and start with clear setup
     delete staticDirectory
