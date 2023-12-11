@@ -117,6 +117,12 @@ public class TestSubscriber {
         }
     }
 
+    public int receivedRequestsSize() {
+        synchronized (receivedRequests) {
+            return receivedRequests.size();
+        }
+    }
+
     public void reset() {
         this.receivedRequests.clear();
     }

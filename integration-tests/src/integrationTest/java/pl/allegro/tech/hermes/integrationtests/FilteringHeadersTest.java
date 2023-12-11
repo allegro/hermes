@@ -14,6 +14,7 @@ import java.util.Map;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
+import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
@@ -54,6 +55,7 @@ public class FilteringHeadersTest {
 
         // then
         subscriber.waitUntilReceived(ALICE.asJson());
+        assertThat(subscriber.receivedRequestsSize()).isEqualTo(1);
     }
 
     private HttpHeaders createHeaders(Map<String, String> map) {

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -23,10 +24,16 @@ public class JmsConsumingTest {
     @RegisterExtension
     public static final HermesExtension hermes = new HermesExtension();
 
+    private static final JmsStarter starter = new JmsStarter();
+
     @BeforeAll
     static void startJms() throws Exception {
-        JmsStarter starter = new JmsStarter();
         starter.start();
+    }
+
+    @AfterAll
+    static void stopJms() throws Exception {
+        starter.stop();
     }
 
     @Test
