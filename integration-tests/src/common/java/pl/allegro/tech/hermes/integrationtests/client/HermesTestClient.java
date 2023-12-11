@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.client;
 
 import com.jayway.awaitility.Duration;
 import jakarta.ws.rs.core.Response;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
@@ -15,9 +16,9 @@ import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionSt
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesTestClient {
     private final ManagementTestClient managementTestClient;
@@ -48,6 +49,20 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec getTopicResponse(String topicQualifiedName) {
         return managementTestClient.getTopic(topicQualifiedName);
+    }
+
+    public void saveSchema(String topicQualifiedName, boolean validate, String schema) {
+        managementTestClient.saveSchema(topicQualifiedName, validate, schema)
+                .expectStatus().isCreated();
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+                managementTestClient.getSchema(topicQualifiedName).expectStatus().isOk()
+        );
+    }
+
+    public void updateTopic(String qualifiedTopicName, PatchData patch) {
+        managementTestClient.updateTopic(qualifiedTopicName, patch)
+                .expectStatus()
+                .is2xxSuccessful();
     }
 
     // SUBSCRIPTION
@@ -100,12 +115,24 @@ public class HermesTestClient {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body, Map<String, String> headers) {
+    public WebTestClient.ResponseSpec publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
+        return frontendTestClient.publishUntilStatus(topicQualifiedName, body, statusCode);
+    }
+
+    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body, headers);
     }
 
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, byte[] body) {
-        return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
+    public WebTestClient.ResponseSpec publishJSONUntilSuccess(String topicQualifiedName, String body) {
+        return frontendTestClient.publishJSONUntilSuccess(topicQualifiedName, body, new HttpHeaders());
+    }
+
+    public WebTestClient.ResponseSpec publishAvroUntilSuccess(String topicQualifiedName, byte[] body) {
+        return frontendTestClient.publishAvroUntilSuccess(topicQualifiedName, body);
+    }
+
+    public WebTestClient.ResponseSpec publishAvroUntilSuccess(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+        return frontendTestClient.publishAvroUntilSuccess(topicQualifiedName, body, headers);
     }
 
     public void updateSubscription(Topic topic, String subscription, PatchData patch) {
@@ -114,16 +141,24 @@ public class HermesTestClient {
                 .is2xxSuccessful();
     }
 
-    public WebTestClient.ResponseSpec publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
-        return frontendTestClient.publishUntilStatus(topicQualifiedName, body, statusCode);
-    }
-
-    public WebTestClient.ResponseSpec publishWithHeaders(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+    public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishWithHeaders(topicQualifiedName, body, headers);
     }
 
     public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
         return frontendTestClient.publish(topicQualifiedName, body);
+    }
+
+    public WebTestClient.ResponseSpec publishAvro(String topicQualifiedName, byte[] body) {
+        return frontendTestClient.publishAvro(topicQualifiedName, body, new HttpHeaders());
+    }
+
+    public WebTestClient.ResponseSpec publishAvro(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+        return frontendTestClient.publishAvro(topicQualifiedName, body, headers);
+    }
+
+    public WebTestClient.ResponseSpec publishJSON(String topicQualifiedName, String body) {
+        return frontendTestClient.publishJSON(topicQualifiedName, body, new HttpHeaders());
     }
 
     public Response publishChunked(String topicQualifiedName, String body) {
@@ -192,4 +227,5 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {
         return managementTestClient.getPreview(qualifiedTopicName, primaryKafkaClusterName, partition, offset);
     }
+
 }

@@ -33,6 +33,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import static pl.allegro.tech.hermes.utils.Headers.createHeaders;
 
 public class PublishingAndConsumingTest {
 
@@ -256,7 +257,7 @@ public class PublishingAndConsumingTest {
                         .build());
 
         // when
-        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body(), Map.of("Trace-Id", "valueFromRequest"));
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body(), createHeaders(Map.of("Trace-Id", "valueFromRequest")));
 
         // then
         subscriber.waitUntilRequestReceived(request -> {
@@ -327,7 +328,7 @@ public class PublishingAndConsumingTest {
         hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build());
 
         // when
-        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body(), Map.of("Trace-Id", traceId));
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body(), createHeaders(Map.of("Trace-Id", traceId)));
 
         // then
         subscriber.waitUntilRequestReceived(request -> {
@@ -348,7 +349,7 @@ public class PublishingAndConsumingTest {
         hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build());
 
         // when
-        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body(), TraceHeaders.fromTraceContext(trace));
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body(), createHeaders(TraceHeaders.fromTraceContext(trace)));
 
         // then
         subscriber.waitUntilRequestReceived(request -> {

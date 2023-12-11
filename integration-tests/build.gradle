@@ -9,6 +9,7 @@ dependencies {
     testImplementation project(':hermes-management')
     testImplementation project(':hermes-consumers')
     testImplementation project(':hermes-frontend')
+    testImplementation project(':hermes-client')
 
     testImplementation group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
     testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp

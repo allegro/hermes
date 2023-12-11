@@ -61,7 +61,7 @@ public class JmsConsumingTest {
         hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), jmsEndpointAddress()).build());
 
         // when
-        hermes.api().publishWithHeaders(topic.getQualifiedName(), TestMessage.simple().body(), headers);
+        hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body(), headers);
 
         // then
         subscriber.waitUntilMessageWithHeaderReceived("TraceId", traceId);
@@ -78,7 +78,7 @@ public class JmsConsumingTest {
         hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), jmsEndpointAddress()).build());
 
         // when
-        hermes.api().publishWithHeaders(topic.getQualifiedName(), TestMessage.simple().body(), headers);
+        hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body(), headers);
 
         // then
         subscriber.waitUntilMessageWithHeaderReceived("TraceId", trace.getTraceId());

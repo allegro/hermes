@@ -76,10 +76,4 @@ public class HermesInitHelper {
                 assertThat(sub.getState()).isEqualTo(Subscription.State.ACTIVE);
             });
     }
-
-    public void updateTopic(String qualifiedTopicName, PatchData patch) {
-        managementTestClient.updateTopic(qualifiedTopicName, patch)
-                .expectStatus()
-                .is2xxSuccessful();
-    }
 }
