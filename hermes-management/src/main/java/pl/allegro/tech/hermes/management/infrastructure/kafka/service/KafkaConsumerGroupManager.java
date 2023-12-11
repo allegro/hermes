@@ -29,11 +29,11 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
     public KafkaConsumerGroupManager(KafkaNamesMapper kafkaNamesMapper,
                                      String clusterName,
-                                     String bootstrapKafkaServer,
+                                     String brokerList,
                                      KafkaProperties kafkaProperties) {
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.clusterName = clusterName;
-        this.consumerManager = new KafkaConsumerManager(kafkaProperties, kafkaNamesMapper, bootstrapKafkaServer);
+        this.consumerManager = new KafkaConsumerManager(kafkaProperties, kafkaNamesMapper, brokerList);
     }
 
     @Override

@@ -55,7 +55,7 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 public class KafkaMessageReceiverFactory implements ReceiverFactory {
 
     private final CommonConsumerParameters commonConsumerParameters;
-    private final KafkaParameters kafkaAuthorizationParameters;
+    private final KafkaParameters kafkaParameters;
     private final KafkaReceiverParameters consumerReceiverParameters;
     private final KafkaConsumerParameters kafkaConsumerParameters;
     private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
@@ -69,7 +69,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     public KafkaMessageReceiverFactory(CommonConsumerParameters commonConsumerParameters,
                                        KafkaReceiverParameters consumerReceiverParameters,
                                        KafkaConsumerParameters kafkaConsumerParameters,
-                                       KafkaParameters kafkaAuthorizationParameters,
+                                       KafkaParameters kafkaParameters,
                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        MetricsFacade metricsFacade,
                                        OffsetQueue offsetQueue,
@@ -80,7 +80,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         this.commonConsumerParameters = commonConsumerParameters;
         this.consumerReceiverParameters = consumerReceiverParameters;
         this.kafkaConsumerParameters = kafkaConsumerParameters;
-        this.kafkaAuthorizationParameters = kafkaAuthorizationParameters;
+        this.kafkaParameters = kafkaParameters;
         this.messageConverterFactory = messageConverterFactory;
         this.metricsFacade = metricsFacade;
         this.offsetQueue = offsetQueue;
@@ -155,7 +155,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private KafkaConsumer<byte[], byte[]> createKafkaConsumer(Topic topic, Subscription subscription) {
         ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
         Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaAuthorizationParameters.getBrokerList());
+        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
         props.put(CLIENT_ID_CONFIG, consumerReceiverParameters.getClientId() + "_" + groupId.asString());
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, "false");
@@ -168,14 +168,10 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     }
 
     private void addKafkaAuthorizationParameters(Properties props) {
-        if (kafkaAuthorizationParameters.isEnabled()) {
-            props.put(SASL_MECHANISM, kafkaAuthorizationParameters.getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaAuthorizationParameters.getProtocol());
-            props.put(SASL_JAAS_CONFIG,
-                    "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
-                            + "username=\"" + kafkaAuthorizationParameters.getUsername() + "\"\n"
-                            + "password=\"" + kafkaAuthorizationParameters.getPassword() + "\";"
-            );
+        if (kafkaParameters.isAuthenticationEnabled()) {
+            props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
+            props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
     }
 
