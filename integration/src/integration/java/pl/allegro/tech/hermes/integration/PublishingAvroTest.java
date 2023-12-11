@@ -450,12 +450,12 @@ public class PublishingAvroTest extends IntegrationTest {
     @Test
     public void shouldSendMessageIdHeaderToSubscriber() {
         // given
-        String traceId = UUID.randomUUID().toString();
         Topic topic = randomTopic("sendMessageIdHeaderToSubscriber", "topic").withContentType(AVRO).build();
         operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
         operations.createSubscription(topic, "subscription", remoteService.getUrl());
         remoteService.expectMessages(user.asJson());
         WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
+        String traceId = UUID.randomUUID().toString();
 
         // when
         Response response = client
