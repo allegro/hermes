@@ -4,6 +4,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.integrationtests.client.HermesTestClient;
+import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
@@ -13,9 +14,11 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     private static final ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
     private static final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
-    private static final HermesConsumersTestApp consumers = new HermesConsumersTestApp(hermesZookeeper, kafka);
-    private static final HermesManagementTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka);
-    private static final HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka);
+    public static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
+            .withKafkaCluster(kafka);
+    private static final HermesConsumersTestApp consumers = new HermesConsumersTestApp(hermesZookeeper, kafka, schemaRegistry);
+    private static final HermesManagementTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry);
+    private static final HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
     private HermesTestClient hermesTestClient;
     private HermesInitHelper hermesInitHelper;
 
@@ -25,8 +28,9 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     public void beforeAll(ExtensionContext context) {
         if (!started) {
             Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
+            schemaRegistry.start();
             management.start();
-            Stream.of(consumers, frontend).parallel().forEach(HermesTestApp::start);
+            Stream.of(consumers, frontend).forEach(HermesTestApp::start);
             started = true;
         }
         hermesTestClient = new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
@@ -36,7 +40,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     @Override
     public void close() {
         Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
-        Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::stop);
+        Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
         started = false;
     }
 

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.core.env.Environment;
 import pl.allegro.tech.hermes.management.HermesManagement;
+import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
@@ -26,16 +27,22 @@ public class HermesManagementTestApp implements HermesTestApp {
     private int port = -1;
     private final Map<String, ZookeeperContainer> hermesZookeepers;
     private final Map<String, KafkaContainerCluster> kafkaClusters;
+    private final ConfluentSchemaRegistryContainer schemaRegistry;
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesManagement.class);
 
-    public HermesManagementTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
-        this(Map.of(DEFAULT_DC_NAME, hermesZookeeper), Map.of(DEFAULT_DC_NAME, kafka));
+    public HermesManagementTestApp(ZookeeperContainer
+                                           hermesZookeeper,
+                                   KafkaContainerCluster kafka,
+                                   ConfluentSchemaRegistryContainer schemaRegistry) {
+        this(Map.of(DEFAULT_DC_NAME, hermesZookeeper), Map.of(DEFAULT_DC_NAME, kafka), schemaRegistry);
     }
 
     public HermesManagementTestApp(Map<String, ZookeeperContainer> hermesZookeepers,
-                                   Map<String, KafkaContainerCluster> kafkaClusters) {
+                                   Map<String, KafkaContainerCluster> kafkaClusters,
+                                   ConfluentSchemaRegistryContainer schemaRegistry) {
         this.hermesZookeepers = hermesZookeepers;
         this.kafkaClusters = kafkaClusters;
+        this.schemaRegistry = schemaRegistry;
     }
 
     @Override
@@ -66,6 +73,10 @@ public class HermesManagementTestApp implements HermesTestApp {
             args.add("--kafka.clusters[" + idx + "].namespace=itTest");
             idx++;
         }
+
+        args.add("--schema.repository.serverUrl=" + schemaRegistry.getUrl());
+        args.add("--topic.touchSchedulerEnabled=" + false);
+
         app.run(args.toArray(new String[0]));
         String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
         if (localServerPort == null) {

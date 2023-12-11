@@ -4,6 +4,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
@@ -13,6 +14,7 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
     private final ZookeeperContainer hermesZookeeper;
     private final KafkaContainerCluster kafka;
+    private final ConfluentSchemaRegistryContainer schemaRegistry;
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesFrontend.class)
             .web(WebApplicationType.NONE);
 
@@ -21,9 +23,12 @@ public class HermesFrontendTestApp implements HermesTestApp {
     private Duration metadataMaxAge = Duration.ofMinutes(5);
     private Duration readinessCheckInterval = Duration.ofSeconds(1);
 
-    public HermesFrontendTestApp(ZookeeperContainer hermesZookeeper, KafkaContainerCluster kafka) {
+    public HermesFrontendTestApp(ZookeeperContainer hermesZookeeper,
+                                 KafkaContainerCluster kafka,
+                                 ConfluentSchemaRegistryContainer schemaRegistry) {
         this.hermesZookeeper = hermesZookeeper;
         this.kafka = kafka;
+        this.schemaRegistry = schemaRegistry;
     }
 
     @Override
@@ -34,6 +39,8 @@ public class HermesFrontendTestApp implements HermesTestApp {
                 "--frontend.kafka.namespace=itTest",
                 "--frontend.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
                 "--frontend.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
+                "--frontend.schema.repository.serverUrl=" + schemaRegistry.getUrl(),
+                "--frontend.schema.cache.enabled=true",
                 "--frontend.readiness.check.kafkaCheckEnabled=" + kafkaCheckEnabled,
                 "--frontend.readiness.check.enabled=true",
                 "--frontend.header.propagation.enabled=true",

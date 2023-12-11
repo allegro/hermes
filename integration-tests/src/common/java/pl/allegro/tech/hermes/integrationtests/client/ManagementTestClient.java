@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.List;
 
 public class ManagementTestClient {
@@ -43,6 +44,8 @@ public class ManagementTestClient {
 
     private static final String SET_READINESS = "/readiness/datacenters/{dc}";
 
+    private static final String TOPIC_SCHEMA = "topics/{topicName}/schema";
+
     private final WebTestClient webTestClient;
 
     private final String managementContainerUrl;
@@ -53,6 +56,7 @@ public class ManagementTestClient {
         this.managementContainerUrl = "http://localhost:" + managementPort;
         this.webTestClient = WebTestClient
                 .bindToServer()
+                .responseTimeout(Duration.ofSeconds(30))
                 .baseUrl(managementContainerUrl)
                 .build();
         this.objectMapper = new ObjectMapper();
@@ -219,6 +223,25 @@ public class ManagementTestClient {
                         .path(SET_READINESS)
                         .build(dc))
                 .body(Mono.just(new Readiness(state)), Readiness.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec saveSchema(String qualifiedTopicName, boolean validate, String schema) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPIC_SCHEMA)
+                        .queryParam("validate", validate)
+                        .build(qualifiedTopicName))
+                .header("Content-Type", "application/json")
+                .body(Mono.just(schema), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getSchema(String qualifiedTopicName) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPIC_SCHEMA)
+                        .build(qualifiedTopicName))
                 .exchange();
     }
 }
