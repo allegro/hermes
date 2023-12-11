@@ -40,6 +40,10 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         started = false;
     }
 
+    public int getFrontendPort() {
+        return frontend.getPort();
+    }
+
     public HermesTestClient api() {
         return hermesTestClient;
     }

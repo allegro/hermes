@@ -8,6 +8,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Readiness;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
@@ -39,6 +40,8 @@ public class ManagementTestClient {
     private static final String LATEST_UNDELIVERED_MESSAGE = "/topics/{topicName}/subscriptions/{subscriptionName}/undelivered";
 
     private static final String TOPIC_PREVIEW = "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
+
+    private static final String SET_READINESS = "/readiness/datacenters/{dc}";
 
     private final WebTestClient webTestClient;
 
@@ -207,6 +210,15 @@ public class ManagementTestClient {
                         .path(TOPIC_PATH)
                         .build(qualifiedTopicName))
                 .body(Mono.just(patch), PatchData.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec setReadiness(String dc, boolean state) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SET_READINESS)
+                        .build(dc))
+                .body(Mono.just(new Readiness(state)), Readiness.class)
                 .exchange();
     }
 }

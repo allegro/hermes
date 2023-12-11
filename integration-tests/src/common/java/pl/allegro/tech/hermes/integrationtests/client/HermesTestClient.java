@@ -187,4 +187,12 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {
         return managementTestClient.getPreview(qualifiedTopicName, primaryKafkaClusterName, partition, offset);
     }
+
+    public WebTestClient.ResponseSpec setReadiness(String dc, boolean state) {
+        return managementTestClient.setReadiness(dc, state);
+    }
+
+    public WebTestClient.ResponseSpec getReadiness() {
+        return frontendTestClient.getStatusReady();
+    }
 }
