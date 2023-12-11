@@ -11,10 +11,10 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtensi
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
-import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
@@ -54,8 +54,7 @@ public class FilteringHeadersTest {
         hermes.api().publishWithHeaders(topic.getQualifiedName(), BOB.asJson(), createHeaders(Map.of("Trace-Id", "invalid", "Span-Id", "my-span"))).expectStatus().is2xxSuccessful();
 
         // then
-        subscriber.waitUntilReceived(ALICE.asJson());
-        assertThat(subscriber.receivedRequestsSize()).isEqualTo(1);
+        subscriber.waitUntilAllReceivedStrict(Set.of(ALICE.asJson()));
     }
 
     private HttpHeaders createHeaders(Map<String, String> map) {

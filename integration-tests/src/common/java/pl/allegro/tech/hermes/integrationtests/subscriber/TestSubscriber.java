@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -117,10 +119,13 @@ public class TestSubscriber {
         }
     }
 
-    public int receivedRequestsSize() {
-        synchronized (receivedRequests) {
-            return receivedRequests.size();
-        }
+    public void waitUntilAllReceivedStrict(Set<String> expectedBodies) {
+        awaitWithSyncRequests(() -> {
+            int receivedCount = receivedRequests.size();
+            assertThat(receivedCount).isEqualTo(expectedBodies.size());
+            Set<String> actual = receivedRequests.stream().map(LoggedRequest::getBodyAsString).collect(Collectors.toSet());
+            assertThat(actual).isEqualTo(expectedBodies);
+        });
     }
 
     public void reset() {

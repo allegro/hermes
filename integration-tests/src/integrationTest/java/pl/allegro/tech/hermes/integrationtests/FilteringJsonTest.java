@@ -10,8 +10,9 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
+import java.util.Set;
+
 import static com.google.common.collect.ImmutableMap.of;
-import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
@@ -47,13 +48,11 @@ public class FilteringJsonTest {
                 .build());
 
         // when
-        hermes.api().publish(topic.getQualifiedName(), ALICE.asJson());
-        hermes.api().publish(topic.getQualifiedName(), BOB.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), BOB.asJson());
 
         // then
-        subscriber.waitUntilReceived(BOB.asJson());
-        subscriber.receivedRequestsSize();
-        assertThat(subscriber.receivedRequestsSize()).isEqualTo(1);
+        subscriber.waitUntilAllReceivedStrict(Set.of(BOB.asJson()));
     }
 
     @Test
@@ -68,14 +67,13 @@ public class FilteringJsonTest {
                 .build());
 
         // when
-        hermes.api().publish(topic.getQualifiedName(), ALICE.asJson());
-        hermes.api().publish(topic.getQualifiedName(), ALICE_GREY.asJson());
-        hermes.api().publish(topic.getQualifiedName(), BOB.asJson());
-        hermes.api().publish(topic.getQualifiedName(), BOB_GREY.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE_GREY.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), BOB.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), BOB_GREY.asJson());
 
         // then
-        subscriber.waitUntilReceived(BOB_GREY.asJson());
-        assertThat(subscriber.receivedRequestsSize()).isEqualTo(1);
+        subscriber.waitUntilAllReceivedStrict(Set.of(BOB_GREY.asJson()));
     }
 
     @Test
@@ -90,12 +88,11 @@ public class FilteringJsonTest {
                 .build());
 
         // when
-        hermes.api().publish(topic.getQualifiedName(), ALICE.asJson());
-        hermes.api().publish(topic.getQualifiedName(), BOB.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), BOB.asJson());
 
         // then
-        subscriber.waitUntilReceived(BOB.asJson());
+        subscriber.waitUntilAllReceivedStrict(Set.of(BOB.asJson()));
         subscriber.waitUntilMessageWithHeaderReceived("MY-HEADER", "myHeaderValue");
-        assertThat(subscriber.receivedRequestsSize()).isEqualTo(1);
     }
 }
