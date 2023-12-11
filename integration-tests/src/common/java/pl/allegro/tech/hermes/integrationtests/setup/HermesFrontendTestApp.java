@@ -36,14 +36,14 @@ public class HermesFrontendTestApp implements HermesTestApp {
                 "--frontend.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
                 "--frontend.readiness.check.kafkaCheckEnabled=" + kafkaCheckEnabled,
                 "--frontend.readiness.check.enabled=true",
+                "--frontend.header.propagation.enabled=true",
+                "--frontend.header.propagation.allowFilter=" + "Trace-Id, Span-Id, Parent-Span-Id, Trace-Sampled, Trace-Reported",
                 "--frontend.kafka.producer.metadataMaxAge=" + metadataMaxAge,
                 "--frontend.readiness.check.interval=" + readinessCheckInterval,
                 "--frontend.handlers.forceTopicMaxMessageSize=true",
                 "--frontend.throughput.type=fixed",
                 "--frontend.throughput.fixedMax=" + 50 * 1024L,
-                "--frontend.handlers.idleTimeout=" + Duration.ofSeconds(2),
-                "--frontend.header.propagation.enabled=true",
-                "--frontend.header.propagation.allowFilter=" + "Trace-Id, Span-Id, Parent-Span-Id, Trace-Sampled, Trace-Reported"
+                "--frontend.handlers.idleTimeout=" + Duration.ofSeconds(2)
         );
         port = app.context().getBean(HermesServer.class).getPort();
         return this;

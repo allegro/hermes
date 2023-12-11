@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integrationtests.client;
 import com.jayway.awaitility.Duration;
 import jakarta.ws.rs.core.Response;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
@@ -107,14 +108,18 @@ public class HermesTestClient {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body);
     }
 
-    public WebTestClient.ResponseSpec publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
-        return frontendTestClient.publishUntilStatus(topicQualifiedName, body, statusCode);
-    }
-
     public void updateSubscription(Topic topic, String subscription, PatchData patch) {
         managementTestClient.updateSubscription(topic, subscription, patch)
                 .expectStatus()
                 .is2xxSuccessful();
+    }
+
+    public WebTestClient.ResponseSpec publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
+        return frontendTestClient.publishUntilStatus(topicQualifiedName, body, statusCode);
+    }
+
+    public WebTestClient.ResponseSpec publishWithHeaders(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+        return frontendTestClient.publishWithHeaders(topicQualifiedName, body, headers);
     }
 
     public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
