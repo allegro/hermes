@@ -34,7 +34,8 @@ dependencies {
         exclude module: 'hornetq-native'
     }
 
-    api(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
+    api(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.125.11')
+    api(group: 'com.google.cloud', name: 'google-cloud-bigquery', version: '2.27.0')
 
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
