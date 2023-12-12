@@ -235,4 +235,8 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec getReadiness() {
         return frontendTestClient.getStatusReady();
     }
+
+    public WebTestClient.ResponseSpec getAllTopicClients(String topicQualifiedName) {
+        return managementTestClient.getAllTopicClients(topicQualifiedName);
+    }
 }

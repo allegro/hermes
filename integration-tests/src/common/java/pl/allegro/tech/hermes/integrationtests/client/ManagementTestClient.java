@@ -46,6 +46,8 @@ public class ManagementTestClient {
 
     private static final String TOPIC_SCHEMA = "topics/{topicName}/schema";
 
+    private static final String ALL_TOPIC_CLIENTS = "topics/{topicName}/clients";
+
     private final WebTestClient webTestClient;
 
     private final String managementContainerUrl;
@@ -167,7 +169,7 @@ public class ManagementTestClient {
 
     private List<String> mapStringJsonToListOfString(String jsonString) {
         try {
-            return objectMapper.readValue(jsonString, new TypeReference<List<String>>() {
+            return objectMapper.readValue(jsonString, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -242,6 +244,14 @@ public class ManagementTestClient {
                         .fromUri(managementContainerUrl)
                         .path(TOPIC_SCHEMA)
                         .build(qualifiedTopicName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getAllTopicClients(String topicQualifiedName) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(ALL_TOPIC_CLIENTS)
+                        .build(topicQualifiedName))
                 .exchange();
     }
 }
