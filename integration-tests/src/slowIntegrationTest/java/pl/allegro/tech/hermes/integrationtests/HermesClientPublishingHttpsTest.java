@@ -38,8 +38,6 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 public class HermesClientPublishingHttpsTest {
 
-    private Topic topic;
-
     private static final ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
     private static final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
     private static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
@@ -75,7 +73,6 @@ public class HermesClientPublishingHttpsTest {
                 .forEach(Startable::stop);
         frontend.stop();
     }
-
 
     @Test
     public void shouldCommunicateWithHermesUsingHttp2() throws Exception {

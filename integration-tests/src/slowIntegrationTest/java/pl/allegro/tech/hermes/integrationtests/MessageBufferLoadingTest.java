@@ -74,7 +74,6 @@ public class MessageBufferLoadingTest {
                 .forEach(Startable::stop);
     }
 
-
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
@@ -86,7 +85,6 @@ public class MessageBufferLoadingTest {
         frontend.withProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
         frontend.withProperty(MESSAGES_LOCAL_STORAGE_ENABLED, true);
         frontend.start();
-
 
         FrontendTestClient publisher = new FrontendTestClient(frontend.getPort());
 
