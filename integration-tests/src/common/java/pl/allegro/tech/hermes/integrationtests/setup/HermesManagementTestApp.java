@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
@@ -98,11 +99,9 @@ public class HermesManagementTestApp implements HermesTestApp {
             waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> {
                 try {
                     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                    if (!"readWrite".equals(response.body())) {
-                        throw new RuntimeException();
-                    }
+                    assertThat(response.body()).isEqualTo("readWrite");
                 } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
+                    throw new AssertionError("Reading management mode failed", e);
                 }
             });
         } catch (URISyntaxException e) {
