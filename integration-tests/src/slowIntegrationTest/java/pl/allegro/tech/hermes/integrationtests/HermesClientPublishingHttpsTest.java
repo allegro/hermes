@@ -75,7 +75,7 @@ public class HermesClientPublishingHttpsTest {
     }
 
     @Test
-    public void shouldCommunicateWithHermesUsingHttp2() throws Exception {
+    public void shouldCommunicateWithHermesUsingHttp2() {
         // given
         Topic topic = initHelper.createTopic(topicWithRandomName().build());
         String message = TestMessage.of("hello", "world").body();
