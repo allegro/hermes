@@ -43,6 +43,8 @@ public class ManagementTestClient {
 
     private static final String TOPIC_SCHEMA = "topics/{topicName}/schema";
 
+    private static final String TOPIC_METRICS_PATH = "/topics/{topicName}/metrics";
+
     private final WebTestClient webTestClient;
 
     private final String managementContainerUrl;
@@ -211,6 +213,28 @@ public class ManagementTestClient {
                         .path(TOPIC_PATH)
                         .build(qualifiedTopicName))
                 .body(Mono.just(patch), PatchData.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getTopicMetrics(String qualifiedTopicName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(TOPIC_METRICS_PATH)
+                        .build(qualifiedTopicName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listSubscriptions(String qualifiedTopicName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTIONS_PATH)
+                        .build(qualifiedTopicName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listTopics(String groupName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(TOPICS_PATH)
+                        .queryParam("groupName", groupName)
+                        .build())
                 .exchange();
     }
 

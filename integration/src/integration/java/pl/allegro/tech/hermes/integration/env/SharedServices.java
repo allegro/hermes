@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
-import pl.allegro.tech.hermes.integration.helper.graphite.GraphiteMockServer;
 import pl.allegro.tech.hermes.test.helper.environment.Starter;
 import pl.allegro.tech.hermes.test.helper.environment.WireMockStarter;
 
@@ -66,9 +65,5 @@ public final class SharedServices {
 
     public ConfigurableApplicationContext consumers() {
         return ((ConsumersStarter) starters.get(ConsumersStarter.class)).instance();
-    }
-
-    public GraphiteMockServer graphiteMock() {
-        return ((GraphiteMockStarter) starters.get(GraphiteMockStarter.class)).instance();
     }
 }

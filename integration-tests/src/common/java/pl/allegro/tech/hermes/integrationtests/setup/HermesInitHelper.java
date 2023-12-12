@@ -37,11 +37,12 @@ public class HermesInitHelper {
         return topic;
     }
 
-    private void createGroup(Group group) {
+    public Group createGroup(Group group) {
         managementTestClient.createGroup(group)
             .expectStatus()
             .is2xxSuccessful();
         waitUntilGroupCreated(group.getGroupName());
+        return group;
     }
 
     private void waitUntilGroupCreated(String groupName) {

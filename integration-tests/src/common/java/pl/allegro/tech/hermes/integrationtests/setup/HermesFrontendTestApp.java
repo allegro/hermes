@@ -50,7 +50,8 @@ public class HermesFrontendTestApp implements HermesTestApp {
                 "--frontend.handlers.forceTopicMaxMessageSize=true",
                 "--frontend.throughput.type=fixed",
                 "--frontend.throughput.fixedMax=" + 50 * 1024L,
-                "--frontend.handlers.idleTimeout=" + Duration.ofSeconds(2)
+                "--frontend.handlers.idleTimeout=" + Duration.ofSeconds(2),
+                "--frontend.metrics.micrometer.reportPeriod=" + Duration.ofSeconds(1)
         );
         port = app.context().getBean(HermesServer.class).getPort();
         return this;
