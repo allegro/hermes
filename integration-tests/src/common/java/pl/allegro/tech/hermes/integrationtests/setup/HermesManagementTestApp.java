@@ -76,6 +76,7 @@ public class HermesManagementTestApp implements HermesTestApp {
 
         args.add("--schema.repository.serverUrl=" + schemaRegistry.getUrl());
         args.add("--topic.touchSchedulerEnabled=" + false);
+        args.add("--topic.allowRemoval=" + true);
 
         app.run(args.toArray(new String[0]));
         String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");

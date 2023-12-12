@@ -44,9 +44,13 @@ public class ManagementTestClient {
 
     private static final String SET_READINESS = "/readiness/datacenters/{dc}";
 
-    private static final String TOPIC_SCHEMA = "topics/{topicName}/schema";
+    private static final String TOPIC_SCHEMA = "/topics/{topicName}/schema";
 
-    private static final String ALL_TOPIC_CLIENTS = "topics/{topicName}/clients";
+    private static final String ALL_TOPIC_CLIENTS = "/topics/{topicName}/clients";
+
+    private static final String SUBSCRIPTIONS_BY_OWNER = "/subscriptions/owner/{source}/{ownerId}";
+
+    private static final String TOPICS_BY_OWNER = "/topics/owner/{source}/{ownerId}";
 
     private final WebTestClient webTestClient;
 
@@ -251,6 +255,36 @@ public class ManagementTestClient {
         return webTestClient.get().uri(UriBuilder
                         .fromUri(managementContainerUrl)
                         .path(ALL_TOPIC_CLIENTS)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getSubscriptionsForOwner(String source, String ownerId) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTIONS_BY_OWNER)
+                        .build(source, ownerId))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteSubscription(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTION_PATH)
+                        .build(topicQualifiedName, subscriptionName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getTopicsForOwner(String source, String ownerId) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPICS_BY_OWNER)
+                        .build(source, ownerId))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteTopic(String topicQualifiedName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(TOPIC_PATH)
                         .build(topicQualifiedName))
                 .exchange();
     }

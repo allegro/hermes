@@ -239,4 +239,20 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec getAllTopicClients(String topicQualifiedName) {
         return managementTestClient.getAllTopicClients(topicQualifiedName);
     }
+
+    public WebTestClient.ResponseSpec getSubscriptionsForOwner(String source, String ownerId) {
+        return managementTestClient.getSubscriptionsForOwner(source, ownerId);
+    }
+
+    public WebTestClient.ResponseSpec deleteSubscription(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.deleteSubscription(topicQualifiedName, subscriptionName);
+    }
+
+    public WebTestClient.ResponseSpec getTopicsForOwner(String source, String ownerId) {
+        return managementTestClient.getTopicsForOwner(source, ownerId);
+    }
+
+    public WebTestClient.ResponseSpec deleteTopic(String topicQualifiedName) {
+        return managementTestClient.deleteTopic(topicQualifiedName);
+    }
 }
