@@ -38,6 +38,7 @@ public class ListSubscriptionForOwnerTest {
 
         // then
         assertThat(listSubscriptionsForOwner("Team A")).containsExactly(subscription1.getName(), subscription2.getName());
+        assertThat(listSubscriptionsForOwner("Team B")).containsExactly(subscription3.getName());
     }
 
     @Test
