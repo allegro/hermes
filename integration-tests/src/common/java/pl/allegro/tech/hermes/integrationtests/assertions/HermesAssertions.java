@@ -18,4 +18,7 @@ public final class HermesAssertions extends Assertions {
         return new WiremockRequestAssertion(request);
     }
 
+    public static PrometheusMetricsAssertion assertThatMetrics(String body) {
+        return new PrometheusMetricsAssertion(body);
+    }
 }

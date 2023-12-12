@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static jakarta.ws.rs.client.ClientBuilder.newClient;
 import static org.awaitility.Awaitility.waitAtMost;
@@ -42,11 +42,14 @@ public class FrontendTestClient {
         this.chunkedClient = newClient(new ClientConfig().property(REQUEST_ENTITY_PROCESSING, CHUNKED));
     }
 
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body) {
-        AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
+    public int publishUntilSuccess(String topicQualifiedName, String body) {
+        AtomicInteger attempts = new AtomicInteger(0);
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> response.set(publish(topicQualifiedName, body).expectStatus().isCreated()));
-        return response.get();
+                .untilAsserted(() -> {
+                    attempts.getAndIncrement();
+                    publish(topicQualifiedName, body).expectStatus().isCreated();
+                });
+        return attempts.get();
     }
 
     public Response publishChunked(String topicQualifiedName, String body) {
@@ -58,36 +61,48 @@ public class FrontendTestClient {
 
     }
 
-    public WebTestClient.ResponseSpec publishUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
-        AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
+    public int publishUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+        AtomicInteger attempts = new AtomicInteger(0);
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> response.set(publish(topicQualifiedName, body, headers).expectStatus().isCreated()));
-        return response.get();
+                .untilAsserted(() -> {
+                    attempts.getAndIncrement();
+                    publish(topicQualifiedName, body, headers).expectStatus().isCreated();
+                });
+        return attempts.get();
     }
 
-    public WebTestClient.ResponseSpec publishJSONUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
-        AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
+    public int publishJSONUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+        AtomicInteger attempts = new AtomicInteger(0);
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> response.set(publishJSON(topicQualifiedName, body, headers).expectStatus().isCreated()));
-        return response.get();
+                .untilAsserted(() -> {
+                    attempts.getAndIncrement();
+                    publishJSON(topicQualifiedName, body, headers).expectStatus().isCreated();
+                });
+        return attempts.get();
     }
 
-    public WebTestClient.ResponseSpec publishAvroUntilSuccess(String topicQualifiedName, byte[] body) {
+    public int publishAvroUntilSuccess(String topicQualifiedName, byte[] body) {
         return publishAvroUntilSuccess(topicQualifiedName, body, new HttpHeaders());
     }
 
-    public WebTestClient.ResponseSpec publishAvroUntilSuccess(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
-        AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
+    public int publishAvroUntilSuccess(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+        AtomicInteger attempts = new AtomicInteger(0);
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> response.set(publishAvro(topicQualifiedName, body, headers).expectStatus().isCreated()));
-        return response.get();
+                .untilAsserted(() -> {
+                    attempts.getAndIncrement();
+                    publishAvro(topicQualifiedName, body, headers).expectStatus().isCreated();
+                });
+        return attempts.get();
     }
 
-    public WebTestClient.ResponseSpec publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
-        AtomicReference<WebTestClient.ResponseSpec> response = new AtomicReference<>();
+    public int publishUntilStatus(String topicQualifiedName, String body, int statusCode) {
+        AtomicInteger attempts = new AtomicInteger(0);
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> response.set(publish(topicQualifiedName, body).expectStatus().isEqualTo(statusCode)));
-        return response.get();
+                .untilAsserted(() -> {
+                    attempts.getAndIncrement();
+                    publish(topicQualifiedName, body).expectStatus().isEqualTo(statusCode);
+                });
+        return attempts.get();
     }
 
     WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
@@ -145,8 +160,6 @@ public class FrontendTestClient {
                          String topicName, boolean chunkedEncoding) throws IOException, InterruptedException{
         return slowTestClient.slowEvent(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, chunkedEncoding);
     }
-
-
 
     public WebTestClient.ResponseSpec getStatusHealth() {
         return webTestClient.get().uri(UriBuilder

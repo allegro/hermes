@@ -61,7 +61,10 @@ public class TopicBuilder {
     }
 
     public static TopicBuilder topicWithRandomName() {
-        return topic("group" + sequence.incrementAndGet(), "topic" + sequence.incrementAndGet());
+        return topic(
+                TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
+                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet()
+        );
     }
 
     public static TopicBuilder randomTopic(String group, String topicNamePrefix) {

@@ -64,7 +64,6 @@ public class HermesIntegrationEnvironment implements EnvironmentAware {
     }
 
     static {
-        STARTERS.put(GraphiteMockStarter.class, new GraphiteMockStarter(GRAPHITE_SERVER_PORT));
         STARTERS.put(WireMockStarter.class, new WireMockStarter(HTTP_ENDPOINT_PORT));
         STARTERS.put(GraphiteHttpMockStarter.class, new GraphiteHttpMockStarter());
         STARTERS.put(PrometheusHttpMockStarter.class, new PrometheusHttpMockStarter());
