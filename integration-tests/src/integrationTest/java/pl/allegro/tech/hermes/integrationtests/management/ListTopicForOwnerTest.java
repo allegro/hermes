@@ -22,56 +22,56 @@ public class ListTopicForOwnerTest {
     @Test
     public void shouldListTopicsForOwnerId() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "Team A")).build());
-        Topic topic2 = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "Team A")).build());
-        Topic topic3 = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "Team B")).build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "ListTopicForOwner - Team A")).build());
+        Topic topic2 = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "ListTopicForOwner - Team A")).build());
+        Topic topic3 = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "ListTopicForOwner - Team B")).build());
 
         // expect
-        assertThat(listTopicsForOwner("Team A")).containsExactly(topic.getQualifiedName(), topic2.getQualifiedName());
-        assertThat(listTopicsForOwner("Team B")).containsExactly(topic3.getQualifiedName());
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team A")).containsExactly(topic.getQualifiedName(), topic2.getQualifiedName());
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team B")).containsExactly(topic3.getQualifiedName());
     }
 
     @Test
     public void shouldListTopicAfterNewTopicIsAdded() {
         // expect empty list on start
-        assertThat(listTopicsForOwner("Team C")).isEmpty();
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team C")).isEmpty();
 
         // when
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "Team C")).build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "ListTopicForOwner - Team C")).build());
 
         // then
-        assertThat(listTopicsForOwner("Team C")).containsExactly(topic.getQualifiedName());
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team C")).containsExactly(topic.getQualifiedName());
     }
 
     @Test
     public void shouldListTopicAfterOwnerIsChanged() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "Team D")).build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "ListTopicForOwner - Team D")).build());
 
         // then
-        assertThat(listTopicsForOwner("Team D")).containsExactly(topic.getQualifiedName());
-        assertThat(listTopicsForOwner("Team E")).isEmpty();
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team D")).containsExactly(topic.getQualifiedName());
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team E")).isEmpty();
 
         // when
         hermes.api().updateTopic(topic.getQualifiedName(),
-                PatchData.patchData().set("owner", new OwnerId("Plaintext", "Team E")).build());
+                PatchData.patchData().set("owner", new OwnerId("Plaintext", "ListTopicForOwner - Team E")).build());
 
         // then
-        assertThat(listTopicsForOwner("Team D")).isEmpty();
-        assertThat(listTopicsForOwner("Team E")).containsExactly(topic.getQualifiedName());
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team D")).isEmpty();
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team E")).containsExactly(topic.getQualifiedName());
     }
 
     @Test
     public void shouldNotListTopicAfterTopicIsDeleted() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "Team F")).build());
-        assertThat(listTopicsForOwner("Team F")).containsExactly(topic.getQualifiedName());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withOwner(new OwnerId("Plaintext", "ListTopicForOwner - Team F")).build());
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team F")).containsExactly(topic.getQualifiedName());
 
         // when
         hermes.api().deleteTopic(topic.getQualifiedName()).expectStatus().is2xxSuccessful();
 
         // then
-        assertThat(listTopicsForOwner("Team F")).isEmpty();
+        assertThat(listTopicsForOwner("ListTopicForOwner - Team F")).isEmpty();
     }
 
     private List<String> listTopicsForOwner(String ownerId) {

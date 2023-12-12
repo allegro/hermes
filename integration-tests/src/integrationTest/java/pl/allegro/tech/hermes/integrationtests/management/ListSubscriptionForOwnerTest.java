@@ -32,61 +32,61 @@ public class ListSubscriptionForOwnerTest {
     @Test
     public void shouldListSubscriptionsForOwnerId() {
         // given
-        Subscription subscription1 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "Team A")).build());
-        Subscription subscription2 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "Team A")).build());
-        Subscription subscription3 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "Team B")).build());
+        Subscription subscription1 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "ListSubForOwner - Team A")).build());
+        Subscription subscription2 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "ListSubForOwner - Team A")).build());
+        Subscription subscription3 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "ListSubForOwner - Team B")).build());
 
         // then
-        assertThat(listSubscriptionsForOwner("Team A")).containsExactly(subscription1.getName(), subscription2.getName());
-        assertThat(listSubscriptionsForOwner("Team B")).containsExactly(subscription3.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team A")).containsExactly(subscription1.getName(), subscription2.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team B")).containsExactly(subscription3.getName());
     }
 
     @Test
     public void shouldListSubscriptionAfterNewSubscriptionIsAdded() {
         // given
-        assertThat(listSubscriptionsForOwner("Team C")).isEmpty();
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team C")).isEmpty();
 
         // when
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "Team C")).build());
+        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "ListSubForOwner - Team C")).build());
 
         // then
-        assertThat(listSubscriptionsForOwner("Team C")).containsExactly(subscription.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team C")).containsExactly(subscription.getName());
     }
 
     @Test
     public void shouldListSubscriptionAfterOwnerIsChanged() {
         // given
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "Team D")).build());
+        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "ListSubForOwner - Team D")).build());
 
         // then
-        assertThat(listSubscriptionsForOwner("Team D")).containsExactly(subscription.getName());
-        assertThat(listSubscriptionsForOwner("Team E")).isEmpty();
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team D")).containsExactly(subscription.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team E")).isEmpty();
 
         // when
         hermes.api().updateSubscription(topic, subscription.getName(),
-                PatchData.patchData().set("owner", new OwnerId("Plaintext", "Team E")).build());
+                PatchData.patchData().set("owner", new OwnerId("Plaintext", "ListSubForOwner - Team E")).build());
 
         // then
-        assertThat(listSubscriptionsForOwner("Team D")).isEmpty();
-        assertThat(listSubscriptionsForOwner("Team E")).containsExactly(subscription.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team D")).isEmpty();
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team E")).containsExactly(subscription.getName());
     }
 
     @Test
     public void shouldNotListTopicAfterIsDeleted() {
         // given
-        Subscription subscription1 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "Team F")).build());
-        Subscription subscription2 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "Team G")).build());
+        Subscription subscription1 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "ListSubForOwner - Team F")).build());
+        Subscription subscription2 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "ListSubForOwner - Team G")).build());
 
         // then
-        assertThat(listSubscriptionsForOwner("Team F")).containsExactly(subscription1.getName());
-        assertThat(listSubscriptionsForOwner("Team G")).containsExactly(subscription2.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team F")).containsExactly(subscription1.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team G")).containsExactly(subscription2.getName());
 
         // when
         hermes.api().deleteSubscription(topic.getQualifiedName(), subscription1.getName()).expectStatus().is2xxSuccessful();
 
         // then
-        assertThat(listSubscriptionsForOwner("Team F")).isEmpty();
-        assertThat(listSubscriptionsForOwner("Team G")).containsExactly(subscription2.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team F")).isEmpty();
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team G")).containsExactly(subscription2.getName());
     }
 
     private List<String> listSubscriptionsForOwner(String ownerId) {
