@@ -25,6 +25,7 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FR
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_NAMESPACE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_PRODUCER_METADATA_MAX_AGE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_MICROMETER_REPORT_PERIOD;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_CACHE_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SPRING_PROFILES_ACTIVE;
@@ -85,6 +86,8 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
         args.add(getArgument(FRONTEND_THROUGHPUT_TYPE, "fixed"));
         args.add(getArgument(FRONTEND_THROUGHPUT_FIXED_MAX,  50 * 1024L));
+
+        args.add(getArgument(METRICS_MICROMETER_REPORT_PERIOD, Duration.ofSeconds(1)));
 
         return args;
     }
