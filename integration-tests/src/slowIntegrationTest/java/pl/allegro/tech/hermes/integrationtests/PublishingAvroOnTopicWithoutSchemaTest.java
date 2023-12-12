@@ -5,8 +5,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
@@ -14,14 +14,10 @@ import pl.allegro.tech.hermes.integrationtests.client.FrontendTestClient;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesInitHelper;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
+import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
-import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
-import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
-import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
-
-import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
@@ -30,11 +26,11 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SC
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 public class PublishingAvroOnTopicWithoutSchemaTest {
-    private static final ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
-    private static final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
-    public static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
-            .withKafkaCluster(kafka);
-    private static final HermesManagementTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry);
+
+    @RegisterExtension
+    public static InfrastructureExtension infra = new InfrastructureExtension();
+
+    private static final HermesManagementTestApp management = new HermesManagementTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
     private static HermesInitHelper initHelper;
     private static FrontendTestClient publisher;
     private static HermesFrontendTestApp frontend;
@@ -43,13 +39,11 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
 
     @BeforeAll
     public static void setup() {
-        Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
-        schemaRegistry.start();
         management.start();
         initHelper = new HermesInitHelper(management.getPort());
         emptySchemaRegistryMock.start();
 
-        frontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
+        frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
         frontend.withProperty(SCHEMA_REPOSITORY_SERVER_URL, "http://localhost:" + emptySchemaRegistryMock.port());
         frontend.start();
 
@@ -62,9 +56,6 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
         management.stop();
         emptySchemaRegistryMock.stop();
         frontend.stop();
-        Stream.of(hermesZookeeper, kafka, schemaRegistry)
-                .parallel()
-                .forEach(Startable::stop);
     }
 
     @Test

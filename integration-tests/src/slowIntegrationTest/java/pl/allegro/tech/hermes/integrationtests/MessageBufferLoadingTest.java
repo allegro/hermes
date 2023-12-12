@@ -6,7 +6,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -20,16 +19,13 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesInitHelper;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
+import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
-import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
-import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
-import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.io.File;
 import java.time.Clock;
 import java.util.Collections;
-import java.util.stream.Stream;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
@@ -48,18 +44,15 @@ public class MessageBufferLoadingTest {
     private static final int ENTRIES = 100;
     private static final int AVERAGE_MESSAGE_SIZE = 600;
 
-    private static final ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
-    private static final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
-    private static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer()
-            .withKafkaCluster(kafka);
-    private static final HermesConsumersTestApp consumers = new HermesConsumersTestApp(hermesZookeeper, kafka, schemaRegistry);
-    private static final HermesManagementTestApp management = new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry);
+    @RegisterExtension
+    public static InfrastructureExtension infra = new InfrastructureExtension();
+
+    private static final HermesConsumersTestApp consumers = new HermesConsumersTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
+    private static final HermesManagementTestApp management = new HermesManagementTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
     private static HermesInitHelper initHelper;
 
     @BeforeAll
     public static void setup() {
-        Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
-        schemaRegistry.start();
         management.start();
         initHelper = new HermesInitHelper(management.getPort());
         consumers.start();
@@ -69,19 +62,16 @@ public class MessageBufferLoadingTest {
     public static void clean() {
         management.stop();
         consumers.stop();
-        Stream.of(hermesZookeeper, kafka, schemaRegistry)
-                .parallel()
-                .forEach(Startable::stop);
     }
 
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
     @Test
-    public void shouldBackupMessage() throws Exception {
+    public void shouldBackupMessage() {
         // setup
         String backupStorageDir = Files.createTempDir().getAbsolutePath();
-        HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
+        HermesFrontendTestApp frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
         frontend.withProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
         frontend.withProperty(MESSAGES_LOCAL_STORAGE_ENABLED, true);
         frontend.start();
@@ -97,7 +87,7 @@ public class MessageBufferLoadingTest {
             publisher.publishUntilSuccess(topic.getQualifiedName(), "message");
 
             // when
-            kafka.cutOffConnectionsBetweenBrokersAndClients();
+            infra.kafka().cutOffConnectionsBetweenBrokersAndClients();
 
             publisher.publishUntilStatus(topic.getQualifiedName(), "message", ACCEPTED.getStatusCode());
 
@@ -106,7 +96,7 @@ public class MessageBufferLoadingTest {
 
         } finally {
             // after
-            kafka.restoreConnectionsBetweenBrokersAndClients();
+            infra.kafka().restoreConnectionsBetweenBrokersAndClients();
             frontend.stop();
         }
     }
@@ -124,7 +114,7 @@ public class MessageBufferLoadingTest {
                 subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
         );
 
-        HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
+        HermesFrontendTestApp frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
         frontend.withProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
 
         // when
