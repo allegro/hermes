@@ -120,6 +120,10 @@ public class HermesFrontendTestApp implements HermesTestApp {
         return port;
     }
 
+    public int getSSLPort() {
+        return app.context().getBean(HermesServer.class).getSSLPort();
+    }
+
     public <T> T getBean(Class<T> clazz) {
         return app.context().getBean(clazz);
     }

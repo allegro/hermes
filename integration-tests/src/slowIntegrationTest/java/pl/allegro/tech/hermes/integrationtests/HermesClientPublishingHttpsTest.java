@@ -19,7 +19,6 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesInitHelper;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
-import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import javax.net.ssl.X509TrustManager;
 import java.net.URI;
@@ -40,8 +39,6 @@ public class HermesClientPublishingHttpsTest {
 
     private static final HermesManagementTestApp management = new HermesManagementTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
     private static HermesInitHelper initHelper;
-
-    private static final int frontendSSLPort = Ports.nextAvailable();
     private static HermesFrontendTestApp frontend;
 
     @BeforeAll
@@ -52,7 +49,7 @@ public class HermesClientPublishingHttpsTest {
         frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
         frontend.withProperty(FRONTEND_SSL_ENABLED, true);
         frontend.withProperty(FRONTEND_HTTP2_ENABLED, true);
-        frontend.withProperty(FRONTEND_SSL_PORT, frontendSSLPort);
+        frontend.withProperty(FRONTEND_SSL_PORT, 0);
         frontend.withProperty(FRONTEND_SSL_KEYSTORE_SOURCE, "provided");
         frontend.withProperty(FRONTEND_SSL_TRUSTSTORE_SOURCE, "provided");
 
@@ -73,7 +70,7 @@ public class HermesClientPublishingHttpsTest {
 
         OkHttpHermesSender okHttpHermesSender = new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());
         HermesClient client = hermesClient(okHttpHermesSender)
-                .withURI(URI.create("https://localhost:" + frontendSSLPort))
+                .withURI(URI.create("https://localhost:" + frontend.getSSLPort()))
                 .build();
 
         // when
