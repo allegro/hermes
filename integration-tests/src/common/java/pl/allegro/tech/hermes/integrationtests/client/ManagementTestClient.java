@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -39,11 +41,19 @@ public class ManagementTestClient {
 
     private static final String LATEST_UNDELIVERED_MESSAGE = "/topics/{topicName}/subscriptions/{subscriptionName}/undelivered";
 
-    private static final String TOPIC_PREVIEW = "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
+    private static final String TOPIC_PREVIEW = "/topics/{topicName}/preview";
+
+    private static final String TOPIC_PREVIEW_OFFSET = "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
 
     private static final String TOPIC_SCHEMA = "topics/{topicName}/schema";
 
     private static final String TOPIC_METRICS_PATH = "/topics/{topicName}/metrics";
+
+    private static final String FILTERS = "/filters/{topicName}";
+
+    private static final String STATUS_HEALTH = "/status/health";
+
+    private static final String STATS = "/stats";
 
     private final WebTestClient webTestClient;
 
@@ -202,8 +212,15 @@ public class ManagementTestClient {
 
     public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {
         return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
-                        .path(TOPIC_PREVIEW)
+                        .path(TOPIC_PREVIEW_OFFSET)
                         .build(qualifiedTopicName, primaryKafkaClusterName, partition, offset))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName) {
+        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(TOPIC_PREVIEW)
+                        .build(qualifiedTopicName))
                 .exchange();
     }
 
@@ -249,11 +266,56 @@ public class ManagementTestClient {
                 .exchange();
     }
 
+    public WebTestClient.ResponseSpec saveSchema(String qualifiedTopicName, String schema) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPIC_SCHEMA)
+                        .build(qualifiedTopicName))
+                .header("Content-Type", "application/json")
+                .body(Mono.just(schema), String.class)
+                .exchange();
+    }
+
     public WebTestClient.ResponseSpec getSchema(String qualifiedTopicName) {
         return webTestClient.get().uri(UriBuilder
                         .fromUri(managementContainerUrl)
                         .path(TOPIC_SCHEMA)
                         .build(qualifiedTopicName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteSchema(String qualifiedTopicName) {
+        return webTestClient.delete().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPIC_SCHEMA)
+                        .build(qualifiedTopicName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec verifyFilters(String qualifiedTopicName,
+                                                    MessageFiltersVerificationInput input) {
+        return webTestClient.post().uri(UriBuilder
+                .fromUri(managementContainerUrl)
+                .path(FILTERS)
+                .build(qualifiedTopicName)
+        ).contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(input), MessageFiltersVerificationInput.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getStatusHealth() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(STATUS_HEALTH)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getStats() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(STATS)
+                        .build())
                 .exchange();
     }
 }
