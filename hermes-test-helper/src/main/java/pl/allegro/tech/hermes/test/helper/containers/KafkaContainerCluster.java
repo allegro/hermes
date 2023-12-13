@@ -142,6 +142,7 @@ public class KafkaContainerCluster implements Startable {
 
     @Override
     public void stop() {
+        toxiproxy.stop();
         Stream.concat(brokers.stream(), Stream.of(zookeeper))
                 .parallel()
                 .forEach(GenericContainer::stop);
