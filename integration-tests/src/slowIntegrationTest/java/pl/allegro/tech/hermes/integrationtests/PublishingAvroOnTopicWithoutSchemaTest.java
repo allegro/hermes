@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.core.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,7 +18,6 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
-import pl.allegro.tech.hermes.test.helper.util.Ports;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
@@ -35,7 +35,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
     private static FrontendTestClient publisher;
     private static HermesFrontendTestApp frontend;
 
-    private static final WireMockServer emptySchemaRegistryMock = new WireMockServer(Ports.nextAvailable());
+    private static final WireMockServer emptySchemaRegistryMock = new WireMockServer(Options.DYNAMIC_PORT);
 
     @BeforeAll
     public static void setup() {
