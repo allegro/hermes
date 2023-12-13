@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 
 public class HermesServerGracefulShutdownTest  {
 
@@ -29,7 +28,6 @@ public class HermesServerGracefulShutdownTest  {
     @BeforeEach
     public void beforeEach() {
         frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-        frontend.withProperty(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
         frontend.start();
         hermesServer = frontend.getBean(HermesServer.class);
         frontendClient = new FrontendTestClient(frontend.getPort());

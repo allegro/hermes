@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HEADER_PROPAGATION_ALLOWED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HEADER_PROPAGATION_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_IDLE_TIMEOUT;
@@ -86,6 +87,8 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
         args.add(getArgument(FRONTEND_THROUGHPUT_TYPE, "fixed"));
         args.add(getArgument(FRONTEND_THROUGHPUT_FIXED_MAX,  50 * 1024L));
+
+        args.add(getArgument(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false));
 
         args.add(getArgument(METRICS_MICROMETER_REPORT_PERIOD, Duration.ofSeconds(1)));
 
