@@ -1,15 +1,13 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.client.FrontendTestClient;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesInitHelper;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
@@ -21,23 +19,15 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 public class AttachingKeepAliveHeaderTest {
 
+    @Order(0)
     @RegisterExtension
     public static InfrastructureExtension infra = new InfrastructureExtension();
 
-    private static final HermesManagementTestApp management = new HermesManagementTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-    private static HermesInitHelper initHelper;
+    @Order(1)
+    @RegisterExtension
+    public static HermesManagementExtension management = new HermesManagementExtension(infra);
+
     private static final String MESSAGE = TestMessage.of("hello", "world").body();
-
-    @BeforeAll
-    public static void setup() {
-        management.start();
-        initHelper = new HermesInitHelper(management.getPort());
-    }
-
-    @AfterAll
-    public static void clean() {
-        management.stop();
-    }
 
     @Test
     public void shouldAttachKeepAliveHeaderWhenEnabled() {
@@ -47,7 +37,7 @@ public class AttachingKeepAliveHeaderTest {
             f.withProperty(FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT, "2s");
         });
 
-        Topic topic = initHelper.createTopic(topicWithRandomName().build());
+        Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
 
         FrontendTestClient publisher = new FrontendTestClient(frontend.getPort());
 
@@ -69,7 +59,7 @@ public class AttachingKeepAliveHeaderTest {
             f.withProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED, false);
         });
 
-        Topic topic = initHelper.createTopic(topicWithRandomName().build());
+        Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
 
         FrontendTestClient publisher = new FrontendTestClient(frontend.getPort());
 
