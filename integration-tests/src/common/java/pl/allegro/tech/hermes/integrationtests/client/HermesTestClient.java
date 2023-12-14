@@ -69,10 +69,8 @@ public class HermesTestClient {
         return managementTestClient.deleteSchema(topicQualifiedName);
     }
 
-    public void updateTopic(String qualifiedTopicName, PatchData patch) {
-        managementTestClient.updateTopic(qualifiedTopicName, patch)
-                .expectStatus()
-                .is2xxSuccessful();
+    public WebTestClient.ResponseSpec updateTopic(String qualifiedTopicName, PatchData patch) {
+        return managementTestClient.updateTopic(qualifiedTopicName, patch);
     }
 
     public Subscription getSubscription(String topicQualifiedName, String subscriptionName) {
