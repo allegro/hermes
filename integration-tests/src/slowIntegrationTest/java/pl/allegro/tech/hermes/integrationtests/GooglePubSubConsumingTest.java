@@ -41,7 +41,7 @@ public class GooglePubSubConsumingTest {
     public static HermesConsumersTestApp consumer;
 
     @BeforeAll
-    public static void startPubSub() {
+    public static void setup() {
         googlePubSubContainer.start();
         consumer = new HermesConsumersTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry())
                 .googlePubSubEndpoint(googlePubSubContainer.getEmulatorEndpoint());
@@ -49,7 +49,7 @@ public class GooglePubSubConsumingTest {
     }
 
     @AfterAll
-    public static void stopPubSub() {
+    public static void clean() {
         consumer.stop();
         googlePubSubContainer.stop();
     }
