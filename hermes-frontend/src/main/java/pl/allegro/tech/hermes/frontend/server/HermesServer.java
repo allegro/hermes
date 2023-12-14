@@ -161,4 +161,14 @@ public class HermesServer {
                 .getAddress();
         return socketAddress.getPort();
     }
+
+    public int getSSLPort() {
+        InetSocketAddress socketAddress = (InetSocketAddress) undertow.getListenerInfo().stream()
+                .filter(listener -> listener.getSslContext() != null)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No SSL port available yet."))
+                .getAddress();
+        return socketAddress.getPort();
+    }
+
 }

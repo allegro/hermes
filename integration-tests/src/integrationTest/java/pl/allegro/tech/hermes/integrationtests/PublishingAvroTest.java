@@ -302,7 +302,7 @@ public class PublishingAvroTest {
                         .withJsonToAvroDryRun(true)
                         .withContentType(JSON)
                         .build());
-        hermes.api().saveSchema(topic.getQualifiedName(), false, user.getSchemaAsString());
+        hermes.api().ensureSchemaSaved(topic.getQualifiedName(), false, user.getSchemaAsString());
 
         TestSubscriber subscriber = subscribers.createSubscriber();
         hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build());
@@ -326,7 +326,7 @@ public class PublishingAvroTest {
                         .build());
 
         Schema schema = AvroUserSchemaLoader.load("/schema/user_no_metadata.avsc");
-        hermes.api().saveSchema(topic.getQualifiedName(), false, schema.toString());
+        hermes.api().ensureSchemaSaved(topic.getQualifiedName(), false, schema.toString());
 
         TestSubscriber subscriber = subscribers.createSubscriber();
         hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build());
@@ -381,7 +381,7 @@ public class PublishingAvroTest {
                         .withContentType(AVRO)
                 .build());
 
-        hermes.api().saveSchema(topic.getQualifiedName(), false, load("/schema/user_v2.avsc").toString());
+        hermes.api().ensureSchemaSaved(topic.getQualifiedName(), false, load("/schema/user_v2.avsc").toString());
 
         // when
         HermesMessage message = hermesMessage(topic.getQualifiedName(), user.asBytes())
@@ -413,7 +413,7 @@ public class PublishingAvroTest {
                 .withContentType(AVRO)
                 .build());
 
-        hermes.api().saveSchema(topic.getQualifiedName(), false, load("/schema/user_v2.avsc").toString());
+        hermes.api().ensureSchemaSaved(topic.getQualifiedName(), false, load("/schema/user_v2.avsc").toString());
 
         // when
         HermesMessage message = hermesMessage(topic.getQualifiedName(), user.asBytes())
@@ -461,7 +461,7 @@ public class PublishingAvroTest {
         HermesMessage messageV2 = hermesMessage(topic.getQualifiedName(), userV2.asBytes()).build();
 
         // when schema is updated to version 2
-        hermes.api().saveSchema(topic.getQualifiedName(), false, schemaV2.toString());
+        hermes.api().ensureSchemaSaved(topic.getQualifiedName(), false, schemaV2.toString());
 
         // and messages is published with schema version 2
         hermes.api().publishAvroUntilSuccess(topic.getQualifiedName(), messageV2.getBody(), createHeaders(messageV2.getHeaders()));

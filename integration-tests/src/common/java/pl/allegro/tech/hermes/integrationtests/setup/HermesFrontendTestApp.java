@@ -9,6 +9,30 @@ import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HEADER_PROPAGATION_ALLOWED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HEADER_PROPAGATION_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_IDLE_TIMEOUT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_PORT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_FIXED_MAX;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_TYPE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_BROKER_LIST;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_NAMESPACE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_PRODUCER_METADATA_MAX_AGE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_MICROMETER_REPORT_PERIOD;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_CACHE_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SPRING_PROFILES_ACTIVE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING;
 
 public class HermesFrontendTestApp implements HermesTestApp {
 
@@ -22,6 +46,7 @@ public class HermesFrontendTestApp implements HermesTestApp {
     private boolean kafkaCheckEnabled = false;
     private Duration metadataMaxAge = Duration.ofMinutes(5);
     private Duration readinessCheckInterval = Duration.ofSeconds(1);
+    private final List<String> extraArgs = new ArrayList<>();
 
     public HermesFrontendTestApp(ZookeeperContainer hermesZookeeper,
                                  KafkaContainerCluster kafka,
@@ -31,28 +56,58 @@ public class HermesFrontendTestApp implements HermesTestApp {
         this.schemaRegistry = schemaRegistry;
     }
 
+    public HermesFrontendTestApp withProperty(String name, Object value) {
+        this.extraArgs.add(getArgument(name, value));
+        return this;
+    }
+
+
+    private  List<String> defaultFrontendArgs() {
+        List<String> args = new ArrayList<>();
+        args.add(getArgument(SPRING_PROFILES_ACTIVE, "integration"));
+        args.add(getArgument(FRONTEND_PORT, 0));
+
+        args.add(getArgument(KAFKA_NAMESPACE, "itTest"));
+        args.add(getArgument(KAFKA_BROKER_LIST, kafka.getBootstrapServersForExternalClients()));
+
+        args.add(getArgument(ZOOKEEPER_CONNECTION_STRING, hermesZookeeper.getConnectionString()));
+
+        args.add(getArgument(SCHEMA_CACHE_ENABLED, true));
+        args.add(getArgument(SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl()));
+
+        args.add(getArgument(FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED, kafkaCheckEnabled));
+        args.add(getArgument(FRONTEND_READINESS_CHECK_ENABLED, true));
+        args.add(getArgument(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, readinessCheckInterval));
+
+        args.add(getArgument(FRONTEND_HEADER_PROPAGATION_ENABLED, true));
+        args.add(getArgument(FRONTEND_HEADER_PROPAGATION_ALLOWED, "Trace-Id, Span-Id, Parent-Span-Id, Trace-Sampled, Trace-Reported"));
+
+        args.add(getArgument(KAFKA_PRODUCER_METADATA_MAX_AGE, metadataMaxAge));
+
+        args.add(getArgument(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE,true));
+        args.add(getArgument(FRONTEND_IDLE_TIMEOUT, Duration.ofSeconds(2)));
+
+        args.add(getArgument(FRONTEND_THROUGHPUT_TYPE, "fixed"));
+        args.add(getArgument(FRONTEND_THROUGHPUT_FIXED_MAX,  50 * 1024L));
+
+        args.add(getArgument(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false));
+
+        args.add(getArgument(METRICS_MICROMETER_REPORT_PERIOD, Duration.ofSeconds(1)));
+
+        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_ENABLED, true));
+        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, Duration.ofSeconds(1)));
+
+        return args;
+    }
+
+
     @Override
     public HermesTestApp start() {
-        app.run(
-                "--spring.profiles.active=integration",
-                "--frontend.server.port=0",
-                "--frontend.kafka.namespace=itTest",
-                "--frontend.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
-                "--frontend.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
-                "--frontend.schema.repository.serverUrl=" + schemaRegistry.getUrl(),
-                "--frontend.schema.cache.enabled=true",
-                "--frontend.readiness.check.kafkaCheckEnabled=" + kafkaCheckEnabled,
-                "--frontend.readiness.check.enabled=true",
-                "--frontend.header.propagation.enabled=true",
-                "--frontend.header.propagation.allowFilter=" + "Trace-Id, Span-Id, Parent-Span-Id, Trace-Sampled, Trace-Reported",
-                "--frontend.kafka.producer.metadataMaxAge=" + metadataMaxAge,
-                "--frontend.readiness.check.interval=" + readinessCheckInterval,
-                "--frontend.handlers.forceTopicMaxMessageSize=true",
-                "--frontend.throughput.type=fixed",
-                "--frontend.throughput.fixedMax=" + 50 * 1024L,
-                "--frontend.handlers.idleTimeout=" + Duration.ofSeconds(2),
-                "--frontend.metrics.micrometer.reportPeriod=" + Duration.ofSeconds(1)
-        );
+        List<String> args = defaultFrontendArgs();
+        args.addAll(extraArgs);
+
+        app.run(args.toArray(new String[0]));
+
         port = app.context().getBean(HermesServer.class).getPort();
         return this;
     }
@@ -68,6 +123,14 @@ public class HermesFrontendTestApp implements HermesTestApp {
             throw new IllegalStateException("hermes-frontend port hasn't been initialized");
         }
         return port;
+    }
+
+    public int getSSLPort() {
+        return app.context().getBean(HermesServer.class).getSSLPort();
+    }
+
+    public <T> T getBean(Class<T> clazz) {
+        return app.context().getBean(clazz);
     }
 
     public HermesFrontendTestApp metadataMaxAgeInSeconds(int value) {
@@ -88,5 +151,9 @@ public class HermesFrontendTestApp implements HermesTestApp {
     public HermesFrontendTestApp kafkaCheckDisabled() {
         kafkaCheckEnabled = false;
         return this;
+    }
+
+    private static String getArgument(String config, Object value) {
+        return "--" + config + "=" + value;
     }
 }

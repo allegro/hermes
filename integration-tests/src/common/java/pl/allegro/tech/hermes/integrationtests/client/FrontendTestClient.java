@@ -26,6 +26,7 @@ public class FrontendTestClient {
     private static final String TOPIC_PATH = "/topics/{topicName}";
     private static final String STATUS_HEALTH_PATH = "/status/health";
     private static final String STATUS_READY_PATH = "/status/ready";
+    private static final String STATUS_PING_PATH = "/status/ping";
 
     private final WebTestClient webTestClient;
     private final FrontendSlowClient slowTestClient;
@@ -105,7 +106,7 @@ public class FrontendTestClient {
         return attempts.get();
     }
 
-    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
+    public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(TOPIC_PATH)
@@ -173,6 +174,14 @@ public class FrontendTestClient {
         return webTestClient.get().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(STATUS_READY_PATH)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getStatusPing() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(frontendContainerUrl)
+                        .path(STATUS_PING_PATH)
                         .build())
                 .exchange();
     }

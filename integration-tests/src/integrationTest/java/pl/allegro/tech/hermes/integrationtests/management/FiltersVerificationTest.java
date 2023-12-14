@@ -1,11 +1,13 @@
-package pl.allegro.tech.hermes.integration.management;
+package pl.allegro.tech.hermes.integrationtests.management;
 
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationResult;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.integration.IntegrationTest;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
@@ -17,14 +19,17 @@ import static pl.allegro.tech.hermes.api.MessageFiltersVerificationResult.Verifi
 import static pl.allegro.tech.hermes.api.MessageFiltersVerificationResult.VerificationStatus.MATCHED;
 import static pl.allegro.tech.hermes.api.MessageFiltersVerificationResult.VerificationStatus.NOT_MATCHED;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
-public class FiltersVerificationTest extends IntegrationTest {
+public class FiltersVerificationTest {
     private static final MessageFilterSpecification FILTER_MATCHING_USERS_WITH_NAME_BOB = new MessageFilterSpecification(of(
             "type", "avropath",
             "path", ".name",
             "matcher", "Bob"
     ));
+
+    @RegisterExtension
+    public static final HermesExtension hermes = new HermesExtension();
 
     @Test
     void shouldReturnMatchedWhenGivenMessageMatchesFilter() {
@@ -69,17 +74,21 @@ public class FiltersVerificationTest extends IntegrationTest {
 
     private Topic createTopicWithAvroUserSchema() {
         String schema = AvroUserSchemaLoader.load().toString();
-        Topic topic = randomTopic("group", "topic")
+
+        TopicWithSchema topicWithSchema = topicWithSchema(topicWithRandomName()
                 .withContentType(AVRO)
-                .build();
-        operations.buildTopicWithSchema(topicWithSchema(topic, schema));
-        return topic;
+                .build(), schema);
+
+        return hermes.initHelper().createTopicWithSchema(topicWithSchema);
     }
 
     private MessageFiltersVerificationResult verifyFilters(Topic topic, MessageFilterSpecification specification, byte[] message) {
-        return management.filter().verify(
+        return hermes.api().verifyFilters(
                 topic.getQualifiedName(),
                 new MessageFiltersVerificationInput(singletonList(specification), message)
-        );
+        )
+                .expectStatus().isOk()
+                .expectBody(MessageFiltersVerificationResult.class)
+                .returnResult().getResponseBody();
     }
 }
