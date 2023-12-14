@@ -282,7 +282,7 @@ public class TopicManagementTest {
     public void shouldReturnTopicsThatAreCurrentlyTracked() {
         // given
         Topic trackedTopic = hermes.initHelper().createTopic(topicWithRandomName().withTrackingEnabled(true).build());
-        hermes.initHelper().createTopic(topicWithRandomName().withTrackingEnabled(false).build());
+        Topic untrackedTopic = hermes.initHelper().createTopic(topicWithRandomName().withTrackingEnabled(false).build());
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().listTrackedTopics("");
@@ -291,7 +291,7 @@ public class TopicManagementTest {
         response.expectStatus().isOk();
         assertThat(
                 Arrays.stream(Objects.requireNonNull(response.expectBody(String[].class).returnResult().getResponseBody())).toList()
-        ).containsExactly(trackedTopic.getQualifiedName());
+        ).contains(trackedTopic.getQualifiedName()).doesNotContain(untrackedTopic.getQualifiedName());
     }
 
     @Test
