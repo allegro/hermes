@@ -17,6 +17,8 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FR
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HEADER_PROPAGATION_ALLOWED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HEADER_PROPAGATION_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_IDLE_TIMEOUT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_PORT;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
@@ -91,6 +93,9 @@ public class HermesFrontendTestApp implements HermesTestApp {
         args.add(getArgument(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false));
 
         args.add(getArgument(METRICS_MICROMETER_REPORT_PERIOD, Duration.ofSeconds(1)));
+
+        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_ENABLED, true));
+        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, Duration.ofSeconds(1)));
 
         return args;
     }

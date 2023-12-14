@@ -7,6 +7,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -43,12 +44,29 @@ public class HermesTestClient {
         return managementTestClient.getTopic(topicQualifiedName);
     }
 
-    public void saveSchema(String topicQualifiedName, boolean validate, String schema) {
+    public WebTestClient.ResponseSpec saveSchema(String topicQualifiedName, String schema) {
+        return managementTestClient.saveSchema(topicQualifiedName, schema);
+
+    }
+
+    public void ensureSchemaSaved(String topicQualifiedName, boolean validate, String schema) {
         managementTestClient.saveSchema(topicQualifiedName, validate, schema)
                 .expectStatus().isCreated();
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
                 managementTestClient.getSchema(topicQualifiedName).expectStatus().isOk()
         );
+    }
+
+    public WebTestClient.ResponseSpec saveSchema(String topicQualifiedName, boolean validate, String schema) {
+        return managementTestClient.saveSchema(topicQualifiedName, validate, schema);
+    }
+
+    public WebTestClient.ResponseSpec getSchema(String topicQualifiedName) {
+        return managementTestClient.getSchema(topicQualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec deleteSchema(String topicQualifiedName) {
+        return managementTestClient.deleteSchema(topicQualifiedName);
     }
 
     public void updateTopic(String qualifiedTopicName, PatchData patch) {
@@ -210,6 +228,10 @@ public class HermesTestClient {
         return managementTestClient.getPreview(qualifiedTopicName, primaryKafkaClusterName, partition, offset);
     }
 
+    public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName) {
+        return managementTestClient.getPreview(qualifiedTopicName);
+    }
+
     public WebTestClient.ResponseSpec getTopicMetrics(String qualifiedName) {
         return managementTestClient.getTopicMetrics(qualifiedName);
     }
@@ -224,5 +246,18 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec getConsumersMetrics() {
         return consumerTestClient.getMetrics();
+    }
+
+    public WebTestClient.ResponseSpec verifyFilters(String qualifiedTopicName,
+                                                    MessageFiltersVerificationInput input) {
+        return managementTestClient.verifyFilters(qualifiedTopicName, input);
+    }
+
+    public WebTestClient.ResponseSpec getManagementHealth() {
+        return managementTestClient.getStatusHealth();
+    }
+
+    public WebTestClient.ResponseSpec getManagementStats() {
+        return managementTestClient.getStats();
     }
 }

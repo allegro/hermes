@@ -78,6 +78,10 @@ public class HermesManagementTestApp implements HermesTestApp {
         args.add("--schema.repository.serverUrl=" + schemaRegistry.getUrl());
         args.add("--topic.touchSchedulerEnabled=" + false);
 
+        args.add("--topic.removeSchema=" + true);
+        args.add("--schema.repository.type=schema_registry");
+        args.add("--schema.repository.deleteSchemaPathSuffix=");
+
         app.run(args.toArray(new String[0]));
         String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
         if (localServerPort == null) {
