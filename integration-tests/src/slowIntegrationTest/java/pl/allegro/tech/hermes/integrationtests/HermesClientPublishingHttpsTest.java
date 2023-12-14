@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integrationtests;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.Topic;
@@ -15,13 +16,12 @@ import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesInitHelper;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import javax.net.ssl.X509TrustManager;
 import java.net.URI;
+import javax.net.ssl.X509TrustManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
@@ -34,18 +34,18 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 public class HermesClientPublishingHttpsTest {
 
+    @Order(0)
     @RegisterExtension
     public static InfrastructureExtension infra = new InfrastructureExtension();
 
-    private static final HermesManagementTestApp management = new HermesManagementTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-    private static HermesInitHelper initHelper;
+    @Order(1)
+    @RegisterExtension
+    public static HermesManagementExtension management = new HermesManagementExtension(infra);
+
     private static HermesFrontendTestApp frontend;
 
     @BeforeAll
     public static void setup() {
-        management.start();
-        initHelper = new HermesInitHelper(management.getPort());
-
         frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
         frontend.withProperty(FRONTEND_SSL_ENABLED, true);
         frontend.withProperty(FRONTEND_HTTP2_ENABLED, true);
@@ -58,14 +58,13 @@ public class HermesClientPublishingHttpsTest {
 
     @AfterAll
     public static void clean() {
-        management.stop();
         frontend.stop();
     }
 
     @Test
     public void shouldCommunicateWithHermesUsingHttp2() {
         // given
-        Topic topic = initHelper.createTopic(topicWithRandomName().build());
+        Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
         String message = TestMessage.of("hello", "world").body();
 
         OkHttpHermesSender okHttpHermesSender = new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());

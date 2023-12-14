@@ -10,14 +10,6 @@ public interface EnvironmentAware {
 
     String HTTP_ENDPOINT_URL = "http://localhost:" + HTTP_ENDPOINT_PORT + "/";
 
-    String GOOGLE_PUBSUB_ENDPOINT_URL = "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic";
-
-    String GOOGLE_PUBSUB_PROJECT_ID = "test-project";
-
-    String GOOGLE_PUBSUB_TOPIC_ID = "test-topic";
-
-    String GOOGLE_PUBSUB_SUBSCRIPTION_ID = "test-subscription";
-
     int FRONTEND_PORT = 18080;
 
     String FRONTEND_URL = "http://localhost:" + FRONTEND_PORT + "/";

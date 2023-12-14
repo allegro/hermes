@@ -17,6 +17,7 @@ public class HermesConsumersTestApp implements HermesTestApp {
     private final ConfluentSchemaRegistryContainer schemaRegistry;
 
     private int port = -1;
+    private String googlePubSubEndpoint = "integration";
 
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesConsumers.class)
             .web(WebApplicationType.NONE);
@@ -43,7 +44,9 @@ public class HermesConsumersTestApp implements HermesTestApp {
                 "--consumer.workload.rebalanceInterval=" + Duration.ofSeconds(1),
                 "--consumer.commit.offset.period=" + Duration.ofSeconds(1),
                 "--consumer.metrics.micrometer.reportPeriod=" + Duration.ofSeconds(5),
-                "--consumer.schema.cache.enabled=true"
+                "--consumer.schema.cache.enabled=true",
+                "--consumer.metrics.metric-registry.graphiteReporterEnabled=false",
+                "--consumer.google.pubsub.sender.transportChannelProviderAddress=" + googlePubSubEndpoint
         );
         port = app.context().getBean(ConsumerHttpServer.class).getPort();
         return this;
@@ -60,5 +63,10 @@ public class HermesConsumersTestApp implements HermesTestApp {
             throw new IllegalStateException("hermes-consumers port hasn't been initialized");
         }
         return port;
+    }
+
+    public HermesConsumersTestApp googlePubSubEndpoint(String endpoint) {
+        googlePubSubEndpoint = endpoint;
+        return this;
     }
 }

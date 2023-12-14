@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.core.Options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -13,8 +14,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integrationtests.client.FrontendTestClient;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesInitHelper;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
@@ -27,11 +27,14 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 public class PublishingAvroOnTopicWithoutSchemaTest {
 
+    @Order(0)
     @RegisterExtension
     public static InfrastructureExtension infra = new InfrastructureExtension();
 
-    private static final HermesManagementTestApp management = new HermesManagementTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-    private static HermesInitHelper initHelper;
+    @Order(1)
+    @RegisterExtension
+    public static HermesManagementExtension management = new HermesManagementExtension(infra);
+
     private static FrontendTestClient publisher;
     private static HermesFrontendTestApp frontend;
 
@@ -39,8 +42,6 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
 
     @BeforeAll
     public static void setup() {
-        management.start();
-        initHelper = new HermesInitHelper(management.getPort());
         emptySchemaRegistryMock.start();
 
         frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
@@ -53,7 +54,6 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
 
     @AfterAll
     public static void clean() {
-        management.stop();
         emptySchemaRegistryMock.stop();
         frontend.stop();
     }
@@ -65,7 +65,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
                 .withContentType(AVRO)
                 .build(), AvroUserSchemaLoader.load().toString());
 
-        Topic topic = initHelper.createTopicWithSchema(topicWithSchema);
+        Topic topic = management.initHelper().createTopicWithSchema(topicWithSchema);
 
         // when
         String message = new AvroUser("Bob", 50, "blue").asJson();
