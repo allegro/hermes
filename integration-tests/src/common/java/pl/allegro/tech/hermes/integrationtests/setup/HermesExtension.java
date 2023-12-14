@@ -4,11 +4,16 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.integrationtests.client.HermesTestClient;
+import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
+import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.util.stream.Stream;
+
+import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
+import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PORT;
 
 public class HermesExtension implements BeforeAllCallback, ExtensionContext.Store.CloseableResource {
 
@@ -24,6 +29,10 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     private static boolean started = false;
 
+    public static final TestSubscribersExtension auditEventsReceiver = new TestSubscribersExtension(AUDIT_EVENT_PORT);
+
+    public static TestSubscriber auditEvents;
+
     @Override
     public void beforeAll(ExtensionContext context) {
         if (!started) {
@@ -35,6 +44,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         }
         hermesTestClient = new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
         hermesInitHelper = new HermesInitHelper(management.getPort());
+        auditEvents = auditEventsReceiver.createSubscriberWithStrictPath(200, AUDIT_EVENT_PATH);
     }
 
     @Override

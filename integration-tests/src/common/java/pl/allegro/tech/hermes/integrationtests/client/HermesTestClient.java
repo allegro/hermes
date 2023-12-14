@@ -51,10 +51,12 @@ public class HermesTestClient {
         );
     }
 
-    public void updateTopic(String qualifiedTopicName, PatchData patch) {
-        managementTestClient.updateTopic(qualifiedTopicName, patch)
-                .expectStatus()
-                .is2xxSuccessful();
+    public WebTestClient.ResponseSpec getSchema(String topicQualifiedName) {
+        return managementTestClient.getSchema(topicQualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec updateTopic(String qualifiedTopicName, PatchData patch) {
+        return managementTestClient.updateTopic(qualifiedTopicName, patch);
     }
 
     public Subscription getSubscription(String topicQualifiedName, String subscriptionName) {
@@ -219,7 +221,7 @@ public class HermesTestClient {
     }
 
     public WebTestClient.ResponseSpec listTopics(String groupName) {
-        return managementTestClient.listTopics(groupName);
+        return managementTestClient.listTopics(groupName, false);
     }
 
     public WebTestClient.ResponseSpec getConsumersMetrics() {
@@ -251,5 +253,13 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec deleteTopic(String topicQualifiedName) {
         return managementTestClient.deleteTopic(topicQualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec listTrackedTopics(String groupName) {
+        return managementTestClient.listTopics(groupName, true);
+    }
+
+    public WebTestClient.ResponseSpec queryTopics(String group, String query) {
+        return managementTestClient.queryTopics(group, query);
     }
 }

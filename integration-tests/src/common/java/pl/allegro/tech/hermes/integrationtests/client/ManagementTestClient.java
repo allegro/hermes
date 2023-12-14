@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
@@ -53,6 +54,8 @@ public class ManagementTestClient {
     private static final String TOPICS_BY_OWNER = "/topics/owner/{source}/{ownerId}";
 
     private static final String TOPIC_METRICS_PATH = "/topics/{topicName}/metrics";
+
+    private static final String TOPICS_QUERY = "/topics/query";
 
     private final WebTestClient webTestClient;
 
@@ -239,10 +242,11 @@ public class ManagementTestClient {
                 .exchange();
     }
 
-    public WebTestClient.ResponseSpec listTopics(String groupName) {
+    public WebTestClient.ResponseSpec listTopics(String groupName, boolean tracked) {
         return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
                         .path(TOPICS_PATH)
                         .queryParam("groupName", groupName)
+                        .queryParam("tracked", tracked)
                         .build())
                 .exchange();
     }
@@ -310,6 +314,17 @@ public class ManagementTestClient {
         return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
                         .path(TOPIC_PATH)
                         .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec queryTopics(String group, String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPICS_QUERY)
+                        .queryParam("groupName", group)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
                 .exchange();
     }
 }

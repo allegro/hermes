@@ -38,6 +38,18 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
         });
     }
 
+    public TestSubscribersExtension(int port) {
+        service = new WireMockServer(port);
+        service.start();
+        serviceUrl = URI.create("http://localhost:" + service.port());
+        service.addMockServiceRequestListener((request, response) -> {
+            TestSubscriber subscriber = subscribersPerPath.get(request.getUrl()); // getUrl() returns path here
+            if (subscriber != null) {
+                subscriber.onRequestReceived(LoggedRequest.createFrom(request));
+            }
+        });
+    }
+
     public TestSubscriber createSubscriber(String endpointPathSuffix) {
         return createSubscriber(OK.getStatusCode(), endpointPathSuffix);
     }
@@ -52,12 +64,15 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
 
     public TestSubscriber createSubscriber(int statusCode, String endpointPathSuffix) {
         String path = createPath(endpointPathSuffix);
+        return createSubscriberWithStrictPath(statusCode, path);
+    }
+
+    public TestSubscriber createSubscriberWithStrictPath(int statusCode, String path) {
         service.addStubMapping(post(urlPathEqualTo(path)).willReturn(aResponse().withStatus(statusCode)).build());
         TestSubscriber subscriber = new TestSubscriber(createSubscriberURI(path));
         subscribersPerPath.put(path, subscriber);
         return subscriber;
     }
-
 
     public TestSubscriber createSubscriberWithRetry(String message, int delay) {
         String path = createPath("");

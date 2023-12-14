@@ -26,6 +26,11 @@ import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 public class HermesManagementTestApp implements HermesTestApp {
 
     private int port = -1;
+
+    public static int AUDIT_EVENT_PORT = 19998;
+
+    public static String AUDIT_EVENT_PATH = "/audit-events";
+
     private final Map<String, ZookeeperContainer> hermesZookeepers;
     private final Map<String, KafkaContainerCluster> kafkaClusters;
     private final ConfluentSchemaRegistryContainer schemaRegistry;
@@ -78,6 +83,9 @@ public class HermesManagementTestApp implements HermesTestApp {
         args.add("--schema.repository.serverUrl=" + schemaRegistry.getUrl());
         args.add("--topic.touchSchedulerEnabled=" + false);
         args.add("--topic.allowRemoval=" + true);
+        args.add("--topic.allowedTopicLabels=" + "label-1, label-2, label-3");
+        args.add("--audit.isEventAuditEnabled=" + true);
+        args.add("--audit.eventUrl=" + "http://localhost:" + AUDIT_EVENT_PORT + AUDIT_EVENT_PATH);
 
         app.run(args.toArray(new String[0]));
         String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
