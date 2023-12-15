@@ -70,7 +70,7 @@ public class KafkaSingleMessageReaderTest {
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
 
         // then
-        assertThat(previews).contains(avroUser.asJson());
+        assertThat(previews).containsAnyOf(avroUser.asJson());
     }
 
     @Test
@@ -88,7 +88,7 @@ public class KafkaSingleMessageReaderTest {
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
 
         // then
-        assertThat(previews).contains(avroUser.asJson());
+        assertThat(previews).containsAnyOf(avroUser.asJson());
     }
 
     @Test
