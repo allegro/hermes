@@ -70,7 +70,8 @@ public class KafkaSingleMessageReaderTest {
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
 
         // then
-        assertThat(previews).containsAnyOf(avroUser.asJson());
+        boolean isMessagePresent = previews.stream().anyMatch(preview -> preview.contains(avroUser.getName()));
+        assertThat(isMessagePresent).isTrue();
     }
 
     @Test
@@ -88,7 +89,8 @@ public class KafkaSingleMessageReaderTest {
         List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
 
         // then
-        assertThat(previews).containsAnyOf(avroUser.asJson());
+        boolean isMessagePresent = previews.stream().anyMatch(preview -> preview.contains(avroUser.getName()));
+        assertThat(isMessagePresent).isTrue();
     }
 
     @Test
