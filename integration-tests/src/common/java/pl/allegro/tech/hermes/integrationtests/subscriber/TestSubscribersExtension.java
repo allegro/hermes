@@ -27,15 +27,7 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
     private final Map<String, TestSubscriber> subscribersPerPath = new ConcurrentHashMap<>();
 
     public TestSubscribersExtension() {
-        service = new WireMockServer(0);
-        service.start();
-        serviceUrl = URI.create("http://localhost:" + service.port());
-        service.addMockServiceRequestListener((request, response) -> {
-            TestSubscriber subscriber = subscribersPerPath.get(request.getUrl()); // getUrl() returns path here
-            if (subscriber != null) {
-                subscriber.onRequestReceived(LoggedRequest.createFrom(request));
-            }
-        });
+        this(0);
     }
 
     public TestSubscribersExtension(int port) {
