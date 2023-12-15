@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
+import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -54,6 +55,8 @@ public class ManagementTestClient {
     private static final String STATUS_HEALTH = "/status/health";
 
     private static final String STATS = "/stats";
+
+    private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
 
     private final WebTestClient webTestClient;
 
@@ -316,6 +319,12 @@ public class ManagementTestClient {
                         .fromUri(managementContainerUrl)
                         .path(STATS)
                         .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec createOAuthProvider(OAuthProvider provider) {
+        return webTestClient.post().uri(OAUTH_PROVIDERS_PATH)
+                .body(Mono.just(provider), OAuthProvider.class)
                 .exchange();
     }
 }

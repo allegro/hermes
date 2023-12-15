@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import com.jayway.awaitility.Duration;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
@@ -76,5 +77,12 @@ public class HermesInitHelper {
                     .getResponseBody();
                 assertThat(sub.getState()).isEqualTo(Subscription.State.ACTIVE);
             });
+    }
+
+    public OAuthProvider createOAuthProvider(OAuthProvider provider) {
+        managementTestClient.createOAuthProvider(provider)
+                .expectStatus()
+                .is2xxSuccessful();
+        return provider;
     }
 }
