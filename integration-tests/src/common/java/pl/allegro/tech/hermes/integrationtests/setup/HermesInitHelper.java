@@ -22,7 +22,7 @@ public class HermesInitHelper {
     }
 
     public Topic createTopic(Topic topic) {
-        createGroup(Group.from(topic.getName().getGroupName()));
+        createGroupIfMissing(Group.from(topic.getName().getGroupName()));
         managementTestClient.createTopic(TopicWithSchema.topicWithSchema(topic, null))
                 .expectStatus()
                 .is2xxSuccessful();
@@ -31,12 +31,24 @@ public class HermesInitHelper {
     }
 
     public Topic createTopicWithSchema(TopicWithSchema topic) {
-        createGroup(Group.from(topic.getName().getGroupName()));
+        createGroupIfMissing(Group.from(topic.getName().getGroupName()));
         managementTestClient.createTopic(topic)
                 .expectStatus()
                 .is2xxSuccessful();
         waitUntilTopicCreated(topic.getQualifiedName());
         return topic;
+    }
+
+    public Group createGroupIfMissing(Group group) {
+        if (managementTestClient.getGroups().contains(group.getGroupName())) {
+            return group;
+        }
+
+        managementTestClient.createGroup(group)
+                .expectStatus()
+                .is2xxSuccessful();
+        waitUntilGroupCreated(group.getGroupName());
+        return group;
     }
 
     public Group createGroup(Group group) {
