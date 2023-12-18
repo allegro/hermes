@@ -135,7 +135,7 @@ public class HermesManagementTestApp implements HermesTestApp {
         app.context().close();
     }
 
-    public void addEventAuditorListenerPort(int port) {
+    public void addEventAuditorListener(int port) {
         auditEventPort = port;
     }
 }

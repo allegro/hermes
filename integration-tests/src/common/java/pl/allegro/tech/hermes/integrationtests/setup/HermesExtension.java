@@ -37,7 +37,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         if (!started) {
             Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
             schemaRegistry.start();
-            management.addEventAuditorListenerPort(auditEventsReceiver.getPort());
+            management.addEventAuditorListener(auditEventsReceiver.getPort());
             management.start();
             Stream.of(consumers, frontend).forEach(HermesTestApp::start);
             started = true;
