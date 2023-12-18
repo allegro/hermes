@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
@@ -54,6 +55,10 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
             management.start();
             Stream.of(consumers, frontend).forEach(HermesTestApp::start);
             started = true;
+        }
+        if (management.shouldBeRestarted()) {
+            management.stop();
+            management.start();
         }
         hermesTestClient = new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
         hermesInitHelper = new HermesInitHelper(management.getPort());
@@ -127,5 +132,10 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         removeSubscriptions();
         removeTopics();
         removeGroups();
+    }
+
+    public HermesExtension withPrometheus(PrometheusExtension prometheus) {
+        management.withPrometheus(prometheus);
+        return this;
     }
 }
