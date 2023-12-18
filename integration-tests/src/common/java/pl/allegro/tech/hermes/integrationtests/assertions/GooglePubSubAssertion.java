@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integration.test;
+package pl.allegro.tech.hermes.integrationtests.assertions;
 
 import com.google.pubsub.v1.PubsubMessage;
 import org.assertj.core.api.AbstractAssert;

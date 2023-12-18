@@ -36,8 +36,7 @@ public class HermesManagementTestApp implements HermesTestApp {
     private final ConfluentSchemaRegistryContainer schemaRegistry;
     private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesManagement.class);
 
-    public HermesManagementTestApp(ZookeeperContainer
-                                           hermesZookeeper,
+    public HermesManagementTestApp(ZookeeperContainer hermesZookeeper,
                                    KafkaContainerCluster kafka,
                                    ConfluentSchemaRegistryContainer schemaRegistry) {
         this(Map.of(DEFAULT_DC_NAME, hermesZookeeper), Map.of(DEFAULT_DC_NAME, kafka), schemaRegistry);

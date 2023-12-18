@@ -23,8 +23,4 @@ public final class HermesAssertions extends Assertions {
     public static JmsMessageAssertion assertThat(Message message) {
         return new JmsMessageAssertion(message);
     }
-
-    public static GooglePubSubAssertion assertThat(PubsubMessage message) {
-        return new GooglePubSubAssertion(message);
-    }
 }
