@@ -70,10 +70,8 @@ public class HermesTestClient {
         return managementTestClient.deleteSchema(topicQualifiedName);
     }
 
-    public void updateTopic(String qualifiedTopicName, PatchData patch) {
-        managementTestClient.updateTopic(qualifiedTopicName, patch)
-                .expectStatus()
-                .is2xxSuccessful();
+    public WebTestClient.ResponseSpec updateTopic(String qualifiedTopicName, PatchData patch) {
+        return managementTestClient.updateTopic(qualifiedTopicName, patch);
     }
 
     public Subscription getSubscription(String topicQualifiedName, String subscriptionName) {
@@ -242,7 +240,7 @@ public class HermesTestClient {
     }
 
     public WebTestClient.ResponseSpec listTopics(String groupName) {
-        return managementTestClient.listTopics(groupName);
+        return managementTestClient.listTopics(groupName, false);
     }
 
     public WebTestClient.ResponseSpec getConsumersMetrics() {
@@ -260,6 +258,41 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec getManagementStats() {
         return managementTestClient.getStats();
+    }
+    public WebTestClient.ResponseSpec setReadiness(String dc, boolean state) {
+        return managementTestClient.setReadiness(dc, state);
+    }
+
+    public WebTestClient.ResponseSpec getReadiness() {
+        return frontendTestClient.getStatusReady();
+    }
+
+    public WebTestClient.ResponseSpec getAllTopicClients(String topicQualifiedName) {
+        return managementTestClient.getAllTopicClients(topicQualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec getSubscriptionsForOwner(String source, String ownerId) {
+        return managementTestClient.getSubscriptionsForOwner(source, ownerId);
+    }
+
+    public WebTestClient.ResponseSpec deleteSubscription(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.deleteSubscription(topicQualifiedName, subscriptionName);
+    }
+
+    public WebTestClient.ResponseSpec getTopicsForOwner(String source, String ownerId) {
+        return managementTestClient.getTopicsForOwner(source, ownerId);
+    }
+
+    public WebTestClient.ResponseSpec deleteTopic(String topicQualifiedName) {
+        return managementTestClient.deleteTopic(topicQualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec listTrackedTopics(String groupName) {
+        return managementTestClient.listTopics(groupName, true);
+    }
+
+    public WebTestClient.ResponseSpec queryTopics(String group, String query) {
+        return managementTestClient.queryTopics(group, query);
     }
 
     public WebTestClient.ResponseSpec setMode(String mode) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.Topic;
@@ -17,8 +18,7 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 import pl.allegro.tech.hermes.integrationtests.client.FrontendTestClient;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesInitHelper;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
@@ -44,23 +44,23 @@ public class MessageBufferLoadingTest {
     private static final int ENTRIES = 100;
     private static final int AVERAGE_MESSAGE_SIZE = 600;
 
+    @Order(0)
     @RegisterExtension
     public static InfrastructureExtension infra = new InfrastructureExtension();
 
+    @Order(1)
+    @RegisterExtension
+    public static HermesManagementExtension management = new HermesManagementExtension(infra);
+
     private static final HermesConsumersTestApp consumers = new HermesConsumersTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-    private static final HermesManagementTestApp management = new HermesManagementTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-    private static HermesInitHelper initHelper;
 
     @BeforeAll
     public static void setup() {
-        management.start();
-        initHelper = new HermesInitHelper(management.getPort());
         consumers.start();
     }
 
     @AfterAll
     public static void clean() {
-        management.stop();
         consumers.stop();
     }
 
@@ -78,7 +78,7 @@ public class MessageBufferLoadingTest {
 
         FrontendTestClient publisher = new FrontendTestClient(frontend.getPort());
 
-        Topic topic = initHelper.createTopic(topicWithRandomName().build());
+        Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
 
         try {
             //given
@@ -105,12 +105,12 @@ public class MessageBufferLoadingTest {
     public void shouldLoadMessageFromBackupStorage() {
         // given
         String tempDirPath = Files.createTempDir().getAbsolutePath();
-        Topic topic = initHelper.createTopic(topicWithRandomName().withContentType(JSON).build());
+        Topic topic = management.initHelper().createTopic(topicWithRandomName().withContentType(JSON).build());
         backupFileWithOneMessage(tempDirPath, topic);
 
         TestSubscriber subscriber = subscribers.createSubscriber();
 
-        initHelper.createSubscription(
+        management.initHelper().createSubscription(
                 subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
         );
 

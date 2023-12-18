@@ -12,6 +12,7 @@ dependencies {
     testImplementation project(':hermes-client')
 
     testImplementation group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
+    testImplementation group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
     testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testImplementation group: 'org.springframework', name: 'spring-webflux', version: '6.0.8'
     testImplementation group: 'org.springframework', name: 'spring-test', version: '6.0.8'
