@@ -1,62 +1,60 @@
-package pl.allegro.tech.hermes.integration;
+package pl.allegro.tech.hermes.integrationtests;
 
+import jakarta.ws.rs.core.UriBuilder;
 import okhttp3.OkHttpClient;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender;
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender;
+import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import java.net.URI;
-
 import static jakarta.ws.rs.client.ClientBuilder.newClient;
-import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.randomTopic;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
-public class HermesClientPublishingTest extends IntegrationTest {
+public class HermesClientPublishingTest {
 
-    private TestMessage message = TestMessage.of("hello", "world");
-
-    private URI topicURI = create("http://localhost:" + FRONTEND_PORT);
-
-    private Topic topic;
-
-    @BeforeMethod
-    public void initialize() {
-        topic = randomTopic("hermesClientGroup", "topic").build();
-        operations.buildTopic(topic);
-    }
+    @RegisterExtension
+    public static final HermesExtension hermes = new HermesExtension();
+    private static final String FRONTEND_URI = "http://localhost:{frontendPort}";
+    private final TestMessage message = TestMessage.of("hello", "world");
 
     @Test
     public void shouldPublishUsingJerseyClient() {
         // given
-        HermesClient client = hermesClient(new JerseyHermesSender(newClient())).withURI(topicURI).build();
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        HermesClient client = hermesClient(
+                new JerseyHermesSender(newClient())).withURI(UriBuilder.fromUri(FRONTEND_URI).build(hermes.getFrontendPort())
+        ).build();
 
         // when & then
-        runTestSuiteForHermesClient(client);
+        runTestSuiteForHermesClient(client, topic);
     }
 
     @Test
     public void shouldPublishUsingOkHttpClient() {
         // given
-        HermesClient client = hermesClient(new OkHttpHermesSender(new OkHttpClient())).withURI(topicURI).build();
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        HermesClient client = hermesClient(
+                new OkHttpHermesSender(new OkHttpClient())).withURI(UriBuilder.fromUri(FRONTEND_URI).build(hermes.getFrontendPort())
+        ).build();
 
         // when & then
-        runTestSuiteForHermesClient(client);
+        runTestSuiteForHermesClient(client, topic);
     }
 
-    private void runTestSuiteForHermesClient(HermesClient client) {
-        shouldPublishUsingHermesClient(client);
+    private void runTestSuiteForHermesClient(HermesClient client, Topic topic) {
+        shouldPublishUsingHermesClient(client, topic);
         shouldNotPublishUsingHermesClient(client);
     }
 
-    private void shouldPublishUsingHermesClient(HermesClient client) {
+    private void shouldPublishUsingHermesClient(HermesClient client, Topic topic) {
         // when
         HermesResponse response = client.publish(topic.getQualifiedName(), message.body()).join();
 

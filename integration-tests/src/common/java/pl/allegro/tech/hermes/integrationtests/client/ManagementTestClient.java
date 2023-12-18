@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.Readiness;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
@@ -46,7 +47,15 @@ public class ManagementTestClient {
 
     private static final String TOPIC_PREVIEW_OFFSET = "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
 
-    private static final String TOPIC_SCHEMA = "topics/{topicName}/schema";
+    private static final String SET_READINESS = "/readiness/datacenters/{dc}";
+
+    private static final String TOPIC_SCHEMA = "/topics/{topicName}/schema";
+
+    private static final String ALL_TOPIC_CLIENTS = "/topics/{topicName}/clients";
+
+    private static final String SUBSCRIPTIONS_BY_OWNER = "/subscriptions/owner/{source}/{ownerId}";
+
+    private static final String TOPICS_BY_OWNER = "/topics/owner/{source}/{ownerId}";
 
     private static final String TOPIC_METRICS_PATH = "/topics/{topicName}/metrics";
 
@@ -57,6 +66,8 @@ public class ManagementTestClient {
     private static final String STATS = "/stats";
 
     private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
+
+    private static final String TOPICS_QUERY = "/topics/query";
 
     private final WebTestClient webTestClient;
 
@@ -179,7 +190,7 @@ public class ManagementTestClient {
 
     private List<String> mapStringJsonToListOfString(String jsonString) {
         try {
-            return objectMapper.readValue(jsonString, new TypeReference<List<String>>() {
+            return objectMapper.readValue(jsonString, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -250,11 +261,21 @@ public class ManagementTestClient {
                 .exchange();
     }
 
-    public WebTestClient.ResponseSpec listTopics(String groupName) {
+    public WebTestClient.ResponseSpec listTopics(String groupName, boolean tracked) {
         return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
                         .path(TOPICS_PATH)
                         .queryParam("groupName", groupName)
+                        .queryParam("tracked", tracked)
                         .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec setReadiness(String dc, boolean state) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SET_READINESS)
+                        .build(dc))
+                .body(Mono.just(new Readiness(state)), Readiness.class)
                 .exchange();
     }
 
@@ -325,6 +346,55 @@ public class ManagementTestClient {
     public WebTestClient.ResponseSpec createOAuthProvider(OAuthProvider provider) {
         return webTestClient.post().uri(OAUTH_PROVIDERS_PATH)
                 .body(Mono.just(provider), OAuthProvider.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getAllTopicClients(String topicQualifiedName) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(ALL_TOPIC_CLIENTS)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getSubscriptionsForOwner(String source, String ownerId) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTIONS_BY_OWNER)
+                        .build(source, ownerId))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteSubscription(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTION_PATH)
+                        .build(topicQualifiedName, subscriptionName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getTopicsForOwner(String source, String ownerId) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPICS_BY_OWNER)
+                        .build(source, ownerId))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteTopic(String topicQualifiedName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec queryTopics(String group, String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(TOPICS_QUERY)
+                        .queryParam("groupName", group)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
                 .exchange();
     }
 }

@@ -27,7 +27,11 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
     private final Map<String, TestSubscriber> subscribersPerPath = new ConcurrentHashMap<>();
 
     public TestSubscribersExtension() {
-        service = new WireMockServer(0);
+        this(0);
+    }
+
+    public TestSubscribersExtension(int port) {
+        service = new WireMockServer(port);
         service.start();
         serviceUrl = URI.create("http://localhost:" + service.port());
         service.addMockServiceRequestListener((request, response) -> {
@@ -52,12 +56,15 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
 
     public TestSubscriber createSubscriber(int statusCode, String endpointPathSuffix) {
         String path = createPath(endpointPathSuffix);
+        return createSubscriberWithStrictPath(statusCode, path);
+    }
+
+    public TestSubscriber createSubscriberWithStrictPath(int statusCode, String path) {
         service.addStubMapping(post(urlPathEqualTo(path)).willReturn(aResponse().withStatus(statusCode)).build());
         TestSubscriber subscriber = new TestSubscriber(createSubscriberURI(path));
         subscribersPerPath.put(path, subscriber);
         return subscriber;
     }
-
 
     public TestSubscriber createSubscriberWithRetry(String message, int delay) {
         String path = createPath("");
@@ -120,5 +127,9 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
     @Override
     public void afterAll(ExtensionContext context) {
         service.stop();
+    }
+
+    public int getPort() {
+        return service.port();
     }
 }
