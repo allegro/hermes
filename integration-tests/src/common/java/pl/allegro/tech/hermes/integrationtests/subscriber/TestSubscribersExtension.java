@@ -128,4 +128,8 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
     public void afterAll(ExtensionContext context) {
         service.stop();
     }
+
+    public int getPort() {
+        return service.port();
+    }
 }

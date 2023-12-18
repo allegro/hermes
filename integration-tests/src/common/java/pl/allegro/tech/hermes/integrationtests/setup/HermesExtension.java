@@ -13,9 +13,10 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
-import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PORT;
 
 public class HermesExtension implements BeforeAllCallback, ExtensionContext.Store.CloseableResource {
+
+    public static final TestSubscribersExtension auditEventsReceiver = new TestSubscribersExtension();
 
     private static final ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
     private static final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
@@ -29,8 +30,6 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     private static boolean started = false;
 
-    public static final TestSubscribersExtension auditEventsReceiver = new TestSubscribersExtension(AUDIT_EVENT_PORT);
-
     public static TestSubscriber auditEvents;
 
     @Override
@@ -38,6 +37,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         if (!started) {
             Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
             schemaRegistry.start();
+            management.addEventAuditorListenerPort(auditEventsReceiver.getPort());
             management.start();
             Stream.of(consumers, frontend).forEach(HermesTestApp::start);
             started = true;
