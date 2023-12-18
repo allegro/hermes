@@ -79,6 +79,8 @@ public class HermesManagementTestApp implements HermesTestApp {
         args.add("--topic.touchSchedulerEnabled=" + false);
 
         args.add("--topic.removeSchema=" + true);
+        args.add("--group.allowedGroupNameRegex=" + "[a-zA-Z0-9_.-]+");
+        args.add("--group.nonAdminCreationEnabled=" + true);
         args.add("--schema.repository.type=schema_registry");
         args.add("--schema.repository.deleteSchemaPathSuffix=");
 

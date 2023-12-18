@@ -8,6 +8,7 @@ import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -259,5 +260,21 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec getManagementStats() {
         return managementTestClient.getStats();
+    }
+
+    public WebTestClient.ResponseSpec setMode(String mode) {
+        return managementTestClient.setMode(mode);
+    }
+
+    public WebTestClient.ResponseSpec getOfflineRetransmissionTasks() {
+        return managementTestClient.getOfflineRetransmissionTasks();
+    }
+
+    public WebTestClient.ResponseSpec deleteOfflineRetransmissionTask(String taskId) {
+        return managementTestClient.deleteOfflineRetransmissionTask(taskId);
+    }
+
+    public WebTestClient.ResponseSpec createOfflineRetransmissionTask(OfflineRetransmissionRequest request) {
+        return managementTestClient.createOfflineRetransmissionTask(request);
     }
 }

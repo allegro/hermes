@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -54,6 +55,12 @@ public class ManagementTestClient {
     private static final String STATUS_HEALTH = "/status/health";
 
     private static final String STATS = "/stats";
+
+    private static final String MODE = "/mode";
+
+    private static final String OFFLINE_RETRANSMISSION_TASKS = "/offline-retransmission/tasks";
+
+    private static final String OFFLINE_RETRANSMISSION_TASK = "/offline-retransmission/tasks/{taskId}";
 
     private final WebTestClient webTestClient;
 
@@ -295,10 +302,10 @@ public class ManagementTestClient {
     public WebTestClient.ResponseSpec verifyFilters(String qualifiedTopicName,
                                                     MessageFiltersVerificationInput input) {
         return webTestClient.post().uri(UriBuilder
-                .fromUri(managementContainerUrl)
-                .path(FILTERS)
-                .build(qualifiedTopicName)
-        ).contentType(MediaType.APPLICATION_JSON)
+                        .fromUri(managementContainerUrl)
+                        .path(FILTERS)
+                        .build(qualifiedTopicName)
+                ).contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(input), MessageFiltersVerificationInput.class)
                 .exchange();
     }
@@ -318,4 +325,37 @@ public class ManagementTestClient {
                         .build())
                 .exchange();
     }
+
+    public WebTestClient.ResponseSpec setMode(String mode) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(MODE)
+                        .queryParam("mode", mode)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getOfflineRetransmissionTasks() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OFFLINE_RETRANSMISSION_TASKS)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteOfflineRetransmissionTask(String taskId) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(OFFLINE_RETRANSMISSION_TASK)
+                        .build(taskId))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec createOfflineRetransmissionTask(OfflineRetransmissionRequest request) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OFFLINE_RETRANSMISSION_TASKS)
+                        .build())
+                .header("Content-Type", "application/json")
+                .body(Mono.just(request), OfflineRetransmissionRequest.class)
+                .exchange();    }
 }
