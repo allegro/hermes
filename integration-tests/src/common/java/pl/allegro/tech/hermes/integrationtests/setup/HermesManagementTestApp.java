@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.core.env.Environment;
+import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
@@ -37,7 +38,10 @@ public class HermesManagementTestApp implements HermesTestApp {
     private final Map<String, ZookeeperContainer> hermesZookeepers;
     private final Map<String, KafkaContainerCluster> kafkaClusters;
     private final ConfluentSchemaRegistryContainer schemaRegistry;
-    private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesManagement.class);
+    private SpringApplicationBuilder app = null;
+    private List<String> currentArgs = List.of();
+    private PrometheusExtension prometheus = null;
+
     public HermesManagementTestApp(ZookeeperContainer hermesZookeeper,
                                    KafkaContainerCluster kafka,
                                    ConfluentSchemaRegistryContainer schemaRegistry) {
@@ -54,47 +58,9 @@ public class HermesManagementTestApp implements HermesTestApp {
 
     @Override
     public HermesTestApp start() {
-        List<String> args = new ArrayList<>();
-        args.add("--spring.profiles.active=integration");
-        args.add("--server.port=0");
-        args.add("--prometheus.client.enabled=true");
-        args.add("--topic.partitions=2");
-        args.add("--topic.uncleanLeaderElectionEnabled=false");
-        int smallestClusterSize =  kafkaClusters.values().stream()
-                .map(cluster -> cluster.getAllBrokers().size())
-                .min(Integer::compareTo)
-                .orElse(1);
-        args.add("--topic.replicationFactor=" + smallestClusterSize);
-        int idx = 0;
-        for (Map.Entry<String, ZookeeperContainer> zk : hermesZookeepers.entrySet()) {
-            args.add("--storage.clusters[" + idx + "].datacenter=" + zk.getKey());
-            args.add("--storage.clusters[" + idx + "].clusterName=zk");
-            args.add("--storage.clusters[" + idx + "].connectionString=" + zk.getValue().getConnectionString());
-            idx++;
-        }
-        idx = 0;
-        for (Map.Entry<String, KafkaContainerCluster> kafka : kafkaClusters.entrySet()) {
-            args.add("--kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
-            args.add("--kafka.clusters[" + idx + "].clusterName=primary");
-            args.add("--kafka.clusters[" + idx + "].bootstrapKafkaServer=" + kafka.getValue().getBootstrapServersForExternalClients());
-            args.add("--kafka.clusters[" + idx + "].namespace=itTest");
-            idx++;
-        }
-
-        args.add("--schema.repository.serverUrl=" + schemaRegistry.getUrl());
-        args.add("--topic.touchSchedulerEnabled=" + false);
-        args.add("--topic.allowRemoval=" + true);
-        args.add("--topic.allowedTopicLabels=" + "label-1, label-2, label-3");
-        if (auditEventPort != -1) {
-            args.add("--audit.isEventAuditEnabled=" + true);
-            args.add("--audit.eventUrl=" + "http://localhost:" + auditEventPort + AUDIT_EVENT_PATH);
-        }
-
-        args.add("--topic.removeSchema=" + true);
-        args.add("--schema.repository.type=schema_registry");
-        args.add("--schema.repository.deleteSchemaPathSuffix=");
-
-        app.run(args.toArray(new String[0]));
+        currentArgs = createArgs();
+        app = new SpringApplicationBuilder(HermesManagement.class);
+        app.run(currentArgs.toArray(new String[0]));
         String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
         if (localServerPort == null) {
             throw new IllegalStateException("Cannot get hermes-management port");
@@ -135,11 +101,72 @@ public class HermesManagementTestApp implements HermesTestApp {
 
     @Override
     public void stop() {
-        app.context().close();
+        if (app != null) {
+            app.context().close();
+            app = null;
+        }
     }
 
     public void addEventAuditorListener(int port) {
         auditEventPort = port;
+    }
+
+    void withPrometheus(PrometheusExtension prometheus) {
+        this.prometheus = prometheus;
+    }
+
+    boolean shouldBeRestarted() {
+        List<String> args = createArgs();
+        return !args.equals(currentArgs);
+    }
+
+    private List<String> createArgs() {
+        List<String> args = new ArrayList<>();
+        args.add("--spring.profiles.active=integration");
+        args.add("--server.port=0");
+        args.add("--prometheus.client.enabled=true");
+        args.add("--prometheus.client.socketTimeoutMillis=500");
+        if (prometheus != null) {
+            args.add("--prometheus.client.externalMonitoringUrl=" + prometheus.getEndpoint());
+            args.add("--prometheus.client.cacheTtlSeconds=0");
+        }
+        args.add("--topic.partitions=2");
+        args.add("--topic.uncleanLeaderElectionEnabled=false");
+        int smallestClusterSize =  kafkaClusters.values().stream()
+                .map(cluster -> cluster.getAllBrokers().size())
+                .min(Integer::compareTo)
+                .orElse(1);
+        args.add("--topic.replicationFactor=" + smallestClusterSize);
+        int idx = 0;
+        for (Map.Entry<String, ZookeeperContainer> zk : hermesZookeepers.entrySet()) {
+            args.add("--storage.clusters[" + idx + "].datacenter=" + zk.getKey());
+            args.add("--storage.clusters[" + idx + "].clusterName=zk");
+            args.add("--storage.clusters[" + idx + "].connectionString=" + zk.getValue().getConnectionString());
+            idx++;
+        }
+        idx = 0;
+        for (Map.Entry<String, KafkaContainerCluster> kafka : kafkaClusters.entrySet()) {
+            args.add("--kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
+            args.add("--kafka.clusters[" + idx + "].clusterName=primary");
+            args.add("--kafka.clusters[" + idx + "].bootstrapKafkaServer=" + kafka.getValue().getBootstrapServersForExternalClients());
+            args.add("--kafka.clusters[" + idx + "].namespace=itTest");
+            idx++;
+        }
+
+        args.add("--schema.repository.serverUrl=" + schemaRegistry.getUrl());
+        args.add("--topic.touchSchedulerEnabled=" + false);
+        args.add("--topic.allowRemoval=" + true);
+        args.add("--topic.allowedTopicLabels=" + "label-1, label-2, label-3");
+        if (auditEventPort != -1) {
+            args.add("--audit.isEventAuditEnabled=" + true);
+            args.add("--audit.eventUrl=" + "http://localhost:" + auditEventPort + AUDIT_EVENT_PATH);
+        }
+
+        args.add("--topic.removeSchema=" + true);
+        args.add("--schema.repository.type=schema_registry");
+        args.add("--schema.repository.deleteSchemaPathSuffix=");
+
+        return args;
     }
 
     public SubscriptionService subscriptionService() {

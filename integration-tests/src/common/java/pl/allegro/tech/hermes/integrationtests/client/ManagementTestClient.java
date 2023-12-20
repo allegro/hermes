@@ -81,6 +81,8 @@ public class ManagementTestClient {
 
     private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
 
+    private static final String UNHEALTHY_PATH = "/unhealthy";
+
     private static final String TOPICS_QUERY = "/topics/query";
 
     private final WebTestClient webTestClient;
@@ -456,6 +458,103 @@ public class ManagementTestClient {
                         .build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthy() {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "application/json")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyAsPlainText() {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "text/plain")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthy(String ownerId) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("ownerSourceName", "Plaintext")
+                                .queryParam("ownerId", ownerId)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "application/json")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyAsPlainText(String ownerId) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("ownerSourceName", "Plaintext")
+                                .queryParam("ownerId", ownerId)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "text/plain")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForTopic(String qualifiedName) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("qualifiedTopicNames", qualifiedName)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "application/json")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForTopicAsPlainText(String qualifiedName) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("qualifiedTopicNames", qualifiedName)
+                                .build()
+                )
+                .header("Accept", "text/plain")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForSubscription(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("subscriptionNames", subscriptionName)
+                                .queryParam("qualifiedTopicNames", topicQualifiedName)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "application/json")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForSubscriptionAsPlainText(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("subscriptionNames", subscriptionName)
+                                .queryParam("qualifiedTopicNames", topicQualifiedName)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "text/plain")
                 .exchange();
     }
 }

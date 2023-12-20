@@ -309,4 +309,36 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec querySubscriptions(String query) {
         return managementTestClient.querySubscriptions(query);
     }
+
+    public WebTestClient.ResponseSpec listUnhealthy() {
+        return managementTestClient.listUnhealthy();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyAsPlainText() {
+        return managementTestClient.listUnhealthyAsPlainText();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForOwner(String ownerId) {
+        return managementTestClient.listUnhealthy(ownerId);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForOwnerAsPlainText(String ownerId) {
+        return managementTestClient.listUnhealthyAsPlainText(ownerId);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForTopic(String qualifiedName) {
+        return managementTestClient.listUnhealthyForTopic(qualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForTopicAsPlainText(String qualifiedName) {
+        return managementTestClient.listUnhealthyForTopicAsPlainText(qualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForSubscription(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.listUnhealthyForSubscription(topicQualifiedName, subscriptionName);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForSubscriptionAsPlainText(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.listUnhealthyForSubscriptionAsPlainText(topicQualifiedName, subscriptionName);
+    }
 }
