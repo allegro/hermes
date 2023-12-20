@@ -115,6 +115,10 @@ public class HermesManagementTestApp implements HermesTestApp {
         this.prometheus = prometheus;
     }
 
+    void restoreDefaultSettings() {
+        prometheus = null;
+    }
+
     boolean shouldBeRestarted() {
         List<String> args = createArgs();
         return !args.equals(currentArgs);

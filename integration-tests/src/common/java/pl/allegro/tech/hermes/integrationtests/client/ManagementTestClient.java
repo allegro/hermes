@@ -81,6 +81,8 @@ public class ManagementTestClient {
 
     private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
 
+    private static final String OAUTH_PROVIDER_PATH = "/oauth/providers/{oAuthProviderName}";
+
     private static final String UNHEALTHY_PATH = "/unhealthy";
 
     private static final String TOPICS_QUERY = "/topics/query";
@@ -371,6 +373,39 @@ public class ManagementTestClient {
                 .exchange();
     }
 
+    public WebTestClient.ResponseSpec getOAuthProvider(String name) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OAUTH_PROVIDER_PATH)
+                        .build(name))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec removeOAuthProvider(String name) {
+        return webTestClient.delete().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OAUTH_PROVIDER_PATH)
+                        .build(name))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listOAuthProvider() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OAUTH_PROVIDERS_PATH)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec updateOAuthProvider(String name, PatchData patch) {
+        return webTestClient.put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OAUTH_PROVIDER_PATH)
+                        .build(name))
+                .body(Mono.just(patch), PatchData.class)
+                .exchange();
+    }
+
     public WebTestClient.ResponseSpec getAllTopicClients(String topicQualifiedName) {
         return webTestClient.get().uri(UriBuilder
                         .fromUri(managementContainerUrl)
@@ -450,6 +485,15 @@ public class ManagementTestClient {
                 .exchange();
     }
 
+    public WebTestClient.ResponseSpec querySubscriptionMetrics(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_SUBSCRIPTION_METRICS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
 
     public WebTestClient.ResponseSpec querySubscriptions(String query) {
         return webTestClient.post().uri(UriBuilder

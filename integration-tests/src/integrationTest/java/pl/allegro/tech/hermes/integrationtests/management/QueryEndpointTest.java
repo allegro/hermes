@@ -4,6 +4,7 @@ import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,25 +14,32 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TrackingMode;
+import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static java.time.Duration.ofMinutes;
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
+import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
@@ -40,8 +48,14 @@ public class QueryEndpointTest {
 
     private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
 
+    @Order(0)
     @RegisterExtension
-    public static final HermesExtension hermes = new HermesExtension();
+    public static final PrometheusExtension prometheus = new PrometheusExtension();
+
+    @Order(1)
+    @RegisterExtension
+    public static final HermesExtension hermes = new HermesExtension()
+            .withPrometheus(prometheus);
 
     @BeforeAll
     static void setup() {
@@ -232,7 +246,114 @@ public class QueryEndpointTest {
                     found.forEach(it -> Assertions.assertThat(it.getVolume()).isGreaterThanOrEqualTo(0));
                 }
         );
+    }
 
+    @Test
+    public void shouldQuerySubscriptionsMetrics() {
+        // given
+        Topic topic1 = hermes.initHelper().createTopic(topicWithRandomName().build());
+        Topic topic2 = hermes.initHelper().createTopic(topicWithRandomName().build());
+        Subscription subscription1 = hermes.initHelper().createSubscription(
+                subscriptionWithRandomName(topic1.getName(), "http://endpoint1").build()
+        );
+        Subscription subscription2 = hermes.initHelper().createSubscription(
+                subscriptionWithRandomName(topic2.getName(), "http://endpoint2").build()
+        );
+
+        String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
+        String queryGetSubscriptionsMetricsWithPositiveThroughput = "{\"query\": {\"throughput\": {\"gt\": 0}}}";
+        String queryGetSubscriptionsMetricsWithRateInRange = "{\"query\": {\"or\": [{\"rate\": {\"gt\": 10}}, {\"rate\": {\"lt\": 50}}]}}";
+        String queryGetSubscriptionsMetricsWithLagNegative = "{\"query\": {\"lag\": {\"lt\": 0}}}";
+        String queryGetSubscriptionsMetricsWithVolume = "{\"query\": {\"volume\": {\"gt\": -1}}}";
+        prometheus.stubSubscriptionMetrics(
+                subscriptionMetrics(subscription1.getQualifiedName())
+                        .withRate(100)
+                        .withThroughput(0)
+                        .build()
+        );
+        prometheus.stubSubscriptionMetrics(
+                subscriptionMetrics(subscription2.getQualifiedName())
+                        .withRate(40)
+                        .withThroughput(10)
+                        .build()
+        );
+
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+            // when
+            List<SubscriptionNameWithMetrics> allSubscriptions = hermes.api()
+                    .querySubscriptionMetrics(queryGetAllSubscriptionsMetrics)
+                    .expectStatus().isOk()
+                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+            List<SubscriptionNameWithMetrics> subscriptionsWithPositiveThroughput = hermes.api()
+                    .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithPositiveThroughput)
+                    .expectStatus().isOk()
+                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+            List<SubscriptionNameWithMetrics> subscriptionsWithRateInRange = hermes.api()
+                    .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithRateInRange)
+                    .expectStatus().isOk()
+                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+            List<SubscriptionNameWithMetrics> subscriptionsWithNegativeLag = hermes.api()
+                    .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithLagNegative)
+                    .expectStatus().isOk()
+                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+            List<SubscriptionNameWithMetrics> subscriptionsWithVolume = hermes.api()
+                    .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithVolume)
+                    .expectStatus().isOk()
+                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+
+            // then
+            subscriptionsMatchesToNamesAndTheirTopicsNames(allSubscriptions, subscription1, subscription2);
+            subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithPositiveThroughput, subscription2);
+            subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithRateInRange, subscription2);
+            subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithNegativeLag, subscription1, subscription2);
+            subscriptionsMatchesToNamesAndTheirTopicsNames(subscriptionsWithVolume, subscription1, subscription2);
+        });
+    }
+
+    @Test
+    public void shouldHandleUnavailableSubscriptionsMetrics() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        Subscription subscription = hermes.initHelper().createSubscription(
+                subscriptionWithRandomName(topic.getName(), "http://endpoint1").build()
+        );
+        String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
+        String queryGetSubscriptionsMetricsWithPositiveRate = "{\"query\": {\"rate\": {\"gt\": 0}}}";
+        prometheus.stubDelay(ofMinutes(10));
+
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+            // when
+            List<SubscriptionNameWithMetrics> allSubscriptions = hermes.api()
+                    .querySubscriptionMetrics(queryGetAllSubscriptionsMetrics)
+                    .expectStatus().isOk()
+                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+            List<SubscriptionNameWithMetrics> subscriptionsWithPositiveRate = hermes.api()
+                    .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithPositiveRate)
+                    .expectStatus().isOk()
+                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+
+            // then
+            assertThatRateIsUnavailable(allSubscriptions, subscription);
+            assertThatRateIsUnavailable(subscriptionsWithPositiveRate, subscription);
+        });
+    }
+
+    private static void assertThatRateIsUnavailable(List<SubscriptionNameWithMetrics> allSubscriptions, Subscription ... subscriptions) {
+        subscriptionsMatchesToNamesAndTheirTopicsNames(allSubscriptions, subscriptions);
+        for (SubscriptionNameWithMetrics metrics : allSubscriptions) {
+            assertThat(metrics.getRate().asString()).isEqualTo("unavailable");
+        }
+    }
+
+    private static void subscriptionsMatchesToNamesAndTheirTopicsNames(List<SubscriptionNameWithMetrics> found,
+                                                                       Subscription ... expectedSubscriptions) {
+        assertThat(found).isNotNull();
+        Map<String, String> foundSubscriptionsAndTheirTopicNames = found.stream()
+                .collect(Collectors.toMap(SubscriptionNameWithMetrics::getName, SubscriptionNameWithMetrics::getTopicName));
+        for (Subscription subscription : expectedSubscriptions) {
+            assertThat(foundSubscriptionsAndTheirTopicNames).containsKeys(subscription.getName());
+            assertThat(foundSubscriptionsAndTheirTopicNames.get(subscription.getName())).isEqualTo(subscription.getQualifiedTopicName());
+        }
     }
 
     private Subscription enrichSubscription(SubscriptionBuilder subscription, String endpoint) {

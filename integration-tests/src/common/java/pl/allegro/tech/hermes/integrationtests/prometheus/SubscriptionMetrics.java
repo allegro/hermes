@@ -61,6 +61,11 @@ public record SubscriptionMetrics(SubscriptionName name, int rate, int throughpu
             return this;
         }
 
+        public SubscriptionMetricsBuilder withThroughput(int throughput) {
+            this.throughput = throughput;
+            return this;
+        }
+
         public SubscriptionMetrics build() {
             return new SubscriptionMetrics(name, rate, throughput, ratePerStatusCode);
         }

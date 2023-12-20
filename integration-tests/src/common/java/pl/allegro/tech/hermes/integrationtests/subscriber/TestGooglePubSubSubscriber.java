@@ -20,7 +20,6 @@ import com.google.pubsub.v1.ReceivedMessage;
 import com.google.pubsub.v1.TopicName;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import pl.allegro.tech.hermes.test.helper.containers.GooglePubSubContainer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,15 +40,19 @@ public class TestGooglePubSubSubscriber {
     private final String subscription;
     private final List<ReceivedMessage> receivedMessages = new ArrayList<>();
 
-    public TestGooglePubSubSubscriber(GooglePubSubContainer container) throws IOException {
+    public TestGooglePubSubSubscriber(String emulatorEndpoint) {
         this.credentialsProvider = NoCredentialsProvider.create();
-        this.channel = ManagedChannelBuilder.forTarget(container.getEmulatorEndpoint()).usePlaintext().build();
+        this.channel = ManagedChannelBuilder.forTarget(emulatorEndpoint).usePlaintext().build();
         this.transportChannelProvider = FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
         String topicId = "test-topic" + sequence.incrementAndGet();
         String topic = TopicName.format(GOOGLE_PUBSUB_PROJECT_ID, topicId);
         subscription = ProjectSubscriptionName.format(GOOGLE_PUBSUB_PROJECT_ID, "test-subscription" + sequence.incrementAndGet());
-        createTopic(topic);
-        createSubscription(subscription, topic);
+        try {
+            createTopic(topic);
+            createSubscription(subscription, topic);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         endpoint = "googlepubsub://pubsub.googleapis.com:443/projects/%s/topics/%s".formatted(GOOGLE_PUBSUB_PROJECT_ID, topicId);
     }
 
