@@ -4,7 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
+import org.eclipse.jetty.client.HttpClient;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ClientHttpConnector;
+import org.springframework.http.client.reactive.JettyClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
@@ -21,6 +24,7 @@ import java.time.Duration;
 import java.util.List;
 
 public class ManagementTestClient {
+
     private static final String TOPICS_PATH = "/topics";
 
     private static final String TOPIC_PATH = "/topics/{topicName}";
@@ -65,6 +69,16 @@ public class ManagementTestClient {
 
     private static final String STATS = "/stats";
 
+    private static final String QUERY_GROUPS = "/query/groups";
+
+    private static final String QUERY_TOPICS = "/query/topics";
+
+    private static final String QUERY_SUBSCRIPTIONS = "/query/subscriptions";
+
+    private static final String QUERY_TOPIC_METRICS = "/query/topics/metrics";
+
+    private static final String QUERY_SUBSCRIPTION_METRICS = "/query/subscriptions/metrics";
+
     private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
 
     private static final String TOPICS_QUERY = "/topics/query";
@@ -78,11 +92,17 @@ public class ManagementTestClient {
     public ManagementTestClient(int managementPort) {
         this.managementContainerUrl = "http://localhost:" + managementPort;
         this.webTestClient = WebTestClient
-                .bindToServer()
+                .bindToServer(clientHttpConnector())
                 .responseTimeout(Duration.ofSeconds(30))
                 .baseUrl(managementContainerUrl)
                 .build();
         this.objectMapper = new ObjectMapper();
+    }
+
+    private static ClientHttpConnector clientHttpConnector() {
+        HttpClient httpClient = new HttpClient();
+        httpClient.setMaxConnectionsPerDestination(256);
+        return new JettyClientHttpConnector(httpClient);
     }
 
     public WebTestClient.ResponseSpec createGroup(Group group) {
@@ -392,6 +412,47 @@ public class ManagementTestClient {
                         .fromUri(managementContainerUrl)
                         .path(TOPICS_QUERY)
                         .queryParam("groupName", group)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec queryGroups(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_GROUPS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec queryTopics(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_TOPICS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec queryTopicMetrics(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_TOPIC_METRICS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+
+    public WebTestClient.ResponseSpec querySubscriptions(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_SUBSCRIPTIONS)
                         .build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(query), String.class)

@@ -293,4 +293,20 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec queryTopics(String group, String query) {
         return managementTestClient.queryTopics(group, query);
     }
+
+    public WebTestClient.ResponseSpec queryGroups(String query) {
+        return managementTestClient.queryGroups(query);
+    }
+
+    public WebTestClient.ResponseSpec queryTopics(String query) {
+        return managementTestClient.queryTopics(query);
+    }
+
+    public WebTestClient.ResponseSpec queryTopicMetrics(String query) {
+        return managementTestClient.queryTopicMetrics(query);
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptions(String query) {
+        return managementTestClient.querySubscriptions(query);
+    }
 }

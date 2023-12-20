@@ -3,6 +3,9 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.core.env.Environment;
 import pl.allegro.tech.hermes.management.HermesManagement;
+import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
@@ -137,5 +140,17 @@ public class HermesManagementTestApp implements HermesTestApp {
 
     public void addEventAuditorListener(int port) {
         auditEventPort = port;
+    }
+
+    public SubscriptionService subscriptionService() {
+        return app.context().getBean(SubscriptionService.class);
+    }
+
+    public TopicService topicService() {
+        return app.context().getBean(TopicService.class);
+    }
+
+    public GroupService groupService() {
+        return app.context().getBean(GroupService.class);
     }
 }

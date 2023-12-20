@@ -1,18 +1,30 @@
 package pl.allegro.tech.hermes.integrationtests.setup;
 
+import com.jayway.awaitility.Duration;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.lifecycle.Startable;
+import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.client.HermesTestClient;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
+import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
+import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
+import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesExtension implements BeforeAllCallback, ExtensionContext.Store.CloseableResource {
 
@@ -27,6 +39,7 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     private static final HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
     private HermesTestClient hermesTestClient;
     private HermesInitHelper hermesInitHelper;
+    private static final RequestUser testUser = new TestUser();
 
     private static boolean started = false;
 
@@ -72,5 +85,47 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
 
     public void restoreConnectionsBetweenBrokersAndClients() {
         kafka.restoreConnectionsBetweenBrokersAndClients();
+    }
+
+    private void removeSubscriptions() {
+        SubscriptionService service = management.subscriptionService();
+        List<Subscription> subscriptions = service.getAllSubscriptions();
+        for (Subscription subscription : subscriptions) {
+            service.removeSubscription(subscription.getTopicName(), subscription.getName(), testUser);
+        }
+
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+                Assertions.assertThat(service.getAllSubscriptions().size()).isEqualTo(0)
+        );
+    }
+
+    private void removeTopics() {
+        TopicService service = management.topicService();
+        List<Topic> topics = service.getAllTopics();
+        for (Topic topic : topics) {
+            service.removeTopicWithSchema(topic, testUser);
+        }
+
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+                Assertions.assertThat(service.getAllTopics().size()).isEqualTo(0)
+        );
+    }
+
+    private void removeGroups() {
+        GroupService service = management.groupService();
+        List<Group> groups = service.listGroups();
+        for (Group group : groups) {
+            service.removeGroup(group.getGroupName(), testUser);
+        }
+
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+                Assertions.assertThat(service.listGroups().size()).isEqualTo(0)
+        );
+    }
+
+    public void clearManagementData() {
+        removeSubscriptions();
+        removeTopics();
+        removeGroups();
     }
 }
