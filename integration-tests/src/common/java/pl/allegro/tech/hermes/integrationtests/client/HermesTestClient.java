@@ -8,6 +8,7 @@ import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
+import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -306,6 +307,10 @@ public class HermesTestClient {
         return managementTestClient.queryTopicMetrics(query);
     }
 
+    public WebTestClient.ResponseSpec querySubscriptionMetrics(String query) {
+        return managementTestClient.querySubscriptionMetrics(query);
+    }
+
     public WebTestClient.ResponseSpec querySubscriptions(String query) {
         return managementTestClient.querySubscriptions(query);
     }
@@ -340,5 +345,25 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec listUnhealthyForSubscriptionAsPlainText(String topicQualifiedName, String subscriptionName) {
         return managementTestClient.listUnhealthyForSubscriptionAsPlainText(topicQualifiedName, subscriptionName);
+    }
+
+    public WebTestClient.ResponseSpec createOAuthProvider(OAuthProvider provider) {
+        return managementTestClient.createOAuthProvider(provider);
+    }
+
+    public WebTestClient.ResponseSpec getOAuthProvider(String name) {
+        return managementTestClient.getOAuthProvider(name);
+    }
+
+    public WebTestClient.ResponseSpec removeOAuthProvider(String name) {
+        return managementTestClient.removeOAuthProvider(name);
+    }
+
+    public WebTestClient.ResponseSpec listOAuthProvider() {
+        return managementTestClient.listOAuthProvider();
+    }
+
+    public WebTestClient.ResponseSpec updateOAuthProvider(String name, PatchData patch) {
+        return managementTestClient.updateOAuthProvider(name, patch);
     }
 }

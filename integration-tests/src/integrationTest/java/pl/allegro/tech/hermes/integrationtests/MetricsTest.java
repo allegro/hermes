@@ -1,17 +1,20 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import com.jayway.awaitility.Duration;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
+import pl.allegro.tech.hermes.api.MetricDecimalValue;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
@@ -26,14 +29,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
+import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
+import static pl.allegro.tech.hermes.integrationtests.prometheus.TopicMetrics.topicMetrics;
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.groupWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 public class MetricsTest {
 
+    @Order(0)
     @RegisterExtension
-    public static final HermesExtension hermes = new HermesExtension();
+    public static final PrometheusExtension prometheus = new PrometheusExtension();
+
+    @Order(1)
+    @RegisterExtension
+    public static final HermesExtension hermes = new HermesExtension()
+            .withPrometheus(prometheus);
 
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
@@ -343,6 +355,51 @@ public class MetricsTest {
                         )
                         .withValue(1.0)
                 );
+    }
+
+    @Test
+    public void shouldReadTopicMetricsFromPrometheus() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        prometheus.stubTopicMetrics(
+                topicMetrics(topic.getName())
+                        .withRate(10)
+                        .withDeliveryRate(15)
+                        .build()
+        );
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().getTopicMetrics(topic.getQualifiedName());
+
+        // then
+        response.expectStatus().is2xxSuccessful();
+        TopicMetrics metrics = response.expectBody(TopicMetrics.class).returnResult().getResponseBody();
+        assertThat(metrics).isNotNull();
+        assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("10.0"));
+        assertThat(metrics.getDeliveryRate()).isEqualTo(MetricDecimalValue.of("15.0"));
+    }
+
+    @Test
+    public void shouldReadSubscriptionMetricsFromPrometheus() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        Subscription subscription = hermes.initHelper().createSubscription(
+                subscriptionWithRandomName(topic.getName(), "http://endpoint2").build()
+        );
+        prometheus.stubSubscriptionMetrics(
+                subscriptionMetrics(subscription.getQualifiedName())
+                        .withRate(15)
+                        .build()
+        );
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().getSubscriptionMetrics(topic.getQualifiedName(), subscription.getName());
+
+        // then
+        response.expectStatus().is2xxSuccessful();
+        SubscriptionMetrics metrics = response.expectBody(SubscriptionMetrics.class).returnResult().getResponseBody();
+        assertThat(metrics).isNotNull();
+        assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15.0"));
     }
 
     private static HttpHeaders header(String key, String value) {

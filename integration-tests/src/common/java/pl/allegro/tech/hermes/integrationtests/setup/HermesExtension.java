@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.testcontainers.lifecycle.Startable;
@@ -27,7 +28,7 @@ import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTest
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
-public class HermesExtension implements BeforeAllCallback, ExtensionContext.Store.CloseableResource {
+public class HermesExtension implements BeforeAllCallback, AfterAllCallback, ExtensionContext.Store.CloseableResource {
 
     public static final TestSubscribersExtension auditEventsReceiver = new TestSubscribersExtension();
 
@@ -59,6 +60,10 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
         if (management.shouldBeRestarted()) {
             management.stop();
             management.start();
+        }
+        if (consumers.shouldBeRestarted()) {
+            consumers.stop();
+            consumers.start();
         }
         hermesTestClient = new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
         hermesInitHelper = new HermesInitHelper(management.getPort());
@@ -137,5 +142,16 @@ public class HermesExtension implements BeforeAllCallback, ExtensionContext.Stor
     public HermesExtension withPrometheus(PrometheusExtension prometheus) {
         management.withPrometheus(prometheus);
         return this;
+    }
+
+    public HermesExtension withGooglePubSub(GooglePubSubExtension googlePubSub) {
+        consumers.withGooglePubSubEndpoint(googlePubSub);
+        return this;
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        management.restoreDefaultSettings();
+        consumers.restoreDefaultSettings();
     }
 }

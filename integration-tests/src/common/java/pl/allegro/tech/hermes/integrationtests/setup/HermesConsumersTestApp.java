@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.time.Duration;
+import java.util.List;
 
 public class HermesConsumersTestApp implements HermesTestApp {
 
@@ -17,10 +18,9 @@ public class HermesConsumersTestApp implements HermesTestApp {
     private final ConfluentSchemaRegistryContainer schemaRegistry;
 
     private int port = -1;
-    private String googlePubSubEndpoint = "integration";
-
-    private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesConsumers.class)
-            .web(WebApplicationType.NONE);
+    private SpringApplicationBuilder app = null;
+    private List<String> currentArgs = List.of();
+    private GooglePubSubExtension googlePubSub = null;
 
     public HermesConsumersTestApp(ZookeeperContainer hermesZookeeper,
                                   KafkaContainerCluster kafka,
@@ -32,7 +32,37 @@ public class HermesConsumersTestApp implements HermesTestApp {
 
     @Override
     public HermesTestApp start() {
-        app.run(
+        app = new SpringApplicationBuilder(HermesConsumers.class)
+                .web(WebApplicationType.NONE);
+        currentArgs = createArgs();
+        app.run(currentArgs.toArray(new String[0]));
+        port = app.context().getBean(ConsumerHttpServer.class).getPort();
+        return this;
+    }
+
+    @Override
+    public void stop() {
+        if (app != null) {
+            app.context().close();
+            app = null;
+        }
+    }
+
+    @Override
+    public int getPort() {
+        if (port == -1) {
+            throw new IllegalStateException("hermes-consumers port hasn't been initialized");
+        }
+        return port;
+    }
+
+    boolean shouldBeRestarted() {
+        List<String> args = createArgs();
+        return !args.equals(currentArgs);
+    }
+
+    private List<String> createArgs() {
+        return List.of(
                 "--spring.profiles.active=integration",
                 "--consumer.healthCheckPort=0",
                 "--consumer.kafka.namespace=itTest",
@@ -46,27 +76,22 @@ public class HermesConsumersTestApp implements HermesTestApp {
                 "--consumer.metrics.micrometer.reportPeriod=" + Duration.ofSeconds(5),
                 "--consumer.schema.cache.enabled=true",
                 "--consumer.metrics.metric-registry.graphiteReporterEnabled=false",
-                "--consumer.google.pubsub.sender.transportChannelProviderAddress=" + googlePubSubEndpoint
+                "--consumer.google.pubsub.sender.transportChannelProviderAddress=" + getGooglePubSubEndpoint()
         );
-        port = app.context().getBean(ConsumerHttpServer.class).getPort();
-        return this;
     }
 
-    @Override
-    public void stop() {
-        app.context().close();
-    }
-
-    @Override
-    public int getPort() {
-        if (port == -1) {
-            throw new IllegalStateException("hermes-consumers port hasn't been initialized");
+    private String getGooglePubSubEndpoint() {
+        if (googlePubSub == null) {
+            return "integration";
         }
-        return port;
+        return googlePubSub.getEmulatorEndpoint();
     }
 
-    public HermesConsumersTestApp googlePubSubEndpoint(String endpoint) {
-        googlePubSubEndpoint = endpoint;
-        return this;
+    void withGooglePubSubEndpoint(GooglePubSubExtension googlePubSub) {
+        this.googlePubSub = googlePubSub;
+    }
+
+    void restoreDefaultSettings() {
+        googlePubSub = null;
     }
 }
