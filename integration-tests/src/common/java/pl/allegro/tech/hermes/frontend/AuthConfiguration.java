@@ -6,12 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.PropertySource;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
-import pl.allegro.tech.hermes.integration.auth.SingleUserAwareIdentityManager;
 
 @Configuration
-@PropertySource("classpath:application-auth.properties")
 public class AuthConfiguration {
 
     @Value("${auth.username}")
@@ -36,7 +33,7 @@ public class AuthConfiguration {
         return new AuthenticationConfiguration(
                 exchange -> isAuthenticationRequired,
                 Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
-                new SingleUserAwareIdentityManager(username, password));
+                new SingleUserAwareIdentityManager(username, password)
+        );
     }
-
 }

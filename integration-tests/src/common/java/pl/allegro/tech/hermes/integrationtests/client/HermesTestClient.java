@@ -366,4 +366,8 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec updateOAuthProvider(String name, PatchData patch) {
         return managementTestClient.updateOAuthProvider(name, patch);
     }
+
+    public WebTestClient.ResponseSpec searchOwners(String source, String searchString) {
+        return managementTestClient.searchOwners(source, searchString);
+    }
 }

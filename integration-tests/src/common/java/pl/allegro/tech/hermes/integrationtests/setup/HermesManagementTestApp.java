@@ -41,6 +41,7 @@ public class HermesManagementTestApp implements HermesTestApp {
     private SpringApplicationBuilder app = null;
     private List<String> currentArgs = List.of();
     private PrometheusExtension prometheus = null;
+    private CrowdExtension crowd = null;
 
     public HermesManagementTestApp(ZookeeperContainer hermesZookeeper,
                                    KafkaContainerCluster kafka,
@@ -115,11 +116,18 @@ public class HermesManagementTestApp implements HermesTestApp {
         this.prometheus = prometheus;
     }
 
-    void restoreDefaultSettings() {
-        prometheus = null;
+    void withCrowd(CrowdExtension crowd) {
+        this.crowd = crowd;
     }
 
-    boolean shouldBeRestarted() {
+    @Override
+    public void restoreDefaultSettings() {
+        prometheus = null;
+        crowd = null;
+    }
+
+    @Override
+    public boolean shouldBeRestarted() {
         List<String> args = createArgs();
         return !args.equals(currentArgs);
     }
@@ -133,6 +141,10 @@ public class HermesManagementTestApp implements HermesTestApp {
         if (prometheus != null) {
             args.add("--prometheus.client.externalMonitoringUrl=" + prometheus.getEndpoint());
             args.add("--prometheus.client.cacheTtlSeconds=0");
+        }
+        if (crowd != null) {
+            args.add("--owner.crowd.path=" + crowd.getEndpoint());
+            args.add("--owner.crowd.enabled=true");
         }
         args.add("--topic.partitions=2");
         args.add("--topic.uncleanLeaderElectionEnabled=false");

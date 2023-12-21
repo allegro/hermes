@@ -6,5 +6,9 @@ public interface HermesTestApp {
 
     void stop();
 
+    boolean shouldBeRestarted();
+
+    void restoreDefaultSettings();
+
     int getPort();
 }
