@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -7,6 +8,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.BlacklistStatus.BLACKLISTED;
 import static pl.allegro.tech.hermes.api.BlacklistStatus.NOT_BLACKLISTED;
@@ -25,10 +27,12 @@ public class TopicBlacklistTest {
 
         // when
         hermes.api().blacklistTopic(topic.getQualifiedName());
-        WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message.body());
+        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+            WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message.body());
 
-        // then
-        response.expectStatus().isForbidden();
+            // then
+            response.expectStatus().isForbidden();
+        });
     }
 
     @Test
@@ -40,10 +44,12 @@ public class TopicBlacklistTest {
 
         // when
         hermes.api().unblacklistTopic(topic.getQualifiedName());
-        WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message.body());
+        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+            WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message.body());
 
-        // then
-        response.expectStatus().is2xxSuccessful();
+            // then
+            response.expectStatus().is2xxSuccessful();
+        });
     }
 
     @Test
