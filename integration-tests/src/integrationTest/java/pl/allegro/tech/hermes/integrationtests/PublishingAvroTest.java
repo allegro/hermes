@@ -505,6 +505,31 @@ public class PublishingAvroTest {
         subscriber.waitUntilReceived(afterMigrationMessage.asTestMessage().body());
     }
 
+    @Test
+    public void shouldSendMessageIdHeaderToSubscriber() {
+        // given
+        TopicWithSchema topicWithSchema = topicWithSchema(topicWithRandomName()
+                .withContentType(AVRO)
+                .build(), user.getSchemaAsString());
+        Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
+        TestSubscriber subscriber = subscribers.createSubscriber();
+        hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(),
+                "subscription", subscriber.getEndpoint())
+                .withContentType(AVRO)
+                .build());
+        String traceId = UUID.randomUUID().toString();
+
+        // when
+        hermes.api().publishAvroUntilSuccess(topic.getQualifiedName(), user.asBytes(), createHeaders(singletonMap("Trace-Id", traceId)));
+
+        // then
+        subscriber.waitUntilRequestReceived(request -> {
+            String messageId = request.getHeader("Hermes-Message-Id");
+            assertThat(messageId).isNotBlank();
+            assertThat(request.getHeader("messageId")).isEqualTo(messageId);
+            assertThat(request.getHeader("Trace-Id")).isEqualTo(traceId);
+        });
+    }
 
     private void assertBodyDeserializesIntoUser(String body, AvroUser user) {
         AvroUser avroUser = AvroUser.create(user.getCompiledSchema(), body.getBytes());

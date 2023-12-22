@@ -80,7 +80,7 @@ public class HermesFrontendTestApp implements HermesTestApp {
         args.add(getArgument(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, readinessCheckInterval));
 
         args.add(getArgument(FRONTEND_HEADER_PROPAGATION_ENABLED, true));
-        args.add(getArgument(FRONTEND_HEADER_PROPAGATION_ALLOWED, "Trace-Id, Span-Id, Parent-Span-Id, Trace-Sampled, Trace-Reported"));
+        args.add(getArgument(FRONTEND_HEADER_PROPAGATION_ALLOWED, "trace-id, span-id, parent-span-id, trace-sampled, trace-reported"));
 
         args.add(getArgument(KAFKA_PRODUCER_METADATA_MAX_AGE, metadataMaxAge));
 

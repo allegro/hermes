@@ -34,6 +34,6 @@ public class FrontendConfigurationProperties {
         public static String KAFKA_PRODUCER_METADATA_MAX_AGE = "frontend.kafka.producer.metadataMaxAge";
         public static String KAFKA_BROKER_LIST = "frontend.kafka.clusters.[0].brokerList";
         public static String KAFKA_NAMESPACE = "frontend.kafka.namespace";
-        public static String FRONTEND_HEADER_PROPAGATION_ENABLED = "frontend.header.propagation.enabled";
-        public static String FRONTEND_HEADER_PROPAGATION_ALLOWED = "frontend.header.propagation.allowFilter";
+        public static String FRONTEND_HEADER_PROPAGATION_ENABLED = "frontend.http.headers.propagationEnabled";
+        public static String FRONTEND_HEADER_PROPAGATION_ALLOWED = "frontend.http.headers.allowedSet";
 }

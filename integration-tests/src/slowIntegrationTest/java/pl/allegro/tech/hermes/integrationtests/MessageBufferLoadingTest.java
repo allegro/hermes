@@ -140,7 +140,7 @@ public class MessageBufferLoadingTest {
         byte[] content = wrapper.wrapJson("message".getBytes(defaultCharset()),
                 messageId, timestamp, Collections.emptyMap());
 
-        messageRepository.save(new JsonMessage(messageId, content, timestamp, null), topic);
+        messageRepository.save(new JsonMessage(messageId, content, timestamp, null, Collections.emptyMap()), topic);
         messageRepository.close();
 
     }
