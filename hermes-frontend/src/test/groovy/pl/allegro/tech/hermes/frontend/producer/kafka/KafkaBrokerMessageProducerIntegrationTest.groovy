@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
+import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
@@ -38,6 +39,7 @@ import spock.lang.Specification
 import java.time.Duration
 import java.util.stream.Collectors
 
+import static java.util.Collections.emptyMap
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG
@@ -103,7 +105,9 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
-                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(kafkaHeaderNameProperties),
+                new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(
+                            kafkaHeaderNameProperties,
+                            new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties()),
                         schemaProperties.isIdHeaderEnabled()
                 )
         )
@@ -168,7 +172,8 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     private static AvroMessage generateAvroMessage(String partitionKey) {
         def avroUser = new AvroUser()
-        return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema, partitionKey)
+        return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema,
+                partitionKey, emptyMap())
     }
 
     private static def createTestSubscription(Topic topic, String subscriptionName) {

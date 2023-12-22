@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.frontend.buffer;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 
 public class BackupMessage implements Serializable {
@@ -13,9 +15,10 @@ public class BackupMessage implements Serializable {
     private final String partitionKey;
     private final Integer schemaVersion;
     private final Integer schemaId;
+    private final Map<String, String> propagatedHTTPHeaders;
 
     public BackupMessage(String messageId, byte[] data, long timestamp, String qualifiedTopicName, String partitionKey,
-                         Integer schemaVersion, Integer schemaId) {
+                         Integer schemaVersion, Integer schemaId, Map<String, String> propagatedHTTPHeaders) {
         this.messageId = messageId;
         this.data = data;
         this.timestamp = timestamp;
@@ -23,6 +26,7 @@ public class BackupMessage implements Serializable {
         this.partitionKey = partitionKey;
         this.schemaVersion = schemaVersion;
         this.schemaId = schemaId;
+        this.propagatedHTTPHeaders = propagatedHTTPHeaders == null ? Collections.emptyMap() : propagatedHTTPHeaders;
     }
 
     public String getMessageId() {
@@ -51,6 +55,10 @@ public class BackupMessage implements Serializable {
 
     public Integer getSchemaId() {
         return schemaId;
+    }
+
+    public Map<String, String> getPropagatedHTTPHeaders() {
+        return propagatedHTTPHeaders;
     }
 
     @Override

@@ -8,6 +8,4 @@ public interface KafkaHeaderNameParameters {
 
     String getMessageId();
 
-    String getTimestamp();
-
 }

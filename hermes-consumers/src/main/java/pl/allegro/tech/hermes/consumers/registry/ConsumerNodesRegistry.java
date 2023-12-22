@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.registry;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +34,7 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
     private final ConsumerNodesRegistryPaths registryPaths;
     private final String consumerNodeId;
     private final LeaderLatch leaderLatch;
-    private final Map<String, Long> consumersLastSeen = new HashMap<>();
+    private final Map<String, Long> consumersLastSeen = new ConcurrentHashMap<>();
     private final long deathOfConsumerAfterMillis;
     private final Clock clock;
 
@@ -97,11 +99,18 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
         return new ArrayList<>(consumersLastSeen.keySet());
     }
 
-    public void refresh() {
+    public synchronized void refresh() {
         logger.info("Refreshing current consumers registry");
 
         long currentTime = clock.millis();
-        readCurrentNodes().forEach(node -> consumersLastSeen.put(node, currentTime));
+        List<String> currentNodes = readCurrentNodes();
+        List<String> validNodes = currentNodes.stream()
+                .filter(StringUtils::isNotBlank)
+                .toList();
+        if (currentNodes.size() != validNodes.size()) {
+            logger.warn("Found {} invalid consumer nodes.", currentNodes.size() - validNodes.size());
+        }
+        validNodes.forEach(node -> consumersLastSeen.put(node, currentTime));
 
         List<String> deadConsumers = findDeadConsumers(currentTime);
         if (!deadConsumers.isEmpty()) {

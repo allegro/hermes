@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./hermes-console-vue
+        working-directory: ./hermes-console
     steps:
       - name: Checkout
         uses: actions/checkout@v3

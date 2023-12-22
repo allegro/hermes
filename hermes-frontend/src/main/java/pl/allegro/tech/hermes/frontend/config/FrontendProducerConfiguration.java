@@ -20,7 +20,8 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
         SchemaProperties.class,
         KafkaHeaderNameProperties.class,
         KafkaProducerProperties.class,
-        KafkaClustersProperties.class
+        KafkaClustersProperties.class,
+        HTTPHeadersProperties.class
 })
 public class FrontendProducerConfiguration {
 
@@ -33,8 +34,9 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean
-    public KafkaHeaderFactory kafkaHeaderFactory(KafkaHeaderNameProperties kafkaHeaderNameProperties) {
-        return new KafkaHeaderFactory(kafkaHeaderNameProperties);
+    public KafkaHeaderFactory kafkaHeaderFactory(KafkaHeaderNameProperties kafkaHeaderNameProperties,
+                                                 HTTPHeadersProperties httpHeadersProperties) {
+        return new KafkaHeaderFactory(kafkaHeaderNameProperties, httpHeadersProperties.getPropagationAsKafkaHeaders());
     }
 
     @Bean(destroyMethod = "close")

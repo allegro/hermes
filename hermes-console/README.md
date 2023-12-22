@@ -1,62 +1,50 @@
-Hermes Console
-====
+# hermes-console
 
-Hermes admin console - UI for Hermes Management API.
+Hermes console written in Vue 3.
 
-## Build and install
+## Requirements
 
-Install backend and frontend dependencies:
+* node >=18.0.0
+* yarn
 
-```bash
-npm install
-bower install
+## Project Setup
+
+```sh
+yarn
 ```
 
-## Configuration
+### Run mocked backend server
 
-Hermes Console has two initial configuration options, which can be specified using either
-command line or environment variables:
-
-* `-p` or `HERMES_CONSOLE_PORT`: specify port (default: `8000`)
-* `-c` or `HERMES_CONSOLE_CONFIG`: specify configuration source: local file or http resource (default: `./config.json`)
-
-For example to run Hermes Console at port 8001 and fetch configuration from remote source:
-
-```bash
-node serve.js -p 8001 -c http://configuration-source
+```sh
+yarn dev-server
 ```
 
-Other configuration can be found in `config.json.example` file.
+### Compile and Hot-Reload for Development
 
-## Run
-
-Use provided node script:
-
-```
-./serve.js
+```sh
+yarn dev
 ```
 
-Or explicitly via node:
+### Type-Check, Compile and Minify for Production
 
-```
-node serve.js
-```
-
-For development purposes to have hermes console autoreload changed files it can be run with `nodemon`
-
-Install:
-```
-npm install nodemon -g
-```
-Run:
-```
-nodemon serve.js
+```sh
+yarn build
 ```
 
-## Tests
+### Run Unit Tests with [Vitest](https://vitest.dev/)
 
-In order to run all tests and `jshint` code analysis run `grunt` tasks:
-
+```sh
+yarn test:unit
 ```
-grunt test
+
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+yarn lint
+```
+
+### Lint with [ESLint](https://eslint.org/) and fix
+
+```sh
+yarn lint:fix
 ```
