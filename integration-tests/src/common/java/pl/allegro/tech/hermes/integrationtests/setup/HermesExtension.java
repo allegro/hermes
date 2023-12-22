@@ -57,14 +57,12 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
             Stream.of(consumers, frontend).forEach(HermesTestApp::start);
             started = true;
         }
-        if (management.shouldBeRestarted()) {
-            management.stop();
-            management.start();
-        }
-        if (consumers.shouldBeRestarted()) {
-            consumers.stop();
-            consumers.start();
-        }
+        Stream.of(management, consumers, frontend).forEach(app -> {
+            if (app.shouldBeRestarted()) {
+                app.stop();
+                app.start();
+            }
+        });
         hermesTestClient = new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
         hermesInitHelper = new HermesInitHelper(management.getPort());
         auditEvents = auditEventsReceiver.createSubscriberWithStrictPath(200, AUDIT_EVENT_PATH);
@@ -149,9 +147,23 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
         return this;
     }
 
+    public HermesExtension withCrowd(CrowdExtension crowd) {
+        management.withCrowd(crowd);
+        return this;
+    }
+
+    public HermesExtension withFrontendProperty(String name, Object value) {
+        frontend.withProperty(name, value);
+        return this;
+    }
+
+    public HermesExtension withFrontendProfile(String profile) {
+        frontend.withSpringProfile(profile);
+        return this;
+    }
+
     @Override
     public void afterAll(ExtensionContext context) {
-        management.restoreDefaultSettings();
-        consumers.restoreDefaultSettings();
+        Stream.of(management, consumers, frontend).forEach(HermesTestApp::restoreDefaultSettings);
     }
 }

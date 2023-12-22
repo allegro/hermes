@@ -10,8 +10,12 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_PASSWORD;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_USERNAME;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_GRACEFUL_SHUTDOWN_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HEADER_PROPAGATION_ALLOWED;
@@ -39,14 +43,15 @@ public class HermesFrontendTestApp implements HermesTestApp {
     private final ZookeeperContainer hermesZookeeper;
     private final KafkaContainerCluster kafka;
     private final ConfluentSchemaRegistryContainer schemaRegistry;
-    private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesFrontend.class)
-            .web(WebApplicationType.NONE);
+    private SpringApplicationBuilder app;
 
     private int port = -1;
     private boolean kafkaCheckEnabled = false;
     private Duration metadataMaxAge = Duration.ofMinutes(5);
     private Duration readinessCheckInterval = Duration.ofSeconds(1);
-    private final List<String> extraArgs = new ArrayList<>();
+    private final Map<String, Object> extraArgs = new HashMap<>();
+    private final List<String> profiles = new ArrayList<>(List.of("integration"));
+    private List<String> currentArgs = List.of();
 
     public HermesFrontendTestApp(ZookeeperContainer hermesZookeeper,
                                  KafkaContainerCluster kafka,
@@ -57,64 +62,74 @@ public class HermesFrontendTestApp implements HermesTestApp {
     }
 
     public HermesFrontendTestApp withProperty(String name, Object value) {
-        this.extraArgs.add(getArgument(name, value));
+        this.extraArgs.put(name, value);
         return this;
     }
 
-
-    private  List<String> defaultFrontendArgs() {
-        List<String> args = new ArrayList<>();
-        args.add(getArgument(SPRING_PROFILES_ACTIVE, "integration"));
-        args.add(getArgument(FRONTEND_PORT, 0));
-
-        args.add(getArgument(KAFKA_NAMESPACE, "itTest"));
-        args.add(getArgument(KAFKA_BROKER_LIST, kafka.getBootstrapServersForExternalClients()));
-
-        args.add(getArgument(ZOOKEEPER_CONNECTION_STRING, hermesZookeeper.getConnectionString()));
-
-        args.add(getArgument(SCHEMA_CACHE_ENABLED, true));
-        args.add(getArgument(SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl()));
-
-        args.add(getArgument(FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED, kafkaCheckEnabled));
-        args.add(getArgument(FRONTEND_READINESS_CHECK_ENABLED, true));
-        args.add(getArgument(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, readinessCheckInterval));
-
-        args.add(getArgument(FRONTEND_HEADER_PROPAGATION_ENABLED, true));
-        args.add(getArgument(FRONTEND_HEADER_PROPAGATION_ALLOWED, "trace-id, span-id, parent-span-id, trace-sampled, trace-reported"));
-
-        args.add(getArgument(KAFKA_PRODUCER_METADATA_MAX_AGE, metadataMaxAge));
-
-        args.add(getArgument(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE,true));
-        args.add(getArgument(FRONTEND_IDLE_TIMEOUT, Duration.ofSeconds(2)));
-
-        args.add(getArgument(FRONTEND_THROUGHPUT_TYPE, "fixed"));
-        args.add(getArgument(FRONTEND_THROUGHPUT_FIXED_MAX,  50 * 1024L));
-
-        args.add(getArgument(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false));
-
-        args.add(getArgument(METRICS_MICROMETER_REPORT_PERIOD, Duration.ofSeconds(1)));
-
-        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_ENABLED, true));
-        args.add(getArgument(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, Duration.ofSeconds(1)));
-
-        return args;
+    public HermesFrontendTestApp withSpringProfile(String profile) {
+        profiles.add(profile);
+        return this;
     }
 
+    private List<String> createArgs() {
+        Map<String, Object> args = new HashMap<>();
+        args.put(SPRING_PROFILES_ACTIVE, String.join(",", profiles));
+        args.put(FRONTEND_PORT, 0);
+
+        args.put(KAFKA_NAMESPACE, "itTest");
+        args.put(KAFKA_BROKER_LIST, kafka.getBootstrapServersForExternalClients());
+
+        args.put(ZOOKEEPER_CONNECTION_STRING, hermesZookeeper.getConnectionString());
+
+        args.put(SCHEMA_CACHE_ENABLED, true);
+        args.put(SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+
+        args.put(FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED, kafkaCheckEnabled);
+        args.put(FRONTEND_READINESS_CHECK_ENABLED, true);
+        args.put(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, readinessCheckInterval);
+
+        args.put(FRONTEND_HEADER_PROPAGATION_ENABLED, true);
+        args.put(FRONTEND_HEADER_PROPAGATION_ALLOWED, "trace-id, span-id, parent-span-id, trace-sampled, trace-reported");
+
+        args.put(KAFKA_PRODUCER_METADATA_MAX_AGE, metadataMaxAge);
+
+        args.put(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE,true);
+        args.put(FRONTEND_IDLE_TIMEOUT, Duration.ofSeconds(2));
+
+        args.put(FRONTEND_THROUGHPUT_TYPE, "fixed");
+        args.put(FRONTEND_THROUGHPUT_FIXED_MAX,  50 * 1024L);
+
+        args.put(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
+
+        args.put(METRICS_MICROMETER_REPORT_PERIOD, Duration.ofSeconds(1));
+
+        args.put(FRONTEND_MESSAGE_PREVIEW_ENABLED, true);
+        args.put(FRONTEND_MESSAGE_PREVIEW_LOG_PERSIST_PERIOD, Duration.ofSeconds(1));
+
+        args.put(AUTH_USERNAME, "username");
+        args.put(AUTH_PASSWORD, "password");
+
+        args.putAll(extraArgs);
+
+        return args.entrySet().stream().map(e -> getArgument(e.getKey(), e.getValue())).toList();
+    }
 
     @Override
     public HermesTestApp start() {
-        List<String> args = defaultFrontendArgs();
-        args.addAll(extraArgs);
-
-        app.run(args.toArray(new String[0]));
-
+        app = new SpringApplicationBuilder(HermesFrontend.class)
+                .web(WebApplicationType.NONE);
+        currentArgs = createArgs();
+        app.run(currentArgs.toArray(new String[0]));
         port = app.context().getBean(HermesServer.class).getPort();
         return this;
     }
 
     @Override
     public void stop() {
-        app.context().close();
+        if (app != null) {
+            app.context().close();
+            app = null;
+        }
     }
 
     @Override
@@ -155,5 +170,18 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
     private static String getArgument(String config, Object value) {
         return "--" + config + "=" + value;
+    }
+
+    @Override
+    public boolean shouldBeRestarted() {
+        List<String> args = createArgs();
+        return !args.equals(currentArgs);
+    }
+
+    @Override
+    public void restoreDefaultSettings() {
+        extraArgs.clear();
+        profiles.clear();
+        profiles.add("integration");
     }
 }

@@ -56,7 +56,8 @@ public class HermesConsumersTestApp implements HermesTestApp {
         return port;
     }
 
-    boolean shouldBeRestarted() {
+    @Override
+    public boolean shouldBeRestarted() {
         List<String> args = createArgs();
         return !args.equals(currentArgs);
     }
@@ -91,7 +92,8 @@ public class HermesConsumersTestApp implements HermesTestApp {
         this.googlePubSub = googlePubSub;
     }
 
-    void restoreDefaultSettings() {
+    @Override
+    public void restoreDefaultSettings() {
         googlePubSub = null;
     }
 }

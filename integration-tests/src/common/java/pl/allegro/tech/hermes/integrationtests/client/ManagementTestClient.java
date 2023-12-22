@@ -87,6 +87,8 @@ public class ManagementTestClient {
 
     private static final String TOPICS_QUERY = "/topics/query";
 
+    private static final String OWNERS_SEARCH_PATH = "/owners/sources/{source}";
+
     private final WebTestClient webTestClient;
 
     private final String managementContainerUrl;
@@ -599,6 +601,16 @@ public class ManagementTestClient {
                                 .build()
                 )
                 .header("Accept", "text/plain")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec searchOwners(String source, String searchString) {
+        return webTestClient.get().uri(
+                UriBuilder.fromUri(managementContainerUrl)
+                        .path(OWNERS_SEARCH_PATH)
+                        .queryParam("search", searchString)
+                        .build(source)
+                )
                 .exchange();
     }
 }

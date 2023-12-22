@@ -1,17 +1,13 @@
-package pl.allegro.tech.hermes.integration.auth;
+package pl.allegro.tech.hermes.frontend;
 
 import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
 import io.undertow.security.idm.IdentityManager;
 import io.undertow.security.idm.PasswordCredential;
-import org.apache.commons.codec.binary.Base64;
 import pl.allegro.tech.hermes.frontend.server.auth.Roles;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class SingleUserAwareIdentityManager implements IdentityManager {
@@ -74,14 +70,5 @@ public class SingleUserAwareIdentityManager implements IdentityManager {
         public String getName() {
             return username;
         }
-    }
-
-    static Map<String, String> getHeadersWithAuthentication(String username, String password) {
-        String credentials = username + ":" + password;
-        String token = "Basic " + Base64.encodeBase64String(credentials.getBytes(StandardCharsets.UTF_8));
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", token);
-        return headers;
     }
 }
