@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.awaitility.Duration;
 import net.javacrumbs.jsonunit.core.Option;
 import org.apache.avro.Schema;
@@ -22,6 +25,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.time.Clock;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -57,6 +61,63 @@ public class PublishingAvroTest {
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
     private static final AvroUser user = new AvroUser("Bob", 50, "blue");
+
+    private static final ObjectMapper objMapper = new ObjectMapper();
+
+    @Test
+    public void shouldConsumeJsonMessageWithDecimalFromAvroTopic() throws JsonProcessingException {
+        // given
+        String schema = """
+                {
+                    "namespace": "pl.allegro",
+                    "type": "record",
+                    "name": "User",
+                    "fields": [
+                        {
+                              "name": "__metadata",
+                              "type": ["null", {"type": "map", "values": "string"}],
+                              "default": null
+                        },
+                        {"name": "name", "type": "string"},
+                        {"name": "balance","type": {
+                            "type": "bytes",
+                            "logicalType": "decimal",
+                            "precision": 10,
+                            "scale": 2
+                            }
+                        }
+                    ]
+                }""";
+
+
+        TopicWithSchema topicWithSchema = topicWithSchema(topicWithRandomName()
+                .withContentType(AVRO)
+                .build(), schema);
+        Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
+
+        TestSubscriber subscriber = subscribers.createSubscriber();
+
+        hermes.initHelper().createSubscription(
+                subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
+        );
+
+        Map<String, Object> map = Map.of(
+                "name", "Bob", "balance", "1.20"
+        );
+
+        String userWithBalance = objMapper.writeValueAsString(map);
+
+        // when
+        hermes.api().publishJSONUntilSuccess(topic.getQualifiedName(), userWithBalance);
+
+        // then
+        subscriber.waitUntilAnyMessageReceived();
+
+        Map<String, Object> actual = objMapper.readValue(
+                subscriber.getLastReceivedRequest().getBodyAsString(),
+                new TypeReference<HashMap<String,Object>>() {});
+        assertThat(actual.get("balance")).isEqualTo("1.20");
+    }
 
 
     @Test
