@@ -133,8 +133,8 @@ public class OfflineRetransmissionManagementTest {
         OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
                 sourceTopic.getQualifiedName(),
                 targetTopic.getQualifiedName(),
-                Instant.now(),
-                Instant.now().minusSeconds(1));
+                Instant.now().toString(),
+                Instant.now().minusSeconds(1).toString());
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -222,8 +222,8 @@ public class OfflineRetransmissionManagementTest {
         return new OfflineRetransmissionRequest(
                 sourceTopic,
                 targetTopic,
-                Instant.now().minusSeconds(1),
-                Instant.now()
+                Instant.now().minusSeconds(1).toString(),
+                Instant.now().toString()
         );
     }
 
