@@ -68,6 +68,8 @@ public class ManagementTestClient {
 
     private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
 
+    private static final String SUBSCRIPTIONS_QUERY = "/topics/{topicName}/subscriptions/query";
+
     private static final String TOPICS_QUERY = "/topics/query";
 
     private static final String MODE = "/mode";
@@ -75,6 +77,10 @@ public class ManagementTestClient {
     private static final String OFFLINE_RETRANSMISSION_TASKS = "/offline-retransmission/tasks";
 
     private static final String OFFLINE_RETRANSMISSION_TASK = "/offline-retransmission/tasks/{taskId}";
+
+    private static final String SUBSCRIPTION_HEALTH = "/topics/{topicName}/subscriptions/{subscription}/health";
+
+    private static final String CONSUMER_GROUPS = "/topics/{topicName}/subscriptions/{subscription}/consumer-groups";
 
     private final WebTestClient webTestClient;
 
@@ -261,9 +267,10 @@ public class ManagementTestClient {
                 .exchange();
     }
 
-    public WebTestClient.ResponseSpec listSubscriptions(String qualifiedTopicName) {
+    public WebTestClient.ResponseSpec listSubscriptions(String qualifiedTopicName, boolean tracked) {
         return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
                         .path(SUBSCRIPTIONS_PATH)
+                        .queryParam("tracked", tracked)
                         .build(qualifiedTopicName))
                 .exchange();
     }
@@ -436,6 +443,32 @@ public class ManagementTestClient {
                         .build())
                 .header("Content-Type", "application/json")
                 .body(Mono.just(request), OfflineRetransmissionRequest.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptions(String qualifiedTopicName, String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTIONS_QUERY)
+                        .build(qualifiedTopicName))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getSubscriptionHealth(String qualifiedTopicName, String name) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTION_HEALTH)
+                        .build(qualifiedTopicName, name))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getConsumerGroupsDescription(String qualifiedTopicName, String subscriptionName) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(CONSUMER_GROUPS)
+                        .build(qualifiedTopicName, subscriptionName))
                 .exchange();
     }
 }

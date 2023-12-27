@@ -91,8 +91,8 @@ public class HermesTestClient {
         return managementTestClient.getSubscriptionMetrics(topicQualifiedName, subscriptionName);
     }
 
-    public void suspendSubscription(Topic topic, String subscription) {
-        managementTestClient.updateSubscriptionState(topic, subscription, Subscription.State.SUSPENDED)
+    public WebTestClient.ResponseSpec suspendSubscription(Topic topic, String subscription) {
+        return managementTestClient.updateSubscriptionState(topic, subscription, Subscription.State.SUSPENDED)
                 .expectStatus()
                 .is2xxSuccessful();
     }
@@ -141,10 +141,8 @@ public class HermesTestClient {
         return frontendTestClient.publishAvroUntilSuccess(topicQualifiedName, body, headers);
     }
 
-    public void updateSubscription(Topic topic, String subscription, PatchData patch) {
-        managementTestClient.updateSubscription(topic, subscription, patch)
-                .expectStatus()
-                .is2xxSuccessful();
+    public WebTestClient.ResponseSpec updateSubscription(Topic topic, String subscription, PatchData patch) {
+        return managementTestClient.updateSubscription(topic, subscription, patch);
     }
 
     public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
@@ -236,7 +234,7 @@ public class HermesTestClient {
     }
 
     public WebTestClient.ResponseSpec listSubscriptions(String qualifiedName) {
-        return managementTestClient.listSubscriptions(qualifiedName);
+        return managementTestClient.listSubscriptions(qualifiedName, false);
     }
 
     public WebTestClient.ResponseSpec listTopics(String groupName) {
@@ -309,5 +307,25 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec createOfflineRetransmissionTask(OfflineRetransmissionRequest request) {
         return managementTestClient.createOfflineRetransmissionTask(request);
+    }
+
+    public WebTestClient.ResponseSpec createSubscription(Subscription subscription) {
+        return managementTestClient.createSubscription(subscription);
+    }
+
+    public WebTestClient.ResponseSpec listTrackedSubscriptions(String qualifiedName) {
+        return managementTestClient.listSubscriptions(qualifiedName, true);
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptions(String qualifiedName, String query) {
+        return managementTestClient.querySubscriptions(qualifiedName, query);
+    }
+
+    public WebTestClient.ResponseSpec getSubscriptionHealth(String qualifiedTopicName, String name) {
+        return managementTestClient.getSubscriptionHealth(qualifiedTopicName, name);
+    }
+
+    public WebTestClient.ResponseSpec getConsumerGroupsDescription(String qualifiedTopicName, String subscriptionName) {
+        return managementTestClient.getConsumerGroupsDescription(qualifiedTopicName, subscriptionName);
     }
 }
