@@ -8,6 +8,7 @@ import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
+import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -291,6 +292,82 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec queryTopics(String group, String query) {
         return managementTestClient.queryTopics(group, query);
+    }
+
+    public WebTestClient.ResponseSpec queryGroups(String query) {
+        return managementTestClient.queryGroups(query);
+    }
+
+    public WebTestClient.ResponseSpec queryTopics(String query) {
+        return managementTestClient.queryTopics(query);
+    }
+
+    public WebTestClient.ResponseSpec queryTopicMetrics(String query) {
+        return managementTestClient.queryTopicMetrics(query);
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptionMetrics(String query) {
+        return managementTestClient.querySubscriptionMetrics(query);
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptions(String query) {
+        return managementTestClient.querySubscriptions(query);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthy() {
+        return managementTestClient.listUnhealthy();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyAsPlainText() {
+        return managementTestClient.listUnhealthyAsPlainText();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForOwner(String ownerId) {
+        return managementTestClient.listUnhealthy(ownerId);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForOwnerAsPlainText(String ownerId) {
+        return managementTestClient.listUnhealthyAsPlainText(ownerId);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForTopic(String qualifiedName) {
+        return managementTestClient.listUnhealthyForTopic(qualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForTopicAsPlainText(String qualifiedName) {
+        return managementTestClient.listUnhealthyForTopicAsPlainText(qualifiedName);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForSubscription(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.listUnhealthyForSubscription(topicQualifiedName, subscriptionName);
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForSubscriptionAsPlainText(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.listUnhealthyForSubscriptionAsPlainText(topicQualifiedName, subscriptionName);
+    }
+
+    public WebTestClient.ResponseSpec createOAuthProvider(OAuthProvider provider) {
+        return managementTestClient.createOAuthProvider(provider);
+    }
+
+    public WebTestClient.ResponseSpec getOAuthProvider(String name) {
+        return managementTestClient.getOAuthProvider(name);
+    }
+
+    public WebTestClient.ResponseSpec removeOAuthProvider(String name) {
+        return managementTestClient.removeOAuthProvider(name);
+    }
+
+    public WebTestClient.ResponseSpec listOAuthProvider() {
+        return managementTestClient.listOAuthProvider();
+    }
+
+    public WebTestClient.ResponseSpec updateOAuthProvider(String name, PatchData patch) {
+        return managementTestClient.updateOAuthProvider(name, patch);
+    }
+
+    public WebTestClient.ResponseSpec searchOwners(String source, String searchString) {
+        return managementTestClient.searchOwners(source, searchString);
     }
 
     public WebTestClient.ResponseSpec setMode(String mode) {

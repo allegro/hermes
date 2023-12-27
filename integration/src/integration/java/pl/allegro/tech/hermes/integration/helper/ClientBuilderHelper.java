@@ -11,10 +11,10 @@ public class ClientBuilderHelper {
 
         WebTarget client = ClientBuilder.newClient().target(uri).path("topics").path(topicName);
         return client.request()
-                .header("Trace-Id", traceContext.getTraceId())
-                .header("Span-Id", traceContext.getSpanId())
-                .header("Parent-Span-Id", traceContext.getParentSpanId())
-                .header("Trace-Sampled", traceContext.getTraceSampled())
-                .header("Trace-Reported", traceContext.getTraceReported());
+                .header("trace-id", traceContext.getTraceId())
+                .header("span-id", traceContext.getSpanId())
+                .header("parent-span-id", traceContext.getParentSpanId())
+                .header("trace-sampled", traceContext.getTraceSampled())
+                .header("trace-reported", traceContext.getTraceReported());
     }
 }

@@ -32,14 +32,10 @@ public class KafkaTopicMetadataFetcherFactory {
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
         props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, requestTimeoutMs);
-        if (kafkaParameters.isEnabled()) {
-            props.put(SASL_MECHANISM, kafkaParameters.getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getProtocol());
-            props.put(SASL_JAAS_CONFIG,
-                    "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
-                            + "username=\"" + kafkaParameters.getUsername() + "\"\n"
-                            + "password=\"" + kafkaParameters.getPassword() + "\";"
-            );
+        if (kafkaParameters.isAuthenticationEnabled()) {
+            props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
+            props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
         AdminClient adminClient = AdminClient.create(props);
         return new KafkaTopicMetadataFetcher(adminClient, metadataMaxAge);

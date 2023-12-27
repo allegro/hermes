@@ -65,14 +65,10 @@ public class KafkaMessageProducerFactory {
         props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaProducerParameters.getMetricsSampleWindow().toMillis());
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
 
-        if (kafkaParameters.isEnabled()) {
-            props.put(SASL_MECHANISM, kafkaParameters.getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getProtocol());
-            props.put(SASL_JAAS_CONFIG,
-                    "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
-                            + "username=\"" + kafkaParameters.getUsername() + "\"\n"
-                            + "password=\"" + kafkaParameters.getPassword() + "\";"
-            );
+        if (kafkaParameters.isAuthenticationEnabled()) {
+            props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
+            props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
 
         Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));

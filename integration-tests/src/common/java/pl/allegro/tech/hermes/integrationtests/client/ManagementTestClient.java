@@ -4,7 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
+import org.eclipse.jetty.client.HttpClient;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ClientHttpConnector;
+import org.springframework.http.client.reactive.JettyClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
@@ -22,6 +25,7 @@ import java.time.Duration;
 import java.util.List;
 
 public class ManagementTestClient {
+
     private static final String TOPICS_PATH = "/topics";
 
     private static final String TOPIC_PATH = "/topics/{topicName}";
@@ -66,9 +70,23 @@ public class ManagementTestClient {
 
     private static final String STATS = "/stats";
 
+    private static final String QUERY_GROUPS = "/query/groups";
+
+    private static final String QUERY_TOPICS = "/query/topics";
+
+    private static final String QUERY_SUBSCRIPTIONS = "/query/subscriptions";
+
+    private static final String QUERY_TOPIC_METRICS = "/query/topics/metrics";
+
+    private static final String QUERY_SUBSCRIPTION_METRICS = "/query/subscriptions/metrics";
+
     private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
 
     private static final String SUBSCRIPTIONS_QUERY = "/topics/{topicName}/subscriptions/query";
+
+    private static final String OAUTH_PROVIDER_PATH = "/oauth/providers/{oAuthProviderName}";
+
+    private static final String UNHEALTHY_PATH = "/unhealthy";
 
     private static final String TOPICS_QUERY = "/topics/query";
 
@@ -82,6 +100,8 @@ public class ManagementTestClient {
 
     private static final String CONSUMER_GROUPS = "/topics/{topicName}/subscriptions/{subscription}/consumer-groups";
 
+    private static final String OWNERS_SEARCH_PATH = "/owners/sources/{source}";
+
     private final WebTestClient webTestClient;
 
     private final String managementContainerUrl;
@@ -91,11 +111,17 @@ public class ManagementTestClient {
     public ManagementTestClient(int managementPort) {
         this.managementContainerUrl = "http://localhost:" + managementPort;
         this.webTestClient = WebTestClient
-                .bindToServer()
+                .bindToServer(clientHttpConnector())
                 .responseTimeout(Duration.ofSeconds(30))
                 .baseUrl(managementContainerUrl)
                 .build();
         this.objectMapper = new ObjectMapper();
+    }
+
+    private static ClientHttpConnector clientHttpConnector() {
+        HttpClient httpClient = new HttpClient();
+        httpClient.setMaxConnectionsPerDestination(256);
+        return new JettyClientHttpConnector(httpClient);
     }
 
     public WebTestClient.ResponseSpec createGroup(Group group) {
@@ -363,6 +389,39 @@ public class ManagementTestClient {
                 .exchange();
     }
 
+    public WebTestClient.ResponseSpec getOAuthProvider(String name) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OAUTH_PROVIDER_PATH)
+                        .build(name))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec removeOAuthProvider(String name) {
+        return webTestClient.delete().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OAUTH_PROVIDER_PATH)
+                        .build(name))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listOAuthProvider() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OAUTH_PROVIDERS_PATH)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec updateOAuthProvider(String name, PatchData patch) {
+        return webTestClient.put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OAUTH_PROVIDER_PATH)
+                        .build(name))
+                .body(Mono.just(patch), PatchData.class)
+                .exchange();
+    }
+
     public WebTestClient.ResponseSpec getAllTopicClients(String topicQualifiedName) {
         return webTestClient.get().uri(UriBuilder
                         .fromUri(managementContainerUrl)
@@ -409,6 +468,163 @@ public class ManagementTestClient {
                         .build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec queryGroups(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_GROUPS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec queryTopics(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_TOPICS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec queryTopicMetrics(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_TOPIC_METRICS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptionMetrics(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_SUBSCRIPTION_METRICS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptions(String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(QUERY_SUBSCRIPTIONS)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthy() {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "application/json")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyAsPlainText() {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "text/plain")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthy(String ownerId) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("ownerSourceName", "Plaintext")
+                                .queryParam("ownerId", ownerId)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "application/json")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyAsPlainText(String ownerId) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("ownerSourceName", "Plaintext")
+                                .queryParam("ownerId", ownerId)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "text/plain")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForTopic(String qualifiedName) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("qualifiedTopicNames", qualifiedName)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "application/json")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForTopicAsPlainText(String qualifiedName) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("qualifiedTopicNames", qualifiedName)
+                                .build()
+                )
+                .header("Accept", "text/plain")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForSubscription(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("subscriptionNames", subscriptionName)
+                                .queryParam("qualifiedTopicNames", topicQualifiedName)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "application/json")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec listUnhealthyForSubscriptionAsPlainText(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.get().uri(
+                        UriBuilder.fromUri(managementContainerUrl)
+                                .path(UNHEALTHY_PATH)
+                                .queryParam("subscriptionNames", subscriptionName)
+                                .queryParam("qualifiedTopicNames", topicQualifiedName)
+                                .queryParam("respectMonitoringSeverity", "false")
+                                .build()
+                )
+                .header("Accept", "text/plain")
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec searchOwners(String source, String searchString) {
+        return webTestClient.get().uri(
+                UriBuilder.fromUri(managementContainerUrl)
+                        .path(OWNERS_SEARCH_PATH)
+                        .queryParam("search", searchString)
+                        .build(source)
+                )
                 .exchange();
     }
 

@@ -2,7 +2,11 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.core.env.Environment;
+import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.management.HermesManagement;
+import pl.allegro.tech.hermes.management.domain.group.GroupService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
@@ -34,7 +38,11 @@ public class HermesManagementTestApp implements HermesTestApp {
     private final Map<String, ZookeeperContainer> hermesZookeepers;
     private final Map<String, KafkaContainerCluster> kafkaClusters;
     private final ConfluentSchemaRegistryContainer schemaRegistry;
-    private final SpringApplicationBuilder app = new SpringApplicationBuilder(HermesManagement.class);
+    private SpringApplicationBuilder app = null;
+    private List<String> currentArgs = List.of();
+    private PrometheusExtension prometheus = null;
+    private CrowdExtension crowd = null;
+
     public HermesManagementTestApp(ZookeeperContainer hermesZookeeper,
                                    KafkaContainerCluster kafka,
                                    ConfluentSchemaRegistryContainer schemaRegistry) {
@@ -51,10 +59,93 @@ public class HermesManagementTestApp implements HermesTestApp {
 
     @Override
     public HermesTestApp start() {
+        currentArgs = createArgs();
+        app = new SpringApplicationBuilder(HermesManagement.class);
+        app.run(currentArgs.toArray(new String[0]));
+        String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
+        if (localServerPort == null) {
+            throw new IllegalStateException("Cannot get hermes-management port");
+        }
+        port = Integer.parseInt(localServerPort);
+        waitUntilReady();
+        return this;
+    }
+
+    private void waitUntilReady() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("http://localhost:" + getPort() + "/mode"))
+                    .GET()
+                    .build();
+            HttpClient httpClient = HttpClient.newHttpClient();
+
+            waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> {
+                try {
+                    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                    assertThat(response.body()).isEqualTo("readWrite");
+                } catch (IOException | InterruptedException e) {
+                    throw new AssertionError("Reading management mode failed", e);
+                }
+            });
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getPort() {
+        if (port == -1) {
+            throw new IllegalStateException("hermes-management port hasn't been initialized");
+        }
+        return port;
+    }
+
+    @Override
+    public void stop() {
+        if (app != null) {
+            app.context().close();
+            app = null;
+        }
+    }
+
+    public void addEventAuditorListener(int port) {
+        auditEventPort = port;
+    }
+
+    void withPrometheus(PrometheusExtension prometheus) {
+        this.prometheus = prometheus;
+    }
+
+    void withCrowd(CrowdExtension crowd) {
+        this.crowd = crowd;
+    }
+
+    @Override
+    public void restoreDefaultSettings() {
+        prometheus = null;
+        crowd = null;
+    }
+
+    @Override
+    public boolean shouldBeRestarted() {
+        List<String> args = createArgs();
+        return !args.equals(currentArgs);
+    }
+
+    private List<String> createArgs() {
         List<String> args = new ArrayList<>();
         args.add("--spring.profiles.active=integration");
         args.add("--server.port=0");
         args.add("--prometheus.client.enabled=true");
+        args.add("--prometheus.client.socketTimeoutMillis=500");
+        if (prometheus != null) {
+            args.add("--prometheus.client.externalMonitoringUrl=" + prometheus.getEndpoint());
+            args.add("--prometheus.client.cacheTtlSeconds=0");
+        }
+        if (crowd != null) {
+            args.add("--owner.crowd.path=" + crowd.getEndpoint());
+            args.add("--owner.crowd.enabled=true");
+        }
         args.add("--topic.partitions=2");
         args.add("--topic.uncleanLeaderElectionEnabled=false");
         int smallestClusterSize =  kafkaClusters.values().stream()
@@ -96,51 +187,18 @@ public class HermesManagementTestApp implements HermesTestApp {
         args.add("--schema.repository.type=schema_registry");
         args.add("--schema.repository.deleteSchemaPathSuffix=");
 
-        app.run(args.toArray(new String[0]));
-        String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
-        if (localServerPort == null) {
-            throw new IllegalStateException("Cannot get hermes-management port");
-        }
-        port = Integer.parseInt(localServerPort);
-        waitUntilReady();
-        return this;
+        return args;
     }
 
-    private void waitUntilReady() {
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("http://localhost:" + getPort() + "/mode"))
-                    .GET()
-                    .build();
-            HttpClient httpClient = HttpClient.newHttpClient();
-
-            waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> {
-                try {
-                    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                    assertThat(response.body()).isEqualTo("readWrite");
-                } catch (IOException | InterruptedException e) {
-                    throw new AssertionError("Reading management mode failed", e);
-                }
-            });
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+    public SubscriptionService subscriptionService() {
+        return app.context().getBean(SubscriptionService.class);
     }
 
-    @Override
-    public int getPort() {
-        if (port == -1) {
-            throw new IllegalStateException("hermes-management port hasn't been initialized");
-        }
-        return port;
+    public TopicService topicService() {
+        return app.context().getBean(TopicService.class);
     }
 
-    @Override
-    public void stop() {
-        app.context().close();
-    }
-
-    public void addEventAuditorListener(int port) {
-        auditEventPort = port;
+    public GroupService groupService() {
+        return app.context().getBean(GroupService.class);
     }
 }

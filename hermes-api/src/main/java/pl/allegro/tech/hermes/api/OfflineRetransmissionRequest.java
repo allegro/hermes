@@ -8,27 +8,54 @@ import jakarta.validation.constraints.NotNull;
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
 
 public class OfflineRetransmissionRequest {
+
+    private static final List<DateTimeFormatter> formatters = List.of(
+            DateTimeFormatter.ISO_INSTANT,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'").withZone(ZoneId.of("UTC"))
+    );
+
     @NotEmpty
     private final String sourceTopic;
     @NotEmpty
     private final String targetTopic;
     @NotNull
-    private final Instant startTimestamp;
+    private Instant startTimestamp;
     @NotNull
-    private final Instant endTimestamp;
+    private Instant endTimestamp;
 
     @JsonCreator
     public OfflineRetransmissionRequest(
             @JsonProperty("sourceTopic") String sourceTopic,
             @JsonProperty("targetTopic") String targetTopic,
-            @JsonProperty("startTimestamp") Instant startTimestamp,
-            @JsonProperty("endTimestamp") Instant endTimestamp) {
+            @JsonProperty("startTimestamp") String startTimestamp,
+            @JsonProperty("endTimestamp") String endTimestamp) {
         this.sourceTopic = sourceTopic;
         this.targetTopic = targetTopic;
-        this.startTimestamp = startTimestamp;
-        this.endTimestamp = endTimestamp;
+        initializeTimestamps(startTimestamp, endTimestamp);
+    }
+
+    private void initializeTimestamps(String startTimestamp, String endTimestamp) {
+        if (startTimestamp == null || endTimestamp == null) {
+            this.startTimestamp = null;
+            this.endTimestamp = null;
+            return;
+        }
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                this.startTimestamp = formatter.parse(startTimestamp, Instant::from);
+                this.endTimestamp = formatter.parse(endTimestamp, Instant::from);
+                break;
+            } catch (DateTimeParseException e) {
+                // ignore
+            }
+        }
     }
 
     public String getSourceTopic() {

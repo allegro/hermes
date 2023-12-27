@@ -106,7 +106,7 @@ public class HermesManagementInstance {
             for (ClusterInfo kafkaCluster : kafkaClusters) {
                 args.add("--kafka.clusters[" + kafkaClusterIndex + "].datacenter=" + kafkaCluster.getDc());
                 args.add("--kafka.clusters[" + kafkaClusterIndex + "].clusterName=primary");
-                args.add("--kafka.clusters[" + kafkaClusterIndex + "].bootstrapKafkaServer=" + kafkaCluster.getConnectionString());
+                args.add("--kafka.clusters[" + kafkaClusterIndex + "].brokerList=" + kafkaCluster.getConnectionString());
                 args.add("--kafka.clusters[" + kafkaClusterIndex + "].namespace=" + KAFKA_NAMESPACE);
                 kafkaClusterIndex++;
             }
