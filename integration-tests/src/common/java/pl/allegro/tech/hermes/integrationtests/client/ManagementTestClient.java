@@ -40,6 +40,8 @@ public class ManagementTestClient {
 
     private static final String GROUPS_PATH = "/groups";
 
+    private static final String GROUP_PATH = "/groups/{groupName}";
+
     private static final String RETRANSMISSION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}/retransmission";
 
     private static final String BLACKLIST_TOPICS_PATH = "/blacklist/topics";
@@ -685,6 +687,22 @@ public class ManagementTestClient {
                         .fromUri(managementContainerUrl)
                         .path(CONSUMER_GROUPS)
                         .build(qualifiedTopicName, subscriptionName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteGroup(String groupName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(GROUP_PATH)
+                        .build(groupName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec updateGroup(String groupName, Group group) {
+        return webTestClient.put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(GROUP_PATH)
+                        .build(groupName))
+                .body(Mono.just(group), Group.class)
                 .exchange();
     }
 }

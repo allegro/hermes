@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -20,6 +21,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.api.TrackingMode;
+import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
@@ -39,6 +41,8 @@ import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.NO_DATA;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
 import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
+import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
+import static pl.allegro.tech.hermes.integrationtests.prometheus.TopicMetrics.topicMetrics;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.auditEvents;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
@@ -46,8 +50,14 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 public class SubscriptionManagementTest {
 
+    @Order(0)
     @RegisterExtension
-    public static final HermesExtension hermes = new HermesExtension();
+    public static final PrometheusExtension prometheus = new PrometheusExtension();
+
+    @Order(1)
+    @RegisterExtension
+    public static final HermesExtension hermes = new HermesExtension()
+            .withPrometheus(prometheus);
 
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
@@ -333,16 +343,21 @@ public class SubscriptionManagementTest {
     }
 
     @Test
-    @Disabled
     public void shouldReturnHealthyStatusForAHealthySubscription() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // and
-        // TODO uncomment this after adding prometheus extension
-//        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(100, 100, 0));
-//        prometheusEndpoint.returnSubscriptionMetrics(topic, subscriptionName, builder().withRate(100).build());
+        prometheus.stubTopicMetrics(
+                topicMetrics(topic.getName())
+                        .withDeliveryRate(100)
+                        .withRate(100)
+                        .withThroughput(0).build());
+        prometheus.stubSubscriptionMetrics(
+                subscriptionMetrics(subscription.getQualifiedName())
+                        .withRate(100)
+                        .build());
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
@@ -354,16 +369,22 @@ public class SubscriptionManagementTest {
     }
 
     @Test
-    @Disabled
     public void shouldReturnUnhealthyStatusWithAProblemForMalfunctioningSubscription() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // and
-//        prometheusEndpoint.returnTopicMetrics(topic, new PrometheusTopicResponse(100, 50, 0));
-//        prometheusEndpoint.returnSubscriptionMetrics(topic, "subscription",
-//                builder().withRate(50).withRatedStatusCode("500", 11).build());
+        prometheus.stubTopicMetrics(
+                topicMetrics(topic.getName())
+                        .withDeliveryRate(100)
+                        .withRate(50)
+                        .withThroughput(0).build());
+        prometheus.stubSubscriptionMetrics(
+                subscriptionMetrics(subscription.getQualifiedName())
+                        .withRate(50)
+                        .with500Rate(11)
+                        .build());
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
@@ -381,9 +402,7 @@ public class SubscriptionManagementTest {
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // and
-//        prometheusEndpoint.returnServerErrorForAllTopics();
-//        prometheusEndpoint.returnSubscriptionMetrics(topic, "subscription",
-//                builder().withRate(100).build());
+        prometheus.stub500Error();
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());

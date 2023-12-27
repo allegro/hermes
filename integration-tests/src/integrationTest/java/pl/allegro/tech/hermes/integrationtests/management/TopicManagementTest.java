@@ -582,7 +582,7 @@ public class TopicManagementTest {
                 .toList();
     }
 
-    private static ErrorCode getErrorCode(WebTestClient.ResponseSpec createTopicResponse) {
+    public static ErrorCode getErrorCode(WebTestClient.ResponseSpec createTopicResponse) {
         return Objects.requireNonNull(createTopicResponse.expectBody(ErrorDescription.class).returnResult().getResponseBody()).getCode();
     }
 }

@@ -405,4 +405,16 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec getConsumerGroupsDescription(String qualifiedTopicName, String subscriptionName) {
         return managementTestClient.getConsumerGroupsDescription(qualifiedTopicName, subscriptionName);
     }
+
+    public WebTestClient.ResponseSpec deleteGroup(String groupName) {
+        return managementTestClient.deleteGroup(groupName);
+    }
+
+    public WebTestClient.ResponseSpec updateGroup(String groupName, Group group) {
+        return managementTestClient.updateGroup(groupName, group);
+    }
+
+    public List<String> getGroups() {
+        return managementTestClient.getGroups();
+    }
 }
