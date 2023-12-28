@@ -37,7 +37,7 @@ public class ListSubscriptionForOwnerTest {
         Subscription subscription3 = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withOwner(new OwnerId("Plaintext", "ListSubForOwner - Team B")).build());
 
         // then
-        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team A")).contains(subscription1.getName(), subscription2.getName());
+        assertThat(listSubscriptionsForOwner("ListSubForOwner - Team A")).containsOnly(subscription1.getName(), subscription2.getName());
         assertThat(listSubscriptionsForOwner("ListSubForOwner - Team B")).containsExactly(subscription3.getName());
     }
 

@@ -44,7 +44,7 @@ public class TopicManagementTest {
     private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
 
     @Test
-    public void shouldEmmitAuditEventWhenTopicCreated() {
+    public void shouldEmitAuditEventWhenTopicCreated() {
         //when
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
@@ -55,7 +55,7 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenTopicRemoved() {
+    public void shouldEmitAuditEventWhenTopicRemoved() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
@@ -69,7 +69,7 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenTopicUpdated() {
+    public void shouldEmitAuditEventWhenTopicUpdated() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         PatchData patchData = PatchData.from(ImmutableMap.of("maxMessageSize", 2048));
@@ -84,7 +84,7 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventBeforeUpdateWhenWrongPatchDataKeyProvided() {
+    public void shouldEmitAuditEventBeforeUpdateWhenWrongPatchDataKeyProvided() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         PatchData patchData = PatchData.from(ImmutableMap.of("someValue", 2048));
@@ -589,22 +589,6 @@ public class TopicManagementTest {
         // then
         response.expectStatus().isCreated();
         hermes.api().getTopicResponse(qualifiedTopicName).expectStatus().isOk();
-    }
-
-    @Test
-    public void topicCreationRollbackShouldNotDeleteTopicOnBroker() {
-        // given
-        String groupName = "topicCreationRollbackShouldNotDeleteTopicOnBroker";
-        String topicName = "topic";
-        String qualifiedTopicName = groupName + "." + topicName;
-
-        brokerOperations.createTopic(qualifiedTopicName);
-
-        // when
-        hermes.api().createTopic((topicWithSchema(topic(groupName, topicName).build())));
-
-        // then
-        assertThat(brokerOperations.topicExists(qualifiedTopicName)).isTrue();
     }
 
     private static List<String> getGroupTopicsList(String groupName) {

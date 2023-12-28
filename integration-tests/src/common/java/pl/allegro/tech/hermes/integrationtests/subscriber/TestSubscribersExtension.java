@@ -98,23 +98,6 @@ public class TestSubscribersExtension implements AfterEachCallback, AfterAllCall
         return subscriber;
     }
 
-    public TestSubscriber createSubscriberUnavailable() {
-        String path = createPath("");
-        int statusCode = 503;
-        String scenarioName = "Service unavailable";
-        service.addStubMapping(
-                post(urlEqualTo(path))
-                        .inScenario(scenarioName)
-                        .whenScenarioStateIs(STARTED)
-                        .willReturn(aResponse()
-                                .withStatus(statusCode))
-                        .build());
-
-        TestSubscriber subscriber = new TestSubscriber(createSubscriberURI(path));
-        subscribersPerPath.put(path, subscriber);
-        return subscriber;
-    }
-
     private String createPath(String pathSuffix) {
         return "/subscriber-" + subscriberIndex.incrementAndGet() + pathSuffix;
     }

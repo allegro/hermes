@@ -28,7 +28,7 @@ public class GroupManagementTest {
     public static final HermesExtension hermes = new HermesExtension();
 
     @Test
-    public void shouldEmmitAuditEventWhenGroupCreated() {
+    public void shouldEmitAuditEventWhenGroupCreated() {
         //when
         Group group = hermes.initHelper().createGroup(groupWithRandomName().build());
 
@@ -39,7 +39,7 @@ public class GroupManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenGroupRemoved() {
+    public void shouldEmitAuditEventWhenGroupRemoved() {
         //given
         Group group = hermes.initHelper().createGroup(groupWithRandomName().build());
 
@@ -53,7 +53,7 @@ public class GroupManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenGroupUpdated() {
+    public void shouldEmitAuditEventWhenGroupUpdated() {
         //given
         Group group = hermes.initHelper().createGroup(groupWithRandomName().build());
 

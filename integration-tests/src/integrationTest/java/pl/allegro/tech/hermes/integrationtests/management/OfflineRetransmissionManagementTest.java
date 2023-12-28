@@ -215,7 +215,7 @@ public class OfflineRetransmissionManagementTest {
         assertThat(getOfflineRetransmissionTasks().size()).isEqualTo(0);
 
         // cleanup
-        TestSecurityProvider.setUserIsAdmin(true);
+        TestSecurityProvider.reset();
     }
 
     private OfflineRetransmissionRequest createRequest(String sourceTopic, String targetTopic) {

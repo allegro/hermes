@@ -72,7 +72,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
         WebTestClient.ResponseSpec response = publisher.publish(topic.getQualifiedName(), message);
 
         // then
-        response.expectStatus().is5xxServerError();
+        response.expectStatus().isEqualTo(500);
         Assertions.assertThat(response.expectBody(ErrorDescription.class).returnResult().getResponseBody().getCode()).isEqualTo(SCHEMA_COULD_NOT_BE_LOADED);
     }
 }

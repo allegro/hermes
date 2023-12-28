@@ -72,7 +72,7 @@ public class SubscriptionManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenSubscriptionCreated() {
+    public void shouldEmitAuditEventWhenSubscriptionCreated() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
@@ -102,7 +102,7 @@ public class SubscriptionManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenSubscriptionRemoved() {
+    public void shouldEmitAuditEventWhenSubscriptionRemoved() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
@@ -117,7 +117,7 @@ public class SubscriptionManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenSubscriptionEndpointUpdated() {
+    public void shouldEmitAuditEventWhenSubscriptionEndpointUpdated() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
@@ -687,7 +687,7 @@ public class SubscriptionManagementTest {
     @Test
     public void shouldMoveOffsetsToTheEnd() {
         // given
-        TestSubscriber subscriber = subscribers.createSubscriberUnavailable();
+        TestSubscriber subscriber = subscribers.createSubscriber(503);
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
                 .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600)))
