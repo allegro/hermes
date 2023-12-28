@@ -139,6 +139,8 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
         removeSubscriptions();
         removeTopics();
         removeGroups();
+        waitAtMost(Duration.TEN_SECONDS)
+                .until(() -> hermesTestClient.getGroups().isEmpty());
     }
 
     public HermesExtension withPrometheus(PrometheusExtension prometheus) {

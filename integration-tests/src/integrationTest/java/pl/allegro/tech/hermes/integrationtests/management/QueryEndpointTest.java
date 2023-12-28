@@ -222,7 +222,6 @@ public class QueryEndpointTest {
         hermes.initHelper().createTopic(topic("testGroup", topicName1).withContentType(JSON).withTrackingEnabled(false).build());
         hermes.initHelper().createTopic(topic("testGroup", topicName2).withContentType(JSON).withTrackingEnabled(false).build());
 
-
         hermes.api().publish("testGroup." + topicName1, "testMessage1");
         hermes.api().publish("testGroup." + topicName2, "testMessage2");
         hermes.api().publish("testGroup." + topicName2, "testMessage3");
