@@ -10,7 +10,6 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 public class PublishingTimeoutTest {
@@ -37,7 +36,7 @@ public class PublishingTimeoutTest {
     }
 
     @Test
-    public void shouldCloseConnectionAfterSendingDelayData() throws IOException, InterruptedException {
+    public void shouldCloseConnectionAfterSendingDelayData() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         int clientTimeout = 5000;
@@ -52,7 +51,7 @@ public class PublishingTimeoutTest {
 
         // then
         LoggerFactory.getLogger(PublishingTimeoutTest.class).error("Caught exception", thrown);
-        assertTrue(thrown.getMessage().contains("Broken pipe"));
+        assertThat(thrown.getMessage()).containsAnyOf("Broken pipe", "Connection reset by peer");
     }
 
     @Test

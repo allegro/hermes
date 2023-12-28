@@ -2,8 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.management;
 
 import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -57,12 +56,7 @@ public class QueryEndpointTest {
     public static final HermesExtension hermes = new HermesExtension()
             .withPrometheus(prometheus);
 
-    @BeforeAll
-    static void setup() {
-        hermes.clearManagementData();
-    }
-
-    @AfterEach
+    @BeforeEach
     void cleanup() {
         hermes.clearManagementData();
     }
