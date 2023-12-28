@@ -41,11 +41,11 @@ public class OfflineRetransmissionRequest {
             @JsonProperty("endTimestamp") String endTimestamp) {
         this.sourceTopic = sourceTopic;
         this.targetTopic = targetTopic;
-        this.startTimestamp = initializeTimestamps(startTimestamp);
-        this.endTimestamp = initializeTimestamps(endTimestamp);
+        this.startTimestamp = initializeTimestamp(startTimestamp);
+        this.endTimestamp = initializeTimestamp(endTimestamp);
     }
 
-    private Instant initializeTimestamps(String timestamp) {
+    private Instant initializeTimestamp(String timestamp) {
         if (timestamp == null) {
             return null;
         }
