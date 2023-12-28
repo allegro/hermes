@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
 
 import java.time.Instant;
@@ -17,8 +19,10 @@ public class OfflineRetransmissionRequest {
 
     private static final List<DateTimeFormatter> formatters = List.of(
             DateTimeFormatter.ISO_INSTANT,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC")),
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'").withZone(ZoneId.of("UTC"))
     );
+    private static final Logger logger = LoggerFactory.getLogger(OfflineRetransmissionRequest.class);
 
     @NotEmpty
     private final String sourceTopic;
@@ -37,25 +41,25 @@ public class OfflineRetransmissionRequest {
             @JsonProperty("endTimestamp") String endTimestamp) {
         this.sourceTopic = sourceTopic;
         this.targetTopic = targetTopic;
-        initializeTimestamps(startTimestamp, endTimestamp);
+        this.startTimestamp = initializeTimestamps(startTimestamp);
+        this.endTimestamp = initializeTimestamps(endTimestamp);
     }
 
-    private void initializeTimestamps(String startTimestamp, String endTimestamp) {
-        if (startTimestamp == null || endTimestamp == null) {
-            this.startTimestamp = null;
-            this.endTimestamp = null;
-            return;
+    private Instant initializeTimestamps(String timestamp) {
+        if (timestamp == null) {
+            return null;
         }
 
         for (DateTimeFormatter formatter : formatters) {
             try {
-                this.startTimestamp = formatter.parse(startTimestamp, Instant::from);
-                this.endTimestamp = formatter.parse(endTimestamp, Instant::from);
-                break;
+                return formatter.parse(timestamp, Instant::from);
             } catch (DateTimeParseException e) {
                 // ignore
             }
         }
+
+        logger.warn("Provided date [{}] has an invalid format", timestamp);
+        return null;
     }
 
     public String getSourceTopic() {
