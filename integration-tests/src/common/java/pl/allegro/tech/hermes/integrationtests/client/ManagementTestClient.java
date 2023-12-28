@@ -118,6 +118,9 @@ public class ManagementTestClient {
                 .bindToServer(clientHttpConnector())
                 .responseTimeout(Duration.ofSeconds(30))
                 .baseUrl(managementContainerUrl)
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(16 * 1024 * 1024))
                 .build();
         this.objectMapper = new ObjectMapper();
     }
