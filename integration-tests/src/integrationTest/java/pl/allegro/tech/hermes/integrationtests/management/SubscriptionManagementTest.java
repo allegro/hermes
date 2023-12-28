@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.integrationtests.management;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -21,6 +20,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.api.TrackingMode;
+import pl.allegro.tech.hermes.env.BrokerOperations;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
@@ -29,7 +29,6 @@ import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,6 +43,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctionin
 import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
 import static pl.allegro.tech.hermes.integrationtests.prometheus.TopicMetrics.topicMetrics;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.auditEvents;
+import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.brokerOperations;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -255,37 +255,6 @@ public class SubscriptionManagementTest {
         // then
         response.expectStatus().isOk();
         hermes.api().getSubscriptionResponse(topic.getQualifiedName(), subscription.getName()).expectStatus().isBadRequest();
-    }
-
-    @Test
-    @Disabled
-    public void shouldMoveOffsetsToTheEnd() {
-        // given
-        TestSubscriber subscriber = subscribers.createSubscriberUnavailable();
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
-                // prevents discarding messages and moving offsets
-                .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600)))
-                .build());
-        List<String> messages = List.of(MESSAGE.body(), MESSAGE.body(), MESSAGE.body(), MESSAGE.body());
-
-        // prevents from moving offsets during messages sending
-        messages.forEach(message -> hermes.api().publish(topic.getQualifiedName(), message));
-        subscriber.waitUntilAllReceivedStrict(new HashSet<>(messages));
-
-        // TODO broker operations needed
-//        assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isFalse();
-
-        hermes.api().deleteSubscription(topic.getQualifiedName(), subscription.getName());
-
-        // when
-//        waitAtMost(Duration.TEN_SECONDS)
-//                .until(() -> management
-//                        .subscription()
-//                        .moveOffsetsToTheEnd(topic.getQualifiedName(), subscription.getName()).getStatus() == 200);
-
-        // then
-//        assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue();
     }
 
     @Test
@@ -713,5 +682,40 @@ public class SubscriptionManagementTest {
 
         //then
         response.expectStatus().isOk();
+    }
+
+    @Test
+    public void shouldMoveOffsetsToTheEnd() {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriberUnavailable();
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
+                .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600)))
+                .build());
+        List<String> messages = List.of(MESSAGE.body(), MESSAGE.body(), MESSAGE.body(), MESSAGE.body());
+
+        // prevents from moving offsets during messages sending
+        messages.forEach(message -> {
+            hermes.api().publishUntilSuccess(topic.getQualifiedName(), message);
+            subscriber.waitUntilReceived(message);
+        });
+
+        assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isFalse();
+
+        hermes.api().deleteSubscription(topic.getQualifiedName(), subscription.getName());
+
+        // when
+        waitAtMost(Duration.TEN_SECONDS)
+                .until(() -> hermes.api()
+                        .moveOffsetsToTheEnd(topic.getQualifiedName(), subscription.getName()).expectStatus().isOk());
+
+        // then
+        waitAtMost(Duration.TEN_SECONDS)
+                .until(() -> assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue());
+    }
+
+    private boolean allConsumerGroupOffsetsMovedToTheEnd(Subscription subscription) {
+        List<BrokerOperations.ConsumerGroupOffset> partitionsOffsets = brokerOperations.getTopicPartitionsOffsets(subscription.getQualifiedName());
+        return !partitionsOffsets.isEmpty() && partitionsOffsets.stream().allMatch(BrokerOperations.ConsumerGroupOffset::movedToEnd);
     }
 }

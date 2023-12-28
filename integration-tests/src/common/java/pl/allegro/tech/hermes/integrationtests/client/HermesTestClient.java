@@ -417,4 +417,8 @@ public class HermesTestClient {
     public List<String> getGroups() {
         return managementTestClient.getGroups();
     }
+
+    public WebTestClient.ResponseSpec moveOffsetsToTheEnd(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.moveOffsetsToTheEnd(topicQualifiedName, subscriptionName);
+    }
 }

@@ -31,6 +31,7 @@ import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.auditEvents;
+import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.brokerOperations;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -570,6 +571,40 @@ public class TopicManagementTest {
                         new TopicLabel("label-3")
                 )
         );
+    }
+
+    @Test
+    public void shouldCreateTopicEvenIfExistsInBrokers() {
+        // given
+        String groupName = "existingTopicFromExternalBroker";
+        String topicName = "topic";
+        String qualifiedTopicName = groupName + "." + topicName;
+        hermes.initHelper().createGroup(Group.from(groupName));
+
+        brokerOperations.createTopic(qualifiedTopicName);
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().createTopic((topicWithSchema(topic(groupName, topicName).build())));
+
+        // then
+        response.expectStatus().isCreated();
+        hermes.api().getTopicResponse(qualifiedTopicName).expectStatus().isOk();
+    }
+
+    @Test
+    public void topicCreationRollbackShouldNotDeleteTopicOnBroker() {
+        // given
+        String groupName = "topicCreationRollbackShouldNotDeleteTopicOnBroker";
+        String topicName = "topic";
+        String qualifiedTopicName = groupName + "." + topicName;
+
+        brokerOperations.createTopic(qualifiedTopicName);
+
+        // when
+        hermes.api().createTopic((topicWithSchema(topic(groupName, topicName).build())));
+
+        // then
+        assertThat(brokerOperations.topicExists(qualifiedTopicName)).isTrue();
     }
 
     private static List<String> getGroupTopicsList(String groupName) {

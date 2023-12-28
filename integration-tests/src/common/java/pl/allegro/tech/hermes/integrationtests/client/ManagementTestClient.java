@@ -54,6 +54,8 @@ public class ManagementTestClient {
 
     private static final String TOPIC_PREVIEW_OFFSET = "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
 
+    private static final String MOVE_SUBSCRIPTION_OFFSETS = "/topics/{topicName}/subscriptions/{subscriptionName}/moveOffsetsToTheEnd";
+
     private static final String SET_READINESS = "/readiness/datacenters/{dc}";
 
     private static final String TOPIC_SCHEMA = "/topics/{topicName}/schema";
@@ -703,6 +705,14 @@ public class ManagementTestClient {
                         .path(GROUP_PATH)
                         .build(groupName))
                 .body(Mono.just(group), Group.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec moveOffsetsToTheEnd(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(MOVE_SUBSCRIPTION_OFFSETS)
+                        .build(topicQualifiedName, subscriptionName))
                 .exchange();
     }
 }
