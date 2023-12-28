@@ -126,9 +126,9 @@ public class BrokerOperations {
         }
     }
 
-    private AdminClient brokerAdminClient(String bootstrapKafkaServer) {
+    private AdminClient brokerAdminClient(String brokerList) {
         Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapKafkaServer);
+        props.put(BOOTSTRAP_SERVERS_CONFIG, brokerList);
         props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, 10000);
         return AdminClient.create(props);

@@ -1,22 +1,21 @@
-package pl.allegro.tech.hermes.management.config.kafka;
+package pl.allegro.tech.hermes.common.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+public class KafkaAuthenticationProperties {
 
-@ConfigurationProperties(prefix = "sasl")
-public class KafkaSaslProperties {
-    private boolean isEnabled = false;
+    private boolean enabled = false;
     private String mechanism = "PLAIN";
-    private String protocol = "PLAINTEXT";
-    private String username = "admin";
-    private String password = "admin-secret";
+    private String protocol = "SASL_PLAINTEXT";
+    private String username = "username";
+    private String password = "password";
+    private String loginModule = "org.apache.kafka.common.security.plain.PlainLoginModule";
     private String jaasConfig;
 
     public boolean isEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     public String getMechanism() {
@@ -51,8 +50,19 @@ public class KafkaSaslProperties {
         this.password = password;
     }
 
+    public String getLoginModule() {
+        return loginModule;
+    }
+
+    public void setLoginModule(String loginModule) {
+        this.loginModule = loginModule;
+    }
+
     public String getJaasConfig() {
-        return "org.apache.kafka.common.security.plain.PlainLoginModule required\n"
+        if (jaasConfig != null) {
+            return jaasConfig;
+        }
+        return loginModule + " required\n"
                 + "username=\"" + username + "\"\n"
                 + "password=\"" + password + "\";";
     }

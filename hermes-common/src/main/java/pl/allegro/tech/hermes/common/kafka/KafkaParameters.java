@@ -2,15 +2,13 @@ package pl.allegro.tech.hermes.common.kafka;
 
 public interface KafkaParameters {
 
-    boolean isEnabled();
+    boolean isAuthenticationEnabled();
 
-    String getMechanism();
+    String getAuthenticationMechanism();
 
-    String getProtocol();
-
-    String getUsername();
-
-    String getPassword();
+    String getAuthenticationProtocol();
 
     String getBrokerList();
+
+    String getJaasConfig();
 }
