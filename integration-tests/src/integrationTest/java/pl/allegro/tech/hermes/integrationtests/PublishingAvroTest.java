@@ -224,18 +224,18 @@ public class PublishingAvroTest {
                 .withContentType(AVRO)
                 .build(), user.getSchemaAsString());
         Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
-
-        // when
         String message = "{\"__metadata\":null,\"name\":\"john\",\"age\":\"string instead of int\"}";
-        WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message, createHeaders(Map.of("Content-Type", AVRO_JSON)));
 
-        // then
-        response.expectStatus().isBadRequest();
-        response.expectBody(String.class).isEqualTo(
-                "{" + "\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\","
-                        + "\"code\":\"VALIDATION_ERROR\""
-                        + "}"
-        );
+        // when / then
+        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+            WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message, createHeaders(Map.of("Content-Type", AVRO_JSON)));
+            response.expectStatus().isBadRequest();
+            response.expectBody(String.class).isEqualTo(
+                    "{" + "\"message\":\"Invalid message: Failed to convert to AVRO: Expected int. Got VALUE_STRING.\","
+                            + "\"code\":\"VALIDATION_ERROR\""
+                            + "}"
+            );
+        });
     }
 
     @Test

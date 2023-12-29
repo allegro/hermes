@@ -115,6 +115,19 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
         );
     }
 
+    public void stub500Error() {
+        wiremock.addStubMapping(
+                get(urlPathEqualTo("/api/v1/query"))
+                        .withQueryParam("query", new AnythingPattern())
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(500)
+                                        .withHeader("Content-Type", "application/json")
+                        )
+                        .build()
+        );
+    }
+
     private String writeValueAsString(Object o) {
         try {
             return objectMapper.writeValueAsString(o);

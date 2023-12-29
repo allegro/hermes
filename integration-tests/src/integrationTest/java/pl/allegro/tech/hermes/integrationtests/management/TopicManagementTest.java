@@ -31,6 +31,7 @@ import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.auditEvents;
+import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.brokerOperations;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -43,7 +44,7 @@ public class TopicManagementTest {
     private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
 
     @Test
-    public void shouldEmmitAuditEventWhenTopicCreated() {
+    public void shouldEmitAuditEventWhenTopicCreated() {
         //when
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
@@ -54,7 +55,7 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenTopicRemoved() {
+    public void shouldEmitAuditEventWhenTopicRemoved() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
@@ -68,7 +69,7 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventWhenTopicUpdated() {
+    public void shouldEmitAuditEventWhenTopicUpdated() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         PatchData patchData = PatchData.from(ImmutableMap.of("maxMessageSize", 2048));
@@ -83,7 +84,7 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldEmmitAuditEventBeforeUpdateWhenWrongPatchDataKeyProvided() {
+    public void shouldEmitAuditEventBeforeUpdateWhenWrongPatchDataKeyProvided() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         PatchData patchData = PatchData.from(ImmutableMap.of("someValue", 2048));
@@ -572,6 +573,24 @@ public class TopicManagementTest {
         );
     }
 
+    @Test
+    public void shouldCreateTopicEvenIfExistsInBrokers() {
+        // given
+        String groupName = "existingTopicFromExternalBroker";
+        String topicName = "topic";
+        String qualifiedTopicName = groupName + "." + topicName;
+        hermes.initHelper().createGroup(Group.from(groupName));
+
+        brokerOperations.createTopic(qualifiedTopicName);
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().createTopic((topicWithSchema(topic(groupName, topicName).build())));
+
+        // then
+        response.expectStatus().isCreated();
+        hermes.api().getTopicResponse(qualifiedTopicName).expectStatus().isOk();
+    }
+
     private static List<String> getGroupTopicsList(String groupName) {
         return Arrays.stream(Objects.requireNonNull(hermes.api().listTopics(groupName)
                         .expectStatus()
@@ -582,7 +601,7 @@ public class TopicManagementTest {
                 .toList();
     }
 
-    private static ErrorCode getErrorCode(WebTestClient.ResponseSpec createTopicResponse) {
+    public static ErrorCode getErrorCode(WebTestClient.ResponseSpec createTopicResponse) {
         return Objects.requireNonNull(createTopicResponse.expectBody(ErrorDescription.class).returnResult().getResponseBody()).getCode();
     }
 }

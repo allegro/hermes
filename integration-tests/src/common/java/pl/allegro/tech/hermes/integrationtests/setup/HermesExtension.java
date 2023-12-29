@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
+import pl.allegro.tech.hermes.env.BrokerOperations;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -47,6 +48,8 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
 
     public static TestSubscriber auditEvents;
 
+    public static BrokerOperations brokerOperations;
+
     @Override
     public void beforeAll(ExtensionContext context) {
         if (!started) {
@@ -66,6 +69,7 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
         hermesTestClient = new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
         hermesInitHelper = new HermesInitHelper(management.getPort());
         auditEvents = auditEventsReceiver.createSubscriberWithStrictPath(200, AUDIT_EVENT_PATH);
+        brokerOperations = new BrokerOperations(kafka.getBootstrapServersForExternalClients(), "itTest");
     }
 
     @Override

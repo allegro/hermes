@@ -12,6 +12,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OAuthProvider;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Readiness;
@@ -39,6 +40,8 @@ public class ManagementTestClient {
 
     private static final String GROUPS_PATH = "/groups";
 
+    private static final String GROUP_PATH = "/groups/{groupName}";
+
     private static final String RETRANSMISSION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}/retransmission";
 
     private static final String BLACKLIST_TOPICS_PATH = "/blacklist/topics";
@@ -50,6 +53,8 @@ public class ManagementTestClient {
     private static final String TOPIC_PREVIEW = "/topics/{topicName}/preview";
 
     private static final String TOPIC_PREVIEW_OFFSET = "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
+
+    private static final String MOVE_SUBSCRIPTION_OFFSETS = "/topics/{topicName}/subscriptions/{subscriptionName}/moveOffsetsToTheEnd";
 
     private static final String SET_READINESS = "/readiness/datacenters/{dc}";
 
@@ -81,11 +86,23 @@ public class ManagementTestClient {
 
     private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
 
+    private static final String SUBSCRIPTIONS_QUERY = "/topics/{topicName}/subscriptions/query";
+
     private static final String OAUTH_PROVIDER_PATH = "/oauth/providers/{oAuthProviderName}";
 
     private static final String UNHEALTHY_PATH = "/unhealthy";
 
     private static final String TOPICS_QUERY = "/topics/query";
+
+    private static final String MODE = "/mode";
+
+    private static final String OFFLINE_RETRANSMISSION_TASKS = "/offline-retransmission/tasks";
+
+    private static final String OFFLINE_RETRANSMISSION_TASK = "/offline-retransmission/tasks/{taskId}";
+
+    private static final String SUBSCRIPTION_HEALTH = "/topics/{topicName}/subscriptions/{subscription}/health";
+
+    private static final String CONSUMER_GROUPS = "/topics/{topicName}/subscriptions/{subscription}/consumer-groups";
 
     private static final String OWNERS_SEARCH_PATH = "/owners/sources/{source}";
 
@@ -101,6 +118,9 @@ public class ManagementTestClient {
                 .bindToServer(clientHttpConnector())
                 .responseTimeout(Duration.ofSeconds(30))
                 .baseUrl(managementContainerUrl)
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(16 * 1024 * 1024))
                 .build();
         this.objectMapper = new ObjectMapper();
     }
@@ -280,9 +300,10 @@ public class ManagementTestClient {
                 .exchange();
     }
 
-    public WebTestClient.ResponseSpec listSubscriptions(String qualifiedTopicName) {
+    public WebTestClient.ResponseSpec listSubscriptions(String qualifiedTopicName, boolean tracked) {
         return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
                         .path(SUBSCRIPTIONS_PATH)
+                        .queryParam("tracked", tracked)
                         .build(qualifiedTopicName))
                 .exchange();
     }
@@ -345,10 +366,10 @@ public class ManagementTestClient {
     public WebTestClient.ResponseSpec verifyFilters(String qualifiedTopicName,
                                                     MessageFiltersVerificationInput input) {
         return webTestClient.post().uri(UriBuilder
-                .fromUri(managementContainerUrl)
-                .path(FILTERS)
-                .build(qualifiedTopicName)
-        ).contentType(MediaType.APPLICATION_JSON)
+                        .fromUri(managementContainerUrl)
+                        .path(FILTERS)
+                        .build(qualifiedTopicName)
+                ).contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(input), MessageFiltersVerificationInput.class)
                 .exchange();
     }
@@ -611,6 +632,90 @@ public class ManagementTestClient {
                         .queryParam("search", searchString)
                         .build(source)
                 )
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec setMode(String mode) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(MODE)
+                        .queryParam("mode", mode)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getOfflineRetransmissionTasks() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OFFLINE_RETRANSMISSION_TASKS)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteOfflineRetransmissionTask(String taskId) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(OFFLINE_RETRANSMISSION_TASK)
+                        .build(taskId))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec createOfflineRetransmissionTask(OfflineRetransmissionRequest request) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(OFFLINE_RETRANSMISSION_TASKS)
+                        .build())
+                .header("Content-Type", "application/json")
+                .body(Mono.just(request), OfflineRetransmissionRequest.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptions(String qualifiedTopicName, String query) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTIONS_QUERY)
+                        .build(qualifiedTopicName))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(query), String.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getSubscriptionHealth(String qualifiedTopicName, String name) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(SUBSCRIPTION_HEALTH)
+                        .build(qualifiedTopicName, name))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getConsumerGroupsDescription(String qualifiedTopicName, String subscriptionName) {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(CONSUMER_GROUPS)
+                        .build(qualifiedTopicName, subscriptionName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec deleteGroup(String groupName) {
+        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
+                        .path(GROUP_PATH)
+                        .build(groupName))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec updateGroup(String groupName, Group group) {
+        return webTestClient.put().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(GROUP_PATH)
+                        .build(groupName))
+                .body(Mono.just(group), Group.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec moveOffsetsToTheEnd(String topicQualifiedName, String subscriptionName) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(MOVE_SUBSCRIPTION_OFFSETS)
+                        .build(topicQualifiedName, subscriptionName))
                 .exchange();
     }
 }

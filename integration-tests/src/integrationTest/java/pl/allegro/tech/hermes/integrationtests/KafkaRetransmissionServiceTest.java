@@ -31,13 +31,10 @@ import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
-
-// TODO potentially should be moved to slow integrationTest
 public class KafkaRetransmissionServiceTest {
 
     private static final String PRIMARY_KAFKA_CLUSTER_NAME = "primary-dc";
@@ -108,64 +105,55 @@ public class KafkaRetransmissionServiceTest {
         subscriber.noMessagesReceived();
     }
 
-//     TODO schema-registry required
+    @Test
+    public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriber();
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
 
-//    @Test
-//    public void shouldMoveOffsetInDryRunModeForTopicsMigratedToAvro() throws InterruptedException {
-//        // given
-//        TestSubscriber subscriber = subscribers.createSubscriber();
-//        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-//        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
-//
-//        hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body());
-//        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
-//
-//        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
-//        final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
-//
-//        hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body());
-//        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
-//
-//        PatchData patch = patchData()
-//                .set("contentType", ContentType.AVRO)
-//                .set("migratedFromJsonType", true)
-//                .set("schema", avroUser.getSchemaAsString())
-//                .build();
-//
-//        hermes.initHelper().updateTopic(topic.getQualifiedName(), patch);
-//        waitUntilTopicIsUpdatedAfter(topic.getQualifiedName(), subscription.getName());
-//
-//        hermes.api().publishUntilSuccess(topic.getQualifiedName(), avroUser.asBytes());
-//        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
-//
-//        // when
-//        WebTestClient.ResponseSpec response = hermes.api().retransmit(topic.getQualifiedName(), subscription.getName(), retransmissionDate, true);
-//
-//        // then
-//        response.expectStatus().isOk();
-//        MultiDCOffsetChangeSummary summary = response.expectBody(MultiDCOffsetChangeSummary.class).returnResult().getResponseBody();
-//        assert summary != null;
-//        PartitionOffsetsPerKafkaTopic offsets = PartitionOffsetsPerKafkaTopic.from(
-//                summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME)
-//        );
-//        assertThat((Long) offsets.jsonPartitionOffsets.stream().mapToLong(PartitionOffset::getOffset).sum()).isEqualTo(1);
-//        assertThat((Long) offsets.avroPartitionOffsets.stream().mapToLong(PartitionOffset::getOffset).sum()).isEqualTo(0);
-//    }
+        hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body());
+        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+
+        Thread.sleep(1000); //wait 1s because our date time format has seconds precision
+        final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
+
+        hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body());
+        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+
+        PatchData patch = patchData()
+                .set("contentType", ContentType.AVRO)
+                .set("migratedFromJsonType", true)
+                .set("schema", avroUser.getSchemaAsString())
+                .build();
+
+        hermes.api().updateTopic(topic.getQualifiedName(), patch).expectStatus().isOk();
+
+        hermes.api().publishAvroUntilSuccess(topic.getQualifiedName(), avroUser.asBytes());
+        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().retransmit(topic.getQualifiedName(), subscription.getName(), retransmissionDate, true);
+
+        // then
+        response.expectStatus().isOk();
+        MultiDCOffsetChangeSummary summary = response.expectBody(MultiDCOffsetChangeSummary.class).returnResult().getResponseBody();
+        assert summary != null;
+        PartitionOffsetsPerKafkaTopic offsets = PartitionOffsetsPerKafkaTopic.from(
+                summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME)
+        );
+        assertThat((Long) offsets.jsonPartitionOffsets.stream().mapToLong(PartitionOffset::getOffset).sum()).isEqualTo(1);
+        assertThat((Long) offsets.avroPartitionOffsets.stream().mapToLong(PartitionOffset::getOffset).sum()).isEqualTo(0);
+    }
 
     private void publishAndConsumeMessages(List<String> messages, Topic topic, TestSubscriber subscriber) {
         messages.forEach(message -> hermes.api().publish(topic.getQualifiedName(), message));
         messages.forEach(subscriber::waitUntilReceived);
     }
 
-    public void waitUntilTopicIsUpdatedAfter(String topicQualifiedName, String subscription) {
-        long currentTime = clock.millis();
-        until(Duration.TEN_SECONDS, topicQualifiedName, subscription, sub ->
-                sub.getSignalTimesheet().getOrDefault(UPDATE_TOPIC, 0L) > currentTime);
-    }
-
     private void waitUntilConsumerCommitsOffset(String topicQualifiedName, String subscription) {
         long currentTime = clock.millis();
-        until(Duration.TEN_SECONDS, topicQualifiedName, subscription, sub ->
+        until(Duration.ONE_MINUTE, topicQualifiedName, subscription, sub ->
                 sub.getSignalTimesheet().getOrDefault(COMMIT, 0L) > currentTime);
     }
 

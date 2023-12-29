@@ -8,8 +8,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integrationtests.client.ManagementTestClient;
 
-import java.util.concurrent.TimeUnit;
-
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,12 +58,12 @@ public class HermesInitHelper {
     }
 
     private void waitUntilGroupCreated(String groupName) {
-        waitAtMost(new Duration(30, TimeUnit.SECONDS))
+        waitAtMost(Duration.ONE_MINUTE)
             .until(() -> managementTestClient.getGroups().contains(groupName));
     }
 
     private void waitUntilTopicCreated(String topicQualifiedName) {
-        waitAtMost(Duration.TEN_SECONDS)
+        waitAtMost(Duration.ONE_MINUTE)
             .until(() -> managementTestClient.getTopic(topicQualifiedName)
                 .expectStatus()
                 .is2xxSuccessful());

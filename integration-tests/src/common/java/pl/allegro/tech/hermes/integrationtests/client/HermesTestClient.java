@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OAuthProvider;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -91,8 +92,8 @@ public class HermesTestClient {
         return managementTestClient.getSubscriptionMetrics(topicQualifiedName, subscriptionName);
     }
 
-    public void suspendSubscription(Topic topic, String subscription) {
-        managementTestClient.updateSubscriptionState(topic, subscription, Subscription.State.SUSPENDED)
+    public WebTestClient.ResponseSpec suspendSubscription(Topic topic, String subscription) {
+        return managementTestClient.updateSubscriptionState(topic, subscription, Subscription.State.SUSPENDED)
                 .expectStatus()
                 .is2xxSuccessful();
     }
@@ -141,10 +142,8 @@ public class HermesTestClient {
         return frontendTestClient.publishAvroUntilSuccess(topicQualifiedName, body, headers);
     }
 
-    public void updateSubscription(Topic topic, String subscription, PatchData patch) {
-        managementTestClient.updateSubscription(topic, subscription, patch)
-                .expectStatus()
-                .is2xxSuccessful();
+    public WebTestClient.ResponseSpec updateSubscription(Topic topic, String subscription, PatchData patch) {
+        return managementTestClient.updateSubscription(topic, subscription, patch);
     }
 
     public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
@@ -236,7 +235,7 @@ public class HermesTestClient {
     }
 
     public WebTestClient.ResponseSpec listSubscriptions(String qualifiedName) {
-        return managementTestClient.listSubscriptions(qualifiedName);
+        return managementTestClient.listSubscriptions(qualifiedName, false);
     }
 
     public WebTestClient.ResponseSpec listTopics(String groupName) {
@@ -369,5 +368,57 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec searchOwners(String source, String searchString) {
         return managementTestClient.searchOwners(source, searchString);
+    }
+
+    public WebTestClient.ResponseSpec setMode(String mode) {
+        return managementTestClient.setMode(mode);
+    }
+
+    public WebTestClient.ResponseSpec getOfflineRetransmissionTasks() {
+        return managementTestClient.getOfflineRetransmissionTasks();
+    }
+
+    public WebTestClient.ResponseSpec deleteOfflineRetransmissionTask(String taskId) {
+        return managementTestClient.deleteOfflineRetransmissionTask(taskId);
+    }
+
+    public WebTestClient.ResponseSpec createOfflineRetransmissionTask(OfflineRetransmissionRequest request) {
+        return managementTestClient.createOfflineRetransmissionTask(request);
+    }
+
+    public WebTestClient.ResponseSpec createSubscription(Subscription subscription) {
+        return managementTestClient.createSubscription(subscription);
+    }
+
+    public WebTestClient.ResponseSpec listTrackedSubscriptions(String qualifiedName) {
+        return managementTestClient.listSubscriptions(qualifiedName, true);
+    }
+
+    public WebTestClient.ResponseSpec querySubscriptions(String qualifiedName, String query) {
+        return managementTestClient.querySubscriptions(qualifiedName, query);
+    }
+
+    public WebTestClient.ResponseSpec getSubscriptionHealth(String qualifiedTopicName, String name) {
+        return managementTestClient.getSubscriptionHealth(qualifiedTopicName, name);
+    }
+
+    public WebTestClient.ResponseSpec getConsumerGroupsDescription(String qualifiedTopicName, String subscriptionName) {
+        return managementTestClient.getConsumerGroupsDescription(qualifiedTopicName, subscriptionName);
+    }
+
+    public WebTestClient.ResponseSpec deleteGroup(String groupName) {
+        return managementTestClient.deleteGroup(groupName);
+    }
+
+    public WebTestClient.ResponseSpec updateGroup(String groupName, Group group) {
+        return managementTestClient.updateGroup(groupName, group);
+    }
+
+    public List<String> getGroups() {
+        return managementTestClient.getGroups();
+    }
+
+    public WebTestClient.ResponseSpec moveOffsetsToTheEnd(String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.moveOffsetsToTheEnd(topicQualifiedName, subscriptionName);
     }
 }
