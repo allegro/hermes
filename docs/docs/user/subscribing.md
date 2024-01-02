@@ -324,9 +324,9 @@ Hermes supports two delivery modes:
 - ANYCAST - messages will be sent to endpoint returned by `EndpointAddressResolver#resolve`
 - BROADCAST - messages will be sent to endpoint returned by `EndpointAddressResolver#resolveAll`
 
-Example usage of this feature would be to provide `EndpointAddressResolver` implementation which returns any subscriber (e.g. single 
-service instance) for `resolve` or all subscribers for `resolveAll` (e.g. all instances of a service). ANYCAST subscription messages would 
-then be delivered to any subscribing service instance while BROADCAST messages would then be delivered to all subscribing service instances.
+Example usage of this feature would be to provide `EndpointAddressResolver` implementation which returns any subscriber address (e.g. single 
+service instance) for `resolve` and all subscriber addresses for `resolveAll` (e.g. all instances of a service). ANYCAST subscription messages
+would then be delivered to any subscribing service instance and BROADCAST subscription messages would then be delivered to all subscribing service instances.
 
 ## Message filtering
 
