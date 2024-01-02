@@ -738,4 +738,4 @@ For subscriptions with SERIAL deliveryType hermes will deliver `inflightSize` me
 With BATCH deliveryType messages are guaranteed to be delivered in order (batches are sent sequentially). 
 
 Note that by default Hermes does not give any guarantees about assigning messages to partitions. The only option to ensure within-partition ordering is to 
-specify [partition key explicitly](publishing.md#partition-assignment) when publishing and to use BATCH subscription (or SERIAL with ``inflightSize=1`) when consuming. 
+specify [partition key explicitly](publishing.md#partition-assignment) when publishing and to use BATCH subscription (or SERIAL with `inflightSize=1`) when consuming. 
