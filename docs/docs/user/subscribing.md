@@ -731,3 +731,11 @@ It returns array of message tracking information in following format:
 Sending delay can be defined for each serial subscription. Consumers will wait for a given time before trying to deliver a message.
 This might be useful in situations when there are multiple topics that sends events in the same time, but you want to increase
 chance that events from one topic will be delivered later than events from another topic.
+
+## Ordering guarantees
+For subscriptions with SERIAL deliveryType hermes will deliver `inflightSize` messages concurrently. Because of that messages may be delivered out of (partition) order (unless `inflightSize=1` but this can have poor performance).    
+
+With BATCH deliveryType messages are guaranteed to be delivered in order (batches are sent sequentially). 
+
+Note that by default Hermes does not give any guarantees about assigning messages to partitions. The only option to ensure within-partition ordering is to 
+specify [partition key explicitly](publishing.md#partition-assignment) when publishing and to use BATCH subscription (or SERIAL with ``inflightSize=1`) when consuming. 
