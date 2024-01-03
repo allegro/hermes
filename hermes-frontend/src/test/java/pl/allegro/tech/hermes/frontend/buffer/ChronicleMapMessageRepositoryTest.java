@@ -164,7 +164,11 @@ public class ChronicleMapMessageRepositoryTest {
         Path backupFile = Path.of(tempDirPath, "/hermes-buffer-v3.dat");
         Files.copy(fileSavedBy2_5_0, backupFile);
 
-        ChronicleMapMessageRepository messageRepository = new ChronicleMapMessageRepository(backupFile.toFile(), ENTRIES, AVERAGE_MESSAGE_SIZE);
+        ChronicleMapMessageRepository messageRepository = new ChronicleMapMessageRepository(
+                backupFile.toFile(),
+                ENTRIES,
+                AVERAGE_MESSAGE_SIZE
+        );
 
         // when
         List<BackupMessage> loadedMessages = messageRepository.findAll();
