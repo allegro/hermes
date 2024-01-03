@@ -96,8 +96,7 @@ public class ChronicleMapMessageRepositoryTest {
     @Test
     public void shouldCreateRepositoryFromFile() throws IOException {
         //given
-        String baseDir = Files.createTempFile("backup", "").toAbsolutePath().toString();
-        File file = new File(baseDir, "messages.dat");
+        File file = Files.createTempFile("backup", "messages.dat").toFile();
 
         //when
         new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
@@ -113,8 +112,7 @@ public class ChronicleMapMessageRepositoryTest {
         String qualifiedName = "groupName.topic";
         Topic topic = topic(qualifiedName).build();
 
-        String baseDir = Files.createTempFile("backup", "").toAbsolutePath().toString();
-        File file = new File(baseDir, "messages.dat");
+        File file = Files.createTempFile("backup", "messages.dat").toFile();
 
         messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
 
