@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.consumers.consumer.oauth.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.entity.ContentType;
+import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
@@ -40,8 +40,10 @@ public class OAuthHttpClient implements OAuthClient {
                 .timeout(request.getRequestTimeout(), TimeUnit.MILLISECONDS)
                 .idleTimeout(request.getSocketTimeout(), TimeUnit.MILLISECONDS)
                 .method(HttpMethod.POST)
-                .header(HttpHeader.KEEP_ALIVE, "true")
-                .header(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.toString())
+                .headers(headers -> {
+                    headers.add(HttpHeader.KEEP_ALIVE, "true");
+                    headers.add(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.toString());
+                })
                 .param(OAuthTokenRequest.Param.GRANT_TYPE, request.getGrantType())
                 .param(OAuthTokenRequest.Param.SCOPE, request.getScope())
                 .param(OAuthTokenRequest.Param.CLIENT_ID, request.getClientId())
