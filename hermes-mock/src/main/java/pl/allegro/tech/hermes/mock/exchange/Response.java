@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.mock.exchange;
 
-
-
-import org.apache.hc.core5.http.HttpStatus;
+import wiremock.org.apache.hc.core5.http.HttpStatus;
 
 import java.time.Duration;
 
