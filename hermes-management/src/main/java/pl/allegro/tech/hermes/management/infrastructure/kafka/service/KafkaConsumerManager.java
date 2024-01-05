@@ -22,12 +22,12 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 public class KafkaConsumerManager {
 
     private final KafkaNamesMapper kafkaNamesMapper;
-    private final String bootstrapKafkaServer;
+    private final String brokerList;
     private final KafkaProperties kafkaProperties;
 
-    public KafkaConsumerManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper, String bootstrapKafkaServer) {
+    public KafkaConsumerManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper, String brokerList) {
         this.kafkaNamesMapper = kafkaNamesMapper;
-        this.bootstrapKafkaServer = bootstrapKafkaServer;
+        this.brokerList = brokerList;
         this.kafkaProperties = kafkaProperties;
     }
 
@@ -38,17 +38,17 @@ public class KafkaConsumerManager {
 
     private Properties properties(ConsumerGroupId groupId) {
         Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapKafkaServer);
+        props.put(BOOTSTRAP_SERVERS_CONFIG, brokerList);
         props.put(GROUP_ID_CONFIG, groupId.asString());
         props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, 5000);
         props.put(DEFAULT_API_TIMEOUT_MS_CONFIG, 5000);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        if (kafkaProperties.getSasl().isEnabled()) {
-            props.put(SASL_MECHANISM, kafkaProperties.getSasl().getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSasl().getProtocol());
-            props.put(SASL_JAAS_CONFIG, kafkaProperties.getSasl().getJaasConfig());
+        if (kafkaProperties.getAuthentication().isEnabled()) {
+            props.put(SASL_MECHANISM, kafkaProperties.getAuthentication().getMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getAuthentication().getProtocol());
+            props.put(SASL_JAAS_CONFIG, kafkaProperties.getAuthentication().getJaasConfig());
         }
         return props;
     }

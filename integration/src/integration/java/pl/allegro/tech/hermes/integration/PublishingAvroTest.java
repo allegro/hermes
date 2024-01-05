@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integration;
 
+import com.github.tomakehurst.wiremock.http.HttpHeaders;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
@@ -443,6 +444,32 @@ public class PublishingAvroTest extends IntegrationTest {
         remoteService.waitUntilRequestReceived(request -> {
             assertThat(request.getHeaders().getHeader(HermesMessage.SCHEMA_VERSION_HEADER).firstValue()).isEqualTo("2");
             assertBodyDeserializesIntoUser(request.getBodyAsString(), userV2);
+        });
+    }
+
+    @Test
+    public void shouldSendMessageIdHeaderToSubscriber() {
+        // given
+        Topic topic = randomTopic("sendMessageIdHeaderToSubscriber", "topic").withContentType(AVRO).build();
+        operations.buildTopicWithSchema(topicWithSchema(topic, user.getSchemaAsString()));
+        operations.createSubscription(topic, "subscription", remoteService.getUrl());
+        remoteService.expectMessages(user.asJson());
+        WebTarget client = ClientBuilder.newClient().target(FRONTEND_URL).path("topics").path(topic.getQualifiedName());
+        String traceId = UUID.randomUUID().toString();
+
+        // when
+        Response response = client
+                .request()
+                .header("Trace-Id", traceId)
+                .post(Entity.entity(user.asBytes(), MediaType.valueOf("avro/binary")));
+
+        // then
+        assertThat(response).hasStatus(Response.Status.CREATED);
+        remoteService.waitUntilRequestReceived(request -> {
+            String expectedMessageId = response.getHeaderString("Hermes-Message-Id");
+            HttpHeaders headers = request.getHeaders();
+            assertThat(headers.getHeader("messageId").firstValue()).isEqualTo(expectedMessageId);
+            assertThat(headers.getHeader("Trace-Id").firstValue()).isEqualTo(traceId);
         });
     }
 

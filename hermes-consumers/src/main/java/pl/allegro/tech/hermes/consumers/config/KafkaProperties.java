@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
+import pl.allegro.tech.hermes.common.config.KafkaAuthenticationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 public class KafkaProperties implements KafkaParameters {
 
-    private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
+    private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
     private String datacenter = "dc";
 
@@ -13,12 +13,17 @@ public class KafkaProperties implements KafkaParameters {
 
     private String brokerList = "localhost:9092";
 
-    public KafkaAuthorizationProperties getAuthorization() {
-        return authorization;
+    public KafkaAuthenticationProperties getAuthentication() {
+        return authentication;
     }
 
-    public void setAuthorization(KafkaAuthorizationProperties authorization) {
-        this.authorization = authorization;
+    @Deprecated
+    public void setAuthorization(KafkaAuthenticationProperties authorization) {
+        this.authentication = authorization;
+    }
+
+    public void setAuthentication(KafkaAuthenticationProperties authentication) {
+        this.authentication = authentication;
     }
 
     public String getDatacenter() {
@@ -38,28 +43,18 @@ public class KafkaProperties implements KafkaParameters {
     }
 
     @Override
-    public boolean isEnabled() {
-        return authorization.isEnabled();
+    public boolean isAuthenticationEnabled() {
+        return authentication.isEnabled();
     }
 
     @Override
-    public String getMechanism() {
-        return authorization.getMechanism();
+    public String getAuthenticationMechanism() {
+        return authentication.getMechanism();
     }
 
     @Override
-    public String getProtocol() {
-        return authorization.getProtocol();
-    }
-
-    @Override
-    public String getUsername() {
-        return authorization.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return authorization.getPassword();
+    public String getAuthenticationProtocol() {
+        return authentication.getProtocol();
     }
 
     @Override
@@ -69,5 +64,10 @@ public class KafkaProperties implements KafkaParameters {
 
     public void setBrokerList(String brokerList) {
         this.brokerList = brokerList;
+    }
+
+    @Override
+    public String getJaasConfig() {
+        return authentication.getJaasConfig();
     }
 }
