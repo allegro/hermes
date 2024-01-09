@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.time.Duration.ofMinutes;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
@@ -37,6 +38,7 @@ import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.groupWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -182,7 +184,7 @@ public class QueryEndpointTest {
     @Test
     public void shouldSkipEntitiesNotContainingQueriedField() {
         // given
-        hermes.initHelper().createGroup(new Group("group"));
+        hermes.initHelper().createGroup(groupWithRandomName().build());
 
         // when
         List<Group> found = hermes.api().queryGroups("{\"query\": {\"missingField\": \"xxx\"}}")
@@ -196,7 +198,7 @@ public class QueryEndpointTest {
     @Test
     public void shouldSkipEntitiesNotContainingQueriedNestedField() {
         // given
-        hermes.initHelper().createGroup(new Group("group"));
+        hermes.initHelper().createGroup(groupWithRandomName().build());
 
         // when
         List<Group> found = hermes.api().queryGroups("{\"query\": {\"missing.nested.field\": \"xxx\"}}")
@@ -209,23 +211,30 @@ public class QueryEndpointTest {
 
     public static Stream<Arguments> topicsMetricsFilteringData() {
         return Stream.of(
-                arguments("testTopic1", "testTopic2", "{\"query\": {}}", asList("testGroup.testTopic1", "testGroup.testTopic2")),
-                arguments("testTopic3", "testTopic4", "{\"query\": {\"published\": {\"gt\": \"5\"}}}", asList()),
-                arguments("testTopic5", "testTopic6", "{\"query\": {\"published\": {\"gt\": \"2\"}}}", asList("testGroup.testTopic6")),
-                arguments("testTopic7", "testTopic8", "{\"query\": {\"published\": {\"lt\": \"2\"}}}", asList("testGroup.testTopic7")));
+                arguments("testTopic1", "testTopic2", "{\"query\": {}}", asList("testTopic1", "testTopic2")),
+                arguments("testTopic3", "testTopic4", "{\"query\": {\"published\": {\"gt\": \"20\"}}}", asList()),
+                arguments("testTopic5", "testTopic6", "{\"query\": {\"published\": {\"gt\": \"3\"}}}", asList("testTopic6")),
+                arguments("testTopic7", "testTopic8", "{\"query\": {\"published\": {\"lt\": \"3\"}}}", asList("testTopic7")));
     }
 
     @ParameterizedTest
     @MethodSource("topicsMetricsFilteringData")
-    public void shouldQueryTopicsMetrics(String topicName1, String topicName2, String query, List<String> qualifiedNames) {
+    public void shouldQueryTopicsMetrics(String topicName1, String topicName2, String query, List<String> topicNames) {
         // given
-        hermes.initHelper().createTopic(topic("testGroup", topicName1).withContentType(JSON).withTrackingEnabled(false).build());
-        hermes.initHelper().createTopic(topic("testGroup", topicName2).withContentType(JSON).withTrackingEnabled(false).build());
+        Group group = groupWithRandomName().build();
+        hermes.initHelper().createGroup(group);
+        hermes.initHelper().createTopic(topic(group.getGroupName(), topicName1).withContentType(JSON).withTrackingEnabled(false).build());
+        hermes.initHelper().createTopic(topic(group.getGroupName(), topicName2).withContentType(JSON).withTrackingEnabled(false).build());
 
-        hermes.api().publish("testGroup." + topicName1, "testMessage1");
-        hermes.api().publish("testGroup." + topicName2, "testMessage2");
-        hermes.api().publish("testGroup." + topicName2, "testMessage3");
-        hermes.api().publish("testGroup." + topicName2, "testMessage4");
+        hermes.api().publishUntilSuccess(group.getGroupName() + "." + topicName1, "testMessage1");
+        hermes.api().publishUntilSuccess(group.getGroupName() + "." + topicName2, "testMessage2");
+        hermes.api().publishUntilSuccess(group.getGroupName() + "." + topicName2, "testMessage3");
+        hermes.api().publishUntilSuccess(group.getGroupName() + "." + topicName2, "testMessage4");
+        hermes.api().publishUntilSuccess(group.getGroupName() + "." + topicName2, "testMessage5");
+
+        List<String> qualifiedNames = topicNames.stream()
+            .map(topicName -> group.getGroupName() + "." + topicName)
+            .collect(toList());
 
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
                     // when
@@ -359,14 +368,14 @@ public class QueryEndpointTest {
 
     private <T> void assertListMatches(List<T> elements, List<T> found, List<Integer> positions) {
         found.removeIf(o -> !elements.contains(o));
-        List<T> expected = positions.stream().map(i -> elements.get(i - 1)).collect(Collectors.toList());
+        List<T> expected = positions.stream().map(i -> elements.get(i - 1)).collect(toList());
         Assertions.assertThat(found).isSubsetOf(expected);
     }
 
     private void assertTopicMetricsMatchesToNames(List<TopicNameWithMetrics> found, List<String> expectedQualifiedNames) {
         List<String> foundQualifiedNames = found.stream()
                 .map(TopicNameWithMetrics::getName)
-                .collect(Collectors.toList());
+                .collect(toList());
 
         Assertions.assertThat(foundQualifiedNames).containsAll(expectedQualifiedNames);
     }
