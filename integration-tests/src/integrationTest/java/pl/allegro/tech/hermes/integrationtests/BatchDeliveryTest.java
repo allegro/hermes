@@ -31,7 +31,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 public class BatchDeliveryTest {
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @RegisterExtension
     public static final HermesExtension hermes = new HermesExtension();

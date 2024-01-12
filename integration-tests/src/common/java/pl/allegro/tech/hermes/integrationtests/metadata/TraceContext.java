@@ -5,41 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class TraceContext {
-
-    private final String traceId;
-    private final String spanId;
-    private final String parentSpanId;
-    private final String traceSampled;
-    private final String traceReported;
-
-    public TraceContext(String traceId, String spanId, String parentSpanId, String traceSampled, String traceReported) {
-        this.traceId = traceId;
-        this.spanId = spanId;
-        this.parentSpanId = parentSpanId;
-        this.traceSampled = traceSampled;
-        this.traceReported = traceReported;
-    }
-
-    public String getTraceId() {
-        return traceId;
-    }
-
-    public String getSpanId() {
-        return spanId;
-    }
-
-    public String getParentSpanId() {
-        return parentSpanId;
-    }
-
-    public String getTraceSampled() {
-        return traceSampled;
-    }
-
-    public String getTraceReported() {
-        return traceReported;
-    }
+public record TraceContext(String traceId, String spanId, String parentSpanId, String traceSampled,
+                           String traceReported) {
 
     public Map<String, String> asMap() {
 

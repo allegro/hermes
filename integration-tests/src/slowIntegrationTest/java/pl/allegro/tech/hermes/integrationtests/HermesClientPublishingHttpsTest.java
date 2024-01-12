@@ -81,14 +81,7 @@ public class HermesClientPublishingHttpsTest {
     }
 
     private OkHttpClient getOkHttpClientWithSslContextConfigured() {
-        String protocol = "TLS";
-        KeystoreProperties keystoreProperties = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
-        KeystoreProperties truststoreProperties = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
-        DefaultSslContextFactory sslContextFactory = new DefaultSslContextFactory(
-                protocol,
-                new ProvidedKeyManagersProvider(keystoreProperties),
-                new ProvidedTrustManagersProvider(truststoreProperties)
-        );
+        DefaultSslContextFactory sslContextFactory = getDefaultSslContextFactory();
         SSLContextHolder sslContextHolder = sslContextFactory.create();
         return new OkHttpClient.Builder()
                 .sslSocketFactory(
@@ -96,6 +89,17 @@ public class HermesClientPublishingHttpsTest {
                         (X509TrustManager) sslContextHolder.getTrustManagers()[0]
                 )
                 .build();
+    }
+
+    private static DefaultSslContextFactory getDefaultSslContextFactory() {
+        String protocol = "TLS";
+        KeystoreProperties keystoreProperties = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
+        KeystoreProperties truststoreProperties = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
+        return new DefaultSslContextFactory(
+                protocol,
+                new ProvidedKeyManagersProvider(keystoreProperties),
+                new ProvidedTrustManagersProvider(truststoreProperties)
+        );
     }
 
 }

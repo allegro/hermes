@@ -43,11 +43,6 @@ public class FrontendSlowClient {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public String slowEvent(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData, String topicName)
-            throws IOException, InterruptedException {
-        return slowEvent(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, false);
-    }
-
     public String slowEvent(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData,
                             String topicName, boolean chunkedEncoding)
             throws IOException, InterruptedException {
@@ -117,7 +112,7 @@ public class FrontendSlowClient {
         String line;
         StringBuilder response = new StringBuilder();
 
-        while (!(line = bufferedReader.readLine()).equals("")) {
+        while (!(line = bufferedReader.readLine()).isEmpty()) {
             response.append(line);
         }
 

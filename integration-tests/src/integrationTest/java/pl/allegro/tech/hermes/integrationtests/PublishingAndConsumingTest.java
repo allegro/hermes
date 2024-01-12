@@ -84,7 +84,7 @@ public class PublishingAndConsumingTest {
 
         TestSubscriber subscriber = subscribers.createSubscriber("/hello/");
         String interpolatedEndpoint = subscriber.getEndpoint().replace("/hello/", "/{template}/");
-        hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(), "subscription", interpolatedEndpoint).build());;
+        hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(), "subscription", interpolatedEndpoint).build());
 
         // when
         hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
@@ -229,7 +229,7 @@ public class PublishingAndConsumingTest {
     }
 
     @Test
-    public void shouldNotCreateTopicWhenPublishingToNonExistingTopic() throws Exception {
+    public void shouldNotCreateTopicWhenPublishingToNonExistingTopic() {
         // given
         TopicName nonExisting = TopicName.fromQualifiedName("nonExistingGroup.nonExistingTopic8326");
 

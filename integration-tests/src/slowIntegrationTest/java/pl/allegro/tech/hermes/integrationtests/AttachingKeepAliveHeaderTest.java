@@ -55,9 +55,7 @@ public class AttachingKeepAliveHeaderTest {
     @Test
     public void shouldNotAttachKeepAliveHeaderWhenDisabled() {
         //given
-        HermesFrontendTestApp frontend = startFrontend(f -> {
-            f.withProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED, false);
-        });
+        HermesFrontendTestApp frontend = startFrontend(f -> f.withProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED, false));
 
         Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
 

@@ -95,7 +95,7 @@ public class BatchRetryPolicyTest {
     }
 
     @Test
-    public void shouldRetryUntilTtlExceeded() throws Throwable {
+    public void shouldRetryUntilTtlExceeded() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
@@ -124,7 +124,7 @@ public class BatchRetryPolicyTest {
     }
 
     @Test
-    public void shouldRetryOnClientErrors() throws Throwable {
+    public void shouldRetryOnClientErrors() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
@@ -151,7 +151,7 @@ public class BatchRetryPolicyTest {
     }
 
     @Test
-    public void shouldNotRetryOnClientErrors() throws Throwable {
+    public void shouldNotRetryOnClientErrors() {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 

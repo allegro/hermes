@@ -81,19 +81,19 @@ public class JmsConsumingTest {
         hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body(), headers);
 
         // then
-        subscriber.waitUntilMessageWithHeaderReceived("TraceId", trace.getTraceId());
-        subscriber.waitUntilMessageWithHeaderReceived("SpanId", trace.getSpanId());
-        subscriber.waitUntilMessageWithHeaderReceived("ParentSpanId", trace.getParentSpanId());
-        subscriber.waitUntilMessageWithHeaderReceived("TraceSampled", trace.getTraceSampled());
-        subscriber.waitUntilMessageWithHeaderReceived("TraceReported", trace.getTraceReported());
+        subscriber.waitUntilMessageWithHeaderReceived("TraceId", trace.traceId());
+        subscriber.waitUntilMessageWithHeaderReceived("SpanId", trace.spanId());
+        subscriber.waitUntilMessageWithHeaderReceived("ParentSpanId", trace.parentSpanId());
+        subscriber.waitUntilMessageWithHeaderReceived("TraceSampled", trace.traceSampled());
+        subscriber.waitUntilMessageWithHeaderReceived("TraceReported", trace.traceReported());
     }
 
     private void addTraceHeaders(TraceContext trace, HttpHeaders headers) {
-        headers.add("Trace-Id", trace.getTraceId());
-        headers.add("Span-Id", trace.getSpanId());
-        headers.add("Parent-Span-Id", trace.getParentSpanId());
-        headers.add("Trace-Sampled", trace.getTraceSampled());
-        headers.add("Trace-Reported", trace.getTraceReported());
+        headers.add("Trace-Id", trace.traceId());
+        headers.add("Span-Id", trace.spanId());
+        headers.add("Parent-Span-Id", trace.parentSpanId());
+        headers.add("Trace-Sampled", trace.traceSampled());
+        headers.add("Trace-Reported", trace.traceReported());
     }
 
     private String jmsEndpointAddress() {

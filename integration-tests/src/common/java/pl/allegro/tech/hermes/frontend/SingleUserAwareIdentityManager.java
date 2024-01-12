@@ -39,7 +39,7 @@ public class SingleUserAwareIdentityManager implements IdentityManager {
         return null;
     }
 
-    private final class SomeUserAccount implements Account {
+    private static final class SomeUserAccount implements Account {
 
         private final Principal principal;
 
@@ -58,17 +58,11 @@ public class SingleUserAwareIdentityManager implements IdentityManager {
         }
     }
 
-    private final class SomeUserPrincipal implements Principal {
-
-        private final String username;
-
-        private SomeUserPrincipal(String username) {
-            this.username = username;
-        }
+    private record SomeUserPrincipal(String username) implements Principal {
 
         @Override
-        public String getName() {
-            return username;
+            public String getName() {
+                return username;
+            }
         }
-    }
 }

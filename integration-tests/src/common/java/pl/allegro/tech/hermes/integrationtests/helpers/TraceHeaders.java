@@ -7,11 +7,11 @@ import java.util.Map;
 public class TraceHeaders {
     public static Map<String, String> fromTraceContext(TraceContext traceContext) {
         return Map.of(
-                "Trace-Id", traceContext.getTraceId(),
-                "Span-Id", traceContext.getSpanId(),
-                "Parent-Span-Id", traceContext.getParentSpanId(),
-                "Trace-Sampled", traceContext.getTraceSampled(),
-                "Trace-Reported", traceContext.getTraceReported()
+                "Trace-Id", traceContext.traceId(),
+                "Span-Id", traceContext.spanId(),
+                "Parent-Span-Id", traceContext.parentSpanId(),
+                "Trace-Sampled", traceContext.traceSampled(),
+                "Trace-Reported", traceContext.traceReported()
         );
     }
 }
