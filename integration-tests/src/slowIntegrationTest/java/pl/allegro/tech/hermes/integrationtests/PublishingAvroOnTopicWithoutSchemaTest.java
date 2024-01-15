@@ -69,6 +69,8 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
 
         // when
         String message = new AvroUser("Bob", 50, "blue").asJson();
+        // ensure topic is created
+        publisher.publishUntilStatus(topic.getQualifiedName(), message, 500);
         WebTestClient.ResponseSpec response = publisher.publish(topic.getQualifiedName(), message);
 
         // then
