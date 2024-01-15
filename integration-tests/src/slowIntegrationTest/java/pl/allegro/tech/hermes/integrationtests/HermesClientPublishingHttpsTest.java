@@ -71,7 +71,7 @@ public class HermesClientPublishingHttpsTest {
         OkHttpHermesSender okHttpHermesSender = new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());
         HermesClient client = hermesClient(okHttpHermesSender)
                 .withRetries(5)
-                .withRetrySleep(Duration.FIVE_SECONDS.getValueInMS())
+                .withRetrySleep(Duration.FIVE_SECONDS.getValueInMS(), Duration.TEN_SECONDS.getValueInMS())
                 .withURI(URI.create("https://localhost:" + frontend.getSSLPort()))
                 .build();
 

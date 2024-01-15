@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.DURATION;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -76,6 +75,7 @@ public class TopicCreationRollbackTest {
         hermesApi.createGroup(Group.from(groupName));
 
         brokerOperations1.createTopic(qualifiedTopicName);
+        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
 
         // when
         hermesApi.createTopic((topicWithSchema(topic(groupName, topicName).build())));
