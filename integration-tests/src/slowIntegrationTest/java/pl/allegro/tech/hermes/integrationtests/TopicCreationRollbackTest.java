@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,9 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.DURATION;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -78,7 +81,7 @@ public class TopicCreationRollbackTest {
         hermesApi.createTopic((topicWithSchema(topic(groupName, topicName).build())));
 
         // then
-        assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue();
-        assertThat(brokerOperations2.topicExists(qualifiedTopicName)).isTrue();
+        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
+        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations2.topicExists(qualifiedTopicName)).isTrue());
     }
 }
