@@ -29,5 +29,4 @@ dependencies {
     testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testImplementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '1.0.25'
     testImplementation group: 'io.projectreactor', name: 'reactor-test', version: '3.4.25'
-
 }
