@@ -733,9 +733,12 @@ This might be useful in situations when there are multiple topics that sends eve
 chance that events from one topic will be delivered later than events from another topic.
 
 ## Ordering guarantees
-For subscriptions with SERIAL deliveryType hermes will deliver `inflightSize` messages concurrently. Because of that messages may be delivered out of (partition) order (unless `inflightSize=1` but this can have poor performance).    
+For subscriptions with `SERIAL` deliveryType hermes will deliver `inflightSize` messages concurrently. 
+Because of that messages may be delivered out of partition order (unless `inflightSize=1` but this can have poor performance).    
 
-With BATCH deliveryType messages are guaranteed to be delivered in order (batches are sent sequentially). 
+With `BATCH` deliveryType messages are guaranteed to be delivered in partition order (batches are sent sequentially). 
 
-Note that by default Hermes does not give any guarantees about assigning messages to partitions. The only option to ensure within-partition ordering is to 
-specify [partition key explicitly](publishing.md#partition-assignment) when publishing and to use BATCH subscription (or SERIAL with `inflightSize=1`) when consuming. 
+Note that by default Hermes does not give any guarantees about assigning messages to partitions. To do that, publishers must specify [partition key explicitly](publishing.md#partition-assignment).
+
+When messages are published with `parition-key` and consumed with `BATCH` mode (or `SERIAL` with `inflightSize=1`) they will be ordered as long as they were published to one DC. 
+Publishing messages with same `parition-key` to multiple DCs does not guarantee ordering because messages are stored in separate kafka clusters. 
