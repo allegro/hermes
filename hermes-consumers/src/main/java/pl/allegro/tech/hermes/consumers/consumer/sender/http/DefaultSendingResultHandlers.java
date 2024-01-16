@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Response;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleMessageSendingResult;
 

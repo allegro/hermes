@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
 
