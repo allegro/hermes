@@ -9,6 +9,7 @@ import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
