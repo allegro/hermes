@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.client;
+package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import com.jayway.awaitility.Duration;
 import jakarta.ws.rs.core.Response;

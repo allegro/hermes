@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.client;
+package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

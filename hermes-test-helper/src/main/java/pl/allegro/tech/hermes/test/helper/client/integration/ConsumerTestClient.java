@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.client;
+package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import jakarta.ws.rs.core.UriBuilder;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -17,6 +17,9 @@ class ConsumerTestClient {
         this.webTestClient = WebTestClient
                 .bindToServer()
                 .baseUrl(consumerContainerUrl)
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(16 * 1024 * 1024))
                 .build();
     }
 

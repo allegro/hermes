@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
-import pl.allegro.tech.hermes.integrationtests.client.ManagementTestClient;
+import pl.allegro.tech.hermes.test.helper.client.integration.ManagementTestClient;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
