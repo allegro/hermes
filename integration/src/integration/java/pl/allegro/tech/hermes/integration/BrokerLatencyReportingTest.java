@@ -65,7 +65,7 @@ public class BrokerLatencyReportingTest extends IntegrationTest {
         // then
         assertThat(response).hasStatus(CREATED);
         wait.until(() -> {
-            Double metricValue = getMetricValue("hermes_frontend_broker_latency_seconds_count{broker=\"localhost\",").orElse(0.0);
+            Double metricValue = getMetricValue("hermes_frontend_broker_latency_seconds_count{ack=\"LEADER\",broker=\"localhost\",").orElse(0.0);
             assertThat(metricValue).isGreaterThan(0.0d);
         }, 5);
     }

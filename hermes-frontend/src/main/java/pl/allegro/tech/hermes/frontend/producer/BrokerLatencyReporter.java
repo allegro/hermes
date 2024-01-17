@@ -55,6 +55,6 @@ public class BrokerLatencyReporter {
                     duration.toMillis(), ack, messageId, broker);
         }
 
-        metricsFacade.broker().recordBrokerLatency(broker, duration);
+        metricsFacade.broker().recordBrokerLatency(broker, ack, duration);
     }
 }
