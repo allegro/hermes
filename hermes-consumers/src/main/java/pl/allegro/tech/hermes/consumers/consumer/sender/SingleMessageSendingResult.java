@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.jetty.client.api.Result;
+import org.eclipse.jetty.client.Result;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;

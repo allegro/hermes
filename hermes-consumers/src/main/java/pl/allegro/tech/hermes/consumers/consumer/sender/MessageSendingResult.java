@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
-import org.eclipse.jetty.client.api.Result;
+import org.eclipse.jetty.client.Result;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 
 import java.net.URI;
