@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Supplier;
 
 public class BrokerLatencyReporter {
@@ -39,7 +40,12 @@ public class BrokerLatencyReporter {
                        @Nullable Supplier<ProduceMetadata> produceMetadata) {
         Duration duration = timerContext.closeAndGet();
         if (perBrokerLatencyEnabled) {
-            reporterExecutorService.submit(() -> doReport(duration, message.getId(), ack, produceMetadata));
+            try {
+                reporterExecutorService.submit(() -> doReport(duration, message.getId(), ack, produceMetadata));
+            } catch (RejectedExecutionException ignored) {
+                // don't propagate the exception - allow metrics to be dropped if executor is overloaded
+                // executor service should already be instrumented to meter rejected executions so no action is needed
+            }
         }
 
     }
