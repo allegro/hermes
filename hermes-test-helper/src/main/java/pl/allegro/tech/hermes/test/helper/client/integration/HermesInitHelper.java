@@ -18,6 +18,10 @@ public class HermesInitHelper {
         managementTestClient = new ManagementTestClient(managementPort);
     }
 
+    public void setDefaultHeader(String name, String value) {
+        this.managementTestClient.setDefaultHeader(name, value);
+    }
+
     public Topic createTopic(Topic topic) {
         createGroupIfMissing(Group.from(topic.getName().getGroupName()));
         managementTestClient.createTopic(TopicWithSchema.topicWithSchema(topic, null))
