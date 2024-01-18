@@ -51,7 +51,7 @@ public class BrokerLatencyReporter {
         String broker = Optional.ofNullable(produceMetadata).flatMap(metadata -> metadata.get().getBroker()).orElse("unknown");
 
         if (duration.compareTo(slowResponseThreshold) > 0) {
-            logger.info("Slow produce request, broker response time: {} ms, ackLevel: {}, messageId: {}, broker: {}",
+            logger.debug("Slow produce request, broker response time: {} ms, ackLevel: {}, messageId: {}, broker: {}",
                     duration.toMillis(), ack, messageId, broker);
         }
 

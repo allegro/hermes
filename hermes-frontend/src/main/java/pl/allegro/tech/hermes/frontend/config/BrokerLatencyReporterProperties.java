@@ -8,11 +8,8 @@ import java.time.Duration;
 public class BrokerLatencyReporterProperties {
     private boolean enabled;
     private Duration slowResponseLoggingThreshold = Duration.ofMillis(100);
-
     private int threadPoolSize = 8;
-
     private int threadPoolQueueCapacity = 1_000_000;
-
 
     public int getThreadPoolSize() {
         return threadPoolSize;
