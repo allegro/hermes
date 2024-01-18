@@ -102,6 +102,10 @@ public class Waiter extends pl.allegro.tech.hermes.test.helper.endpoint.Waiter {
         awaitAtMost(adjust(new Duration(30, TimeUnit.SECONDS))).until(runnable);
     }
 
+    public void until(Runnable runnable, int seconds) {
+        awaitAtMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(runnable);
+    }
+
     public void untilTopicIsUpdatedAfter(final long currentTime, Topic topic, String subscription) {
         until(Duration.TEN_SECONDS, topic, subscription, sub ->
                 sub.getSignalTimesheet().getOrDefault(UPDATE_TOPIC, 0L) > currentTime);

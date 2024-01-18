@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -48,10 +49,11 @@ public class FrontendPublishingConfiguration {
                                    MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                    ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig,
-                                   MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties) {
+                                   MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties,
+                                   BrokerLatencyReporter brokerLatencyReporter) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,
                 brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(),
-                handlersChainProperties).provide();
+                handlersChainProperties, brokerLatencyReporter).provide();
     }
 
     @Bean
