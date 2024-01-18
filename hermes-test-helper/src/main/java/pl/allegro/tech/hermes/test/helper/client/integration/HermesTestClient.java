@@ -34,8 +34,10 @@ public class HermesTestClient {
         this.consumerTestClient = new ConsumerTestClient(consumerPort);
     }
 
-    public void setManagementTestClientDefaultHeader(String name, String value) {
-        this.managementTestClient.setDefaultHeader(name, value);
+    public HermesTestClient(int managementPort, int frontendPort, int consumerPort, String defaultHeaderName, String defaultHeaderValue) {
+        this.managementTestClient = new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
+        this.frontendTestClient = new FrontendTestClient(frontendPort);
+        this.consumerTestClient = new ConsumerTestClient(consumerPort);
     }
 
     public WebTestClient.ResponseSpec createGroup(Group group) {

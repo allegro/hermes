@@ -18,8 +18,8 @@ public class HermesInitHelper {
         managementTestClient = new ManagementTestClient(managementPort);
     }
 
-    public void setDefaultHeader(String name, String value) {
-        this.managementTestClient.setDefaultHeader(name, value);
+    public HermesInitHelper(int managementPort, String defaultHeaderName, String defaultHeaderValue) {
+        managementTestClient = new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
     }
 
     public Topic createTopic(Topic topic) {

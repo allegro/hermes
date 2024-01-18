@@ -114,22 +114,26 @@ public class ManagementTestClient {
 
     public ManagementTestClient(int managementPort) {
         this.managementContainerUrl = "http://localhost:" + managementPort;
-        this.webTestClient = WebTestClient
+        this.webTestClient = configureWebTestClient().build();
+        this.objectMapper = new ObjectMapper();
+    }
+
+    public ManagementTestClient(int managementPort, String defaultHeaderName, String defaultHeaderValue) {
+        this.managementContainerUrl = "http://localhost:" + managementPort;
+        this.webTestClient = configureWebTestClient()
+                .defaultHeader(defaultHeaderName, defaultHeaderValue)
+                .build();
+        this.objectMapper = new ObjectMapper();
+    }
+
+    private WebTestClient.Builder configureWebTestClient() {
+        return WebTestClient
                 .bindToServer(clientHttpConnector())
                 .responseTimeout(Duration.ofSeconds(30))
                 .baseUrl(managementContainerUrl)
                 .codecs(configurer -> configurer
                         .defaultCodecs()
-                        .maxInMemorySize(16 * 1024 * 1024))
-                .build();
-        this.objectMapper = new ObjectMapper();
-    }
-
-    public void setDefaultHeader(String name, String value) {
-        this.webTestClient
-                .mutate()
-                .defaultHeader(name, value)
-                .build();
+                        .maxInMemorySize(16 * 1024 * 1024));
     }
 
     private static ClientHttpConnector clientHttpConnector() {
