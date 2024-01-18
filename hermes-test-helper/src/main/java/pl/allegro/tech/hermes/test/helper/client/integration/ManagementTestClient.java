@@ -125,6 +125,13 @@ public class ManagementTestClient {
         this.objectMapper = new ObjectMapper();
     }
 
+    public void setDefaultHeader(String name, String value) {
+        this.webTestClient
+                .mutate()
+                .defaultHeader(name, value)
+                .build();
+    }
+
     private static ClientHttpConnector clientHttpConnector() {
         HttpClient httpClient = new HttpClient();
         httpClient.setMaxConnectionsPerDestination(256);
