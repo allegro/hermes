@@ -9,6 +9,26 @@ public class BrokerLatencyReporterProperties {
     private boolean enabled;
     private Duration slowResponseLoggingThreshold = Duration.ofMillis(100);
 
+    private int threadPoolSize = 8;
+
+    private int threadPoolQueueCapacity = 1_000_000;
+
+
+    public int getThreadPoolSize() {
+        return threadPoolSize;
+    }
+
+    public void setThreadPoolSize(int threadPoolSize) {
+        this.threadPoolSize = threadPoolSize;
+    }
+
+    public int getThreadPoolQueueCapacity() {
+        return threadPoolQueueCapacity;
+    }
+
+    public void setThreadPoolQueueCapacity(int threadPoolQueueCapacity) {
+        this.threadPoolQueueCapacity = threadPoolQueueCapacity;
+    }
 
     public boolean isEnabled() {
         return enabled;

@@ -20,9 +20,9 @@ public class BrokerLatencyReporterConfiguration {
                                                 InstrumentedExecutorServiceFactory executorServiceFactory) {
         ExecutorService executorService = executorServiceFactory.getExecutorService(
                 "broker-latency-reporter",
-                8,
+                properties.getThreadPoolSize(),
                 true,
-                1_000_000
+                properties.getThreadPoolQueueCapacity()
         );
 
         return new BrokerLatencyReporter(
