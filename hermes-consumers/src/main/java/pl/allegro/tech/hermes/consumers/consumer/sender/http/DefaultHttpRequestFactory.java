@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import org.eclipse.jetty.client.BytesRequestContent;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesContentProvider;
+import org.eclipse.jetty.client.Request;
 import org.eclipse.jetty.http.HttpMethod;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequestHeaders;
@@ -46,12 +46,8 @@ class DefaultHttpRequestFactory implements HttpRequestFactory {
         }
 
         Request build() {
-            Request request = baseRequest();
-
-            headers.asMap()
-                    .forEach(request::header);
-
-            return request;
+            return baseRequest()
+                    .headers(httpHeaders -> headers.asMap().forEach(httpHeaders::add));
         }
 
         private Request baseRequest() {
@@ -59,7 +55,7 @@ class DefaultHttpRequestFactory implements HttpRequestFactory {
                     .method(HttpMethod.POST)
                     .timeout(timeout, TimeUnit.MILLISECONDS)
                     .idleTimeout(socketTimeout, TimeUnit.MILLISECONDS)
-                    .content(new BytesContentProvider(message.getData()));
+                    .body(new BytesRequestContent(message.getData()));
 
             metadataAppender.append(baseRequest, message);
 

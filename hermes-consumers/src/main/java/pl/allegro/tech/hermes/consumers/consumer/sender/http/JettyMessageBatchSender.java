@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import org.apache.http.entity.ContentType;
 import org.apache.http.protocol.HTTP;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.EndpointAddress;
