@@ -39,22 +39,17 @@ Minimal request:
 
 All options:
 
-Option                               | Description                                         | Default value
------------------------------------- | ----------------------------------------------------| -------------
-trackingMode                         | track outgoing messages                             | trackingOff
-subscriptionPolicy.rate              | maximum sending speed in rps (per DC)               | 400
-subscriptionPolicy.messageTtl        | inflight Time To Live in seconds                    | 3600
-subscriptionPolicy.messageBackoff    | backoff time between retry attempts in millis       | 1000
-subscriptionPolicy.retryClientErrors | retry on receiving 4xx status                       | false
-subscriptionPolicy.requestTimeout    | request timeout in millis                           | 1000
-subscriptionPolicy.socketTimeout     | maximum time of inactivity between two data packets | infinity
-subscriptionPolicy.inflightSize      | max number of pending requests                      | 100
-subscriptionPolicy.backoffMultiplier | backoff multiplier for calculating message backoff  | 1
-subscriptionPolicy.backoffMaxIntervalInSec | maximal retry backoff in seconds              | 600
-headers                              | additional HTTP request headers                     | [] (array of headers)
-filters                              | used for skipping unwanted messages                 | [] (array of filters)
-endpointAddressResolverMetadata      | additional address resolver metadata                | {} (map)
-subscriptionIdentityHeadersEnabled   | attach HTTP headers with subscription identity      | false
+| Option                             | Description                                                                           | Default value                                        |
+|------------------------------------|---------------------------------------------------------------------------------------|------------------------------------------------------|
+| trackingMode                       | track outgoing messages                                                               | trackingOff                                          |
+| contentType                        | delivered message format (JSON or BATCH)                                              | JSON                                                 |
+| deliveryType                       | delivery type (SERIAL or BATCH)                                                       | SERIAL                                               |
+| subscriptionPolicy                 | see [delivery types](#delivery-type)                                                  | [serial](#serial-delivery), [batch](#batch-delivery) |
+| mode                               | whether to send message to single (ANYCAST) or all (BROADCAST) subscription endpoints | ANYCAST                                              |
+| headers                            | additional HTTP request headers                                                       | [] (array of headers)                                |
+| filters                            | used for skipping unwanted messages                                                   | [] (array of filters)                                |
+| endpointAddressResolverMetadata    | additional address resolver metadata                                                  | {} (map)                                             |
+| subscriptionIdentityHeadersEnabled | attach HTTP headers with subscription identity                                        | false                                                |
 
 Possible values for **trackingMode** are:
 
@@ -76,6 +71,7 @@ Request that specifies all available options:
         "id": "My Team"
     },
     "contact": "my-team@my-company.com",
+    "deliveryType": "SERIAL",
     "subscriptionPolicy": {
         "rate": 100,
         "messageTtl": 3600,
@@ -87,6 +83,7 @@ Request that specifies all available options:
         "backoffMultiplier": 1.0,
         "backoffMaxIntervalInSec": 600
     },
+    "mode": "ANYCAST",
     "headers": [
         {"name": "SOME_HEADER", "value": "ABC"},
         {"name": "OTHER_HEADER", "value": "123"}
@@ -141,6 +138,66 @@ no matter how many times Hermes would try to deliver it. This behavior can be ch
 flag on subscription. When this flag is set to true, message with response code **4xx** will be retried, 
 also causing slowing down overall sending speed. See [back pressure section](#back-pressure) for more details.
 
+## Content type
+
+Hermes can deliver messages to subscribers in two formats:
+
+- JSON - if topic content type was of type JSON or AVRO
+- AVRO - if topic content type was of type AVRO
+
+## Delivery type
+
+Hermes supports two delivery types: SERIAL and BATCH. 
+
+### Serial delivery
+With serial delivery, each hermes consumer will process at most `inflightSize` messages concurrently. Messages are sent individually 
+(number of published messages = number of messages sent to subscriber).
+
+
+Options for `subscriptionPolicy`:
+
+| Option                  | Description                                         | Default value |
+|-------------------------|-----------------------------------------------------|---------------|
+| rate                    | maximum sending speed in rps (per DC)               | 400           |
+| messageTtl              | inflight Time To Live in seconds                    | 3600          |
+| messageBackoff          | backoff time between retry attempts in millis       | 1000          |
+| retryClientErrors       | retry on receiving 4xx status                       | false         |
+| requestTimeout          | request timeout in millis                           | 1000          |
+| socketTimeout           | maximum time of inactivity between two data packets | infinity      |
+| inflightSize            | max number of pending requests                      | 100           |
+| backoffMultiplier       | backoff multiplier for calculating message backoff  | 1             |
+| backoffMaxIntervalInSec | maximal retry backoff in seconds                    | 600           |
+
+
+### Batch delivery
+With batch delivery hermes consumer aggregates messages in a batch before sending the batch to the subscriber. There are 3 
+configurable thresholds that determine when the batch will be ready to be sent - number of messages in the batch, duration of the batch 
+and size of the batch in bytes. Batch is considered ready whenever one of these thresholds is surpassed.
+
+Messages will be sent as an array of JSON messages, e.g.
+
+```json
+[{"foo": "bar1"}, {"foo":  "bar2"}, ...]
+```
+
+Options for `subscriptionPolicy`:
+
+| Option                  | Description                                                     | Default value |
+|-------------------------|-----------------------------------------------------------------|---------------|
+| messageTtl              | inflight Time To Live in seconds                                | 3600          |
+| messageBackoff          | backoff time between retry attempts in millis                   | 500           |
+| retryClientErrors       | retry on receiving 4xx status                                   | false         |
+| requestTimeout          | request timeout in millis                                       | 30000         |
+| batchSize               | maximum number of messages in a batch                           | 100           |
+| batchTime               | maximum duration in millis for which messages can be aggregated | 30000         |
+| batchVolume             | maximum batch size in bytes                                     | 64000         |
+
+#### Limitations
+Following subscription options are not available with batch delivery:   
+
+- AVRO subscription contentType 
+- BROADCAST mode 
+
 ## Retries
 
 Hermes Consumers have been optimized towards maximizing chances of successful message delivery. Retry policy is
@@ -178,12 +235,11 @@ current_backoff = previous_backoff * backoff_multiplier
 ```
 This has the following consequences:
 
-Backoff multiplier               | Retry policy type                                      
----------------------------------|--------------------------------
-1                                | Constant retry backoff
-  above 1                        | Exponential retry backoff
-  
-  
+| Backoff multiplier | Retry policy type         |
+|--------------------|---------------------------|
+| 1                  | Constant retry backoff    |
+| above 1            | Exponential retry backoff |
+
 The hard limit to current backoff is defined by maximum backoff parameter and by default is equal to 600 s. 
 
 It is worth mentioning that the calculation of current backoff is ignored when the  **Retry-After** header is used.                    
@@ -261,6 +317,17 @@ It's ignored by the default implementation.
 
 See [console integration](../configuration/console.md#subscription-configuration) for more information.
 
+## Mode
+
+Hermes supports two delivery modes:
+
+- ANYCAST - messages will be sent to endpoint returned by `EndpointAddressResolver#resolve`
+- BROADCAST - messages will be sent to endpoint returned by `EndpointAddressResolver#resolveAll`
+
+Example usage of this feature would be to provide `EndpointAddressResolver` implementation which returns any subscriber address (e.g. single 
+service instance) for `resolve` and all subscriber addresses for `resolveAll` (e.g. all instances of a service). ANYCAST subscription messages
+would then be delivered to any subscribing service instance and BROADCAST subscription messages would then be delivered to all subscribing service instances.
+
 ## Message filtering
 
 Each subscription can define set of filters that are going to be applied after receiving message from kafka in order
@@ -271,10 +338,10 @@ of their declaration.
 This mainly concerns message content type. Filtering is done *before* any conversion takes place so all messages have
 the same content type as topic on which they were published.
 
-Topic content-type    | Filter type
---------------------- | -----------
-avro                  | avropath
-json                  | jsonpath
+| Topic content-type | Filter type |
+|--------------------|-------------|
+| avro               | avropath    |
+| json               | jsonpath    |
 
 ### Matching strategy
 
@@ -304,12 +371,12 @@ In case when `matchingStrategy` would be set to `any` then all messages with *GB
 JsonPath filter is based on popular [library](https://github.com/jayway/JsonPath) of the same name that can query
 json documents. In this case it is used as a selector to retrieve value that is later matched by regexp.
 
-Option                | Description
---------------------- | ---------------------------------------------------
-type                  | type of filter
-path                  | JsonPath expression to query json document
-matcher               | regexp expression to match value from json document
-matchingStrategy      | type of matching strategy. Default is `all`
+| Option           | Description                                         |
+|------------------|-----------------------------------------------------|
+| type             | type of filter                                      |
+| path             | JsonPath expression to query json document          |
+| matcher          | regexp expression to match value from json document |
+| matchingStrategy | type of matching strategy. Default is `all`         |
 
 Example:
 ```
@@ -323,12 +390,12 @@ avro so we decided to introduce very simple dotted path format without any advan
 understand if you're familiar with JsonPath. Right now array and basic selectors that point to specific fields are
 supported.
 
-Option                | Description
---------------------- | ---------------------------------------------------
-type                  | type of filter
-path                  | dotted expression to query avro document. When array selector is used then wildcard sign `*` can be used as index
-matcher               | regexp expression to match value from avro document
-matchingStrategy      | type of matching strategy. Default is `all`
+| Option           | Description                                                                                                       |
+|------------------|-------------------------------------------------------------------------------------------------------------------|
+| type             | type of filter                                                                                                    |
+| path             | dotted expression to query avro document. When array selector is used then wildcard sign `*` can be used as index |
+| matcher          | regexp expression to match value from avro document                                                               |
+| matchingStrategy | type of matching strategy. Default is `all`                                                                       |
 
 Example:
 ```
@@ -664,3 +731,14 @@ It returns array of message tracking information in following format:
 Sending delay can be defined for each serial subscription. Consumers will wait for a given time before trying to deliver a message.
 This might be useful in situations when there are multiple topics that sends events in the same time, but you want to increase
 chance that events from one topic will be delivered later than events from another topic.
+
+## Ordering guarantees
+For subscriptions with `SERIAL` deliveryType hermes will deliver `inflightSize` messages concurrently. 
+Because of that messages may be delivered out of partition order (unless `inflightSize=1` but this can have poor performance).    
+
+With `BATCH` deliveryType messages are guaranteed to be delivered in partition order (batches are sent sequentially). 
+
+Note that by default Hermes does not give any guarantees about assigning messages to partitions. To do that, publishers must specify [partition key explicitly](publishing.md#partition-assignment).
+
+When messages are published with `parition-key` and consumed with `BATCH` mode (or `SERIAL` with `inflightSize=1`) they will be ordered as long as they were published to one DC. 
+Publishing messages with same `parition-key` to multiple DCs does not guarantee ordering because messages are stored in separate kafka clusters. 
