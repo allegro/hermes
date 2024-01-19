@@ -39,7 +39,6 @@ public class OAuthTestServer {
             wireMockServer.addStubMapping(
                     post(urlPathEqualTo(OAUTH2_TOKEN_ENDPOINT))
                             .withQueryParam("grant_type", equalTo("password"))
-                            .withQueryParam("scope", equalTo(""))
                             .withQueryParam("client_id", equalTo(client.clientId()))
                             .withQueryParam("client_secret", equalTo(client.secret()))
                             .withQueryParam("username", equalTo(resourceOwner.username()))
@@ -67,7 +66,6 @@ public class OAuthTestServer {
             wireMockServer.addStubMapping(
                     post(urlPathEqualTo(OAUTH2_TOKEN_ENDPOINT))
                             .withQueryParam("grant_type", equalTo("client_credentials"))
-                            .withQueryParam("scope", equalTo(""))
                             .withQueryParam("client_id", equalTo(client.clientId()))
                             .withQueryParam("client_secret", equalTo(client.secret()))
                             .willReturn(
