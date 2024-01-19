@@ -2,17 +2,17 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import org.eclipse.jetty.client.HttpClient
-import org.eclipse.jetty.util.HttpCookieStore
+import org.eclipse.jetty.http.HttpCookieStore
 import pl.allegro.tech.hermes.api.EndpointAddress
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.consumers.consumer.Message
+import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.consumer.sender.MultiMessageSendingResult
-import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.AuthHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HermesHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.Http1HeadersProvider
@@ -61,7 +61,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
         wireMockServers.forEach { it.start() }
 
         client = new HttpClient()
-        client.setCookieStore(new HttpCookieStore.Empty())
+        client.setHttpCookieStore(new HttpCookieStore.Empty())
         client.setConnectTimeout(1000)
         client.setIdleTimeout(1000)
         client.start()
