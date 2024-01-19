@@ -35,4 +35,4 @@ public class FrontendConfigurationProperties {
         public static String KAFKA_NAMESPACE = "frontend.kafka.namespace";
         public static String FRONTEND_HEADER_PROPAGATION_ENABLED = "frontend.http.headers.propagationEnabled";
         public static String FRONTEND_HEADER_PROPAGATION_ALLOWED = "frontend.http.headers.allowedSet";
-}
+        public static String BROKER_LATENCY_REPORTER_ENABLED = "frontend.brokerLatencyReporter.enabled";}
