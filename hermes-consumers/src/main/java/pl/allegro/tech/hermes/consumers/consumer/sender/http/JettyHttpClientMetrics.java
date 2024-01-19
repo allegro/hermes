@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 public class JettyHttpClientMetrics implements Request.Listener {

@@ -63,10 +63,10 @@ import javax.jms.Message;
 
 @Configuration
 @EnableConfigurationProperties({
-        SslContextProperties.class,
-        HttpClientsMonitoringProperties.class,
-        SenderAsyncTimeoutProperties.class,
-        BatchProperties.class
+    SslContextProperties.class,
+    HttpClientsMonitoringProperties.class,
+    SenderAsyncTimeoutProperties.class,
+    BatchProperties.class
 })
 public class ConsumerSenderConfiguration {
 
@@ -78,16 +78,16 @@ public class ConsumerSenderConfiguration {
 
     @Bean(name = "http1-serial-client")
     public HttpClient http1SerialClient(
-            HttpClientsFactory httpClientsFactory,
-            @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters,
-            MetricsFacade metricsFacade
+        HttpClientsFactory httpClientsFactory,
+        @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters,
+        MetricsFacade metricsFacade
     ) {
         HttpClient client = httpClientsFactory.createClientForHttp1("jetty-http1-serial-client", http1ClientParameters);
         if (http1ClientParameters.isRequestProcessingMonitoringEnabled()) {
             var metrics = metricsFacade.consumerSender();
             enrichWithMetrics(
-                    client, metrics.http1SerialClientRequestQueueWaitingTimer(),
-                    metrics.http1SerialClientRequestProcessingTimer()
+                client, metrics.http1SerialClientRequestQueueWaitingTimer(),
+                metrics.http1SerialClientRequestProcessingTimer()
             );
         }
         return client;
@@ -101,9 +101,9 @@ public class ConsumerSenderConfiguration {
 
     @Bean
     public Http2ClientHolder http2ClientHolder(
-            HttpClientsFactory httpClientsFactory,
-            @Named("http2-serial-client-parameters") Http2ClientProperties http2ClientProperties,
-            MetricsFacade metricsFacade
+        HttpClientsFactory httpClientsFactory,
+        @Named("http2-serial-client-parameters") Http2ClientProperties http2ClientProperties,
+        MetricsFacade metricsFacade
     ) {
         if (!http2ClientProperties.isEnabled()) {
             return new Http2ClientHolder(null);
@@ -112,8 +112,8 @@ public class ConsumerSenderConfiguration {
             if (http2ClientProperties.isRequestProcessingMonitoringEnabled()) {
                 var metrics = metricsFacade.consumerSender();
                 enrichWithMetrics(
-                        client, metrics.http2SerialClientRequestQueueWaitingTimer(),
-                        metrics.http2SerialClientRequestProcessingTimer()
+                    client, metrics.http2SerialClientRequestQueueWaitingTimer(),
+                    metrics.http2SerialClientRequestProcessingTimer()
                 );
             }
             return new Http2ClientHolder(client);
@@ -128,15 +128,15 @@ public class ConsumerSenderConfiguration {
 
     @Bean(name = "http1-batch-client")
     public HttpClient http1BatchClient(
-            HttpClientsFactory httpClientsFactory,
-            @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters,
-            MetricsFacade metricsFacade) {
+        HttpClientsFactory httpClientsFactory,
+        @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters,
+        MetricsFacade metricsFacade) {
         HttpClient client = httpClientsFactory.createClientForHttp1("jetty-http1-batch-client", http1ClientParameters);
         if (http1ClientParameters.isRequestProcessingMonitoringEnabled()) {
             var metrics = metricsFacade.consumerSender();
             enrichWithMetrics(
-                    client, metrics.http1BatchClientRequestQueueWaitingTimer(),
-                    metrics.http1BatchClientRequestProcessingTimer()
+                client, metrics.http1BatchClientRequestQueueWaitingTimer(),
+                metrics.http1BatchClientRequestProcessingTimer()
             );
         }
         return client;
@@ -159,8 +159,8 @@ public class ConsumerSenderConfiguration {
                                                                    BatchHttpRequestFactory batchHttpRequestFactory
     ) {
         return new HttpMessageBatchSenderFactory(
-                resultHandlers,
-                batchHttpRequestFactory);
+            resultHandlers,
+            batchHttpRequestFactory);
     }
 
     @Bean(initMethod = "start")
@@ -170,12 +170,12 @@ public class ConsumerSenderConfiguration {
                                                                    Http2ClientHolder http2ClientHolder,
                                                                    HttpClientsMonitoringProperties monitoringProperties) {
         return new HttpClientsWorkloadReporter(
-                metrics,
-                http1SerialClient,
-                http1BatchClient,
-                http2ClientHolder,
-                monitoringProperties.isRequestQueueMonitoringEnabled(),
-                monitoringProperties.isConnectionPoolMonitoringEnabled());
+            metrics,
+            http1SerialClient,
+            http1BatchClient,
+            http2ClientHolder,
+            monitoringProperties.isRequestQueueMonitoringEnabled(),
+            monitoringProperties.isConnectionPoolMonitoringEnabled());
     }
 
     @Bean(destroyMethod = "closeProviders")
@@ -193,15 +193,15 @@ public class ConsumerSenderConfiguration {
                                                                         SendingResultHandlers sendingResultHandlers,
                                                                         HttpRequestFactoryProvider requestFactoryProvider) {
         return new JettyHttpMessageSenderProvider(
-                httpClient,
-                http2ClientHolder,
-                endpointAddressResolver,
-                metadataAppender,
-                authorizationProviderFactory,
-                httpHeadersProviderFactory,
-                sendingResultHandlers,
-                requestFactoryProvider,
-                ImmutableSet.of("http", "https")
+            httpClient,
+            http2ClientHolder,
+            endpointAddressResolver,
+            metadataAppender,
+            authorizationProviderFactory,
+            httpHeadersProviderFactory,
+            sendingResultHandlers,
+            requestFactoryProvider,
+            ImmutableSet.of("http", "https")
         );
     }
 
@@ -255,21 +255,21 @@ public class ConsumerSenderConfiguration {
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
     public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
-            GooglePubSubSenderTargetResolver targetResolver,
-            CredentialsProvider credentialsProvider,
-            ExecutorProvider executorProvider,
-            RetrySettings retrySettings,
-            BatchingSettings batchingSettings,
-            GooglePubSubMessageTransformerCreator googlePubSubMessageTransformerCreator,
-            TransportChannelProvider transportChannelProvider) {
+        GooglePubSubSenderTargetResolver targetResolver,
+        CredentialsProvider credentialsProvider,
+        ExecutorProvider executorProvider,
+        RetrySettings retrySettings,
+        BatchingSettings batchingSettings,
+        GooglePubSubMessageTransformerCreator googlePubSubMessageTransformerCreator,
+        TransportChannelProvider transportChannelProvider) {
         return new GooglePubSubMessageSenderProvider(
-                targetResolver,
-                credentialsProvider,
-                executorProvider,
-                retrySettings,
-                batchingSettings,
-                transportChannelProvider,
-                googlePubSubMessageTransformerCreator
+            targetResolver,
+            credentialsProvider,
+            executorProvider,
+            retrySettings,
+            batchingSettings,
+            transportChannelProvider,
+            googlePubSubMessageTransformerCreator
         );
     }
 
@@ -294,18 +294,18 @@ public class ConsumerSenderConfiguration {
     public FutureAsyncTimeout futureAsyncTimeoutFactory(InstrumentedExecutorServiceFactory executorFactory,
                                                         SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
         ScheduledExecutorService timeoutExecutorService = executorFactory.getScheduledExecutorService(
-                "async-timeout",
-                senderAsyncTimeoutProperties.getThreadPoolSize(),
-                senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled()
+            "async-timeout",
+            senderAsyncTimeoutProperties.getThreadPoolSize(),
+            senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled()
         );
         return new FutureAsyncTimeout(timeoutExecutorService);
     }
 
     private static void enrichWithMetrics(
-            HttpClient client, HermesTimer requestQueueWaitingTimer, HermesTimer requestProcessingTimer
+        HttpClient client, HermesTimer requestQueueWaitingTimer, HermesTimer requestProcessingTimer
     ) {
-        client.getRequestListeners().add(
-                new JettyHttpClientMetrics(requestQueueWaitingTimer, requestProcessingTimer)
+        client.getRequestListeners().addListener(
+            new JettyHttpClientMetrics(requestQueueWaitingTimer, requestProcessingTimer)
         );
     }
 }
