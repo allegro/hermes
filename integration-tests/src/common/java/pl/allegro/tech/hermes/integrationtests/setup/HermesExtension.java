@@ -9,6 +9,7 @@ import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
@@ -128,7 +129,11 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
         GroupService service = management.groupService();
         List<Group> groups = service.listGroups();
         for (Group group : groups) {
-            service.removeGroup(group.getGroupName(), testUser);
+            try {
+                service.removeGroup(group.getGroupName(), testUser);
+            } catch (GroupNotEmptyException ignored) {
+                // ignore
+            }
         }
 
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->

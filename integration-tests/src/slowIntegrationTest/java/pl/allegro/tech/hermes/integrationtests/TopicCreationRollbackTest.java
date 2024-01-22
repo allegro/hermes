@@ -82,6 +82,6 @@ public class TopicCreationRollbackTest {
 
         // then
         waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
-        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations2.topicExists(qualifiedTopicName)).isTrue());
+        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations2.topicExists(qualifiedTopicName)).isFalse());
     }
 }

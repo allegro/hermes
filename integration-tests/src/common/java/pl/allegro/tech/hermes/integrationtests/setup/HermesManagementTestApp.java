@@ -179,6 +179,7 @@ public class HermesManagementTestApp implements HermesTestApp {
         }
 
         args.add("--topic.removeSchema=" + true);
+        args.add("--storage.pathPrefix=" + "/hermes");
         args.add("--subscription.subscribersWithAccessToAnyTopic[0].ownerSource=" + "Plaintext");
         args.add("--subscription.subscribersWithAccessToAnyTopic[0].ownerId=" + "subscriberAllowedToAccessAnyTopic");
         args.add("--subscription.subscribersWithAccessToAnyTopic[0].protocols=" + "http, https");
