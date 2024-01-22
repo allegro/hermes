@@ -430,7 +430,7 @@ public class PublishingAvroTest {
     }
 
     @Test
-    public void shouldUpdateSchemaAndUseItImmediately() throws InterruptedException {
+    public void shouldUpdateSchemaAndUseItImmediately() {
         // given
         TopicWithSchema topicWithSchema = topicWithSchema(topicWithRandomName()
                 .withContentType(AVRO)

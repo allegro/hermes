@@ -18,5 +18,4 @@ class TestUser implements RequestUser {
     public boolean isOwner(OwnerId ownerId) {
         return true;
     }
-};
-
+}

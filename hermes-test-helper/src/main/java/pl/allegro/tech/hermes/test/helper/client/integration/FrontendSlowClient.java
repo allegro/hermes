@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integration.client;
+package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,40 +13,41 @@ import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class SlowClient {
+public class FrontendSlowClient {
 
-    public static final String HOST = "localhost";
-    public static final int PORT = 18080;
     public static final String MSG_BODY = "{\"field\": \"value\"}";
 
-    public static String msgHeadWithContentLenght(String topicName) {
+    public String msgHeadWithContentLenght(String topicName) {
         return "POST /topics/" + topicName + " HTTP/1.1\n"
-             + "Host: " + HOST + ":" + PORT + "\n"
-             + "Content-Type: application/json\n"
-             + "Content-Length: " + MSG_BODY.length() + "\r\n\r\n";
+                + "Host: " + host + ":" + port + "\n"
+                + "Content-Type: application/json\n"
+                + "Content-Length: " + MSG_BODY.length() + "\r\n\r\n";
     }
 
-    private static String msgHeadWithChunkedEncoding(String topicName) {
+    private String msgHeadWithChunkedEncoding(String topicName) {
         return "POST /topics/" + topicName + " HTTP/1.1\n"
-                + "Host: " + HOST + ":" + PORT + "\n"
+                + "Host: " + host + ":" + port + "\n"
                 + "Content-Type: application/json\n"
                 + "Transfer-Encoding: chunked \r\n\r\n";
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SlowClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrontendSlowClient.class);
+
+    private final String host;
+    private final int port;
+
+    public FrontendSlowClient(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    public String slowEvent(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData, String topicName)
-            throws IOException, InterruptedException {
-        return slowEvent(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, false);
-    }
 
     public String slowEvent(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData,
                             String topicName, boolean chunkedEncoding)
             throws IOException, InterruptedException {
 
-        Socket clientSocket = new Socket(HOST, PORT);
+        Socket clientSocket = new Socket(host, port);
 
         Thread.sleep(delayBeforeSendingFirstData);
 
@@ -111,7 +112,7 @@ public class SlowClient {
         String line;
         StringBuilder response = new StringBuilder();
 
-        while (!(line = bufferedReader.readLine()).equals("")) {
+        while (!(line = bufferedReader.readLine()).isEmpty()) {
             response.append(line);
         }
 

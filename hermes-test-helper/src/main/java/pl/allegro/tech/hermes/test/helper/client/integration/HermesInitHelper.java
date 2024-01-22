@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.setup;
+package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import com.jayway.awaitility.Duration;
 import pl.allegro.tech.hermes.api.Group;
@@ -6,7 +6,6 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
-import pl.allegro.tech.hermes.integrationtests.client.ManagementTestClient;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +16,10 @@ public class HermesInitHelper {
 
     public HermesInitHelper(int managementPort) {
         managementTestClient = new ManagementTestClient(managementPort);
+    }
+
+    public HermesInitHelper(int managementPort, String defaultHeaderName, String defaultHeaderValue) {
+        managementTestClient = new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
     }
 
     public Topic createTopic(Topic topic) {

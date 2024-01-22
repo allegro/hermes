@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.integrationtests.client.FrontendTestClient;
+import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
@@ -55,9 +55,7 @@ public class AttachingKeepAliveHeaderTest {
     @Test
     public void shouldNotAttachKeepAliveHeaderWhenDisabled() {
         //given
-        HermesFrontendTestApp frontend = startFrontend(f -> {
-            f.withProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED, false);
-        });
+        HermesFrontendTestApp frontend = startFrontend(f -> f.withProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED, false));
 
         Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
 

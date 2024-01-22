@@ -18,10 +18,7 @@ public class FrontendConfigurationProperties {
         public static String FRONTEND_KEEP_ALIVE_HEADER_ENABLED = "frontend.handlers.keepAliveHeader.enabled";
         public static String FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT = "frontend.handlers.keepAliveHeader.timeout";
         public static String FRONTEND_IDLE_TIMEOUT = "frontend.handlers.idleTimeout";
-        public static String METRICS_ZOOKEEPER_REPORTER_ENABLED = "frontend.metrics.zookeeperReporterEnabled";
-        public static String METRICS_GRAPHITE_REPORTER_ENABLED = "frontend.metrics.graphiteReporterEnabled";
         public static String METRICS_MICROMETER_REPORT_PERIOD = "frontend.metrics.micrometer.reportPeriod";
-        public static String GRAPHITE_PORT = "frontend.graphite.port";
         public static String SCHEMA_CACHE_ENABLED = "frontend.schema.cache.enabled";
         public static String SCHEMA_REPOSITORY_SERVER_URL = "frontend.schema.repository.serverUrl";
         public static String FRONTEND_SSL_ENABLED = "frontend.ssl.enabled";
@@ -38,4 +35,4 @@ public class FrontendConfigurationProperties {
         public static String KAFKA_NAMESPACE = "frontend.kafka.namespace";
         public static String FRONTEND_HEADER_PROPAGATION_ENABLED = "frontend.http.headers.propagationEnabled";
         public static String FRONTEND_HEADER_PROPAGATION_ALLOWED = "frontend.http.headers.allowedSet";
-}
+        public static String BROKER_LATENCY_REPORTER_ENABLED = "frontend.brokerLatencyReporter.enabled";}

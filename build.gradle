@@ -113,7 +113,7 @@ allprojects {
 }
 
 
-configure(subprojects - project(':integration')) {
+configure(subprojects - project(':integration-tests')) {
     apply plugin: 'jacoco'
     apply plugin: 'maven-publish'
     apply plugin: 'signing'

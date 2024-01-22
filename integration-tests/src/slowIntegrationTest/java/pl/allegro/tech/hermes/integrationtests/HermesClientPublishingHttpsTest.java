@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import com.jayway.awaitility.Duration;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -69,6 +70,8 @@ public class HermesClientPublishingHttpsTest {
 
         OkHttpHermesSender okHttpHermesSender = new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());
         HermesClient client = hermesClient(okHttpHermesSender)
+                .withRetries(5)
+                .withRetrySleep(Duration.FIVE_SECONDS.getValueInMS(), Duration.TEN_SECONDS.getValueInMS())
                 .withURI(URI.create("https://localhost:" + frontend.getSSLPort()))
                 .build();
 
@@ -81,14 +84,7 @@ public class HermesClientPublishingHttpsTest {
     }
 
     private OkHttpClient getOkHttpClientWithSslContextConfigured() {
-        String protocol = "TLS";
-        KeystoreProperties keystoreProperties = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
-        KeystoreProperties truststoreProperties = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
-        DefaultSslContextFactory sslContextFactory = new DefaultSslContextFactory(
-                protocol,
-                new ProvidedKeyManagersProvider(keystoreProperties),
-                new ProvidedTrustManagersProvider(truststoreProperties)
-        );
+        DefaultSslContextFactory sslContextFactory = getDefaultSslContextFactory();
         SSLContextHolder sslContextHolder = sslContextFactory.create();
         return new OkHttpClient.Builder()
                 .sslSocketFactory(
@@ -96,6 +92,17 @@ public class HermesClientPublishingHttpsTest {
                         (X509TrustManager) sslContextHolder.getTrustManagers()[0]
                 )
                 .build();
+    }
+
+    private static DefaultSslContextFactory getDefaultSslContextFactory() {
+        String protocol = "TLS";
+        KeystoreProperties keystoreProperties = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
+        KeystoreProperties truststoreProperties = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
+        return new DefaultSslContextFactory(
+                protocol,
+                new ProvidedKeyManagersProvider(keystoreProperties),
+                new ProvidedTrustManagersProvider(truststoreProperties)
+        );
     }
 
 }

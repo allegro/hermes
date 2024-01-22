@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.client;
+package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;

@@ -1,12 +1,13 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.env.BrokerOperations;
-import pl.allegro.tech.hermes.integrationtests.client.HermesTestClient;
+import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
@@ -15,6 +16,7 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
@@ -73,12 +75,13 @@ public class TopicCreationRollbackTest {
         hermesApi.createGroup(Group.from(groupName));
 
         brokerOperations1.createTopic(qualifiedTopicName);
+        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
 
         // when
         hermesApi.createTopic((topicWithSchema(topic(groupName, topicName).build())));
 
         // then
-        assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue();
-        assertThat(brokerOperations2.topicExists(qualifiedTopicName)).isTrue();
+        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
+        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations2.topicExists(qualifiedTopicName)).isTrue());
     }
 }

@@ -45,7 +45,7 @@ public class Hermes {
     private ClientConfig managementConfig = getDefaultManagementConfig();
     private ClientConfig publisherConfig = getDefaultPublisherConfig();
 
-    private Collection<ClientRequestFilter> filters = new ArrayList<>();
+    private final Collection<ClientRequestFilter> filters = new ArrayList<>();
 
     public Hermes(String url, String consumerUrl) {
         this.url = url;

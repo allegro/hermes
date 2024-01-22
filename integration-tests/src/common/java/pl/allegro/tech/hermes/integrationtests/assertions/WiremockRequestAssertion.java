@@ -19,9 +19,7 @@ public class WiremockRequestAssertion extends AbstractAssert<WiremockRequestAsse
     }
 
     public WiremockRequestAssertion containsAllHeaders(Map<String, String> headers) {
-        headers.forEach((header, value) -> {
-            assertThat(actual.getHeader(header)).isEqualTo(value);
-        });
+        headers.forEach((header, value) -> assertThat(actual.getHeader(header)).isEqualTo(value));
         return this;
     }
 }

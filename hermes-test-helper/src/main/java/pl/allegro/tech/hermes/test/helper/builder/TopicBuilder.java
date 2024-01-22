@@ -44,7 +44,7 @@ public class TopicBuilder {
 
     private int maxMessageSize = 1024 * 1024;
 
-    private List<String> publishers = new ArrayList<>();
+    private final List<String> publishers = new ArrayList<>();
 
     private boolean authEnabled = false;
 

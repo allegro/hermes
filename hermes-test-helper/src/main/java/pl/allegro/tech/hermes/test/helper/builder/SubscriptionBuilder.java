@@ -56,11 +56,11 @@ public class SubscriptionBuilder {
 
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
-    private List<MessageFilterSpecification> filters = new ArrayList<>();
+    private final List<MessageFilterSpecification> filters = new ArrayList<>();
 
     private SubscriptionMode mode = SubscriptionMode.ANYCAST;
 
-    private List<Header> headers = new ArrayList<>();
+    private final List<Header> headers = new ArrayList<>();
 
     private EndpointAddressResolverMetadata metadata = EndpointAddressResolverMetadata.empty();
     private SubscriptionOAuthPolicy oAuthPolicy;

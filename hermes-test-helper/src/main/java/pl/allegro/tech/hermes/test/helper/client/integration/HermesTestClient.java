@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.client;
+package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import com.jayway.awaitility.Duration;
 import jakarta.ws.rs.core.Response;
@@ -30,6 +30,12 @@ public class HermesTestClient {
 
     public HermesTestClient(int managementPort, int frontendPort, int consumerPort) {
         this.managementTestClient = new ManagementTestClient(managementPort);
+        this.frontendTestClient = new FrontendTestClient(frontendPort);
+        this.consumerTestClient = new ConsumerTestClient(consumerPort);
+    }
+
+    public HermesTestClient(int managementPort, int frontendPort, int consumerPort, String defaultHeaderName, String defaultHeaderValue) {
+        this.managementTestClient = new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
         this.frontendTestClient = new FrontendTestClient(frontendPort);
         this.consumerTestClient = new ConsumerTestClient(consumerPort);
     }
