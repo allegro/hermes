@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.client.ClientConfig;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.JdkClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Mono;
@@ -36,7 +37,7 @@ public class FrontendTestClient {
     public FrontendTestClient(int frontendPort) {
         this.frontendContainerUrl = "http://localhost:" + frontendPort;
         this.webTestClient = WebTestClient
-                .bindToServer()
+                .bindToServer(new JdkClientHttpConnector())
                 .baseUrl(frontendContainerUrl)
                 .build();
         this.slowTestClient = new FrontendSlowClient("localhost", frontendPort);
