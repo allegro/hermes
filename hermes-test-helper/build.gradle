@@ -33,8 +33,8 @@ dependencies {
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
     implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
-    implementation group: 'org.springframework', name: 'spring-test', version: '6.0.8'
-    implementation group: 'org.springframework', name: 'spring-webflux', version: '6.0.8'
+    implementation group: 'org.springframework', name: 'spring-test', versions.spring_web
+    implementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     implementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
