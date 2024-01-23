@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.http.HttpHeaders;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.integrationtests.setup.TraceContext;
-import pl.allegro.tech.hermes.integrationtests.subscriber.TestJmsSubscriber;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.JmsStarter;
+import pl.allegro.tech.hermes.integrationtests.setup.TraceContext;
+import pl.allegro.tech.hermes.integrationtests.subscriber.TestJmsSubscriber;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.UUID;

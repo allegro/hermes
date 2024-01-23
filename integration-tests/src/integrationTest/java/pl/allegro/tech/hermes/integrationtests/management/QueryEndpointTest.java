@@ -262,11 +262,11 @@ public class QueryEndpointTest {
                 subscriptionWithRandomName(topic2.getName(), "http://endpoint2").build()
         );
 
-        String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
-        String queryGetSubscriptionsMetricsWithPositiveThroughput = "{\"query\": {\"throughput\": {\"gt\": 0}}}";
-        String queryGetSubscriptionsMetricsWithRateInRange = "{\"query\": {\"or\": [{\"rate\": {\"gt\": 10}}, {\"rate\": {\"lt\": 50}}]}}";
-        String queryGetSubscriptionsMetricsWithLagNegative = "{\"query\": {\"lag\": {\"lt\": 0}}}";
-        String queryGetSubscriptionsMetricsWithVolume = "{\"query\": {\"volume\": {\"gt\": -1}}}";
+        final String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
+        final String queryGetSubscriptionsMetricsWithPositiveThroughput = "{\"query\": {\"throughput\": {\"gt\": 0}}}";
+        final String queryGetSubscriptionsMetricsWithRateInRange = "{\"query\": {\"or\": [{\"rate\": {\"gt\": 10}}, {\"rate\": {\"lt\": 50}}]}}";
+        final String queryGetSubscriptionsMetricsWithLagNegative = "{\"query\": {\"lag\": {\"lt\": 0}}}";
+        final String queryGetSubscriptionsMetricsWithVolume = "{\"query\": {\"volume\": {\"gt\": -1}}}";
         prometheus.stubSubscriptionMetrics(
                 subscriptionMetrics(subscription1.getQualifiedName())
                         .withRate(100)
@@ -282,23 +282,23 @@ public class QueryEndpointTest {
 
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
             // when
-            List<SubscriptionNameWithMetrics> allSubscriptions = hermes.api()
+            final List<SubscriptionNameWithMetrics> allSubscriptions = hermes.api()
                     .querySubscriptionMetrics(queryGetAllSubscriptionsMetrics)
                     .expectStatus().isOk()
                     .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
-            List<SubscriptionNameWithMetrics> subscriptionsWithPositiveThroughput = hermes.api()
+            final List<SubscriptionNameWithMetrics> subscriptionsWithPositiveThroughput = hermes.api()
                     .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithPositiveThroughput)
                     .expectStatus().isOk()
                     .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
-            List<SubscriptionNameWithMetrics> subscriptionsWithRateInRange = hermes.api()
+            final List<SubscriptionNameWithMetrics> subscriptionsWithRateInRange = hermes.api()
                     .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithRateInRange)
                     .expectStatus().isOk()
                     .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
-            List<SubscriptionNameWithMetrics> subscriptionsWithNegativeLag = hermes.api()
+            final List<SubscriptionNameWithMetrics> subscriptionsWithNegativeLag = hermes.api()
                     .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithLagNegative)
                     .expectStatus().isOk()
                     .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
-            List<SubscriptionNameWithMetrics> subscriptionsWithVolume = hermes.api()
+            final List<SubscriptionNameWithMetrics> subscriptionsWithVolume = hermes.api()
                     .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithVolume)
                     .expectStatus().isOk()
                     .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();

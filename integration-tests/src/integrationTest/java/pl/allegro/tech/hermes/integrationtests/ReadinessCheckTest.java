@@ -25,7 +25,7 @@ public class ReadinessCheckTest {
         hermes.api().setReadiness(DEFAULT_DC_NAME, false).expectStatus().isAccepted();
 
         // then
-            waitAtMost(Duration.FIVE_SECONDS).until(
+        waitAtMost(Duration.FIVE_SECONDS).until(
                 () -> Objects.equals(hermes.api().getReadiness().expectStatus().is5xxServerError().expectBody(String.class).returnResult().getResponseBody(), "NOT_READY")
         );
 

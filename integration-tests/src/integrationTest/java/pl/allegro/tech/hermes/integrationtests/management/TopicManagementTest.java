@@ -116,7 +116,7 @@ public class TopicManagementTest {
     public void shouldListTopics() {
         // given
         hermes.initHelper().createTopic(topic("listTopicsGroup.topic1").build());
-        hermes.api().createTopic( new TopicWithSchema(topic("listTopicsGroup.topic2").build(), null));
+        hermes.api().createTopic(new TopicWithSchema(topic("listTopicsGroup.topic2").build(), null));
 
         // when then
         assertThat(getGroupTopicsList("listTopicsGroup")).containsExactly("listTopicsGroup.topic1", "listTopicsGroup.topic2");

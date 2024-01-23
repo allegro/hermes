@@ -12,25 +12,25 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException;
-import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
-import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
+import pl.allegro.tech.hermes.env.BrokerOperations;
+import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
-import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
+import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
+import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
-import pl.allegro.tech.hermes.env.BrokerOperations;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesExtension implements BeforeAllCallback, AfterAllCallback, ExtensionContext.Store.CloseableResource {

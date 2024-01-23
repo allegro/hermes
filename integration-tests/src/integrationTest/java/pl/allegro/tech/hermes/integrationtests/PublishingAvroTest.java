@@ -482,8 +482,8 @@ public class PublishingAvroTest {
         hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(),
                 "subscription", subscriber.getEndpoint()).build());
 
-        TestMessage beforeMigrationMessage = new AvroUser("Bob", 50, "blue").asTestMessage();
-        AvroUser afterMigrationMessage = new AvroUser("Barney", 35, "yellow");
+        final TestMessage beforeMigrationMessage = new AvroUser("Bob", 50, "blue").asTestMessage();
+        final AvroUser afterMigrationMessage = new AvroUser("Barney", 35, "yellow");
 
         hermes.api().publishUntilSuccess(topic.getQualifiedName(), beforeMigrationMessage.body());
         subscriber.waitUntilReceived(beforeMigrationMessage.body());

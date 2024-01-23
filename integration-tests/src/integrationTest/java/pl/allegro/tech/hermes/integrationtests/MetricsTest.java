@@ -219,7 +219,7 @@ public class MetricsTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(
+        final Subscription subscription = hermes.initHelper().createSubscription(
                 subscription(topic, "subscription")
                         .withEndpoint(subscriber.getEndpoint())
                         .withSubscriptionPolicy(
@@ -260,7 +260,7 @@ public class MetricsTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(
+        final Subscription subscription = hermes.initHelper().createSubscription(
                 subscription(topic, "subscription")
                         .withEndpoint(subscriber.getEndpoint())
                         .withSubscriptionPolicy(
@@ -320,7 +320,7 @@ public class MetricsTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber(404);
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(
+        final Subscription subscription = hermes.initHelper().createSubscription(
                 subscription(topic, "subscription")
                         .withEndpoint(subscriber.getEndpoint())
                         .withSubscriptionPolicy(
