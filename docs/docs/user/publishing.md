@@ -168,3 +168,7 @@ buffered events.
 Default implementation uses [OpenHFT ChronicleMap](https://github.com/OpenHFT/Chronicle-Map) to persist unsent messages
 to disk. Map structure is continuously persisted to disk, as it is stored in offheap memory as
 [memory mapped file](https://en.wikipedia.org/wiki/Memory-mapped_file).
+
+## Partition assignment
+`Partition-Key` header can be used by publishers to specify Kafka `key` which will be used for partition assignment for a message. This will ensure 
+that all messages with given `Partition-Key` will be sent to the same Kafka partition. 

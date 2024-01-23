@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http
 
 import org.eclipse.jetty.client.HttpClient
-import org.eclipse.jetty.client.HttpDestination
-import org.eclipse.jetty.client.HttpExchange
+import org.eclipse.jetty.client.transport.HttpDestination
+import org.eclipse.jetty.client.transport.HttpExchange
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import spock.lang.Specification
 
