@@ -5,10 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
+import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.function.Consumer;

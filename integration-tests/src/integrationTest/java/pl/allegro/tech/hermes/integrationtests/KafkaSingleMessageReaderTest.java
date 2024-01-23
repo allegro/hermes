@@ -96,7 +96,7 @@ public class KafkaSingleMessageReaderTest {
     @Test
     public void shouldReturnNotFoundErrorForNonExistingOffset() {
         // given
-        long nonExistingOffset = 10L;
+        final long nonExistingOffset = 10L;
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());

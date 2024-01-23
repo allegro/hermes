@@ -60,9 +60,9 @@ public class KafkaRetransmissionServiceTest {
     @Test
     public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
         // given
-        TestSubscriber subscriber = subscribers.createSubscriber();
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
+        final TestSubscriber subscriber = subscribers.createSubscriber();
+        final Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        final Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
         publishAndConsumeMessages(messages, topic, subscriber);
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
         final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
@@ -83,7 +83,7 @@ public class KafkaRetransmissionServiceTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
+        final Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
         // we have 2 partitions, thus 4 messages to get 2 per partition
         publishAndConsumeMessages(messages, topic, subscriber);
         Thread.sleep(2000);
