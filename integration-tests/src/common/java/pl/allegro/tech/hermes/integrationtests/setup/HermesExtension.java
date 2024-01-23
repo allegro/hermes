@@ -5,6 +5,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -32,6 +34,8 @@ import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesExtension implements BeforeAllCallback, AfterAllCallback, ExtensionContext.Store.CloseableResource {
+
+    private static final Logger logger = LoggerFactory.getLogger(HermesExtension.class);
 
     public static final TestSubscribersExtension auditEventsReceiver = new TestSubscribersExtension();
 
@@ -131,8 +135,8 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
         for (Group group : groups) {
             try {
                 service.removeGroup(group.getGroupName(), testUser);
-            } catch (GroupNotEmptyException ignored) {
-                // ignore
+            } catch (GroupNotEmptyException e) {
+                logger.warn("Error during removing group: {}", group, e);
             }
         }
 
