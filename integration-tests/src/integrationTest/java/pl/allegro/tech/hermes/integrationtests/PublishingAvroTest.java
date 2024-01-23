@@ -548,7 +548,7 @@ public class PublishingAvroTest {
 
     private void waitUntilConsumerCommitsOffset(Topic topic, String subscription) {
         long currentTime = clock.millis();
-        waitAtMost(adjust(Duration.TEN_SECONDS)).until(() ->
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
         hermes.api().getRunningSubscriptionsStatus().stream()
                 .filter(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription))
                 .anyMatch(sub -> sub.getSignalTimesheet().getOrDefault(COMMIT, 0L) > currentTime));

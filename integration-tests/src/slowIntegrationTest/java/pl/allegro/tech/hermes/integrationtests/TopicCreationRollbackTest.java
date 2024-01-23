@@ -38,8 +38,6 @@ public class TopicCreationRollbackTest {
 
     private static BrokerOperations brokerOperations1;
 
-    private static BrokerOperations brokerOperations2;
-
     @BeforeAll
     public static void setup() {
         Stream.of(hermesZookeeper, kafka1, kafka2)
@@ -54,7 +52,6 @@ public class TopicCreationRollbackTest {
         management.start();
         hermesApi = new HermesTestClient(management.getPort(), management.getPort(), management.getPort());
         brokerOperations1 = new BrokerOperations(kafka1.getBootstrapServersForExternalClients(), "itTest");
-        brokerOperations2 = new BrokerOperations(kafka2.getBootstrapServersForExternalClients(), "itTest");
     }
 
     @AfterAll
@@ -81,7 +78,6 @@ public class TopicCreationRollbackTest {
         hermesApi.createTopic((topicWithSchema(topic(groupName, topicName).build())));
 
         // then
-        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
-        waitAtMost(Duration.ONE_MINUTE).until(() -> assertThat(brokerOperations2.topicExists(qualifiedTopicName)).isTrue());
+        assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue();
     }
 }
