@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 import org.eclipse.jetty.client.ConnectionPool;
 import org.eclipse.jetty.client.DuplexConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.MultiplexConnectionPool;
+import org.eclipse.jetty.client.transport.HttpDestination;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.Queue;

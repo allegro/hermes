@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.management.config.console;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.io.SocketConfig;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +15,8 @@ import pl.allegro.tech.hermes.management.infrastructure.console.ClasspathFileCon
 import pl.allegro.tech.hermes.management.infrastructure.console.FrontendRoutesFilter;
 import pl.allegro.tech.hermes.management.infrastructure.console.HttpConsoleConfigurationRepository;
 import pl.allegro.tech.hermes.management.infrastructure.console.SpringConfigConsoleConfigurationRepository;
+
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableConfigurationProperties({ConsoleConfigProperties.class, ConsoleProperties.class})
@@ -40,9 +45,18 @@ public class ConsoleConfiguration {
     }
 
     private ConsoleConfigurationRepository httpConsoleConfigurationRepository(ConsoleConfigProperties properties) {
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-        requestFactory.setConnectTimeout((int) properties.getHttpClient().getConnectTimeout().toMillis());
-        requestFactory.setReadTimeout((int) properties.getHttpClient().getReadTimeout().toMillis());
+        var httpClientProperties = properties.getHttpClient();
+        var socketConfig = SocketConfig.custom()
+                .setSoTimeout((int) httpClientProperties.getReadTimeout().toMillis(), TimeUnit.MILLISECONDS)
+                .build();
+        var connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setDefaultSocketConfig(socketConfig)
+                .build();
+        var client = HttpClientBuilder.create()
+                .setConnectionManager(connectionManager)
+                .build();
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(client);
+        requestFactory.setConnectTimeout(properties.getHttpClient().getConnectTimeout());
         RestTemplate restTemplate = new RestTemplate(requestFactory);
         return new HttpConsoleConfigurationRepository(properties, restTemplate);
     }
