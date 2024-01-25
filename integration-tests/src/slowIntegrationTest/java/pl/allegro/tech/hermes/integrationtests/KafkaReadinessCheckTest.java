@@ -8,7 +8,7 @@ import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesTestApp;
+import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 import pl.allegro.tech.hermes.test.helper.containers.BrokerId;

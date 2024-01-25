@@ -25,6 +25,7 @@ import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
+import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 import java.util.List;
 import java.util.stream.Stream;
