@@ -51,9 +51,8 @@ public class MultiDatacenterPublishingAndSubscribingTest {
         );
         management.start();
         initHelper = new HermesInitHelper(management.getPort());
-        Stream.of(dc1, dc2)
-                .parallel()
-                .forEach(HermesDatacenter::startConsumersAndFrontend);
+        dc1.startConsumersAndFrontend();
+        dc2.startConsumersAndFrontend();
     }
 
     @AfterAll
@@ -104,8 +103,8 @@ public class MultiDatacenterPublishingAndSubscribingTest {
         }
 
         void startConsumersAndFrontend() {
-            Stream.of(consumers, frontend)
-                    .forEach(HermesTestApp::start);
+            frontend.start();
+            consumers.start();
             frontendClient = new FrontendTestClient(frontend.getPort());
         }
 
