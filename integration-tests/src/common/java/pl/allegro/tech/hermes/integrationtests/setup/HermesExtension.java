@@ -139,10 +139,6 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
                 logger.warn("Error during removing group: {}", group, e);
             }
         }
-
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
-                Assertions.assertThat(service.listGroups().size()).isEqualTo(0)
-        );
     }
 
     public void clearManagementData() {

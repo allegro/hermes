@@ -25,7 +25,7 @@ import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
-import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
@@ -47,9 +47,9 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 public class ConsumerMessageSenderTest {
 
     public static final int ASYNC_TIMEOUT_MS = 2000;
-    private Subscription subscription = subscriptionWithTtl(10);
+    private final Subscription subscription = subscriptionWithTtl(10);
 
-    private Subscription subscriptionWith4xxRetry = subscriptionWithTtlAndClientErrorRetry(10);
+    private final Subscription subscriptionWith4xxRetry = subscriptionWithTtlAndClientErrorRetry(10);
 
     @Mock
     private MessageSender messageSender;
@@ -122,7 +122,7 @@ public class ConsumerMessageSenderTest {
     }
 
     @Test
-    public void shouldKeepTryingToSendMessageFailedSending() throws InterruptedException {
+    public void shouldKeepTryingToSendMessageFailedSending() {
         // given
         Message message = message();
         doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
@@ -154,7 +154,7 @@ public class ConsumerMessageSenderTest {
     }
 
     @Test
-    public void shouldNotKeepTryingToSendMessageFailedWithStatusCode4xx() throws InterruptedException {
+    public void shouldNotKeepTryingToSendMessageFailedWithStatusCode4xx() {
         // given
         Message message = message();
         doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
@@ -170,7 +170,7 @@ public class ConsumerMessageSenderTest {
     }
 
     @Test
-    public void shouldKeepTryingToSendMessageFailedWithStatusCode4xxForSubscriptionWith4xxRetry() throws InterruptedException {
+    public void shouldKeepTryingToSendMessageFailedWithStatusCode4xxForSubscriptionWith4xxRetry() {
         // given
         ConsumerMessageSender sender = consumerMessageSender(subscriptionWith4xxRetry);
         Message message = message();
@@ -227,11 +227,11 @@ public class ConsumerMessageSenderTest {
     }
 
     @Test
-    public void shouldNotRetryOnRetryAfterAboveTtl() throws InterruptedException {
+    public void shouldNotRetryOnRetryAfterAboveTtl() {
         // given
         int retrySeconds = subscription.getSerialSubscriptionPolicy().getMessageTtl();
         Message message = message();
-        doReturn(backoff(retrySeconds)).when(messageSender).send(message);
+        doReturn(backoff(retrySeconds + 1)).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
@@ -390,8 +390,8 @@ public class ConsumerMessageSenderTest {
         ConsumerMessageSender sender = new ConsumerMessageSender(
                 subscription,
                 messageSenderFactory,
-                Arrays.asList(successHandler),
-                Arrays.asList(errorHandler),
+                List.of(successHandler),
+                List.of(errorHandler),
                 rateLimiter,
                 Executors.newSingleThreadExecutor(),
                 () -> inflightSemaphore.release(),
