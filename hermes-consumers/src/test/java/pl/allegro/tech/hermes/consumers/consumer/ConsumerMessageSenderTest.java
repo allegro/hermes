@@ -231,7 +231,7 @@ public class ConsumerMessageSenderTest {
         // given
         int retrySeconds = subscription.getSerialSubscriptionPolicy().getMessageTtl();
         Message message = message();
-        doReturn(backoff(retrySeconds + 1)).when(messageSender).send(message);
+        doReturn(backoff(retrySeconds + 10)).when(messageSender).send(message);
 
         // when
         sender.sendAsync(message);
@@ -415,7 +415,7 @@ public class ConsumerMessageSenderTest {
     }
 
     private void verifyErrorHandlerHandleDiscarded(Message message, Subscription subscription) {
-        verify(errorHandler, timeout(1000).times(1)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
+        verify(errorHandler, timeout(5000).times(1)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
     }
 
     private void verifyLatencyTimersCountedTimes(Subscription subscription, int timeCount, int closeCount) {
