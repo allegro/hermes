@@ -230,7 +230,7 @@ public class ConsumerMessageSenderTest {
     public void shouldNotRetryOnRetryAfterAboveTtl() {
         // given
         int retrySeconds = subscription.getSerialSubscriptionPolicy().getMessageTtl();
-        Message message = message();
+        Message message = messageWithTimestamp(System.currentTimeMillis() - 1);
         doReturn(backoff(retrySeconds + 1)).doReturn(success()).when(messageSender).send(message);
 
         // when

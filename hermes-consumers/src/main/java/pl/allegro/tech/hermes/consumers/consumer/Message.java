@@ -115,7 +115,7 @@ public class Message implements FilterableMessage {
 
     public boolean isTtlExceeded(long ttlMillis) {
         long currentTimestamp = System.currentTimeMillis();
-        return currentTimestamp >= readingTimestamp + ttlMillis;
+        return currentTimestamp > readingTimestamp + ttlMillis;
     }
 
     public void incrementRetryCounter(Collection<URI> succeededUris) {
