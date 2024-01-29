@@ -27,5 +27,5 @@ You can also use other *magic words* from [GitHub handbook](https://help.github.
 
 * use `spock` when writing new unit tests in all modules
 * when changing old tests use your best judgement as to when rewrite them to `spock`
-* use `TestNG` with defined environment in `integration` module
+* use `JUnit5` with defined environment in `integration-tests` module
 * prepend configuration options with module name, i.e. `frontend.` or `consumer.` when it applies to single module

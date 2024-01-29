@@ -29,7 +29,6 @@ public interface RecordToBytesConverter {
     static GenericRecord bytesToRecord(byte [] data, Schema schema) throws IOException {
         GenericDatumReader<GenericRecord> reader = new GenericDatumReader<>(schema);
         BinaryDecoder binaryDecoder = DecoderFactory.get().binaryDecoder(data, null);
-        GenericRecord record = reader.read(null, binaryDecoder);
-        return record;
+        return reader.read(null, binaryDecoder);
     }
 }

@@ -45,7 +45,7 @@ public class Hermes {
     private ClientConfig managementConfig = getDefaultManagementConfig();
     private ClientConfig publisherConfig = getDefaultPublisherConfig();
 
-    private Collection<ClientRequestFilter> filters = new ArrayList<>();
+    private final Collection<ClientRequestFilter> filters = new ArrayList<>();
 
     public Hermes(String url, String consumerUrl) {
         this.url = url;
@@ -60,7 +60,7 @@ public class Hermes {
         return clientConfig;
     }
 
-    private static ClientConfig getDefaultPublisherConfig() {
+    public static ClientConfig getDefaultPublisherConfig() {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.property(ClientProperties.ASYNC_THREADPOOL_SIZE, DEFAULT_THREAD_POOL_SIZE);
         clientConfig.property(ClientProperties.CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
@@ -69,7 +69,7 @@ public class Hermes {
         return clientConfig;
     }
 
-    private static ClientBuilder getClientBuilder(ClientConfig clientConfig) {
+    public static ClientBuilder getClientBuilder(ClientConfig clientConfig) {
         return ClientBuilder.newBuilder().withConfig(clientConfig).register(
                 new JacksonXmlBindJsonProvider(
                         new ObjectMapper().registerModule(new JavaTimeModule()),

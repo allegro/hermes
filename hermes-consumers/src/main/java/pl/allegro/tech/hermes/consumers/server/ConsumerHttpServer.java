@@ -63,4 +63,8 @@ public class ConsumerHttpServer {
     public void stop() {
         server.stop(0);
     }
+
+    public int getPort() {
+        return server.getAddress().getPort();
+    }
 }
