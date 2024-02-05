@@ -83,7 +83,7 @@ export interface CreateSubscriptionFormRequestBody {
   contentType: string;
   deliveryType: string;
   description: string;
-  endpoint: string;
+  endpoint?: string;
   filters: SubscriptionFilterJson[];
   headers: SubscriptionHeaderJson[];
   http2Enabled: boolean;
