@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
@@ -26,7 +25,6 @@ import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static com.jayway.awaitility.Duration.TEN_SECONDS;
@@ -224,13 +222,6 @@ public class PublishingAndConsumingTest {
         hermes.api().waitUntilSubscriptionActivated(topic.getQualifiedName(), subscriptionName);
         hermes.api().suspendSubscription(topic, subscriptionName);
         hermes.api().waitUntilSubscriptionSuspended(topic.getQualifiedName(), subscriptionName);
-        // wait until consumer group removed
-        waitAtMost(30, TimeUnit.SECONDS).until(() ->
-                        hermes.api().getConsumerGroupsDescription(topic.getQualifiedName(), subscriptionName).expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
-                                .get(0)
-                                .getState()
-                                .equals("Empty")
-                );
         hermes.api().publishUntilSuccess(topic.getQualifiedName(),  TestMessage.of("hello", "world").body());
 
         // then

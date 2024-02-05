@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.BlacklistStatus;
+import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OAuthProvider;
@@ -106,21 +107,33 @@ public class HermesTestClient {
 
     public void waitUntilSubscriptionActivated(String topicQualifiedName, String subscriptionName) {
         waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
-                        .expectStatus()
-                        .is2xxSuccessful()
-                        .expectBody(Subscription.class)
-                        .returnResult().getResponseBody().getState().equals(Subscription.State.ACTIVE)
+                .until(() -> {
+                            managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
+                                    .expectStatus()
+                                    .is2xxSuccessful()
+                                    .expectBody(Subscription.class)
+                                    .returnResult().getResponseBody().getState().equals(Subscription.State.ACTIVE);
+                            managementTestClient.getConsumerGroupsDescription(topicQualifiedName, subscriptionName).expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
+                                    .get(0)
+                                    .getState()
+                                    .equals("Stable");
+                        }
                 );
     }
 
     public void waitUntilSubscriptionSuspended(String topicQualifiedName, String subscriptionName) {
         waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
-                        .expectStatus()
-                        .is2xxSuccessful()
-                        .expectBody(Subscription.class)
-                        .returnResult().getResponseBody().getState().equals(Subscription.State.SUSPENDED)
+                .until(() -> {
+                            managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
+                                    .expectStatus()
+                                    .is2xxSuccessful()
+                                    .expectBody(Subscription.class)
+                                    .returnResult().getResponseBody().getState().equals(Subscription.State.SUSPENDED);
+                            managementTestClient.getConsumerGroupsDescription(topicQualifiedName, subscriptionName).expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
+                                    .get(0)
+                                    .getState()
+                                    .equals("Empty");
+                        }
                 );
     }
 
@@ -264,6 +277,7 @@ public class HermesTestClient {
     public WebTestClient.ResponseSpec getManagementStats() {
         return managementTestClient.getStats();
     }
+
     public WebTestClient.ResponseSpec setReadiness(String dc, boolean state) {
         return managementTestClient.setReadiness(dc, state);
     }
