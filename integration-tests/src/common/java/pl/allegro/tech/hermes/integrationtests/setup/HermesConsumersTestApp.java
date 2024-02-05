@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.consumers.server.ConsumerHttpServer;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
+import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 import java.time.Duration;
 import java.util.List;
