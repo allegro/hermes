@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
+import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 import java.io.IOException;
 import java.net.URI;

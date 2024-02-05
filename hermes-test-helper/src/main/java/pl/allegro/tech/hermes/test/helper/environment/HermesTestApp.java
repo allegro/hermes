@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.setup;
+package pl.allegro.tech.hermes.test.helper.environment;
 
 public interface HermesTestApp {
 
