@@ -116,12 +116,22 @@ public class FrontendTestClient {
                 .exchange();
     }
 
-    WebTestClient.ResponseSpec publish(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+    public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(TOPIC_PATH)
                         .build(topicQualifiedName))
                 .body(Mono.just(body), String.class)
+                .headers(requestHeaders -> requestHeaders.addAll(headers))
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec publish(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+        return webTestClient.post().uri(UriBuilder
+                        .fromUri(frontendContainerUrl)
+                        .path(TOPIC_PATH)
+                        .build(topicQualifiedName))
+                .body(Mono.just(body), byte[].class)
                 .headers(requestHeaders -> requestHeaders.addAll(headers))
                 .exchange();
     }
@@ -137,7 +147,7 @@ public class FrontendTestClient {
                 .exchange();
     }
 
-    WebTestClient.ResponseSpec publishAvro(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+    public WebTestClient.ResponseSpec publishAvro(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
         return webTestClient.post().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(TOPIC_PATH)
