@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
+import pl.allegro.tech.hermes.frontend.config.KafkaProperties;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
@@ -34,16 +34,19 @@ public class KafkaMessageProducerFactory {
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
-    private final KafkaParameters kafkaParameters;
+    private final KafkaProperties kafkaParameters;
+    private final List<KafkaProperties> remoteKafkaParameters;
     private final KafkaProducerParameters kafkaProducerParameters;
     private final long bufferedSizeBytes;
 
-    public KafkaMessageProducerFactory(KafkaParameters kafkaParameters,
+    public KafkaMessageProducerFactory(KafkaProperties kafkaParameters,
+                                       List<KafkaProperties> remoteKafkaParameters,
                                        KafkaProducerParameters kafkaProducerParameters,
                                        long bufferedSizeBytes) {
         this.kafkaProducerParameters = kafkaProducerParameters;
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;
+        this.remoteKafkaParameters = remoteKafkaParameters;
     }
 
     public Producers provide() {
@@ -71,12 +74,49 @@ public class KafkaMessageProducerFactory {
             props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
 
-        Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));
-        Producer<byte[], byte[]> everyoneConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_ALL));
-        return new Producers(leaderConfirms, everyoneConfirms, kafkaProducerParameters.isReportNodeMetricsEnabled());
+        Producers.Tuple localProducers = new Producers.Tuple(
+                producer(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
+                producer(kafkaParameters, kafkaProducerParameters, ACK_ALL)
+        );
+
+        List<Producers.Tuple> remoteProducers = remoteKafkaParameters.stream().map(
+                kafkaProperties -> new Producers.Tuple(
+                        producer(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
+                        producer(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
+        return new Producers(
+                localProducers,
+                remoteProducers,
+                kafkaProducerParameters.isReportNodeMetricsEnabled()
+        );
     }
 
-    private ImmutableMap<String, Object> copyWithEntryAdded(Map<String, Object> common, String key, String value) {
-        return ImmutableMap.<String, Object>builder().putAll(common).put(key, value).build();
+    private KafkaProducer<byte[], byte[]> producer(KafkaParameters kafkaParameters,
+                                                   KafkaProducerParameters kafkaProducerParameters,
+                                                   String acks) {
+        Map<String, Object> props = new HashMap<>();
+        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
+        props.put(MAX_BLOCK_MS_CONFIG, (int) kafkaProducerParameters.getMaxBlock().toMillis());
+        props.put(COMPRESSION_TYPE_CONFIG, kafkaProducerParameters.getCompressionCodec());
+        props.put(BUFFER_MEMORY_CONFIG, bufferedSizeBytes);
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, (int) kafkaProducerParameters.getRequestTimeout().toMillis());
+        props.put(BATCH_SIZE_CONFIG, kafkaProducerParameters.getBatchSize());
+        props.put(SEND_BUFFER_CONFIG, kafkaProducerParameters.getTcpSendBuffer());
+        props.put(RETRIES_CONFIG, kafkaProducerParameters.getRetries());
+        props.put(RETRY_BACKOFF_MS_CONFIG, (int) kafkaProducerParameters.getRetryBackoff().toMillis());
+        props.put(METADATA_MAX_AGE_CONFIG, (int) kafkaProducerParameters.getMetadataMaxAge().toMillis());
+        props.put(KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
+        props.put(VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
+        props.put(MAX_REQUEST_SIZE_CONFIG, kafkaProducerParameters.getMaxRequestSize());
+        props.put(LINGER_MS_CONFIG, (int) kafkaProducerParameters.getLinger().toMillis());
+        props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaProducerParameters.getMetricsSampleWindow().toMillis());
+        props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
+        props.put(ACKS_CONFIG, acks);
+
+        if (kafkaParameters.isAuthenticationEnabled()) {
+            props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
+            props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
+        }
+        return new KafkaProducer(props);
     }
 }

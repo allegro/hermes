@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.jayway.awaitility.Awaitility.await;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -54,7 +55,7 @@ public class KafkaBrokerMessageProducerTest {
         new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties();
     private final KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties();
     private final Producers producers =
-        new Producers(leaderConfirmsProducer, everyoneConfirmProducer, kafkaProducerProperties.isReportNodeMetricsEnabled());
+        new Producers(new Producers.Tuple(leaderConfirmsProducer, everyoneConfirmProducer), emptyList() ,kafkaProducerProperties.isReportNodeMetricsEnabled());
 
     private KafkaBrokerMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");

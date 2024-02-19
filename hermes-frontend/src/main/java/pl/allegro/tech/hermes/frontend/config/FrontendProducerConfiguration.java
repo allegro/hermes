@@ -4,15 +4,18 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
+import pl.allegro.tech.hermes.frontend.producer.kafka.MultiDCKafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
+
+import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -29,8 +32,9 @@ public class FrontendProducerConfiguration {
     public BrokerMessageProducer kafkaBrokerMessageProducer(Producers producers,
                                                             KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
                                                             MetricsFacade metricsFacade,
-                                                            MessageToKafkaProducerRecordConverter messageConverter) {
-        return new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
+                                                            MessageToKafkaProducerRecordConverter messageConverter,
+                                                            BrokerLatencyReporter brokerLatencyReporter) {
+        return new MultiDCKafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter, brokerLatencyReporter);
     }
 
     @Bean
@@ -45,7 +49,11 @@ public class FrontendProducerConfiguration {
                                           LocalMessageStorageProperties localMessageStorageProperties,
                                           DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new KafkaMessageProducerFactory(kafkaProperties, kafkaProducerProperties,
+        List<KafkaProperties> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
+        return new KafkaMessageProducerFactory(
+                kafkaProperties,
+                remoteKafkaProperties,
+                kafkaProducerProperties,
                 localMessageStorageProperties.getBufferedSizeBytes()).provide();
     }
 
