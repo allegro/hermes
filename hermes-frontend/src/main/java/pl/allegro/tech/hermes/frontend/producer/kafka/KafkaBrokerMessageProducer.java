@@ -36,6 +36,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     @Override
     public void send(Message message, CachedTopic cachedTopic, final PublishingCallback callback) {
+        // TODO: report per broker latency metrics
         ProducerRecord<byte[], byte[]> producerRecord =
                 messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 

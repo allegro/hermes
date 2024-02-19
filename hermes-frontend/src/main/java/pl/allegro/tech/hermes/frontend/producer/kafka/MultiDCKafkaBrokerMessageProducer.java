@@ -41,7 +41,7 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
         this.messageConverter = messageConverter;
         this.brokerLatencyReporter = brokerLatencyReporter;
 
-        // check that remote exists
+        // TODO: check that remote producers exist
 //        producers.registerGauges(metricsFacade);
     }
 
