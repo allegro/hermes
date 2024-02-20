@@ -31,16 +31,19 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
     private final MetricsFacade metricsFacade;
     private final MessageToKafkaProducerRecordConverter messageConverter;
 
+    private final Readiness readiness;
     private final CircuitBreakerRegistry circuitBreakerRegistry;
 
     public KafkaBrokerMessageProducer2(Producers producers,
                                        KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
                                        MetricsFacade metricsFacade,
-                                       MessageToKafkaProducerRecordConverter messageConverter) {
+                                       MessageToKafkaProducerRecordConverter messageConverter,
+                                       Readiness readiness) {
         this.producers = producers;
         this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
         this.metricsFacade = metricsFacade;
         this.messageConverter = messageConverter;
+        this.readiness = readiness;
 //        producers.registerGauges(metricsFacade);
 
         // https://resilience4j.readme.io/docs/circuitbreaker
@@ -86,14 +89,25 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
         // 6. local: healthy, enabled    | remote: unhealthy, enabled <- niemożliwy przy 100% sukcesów
         // 7. local: unhealthy, enabled  | remote: unhealthy, enabled <- jeszcze nie zrobione, w tym przypadku wolimy local
 
-        // zwróć Optional.empty() gdy: disabled lub unhealthy
-        return producers.get(cachedTopic.getTopic());
-    }
+        // TODO: zwróć Optional.empty() gdy: disabled lub unhealthy
+        if (!readiness.isReady(/* remoteDc */ "todo")) {
+            return Optional.empty();
+        }
 
+        var circuitBreaker = circuitBreakerRegistry.circuitBreaker(cachedTopic.getQualifiedName(), "remote");
+
+        try {
+            circuitBreaker.acquirePermission();
+        } catch (CallNotPermittedException open) {
+            return Optional.empty();
+        }
+        return Optional.of(producers.getRemote(cachedTopic.getTopic()).get(0));
+    }
 
     // If exception rate greater than X, switch to remote DC for a topic
     @Override
     public void send(Message message, CachedTopic cachedTopic, final PublishingCallback callback) {
+
         // TODO: report per broker latency metrics
         var producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
@@ -102,22 +116,41 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
         HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
 
         try {
-
-            if (remoteProducer.isEmpty()) {
-                producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
-            } else {
-                var circuitBreaker = circuitBreakerRegistry.circuitBreaker(cachedTopic.getQualifiedName());
-                try {
-                    circuitBreaker.acquirePermission();
-                    producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
-                } catch (CallNotPermittedException open) {
-                    // todo: what if remote DC is disabled or unhealthy?
-                    remoteProducer.get().send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
-                } catch (Exception e) {
-                    circuitBreaker.releasePermission();
-                    throw e;
+            var circuitBreaker = circuitBreakerRegistry.circuitBreaker(cachedTopic.getQualifiedName());
+            try {
+                circuitBreaker.acquirePermission();
+                producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
+                // release remote
+            } catch (CallNotPermittedException open) {
+                if (remoteProducer.isEmpty()) {
+                    // TODO: maybe transition to closed manually?
+                    producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
+                    // on success?
+                } else {
+                    remoteProducer.get().send(producerRecord, new CbSendCallback(message, cachedTopic, remoteCircuitBreaker, callback, timer));
                 }
+            } catch (Exception e) {
+                circuitBreaker.releasePermission();
+                // release remote
+                throw e;
             }
+
+
+//            if (remoteProducer.isEmpty()) {
+//                producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
+//            } else {
+//                var circuitBreaker = circuitBreakerRegistry.circuitBreaker(cachedTopic.getQualifiedName());
+//                try {
+//                    circuitBreaker.acquirePermission();
+//                    producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
+//                } catch (CallNotPermittedException open) {
+//                    // todo: what if remote DC is disabled or unhealthy?
+//                    remoteProducer.get().send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
+//                } catch (Exception e) {
+//                    circuitBreaker.releasePermission();
+//                    throw e;
+//                }
+//            }
         } catch (Exception e) {
             // message didn't get to internal producer buffer and it will not be send to a broker
             callback.onUnpublished(message, cachedTopic.getTopic(), e);
