@@ -6,6 +6,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import jakarta.inject.Singleton;
 import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.slf4j.Logger;
@@ -104,12 +105,49 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
         return Optional.of(producers.getRemote(cachedTopic.getTopic()).get(0));
     }
 
+    private class ReliableProducer {
+
+        private final Producer<byte[], byte[]> producer;
+        private final CircuitBreaker circuitBreaker;
+
+        private  boolean acquired;
+
+        public boolean isHealthy() {
+            if (!readiness.isReady("todo")) {
+                return false;
+            }
+            try {
+                circuitBreaker.acquirePermission();
+                acquired = true;
+                return true;
+            } catch (CallNotPermittedException open) {
+                return false;
+            }
+        }
+
+        public void send(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback) {
+            producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
+        }
+    }
+
     // If exception rate greater than X, switch to remote DC for a topic
     @Override
     public void send(Message message, CachedTopic cachedTopic, final PublishingCallback callback) {
 
         // TODO: report per broker latency metrics
         var producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
+
+        ReliableProducer local = getLocal(cachedTopic);
+        ReliableProducer remote = getRemote(cachedTopic);
+
+        if (local.isHealthy() || !remote.isHealthy()) {
+            local.send(message, producerRecord, callback);
+            // local callback
+        } else {
+            remote.send(message, producerRecord, callback);
+            // remote callback
+        }
+
 
         Optional<Producer<byte[], byte[]>> remoteProducer = getRemoteProducer(cachedTopic);
         var producer = producers.get(cachedTopic.getTopic());
