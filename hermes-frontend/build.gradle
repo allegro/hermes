@@ -11,6 +11,8 @@ dependencies {
     implementation project(':hermes-metrics')
     implementation project(':hermes-schema')
 
+    implementation group:'io.github.resilience4j', name: 'resilience4j-circuitbreaker', version: '2.2.0'
+
     api group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     api group: 'io.undertow', name: 'undertow-core', version: versions.undertow
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
