@@ -80,6 +80,10 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
     // 1. if timeouts % greater than X -> switch to remote DC for a topic. HALF_OPEN -> probes local DC
     // 2. reverse of 1). Slowly move traffic to remote DC.
     // 3. Time budget for local. On timeout, fallback to remote.
+        // - start by sending produce request to local DC
+        // - after X ms send produce request to remote DC
+        // - complete hermes client request when at least one DC responded or the global (Y) timeout elapsed
+        // - X = 250 ms (?); Y = 500 ms (?)
     // 4. Multi strategy - on large latency pick more aggressive fallback
     public Optional<Producer<byte[], byte[]>> getRemoteProducer(CachedTopic cachedTopic) {
         // 1. local: healthy, enabled    | remote: healthy, enabled <- standardowy przypadek obsłużony przez circuit breaker
@@ -105,80 +109,65 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
         return Optional.of(producers.getRemote(cachedTopic.getTopic()).get(0));
     }
 
-    private class ReliableProducer {
-
-        private final CachedTopic cachedTopic;
-        private final Producer<byte[], byte[]> producer;
-        private final CircuitBreaker circuitBreaker;
-
-        private  boolean acquired;
-
-        public boolean isHealthy() {
-            if (!readiness.isReady("todo")) {
-                return false;
-            }
-            try {
-                circuitBreaker.acquirePermission();
-                acquired = true;
-                return true;
-            } catch (CallNotPermittedException open) {
-                return false;
-            }
-        }
-
-        public void send(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback) {
-            HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
-
-            if (acquired) {
-                try {
-                    producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
-                } catch (Exception e) {
-                    var duration = timer.closeAndGet();
-                    circuitBreaker.onError(duration.toMillis(), TimeUnit.MILLISECONDS, e);
-                    callback.onUnpublished(message, cachedTopic.getTopic(), e);
-                }
-
-            } else {                // cons:
-                // - we don't record results (errors or successes)
-                try {
-                    producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
-
-                }
-                catch (Exception e) {
-                    callback.onUnpublished(message, cachedTopic.getTopic(), e);
-                }
-            }
-        }
-    }
-
+    // todo: rethink the name
     private interface ProduceStrategy {
 
-        boolean sendAsync(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback);
+        boolean sendAsync(Message message,
+                          CachedTopic cachedTopic,
+                          ProducerRecord<byte[], byte[]> producerRecord,
+                          PublishingCallback callback);
     }
 
     private class UnconditionalProduceStrategy implements ProduceStrategy {
 
-        @Override
-        public boolean sendAsync(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback) {
+        private final Producers producers;
 
+        UnconditionalProduceStrategy(Producers producers) {
+            this.producers = producers;
+        }
+
+        @Override
+        public boolean sendAsync(Message message,
+                                 CachedTopic cachedTopic,
+                                 ProducerRecord<byte[], byte[]> producerRecord,
+                                 PublishingCallback callback) {
+            HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
+            try {
+                producers.get(cachedTopic.getTopic()).send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
+            } catch (Exception e) {
+                callback.onUnpublished(message, cachedTopic.getTopic(), e);
+            }
+            return true;
         }
     }
 
-    private class CbProduceStrategy implements ProduceStrategy {
+    private class LocalProduceStrategy implements ProduceStrategy {
 
-        private final CircuitBreaker circuitBreaker;
-        private final Producer<byte[], byte[]> producer;
+        private final Producers producers;
+        private final Readiness readiness;
+        private final CircuitBreakerRegistry circuitBreakerRegistry;
 
-        private CbProduceStrategy(CircuitBreaker circuitBreaker, Producer<byte[], byte[]> producer) {
-            this.circuitBreaker = circuitBreaker;
-            this.producer = producer;
+        LocalProduceStrategy(Producers producers, Readiness readiness, CircuitBreakerRegistry circuitBreakerRegistry) {
+            this.producers = producers;
+            this.readiness = readiness;
+            this.circuitBreakerRegistry = circuitBreakerRegistry;
         }
 
         @Override
-        public boolean sendAsync(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback) {
+        public boolean sendAsync(Message message,
+                                 CachedTopic cachedTopic,
+                                 ProducerRecord<byte[], byte[]> producerRecord,
+                                 PublishingCallback callback) {
+            if (!readiness.isReady(/* local DC */)) {
+                return false;
+            }
+
+            var circuitBreaker = circuitBreakerRegistry.circuitBreaker(cachedTopic.getQualifiedName());
+            // todo: rethink passing this timer from this method caller
+            HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
             try {
                 circuitBreaker.acquirePermission();
-                producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
+                producers.get(cachedTopic.getTopic()).send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
                 return true;
             } catch (CallNotPermittedException open) {
                 return false;
@@ -188,115 +177,53 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
                 callback.onUnpublished(message, cachedTopic.getTopic(), e);
                 return true;
             }
+            return false;
         }
     }
 
+    private class RemoteProduceStrategy implements ProduceStrategy {
 
+        @Override
+        public boolean sendAsync(Message message,
+                                 CachedTopic cachedTopic,
+                                 ProducerRecord<byte[], byte[]> producerRecord,
+                                 PublishingCallback callback) {
+            List<String> dcs = readiness.getReadyRemoteDatacenters();
+            if (dcs.isEmpty()) {
+                return false;
+            }
+
+            String dc = getNearestDc(dcs);
+
+            var circuitBreaker = circuitBreakerRegistry.circuitBreaker(cachedTopic.getQualifiedName());
+            // todo: rethink passing this timer from this method caller
+            HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
+            try {
+                circuitBreaker.acquirePermission();
+                producers.getRemote(dc, cachedTopic.getTopic()).send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
+                return true;
+            } catch (CallNotPermittedException open) {
+                return false;
+            } catch (Exception e) {
+                var duration = timer.closeAndGet();
+                circuitBreaker.onError(duration.toMillis(), TimeUnit.MILLISECONDS, e);
+                callback.onUnpublished(message, cachedTopic.getTopic(), e);
+                return true;
+            }
+            return false;
+        }
+    }
 
     // If exception rate greater than X, switch to remote DC for a topic
     @Override
     public void send(Message message, CachedTopic cachedTopic, final PublishingCallback callback) {
-
         // TODO: report per broker latency metrics
         var producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
-
-        ReliableProducer local = getLocal(cachedTopic);
-        ReliableProducer remote = getRemote(cachedTopic);
-
-        FallbackChain<> ..
-
-        ProduceStrategy unconditionalProduceStrategy = new UnconditionalProduceStrategy();
-        ProduceStrategy remoteProduceStrategy = new CbProduceStrategy(unconditionalProduceStrategy);
-        ProduceStrategy localProduceStrategy = new CbProduceStrategy(remoteProduceStrategy);
-
-        localProduceStrategy.sendAsync();
-
-        // ------
-        List<ProduceStrategy> strategies = List.of(
-                new CbProduceStrategy(),
-                new CbProduceStrategy(),
-                new UnconditionalProduceStrategy(),
-        );
 
         for (ProduceStrategy strategy : strategies) {
             if (strategy.sendAsync()) {
                 break;
             }
-        }
-
-        // ----
-        if (!local.send(message, producerRecord, callback)) {
-            if (!remote.send(message, producerRecord, callback)) {
-                local.sendForcefully();
-            }
-        }
-
-
-        if (local.isHealthy()) {
-            local.send(message, producerRecord, callback);
-        } else if (remote.isHealthy()) {
-            remote.send(message, producerRecord, callback);
-        } else {
-
-            local.sendForcefully();
-        }
-
-
-
-        if (local.isHealthy() || !remote.isHealthy()) {
-            local.send(message, producerRecord, callback);
-            // local callback
-        } else {
-            remote.send(message, producerRecord, callback);
-            // remote callback
-        }
-
-
-
-
-        Optional<Producer<byte[], byte[]>> remoteProducer = getRemoteProducer(cachedTopic);
-        var producer = producers.get(cachedTopic.getTopic());
-        HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
-
-        try {
-            var circuitBreaker = circuitBreakerRegistry.circuitBreaker(cachedTopic.getQualifiedName());
-            try {
-                circuitBreaker.acquirePermission();
-                producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
-                // release remote
-            } catch (CallNotPermittedException open) {
-                if (remoteProducer.isEmpty()) {
-                    // TODO: maybe transition to closed manually?
-                    producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
-                    // on success?
-                } else {
-                    remoteProducer.get().send(producerRecord, new CbSendCallback(message, cachedTopic, remoteCircuitBreaker, callback, timer));
-                }
-            } catch (Exception e) {
-                circuitBreaker.releasePermission();
-                // release remote
-                throw e;
-            }
-
-
-//            if (remoteProducer.isEmpty()) {
-//                producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
-//            } else {
-//                var circuitBreaker = circuitBreakerRegistry.circuitBreaker(cachedTopic.getQualifiedName());
-//                try {
-//                    circuitBreaker.acquirePermission();
-//                    producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
-//                } catch (CallNotPermittedException open) {
-//                    // todo: what if remote DC is disabled or unhealthy?
-//                    remoteProducer.get().send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
-//                } catch (Exception e) {
-//                    circuitBreaker.releasePermission();
-//                    throw e;
-//                }
-//            }
-        } catch (Exception e) {
-            // message didn't get to internal producer buffer and it will not be send to a broker
-            callback.onUnpublished(message, cachedTopic.getTopic(), e);
         }
     }
 
