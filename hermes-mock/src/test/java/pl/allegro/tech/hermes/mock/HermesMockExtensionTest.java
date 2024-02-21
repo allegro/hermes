@@ -4,7 +4,7 @@ import groovy.json.JsonOutput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher;
+import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
@@ -17,11 +17,11 @@ class HermesMockExtensionTest {
     @RegisterExtension
     static final HermesMockExtension hermes = new HermesMockExtension(port);
 
-    private HermesPublisher publisher;
+    private FrontendTestClient publisher;
 
     @BeforeEach
     void setup() {
-        publisher = new HermesPublisher(String.format("http://localhost:%d", port));
+        publisher = new FrontendTestClient(port);
     }
 
     @Test

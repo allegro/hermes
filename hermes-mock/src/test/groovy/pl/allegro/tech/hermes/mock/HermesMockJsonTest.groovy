@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.mock
 
-import wiremock.org.apache.hc.core5.http.HttpStatus;
+import org.springframework.util.MultiValueMap
+import org.springframework.util.MultiValueMapAdapter
+import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient
+import wiremock.org.apache.hc.core5.http.HttpStatus
 import org.junit.ClassRule
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
@@ -22,7 +24,9 @@ class HermesMockJsonTest extends Specification {
     @Shared
     HermesMockRule hermes = new HermesMockRule(port)
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
+    MultiValueMap headers = new MultiValueMapAdapter<>(Map.of("Content-Type", List.of("application/json")))
+
+    FrontendTestClient publisher = new FrontendTestClient(port)
 
     def setup() {
         hermes.resetReceivedRequest()
@@ -43,7 +47,7 @@ class HermesMockJsonTest extends Specification {
 
         then: "check for any single message on the topic and check for correct response"
             hermes.expect().singleMessageOnTopic(topicName)
-            response.status == HttpStatus.SC_CREATED
+            response.expectStatus().isCreated()
     }
 
     def "should not match json pattern"() {
@@ -59,7 +63,7 @@ class HermesMockJsonTest extends Specification {
             def response = publishJson(topicName, message.asJson())
 
         then: "check for correct response status"
-            response.status == HttpStatus.SC_NOT_FOUND
+            response.expectStatus().isNotFound()
     }
 
     def "should receive an json message"() {
@@ -68,11 +72,11 @@ class HermesMockJsonTest extends Specification {
         hermes.define().jsonTopic(topicName, HttpStatus.SC_OK)
 
         when:
-        def response = publisher.publish(topicName, "Basic Request")
+        def response = publisher.publish(topicName, "Basic Request", headers)
 
         then:
         hermes.expect().singleMessageOnTopic(topicName)
-        response.status == HttpStatus.SC_OK
+        response.expectStatus().isOk()
     }
 
     def "should respond with a delay"() {
@@ -83,7 +87,7 @@ class HermesMockJsonTest extends Specification {
         Instant start = now()
 
         when:
-        publisher.publish(topicName, "Basic Request")
+        publisher.publish(topicName, "Basic Request", headers)
 
         then:
         hermes.expect().singleMessageOnTopic(topicName)
@@ -127,8 +131,8 @@ class HermesMockJsonTest extends Specification {
         def response2 = publishJson(topicName, value, keyPattern2)
 
         then: "check for any single message on the topic and check for correct response"
-        response1.status == HttpStatus.SC_CREATED
-        response2.status == HttpStatus.SC_CREATED
+        response1.expectStatus().isCreated()
+        response2.expectStatus().isCreated()
 
         when: "first stub mapping is removed and two messages are sent again"
         hermes.define().removeStubMapping(jsonTopicStubMapping1)
@@ -136,12 +140,12 @@ class HermesMockJsonTest extends Specification {
         response2 = publishJson(topicName, value, keyPattern2)
 
         then: "removed stub mapping should response with not found, second stub on same topic should return 201 status"
-        response1.status == HttpStatus.SC_NOT_FOUND
-        response2.status == HttpStatus.SC_CREATED
+        response1.expectStatus().isNotFound()
+        response2.expectStatus().isCreated()
     }
 
     private def publishJson(String topic, String message) {
-        publisher.publish(topic, message)
+        publisher.publish(topic, message, headers)
     }
 
     private def publishJson(String topicName, String value, String keyPattern) {
