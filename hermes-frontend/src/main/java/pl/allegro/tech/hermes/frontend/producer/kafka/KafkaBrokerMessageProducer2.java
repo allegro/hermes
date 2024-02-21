@@ -34,17 +34,28 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
 
     private final Readiness readiness;
     private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final List<ProduceStrategy> strategies;
+
+
 
     public KafkaBrokerMessageProducer2(Producers producers,
                                        KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
                                        MetricsFacade metricsFacade,
                                        MessageToKafkaProducerRecordConverter messageConverter,
-                                       Readiness readiness) {
+                                       Readiness readiness,
+                                       CircuitBreakerRegistry circuitBreakerRegistry) {
         this.producers = producers;
         this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
         this.metricsFacade = metricsFacade;
         this.messageConverter = messageConverter;
         this.readiness = readiness;
+
+        this.strategies = List.of(
+                new LocalProduceStrategy(producers, readiness, circuitBreakerRegistry),
+                new RemoteProduceStrategy(),
+                new UnconditionalProduceStrategy(producers)
+        );
+
 //        producers.registerGauges(metricsFacade);
 
         // https://resilience4j.readme.io/docs/circuitbreaker
