@@ -107,6 +107,7 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
 
     private class ReliableProducer {
 
+        private final CachedTopic cachedTopic;
         private final Producer<byte[], byte[]> producer;
         private final CircuitBreaker circuitBreaker;
 
@@ -126,9 +127,71 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
         }
 
         public void send(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback) {
-            producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
+            HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
+
+            if (acquired) {
+                try {
+                    producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
+                } catch (Exception e) {
+                    var duration = timer.closeAndGet();
+                    circuitBreaker.onError(duration.toMillis(), TimeUnit.MILLISECONDS, e);
+                    callback.onUnpublished(message, cachedTopic.getTopic(), e);
+                }
+
+            } else {                // cons:
+                // - we don't record results (errors or successes)
+                try {
+                    producer.send(producerRecord, new SendCallback(message, cachedTopic, callback, timer));
+
+                }
+                catch (Exception e) {
+                    callback.onUnpublished(message, cachedTopic.getTopic(), e);
+                }
+            }
         }
     }
+
+    private interface ProduceStrategy {
+
+        boolean sendAsync(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback);
+    }
+
+    private class UnconditionalProduceStrategy implements ProduceStrategy {
+
+        @Override
+        public boolean sendAsync(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback) {
+
+        }
+    }
+
+    private class CbProduceStrategy implements ProduceStrategy {
+
+        private final CircuitBreaker circuitBreaker;
+        private final Producer<byte[], byte[]> producer;
+
+        private CbProduceStrategy(CircuitBreaker circuitBreaker, Producer<byte[], byte[]> producer) {
+            this.circuitBreaker = circuitBreaker;
+            this.producer = producer;
+        }
+
+        @Override
+        public boolean sendAsync(Message message, ProducerRecord<byte[], byte[]> producerRecord, PublishingCallback callback) {
+            try {
+                circuitBreaker.acquirePermission();
+                producer.send(producerRecord, new CbSendCallback(message, cachedTopic, callback, circuitBreaker, timer));
+                return true;
+            } catch (CallNotPermittedException open) {
+                return false;
+            } catch (Exception e) {
+                var duration = timer.closeAndGet();
+                circuitBreaker.onError(duration.toMillis(), TimeUnit.MILLISECONDS, e);
+                callback.onUnpublished(message, cachedTopic.getTopic(), e);
+                return true;
+            }
+        }
+    }
+
+
 
     // If exception rate greater than X, switch to remote DC for a topic
     @Override
@@ -140,6 +203,46 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
         ReliableProducer local = getLocal(cachedTopic);
         ReliableProducer remote = getRemote(cachedTopic);
 
+        FallbackChain<> ..
+
+        ProduceStrategy unconditionalProduceStrategy = new UnconditionalProduceStrategy();
+        ProduceStrategy remoteProduceStrategy = new CbProduceStrategy(unconditionalProduceStrategy);
+        ProduceStrategy localProduceStrategy = new CbProduceStrategy(remoteProduceStrategy);
+
+        localProduceStrategy.sendAsync();
+
+        // ------
+        List<ProduceStrategy> strategies = List.of(
+                new CbProduceStrategy(),
+                new CbProduceStrategy(),
+                new UnconditionalProduceStrategy(),
+        );
+
+        for (ProduceStrategy strategy : strategies) {
+            if (strategy.sendAsync()) {
+                break;
+            }
+        }
+
+        // ----
+        if (!local.send(message, producerRecord, callback)) {
+            if (!remote.send(message, producerRecord, callback)) {
+                local.sendForcefully();
+            }
+        }
+
+
+        if (local.isHealthy()) {
+            local.send(message, producerRecord, callback);
+        } else if (remote.isHealthy()) {
+            remote.send(message, producerRecord, callback);
+        } else {
+
+            local.sendForcefully();
+        }
+
+
+
         if (local.isHealthy() || !remote.isHealthy()) {
             local.send(message, producerRecord, callback);
             // local callback
@@ -147,6 +250,8 @@ public class KafkaBrokerMessageProducer2 implements BrokerMessageProducer {
             remote.send(message, producerRecord, callback);
             // remote callback
         }
+
+
 
 
         Optional<Producer<byte[], byte[]>> remoteProducer = getRemoteProducer(cachedTopic);
