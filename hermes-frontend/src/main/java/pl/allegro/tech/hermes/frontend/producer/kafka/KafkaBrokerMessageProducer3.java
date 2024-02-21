@@ -102,6 +102,8 @@ public class KafkaBrokerMessageProducer3 implements BrokerMessageProducer {
         }
     }
 
+
+
     private class SendCallback implements org.apache.kafka.clients.producer.Callback {
 
         private final Message message;
