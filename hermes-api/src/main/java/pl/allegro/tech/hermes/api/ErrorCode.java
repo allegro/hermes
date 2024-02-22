@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.api;
 
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.GATEWAY_TIMEOUT;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
@@ -63,7 +63,8 @@ public enum ErrorCode {
     UNKNOWN_MIGRATION(NOT_FOUND),
     INVALID_QUERY(BAD_REQUEST),
     IMPLEMENTATION_ABSENT(NOT_FOUND),
-    MOVING_SUBSCRIPTION_OFFSETS_VALIDATION_ERROR(BAD_REQUEST);
+    MOVING_SUBSCRIPTION_OFFSETS_VALIDATION_ERROR(BAD_REQUEST),
+    SENDING_TO_KAFKA_TIMEOUT(GATEWAY_TIMEOUT);
 
     private final int httpCode;
 

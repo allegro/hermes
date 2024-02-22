@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.config;
 
+import jakarta.inject.Named;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -49,7 +50,7 @@ public class FrontendConfiguration {
     }
 
     @Bean
-    public BackupMessagesLoader backupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
+    public BackupMessagesLoader backupMessagesLoader(@Named("bufferedMessageBrokerProducer") BrokerMessageProducer brokerMessageProducer,
                                                      BrokerListeners brokerListeners,
                                                      TopicsCache topicsCache,
                                                      SchemaRepository schemaRepository,

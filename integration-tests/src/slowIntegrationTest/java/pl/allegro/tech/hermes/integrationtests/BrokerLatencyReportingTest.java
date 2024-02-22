@@ -5,6 +5,7 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -53,7 +54,9 @@ public class BrokerLatencyReportingTest {
         frontend.stop();
     }
 
+    //TODO: enable after adding back broker latency reporter
     @Test
+    @Disabled("enable after adding back broker latency reporter")
     public void shouldReportBrokerLatencyMetrics() {
         // given
         Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
