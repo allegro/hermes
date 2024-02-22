@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
+import jakarta.inject.Named;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -90,7 +91,7 @@ public class FrontendServerConfiguration {
     }
 
     @Bean
-    public TopicMetadataLoadingRunner topicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
+    public TopicMetadataLoadingRunner topicMetadataLoadingRunner(@Named("kafkaBrokerMessageProducer") BrokerMessageProducer brokerMessageProducer,
                                                                  TopicsCache topicsCache,
                                                                  TopicLoadingProperties topicLoadingProperties) {
         return new TopicMetadataLoadingRunner(brokerMessageProducer, topicsCache,

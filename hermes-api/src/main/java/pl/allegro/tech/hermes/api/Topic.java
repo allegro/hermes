@@ -54,13 +54,14 @@ public class Topic {
     private Set<TopicLabel> labels;
     private Instant createdAt;
     private Instant modifiedAt;
+    private boolean buffersDisabled = false;
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
                  boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
                  @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE)
                  Boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
-                 TopicDataOfflineStorage offlineStorage, Set<TopicLabel> labels, Instant createdAt, Instant modifiedAt) {
+                 TopicDataOfflineStorage offlineStorage, Set<TopicLabel> labels, Instant createdAt, Instant modifiedAt, boolean buffersDisabled) {
         this.name = name;
         this.description = description;
         this.owner = owner;
@@ -78,6 +79,7 @@ public class Topic {
         this.labels = labels;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
+        this.buffersDisabled = buffersDisabled;
     }
 
     @JsonCreator
@@ -100,7 +102,8 @@ public class Topic {
             @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
             @JsonProperty("labels") Set<TopicLabel> labels,
             @JsonProperty("createdAt") Instant createdAt,
-            @JsonProperty("modifiedAt") Instant modifiedAt
+            @JsonProperty("modifiedAt") Instant modifiedAt,
+            @JsonProperty("buffersDisabled") boolean buffersDisabled
     ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
                 trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled,
@@ -109,7 +112,7 @@ public class Topic {
                 subscribingRestricted,
                 offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage,
                 labels == null ? Collections.emptySet() : labels,
-                createdAt, modifiedAt
+                createdAt, modifiedAt, buffersDisabled
         );
     }
 
@@ -249,6 +252,10 @@ public class Topic {
 
     public void setModifiedAt(Long modifiedAt) {
         this.modifiedAt = Instant.ofEpochMilli(modifiedAt);
+    }
+
+    public boolean isBuffersDisabled() {
+        return buffersDisabled;
     }
 
     @Override

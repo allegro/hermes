@@ -21,7 +21,7 @@ public class TopicWithSchema extends Topic {
                 topic.isJsonToAvroDryRunEnabled(), topic.getAck(), topic.isTrackingEnabled(), topic.wasMigratedFromJsonType(),
                 topic.isSchemaIdAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
                 topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage(), topic.getLabels(),
-                topic.getCreatedAt(), topic.getModifiedAt());
+                topic.getCreatedAt(), topic.getModifiedAt(), topic.isBuffersDisabled());
     }
 
     @JsonCreator
@@ -44,10 +44,11 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
                            @JsonProperty("labels") Set<TopicLabel> labels,
                            @JsonProperty("createdAt") Instant createdAt,
-                           @JsonProperty("modifiedAt") Instant modifiedAt) {
+                           @JsonProperty("modifiedAt") Instant modifiedAt,
+                           @JsonProperty("buffersDisabled") boolean buffersDisabled) {
         super(qualifiedName, description, owner, retentionTime, jsonToAvroDryRunEnabled, ack, trackingEnabled,
                 migratedFromJsonType, schemaIdAwareSerializationEnabled, contentType, maxMessageSize,
-                publishingAuth, subscribingRestricted, offlineStorage, labels, createdAt, modifiedAt);
+                publishingAuth, subscribingRestricted, offlineStorage, labels, createdAt, modifiedAt, buffersDisabled);
         this.topic = convertToTopic();
         this.schema = schema;
     }
@@ -65,7 +66,7 @@ public class TopicWithSchema extends Topic {
                 this.isJsonToAvroDryRunEnabled(), this.getAck(), this.isTrackingEnabled(), this.wasMigratedFromJsonType(),
                 this.isSchemaIdAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(),
                 this.getPublishingAuth(), this.isSubscribingRestricted(), this.getOfflineStorage(), this.getLabels(),
-                this.getCreatedAt(), this.getModifiedAt());
+                this.getCreatedAt(), this.getModifiedAt(), this.isBuffersDisabled());
     }
 
     public String getSchema() {
