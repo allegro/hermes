@@ -123,11 +123,12 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
             Supplier<ProduceMetadata> produceMetadata = produceMetadataSupplier(topic, recordMetadata);
+            // TODO: broker latency reporter
             if (e == null) {
-                callback.onPublished(message, topic.getTopic(), produceMetadata);
+                callback.onPublished(message, topic.getTopic());
                 producers.maybeRegisterNodeMetricsGauges(metricsFacade);
             } else {
-                callback.onUnpublished(message, topic.getTopic(), produceMetadata, e);
+                callback.onUnpublished(message, topic.getTopic(), e);
             }
         }
     }

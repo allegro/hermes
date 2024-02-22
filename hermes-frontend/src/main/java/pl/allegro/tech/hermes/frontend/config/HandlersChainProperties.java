@@ -12,6 +12,8 @@ public class HandlersChainProperties implements HandlersChainParameters {
 
     private Duration longIdleTimeout = Duration.ofMillis(400);
 
+    private Duration globalAsyncTimeout = Duration.ofMillis(500);
+
     private boolean forceTopicMaxMessageSize = false;
 
     @Override
@@ -59,6 +61,15 @@ public class HandlersChainProperties implements HandlersChainParameters {
 
     public void setForceTopicMaxMessageSize(boolean forceTopicMaxMessageSize) {
         this.forceTopicMaxMessageSize = forceTopicMaxMessageSize;
+    }
+
+    @Override
+    public Duration getGlobalAsyncTimeout() {
+        return globalAsyncTimeout;
+    }
+
+    public void setGlobalAsyncTimeout(Duration globalAsyncTimeout) {
+        this.globalAsyncTimeout = globalAsyncTimeout;
     }
 
     private AuthenticationProperties authentication = new AuthenticationProperties();

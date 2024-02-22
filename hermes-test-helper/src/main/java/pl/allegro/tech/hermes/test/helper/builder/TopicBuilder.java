@@ -54,6 +54,8 @@ public class TopicBuilder {
 
     private boolean subscribingRestricted = false;
 
+    private boolean buffersDisabled = false;
+
     private TopicDataOfflineStorage offlineStorage = TopicDataOfflineStorage.defaultOfflineStorage();
 
     private Set<TopicLabel> labels = Collections.emptySet();
@@ -90,7 +92,7 @@ public class TopicBuilder {
                 name, description, owner, retentionTime, migratedFromJsonType, ack, fallbackToRemoteDatacenterEnabled,
                 trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
-                offlineStorage, labels, null, null
+                offlineStorage, labels, null, null, buffersDisabled
         );
     }
 
@@ -181,6 +183,11 @@ public class TopicBuilder {
 
     public TopicBuilder withLabels(Set<TopicLabel> labels) {
         this.labels = labels;
+        return this;
+    }
+
+    public TopicBuilder withBuffersDisabled(boolean buffersDisabled) {
+        this.buffersDisabled = buffersDisabled;
         return this;
     }
 }

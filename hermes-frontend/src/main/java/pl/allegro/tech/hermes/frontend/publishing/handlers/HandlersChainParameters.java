@@ -8,6 +8,8 @@ public interface HandlersChainParameters {
 
     Duration getLongIdleTimeout();
 
+    Duration getGlobalAsyncTimeout();
+
     boolean isForceTopicMaxMessageSize();
 
     boolean isKeepAliveHeaderEnabled();

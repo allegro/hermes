@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @ConfigurationProperties(prefix = "frontend.kafka")
 public class KafkaClustersProperties {
@@ -46,6 +47,13 @@ public class KafkaClustersProperties {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No properties for datacenter: " + datacenterNameProvider.getDatacenterName() + " defined."));
+    }
+
+    public List<KafkaProperties> toRemoteKafkaProperties(DatacenterNameProvider datacenterNameProvider) {
+        return this.clusters
+                .stream()
+                .filter(cluster -> !cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName()))
+                .collect(Collectors.toList());
     }
 }
 

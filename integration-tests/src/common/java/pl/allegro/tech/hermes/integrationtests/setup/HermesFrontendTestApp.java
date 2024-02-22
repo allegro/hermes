@@ -42,7 +42,7 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.ZO
 public class HermesFrontendTestApp implements HermesTestApp {
 
     private final ZookeeperContainer hermesZookeeper;
-    private final KafkaContainerCluster kafka;
+    private final Map<String, KafkaContainerCluster> kafkaClusters;
     private final ConfluentSchemaRegistryContainer schemaRegistry;
     private SpringApplicationBuilder app;
 
@@ -58,8 +58,20 @@ public class HermesFrontendTestApp implements HermesTestApp {
                                  KafkaContainerCluster kafka,
                                  ConfluentSchemaRegistryContainer schemaRegistry) {
         this.hermesZookeeper = hermesZookeeper;
-        this.kafka = kafka;
         this.schemaRegistry = schemaRegistry;
+        this.kafkaClusters = Map.of("dc", kafka);
+
+    }
+    public HermesFrontendTestApp(ZookeeperContainer hermesZookeeper,
+                                 Map<String, KafkaContainerCluster> kafkaClusters,
+                                 ConfluentSchemaRegistryContainer schemaRegistry) {
+        this.hermesZookeeper = hermesZookeeper;
+        this.schemaRegistry = schemaRegistry;
+        this.kafkaClusters = kafkaClusters;
+    }
+
+    private String kafkaClusterProperty(int index, String name) {
+        return String.format("frontend.kafka.clusters[%d].%s", index, name);
     }
 
     public HermesFrontendTestApp withProperty(String name, Object value) {
@@ -78,7 +90,13 @@ public class HermesFrontendTestApp implements HermesTestApp {
         args.put(FRONTEND_PORT, 0);
 
         args.put(KAFKA_NAMESPACE, "itTest");
-        args.put(KAFKA_BROKER_LIST, kafka.getBootstrapServersForExternalClients());
+
+        var i = 0;
+        for (var entry : kafkaClusters.entrySet()) {
+            args.put(kafkaClusterProperty(i, "datacenter"), entry.getKey());
+            args.put(KAFKA_BROKER_LIST, entry.getValue().getBootstrapServersForExternalClients());
+            i++;
+        }
 
         args.put(ZOOKEEPER_CONNECTION_STRING, hermesZookeeper.getConnectionString());
 
