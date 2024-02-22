@@ -28,7 +28,7 @@ class TimeoutHandler implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
         MessageState state = attachment.getMessageState();
-        boolean buffersDisabled = attachment.getCachedTopic().getTopic().isBuffersDisabled();
+        boolean buffersDisabled = attachment.getCachedTopic().getTopic().isFallbackToRemoteDatacenterEnabled();
 
         state.setTimeoutHasPassed();
         if (state.setReadingTimeout()) {

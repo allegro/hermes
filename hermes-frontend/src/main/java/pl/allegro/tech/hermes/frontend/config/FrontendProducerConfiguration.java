@@ -4,6 +4,7 @@ import jakarta.inject.Named;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.BufferAwareBrokerMessageProducer;
@@ -16,6 +17,7 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerReco
 import pl.allegro.tech.hermes.frontend.producer.kafka.MultiDCKafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.producer.kafka.SimpleRemoteProducerProvider;
+import pl.allegro.tech.hermes.frontend.readiness.AdminReadinessService;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.List;
@@ -55,11 +57,18 @@ public class FrontendProducerConfiguration {
     @Bean
     public BrokerMessageProducer unbufferedMessageBrokerProducer(
             @Named("experimentalKafkaMessageProducer") Producers producers,
+            AdminReadinessService adminReadinessService,
             MetricsFacade metricsFacade,
             MessageToKafkaProducerRecordConverter messageConverter,
             ExperimentalKafkaProducerProperties kafkaProducerProperties
     ) {
-        return new MultiDCKafkaBrokerMessageProducer(producers, new SimpleRemoteProducerProvider(), metricsFacade, messageConverter, kafkaProducerProperties.getSpeculativeSendDelay());
+        return new MultiDCKafkaBrokerMessageProducer(
+                producers,
+                new SimpleRemoteProducerProvider(adminReadinessService),
+                metricsFacade,
+                messageConverter,
+                kafkaProducerProperties.getSpeculativeSendDelay()
+        );
     }
 
     @Bean
@@ -74,7 +83,7 @@ public class FrontendProducerConfiguration {
                                           LocalMessageStorageProperties localMessageStorageProperties,
                                           DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        List<KafkaProperties> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
+        List<KafkaParameters> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
         return new KafkaMessageProducerFactory(
                 kafkaProperties,
                 remoteKafkaProperties,
@@ -89,7 +98,7 @@ public class FrontendProducerConfiguration {
                                           LocalMessageStorageProperties localMessageStorageProperties,
                                           DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        List<KafkaProperties> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
+        List<KafkaParameters> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
         return new KafkaMessageProducerFactory(
                 kafkaProperties,
                 remoteKafkaProperties,

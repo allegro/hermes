@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
-import pl.allegro.tech.hermes.frontend.config.KafkaProperties;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,12 +34,12 @@ public class KafkaMessageProducerFactory {
     private static final String ACK_LEADER = "1";
 
     private final KafkaParameters kafkaParameters;
-    private final List<KafkaProperties> remoteKafkaParameters;
+    private final List<KafkaParameters> remoteKafkaParameters;
     private final KafkaProducerParameters kafkaProducerParameters;
     private final long bufferedSizeBytes;
 
     public KafkaMessageProducerFactory(KafkaParameters kafkaParameters,
-                                       List<KafkaProperties> remoteKafkaParameters,
+                                       List<KafkaParameters> remoteKafkaParameters,
                                        KafkaProducerParameters kafkaProducerParameters,
                                        long bufferedSizeBytes) {
         this.kafkaProducerParameters = kafkaProducerParameters;
@@ -52,12 +51,14 @@ public class KafkaMessageProducerFactory {
 
     public Producers provide() {
         Producers.Tuple localProducers = new Producers.Tuple(
+                kafkaParameters.getDatacenter(),
                 producer(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
                 producer(kafkaParameters, kafkaProducerParameters, ACK_ALL)
         );
 
         List<Producers.Tuple> remoteProducers = remoteKafkaParameters.stream().map(
                 kafkaProperties -> new Producers.Tuple(
+                        kafkaProperties.getDatacenter(),
                         producer(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
                         producer(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
         return new Producers(

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class KafkaClustersProperties {
                         "No properties for datacenter: " + datacenterNameProvider.getDatacenterName() + " defined."));
     }
 
-    public List<KafkaProperties> toRemoteKafkaProperties(DatacenterNameProvider datacenterNameProvider) {
+    public List<KafkaParameters> toRemoteKafkaProperties(DatacenterNameProvider datacenterNameProvider) {
         return this.clusters
                 .stream()
                 .filter(cluster -> !cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName()))

@@ -32,6 +32,8 @@ public class TopicBuilder {
 
     private Topic.Ack ack = Topic.Ack.LEADER;
 
+    private boolean fallbackToRemoteDatacenterEnabled = false;
+
     private ContentType contentType = ContentType.JSON;
 
     private RetentionTime retentionTime = RetentionTime.of(1, TimeUnit.DAYS);
@@ -51,8 +53,6 @@ public class TopicBuilder {
     private boolean unauthenticatedAccessEnabled = true;
 
     private boolean subscribingRestricted = false;
-
-    private boolean buffersDisabled = false;
 
     private TopicDataOfflineStorage offlineStorage = TopicDataOfflineStorage.defaultOfflineStorage();
 
@@ -87,10 +87,10 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
+                name, description, owner, retentionTime, migratedFromJsonType, ack, fallbackToRemoteDatacenterEnabled,
+                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
-                offlineStorage, labels, null, null, buffersDisabled
+                offlineStorage, labels, null, null
         );
     }
 
@@ -121,6 +121,11 @@ public class TopicBuilder {
 
     public TopicBuilder withAck(Topic.Ack ack) {
         this.ack = ack;
+        return this;
+    }
+
+    public TopicBuilder withFallbackToRemoteDatacenterEnabled() {
+        this.fallbackToRemoteDatacenterEnabled = true;
         return this;
     }
 
@@ -176,11 +181,6 @@ public class TopicBuilder {
 
     public TopicBuilder withLabels(Set<TopicLabel> labels) {
         this.labels = labels;
-        return this;
-    }
-
-    public TopicBuilder withBuffersDisabled(boolean buffersDisabled) {
-        this.buffersDisabled = buffersDisabled;
         return this;
     }
 }

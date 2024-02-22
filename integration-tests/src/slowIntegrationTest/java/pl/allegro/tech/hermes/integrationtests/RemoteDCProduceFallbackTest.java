@@ -88,7 +88,7 @@ public class RemoteDCProduceFallbackTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         TestMessage message = TestMessage.of("key1", "value1");
-        Topic topic = initHelper.createTopic(topicWithRandomName().withBuffersDisabled(true).build());
+        Topic topic = initHelper.createTopic(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
         initHelper.createSubscription(
                 subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
         );
@@ -108,7 +108,7 @@ public class RemoteDCProduceFallbackTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         TestMessage message = TestMessage.of("key1", "value1");
-        Topic topic = initHelper.createTopic(topicWithRandomName().withBuffersDisabled(true).build());
+        Topic topic = initHelper.createTopic(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
         initHelper.createSubscription(
                 subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
         );

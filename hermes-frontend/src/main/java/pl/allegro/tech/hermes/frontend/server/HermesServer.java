@@ -9,7 +9,8 @@ import org.xnio.SslClientAuthMode;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
-import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
 
 import java.net.InetSocketAddress;
 
@@ -46,6 +47,7 @@ public class HermesServer {
             HermesServerParameters hermesServerParameters,
             MetricsFacade metricsFacade,
             HttpHandler publishingHandler,
+            HealthCheckService healthCheckService,
             ReadinessChecker readinessChecker,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
@@ -59,7 +61,7 @@ public class HermesServer {
         this.metricsFacade = metricsFacade;
         this.publishingHandler = publishingHandler;
         this.prometheusMeterRegistry = prometheusMeterRegistry;
-        this.healthCheckService = new HealthCheckService();
+        this.healthCheckService = healthCheckService;
         this.readinessChecker = readinessChecker;
         this.messagePreviewPersister = messagePreviewPersister;
         this.topicMetadataLoadingJob = topicMetadataLoadingJob;

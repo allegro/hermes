@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
 import jakarta.inject.Named;
-import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,14 +12,14 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
-import pl.allegro.tech.hermes.frontend.server.DefaultReadinessChecker;
+import pl.allegro.tech.hermes.frontend.readiness.DefaultReadinessChecker;
+import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.server.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 import java.util.Optional;
@@ -29,7 +27,6 @@ import java.util.Optional;
 @Configuration
 @EnableConfigurationProperties({
         TopicLoadingProperties.class,
-        ReadinessCheckProperties.class,
         SslProperties.class,
         HermesServerProperties.class
 })
@@ -40,6 +37,7 @@ public class FrontendServerConfiguration {
                                      SslProperties sslProperties,
                                      MetricsFacade metricsFacade,
                                      HttpHandler publishingHandler,
+                                     HealthCheckService healthCheckService,
                                      DefaultReadinessChecker defaultReadinessChecker,
                                      DefaultMessagePreviewPersister defaultMessagePreviewPersister,
                                      ThroughputLimiter throughputLimiter,
@@ -52,6 +50,7 @@ public class FrontendServerConfiguration {
                 hermesServerProperties,
                 metricsFacade,
                 publishingHandler,
+                healthCheckService,
                 defaultReadinessChecker,
                 defaultMessagePreviewPersister,
                 throughputLimiter,
@@ -59,23 +58,6 @@ public class FrontendServerConfiguration {
                 topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
                 sslContextFactoryProvider,
                 prometheusMeterRegistry);
-    }
-
-    @Bean
-    public DefaultReadinessChecker readinessChecker(ReadinessCheckProperties readinessCheckProperties,
-                                                    TopicMetadataLoadingRunner topicMetadataLoadingRunner,
-                                                    CuratorFramework zookeeper,
-                                                    ZookeeperPaths paths,
-                                                    ObjectMapper mapper) {
-        return new DefaultReadinessChecker(
-                topicMetadataLoadingRunner,
-                zookeeper,
-                paths,
-                mapper,
-                readinessCheckProperties.isEnabled(),
-                readinessCheckProperties.isKafkaCheckEnabled(),
-                readinessCheckProperties.getInterval()
-        );
     }
 
     @Bean
