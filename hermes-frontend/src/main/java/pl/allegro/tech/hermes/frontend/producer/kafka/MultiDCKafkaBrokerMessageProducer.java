@@ -41,6 +41,7 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
         this.remoteProducerProvider = remoteProducerProvider;
     }
 
+    //TODO: single thread is probably not enough because send() can block for a long time
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
 
@@ -126,6 +127,7 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
         @Override
         public void onUnpublished(Message message, Topic topic, Exception exception) {
             if (tries.decrementAndGet() == 0) {
+                // TODO: consider reporting exceptions from both DCs, e.g. by caching the first one
                 callback.onUnpublished(message, topic, exception);
             }
         }
@@ -136,6 +138,7 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
                 callback.onPublished(message, topic);
                 // producers.maybeRegisterNodeMetricsGauges(metricsFacade);
             }
+            // TODO: consider adding metrics for 'else' case: event duplication
         }
     }
 
