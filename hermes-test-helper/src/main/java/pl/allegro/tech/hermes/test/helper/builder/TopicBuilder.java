@@ -16,8 +16,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class TopicBuilder {
+
+    private static final AtomicLong sequence = new AtomicLong();
 
     private final TopicName name;
 
@@ -41,7 +44,7 @@ public class TopicBuilder {
 
     private int maxMessageSize = 1024 * 1024;
 
-    private List<String> publishers = new ArrayList<>();
+    private final List<String> publishers = new ArrayList<>();
 
     private boolean authEnabled = false;
 
@@ -55,6 +58,13 @@ public class TopicBuilder {
 
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
+    }
+
+    public static TopicBuilder topicWithRandomName() {
+        return topic(
+                TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
+                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet()
+        );
     }
 
     public static TopicBuilder randomTopic(String group, String topicNamePrefix) {

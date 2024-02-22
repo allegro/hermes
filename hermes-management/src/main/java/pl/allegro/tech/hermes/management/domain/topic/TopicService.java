@@ -161,6 +161,7 @@ public class TopicService {
 
         if (!retrieved.equals(modified)) {
             Instant beforeMigrationInstant = clock.instant();
+            // TODO: this does not work as intended, uses == instead of equals
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
                 multiDCAwareService.manageTopic(brokerTopicManagement ->
                         brokerTopicManagement.updateTopic(modified)

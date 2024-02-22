@@ -65,5 +65,4 @@ public abstract class ZookeeperBaseTest {
             zookeeperClient.delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes");
         }
     }
-
 }

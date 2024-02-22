@@ -20,7 +20,7 @@ export function parseFormToRequestBody(
   const headerFilters = form.headerFilters.map((filter: HeaderFilter) =>
     mapHeaderFilter(filter),
   );
-  return {
+  const parsedForm: CreateSubscriptionFormRequestBody = {
     name: form.name,
     topicName: topic,
     owner: {
@@ -45,6 +45,17 @@ export function parseFormToRequestBody(
     subscriptionIdentityHeadersEnabled: form.attachSubscriptionIdentityHeaders,
     autoDeleteWithTopicEnabled: form.deleteSubscriptionAutomatically,
   };
+
+  if (isEndpointAnonymized(form.endpoint)) {
+    delete parsedForm.endpoint;
+  }
+
+  return parsedForm;
+}
+
+function isEndpointAnonymized(endpoint: string) {
+  const regexPattern: RegExp = /.*:([*]+)@.*/;
+  return regexPattern.test(endpoint);
 }
 
 function mapSubscriptionPolicy(form: SubscriptionForm): SubscriptionPolicyJson {

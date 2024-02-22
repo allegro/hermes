@@ -20,8 +20,7 @@ public class MultiUrlEndpointAddressResolver implements EndpointAddressResolver 
     private final EndpointAddressResolver delegate = new InterpolatingEndpointAddressResolver(new MessageBodyInterpolator());
 
     @Override
-    public List<URI> resolveAll(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
-            throws EndpointAddressResolutionException {
+    public List<URI> resolveAll(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata) {
         return Stream.of(address.getEndpoint().split(";"))
                 .map(url -> safeResolve(message, url, metadata))
                 .collect(Collectors.toList());

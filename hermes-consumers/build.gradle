@@ -17,7 +17,7 @@ dependencies {
 
     api group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     api group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
-    api group: 'org.eclipse.jetty.http2', name: 'http2-http-client-transport', version: versions.jetty
+    api group: 'org.eclipse.jetty.http2', name: 'jetty-http2-client-transport', version: versions.jetty
 
     implementation group: 'org.jctools', name: 'jctools-core', version: '1.2'
 

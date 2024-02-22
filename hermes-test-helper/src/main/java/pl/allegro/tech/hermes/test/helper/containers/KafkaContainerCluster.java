@@ -31,7 +31,7 @@ public class KafkaContainerCluster implements Startable {
     private static final DockerImageName KAFKA_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka")
             .withTag(ImageTags.confluentImagesTag());
     private static final DockerImageName TOXIPROXY_IMAGE_NAME = DockerImageName.parse("ghcr.io/shopify/toxiproxy")
-            .withTag("2.4.0").asCompatibleSubstituteFor("shopify/toxiproxy");;
+            .withTag("2.4.0").asCompatibleSubstituteFor("shopify/toxiproxy");
 
     private static final Duration CLUSTER_START_TIMEOUT = Duration.ofMinutes(360);
     private static final String ZOOKEEPER_NETWORK_ALIAS = "zookeeper";
@@ -142,6 +142,7 @@ public class KafkaContainerCluster implements Startable {
 
     @Override
     public void stop() {
+        toxiproxy.stop();
         Stream.concat(brokers.stream(), Stream.of(zookeeper))
                 .parallel()
                 .forEach(GenericContainer::stop);
@@ -155,7 +156,7 @@ public class KafkaContainerCluster implements Startable {
         proxies.forEach(proxy -> proxy.setConnectionCut(false));
     }
 
-    public void makeClusterOperational() {
+    public void startAllStoppedBrokers() {
         brokers.stream()
                 .filter(broker -> !broker.isKafkaRunning())
                 .parallel()
