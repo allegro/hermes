@@ -150,10 +150,11 @@ public class CommonConfiguration {
 
     @Bean(destroyMethod = "stop")
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(CuratorFramework curator,
+                                                                               MetricsFacade metricsFacade,
                                                                                ZookeeperClustersProperties zookeeperClustersProperties,
                                                                                DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-        return new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties).provide();
+        return new ModelAwareZookeeperNotifyingCacheFactory(curator, metricsFacade, zookeeperProperties).provide();
     }
 
     @Bean

@@ -56,7 +56,7 @@ public class MetricsFacade {
         this.trackerElasticSearchMetrics = new TrackerElasticSearchMetrics(hermesMetrics, meterRegistry);
         this.persistentBufferMetrics = new PersistentBufferMetrics(hermesMetrics, meterRegistry);
         this.producerMetrics = new ProducerMetrics(hermesMetrics, meterRegistry);
-        this.executorMetrics = new ExecutorMetrics(hermesMetrics, meterRegistry);
+        this.executorMetrics = new ExecutorMetrics(meterRegistry);
         this.schemaClientMetrics = new SchemaClientMetrics(hermesMetrics, meterRegistry);
         this.undeliveredMessagesMetrics = new UndeliveredMessagesMetrics(hermesMetrics, meterRegistry);
         this.deserializationMetrics = new DeserializationMetrics(hermesMetrics, meterRegistry);
