@@ -1,19 +1,15 @@
 package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.ToDoubleFunction;
 
 public class ExecutorMetrics {
-    private final HermesMetrics hermesMetrics;
     private final MeterRegistry meterRegistry;
 
-    public ExecutorMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
-        this.hermesMetrics = hermesMetrics;
+    public ExecutorMetrics(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
     }
 
@@ -23,39 +19,5 @@ public class ExecutorMetrics {
 
     public ScheduledExecutorService monitor(ScheduledExecutorService scheduledExecutorService, String executorName) {
         return ExecutorServiceMetrics.monitor(meterRegistry, scheduledExecutorService, executorName);
-    }
-
-    public <T> void registerThreadPoolCapacity(String executorName, T stateObj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerThreadPoolCapacity(executorName, () -> (int) f.applyAsDouble(stateObj));
-        registerMicrometerGauge("executors.capacity", executorName, stateObj, f);
-    }
-
-    public <T> void registerThreadPoolActiveThreads(String executorName, T stateObj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerThreadPoolActiveThreads(executorName, () -> (int) f.applyAsDouble(stateObj));
-        registerMicrometerGauge("executors.active-threads", executorName, stateObj, f);
-    }
-
-    public <T> void registerThreadPoolUtilization(String executorName, T stateObj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerThreadPoolUtilization(executorName, () -> f.applyAsDouble(stateObj));
-        registerMicrometerGauge("executors.utilization", executorName, stateObj, f);
-    }
-
-    public <T> void registerThreadPoolTaskQueueCapacity(String executorName, T stateObj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerThreadPoolTaskQueueCapacity(executorName, () -> (int) f.applyAsDouble(stateObj));
-        registerMicrometerGauge("executors.task-queue-capacity", executorName, stateObj, f);
-    }
-
-    public <T> void registerThreadPoolTaskQueued(String executorName, T stateObj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerThreadPoolTaskQueued(executorName, () -> (int) f.applyAsDouble(stateObj));
-        registerMicrometerGauge("executors.task-queue-size", executorName, stateObj, f);
-    }
-
-    public <T> void registerThreadPoolTaskQueueUtilization(String executorName, T stateObj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerThreadPoolTaskQueueUtilization(executorName, () -> f.applyAsDouble(stateObj));
-        registerMicrometerGauge("executors.task-queue-utilization", executorName, stateObj, f);
-    }
-
-    private <T> void registerMicrometerGauge(String name, String executorName, T stateObj, ToDoubleFunction<T> f) {
-        meterRegistry.gauge(name, Tags.of("executor_name", executorName), stateObj, f);
     }
 }
