@@ -1,8 +1,5 @@
-package pl.allegro.tech.hermes.frontend.services;
+package pl.allegro.tech.hermes.frontend.readiness;
 
-import jakarta.inject.Singleton;
-
-@Singleton
 public class HealthCheckService {
 
     private volatile boolean shutdown = true;
