@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.ToDoubleFunction;
 
 import static pl.allegro.tech.hermes.common.metric.Gauges.INFLIGHT_REQUESTS;
-import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 public class ProducerMetrics {
     private final HermesMetrics hermesMetrics;
@@ -84,32 +83,6 @@ public class ProducerMetrics {
         hermesMetrics.registerProducerInflightRequest(() -> (int) f.applyAsDouble(stateObj));
     }
 
-    public <T> void registerAckAllMaxLatencyBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-max", ACK_ALL, brokerNodeId);
-    }
-
-    public <T> void registerAckLeaderMaxLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-max", ACK_LEADER, brokerNodeId);
-    }
-
-    public <T> void registerAckAllAvgLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-avg", ACK_ALL, brokerNodeId);
-    }
-
-    public <T> void registerAckLeaderAvgLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-avg", ACK_LEADER, brokerNodeId);
-    }
-
-    private <T> void registerLatencyPerBrokerGauge(T stateObj,
-                                                   ToDoubleFunction<T> f,
-                                                   String metricName,
-                                                   String producerName,
-                                                   String brokerNodeId) {
-        String baseMetricName = KAFKA_PRODUCER + producerName +  metricName;
-        String graphiteMetricName = baseMetricName + "." + escapeDots(brokerNodeId);
-
-        registerTimeGauge(stateObj, f, graphiteMetricName, baseMetricName, Tags.of("broker", brokerNodeId), TimeUnit.MILLISECONDS);
-    }
 
     private <T> void registerTimeGauge(T stateObj,
                                        ToDoubleFunction<T> f,

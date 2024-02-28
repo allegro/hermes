@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import pl.allegro.tech.hermes.api.Topic;
@@ -33,7 +32,7 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
                                              MetricsFacade metricsFacade,
                                              MessageToKafkaProducerRecordConverter messageConverter,
                                              Duration speculativeSendDelay
-                                             ) {
+    ) {
         this.messageConverter = messageConverter;
         this.producers = producers;
         this.metricsFacade = metricsFacade;
@@ -50,7 +49,7 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
 
         var producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
-        Optional<Producer<byte[], byte[]>> remoteProducer = remoteProducerProvider.get(cachedTopic, producers);
+        Optional<KafkaProducer<byte[], byte[]>> remoteProducer = remoteProducerProvider.get(cachedTopic, producers);
 
         final ThreadSafeCallback publishingCallback = remoteProducer.isPresent()
                 ? ThreadSafeCallback.withFallback(message, cachedTopic, callback)
@@ -77,13 +76,13 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
 
     }
 
-    private void send(Producer<byte[], byte[]> producer,
+    private void send(KafkaProducer<byte[], byte[]> producer,
                       ProducerRecord<byte[], byte[]> producerRecord,
                       ThreadSafeCallback callback,
                       CachedTopic cachedTopic,
                       Message message) {
         try {
-            producer.send(producerRecord, callback);
+            producer.send(producerRecord, cachedTopic, message, callback);
         } catch (Exception e) {
             // message didn't get to internal producer buffer and it will not be send to a broker
             callback.onUnpublished(message, cachedTopic.getTopic(), e);
@@ -136,7 +135,6 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
         public void onPublished(Message message, Topic topic) {
             if (sent.compareAndSet(false, true)) {
                 callback.onPublished(message, topic);
-                // producers.maybeRegisterNodeMetricsGauges(metricsFacade);
             }
             // TODO: consider adding metrics for 'else' case: event duplication
         }

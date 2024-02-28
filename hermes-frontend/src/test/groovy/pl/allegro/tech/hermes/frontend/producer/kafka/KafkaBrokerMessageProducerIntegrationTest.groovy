@@ -24,6 +24,7 @@ import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
 import pl.allegro.tech.hermes.metrics.PathsCompiler
@@ -46,6 +47,9 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     static Integer NUMBER_OF_PARTITION = 3
+
+    @Shared
+    BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(false, null, null, null)
 
     @Shared
     KafkaContainer kafkaContainer = new KafkaContainer()
@@ -95,7 +99,10 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     }
 
     def setup() {
-        producers = new Producers(new Producers.Tuple(leaderConfirms, everyoneConfirms), emptyList(), kafkaProducerProperties.isReportNodeMetricsEnabled())
+        producers = new Producers(new Producers.Tuple(
+                new pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducer<byte[], byte[]>(leaderConfirms, brokerLatencyReporter),
+                new pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducer<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter)),
+                emptyList())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
