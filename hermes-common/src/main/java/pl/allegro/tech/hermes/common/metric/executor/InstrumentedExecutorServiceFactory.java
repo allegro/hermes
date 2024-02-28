@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-
 public class InstrumentedExecutorServiceFactory {
 
     private final MetricsFacade metricsFacade;
@@ -63,13 +62,8 @@ public class InstrumentedExecutorServiceFactory {
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(queueCapacity),
                 threadFactory,
-                getMeteredRejectedExecutionHandler(executorName)
+                rejectedExecutionHandler
         );
         return executor;
     }
-
-    RejectedExecutionHandler getMeteredRejectedExecutionHandler(String executorName) {
-        return rejectedExecutionHandler;
-    }
-
 }
