@@ -112,34 +112,6 @@ public class HermesMetrics {
         metricRegistry.register(metricRegistryName(Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_REQUEST_QUEUE_SIZE), gauge);
     }
 
-    public void registerThreadPoolActiveThreads(String executorName, Gauge<Integer> gauge) {
-        registerExecutorGauge(Gauges.EXECUTOR_ACTIVE_THREADS, executorName, gauge);
-    }
-
-    public void registerThreadPoolCapacity(String executorName, Gauge<Integer> gauge) {
-        registerExecutorGauge(Gauges.EXECUTOR_CAPACITY, executorName, gauge);
-    }
-
-    public void registerThreadPoolUtilization(String executorName, Gauge<Double> gauge) {
-        registerExecutorGauge(Gauges.UTILIZATION, executorName, gauge);
-    }
-
-    public void registerThreadPoolTaskQueueCapacity(String executorName, Gauge<Integer> gauge) {
-        registerExecutorGauge(Gauges.TASK_QUEUE_CAPACITY, executorName, gauge);
-    }
-
-    public void registerThreadPoolTaskQueued(String executorName, Gauge<Integer> gauge) {
-        registerExecutorGauge(Gauges.TASK_QUEUED, executorName, gauge);
-    }
-
-    public void registerThreadPoolTaskQueueUtilization(String executorName, Gauge<Double> gauge) {
-        registerExecutorGauge(Gauges.TASKS_QUEUE_UTILIZATION, executorName, gauge);
-    }
-
-    public void incrementThreadPoolTaskRejectedCount(String executorName) {
-        executorCounter(Gauges.TASKS_REJECTED_COUNT, executorName).inc();
-    }
-
     public void registerInflightGauge(SubscriptionName subscription, Gauge<?> gauge) {
         registerGauge(metricRegistryName(Gauges.INFLIGHT, subscription.getTopicName(), subscription.getName()), gauge);
     }
