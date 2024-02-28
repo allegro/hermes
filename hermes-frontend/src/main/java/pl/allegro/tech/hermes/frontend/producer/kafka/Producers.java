@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
-import org.apache.kafka.common.Node;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
@@ -11,41 +9,37 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 // exposes kafka producer metrics, see: https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
 public class Producers {
-    private final Producer<byte[], byte[]> ackLeader;
-    private final Producer<byte[], byte[]> ackAll;
+    private final KafkaProducer<byte[], byte[]> ackLeader;
+    private final KafkaProducer<byte[], byte[]> ackAll;
 
-    private final List<Producer<byte[], byte[]>> remoteAckLeader;
-    private final List<Producer<byte[], byte[]>> remoteAckAll;
+    private final List<KafkaProducer<byte[], byte[]>> remoteAckLeader;
+    private final List<KafkaProducer<byte[], byte[]>> remoteAckAll;
 
-    private final boolean reportNodeMetrics;
-    private final AtomicBoolean nodeMetricsRegistered = new AtomicBoolean(false);
 
     public Producers(Tuple localProducers,
-                     List<Tuple> remoteProducers,
-                     boolean reportNodeMetrics) {
+                     List<Tuple> remoteProducers) {
         this.ackLeader = localProducers.ackLeader;
         this.ackAll = localProducers.ackAll;
-        this.reportNodeMetrics = reportNodeMetrics;
         this.remoteAckLeader = remoteProducers.stream().map(it -> it.ackLeader).collect(Collectors.toList());
         this.remoteAckAll = remoteProducers.stream().map(it -> it.ackAll).collect(Collectors.toList());
     }
 
-    public Producer<byte[], byte[]> get(Topic topic) {
+    public KafkaProducer<byte[], byte[]> get(Topic topic) {
         return topic.isReplicationConfirmRequired() ? ackAll : ackLeader;
     }
 
-    public List<Producer<byte[], byte[]>> getRemote(Topic topic) {
+    public List<KafkaProducer<byte[], byte[]>> getRemote(Topic topic) {
         return topic.isReplicationConfirmRequired() ? remoteAckLeader : remoteAckAll;
     }
 
 
+    //TODO: should probably be split per DC
     public void registerGauges(MetricsFacade metricsFacade) {
         MetricName bufferTotalBytes = producerMetric("buffer-total-bytes", "producer-metrics", "buffer total bytes");
         metricsFacade.producer().registerAckAllTotalBytesGauge(ackAll, producerGauge(bufferTotalBytes));
@@ -73,27 +67,8 @@ public class Producers {
         metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(ackLeader, producerGauge(queueTimeMax));
     }
 
-    public void maybeRegisterNodeMetricsGauges(MetricsFacade metricsFacade) {
-        if (reportNodeMetrics && nodeMetricsRegistered.compareAndSet(false, true)) {
-            registerLatencyPerBrokerGauge(metricsFacade);
-        }
-    }
 
-    private void registerLatencyPerBrokerGauge(MetricsFacade metricsFacade) {
-        List<Node> brokers = ProducerBrokerNodeReader.read(ackLeader);
-        for (Node broker : brokers) {
-            metricsFacade.producer().registerAckAllMaxLatencyBrokerGauge(ackAll,
-                    producerLatencyGauge("request-latency-max", broker), broker.host());
-            metricsFacade.producer().registerAckLeaderMaxLatencyPerBrokerGauge(ackLeader,
-                    producerLatencyGauge("request-latency-max", broker), broker.host());
-            metricsFacade.producer().registerAckAllAvgLatencyPerBrokerGauge(ackAll,
-                    producerLatencyGauge("request-latency-avg", broker), broker.host());
-            metricsFacade.producer().registerAckLeaderAvgLatencyPerBrokerGauge(ackLeader,
-                    producerLatencyGauge("request-latency-avg", broker), broker.host());
-        }
-    }
-
-    private double findProducerMetric(Producer<byte[], byte[]> producer,
+    private double findProducerMetric(KafkaProducer<byte[], byte[]> producer,
                                       Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
         Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                 producer.metrics().entrySet().stream().filter(predicate).findFirst();
@@ -101,14 +76,8 @@ public class Producers {
         return value < 0 ? 0.0 : value;
     }
 
-    private ToDoubleFunction<Producer<byte[], byte[]>> producerLatencyGauge(String producerMetricName, Node node) {
-        Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals("producer-node-metrics")
-                && entry.getKey().name().equals(producerMetricName)
-                && entry.getKey().tags().containsValue("node-" + node.id());
-        return producer -> findProducerMetric(producer, predicate);
-    }
 
-    private ToDoubleFunction<Producer<byte[], byte[]>> producerGauge(MetricName producerMetricName) {
+    private ToDoubleFunction<KafkaProducer<byte[], byte[]>> producerGauge(MetricName producerMetricName) {
         Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group())
                 && entry.getKey().name().equals(producerMetricName.name());
         return producer -> findProducerMetric(producer, predicate);
@@ -124,10 +93,10 @@ public class Producers {
     }
 
     public static class Tuple {
-        private final Producer<byte[], byte[]> ackLeader;
-        private final Producer<byte[], byte[]> ackAll;
+        private final KafkaProducer<byte[], byte[]> ackLeader;
+        private final KafkaProducer<byte[], byte[]> ackAll;
 
-        public Tuple(Producer<byte[], byte[]> ackLeader, Producer<byte[], byte[]> ackAll) {
+        public Tuple(KafkaProducer<byte[], byte[]> ackLeader, KafkaProducer<byte[], byte[]> ackAll) {
             this.ackLeader = ackLeader;
             this.ackAll = ackAll;
         }

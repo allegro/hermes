@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.frontend.config.KafkaProperties;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,13 +37,15 @@ public class KafkaMessageProducerFactory {
     private final KafkaParameters kafkaParameters;
     private final List<KafkaProperties> remoteKafkaParameters;
     private final KafkaProducerParameters kafkaProducerParameters;
+    private final BrokerLatencyReporter brokerLatencyReporter;
     private final long bufferedSizeBytes;
 
     public KafkaMessageProducerFactory(KafkaParameters kafkaParameters,
                                        List<KafkaProperties> remoteKafkaParameters,
-                                       KafkaProducerParameters kafkaProducerParameters,
+                                       KafkaProducerParameters kafkaProducerParameters, BrokerLatencyReporter brokerLatencyReporter,
                                        long bufferedSizeBytes) {
         this.kafkaProducerParameters = kafkaProducerParameters;
+        this.brokerLatencyReporter = brokerLatencyReporter;
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;
         this.remoteKafkaParameters = remoteKafkaParameters;
@@ -62,8 +64,7 @@ public class KafkaMessageProducerFactory {
                         producer(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
         return new Producers(
                 localProducers,
-                remoteProducers,
-                kafkaProducerParameters.isReportNodeMetricsEnabled()
+                remoteProducers
         );
     }
 
@@ -94,6 +95,9 @@ public class KafkaMessageProducerFactory {
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
-        return new KafkaProducer<>(props);
+        return new KafkaProducer<>(
+                new org.apache.kafka.clients.producer.KafkaProducer<>(props),
+                brokerLatencyReporter
+        );
     }
 }

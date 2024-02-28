@@ -19,15 +19,17 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties;
-import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Charsets.UTF_8;
@@ -48,24 +50,30 @@ public class KafkaBrokerMessageProducerTest {
     private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, PARTITION_KEY, emptyMap());
 
     private final ByteArraySerializer serializer = new ByteArraySerializer();
+    @Mock
+    private HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
+    private final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
+    private final BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(false, metricsFacade, Duration.ZERO, Executors.newSingleThreadExecutor());
+
     private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
     private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
+    private final KafkaProducer<byte[], byte[]> leaderConfirmsProduceWrapper = new KafkaProducer<>(leaderConfirmsProducer, brokerLatencyReporter);
+    private final KafkaProducer<byte[], byte[]> everyoneConfirmsProduceWrapper = new KafkaProducer<>(everyoneConfirmProducer, brokerLatencyReporter);
+
+
     private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
     private final HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties =
         new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties();
-    private final KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties();
-    private final Producers producers =
-        new Producers(new Producers.Tuple(leaderConfirmsProducer, everyoneConfirmProducer), emptyList(), kafkaProducerProperties.isReportNodeMetricsEnabled());
+    private final Producers producers = new Producers(
+            new Producers.Tuple(leaderConfirmsProduceWrapper, everyoneConfirmsProduceWrapper),
+            emptyList());
 
     private KafkaBrokerMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
     private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties,
         httpHeadersPropagationAsKafkaHeadersProperties);
 
-    @Mock
-    private HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
 
-    private final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
 
     @Mock
     private KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
