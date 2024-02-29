@@ -14,6 +14,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.BATCH_SIZE_CONFIG
 import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.BUFFER_MEMORY_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.COMPRESSION_TYPE_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.MAX_BLOCK_MS_CONFIG;
@@ -80,6 +81,7 @@ public class KafkaMessageProducerFactory {
         props.put(COMPRESSION_TYPE_CONFIG, kafkaProducerParameters.getCompressionCodec());
         props.put(BUFFER_MEMORY_CONFIG, bufferedSizeBytes);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, (int) kafkaProducerParameters.getRequestTimeout().toMillis());
+        props.put(DELIVERY_TIMEOUT_MS_CONFIG, (int) kafkaProducerParameters.getDeliveryTimeout().toMillis());
         props.put(BATCH_SIZE_CONFIG, kafkaProducerParameters.getBatchSize());
         props.put(SEND_BUFFER_CONFIG, kafkaProducerParameters.getTcpSendBuffer());
         props.put(RETRIES_CONFIG, kafkaProducerParameters.getRetries());
