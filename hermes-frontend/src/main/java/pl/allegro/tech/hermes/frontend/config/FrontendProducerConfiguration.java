@@ -27,7 +27,7 @@ import java.util.List;
         SchemaProperties.class,
         KafkaHeaderNameProperties.class,
         KafkaProducerProperties.class,
-        ExperimentalKafkaProducerProperties.class,
+        FailFastKafkaProducerProperties.class,
         KafkaClustersProperties.class,
         HTTPHeadersProperties.class
 })
@@ -55,9 +55,9 @@ public class FrontendProducerConfiguration {
 
     @Bean
     public BrokerMessageProducer unbufferedMessageBrokerProducer(
-            @Named("experimentalKafkaMessageProducer") Producers producers,
+            @Named("failFastKafkaProducers") Producers producers,
             MessageToKafkaProducerRecordConverter messageConverter,
-            ExperimentalKafkaProducerProperties kafkaProducerProperties
+            FailFastKafkaProducerProperties kafkaProducerProperties
     ) {
         return new MultiDCKafkaBrokerMessageProducer(producers, new SimpleRemoteProducerProvider(), messageConverter, kafkaProducerProperties.getSpeculativeSendDelay());
     }
@@ -89,10 +89,10 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean(destroyMethod = "close")
-    public Producers experimentalKafkaMessageProducer(KafkaClustersProperties kafkaClustersProperties,
-                                          ExperimentalKafkaProducerProperties kafkaProducerProperties,
-                                          LocalMessageStorageProperties localMessageStorageProperties,
-                                          DatacenterNameProvider datacenterNameProvider, BrokerLatencyReporter brokerLatencyReporter) {
+    public Producers failFastKafkaProducers(KafkaClustersProperties kafkaClustersProperties,
+                                            FailFastKafkaProducerProperties kafkaProducerProperties,
+                                            LocalMessageStorageProperties localMessageStorageProperties,
+                                            DatacenterNameProvider datacenterNameProvider, BrokerLatencyReporter brokerLatencyReporter) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         List<KafkaProperties> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
         return new KafkaMessageProducerFactory(

@@ -5,8 +5,8 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducerParameters;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "frontend.kafka.experimental-producer")
-public class ExperimentalKafkaProducerProperties implements KafkaProducerParameters {
+@ConfigurationProperties(prefix = "frontend.kafka.fail-fast-producer")
+public class FailFastKafkaProducerProperties implements KafkaProducerParameters {
 
     private Duration speculativeSendDelay = Duration.ofMillis(250);
 
@@ -18,9 +18,11 @@ public class ExperimentalKafkaProducerProperties implements KafkaProducerParamet
 
     private int retries = Integer.MAX_VALUE;
 
-    private Duration retryBackoff = Duration.ofMillis(256);
+    private Duration retryBackoff = Duration.ofMillis(50);
 
     private Duration requestTimeout = Duration.ofMillis(500);
+
+    private Duration deliveryTimeout = Duration.ofMillis(500);
 
     private int batchSize = 16 * 1024;
 
@@ -159,5 +161,14 @@ public class ExperimentalKafkaProducerProperties implements KafkaProducerParamet
 
     public void setSpeculativeSendDelay(Duration speculativeSendDelay) {
         this.speculativeSendDelay = speculativeSendDelay;
+    }
+
+    @Override
+    public Duration getDeliveryTimeout() {
+        return deliveryTimeout;
+    }
+
+    public void setDeliveryTimeout(Duration deliveryTimeout) {
+        this.deliveryTimeout = deliveryTimeout;
     }
 }
