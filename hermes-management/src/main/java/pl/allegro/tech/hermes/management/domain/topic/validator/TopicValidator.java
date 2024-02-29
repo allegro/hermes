@@ -40,6 +40,10 @@ public class TopicValidator {
         checkContentType(created);
         checkTopicLabels(created);
 
+        if (created.isFallbackToRemoteDatacenterEnabled() && !createdBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        }
+
         if (created.wasMigratedFromJsonType()) {
             throw new TopicValidationException("Newly created topic cannot have migratedFromJsonType flag set to true");
         }
@@ -53,6 +57,10 @@ public class TopicValidator {
         apiPreconditions.checkConstraints(updated, modifiedBy.isAdmin());
         checkOwner(updated);
         checkTopicLabels(updated);
+
+        if (!previous.isFallbackToRemoteDatacenterEnabled() && updated.isFallbackToRemoteDatacenterEnabled() && !modifiedBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        }
 
         if (migrationFromJsonTypeFlagChangedToTrue(updated, previous)) {
             if (updated.getContentType() != ContentType.AVRO) {

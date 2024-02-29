@@ -32,6 +32,8 @@ public class TopicBuilder {
 
     private Topic.Ack ack = Topic.Ack.LEADER;
 
+    private boolean fallbackToRemoteDatacenterEnabled = false;
+
     private ContentType contentType = ContentType.JSON;
 
     private RetentionTime retentionTime = RetentionTime.of(1, TimeUnit.DAYS);
@@ -85,8 +87,8 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
+                name, description, owner, retentionTime, migratedFromJsonType, ack, fallbackToRemoteDatacenterEnabled,
+                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
                 offlineStorage, labels, null, null
         );
@@ -119,6 +121,11 @@ public class TopicBuilder {
 
     public TopicBuilder withAck(Topic.Ack ack) {
         this.ack = ack;
+        return this;
+    }
+
+    public TopicBuilder withFallbackToRemoteDatacenterEnabled() {
+        this.fallbackToRemoteDatacenterEnabled = true;
         return this;
     }
 

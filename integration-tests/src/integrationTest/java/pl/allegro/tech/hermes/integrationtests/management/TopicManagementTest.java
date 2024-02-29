@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integrationtests.management;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.jayway.awaitility.Duration;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -16,6 +17,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
+import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
 import java.util.Arrays;
@@ -42,6 +44,11 @@ public class TopicManagementTest {
     public static final HermesExtension hermes = new HermesExtension();
 
     private static final String SCHEMA = AvroUserSchemaLoader.load().toString();
+
+    @AfterEach
+    public void cleanup() {
+        TestSecurityProvider.reset();
+    }
 
     @Test
     public void shouldEmitAuditEventWhenTopicCreated() {
@@ -589,6 +596,93 @@ public class TopicManagementTest {
         // then
         response.expectStatus().isCreated();
         hermes.api().getTopicResponse(qualifiedTopicName).expectStatus().isOk();
+    }
+
+    @Test
+    public void shouldNotAllowNonAdminUserCreateTopicWithFallbackToRemoteDatacenterEnabled() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(false);
+        TopicWithSchema topic = topicWithSchema(
+                topicWithRandomName()
+                        .withFallbackToRemoteDatacenterEnabled()
+                        .build()
+        );
+        hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().createTopic(topic);
+
+        //then
+        response.expectStatus().isBadRequest();
+        assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+                .contains("User is not allowed to enable fallback to remote datacenter");
+    }
+
+    @Test
+    public void shouldAllowAdminUserCreateTopicWithFallbackToRemoteDatacenterEnabled() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(true);
+        TopicWithSchema topic = topicWithSchema(
+                topicWithRandomName()
+                        .withFallbackToRemoteDatacenterEnabled()
+                        .build()
+        );
+        hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().createTopic(topic);
+
+        //then
+        response.expectStatus().isCreated();
+    }
+
+    @Test
+    public void shouldNotAllowNonAdminUserToEnableFallbackToRemoteDatacenter() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        TestSecurityProvider.setUserIsAdmin(false);
+        PatchData patchData = PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", true));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+        //then
+        response.expectStatus().isBadRequest();
+        assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+                .contains("User is not allowed to enable fallback to remote datacenter");
+    }
+
+    @Test
+    public void shouldAllowAdminUserToEnableFallbackToRemoteDatacenter() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        TestSecurityProvider.setUserIsAdmin(true);
+        PatchData patchData = PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", true));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+        //then
+        response.expectStatus().isOk();
+    }
+
+    @Test
+    public void shouldAllowNonAdminUserToModifyTopicWithFallbackToRemoteDatacenterEnabled() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(true);
+        Topic topic = hermes.initHelper().createTopic(
+                topicWithRandomName()
+                        .withFallbackToRemoteDatacenterEnabled()
+                        .build()
+        );
+        TestSecurityProvider.setUserIsAdmin(false);
+        PatchData patchData = PatchData.from(ImmutableMap.of("description", "new description"));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+        //then
+        response.expectStatus().isOk();
     }
 
     private static List<String> getGroupTopicsList(String groupName) {
