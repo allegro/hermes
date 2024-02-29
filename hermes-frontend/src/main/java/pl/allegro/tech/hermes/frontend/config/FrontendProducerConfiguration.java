@@ -82,8 +82,7 @@ public class FrontendProducerConfiguration {
                 remoteKafkaProperties,
                 kafkaProducerProperties,
                 brokerLatencyReporter,
-                localMessageStorageProperties.getBufferedSizeBytes(),
-                datacenterNameProvider.getDatacenterName()
+                localMessageStorageProperties.getBufferedSizeBytes()
                 ).provide();
 
     }
@@ -100,8 +99,7 @@ public class FrontendProducerConfiguration {
                 remoteKafkaProperties,
                 kafkaProducerProperties,
                 brokerLatencyReporter,
-                localMessageStorageProperties.getBufferedSizeBytes(),
-                datacenterNameProvider.getDatacenterName()
+                localMessageStorageProperties.getBufferedSizeBytes()
         ).provide();
 
     }
