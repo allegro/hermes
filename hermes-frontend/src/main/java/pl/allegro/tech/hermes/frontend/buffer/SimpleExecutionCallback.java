@@ -24,4 +24,9 @@ public class SimpleExecutionCallback implements PublishingCallback {
     public void onPublished(Message message, Topic topic) {
         callbacks.forEach(c -> c.onPublished(message, topic));
     }
+
+    @Override
+    public void onEachPublished(Message message, Topic topic, String datacenter) {
+        callbacks.forEach(c -> c.onEachPublished(message, topic, datacenter));
+    }
 }

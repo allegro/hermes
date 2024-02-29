@@ -70,7 +70,7 @@ class MessageReadHandler implements HttpHandler {
     }
 
     private Duration calculateTimeout(Topic topic) {
-        if (topic.isBuffersDisabled()) {
+        if (topic.isFallbackToRemoteDatacenterEnabled()) {
             return globalAsyncTimeout;
         }
         return topic.isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout;

@@ -87,8 +87,7 @@ public class RemoteDCProduceFallbackTest {
     public void shouldPublishAndConsumeThroughMultipleDatacenters() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
-        TestMessage message = TestMessage.of("key1", "value1");
-        Topic topic = initHelper.createTopic(topicWithRandomName().withBuffersDisabled(true).build());
+        Topic topic = initHelper.createTopic(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
         initHelper.createSubscription(
                 subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
         );
@@ -97,6 +96,7 @@ public class RemoteDCProduceFallbackTest {
         dc1.kafka.cutOffConnectionsBetweenBrokersAndClients();
 
         // and message is published to dc1
+        TestMessage message = TestMessage.of("key1", "value1");
         DC1.publishUntilSuccess(topic.getQualifiedName(), message.body());
 
         // then message is received in dc2
@@ -107,8 +107,7 @@ public class RemoteDCProduceFallbackTest {
     public void shouldReturn500whenBothDCsAreUnavailable() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
-        TestMessage message = TestMessage.of("key1", "value1");
-        Topic topic = initHelper.createTopic(topicWithRandomName().withBuffersDisabled(true).build());
+        Topic topic = initHelper.createTopic(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
         initHelper.createSubscription(
                 subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
         );
@@ -118,6 +117,7 @@ public class RemoteDCProduceFallbackTest {
         dc2.kafka.cutOffConnectionsBetweenBrokersAndClients();
 
         // and message is published
+        TestMessage message = TestMessage.of("key1", "value1");
         DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 504);
 
         // then no messages are received

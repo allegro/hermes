@@ -261,6 +261,10 @@ public class BackupMessagesLoader {
                 brokerTimer.close();
                 cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
+            }
+
+            @Override
+            public void onEachPublished(Message message, Topic topic, String datacenter) {
                 trackers.get(topic).logPublished(message.getId(), topic.getName(), "", Collections.emptyMap());
             }
         });

@@ -28,13 +28,12 @@ class TimeoutHandler implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
         MessageState state = attachment.getMessageState();
-        boolean buffersDisabled = attachment.getCachedTopic().getTopic().isBuffersDisabled();
+        boolean buffersDisabled = attachment.getCachedTopic().getTopic().isFallbackToRemoteDatacenterEnabled();
 
         state.setTimeoutHasPassed();
         if (state.setReadingTimeout()) {
             readingTimeout(exchange, attachment);
         } else if (buffersDisabled && state.setTimeoutSendingToKafka()) {
-            logger.info("Async timeout elapsed");
             sendingToKafkaTimeout(exchange, attachment);
         } else if (state.setDelayedSending()) {
             delayedSending(exchange, attachment);
