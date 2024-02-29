@@ -84,7 +84,7 @@ public class RemoteDCProduceFallbackTest {
     }
 
     @Test
-    public void shouldPublishAndConsumeThroughMultipleDatacenters() {
+    public void shouldPublishAndConsumeViaRemoteDCWhenLocalKafkaIsUnavailable() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = initHelper.createTopic(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
