@@ -40,13 +40,9 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
                 messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
         try {
-            Callback wrappedCallback = new SendCallback(message, cachedTopic, callback);
-            producers.get(cachedTopic.getTopic()).send(
-                    producerRecord,
-                    cachedTopic,
-                    message,
-                    wrappedCallback
-                    );
+            var producer = producers.get(cachedTopic.getTopic());
+            Callback wrappedCallback = new SendCallback(message, cachedTopic, callback, producer.getDatacenter());
+            producer.send(producerRecord, cachedTopic, message, wrappedCallback);
         } catch (Exception e) {
             // message didn't get to internal producer buffer and it will not be send to a broker
             callback.onUnpublished(message, cachedTopic.getTopic(), e);
@@ -93,16 +89,19 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         private final Message message;
         private final CachedTopic topic;
         private final PublishingCallback callback;
+        private final String datacenter;
 
-        public SendCallback(Message message, CachedTopic topic, PublishingCallback callback) {
+        public SendCallback(Message message, CachedTopic topic, PublishingCallback callback, String datacenter) {
             this.message = message;
             this.topic = topic;
             this.callback = callback;
+            this.datacenter = datacenter;
         }
 
         @Override
         public void onCompletion(RecordMetadata recordMetadata, Exception e) {
             if (e == null) {
+                callback.onEachPublished(message, topic.getTopic(), datacenter);
                 callback.onPublished(message, topic.getTopic());
             } else {
                 callback.onUnpublished(message, topic.getTopic(), e);

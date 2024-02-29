@@ -126,6 +126,13 @@ public class TopicMetrics {
         );
     }
 
+    public HermesCounter topicDuplicatedMessageCounter(TopicName topicName) {
+        return HermesCounters.from(
+                micrometerCounter(TopicMetricsNames.TOPIC_DUPLICATED_MESSAGE, topicName),
+                hermesMetrics.meter(Meters.TOPIC_DUPLICATED_MESSAGE, topicName)
+        );
+    }
+
     public HermesHistogram topicGlobalMessageContentSizeHistogram() {
         return DefaultHermesHistogram.of(
                 DistributionSummary.builder(TopicMetricsNames.TOPIC_GLOBAL_MESSAGE_SIZE_BYTES)
@@ -176,5 +183,6 @@ public class TopicMetrics {
         public static final String TOPIC_HTTP_STATUS_CODES = "topic-http-status-codes";
         public static final String TOPIC_GLOBAL_MESSAGE_SIZE_BYTES = "topic-global-message-size-bytes";
         public static final String TOPIC_MESSAGE_SIZE_BYTES = "topic-message-size-bytes";
+        public static final String TOPIC_DUPLICATED_MESSAGE = "topic-duplicated-message";
     }
 }

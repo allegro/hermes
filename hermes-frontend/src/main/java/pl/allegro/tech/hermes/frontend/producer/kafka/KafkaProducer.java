@@ -29,74 +29,92 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaProducer.class);
 
+    private final org.apache.kafka.clients.producer.Producer<K, V> producer;
     private final BrokerLatencyReporter brokerLatencyReporter;
-    private final org.apache.kafka.clients.producer.Producer<K,V> producer;
+    private final String datacenter;
 
-    public KafkaProducer(org.apache.kafka.clients.producer.Producer<K, V> kafkaProducer, BrokerLatencyReporter brokerLatencyReporter) {
+    public KafkaProducer(org.apache.kafka.clients.producer.Producer<K, V> kafkaProducer, BrokerLatencyReporter brokerLatencyReporter, String datacenter) {
         this.producer = kafkaProducer;
         this.brokerLatencyReporter = brokerLatencyReporter;
+        this.datacenter = datacenter;
+    }
+
+    public String getDatacenter() {
+        return datacenter;
     }
 
     public void send(ProducerRecord<K, V> producerRecord,
                      CachedTopic cachedTopic,
                      Message message,
                      Callback callback
-                     ) {
+    ) {
         HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
         Callback meteredCallback = new MeteredCallback(timer, message, cachedTopic, callback);
         producer.send(producerRecord, meteredCallback);
     }
 
     @Override
-    public Future<RecordMetadata> send(ProducerRecord<K,V> record) {
+    public Future<RecordMetadata> send(ProducerRecord<K, V> record) {
         return producer.send(record);
     }
 
     @Override
-    public Future<RecordMetadata> send(ProducerRecord<K,V> record, Callback callback) {
+    public Future<RecordMetadata> send(ProducerRecord<K, V> record, Callback callback) {
         return producer.send(record, callback);
     }
 
+    @Override
     public void initTransactions() {
         producer.initTransactions();
     }
 
+    @Override
     public void beginTransaction() throws ProducerFencedException {
         producer.beginTransaction();
     }
 
+    @Override
     public void sendOffsetsToTransaction(Map offsets, String consumerGroupId) throws ProducerFencedException {
         producer.sendOffsetsToTransaction(offsets, consumerGroupId);
     }
 
+    @Override
     public void sendOffsetsToTransaction(Map offsets, ConsumerGroupMetadata groupMetadata) throws ProducerFencedException {
         producer.sendOffsetsToTransaction(offsets, groupMetadata);
     }
 
+    @Override
     public void commitTransaction() throws ProducerFencedException {
         producer.commitTransaction();
     }
 
+    @Override
     public void abortTransaction() throws ProducerFencedException {
         producer.abortTransaction();
     }
 
+    @Override
     public void flush() {
         producer.flush();
     }
 
+
+    @Override
     public List<PartitionInfo> partitionsFor(String topic) {
         return producer.partitionsFor(topic);
     }
 
+    @Override
     public Map<MetricName, ? extends Metric> metrics() {
         return producer.metrics();
     }
 
+    @Override
     public void close() {
         producer.close();
     }
 
+    @Override
     public void close(Duration timeout) {
         producer.close(timeout);
     }

@@ -23,32 +23,26 @@ public class MessageEndProcessor {
     private final Trackers trackers;
     private final BrokerListeners brokerListeners;
     private final TrackingHeadersExtractor trackingHeadersExtractor;
-    private final String datacenter;
 
-    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersExtractor trackingHeadersExtractor, String datacenter) {
+    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersExtractor trackingHeadersExtractor) {
         this.trackers = trackers;
         this.brokerListeners = brokerListeners;
         this.trackingHeadersExtractor = trackingHeadersExtractor;
-        this.datacenter = datacenter;
+    }
+
+    // TODO: move to a better place
+    public void eachSent(HttpServerExchange exchange, AttachmentContent attachment, String datacenter) {
+        trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(),
+                attachment.getTopic().getName(), readHostAndPort(exchange), datacenter,
+                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
     }
 
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
-        trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(),
-                attachment.getTopic().getName(),
-                readHostAndPort(exchange),
-                datacenter,
-                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
         sendResponse(exchange, attachment, StatusCodes.CREATED);
         attachment.getCachedTopic().incrementPublished();
     }
 
-    public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
-        trackers.get(cachedTopic.getTopic()).logPublished(
-                message.getId(),
-                cachedTopic.getTopic().getName(),
-                readHostAndPort(exchange),
-                datacenter,
-                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
+    public void delayedSent(CachedTopic cachedTopic, Message message) {
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
         cachedTopic.incrementPublished();
     }

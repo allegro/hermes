@@ -56,11 +56,10 @@ public class FrontendProducerConfiguration {
     @Bean
     public BrokerMessageProducer unbufferedMessageBrokerProducer(
             @Named("experimentalKafkaMessageProducer") Producers producers,
-            MetricsFacade metricsFacade,
             MessageToKafkaProducerRecordConverter messageConverter,
             ExperimentalKafkaProducerProperties kafkaProducerProperties
     ) {
-        return new MultiDCKafkaBrokerMessageProducer(producers, new SimpleRemoteProducerProvider(), metricsFacade, messageConverter, kafkaProducerProperties.getSpeculativeSendDelay());
+        return new MultiDCKafkaBrokerMessageProducer(producers, new SimpleRemoteProducerProvider(), messageConverter, kafkaProducerProperties.getSpeculativeSendDelay());
     }
 
     @Bean
@@ -83,7 +82,8 @@ public class FrontendProducerConfiguration {
                 remoteKafkaProperties,
                 kafkaProducerProperties,
                 brokerLatencyReporter,
-                localMessageStorageProperties.getBufferedSizeBytes()
+                localMessageStorageProperties.getBufferedSizeBytes(),
+                datacenterNameProvider.getDatacenterName()
                 ).provide();
 
     }
@@ -100,7 +100,9 @@ public class FrontendProducerConfiguration {
                 remoteKafkaProperties,
                 kafkaProducerProperties,
                 brokerLatencyReporter,
-                localMessageStorageProperties.getBufferedSizeBytes()).provide();
+                localMessageStorageProperties.getBufferedSizeBytes(),
+                datacenterNameProvider.getDatacenterName()
+        ).provide();
 
     }
 

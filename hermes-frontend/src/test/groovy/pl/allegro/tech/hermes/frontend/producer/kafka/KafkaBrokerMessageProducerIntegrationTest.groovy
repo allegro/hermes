@@ -84,6 +84,9 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     @Shared
     KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties()
 
+    @Shared
+    String datacenter = "dc";
+
     def setupSpec() {
         kafkaContainer.start()
         kafkaContainer.waitingFor(Wait.forHealthcheck())
@@ -100,8 +103,8 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
 
     def setup() {
         producers = new Producers(new Producers.Tuple(
-                new pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducer<byte[], byte[]>(leaderConfirms, brokerLatencyReporter),
-                new pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducer<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter)),
+                new pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducer<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, datacenter),
+                new pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducer<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, datacenter)),
                 emptyList())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),

@@ -17,7 +17,7 @@ public class BufferAwareBrokerMessageProducer implements BrokerMessageProducer {
 
     @Override
     public void send(Message message, CachedTopic topic, PublishingCallback callback) {
-        if (topic.getTopic().isBuffersDisabled()) {
+        if (topic.getTopic().isFallbackToRemoteDatacenterEnabled()) {
             this.unbufferedBrokerMessageProducer.send(message, topic, callback);
         } else {
             this.bufferedBrokerMessageProducer.send(message, topic, callback);

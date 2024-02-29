@@ -45,6 +45,7 @@ public class KafkaBrokerMessageProducerTest {
     private static final Long TIMESTAMP = 1L;
     private static final String PARTITION_KEY = "partition-key";
     private static final String MESSAGE_ID = "id";
+    private static final String datacenter = "dc";
     private static final Topic TOPIC = topic("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
     private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, PARTITION_KEY, emptyMap());
@@ -57,8 +58,8 @@ public class KafkaBrokerMessageProducerTest {
 
     private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
     private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
-    private final KafkaProducer<byte[], byte[]> leaderConfirmsProduceWrapper = new KafkaProducer<>(leaderConfirmsProducer, brokerLatencyReporter);
-    private final KafkaProducer<byte[], byte[]> everyoneConfirmsProduceWrapper = new KafkaProducer<>(everyoneConfirmProducer, brokerLatencyReporter);
+    private final KafkaProducer<byte[], byte[]> leaderConfirmsProduceWrapper = new KafkaProducer<>(leaderConfirmsProducer, brokerLatencyReporter, datacenter);
+    private final KafkaProducer<byte[], byte[]> everyoneConfirmsProduceWrapper = new KafkaProducer<>(everyoneConfirmProducer, brokerLatencyReporter, datacenter);
 
 
     private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
@@ -136,6 +137,11 @@ public class KafkaBrokerMessageProducerTest {
             public void onPublished(Message message, Topic topic) {
                 callbackCalled.set(true);
             }
+
+            @Override
+            public void onEachPublished(Message message, Topic topic, String datacenter) {
+                callbackCalled.set(true);
+            }
         });
 
         //then
@@ -163,6 +169,11 @@ public class KafkaBrokerMessageProducerTest {
         }
 
         public void onPublished(Message message, Topic topic) {
+        }
+
+        @Override
+        public void onEachPublished(Message message, Topic topic, String datacenter) {
+
         }
     }
 

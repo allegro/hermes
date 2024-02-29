@@ -39,6 +39,8 @@ public class CachedTopic {
     private final MeterBackedHermesCounter topicThroughputMeter;
     private final MeterBackedHermesCounter globalThroughputMeter;
 
+    private final HermesCounter topicDuplicatedMessageCounter;
+
     private final HermesCounter published;
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
@@ -78,6 +80,8 @@ public class CachedTopic {
             topicProducerLatencyTimer = metricsFacade.topics().ackLeaderTopicLatency(topic.getName());
             topicBrokerLatencyTimer = metricsFacade.topics().ackLeaderBrokerLatency();
         }
+
+        topicDuplicatedMessageCounter = metricsFacade.topics().topicDuplicatedMessageCounter(topic.getName());
     }
 
     public Topic getTopic() {
@@ -140,5 +144,9 @@ public class CachedTopic {
 
     public HermesRateMeter getThroughput() {
         return topicThroughputMeter;
+    }
+
+    public void markMessageDuplicated() {
+        topicDuplicatedMessageCounter.increment();
     }
 }

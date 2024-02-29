@@ -47,7 +47,6 @@ class PublishingHandler implements HttpHandler {
         messageState.setSendingToKafkaProducerQueue();
         brokerMessageProducer.send(attachment.getMessage(), attachment.getCachedTopic(), new PublishingCallback() {
 
-            // called from kafka producer thread
             @Override
             public void onPublished(Message message, Topic topic) {
                 exchange.getConnection().getWorker().execute(() -> {
@@ -55,28 +54,33 @@ class PublishingHandler implements HttpHandler {
                         attachment.removeTimeout();
                         messageEndProcessor.sent(exchange, attachment);
                     } else if (messageState.setDelayedSentToKafka()) {
-                        messageEndProcessor.delayedSent(exchange, attachment.getCachedTopic(), message);
+                        messageEndProcessor.delayedSent(attachment.getCachedTopic(), message);
                     }
                 });
             }
 
-            // in most cases this method should be called from worker thread,
-            // therefore there is no need to switch it to another worker thread
-            // TODO: this can be called from scheduled executor service thread with multi DC publishing. Consider switching to worker here
+            @Override
+            public void onEachPublished(Message message, Topic topic, String datacenter) {
+                exchange.getConnection().getWorker().execute(() -> messageEndProcessor.eachSent(exchange, attachment));
+            }
+
             @Override
             public void onUnpublished(Message message, Topic topic, Exception exception) {
-                messageState.setErrorInSendingToKafka();
-                attachment.removeTimeout();
-                handleNotPublishedMessage(exchange, topic, attachment.getMessageId(), exception);
+                exchange.getConnection().getWorker().execute(() -> {
+                    messageState.setErrorInSendingToKafka();
+                    attachment.removeTimeout();
+                    handleNotPublishedMessage(exchange, topic, attachment.getMessageId(), exception);
+                });
             }
         });
 
         if (messageState.setSendingToKafka()
-                && !attachment.getCachedTopic().getTopic().isBuffersDisabled()
+                && !attachment.getCachedTopic().getTopic().isFallbackToRemoteDatacenterEnabled()
                 && messageState.setDelayedProcessing()) {
             messageEndProcessor.bufferedButDelayedProcessing(exchange, attachment);
         }
     }
+
 
     private void handleNotPublishedMessage(HttpServerExchange exchange, Topic topic, String messageId, Exception exception) {
         messageErrorProcessor.sendAndLog(

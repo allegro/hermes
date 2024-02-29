@@ -54,7 +54,6 @@ public class BackupMessagesLoader {
     private final int maxResendRetries;
     private final Duration resendSleep;
     private final Duration readTopicInfoSleep;
-    private final String datacenter;
 
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
@@ -65,9 +64,7 @@ public class BackupMessagesLoader {
                                 SchemaRepository schemaRepository,
                                 SchemaExistenceEnsurer schemaExistenceEnsurer,
                                 Trackers trackers,
-                                BackupMessagesLoaderParameters backupMessagesLoaderParameters,
-                                String datacenter
-                                ) {
+                                BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
@@ -78,7 +75,6 @@ public class BackupMessagesLoader {
         this.resendSleep = backupMessagesLoaderParameters.getLoadingPauseBetweenResend();
         this.readTopicInfoSleep = backupMessagesLoaderParameters.getLoadingWaitForBrokerTopicInfo();
         this.maxResendRetries = backupMessagesLoaderParameters.getMaxResendRetries();
-        this.datacenter = datacenter;
     }
 
     public void loadMessages(List<BackupMessage> messages) {
@@ -265,6 +261,10 @@ public class BackupMessagesLoader {
                 brokerTimer.close();
                 cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
+            }
+
+            @Override
+            public void onEachPublished(Message message, Topic topic, String datacenter) {
                 trackers.get(topic).logPublished(message.getId(), topic.getName(), "", datacenter, Collections.emptyMap());
             }
         });

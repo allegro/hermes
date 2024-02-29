@@ -39,16 +39,19 @@ public class KafkaMessageProducerFactory {
     private final KafkaProducerParameters kafkaProducerParameters;
     private final BrokerLatencyReporter brokerLatencyReporter;
     private final long bufferedSizeBytes;
+    private final String datacenter;
 
     public KafkaMessageProducerFactory(KafkaParameters kafkaParameters,
                                        List<KafkaProperties> remoteKafkaParameters,
                                        KafkaProducerParameters kafkaProducerParameters, BrokerLatencyReporter brokerLatencyReporter,
-                                       long bufferedSizeBytes) {
+                                       long bufferedSizeBytes,
+                                       String datacenter) {
         this.kafkaProducerParameters = kafkaProducerParameters;
         this.brokerLatencyReporter = brokerLatencyReporter;
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;
         this.remoteKafkaParameters = remoteKafkaParameters;
+        this.datacenter = datacenter;
 
     }
 
@@ -97,7 +100,8 @@ public class KafkaMessageProducerFactory {
         }
         return new KafkaProducer<>(
                 new org.apache.kafka.clients.producer.KafkaProducer<>(props),
-                brokerLatencyReporter
+                brokerLatencyReporter,
+                datacenter
         );
     }
 }
