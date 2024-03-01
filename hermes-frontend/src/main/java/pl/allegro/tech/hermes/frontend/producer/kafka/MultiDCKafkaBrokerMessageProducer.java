@@ -160,6 +160,7 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
     }
 
 
+    // TODO: maybe implementation this should be moved to KafkaProducer to make it easier for BrokerMessageProducer implementations
     @Override
     public boolean isTopicAvailable(CachedTopic topic) {
         return false;
