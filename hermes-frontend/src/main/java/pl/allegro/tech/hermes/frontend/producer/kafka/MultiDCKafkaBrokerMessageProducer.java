@@ -63,15 +63,8 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
             }
         }, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
 
-        scheduler.execute(
-                () -> send(producers.get(cachedTopic.getTopic()),
-                        producerRecord,
-                        sendCallback,
-                        cachedTopic,
-                        message
-                )
-        );
 
+        send(producers.get(cachedTopic.getTopic()), producerRecord, sendCallback, cachedTopic, message);
     }
 
     private void send(KafkaProducer<byte[], byte[]> producer,
