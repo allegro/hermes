@@ -39,6 +39,7 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
         this.producers = producers;
         this.speculativeSendDelay = speculativeSendDelay;
         this.remoteProducerProvider = remoteProducerProvider;
+        // TODO: producers.registerGauges(metricsFacade);
     }
 
     @Override
