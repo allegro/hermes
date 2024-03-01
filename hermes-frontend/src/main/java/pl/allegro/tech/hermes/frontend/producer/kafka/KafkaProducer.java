@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
+// TODO: is it a good idea to create abstraction on top of Producer? Currently it provides DC and instrumentation
 public class KafkaProducer<K, V> implements Producer<K, V> {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaProducer.class);
