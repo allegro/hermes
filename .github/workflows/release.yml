@@ -25,7 +25,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - name: Release
         if: github.ref == 'refs/heads/master'
         run: ./gradlew release -Prelease.customPassword=${GITHUB_TOKEN} -Prelease.customUsername=${GITHUB_ACTOR} -Prelease.forceVersion=${FORCE_VERSION}

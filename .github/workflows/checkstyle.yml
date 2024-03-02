@@ -22,7 +22,7 @@ jobs:
           java-version: 17
           distribution: 'temurin'
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - name: Run check style
         # ignore lengthy console setup tasks
         run: ./gradlew --continue clean checkstyleMain checkstyleTest checkstyleIntegrationTest checkstyleSlowIntegrationTest checkstyleJmh -PmaxCheckstyleWarnings=0 -x attachHermesConsole -x prepareIndexTemplate
