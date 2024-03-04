@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerReco
 import pl.allegro.tech.hermes.frontend.producer.kafka.MultiDCKafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.Producers;
 import pl.allegro.tech.hermes.frontend.producer.kafka.SimpleRemoteProducerProvider;
+import pl.allegro.tech.hermes.frontend.readiness.AdminReadinessService;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.List;
@@ -57,9 +58,15 @@ public class FrontendProducerConfiguration {
     public BrokerMessageProducer unbufferedMessageBrokerProducer(
             @Named("failFastKafkaProducers") Producers producers,
             MessageToKafkaProducerRecordConverter messageConverter,
-            FailFastKafkaProducerProperties kafkaProducerProperties
+            FailFastKafkaProducerProperties kafkaProducerProperties,
+            AdminReadinessService adminReadinessService
     ) {
-        return new MultiDCKafkaBrokerMessageProducer(producers, new SimpleRemoteProducerProvider(), messageConverter, kafkaProducerProperties.getSpeculativeSendDelay());
+        return new MultiDCKafkaBrokerMessageProducer(
+                producers,
+                new SimpleRemoteProducerProvider(adminReadinessService),
+                messageConverter,
+                kafkaProducerProperties.getSpeculativeSendDelay()
+        );
     }
 
     @Bean

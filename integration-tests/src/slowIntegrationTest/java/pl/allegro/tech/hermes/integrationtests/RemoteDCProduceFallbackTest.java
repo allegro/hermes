@@ -12,8 +12,8 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
-import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
+import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
@@ -38,9 +38,10 @@ public class RemoteDCProduceFallbackTest {
     private static HermesManagementTestApp management;
     private static HermesInitHelper initHelper;
     private static HermesFrontendTestApp frontendDC1;
+    private static HermesConsumersTestApp consumerDC1;
     private static HermesConsumersTestApp consumerDC2;
 
-    private static FrontendTestClient DC1;
+    private static HermesTestClient DC1;
 
     @BeforeAll
     public static void setup() {
@@ -60,27 +61,33 @@ public class RemoteDCProduceFallbackTest {
         );
         frontendDC1.start();
 
+        consumerDC1 = new HermesConsumersTestApp(dc1.hermesZookeeper, dc1.kafka, schemaRegistry);
+        consumerDC1.start();
+
         consumerDC2 = new HermesConsumersTestApp(dc2.hermesZookeeper, dc2.kafka, schemaRegistry);
         consumerDC2.start();
 
-        DC1 = new FrontendTestClient(frontendDC1.getPort());
+        DC1 = new HermesTestClient(management.getPort(), frontendDC1.getPort(), consumerDC1.getPort());
         initHelper = new HermesInitHelper(management.getPort());
     }
 
     @AfterAll
     public static void clean() {
         management.stop();
+        consumerDC2.stop();
+        frontendDC1.stop();
+        consumerDC1.stop();
+        schemaRegistry.stop();
         Stream.of(dc1, dc2)
                 .parallel()
                 .forEach(HermesDatacenter::stop);
-        schemaRegistry.stop();
-        consumerDC2.stop();
-        frontendDC1.stop();
     }
 
     @AfterEach
     public void afterEach() {
         Stream.of(dc1, dc2).forEach(dc -> dc.kafka.restoreConnectionsBetweenBrokersAndClients());
+        DC1.setReadiness(DEFAULT_DC_NAME, true);
+        DC1.setReadiness("dc2", true);
     }
 
     @Test
@@ -124,6 +131,26 @@ public class RemoteDCProduceFallbackTest {
         subscriber.noMessagesReceived();
     }
 
+    @Test
+    public void shouldNotFallBackToNotReadyDatacenter() {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriber();
+        Topic topic = initHelper.createTopic(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
+        initHelper.createSubscription(
+                subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
+        );
+
+        // when local datacenter is not available and remote is not ready
+        dc1.kafka.cutOffConnectionsBetweenBrokersAndClients();
+        DC1.setReadiness("dc2", false);
+
+        // and message is published
+        TestMessage message = TestMessage.of("key1", "value1");
+        DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 504);
+
+        // then no messages are received
+        subscriber.noMessagesReceived();
+    }
 
     private static class HermesDatacenter {
 
