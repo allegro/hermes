@@ -135,7 +135,7 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, Map<String, String> extraRequestHeaders,
-                                                        long timestamp, PublishedMessageTraceStatus status, String datacenter) {
+                                                        long timestamp, PublishedMessageTraceStatus status, String storageDatacenter) {
         return new PublishedMessageTrace(messageMetadata.getMessageId(),
                 timestamp,
                 messageMetadata.getTopic(),
@@ -145,7 +145,7 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
                 CLUSTER_NAME,
                 extraRequestHeaders.entrySet().stream()
                     .collect(extraRequestHeadersCollector()),
-                datacenter
+                storageDatacenter
                 );
     }
 }

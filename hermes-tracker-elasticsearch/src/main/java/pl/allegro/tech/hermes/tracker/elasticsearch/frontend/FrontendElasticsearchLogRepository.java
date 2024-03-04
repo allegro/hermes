@@ -50,9 +50,9 @@ public class FrontendElasticsearchLogRepository
                              long timestamp,
                              String topicName,
                              String hostname,
-                             String datacenter,
+                             String storageDatacenter,
                              Map<String, String> extraRequestHeaders) {
-        queue.offer(build(() -> published(messageId, timestamp, topicName, hostname, datacenter, extraRequestHeaders)));
+        queue.offer(build(() -> success(messageId, timestamp, topicName, hostname, storageDatacenter, extraRequestHeaders)));
     }
 
     @Override
@@ -79,15 +79,15 @@ public class FrontendElasticsearchLogRepository
         this.elasticClient.close();
     }
 
-    private XContentBuilder published(String messageId,
-                                      long timestamp,
-                                      String topicName,
-                                      String hostname,
-                                      String datacenter,
-                                      Map<String, String> extraRequestHeaders)
+    private XContentBuilder success(String messageId,
+                                    long timestamp,
+                                    String topicName,
+                                    String hostname,
+                                    String storageDatacenter,
+                                    Map<String, String> extraRequestHeaders)
             throws IOException {
         return notEndedDocument(messageId, timestamp, topicName, SUCCESS.toString(), hostname, extraRequestHeaders)
-                .field(DATACENTER, datacenter)
+                .field(STORAGE_DATACENTER, storageDatacenter)
                 .endObject();
     }
 

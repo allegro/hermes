@@ -31,10 +31,10 @@ public class MessageEndProcessor {
     }
 
     // TODO: move to a better place
-    public void eachSent(HttpServerExchange exchange, AttachmentContent attachment, String datacenter) {
+    public void eachSent(HttpServerExchange exchange, AttachmentContent attachment, String storageDatacenter) {
         trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(),
                 attachment.getTopic().getName(), readHostAndPort(exchange),
-                datacenter,
+                storageDatacenter,
                 trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
     }
 

@@ -18,7 +18,7 @@ public class PublishedMessageTrace implements MessageTrace {
     private final String message;
     private final String cluster;
     private final String extraRequestHeaders;
-    private final String datacenter;
+    private final String storageDatacenter;
 
     @JsonCreator
     public PublishedMessageTrace(@JsonProperty("messageId") String messageId,
@@ -29,7 +29,7 @@ public class PublishedMessageTrace implements MessageTrace {
                                  @JsonProperty("message") String message,
                                  @JsonProperty("cluster") String cluster,
                                  @JsonProperty("extraRequestHeaders") String extraRequestHeaders,
-                                 @JsonProperty("datacenter") String datacenter) {
+                                 @JsonProperty("storageDc") String storageDatacenter) {
         this.messageId = messageId;
         this.timestamp = timestamp;
         this.status = status;
@@ -38,7 +38,7 @@ public class PublishedMessageTrace implements MessageTrace {
         this.message = message;
         this.cluster = cluster;
         this.extraRequestHeaders = extraRequestHeaders;
-        this.datacenter = datacenter;
+        this.storageDatacenter = storageDatacenter;
     }
 
     public String getMessageId() {
@@ -79,8 +79,9 @@ public class PublishedMessageTrace implements MessageTrace {
         return extraRequestHeaders;
     }
 
-    public String getDatacenter() {
-        return datacenter;
+    @JsonProperty("storageDc")
+    public String getStorageDatacenter() {
+        return storageDatacenter;
     }
 
     @Override

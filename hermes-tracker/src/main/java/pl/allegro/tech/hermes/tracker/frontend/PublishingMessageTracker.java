@@ -22,8 +22,8 @@ public class PublishingMessageTracker implements PublishingTracker {
     }
 
     @Override
-    public void logPublished(String messageId, TopicName topicName, String hostname, String datacenter, Map<String, String> extraRequestHeaders) {
-        repositories.forEach(r -> r.logPublished(messageId, clock.millis(), topicName.qualifiedName(), hostname, datacenter, extraRequestHeaders));
+    public void logPublished(String messageId, TopicName topicName, String hostname, String storageDatacenter, Map<String, String> extraRequestHeaders) {
+        repositories.forEach(r -> r.logPublished(messageId, clock.millis(), topicName.qualifiedName(), hostname, storageDatacenter, extraRequestHeaders));
     }
 
     @Override

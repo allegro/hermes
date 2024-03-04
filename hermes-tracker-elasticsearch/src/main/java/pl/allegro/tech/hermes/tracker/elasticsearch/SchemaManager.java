@@ -18,7 +18,6 @@ import java.util.function.Function;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.BATCH_ID;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.CLUSTER;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.DATACENTER;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.EXTRA_REQUEST_HEADERS;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.MESSAGE_ID;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.OFFSET;
@@ -28,6 +27,7 @@ import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.REASON
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.REMOTE_HOSTNAME;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.SOURCE_HOSTNAME;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.STATUS;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.STORAGE_DATACENTER;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TIMESTAMP;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TIMESTAMP_SECONDS;
@@ -143,7 +143,7 @@ public class SchemaManager {
                             .startObject(SOURCE_HOSTNAME).field("type", "keyword").field("norms", false).endObject()
                             .startObject(REMOTE_HOSTNAME).field("type", "keyword").field("norms", false).endObject()
                             .startObject(REASON).field("type", "text").field("norms", false).endObject()
-                            .startObject(DATACENTER).field("type", "text").field("norms", false).endObject()
+                            .startObject(STORAGE_DATACENTER).field("type", "text").field("norms", false).endObject()
                             .startObject(EXTRA_REQUEST_HEADERS).field("type", "text").field("norms", false).endObject();
 
             return additionalMapping.apply(jsonBuilder).endObject().endObject().endObject();

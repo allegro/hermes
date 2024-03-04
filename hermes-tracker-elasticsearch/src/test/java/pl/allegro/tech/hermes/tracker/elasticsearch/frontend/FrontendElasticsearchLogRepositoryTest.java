@@ -70,10 +70,10 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     protected void awaitUntilPublishMessageIsPersisted(String topic,
                                                        String id,
                                                        String remoteHostname,
-                                                       String datacenter,
+                                                       String storageDatacenter,
                                                        String... extraRequestHeadersKeywords) throws Exception {
         awaitUntilMessageIsIndexed(getQuery(topic, id, PublishedMessageTraceStatus.SUCCESS, remoteHostname, extraRequestHeadersKeywords)
-                .must(matchQuery(DATACENTER, datacenter))
+                .must(matchQuery(STORAGE_DATACENTER, storageDatacenter))
         );
     }
 

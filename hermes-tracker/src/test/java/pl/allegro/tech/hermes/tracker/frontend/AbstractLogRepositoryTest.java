@@ -83,7 +83,7 @@ public abstract class AbstractLogRepositoryTest {
         String topic,
         String id,
         String remoteHostname,
-        String datacenter,
+        String storageDatacenter,
         String... extraRequestHeadersKeywords
     )
         throws Exception;
