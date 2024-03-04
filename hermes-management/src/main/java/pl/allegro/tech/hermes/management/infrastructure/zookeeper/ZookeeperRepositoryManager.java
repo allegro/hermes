@@ -28,7 +28,7 @@ import pl.allegro.tech.hermes.management.config.storage.ZookeeperGroupRepository
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
-import pl.allegro.tech.hermes.management.domain.readiness.ReadinessRepository;
+import pl.allegro.tech.hermes.management.domain.readiness.DatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.infrastructure.readiness.ZookeeperDatacenterReadinessRepository;
@@ -58,7 +58,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     private final Map<String, WorkloadConstraintsRepository> workloadConstraintsRepositoriesByDc = new HashMap<>();
     private final Map<String, LastUndeliveredMessageReader> lastUndeliveredMessageReaderByDc = new HashMap<>();
     private final Map<String, AdminTool> adminToolByDc = new HashMap<>();
-    private final Map<String, ReadinessRepository> readinessRepositoriesByDc = new HashMap<>();
+    private final Map<String, DatacenterReadinessRepository> readinessRepositoriesByDc = new HashMap<>();
     private final Map<String, OfflineRetransmissionRepository> offlineRetransmissionRepositoriesByDc = new HashMap<>();
     private final ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
 
@@ -115,7 +115,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
             AdminTool adminTool = new ZookeeperAdminTool(paths, client.getCuratorFramework(), mapper);
             adminToolByDc.put(dcName, adminTool);
 
-            ReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
+            DatacenterReadinessRepository readinessRepository = new ZookeeperDatacenterReadinessRepository(zookeeper, mapper, paths);
             readinessRepositoriesByDc.put(dcName, readinessRepository);
 
             ZookeeperOfflineRetransmissionRepository offlineRetransmissionRepository =
@@ -166,7 +166,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
         repositoryByType.put(WorkloadConstraintsRepository.class, workloadConstraintsRepositoriesByDc);
         repositoryByType.put(LastUndeliveredMessageReader.class, lastUndeliveredMessageReaderByDc);
         repositoryByType.put(AdminTool.class, adminToolByDc);
-        repositoryByType.put(ReadinessRepository.class, readinessRepositoriesByDc);
+        repositoryByType.put(DatacenterReadinessRepository.class, readinessRepositoriesByDc);
         repositoryByType.put(OfflineRetransmissionRepository.class, offlineRetransmissionRepositoriesByDc);
     }
 }
