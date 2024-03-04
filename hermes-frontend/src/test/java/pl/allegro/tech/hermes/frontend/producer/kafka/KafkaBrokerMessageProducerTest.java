@@ -66,9 +66,6 @@ public class KafkaBrokerMessageProducerTest {
 
     private final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
 
-    @Mock
-    private KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
-
     private CachedTopic cachedTopic;
 
     private final SchemaProperties schemaProperties = new SchemaProperties();
@@ -78,7 +75,7 @@ public class KafkaBrokerMessageProducerTest {
         cachedTopic = new CachedTopic(TOPIC, metricsFacade, kafkaNamesMapper.toKafkaTopics(TOPIC));
         MessageToKafkaProducerRecordConverter messageConverter =
             new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
-        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
+        producer = new KafkaBrokerMessageProducer(producers, metricsFacade, messageConverter);
     }
 
     @After

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.BrokerTopicMetadataFetcher;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
@@ -19,8 +19,10 @@ import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingJob;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingRunner;
 import pl.allegro.tech.hermes.frontend.server.TopicMetadataLoadingStartupHook;
 import pl.allegro.tech.hermes.frontend.server.TopicSchemaLoadingStartupHook;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Configuration
@@ -72,14 +74,24 @@ public class FrontendServerConfiguration {
         return new TopicMetadataLoadingJob(topicMetadataLoadingRunner, topicLoadingProperties.getMetadataRefreshJob().getInterval());
     }
 
-    @Bean
-    public TopicMetadataLoadingRunner topicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
+    @Bean(destroyMethod = "close")
+    public TopicMetadataLoadingRunner topicMetadataLoadingRunner(KafkaClustersProperties kafkaClustersProperties,
+                                                                 BrokerTopicMetadataFetcher brokerTopicMetadataFetcher,
                                                                  TopicsCache topicsCache,
-                                                                 TopicLoadingProperties topicLoadingProperties) {
-        return new TopicMetadataLoadingRunner(brokerMessageProducer, topicsCache,
+                                                                 TopicLoadingProperties topicLoadingProperties,
+                                                                 DatacenterNameProvider datacenterNameProvider) {
+        List<String> datacenters = kafkaClustersProperties.getClusters().stream()
+                .map(KafkaProperties::getDatacenter)
+                .toList();
+        return new TopicMetadataLoadingRunner(
+                brokerTopicMetadataFetcher,
+                datacenterNameProvider.getDatacenterName(),
+                datacenters,
+                topicsCache,
                 topicLoadingProperties.getMetadata().getRetryCount(),
                 topicLoadingProperties.getMetadata().getRetryInterval(),
-                topicLoadingProperties.getMetadata().getThreadPoolSize());
+                topicLoadingProperties.getMetadata().getThreadPoolSize()
+        );
     }
 
     @Bean(initMethod = "run")

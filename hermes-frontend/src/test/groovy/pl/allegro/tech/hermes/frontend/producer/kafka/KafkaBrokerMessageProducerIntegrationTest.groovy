@@ -103,7 +103,6 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     def setup() {
         producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
-                new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(
                             kafkaHeaderNameProperties,

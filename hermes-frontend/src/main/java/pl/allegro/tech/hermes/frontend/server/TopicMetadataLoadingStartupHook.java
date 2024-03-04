@@ -18,11 +18,7 @@ public class TopicMetadataLoadingStartupHook {
 
     public void run() {
         if (isTopicMetadataLoadingStartupHookEnabled) {
-            try {
-                topicMetadataLoadingRunner.refreshMetadata();
-            } catch (Exception e) {
-                logger.error("An error occurred while refreshing topic metadata", e);
-            }
+            topicMetadataLoadingRunner.refreshMetadataForLocalDatacenter();
         } else {
             logger.info("Topic metadata loading startup hook is disabled");
         }

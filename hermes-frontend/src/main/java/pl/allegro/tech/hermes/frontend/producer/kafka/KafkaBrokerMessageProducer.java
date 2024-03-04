@@ -23,16 +23,13 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
     private final Producers producers;
-    private final KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
     private final MetricsFacade metricsFacade;
     private final MessageToKafkaProducerRecordConverter messageConverter;
 
     public KafkaBrokerMessageProducer(Producers producers,
-                                      KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
                                       MetricsFacade metricsFacade,
                                       MessageToKafkaProducerRecordConverter messageConverter) {
         this.producers = producers;
-        this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
         this.metricsFacade = metricsFacade;
         this.messageConverter = messageConverter;
         producers.registerGauges(metricsFacade);
@@ -49,32 +46,6 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
             // message didn't get to internal producer buffer and it will not be send to a broker
             callback.onUnpublished(message, cachedTopic.getTopic(), e);
         }
-    }
-
-    @Override
-    public boolean isTopicAvailable(CachedTopic cachedTopic) {
-        String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
-
-        try {
-            List<PartitionInfo> partitionInfos = producers.get(cachedTopic.getTopic()).partitionsFor(kafkaTopicName);
-            if (anyPartitionWithoutLeader(partitionInfos)) {
-                logger.warn("Topic {} has partitions without a leader.", kafkaTopicName);
-                return false;
-            }
-            if (anyUnderReplicatedPartition(partitionInfos, kafkaTopicName)) {
-                logger.warn("Topic {} has under replicated partitions.", kafkaTopicName);
-                return false;
-            }
-            if (partitionInfos.size() > 0) {
-                return true;
-            }
-        } catch (Exception e) {
-            logger.warn("Could not read information about partitions for topic {}. {}", kafkaTopicName, e.getMessage());
-            return false;
-        }
-
-        logger.warn("No information about partitions for topic {}", kafkaTopicName);
-        return false;
     }
 
     private Supplier<ProduceMetadata> produceMetadataSupplier(CachedTopic topic, RecordMetadata recordMetadata) {
@@ -97,15 +68,6 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
             }
             return ProduceMetadata.empty();
         };
-    }
-
-    private boolean anyPartitionWithoutLeader(List<PartitionInfo> partitionInfos) {
-        return partitionInfos.stream().anyMatch(p -> p.leader() == null);
-    }
-
-    private boolean anyUnderReplicatedPartition(List<PartitionInfo> partitionInfos, String kafkaTopicName) throws Exception {
-        int minInSyncReplicas = kafkaTopicMetadataFetcher.fetchMinInSyncReplicas(kafkaTopicName);
-        return partitionInfos.stream().anyMatch(p -> p.inSyncReplicas().length < minInSyncReplicas);
     }
 
     private class SendCallback implements org.apache.kafka.clients.producer.Callback {
