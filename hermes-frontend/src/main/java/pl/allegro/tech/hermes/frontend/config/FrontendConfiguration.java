@@ -17,6 +17,7 @@ import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.TopicAvailabilityChecker;
 import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
@@ -55,9 +56,18 @@ public class FrontendConfiguration {
                                                      TopicsCache topicsCache,
                                                      SchemaRepository schemaRepository,
                                                      Trackers trackers,
-                                                     LocalMessageStorageProperties localMessageStorageProperties) {
-        return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, schemaRepository,
-                new SchemaExistenceEnsurer(schemaRepository), trackers, localMessageStorageProperties);
+                                                     LocalMessageStorageProperties localMessageStorageProperties,
+                                                     TopicAvailabilityChecker topicAvailabilityChecker) {
+        return new BackupMessagesLoader(
+                topicAvailabilityChecker,
+                brokerMessageProducer,
+                brokerListeners,
+                topicsCache,
+                schemaRepository,
+                new SchemaExistenceEnsurer(schemaRepository),
+                trackers,
+                localMessageStorageProperties
+        );
     }
 
     @Bean(initMethod = "extend")

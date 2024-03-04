@@ -7,10 +7,12 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.TopicAvailabilityChecker;
 import pl.allegro.tech.hermes.frontend.producer.kafka.BufferAwareBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageProducerFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicAvailabilityChecker;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcher;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaTopicMetadataFetcherFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
@@ -46,11 +48,10 @@ public class FrontendProducerConfiguration {
     @Bean
     public BrokerMessageProducer bufferedMessageBrokerProducer(
             @Named("kafkaMessageProducer") Producers producers,
-            KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
             MetricsFacade metricsFacade,
             MessageToKafkaProducerRecordConverter messageConverter
     ) {
-        return new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
+        return new KafkaBrokerMessageProducer(producers, metricsFacade, messageConverter);
     }
 
     @Bean
@@ -117,5 +118,11 @@ public class FrontendProducerConfiguration {
     public MessageToKafkaProducerRecordConverter messageToKafkaProducerRecordConverter(KafkaHeaderFactory kafkaHeaderFactory,
                                                                                        SchemaProperties schemaProperties) {
         return new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
+    }
+
+    @Bean
+    public TopicAvailabilityChecker topicAvailabilityChecker(@Named("kafkaMessageProducer") Producers producers,
+                                                             KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher) {
+        return new KafkaTopicAvailabilityChecker(producers, kafkaTopicMetadataFetcher);
     }
 }

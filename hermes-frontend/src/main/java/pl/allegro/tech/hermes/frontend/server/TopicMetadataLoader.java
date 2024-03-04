@@ -7,7 +7,7 @@ import net.jodah.failsafe.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.TopicAvailabilityChecker;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -22,18 +22,17 @@ class TopicMetadataLoader implements AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(TopicMetadataLoader.class);
 
-    private final BrokerMessageProducer brokerMessageProducer;
+    private final TopicAvailabilityChecker topicAvailabilityChecker;
 
     private final ScheduledExecutorService scheduler;
 
     private final RetryPolicy<MetadataLoadingResult> retryPolicy;
 
-    TopicMetadataLoader(BrokerMessageProducer brokerMessageProducer,
-                               int retryCount,
-                               Duration retryInterval,
-                               int threadPoolSize) {
-
-        this.brokerMessageProducer = brokerMessageProducer;
+    TopicMetadataLoader(TopicAvailabilityChecker topicAvailabilityChecker,
+                        int retryCount,
+                        Duration retryInterval,
+                        int threadPoolSize) {
+        this.topicAvailabilityChecker = topicAvailabilityChecker;
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("topic-metadata-loader-%d").build();
         this.scheduler = Executors.newScheduledThreadPool(threadPoolSize, threadFactory);
         this.retryPolicy = new RetryPolicy<MetadataLoadingResult>()
@@ -49,7 +48,7 @@ class TopicMetadataLoader implements AutoCloseable {
 
     private MetadataLoadingResult fetchTopicMetadata(CachedTopic topic, ExecutionContext context) {
         int attempt = context.getAttemptCount();
-        if (brokerMessageProducer.isTopicAvailable(topic)) {
+        if (topicAvailabilityChecker.isTopicAvailable(topic)) {
             return MetadataLoadingResult.success(topic.getTopicName());
         }
         logger.warn("Failed to load metadata for topic {}, attempt #{}", topic.getQualifiedName(), attempt);

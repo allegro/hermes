@@ -23,9 +23,4 @@ public class BufferAwareBrokerMessageProducer implements BrokerMessageProducer {
             this.bufferedBrokerMessageProducer.send(message, topic, callback);
         }
     }
-
-    @Override
-    public boolean isTopicAvailable(CachedTopic topic) {
-        return bufferedBrokerMessageProducer.isTopicAvailable(topic);
-    }
 }

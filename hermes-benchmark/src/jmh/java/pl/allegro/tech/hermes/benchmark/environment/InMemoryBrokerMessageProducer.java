@@ -11,9 +11,4 @@ public class InMemoryBrokerMessageProducer implements BrokerMessageProducer {
     public void send(Message message, CachedTopic topic, PublishingCallback callback) {
         callback.onPublished(message, topic.getTopic());
     }
-
-    @Override
-    public boolean isTopicAvailable(CachedTopic topic) {
-        return true;
-    }
 }

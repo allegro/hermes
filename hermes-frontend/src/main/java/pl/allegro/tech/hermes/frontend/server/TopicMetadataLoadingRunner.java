@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.TopicAvailabilityChecker;
 
 import java.time.Duration;
 import java.util.List;
@@ -22,7 +22,7 @@ public class TopicMetadataLoadingRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(TopicMetadataLoadingRunner.class);
 
-    private final BrokerMessageProducer brokerMessageProducer;
+    private final TopicAvailabilityChecker topicAvailabilityChecker;
 
     private final TopicsCache topicsCache;
 
@@ -32,12 +32,12 @@ public class TopicMetadataLoadingRunner {
 
     private final int threadPoolSize;
 
-    public TopicMetadataLoadingRunner(BrokerMessageProducer brokerMessageProducer,
-                               TopicsCache topicsCache,
-                               int retryCount,
-                               Duration retryInterval,
-                               int threadPoolSize) {
-        this.brokerMessageProducer = brokerMessageProducer;
+    public TopicMetadataLoadingRunner(TopicAvailabilityChecker topicAvailabilityChecker,
+                                      TopicsCache topicsCache,
+                                      int retryCount,
+                                      Duration retryInterval,
+                                      int threadPoolSize) {
+        this.topicAvailabilityChecker = topicAvailabilityChecker;
         this.topicsCache = topicsCache;
         this.retryCount = retryCount;
         this.retryInterval = retryInterval;
@@ -54,7 +54,7 @@ public class TopicMetadataLoadingRunner {
     }
 
     private List<MetadataLoadingResult> loadMetadataForTopics(List<CachedTopic> topics) throws Exception {
-        try (TopicMetadataLoader loader = new TopicMetadataLoader(brokerMessageProducer, retryCount, retryInterval, threadPoolSize)) {
+        try (TopicMetadataLoader loader = new TopicMetadataLoader(topicAvailabilityChecker, retryCount, retryInterval, threadPoolSize)) {
             return allComplete(topics.stream().map(loader::loadTopicMetadata).collect(toList())).join();
         }
     }

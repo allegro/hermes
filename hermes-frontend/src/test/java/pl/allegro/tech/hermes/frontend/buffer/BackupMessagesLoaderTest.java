@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.frontend.config.LocalMessageStorageProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.TopicAvailabilityChecker;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -48,6 +49,8 @@ public class BackupMessagesLoaderTest {
     private static final int ENTRIES = 100;
     private static final int AVERAGE_MESSAGE_SIZE = 600;
 
+    private final TopicAvailabilityChecker topicAvailabilityChecker = mock(TopicAvailabilityChecker.class);
+
     private final BrokerMessageProducer producer = mock(BrokerMessageProducer.class);
 
     private final BrokerListeners listeners = mock(BrokerListeners.class);
@@ -75,7 +78,7 @@ public class BackupMessagesLoaderTest {
         when(cachedTopic.getTopic()).thenReturn(topic);
         when(cachedTopic.startBrokerLatencyTimer()).thenReturn(HermesTimerContext.from(micrometerTimer, graphiteTimer));
         when(topicsCache.getTopic(topic.getQualifiedName())).thenReturn(Optional.of(cachedTopic));
-        when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
+        when(topicAvailabilityChecker.isTopicAvailable(cachedTopic)).thenReturn(true);
     }
 
     @After
@@ -97,15 +100,16 @@ public class BackupMessagesLoaderTest {
         );
 
         final BackupMessagesLoader backupMessagesLoader =
-            new BackupMessagesLoader(
-                producer,
-                listeners,
-                topicsCache,
-                schemaRepository,
-                schemaExistenceEnsurer,
-                trackers,
-                localMessageStorageProperties
-            );
+                new BackupMessagesLoader(
+                        topicAvailabilityChecker,
+                        producer,
+                        listeners,
+                        topicsCache,
+                        schemaRepository,
+                        schemaExistenceEnsurer,
+                        trackers,
+                        localMessageStorageProperties
+                );
 
         messageRepository.save(messageOfAge(1), topic);
         messageRepository.save(messageOfAge(10), topic);
@@ -140,15 +144,16 @@ public class BackupMessagesLoaderTest {
                 AVERAGE_MESSAGE_SIZE
         );
         BackupMessagesLoader backupMessagesLoader =
-            new BackupMessagesLoader(
-                producer,
-                listeners,
-                topicsCache,
-                schemaRepository,
-                schemaExistenceEnsurer,
-                trackers,
-                localMessageStorageProperties
-            );
+                new BackupMessagesLoader(
+                        topicAvailabilityChecker,
+                        producer,
+                        listeners,
+                        topicsCache,
+                        schemaRepository,
+                        schemaExistenceEnsurer,
+                        trackers,
+                        localMessageStorageProperties
+                );
 
         messageRepository.save(messageOfAge(1), topic);
 
@@ -166,18 +171,19 @@ public class BackupMessagesLoaderTest {
         LocalMessageStorageProperties localMessageStorageProperties = new LocalMessageStorageProperties();
         localMessageStorageProperties.setMaxAge(Duration.ofHours(8));
 
-        when(producer.isTopicAvailable(cachedTopic)).thenReturn(false).thenReturn(false).thenReturn(true);
+        when(topicAvailabilityChecker.isTopicAvailable(cachedTopic)).thenReturn(false).thenReturn(false).thenReturn(true);
 
         BackupMessagesLoader backupMessagesLoader =
-            new BackupMessagesLoader(
-                producer,
-                listeners,
-                topicsCache,
-                schemaRepository,
-                schemaExistenceEnsurer,
-                trackers,
-                localMessageStorageProperties
-            );
+                new BackupMessagesLoader(
+                        topicAvailabilityChecker,
+                        producer,
+                        listeners,
+                        topicsCache,
+                        schemaRepository,
+                        schemaExistenceEnsurer,
+                        trackers,
+                        localMessageStorageProperties
+                );
         MessageRepository messageRepository = new ChronicleMapMessageRepository(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
                 ENTRIES,
@@ -189,7 +195,7 @@ public class BackupMessagesLoaderTest {
         backupMessagesLoader.loadMessages(messageRepository.findAll());
 
         // then
-        verify(producer, times(3)).isTopicAvailable(cachedTopic);
+        verify(topicAvailabilityChecker, times(3)).isTopicAvailable(cachedTopic);
         verify(producer, times(1)).send(any(JsonMessage.class), eq(cachedTopic), any(PublishingCallback.class));
     }
 
@@ -207,15 +213,16 @@ public class BackupMessagesLoaderTest {
         );
 
         BackupMessagesLoader backupMessagesLoader =
-            new BackupMessagesLoader(
-                producer,
-                listeners,
-                topicsCache,
-                schemaRepository,
-                schemaExistenceEnsurer,
-                trackers,
-                localMessageStorageProperties
-            );
+                new BackupMessagesLoader(
+                        topicAvailabilityChecker,
+                        producer,
+                        listeners,
+                        topicsCache,
+                        schemaRepository,
+                        schemaExistenceEnsurer,
+                        trackers,
+                        localMessageStorageProperties
+                );
 
         messageRepository.save(messageOfAge(1), topic);
 

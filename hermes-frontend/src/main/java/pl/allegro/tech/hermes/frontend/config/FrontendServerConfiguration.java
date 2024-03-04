@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
-import jakarta.inject.Named;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.TopicAvailabilityChecker;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.server.DefaultReadinessChecker;
@@ -91,10 +90,10 @@ public class FrontendServerConfiguration {
     }
 
     @Bean
-    public TopicMetadataLoadingRunner topicMetadataLoadingRunner(@Named("kafkaBrokerMessageProducer") BrokerMessageProducer brokerMessageProducer,
+    public TopicMetadataLoadingRunner topicMetadataLoadingRunner(TopicAvailabilityChecker topicAvailabilityChecker,
                                                                  TopicsCache topicsCache,
                                                                  TopicLoadingProperties topicLoadingProperties) {
-        return new TopicMetadataLoadingRunner(brokerMessageProducer, topicsCache,
+        return new TopicMetadataLoadingRunner(topicAvailabilityChecker, topicsCache,
                 topicLoadingProperties.getMetadata().getRetryCount(),
                 topicLoadingProperties.getMetadata().getRetryInterval(),
                 topicLoadingProperties.getMetadata().getThreadPoolSize());
