@@ -67,31 +67,40 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     }
 
     @Override
-    protected void awaitUntilMessageIsPersisted(String topic,
-                                                String id,
-                                                String reason,
-                                                String remoteHostname,
-                                                PublishedMessageTraceStatus status,
-                                                String... extraRequestHeadersKeywords) {
-        awaitUntilMessageIsIndexed(
-                getPublishedQuery(topic, id, status, remoteHostname, extraRequestHeadersKeywords)
-                        .must(matchQuery(REASON, reason)));
+    protected void awaitUntilPublishMessageIsPersisted(String topic,
+                                                       String id,
+                                                       String remoteHostname,
+                                                       String datacenter,
+                                                       String... extraRequestHeadersKeywords) throws Exception {
+        awaitUntilMessageIsIndexed(getQuery(topic, id, PublishedMessageTraceStatus.SUCCESS, remoteHostname, extraRequestHeadersKeywords)
+                .must(matchQuery(DATACENTER, datacenter))
+        );
     }
 
     @Override
-    protected void awaitUntilMessageIsPersisted(String topic,
-                                                String id,
-                                                String remoteHostname,
-                                                PublishedMessageTraceStatus status,
-                                                String... extraRequestHeadersKeywords) {
-        awaitUntilMessageIsIndexed(getPublishedQuery(topic, id, status, remoteHostname, extraRequestHeadersKeywords));
+    protected void awaitUntilInflightMessageIsPersisted(String topic,
+                                                        String id,
+                                                        String remoteHostname,
+                                                        String... extraRequestHeadersKeywords) throws Exception {
+        awaitUntilMessageIsIndexed(getQuery(topic, id, PublishedMessageTraceStatus.INFLIGHT, remoteHostname, extraRequestHeadersKeywords));
     }
 
-    private BoolQueryBuilder getPublishedQuery(String topic,
-                                               String id,
-                                               PublishedMessageTraceStatus status,
-                                               String remoteHostname,
-                                               String... extraRequestHeadersKeywords) {
+    @Override
+    protected void awaitUntilErrorMessageIsPersisted(String topic,
+                                                     String id,
+                                                     String reason,
+                                                     String remoteHostname,
+                                                     String... extraRequestHeadersKeywords) throws Exception {
+        awaitUntilMessageIsIndexed(
+                getQuery(topic, id, PublishedMessageTraceStatus.ERROR, remoteHostname, extraRequestHeadersKeywords)
+                        .must(matchQuery(REASON, reason)));
+    }
+
+    private BoolQueryBuilder getQuery(String topic,
+                                      String id,
+                                      PublishedMessageTraceStatus status,
+                                      String remoteHostname,
+                                      String... extraRequestHeadersKeywords) {
         BoolQueryBuilder queryBuilder = boolQuery()
                 .must(termQuery(TOPIC_NAME, topic))
                 .must(termQuery(MESSAGE_ID, id))

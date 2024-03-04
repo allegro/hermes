@@ -4,7 +4,7 @@ import java.util.Map;
 
 public interface LogRepository {
 
-    void logPublished(String messageId, long timestamp, String topicName, String hostname, Map<String, String> extraRequestHeaders);
+    void logPublished(String messageId, long timestamp, String topicName, String hostname, String datacenter, Map<String, String> extraRequestHeaders);
 
     void logError(String messageId,
                   long timestamp,

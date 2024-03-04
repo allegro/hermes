@@ -18,16 +18,18 @@ public class PublishedMessageTrace implements MessageTrace {
     private final String message;
     private final String cluster;
     private final String extraRequestHeaders;
+    private final String datacenter;
 
     @JsonCreator
     public PublishedMessageTrace(@JsonProperty("messageId") String messageId,
-                            @JsonProperty("timestamp") Long timestamp,
-                            @JsonProperty("topicName") String topicName,
-                            @JsonProperty("status") PublishedMessageTraceStatus status,
-                            @JsonProperty("reason") String reason,
-                            @JsonProperty("message") String message,
-                            @JsonProperty("cluster") String cluster,
-                            @JsonProperty("extraRequestHeaders") String extraRequestHeaders) {
+                                 @JsonProperty("timestamp") Long timestamp,
+                                 @JsonProperty("topicName") String topicName,
+                                 @JsonProperty("status") PublishedMessageTraceStatus status,
+                                 @JsonProperty("reason") String reason,
+                                 @JsonProperty("message") String message,
+                                 @JsonProperty("cluster") String cluster,
+                                 @JsonProperty("extraRequestHeaders") String extraRequestHeaders,
+                                 @JsonProperty("datacenter") String datacenter) {
         this.messageId = messageId;
         this.timestamp = timestamp;
         this.status = status;
@@ -36,6 +38,7 @@ public class PublishedMessageTrace implements MessageTrace {
         this.message = message;
         this.cluster = cluster;
         this.extraRequestHeaders = extraRequestHeaders;
+        this.datacenter = datacenter;
     }
 
     public String getMessageId() {
@@ -74,6 +77,10 @@ public class PublishedMessageTrace implements MessageTrace {
 
     public String getExtraRequestHeaders() {
         return extraRequestHeaders;
+    }
+
+    public String getDatacenter() {
+        return datacenter;
     }
 
     @Override

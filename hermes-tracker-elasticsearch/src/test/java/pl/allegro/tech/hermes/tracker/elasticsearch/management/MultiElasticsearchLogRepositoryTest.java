@@ -90,17 +90,18 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     @Test
     public void shouldGetMessageStatus() {
         // given
+        String datacenter = "dc1";
         Map<String, String> extraRequestHeaders = ImmutableMap.of("x-header1", "value1", "x-header2", "value2");
         MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch1.messageStatus", "subscription");
         long timestamp = System.currentTimeMillis();
 
         // when
-        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch1.messageStatus", "localhost", extraRequestHeaders);
+        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch1.messageStatus", "localhost", datacenter, extraRequestHeaders);
         consumersLogRepository.logSuccessful(messageMetadata, "localhost", timestamp);
 
         // then
         assertThat(fetchMessageStatus(messageMetadata))
-                .contains(publishedMessageTrace(messageMetadata, extraRequestHeaders, timestamp, PublishedMessageTraceStatus.SUCCESS))
+                .contains(publishedMessageTrace(messageMetadata, extraRequestHeaders, timestamp, PublishedMessageTraceStatus.SUCCESS, datacenter))
                 .contains(sentMessageTrace(messageMetadata, timestamp, SentMessageTraceStatus.SUCCESS));
     }
 
@@ -134,7 +135,7 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, Map<String, String> extraRequestHeaders,
-                                                        long timestamp, PublishedMessageTraceStatus status) {
+                                                        long timestamp, PublishedMessageTraceStatus status, String datacenter) {
         return new PublishedMessageTrace(messageMetadata.getMessageId(),
                 timestamp,
                 messageMetadata.getTopic(),
@@ -143,6 +144,8 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
                 null,
                 CLUSTER_NAME,
                 extraRequestHeaders.entrySet().stream()
-                    .collect(extraRequestHeadersCollector()));
+                    .collect(extraRequestHeadersCollector()),
+                datacenter
+                );
     }
 }

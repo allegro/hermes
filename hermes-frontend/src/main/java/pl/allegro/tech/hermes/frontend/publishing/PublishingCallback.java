@@ -16,7 +16,7 @@ public interface PublishingCallback {
     void onPublished(Message message, Topic topic);
 
     /**
-     * Invoked every time the message is  successfully published to Kafka.
+     * Invoked every time the message is successfully published to Kafka.
      * Could be invoked one or many times depending on the underlying implementation.
      *
      * @param message the delivered message

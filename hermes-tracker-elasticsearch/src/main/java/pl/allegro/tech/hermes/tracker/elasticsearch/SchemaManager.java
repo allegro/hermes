@@ -18,6 +18,7 @@ import java.util.function.Function;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.BATCH_ID;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.CLUSTER;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.DATACENTER;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.EXTRA_REQUEST_HEADERS;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.MESSAGE_ID;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.OFFSET;
@@ -142,6 +143,7 @@ public class SchemaManager {
                             .startObject(SOURCE_HOSTNAME).field("type", "keyword").field("norms", false).endObject()
                             .startObject(REMOTE_HOSTNAME).field("type", "keyword").field("norms", false).endObject()
                             .startObject(REASON).field("type", "text").field("norms", false).endObject()
+                            .startObject(DATACENTER).field("type", "text").field("norms", false).endObject()
                             .startObject(EXTRA_REQUEST_HEADERS).field("type", "text").field("norms", false).endObject();
 
             return additionalMapping.apply(jsonBuilder).endObject().endObject().endObject();
