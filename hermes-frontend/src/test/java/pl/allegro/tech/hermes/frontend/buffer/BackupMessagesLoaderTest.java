@@ -66,6 +66,8 @@ public class BackupMessagesLoaderTest {
 
     private final Topic topic = TopicBuilder.topic("pl.allegro.tech.hermes.test").build();
 
+    private final String datacenter = "dc1";
+
     @Before
     public void setUp() {
         tempDir = Files.createTempDir();
@@ -104,7 +106,8 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties
+                localMessageStorageProperties,
+                datacenter
             );
 
         messageRepository.save(messageOfAge(1), topic);
@@ -147,7 +150,8 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties
+                localMessageStorageProperties,
+                datacenter
             );
 
         messageRepository.save(messageOfAge(1), topic);
@@ -176,7 +180,8 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties
+                localMessageStorageProperties,
+                datacenter
             );
         MessageRepository messageRepository = new ChronicleMapMessageRepository(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
@@ -214,7 +219,8 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties
+                localMessageStorageProperties,
+                datacenter
             );
 
         messageRepository.save(messageOfAge(1), topic);

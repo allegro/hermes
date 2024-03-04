@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.frontend;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.TrackerElasticSearchMetrics;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
@@ -51,8 +50,9 @@ public class FrontendElasticsearchLogRepository
                              long timestamp,
                              String topicName,
                              String hostname,
+                             String storageDatacenter,
                              Map<String, String> extraRequestHeaders) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, SUCCESS, hostname, extraRequestHeaders)));
+        queue.offer(build(() -> success(messageId, timestamp, topicName, hostname, storageDatacenter, extraRequestHeaders)));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class FrontendElasticsearchLogRepository
                          String reason,
                          String hostname,
                          Map<String, String> extraRequestHeaders) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, ERROR, reason, hostname, extraRequestHeaders)));
+        queue.offer(build(() -> error(messageId, timestamp, topicName, reason, hostname, extraRequestHeaders)));
     }
 
     @Override
@@ -71,7 +71,7 @@ public class FrontendElasticsearchLogRepository
                             String topicName,
                             String hostname,
                             Map<String, String> extraRequestHeaders) {
-        queue.offer(build(() -> document(messageId, timestamp, topicName, INFLIGHT, hostname, extraRequestHeaders)));
+        queue.offer(build(() -> inflight(messageId, timestamp, topicName, hostname, extraRequestHeaders)));
     }
 
     @Override
@@ -79,28 +79,40 @@ public class FrontendElasticsearchLogRepository
         this.elasticClient.close();
     }
 
-    private XContentBuilder document(String messageId,
-                                     long timestamp,
-                                     String topicName,
-                                     PublishedMessageTraceStatus status,
-                                     String hostname,
-                                     Map<String, String> extraRequestHeaders)
+    private XContentBuilder success(String messageId,
+                                    long timestamp,
+                                    String topicName,
+                                    String hostname,
+                                    String storageDatacenter,
+                                    Map<String, String> extraRequestHeaders)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname, extraRequestHeaders).endObject();
+        return notEndedDocument(messageId, timestamp, topicName, SUCCESS.toString(), hostname, extraRequestHeaders)
+                .field(STORAGE_DATACENTER, storageDatacenter)
+                .endObject();
     }
 
-    private XContentBuilder document(String messageId,
+
+    private XContentBuilder inflight(String messageId,
                                      long timestamp,
                                      String topicName,
-                                     PublishedMessageTraceStatus status,
-                                     String reason,
                                      String hostname,
                                      Map<String, String> extraRequestHeaders)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, status.toString(), hostname, extraRequestHeaders)
+        return notEndedDocument(messageId, timestamp, topicName, INFLIGHT.name(), hostname, extraRequestHeaders).endObject();
+    }
+
+    private XContentBuilder error(String messageId,
+                                  long timestamp,
+                                  String topicName,
+                                  String reason,
+                                  String hostname,
+                                  Map<String, String> extraRequestHeaders)
+            throws IOException {
+        return notEndedDocument(messageId, timestamp, topicName, ERROR.toString(), hostname, extraRequestHeaders)
                 .field(REASON, reason)
                 .endObject();
     }
+
 
     protected XContentBuilder notEndedDocument(String messageId,
                                                long timestamp,

@@ -29,6 +29,7 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
@@ -63,8 +64,9 @@ public class FrontendPublishingConfiguration {
 
     @Bean
     public MessageEndProcessor messageEndProcessor(Trackers trackers, BrokerListeners brokerListeners,
-                                                   TrackingHeadersExtractor trackingHeadersExtractor) {
-        return new MessageEndProcessor(trackers, brokerListeners, trackingHeadersExtractor);
+                                                   TrackingHeadersExtractor trackingHeadersExtractor,
+                                                   DatacenterNameProvider datacenterNameProvider) {
+        return new MessageEndProcessor(trackers, brokerListeners, trackingHeadersExtractor, datacenterNameProvider.getDatacenterName());
     }
 
     @Bean

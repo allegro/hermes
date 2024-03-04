@@ -95,7 +95,7 @@ class HermesServerFactory {
         return new HandlersChainFactory(
                 topicsCache,
                 new MessageErrorProcessor(new ObjectMapper(), trackers, trackingHeadersExtractor),
-                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor),
+                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor, "dc"),
                 new MessageFactory(
                         new MessageValidators(Collections.emptyList()),
                         new MessageContentTypeEnforcer(),
