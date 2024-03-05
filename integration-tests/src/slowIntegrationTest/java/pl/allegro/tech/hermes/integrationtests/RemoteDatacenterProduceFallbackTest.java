@@ -26,7 +26,7 @@ import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProv
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
-public class RemoteDCProduceFallbackTest {
+public class RemoteDatacenterProduceFallbackTest {
 
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
@@ -125,7 +125,7 @@ public class RemoteDCProduceFallbackTest {
 
         // and message is published
         TestMessage message = TestMessage.of("key1", "value1");
-        DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 504);
+        DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 503);
 
         // then no messages are received
         subscriber.noMessagesReceived();
@@ -146,7 +146,7 @@ public class RemoteDCProduceFallbackTest {
 
         // and message is published
         TestMessage message = TestMessage.of("key1", "value1");
-        DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 504);
+        DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 503);
 
         // then no messages are received
         subscriber.noMessagesReceived();

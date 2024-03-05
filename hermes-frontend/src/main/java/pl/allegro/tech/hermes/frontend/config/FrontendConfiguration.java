@@ -19,7 +19,6 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
-import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -55,11 +54,10 @@ public class FrontendConfiguration {
                                                      TopicsCache topicsCache,
                                                      SchemaRepository schemaRepository,
                                                      Trackers trackers,
-                                                     LocalMessageStorageProperties localMessageStorageProperties,
-                                                     DatacenterNameProvider datacenterNameProvider
+                                                     LocalMessageStorageProperties localMessageStorageProperties
                                                      ) {
         return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, schemaRepository,
-                new SchemaExistenceEnsurer(schemaRepository), trackers, localMessageStorageProperties, datacenterNameProvider.getDatacenterName());
+                new SchemaExistenceEnsurer(schemaRepository), trackers, localMessageStorageProperties);
     }
 
     @Bean(initMethod = "extend")
