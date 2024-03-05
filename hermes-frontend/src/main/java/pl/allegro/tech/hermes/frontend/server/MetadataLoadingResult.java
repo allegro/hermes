@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.server;
 
 import pl.allegro.tech.hermes.api.TopicName;
 
-final class MetadataLoadingResult {
+public final class MetadataLoadingResult {
 
     enum Type { SUCCESS, FAILURE }
 
@@ -31,7 +31,7 @@ final class MetadataLoadingResult {
         return topicName;
     }
 
-    boolean isFailure() {
+    public boolean isFailure() {
         return Type.FAILURE == type;
     }
 }

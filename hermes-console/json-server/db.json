@@ -128,7 +128,7 @@
     },
     {
       "datacenter": "DC3",
-      "status": "UNDEFINED"
+      "status": "READY"
     }
   ],
   "constraints": {

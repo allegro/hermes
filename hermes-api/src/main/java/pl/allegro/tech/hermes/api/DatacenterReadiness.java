@@ -52,7 +52,6 @@ public class DatacenterReadiness {
 
     public enum ReadinessStatus {
         READY,
-        NOT_READY,
-        UNDEFINED
+        NOT_READY
     }
 }
