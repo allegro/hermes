@@ -117,23 +117,20 @@ public class KafkaMessageSender<K, V> {
         MetricName queueTimeMax = producerMetric("record-queue-time-max", "producer-metrics", "maximum time [ms] that batch spent in the send buffer");
 
         // TODO: add 'datacenter' label
-        switch (ack) {
-            case ALL -> {
-                metricsFacade.producer().registerAckAllTotalBytesGauge(producer, producerGauge(bufferTotalBytes));
-                metricsFacade.producer().registerAckAllAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes));
-                metricsFacade.producer().registerAckAllCompressionRateGauge(producer, producerGauge(compressionRate));
-                metricsFacade.producer().registerAckAllFailedBatchesGauge(producer, producerGauge(failedBatches));
-                metricsFacade.producer().registerAckAllMetadataAgeGauge(producer, producerGauge(metadataAge));
-                metricsFacade.producer().registerAckAllRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax));
-            }
-            case LEADER -> {
-                metricsFacade.producer().registerAckLeaderTotalBytesGauge(producer, producerGauge(bufferTotalBytes));
-                metricsFacade.producer().registerAckLeaderAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes));
-                metricsFacade.producer().registerAckLeaderCompressionRateGauge(producer, producerGauge(compressionRate));
-                metricsFacade.producer().registerAckLeaderFailedBatchesGauge(producer, producerGauge(failedBatches));
-                metricsFacade.producer().registerAckLeaderMetadataAgeGauge(producer, producerGauge(metadataAge));
-                metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax));
-            }
+        if (ack == Topic.Ack.ALL) {
+            metricsFacade.producer().registerAckAllTotalBytesGauge(producer, producerGauge(bufferTotalBytes));
+            metricsFacade.producer().registerAckAllAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes));
+            metricsFacade.producer().registerAckAllCompressionRateGauge(producer, producerGauge(compressionRate));
+            metricsFacade.producer().registerAckAllFailedBatchesGauge(producer, producerGauge(failedBatches));
+            metricsFacade.producer().registerAckAllMetadataAgeGauge(producer, producerGauge(metadataAge));
+            metricsFacade.producer().registerAckAllRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax));
+        } else if (ack == Topic.Ack.LEADER) {
+            metricsFacade.producer().registerAckLeaderTotalBytesGauge(producer, producerGauge(bufferTotalBytes));
+            metricsFacade.producer().registerAckLeaderAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes));
+            metricsFacade.producer().registerAckLeaderCompressionRateGauge(producer, producerGauge(compressionRate));
+            metricsFacade.producer().registerAckLeaderFailedBatchesGauge(producer, producerGauge(failedBatches));
+            metricsFacade.producer().registerAckLeaderMetadataAgeGauge(producer, producerGauge(metadataAge));
+            metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax));
         }
     }
 
@@ -156,4 +153,5 @@ public class KafkaMessageSender<K, V> {
     private static MetricName producerMetric(String name, String group, String description) {
         return new MetricName(name, group, description, Collections.emptyMap());
     }
+
 }
