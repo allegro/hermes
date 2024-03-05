@@ -64,7 +64,7 @@ public class HandlersChainFactory {
                 handlersChainParameters.isForceTopicMaxMessageSize(),
                 handlersChainParameters.getIdleTimeout(),
                 handlersChainParameters.getLongIdleTimeout(),
-                handlersChainParameters.getGlobalAsyncTimeout());
+                handlersChainParameters.getMaxPublishRequestDuration());
         TopicHandler topicHandler = new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
         boolean keepAliveHeaderEnabled = handlersChainParameters.isKeepAliveHeaderEnabled();
         HttpHandler rootPublishingHandler = keepAliveHeaderEnabled ? withKeepAliveHeaderHandler(topicHandler) : topicHandler;

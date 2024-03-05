@@ -30,12 +30,12 @@ class MessageReadHandler implements HttpHandler {
     private final ContentLengthChecker contentLengthChecker;
     private final Duration defaultAsyncTimeout;
     private final Duration longAsyncTimeout;
-    private final Duration globalAsyncTimeout;
+    private final Duration maxPublishRequestDuration;
     private final ThroughputLimiter throughputLimiter;
 
     MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler,
                        MessageErrorProcessor messageErrorProcessor, ThroughputLimiter throughputLimiter,
-                       boolean forceMaxMessageSizePerTopic, Duration idleTime, Duration longIdleTime, Duration globalAsyncTimeout) {
+                       boolean forceMaxMessageSizePerTopic, Duration idleTime, Duration longIdleTime, Duration maxPublishRequestDuration) {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
         this.messageErrorProcessor = messageErrorProcessor;
@@ -43,7 +43,7 @@ class MessageReadHandler implements HttpHandler {
         this.defaultAsyncTimeout = idleTime;
         this.longAsyncTimeout = longIdleTime;
         this.throughputLimiter = throughputLimiter;
-        this.globalAsyncTimeout = globalAsyncTimeout;
+        this.maxPublishRequestDuration = maxPublishRequestDuration;
     }
 
     @Override
@@ -71,7 +71,7 @@ class MessageReadHandler implements HttpHandler {
 
     private Duration calculateTimeout(Topic topic) {
         if (topic.isFallbackToRemoteDatacenterEnabled()) {
-            return globalAsyncTimeout;
+            return maxPublishRequestDuration;
         }
         return topic.isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout;
     }
