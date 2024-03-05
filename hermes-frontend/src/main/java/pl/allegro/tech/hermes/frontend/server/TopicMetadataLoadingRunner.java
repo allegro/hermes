@@ -71,7 +71,7 @@ public class TopicMetadataLoadingRunner {
             List<MetadataLoadingResult> allResults = loadMetadataForTopics(topics, datacenters);
             logger.info("Finished loading topic metadata in {}ms", System.currentTimeMillis() - start);
             logResultInfo(allResults);
-            return allResults.stream().anyMatch(MetadataLoadingResult::isFailure);
+            return allResults.stream().noneMatch(MetadataLoadingResult::isFailure);
         } catch (Exception e) {
             logger.error("An error occurred while refreshing topic metadata", e);
             return false;
