@@ -50,7 +50,7 @@ public class FrontendConfiguration {
     }
 
     @Bean
-    public BackupMessagesLoader backupMessagesLoader(@Named("bufferedMessageBrokerProducer") BrokerMessageProducer brokerMessageProducer,
+    public BackupMessagesLoader backupMessagesLoader(@Named("localDatacenterBrokerProducer") BrokerMessageProducer brokerMessageProducer,
                                                      BrokerListeners brokerListeners,
                                                      TopicsCache topicsCache,
                                                      SchemaRepository schemaRepository,

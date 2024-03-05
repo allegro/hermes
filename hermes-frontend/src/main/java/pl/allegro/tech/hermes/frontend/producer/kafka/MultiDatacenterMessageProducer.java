@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
+import pl.allegro.tech.hermes.frontend.readiness.AdminReadinessService;
 
 import java.time.Duration;
 import java.util.Map;
@@ -20,25 +21,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 
-public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer {
+public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
-    private final Producers producers;
+    private final KafkaMessageSenders kafkaMessageSenders;
     private final MessageToKafkaProducerRecordConverter messageConverter;
     private final Duration speculativeSendDelay;
-    private final RemoteProducerProvider remoteProducerProvider;
+    private final AdminReadinessService adminReadinessService;
     //TODO: tune number of threads, prevent OOM
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(16);
 
 
-    public MultiDCKafkaBrokerMessageProducer(Producers producers,
-                                             RemoteProducerProvider remoteProducerProvider,
-                                             MessageToKafkaProducerRecordConverter messageConverter,
-                                             Duration speculativeSendDelay
+    public MultiDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
+                                          AdminReadinessService adminReadinessService,
+                                          MessageToKafkaProducerRecordConverter messageConverter,
+                                          Duration speculativeSendDelay
     ) {
         this.messageConverter = messageConverter;
-        this.producers = producers;
+        this.kafkaMessageSenders = kafkaMessageSenders;
         this.speculativeSendDelay = speculativeSendDelay;
-        this.remoteProducerProvider = remoteProducerProvider;
+        this.adminReadinessService = adminReadinessService;
         // TODO: producers.registerGauges(metricsFacade);
     }
 
@@ -47,15 +48,15 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
 
         var producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
-        Optional<KafkaProducer<byte[], byte[]>> remoteProducer = remoteProducerProvider.get(cachedTopic, producers);
+        Optional<KafkaMessageSender<byte[], byte[]>> remoteSender = getRemoteSender(cachedTopic);
 
-        final SendCallback sendCallback = remoteProducer.isPresent()
+        final SendCallback sendCallback = remoteSender.isPresent()
                 ? SendCallback.withFallback(callback)
                 : SendCallback.withoutFallback(callback);
 
         scheduler.schedule(() -> {
-            if (!sendCallback.sent.get() && remoteProducer.isPresent()) {
-                send(remoteProducer.get(),
+            if (!sendCallback.sent.get() && remoteSender.isPresent()) {
+                send(remoteSender.get(),
                         producerRecord,
                         sendCallback,
                         cachedTopic,
@@ -64,17 +65,17 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
         }, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
 
 
-        send(producers.get(cachedTopic.getTopic()), producerRecord, sendCallback, cachedTopic, message);
+        send(kafkaMessageSenders.get(cachedTopic.getTopic()), producerRecord, sendCallback, cachedTopic, message);
     }
 
-    private void send(KafkaProducer<byte[], byte[]> producer,
+    private void send(KafkaMessageSender<byte[], byte[]> sender,
                       ProducerRecord<byte[], byte[]> producerRecord,
                       SendCallback callback,
                       CachedTopic cachedTopic,
                       Message message) {
-        String datacenter = producer.getDatacenter();
+        String datacenter = sender.getDatacenter();
         try {
-            producer.send(producerRecord, cachedTopic, message, new DCAwareCallback(
+            sender.send(producerRecord, cachedTopic, message, new DCAwareCallback(
                     message,
                     cachedTopic,
                     datacenter,
@@ -83,6 +84,13 @@ public class MultiDCKafkaBrokerMessageProducer implements BrokerMessageProducer 
             // message didn't get to internal producer buffer and it will not be send to a broker
             callback.onUnpublished(message, cachedTopic, datacenter, e);
         }
+    }
+
+    private Optional<KafkaMessageSender<byte[], byte[]>> getRemoteSender(CachedTopic cachedTopic) {
+        return kafkaMessageSenders.getRemote(cachedTopic.getTopic())
+                .stream()
+                .filter(producer -> adminReadinessService.isDatacenterReady(producer.getDatacenter()))
+                .findFirst();
     }
 
     private record DCAwareCallback(Message message, CachedTopic cachedTopic, String datacenter,

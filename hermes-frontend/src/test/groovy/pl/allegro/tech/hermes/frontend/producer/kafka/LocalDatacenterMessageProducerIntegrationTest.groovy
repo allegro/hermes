@@ -44,7 +44,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CL
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
 
 @Testcontainers
-class KafkaBrokerMessageProducerIntegrationTest extends Specification {
+class LocalDatacenterMessageProducerIntegrationTest extends Specification {
 
     static Integer NUMBER_OF_PARTITION = 3
 
@@ -61,13 +61,13 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaProducer<byte[], byte[]> everyoneConfirms
 
     @Shared
-    KafkaBrokerMessageProducer brokerMessageProducer
+    LocalDatacenterMessageProducer brokerMessageProducer
 
     @Shared
     KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("", "_")
 
     @Shared
-    Producers producers
+    KafkaMessageSenders producers
 
     @Shared
     String containerId
@@ -102,11 +102,11 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     }
 
     def setup() {
-        producers = new Producers(new Producers.Tuple(
-                new pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducer<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, datacenter),
-                new pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducer<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, datacenter)),
+        producers = new KafkaMessageSenders(new KafkaMessageSenders.Tuple(
+                new KafkaMessageSender<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, datacenter),
+                new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, datacenter)),
                 emptyList())
-        brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
+        brokerMessageProducer = new LocalDatacenterMessageProducer(producers,
                 new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(

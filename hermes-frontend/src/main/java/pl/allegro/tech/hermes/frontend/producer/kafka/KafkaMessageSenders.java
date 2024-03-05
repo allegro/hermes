@@ -14,27 +14,27 @@ import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 // exposes kafka producer metrics, see: https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
-public class Producers {
-    private final KafkaProducer<byte[], byte[]> ackLeader;
-    private final KafkaProducer<byte[], byte[]> ackAll;
+public class KafkaMessageSenders {
+    private final KafkaMessageSender<byte[], byte[]> ackLeader;
+    private final KafkaMessageSender<byte[], byte[]> ackAll;
 
-    private final List<KafkaProducer<byte[], byte[]>> remoteAckLeader;
-    private final List<KafkaProducer<byte[], byte[]>> remoteAckAll;
+    private final List<KafkaMessageSender<byte[], byte[]>> remoteAckLeader;
+    private final List<KafkaMessageSender<byte[], byte[]>> remoteAckAll;
 
 
-    public Producers(Tuple localProducers,
-                     List<Tuple> remoteProducers) {
-        this.ackLeader = localProducers.ackLeader;
-        this.ackAll = localProducers.ackAll;
-        this.remoteAckLeader = remoteProducers.stream().map(it -> it.ackLeader).collect(Collectors.toList());
-        this.remoteAckAll = remoteProducers.stream().map(it -> it.ackAll).collect(Collectors.toList());
+    public KafkaMessageSenders(Tuple localSenders,
+                               List<Tuple> remoteSenders) {
+        this.ackLeader = localSenders.ackLeader;
+        this.ackAll = localSenders.ackAll;
+        this.remoteAckLeader = remoteSenders.stream().map(it -> it.ackLeader).collect(Collectors.toList());
+        this.remoteAckAll = remoteSenders.stream().map(it -> it.ackAll).collect(Collectors.toList());
     }
 
-    public KafkaProducer<byte[], byte[]> get(Topic topic) {
+    public KafkaMessageSender<byte[], byte[]> get(Topic topic) {
         return topic.isReplicationConfirmRequired() ? ackAll : ackLeader;
     }
 
-    public List<KafkaProducer<byte[], byte[]>> getRemote(Topic topic) {
+    public List<KafkaMessageSender<byte[], byte[]>> getRemote(Topic topic) {
         return topic.isReplicationConfirmRequired() ? remoteAckLeader : remoteAckAll;
     }
 
@@ -68,7 +68,7 @@ public class Producers {
     }
 
 
-    private double findProducerMetric(KafkaProducer<byte[], byte[]> producer,
+    private double findProducerMetric(KafkaMessageSender<byte[], byte[]> producer,
                                       Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
         Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                 producer.metrics().entrySet().stream().filter(predicate).findFirst();
@@ -77,7 +77,7 @@ public class Producers {
     }
 
 
-    private ToDoubleFunction<KafkaProducer<byte[], byte[]>> producerGauge(MetricName producerMetricName) {
+    private ToDoubleFunction<KafkaMessageSender<byte[], byte[]>> producerGauge(MetricName producerMetricName) {
         Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group())
                 && entry.getKey().name().equals(producerMetricName.name());
         return producer -> findProducerMetric(producer, predicate);
@@ -93,10 +93,10 @@ public class Producers {
     }
 
     public static class Tuple {
-        private final KafkaProducer<byte[], byte[]> ackLeader;
-        private final KafkaProducer<byte[], byte[]> ackAll;
+        private final KafkaMessageSender<byte[], byte[]> ackLeader;
+        private final KafkaMessageSender<byte[], byte[]> ackAll;
 
-        public Tuple(KafkaProducer<byte[], byte[]> ackLeader, KafkaProducer<byte[], byte[]> ackAll) {
+        public Tuple(KafkaMessageSender<byte[], byte[]> ackLeader, KafkaMessageSender<byte[], byte[]> ackAll) {
             this.ackLeader = ackLeader;
             this.ackAll = ackAll;
         }

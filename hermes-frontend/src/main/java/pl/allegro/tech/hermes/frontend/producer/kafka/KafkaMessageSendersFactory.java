@@ -30,7 +30,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 
-public class KafkaMessageProducerFactory {
+public class KafkaMessageSendersFactory {
 
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
@@ -41,10 +41,11 @@ public class KafkaMessageProducerFactory {
     private final BrokerLatencyReporter brokerLatencyReporter;
     private final long bufferedSizeBytes;
 
-    public KafkaMessageProducerFactory(KafkaParameters kafkaParameters,
-                                       List<KafkaProperties> remoteKafkaParameters,
-                                       KafkaProducerParameters kafkaProducerParameters, BrokerLatencyReporter brokerLatencyReporter,
-                                       long bufferedSizeBytes) {
+    public KafkaMessageSendersFactory(KafkaParameters kafkaParameters,
+                                      List<KafkaProperties> remoteKafkaParameters,
+                                      KafkaProducerParameters kafkaProducerParameters,
+                                      BrokerLatencyReporter brokerLatencyReporter,
+                                      long bufferedSizeBytes) {
         this.kafkaProducerParameters = kafkaProducerParameters;
         this.brokerLatencyReporter = brokerLatencyReporter;
         this.bufferedSizeBytes = bufferedSizeBytes;
@@ -53,25 +54,25 @@ public class KafkaMessageProducerFactory {
 
     }
 
-    public Producers provide() {
-        Producers.Tuple localProducers = new Producers.Tuple(
-                producer(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
-                producer(kafkaParameters, kafkaProducerParameters, ACK_ALL)
+    public KafkaMessageSenders provide() {
+        KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
+                sender(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
+                sender(kafkaParameters, kafkaProducerParameters, ACK_ALL)
         );
 
-        List<Producers.Tuple> remoteProducers = remoteKafkaParameters.stream().map(
-                kafkaProperties -> new Producers.Tuple(
-                        producer(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
-                        producer(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
-        return new Producers(
+        List<KafkaMessageSenders.Tuple> remoteProducers = remoteKafkaParameters.stream().map(
+                kafkaProperties -> new KafkaMessageSenders.Tuple(
+                        sender(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
+                        sender(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
+        return new KafkaMessageSenders(
                 localProducers,
                 remoteProducers
         );
     }
 
-    private KafkaProducer<byte[], byte[]> producer(KafkaParameters kafkaParameters,
-                                                   KafkaProducerParameters kafkaProducerParameters,
-                                                   String acks) {
+    private KafkaMessageSender<byte[], byte[]> sender(KafkaParameters kafkaParameters,
+                                                      KafkaProducerParameters kafkaProducerParameters,
+                                                      String acks) {
         Map<String, Object> props = new HashMap<>();
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
         props.put(MAX_BLOCK_MS_CONFIG, (int) kafkaProducerParameters.getMaxBlock().toMillis());
@@ -97,7 +98,7 @@ public class KafkaMessageProducerFactory {
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
-        return new KafkaProducer<>(
+        return new KafkaMessageSender<>(
                 new org.apache.kafka.clients.producer.KafkaProducer<>(props),
                 brokerLatencyReporter,
                 kafkaParameters.getDatacenter()

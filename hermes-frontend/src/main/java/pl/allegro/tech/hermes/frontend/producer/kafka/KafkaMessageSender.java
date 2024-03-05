@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import org.apache.kafka.clients.consumer.ConsumerGroupMetadata;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -9,7 +8,6 @@ import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.errors.InterruptException;
-import org.apache.kafka.common.errors.ProducerFencedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
@@ -18,23 +16,20 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.ProduceMetadata;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
-// TODO: is it a good idea to create abstraction on top of Producer? Currently it provides DC and instrumentation
-public class KafkaProducer<K, V> implements Producer<K, V> {
+public class KafkaMessageSender<K, V> {
 
-    private static final Logger logger = LoggerFactory.getLogger(KafkaProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaMessageSender.class);
 
-    private final org.apache.kafka.clients.producer.Producer<K, V> producer;
+    private final Producer<K, V> producer;
     private final BrokerLatencyReporter brokerLatencyReporter;
     private final String datacenter;
 
-    public KafkaProducer(org.apache.kafka.clients.producer.Producer<K, V> kafkaProducer, BrokerLatencyReporter brokerLatencyReporter, String datacenter) {
+    public KafkaMessageSender(Producer<K, V> kafkaProducer, BrokerLatencyReporter brokerLatencyReporter, String datacenter) {
         this.producer = kafkaProducer;
         this.brokerLatencyReporter = brokerLatencyReporter;
         this.datacenter = datacenter;
@@ -54,71 +49,18 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
         producer.send(producerRecord, meteredCallback);
     }
 
-    @Override
-    public Future<RecordMetadata> send(ProducerRecord<K, V> record) {
-        return producer.send(record);
-    }
-
-    @Override
-    public Future<RecordMetadata> send(ProducerRecord<K, V> record, Callback callback) {
-        return producer.send(record, callback);
-    }
-
-    @Override
-    public void initTransactions() {
-        producer.initTransactions();
-    }
-
-    @Override
-    public void beginTransaction() throws ProducerFencedException {
-        producer.beginTransaction();
-    }
-
-    @Override
-    public void sendOffsetsToTransaction(Map offsets, String consumerGroupId) throws ProducerFencedException {
-        producer.sendOffsetsToTransaction(offsets, consumerGroupId);
-    }
-
-    @Override
-    public void sendOffsetsToTransaction(Map offsets, ConsumerGroupMetadata groupMetadata) throws ProducerFencedException {
-        producer.sendOffsetsToTransaction(offsets, groupMetadata);
-    }
-
-    @Override
-    public void commitTransaction() throws ProducerFencedException {
-        producer.commitTransaction();
-    }
-
-    @Override
-    public void abortTransaction() throws ProducerFencedException {
-        producer.abortTransaction();
-    }
-
-    @Override
-    public void flush() {
-        producer.flush();
-    }
-
-
-    @Override
     public List<PartitionInfo> partitionsFor(String topic) {
         return producer.partitionsFor(topic);
     }
 
-    @Override
     public Map<MetricName, ? extends Metric> metrics() {
         return producer.metrics();
     }
 
-    @Override
     public void close() {
         producer.close();
     }
 
-    @Override
-    public void close(Duration timeout) {
-        producer.close(timeout);
-    }
 
     private Supplier<ProduceMetadata> produceMetadataSupplier(RecordMetadata recordMetadata) {
         return () -> {

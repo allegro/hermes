@@ -6,17 +6,17 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 public interface PublishingCallback {
 
     /**
-     * Invoked when publishing to Kafka fails and the message won't be delivered.
+     * Invoked when publishing to the broker fails and the message won't be delivered.
      */
     void onUnpublished(Message message, Topic topic, Exception exception);
 
     /**
-     * Invoked the first time the message is successfully published to Kafka.
+     * Invoked the first time the message is successfully published to the broker.
      */
     void onPublished(Message message, Topic topic);
 
     /**
-     * Invoked every time the message is  successfully published to Kafka.
+     * Invoked every time the message is successfully published to the broker.
      * Could be invoked one or many times depending on the underlying implementation.
      *
      * @param message the delivered message

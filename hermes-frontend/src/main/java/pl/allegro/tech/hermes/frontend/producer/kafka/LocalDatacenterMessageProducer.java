@@ -16,22 +16,22 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import java.util.List;
 
 @Singleton
-public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
+public class LocalDatacenterMessageProducer implements BrokerMessageProducer {
 
-    private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
-    private final Producers producers;
+    private static final Logger logger = LoggerFactory.getLogger(LocalDatacenterMessageProducer.class);
+    private final KafkaMessageSenders kafkaMessageSenders;
     private final KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
     private final MessageToKafkaProducerRecordConverter messageConverter;
 
-    public KafkaBrokerMessageProducer(Producers producers,
-                                      KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
-                                      MetricsFacade metricsFacade,
-                                      MessageToKafkaProducerRecordConverter messageConverter
+    public LocalDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
+                                          KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
+                                          MetricsFacade metricsFacade,
+                                          MessageToKafkaProducerRecordConverter messageConverter
                                       ) {
-        this.producers = producers;
+        this.kafkaMessageSenders = kafkaMessageSenders;
         this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
         this.messageConverter = messageConverter;
-        producers.registerGauges(metricsFacade);
+        kafkaMessageSenders.registerGauges(metricsFacade);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
                 messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
         try {
-            var producer = producers.get(cachedTopic.getTopic());
+            var producer = kafkaMessageSenders.get(cachedTopic.getTopic());
             Callback wrappedCallback = new SendCallback(message, cachedTopic, callback, producer.getDatacenter());
             producer.send(producerRecord, cachedTopic, message, wrappedCallback);
         } catch (Exception e) {
@@ -54,7 +54,7 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
 
         try {
-            List<PartitionInfo> partitionInfos = producers.get(cachedTopic.getTopic()).partitionsFor(kafkaTopicName);
+            List<PartitionInfo> partitionInfos = kafkaMessageSenders.get(cachedTopic.getTopic()).partitionsFor(kafkaTopicName);
             if (anyPartitionWithoutLeader(partitionInfos)) {
                 logger.warn("Topic {} has partitions without a leader.", kafkaTopicName);
                 return false;

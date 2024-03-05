@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
-public class KafkaBrokerMessageProducerTest {
+public class LocalDatacenterMessageProducerTest {
 
     private static final Long TIMESTAMP = 1L;
     private static final String PARTITION_KEY = "partition-key";
@@ -58,18 +58,18 @@ public class KafkaBrokerMessageProducerTest {
 
     private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
     private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
-    private final KafkaProducer<byte[], byte[]> leaderConfirmsProduceWrapper = new KafkaProducer<>(leaderConfirmsProducer, brokerLatencyReporter, datacenter);
-    private final KafkaProducer<byte[], byte[]> everyoneConfirmsProduceWrapper = new KafkaProducer<>(everyoneConfirmProducer, brokerLatencyReporter, datacenter);
+    private final KafkaMessageSender<byte[], byte[]> leaderConfirmsProduceWrapper = new KafkaMessageSender<>(leaderConfirmsProducer, brokerLatencyReporter, datacenter);
+    private final KafkaMessageSender<byte[], byte[]> everyoneConfirmsProduceWrapper = new KafkaMessageSender<>(everyoneConfirmProducer, brokerLatencyReporter, datacenter);
 
 
     private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
     private final HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties =
         new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties();
-    private final Producers producers = new Producers(
-            new Producers.Tuple(leaderConfirmsProduceWrapper, everyoneConfirmsProduceWrapper),
+    private final KafkaMessageSenders kafkaMessageSenders = new KafkaMessageSenders(
+            new KafkaMessageSenders.Tuple(leaderConfirmsProduceWrapper, everyoneConfirmsProduceWrapper),
             emptyList());
 
-    private KafkaBrokerMessageProducer producer;
+    private LocalDatacenterMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
     private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties,
         httpHeadersPropagationAsKafkaHeadersProperties);
@@ -88,7 +88,7 @@ public class KafkaBrokerMessageProducerTest {
         cachedTopic = new CachedTopic(TOPIC, metricsFacade, kafkaNamesMapper.toKafkaTopics(TOPIC));
         MessageToKafkaProducerRecordConverter messageConverter =
             new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
-        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
+        producer = new LocalDatacenterMessageProducer(kafkaMessageSenders, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
     }
 
     @After
