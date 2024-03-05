@@ -31,7 +31,7 @@ public class LocalDatacenterMessageProducer implements BrokerMessageProducer {
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
         this.messageConverter = messageConverter;
-        kafkaMessageSenders.registerGauges(metricsFacade);
+        kafkaMessageSenders.registerLocalSenderMetrics(metricsFacade);
     }
 
     @Override
