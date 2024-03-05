@@ -7,4 +7,6 @@ public interface BrokerTopicMetadataFetcher {
     boolean tryFetchFromLocalDatacenter(CachedTopic topic);
 
     boolean tryFetchFromDatacenter(CachedTopic topic, String datacenter);
+
+    void close();
 }
