@@ -129,7 +129,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
         private void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception exception) {
             int triesLeft = tries.decrementAndGet();
-            errors.set(triesLeft, new DatacenterError(datacenter, exception));
+            errors.set(Math.max(triesLeft, 0), new DatacenterError(datacenter, exception));
             if (triesLeft == 0) {
                 callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(errors));
             }
