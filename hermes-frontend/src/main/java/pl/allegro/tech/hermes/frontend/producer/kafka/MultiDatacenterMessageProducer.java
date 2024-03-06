@@ -10,14 +10,13 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.readiness.AdminReadinessService;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 
@@ -112,12 +111,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
         private final AtomicBoolean sent = new AtomicBoolean(false);
         private final AtomicInteger tries;
-        private final ConcurrentHashMap<String, Exception> errors;
+        private final AtomicReferenceArray<DatacenterError> errors;
 
         private SendCallback(PublishingCallback callback, int tries) {
             this.callback = callback;
             this.tries = new AtomicInteger(tries);
-            this.errors = new ConcurrentHashMap<>(tries);
+            this.errors = new AtomicReferenceArray<>(tries);
         }
 
         static SendCallback withFallback(PublishingCallback callback) {
@@ -129,8 +128,9 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
 
         private void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception exception) {
-            errors.put(datacenter, exception);
-            if (tries.decrementAndGet() == 0) {
+            int triesLeft = tries.decrementAndGet();
+            errors.set(triesLeft, new DatacenterError(datacenter, exception));
+            if (triesLeft == 0) {
                 callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(errors));
             }
         }
@@ -145,17 +145,20 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
     }
 
+    private record DatacenterError(String datacenter, Exception e) {}
+
     public static class MultiDCPublishException extends RuntimeException {
 
-        public MultiDCPublishException(Map<String, Exception> exceptionsPerDC) {
-            super(errorMessage(exceptionsPerDC));
+        private MultiDCPublishException(AtomicReferenceArray<DatacenterError> errors) {
+            super(errorMessage(errors));
         }
 
-        private static String errorMessage(Map<String, Exception> exceptionsPerDC) {
+        private static String errorMessage(AtomicReferenceArray<DatacenterError> errors) {
             StringBuilder builder = new StringBuilder();
-            exceptionsPerDC.forEach(
-                    (dc, exception) -> builder.append(String.format("[%s]: %s, ", dc, getRootCauseMessage(exception)))
-            );
+            for (var i = 0; i < errors.length(); i++) {
+                var error = errors.get(i);
+                builder.append(String.format("[%s]: %s, ", error.datacenter, getRootCauseMessage(error.e)));
+            }
             return builder.toString();
         }
     }
