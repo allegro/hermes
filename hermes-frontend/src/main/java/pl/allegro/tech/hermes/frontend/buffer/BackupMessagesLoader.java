@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
-import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaId;
@@ -246,11 +245,9 @@ public class BackupMessagesLoader {
     }
 
     private void sendMessage(Message message, CachedTopic cachedTopic) {
-        HermesTimerContext brokerTimer = cachedTopic.startBrokerLatencyTimer();
         brokerMessageProducer.send(message, cachedTopic, new PublishingCallback() {
             @Override
             public void onUnpublished(Message message, Topic topic, Exception exception) {
-                brokerTimer.close();
                 brokerListeners.onError(message, topic, exception);
                 trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "", Collections.emptyMap());
                 toResend.get().add(ImmutablePair.of(message, cachedTopic));
@@ -258,7 +255,6 @@ public class BackupMessagesLoader {
 
             @Override
             public void onPublished(Message message, Topic topic) {
-                brokerTimer.close();
                 cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
             }

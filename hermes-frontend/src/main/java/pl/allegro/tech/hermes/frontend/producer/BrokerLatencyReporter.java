@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer;
 
-import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -10,7 +9,6 @@ import pl.allegro.tech.hermes.frontend.publishing.metadata.ProduceMetadata;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.time.Duration;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Supplier;
@@ -37,7 +35,7 @@ public class BrokerLatencyReporter {
     public void report(HermesTimerContext timerContext,
                        Message message,
                        Topic.Ack ack,
-                       @Nullable Supplier<ProduceMetadata> produceMetadata) {
+                       Supplier<ProduceMetadata> produceMetadata) {
         Duration duration = timerContext.closeAndGet();
         if (perBrokerLatencyEnabled) {
             try {
@@ -53,8 +51,8 @@ public class BrokerLatencyReporter {
     private void doReport(Duration duration,
                           String messageId,
                           Topic.Ack ack,
-                          @Nullable Supplier<ProduceMetadata> produceMetadata) {
-        String broker = Optional.ofNullable(produceMetadata).flatMap(metadata -> metadata.get().getBroker()).orElse("unknown");
+                          Supplier<ProduceMetadata> produceMetadata) {
+        String broker = produceMetadata.get().getBroker().orElse("unknown");
 
         if (duration.compareTo(slowResponseThreshold) > 0) {
             logger.debug("Slow produce request, broker response time: {} ms, ackLevel: {}, messageId: {}, broker: {}",

@@ -106,8 +106,7 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties,
-                datacenter
+                localMessageStorageProperties
             );
 
         messageRepository.save(messageOfAge(1), topic);
@@ -150,8 +149,7 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties,
-                datacenter
+                localMessageStorageProperties
             );
 
         messageRepository.save(messageOfAge(1), topic);
@@ -180,8 +178,7 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties,
-                datacenter
+                localMessageStorageProperties
             );
         MessageRepository messageRepository = new ChronicleMapMessageRepository(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
@@ -219,8 +216,7 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties,
-                datacenter
+                localMessageStorageProperties
             );
 
         messageRepository.save(messageOfAge(1), topic);
