@@ -47,10 +47,9 @@ public class FrontendProducerConfiguration {
     public BrokerMessageProducer localDatacenterBrokerProducer(
             @Named("kafkaMessageSenders") KafkaMessageSenders kafkaMessageSenders,
             KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
-            MetricsFacade metricsFacade,
             MessageToKafkaProducerRecordConverter messageConverter
     ) {
-        return new LocalDatacenterMessageProducer(kafkaMessageSenders, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
+        return new LocalDatacenterMessageProducer(kafkaMessageSenders, kafkaTopicMetadataFetcher, messageConverter);
     }
 
     @Bean
@@ -79,17 +78,20 @@ public class FrontendProducerConfiguration {
                                                    KafkaProducerProperties kafkaProducerProperties,
                                                    LocalMessageStorageProperties localMessageStorageProperties,
                                                    DatacenterNameProvider datacenterNameProvider,
-                                                   BrokerLatencyReporter brokerLatencyReporter
+                                                   BrokerLatencyReporter brokerLatencyReporter,
+                                                   MetricsFacade metricsFacade
                                           ) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         List<KafkaProperties> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
+
         return new KafkaMessageSendersFactory(
                 kafkaProperties,
                 remoteKafkaProperties,
                 kafkaProducerProperties,
                 brokerLatencyReporter,
+                metricsFacade,
                 localMessageStorageProperties.getBufferedSizeBytes()
-                ).provide();
+                ).provide("default");
 
     }
 
@@ -97,7 +99,9 @@ public class FrontendProducerConfiguration {
     public KafkaMessageSenders failFastKafkaMessageSenders(KafkaClustersProperties kafkaClustersProperties,
                                                            FailFastKafkaProducerProperties kafkaProducerProperties,
                                                            LocalMessageStorageProperties localMessageStorageProperties,
-                                                           DatacenterNameProvider datacenterNameProvider, BrokerLatencyReporter brokerLatencyReporter) {
+                                                           DatacenterNameProvider datacenterNameProvider, BrokerLatencyReporter brokerLatencyReporter,
+                                                           MetricsFacade metricsFacade
+                                                           ) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         List<KafkaProperties> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
         return new KafkaMessageSendersFactory(
@@ -105,8 +109,9 @@ public class FrontendProducerConfiguration {
                 remoteKafkaProperties,
                 kafkaProducerProperties,
                 brokerLatencyReporter,
+                metricsFacade,
                 localMessageStorageProperties.getBufferedSizeBytes()
-        ).provide();
+        ).provide("failFast");
 
     }
 

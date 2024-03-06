@@ -7,7 +7,6 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
@@ -25,13 +24,11 @@ public class LocalDatacenterMessageProducer implements BrokerMessageProducer {
 
     public LocalDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
                                           KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
-                                          MetricsFacade metricsFacade,
                                           MessageToKafkaProducerRecordConverter messageConverter
                                       ) {
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
         this.messageConverter = messageConverter;
-        kafkaMessageSenders.registerLocalSenderMetrics(metricsFacade);
     }
 
     @Override

@@ -39,12 +39,10 @@ public class MessageEndProcessor {
 
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
         sendResponse(exchange, attachment, StatusCodes.CREATED);
-        attachment.getCachedTopic().incrementPublished();
     }
 
     public void delayedSent(CachedTopic cachedTopic, Message message) {
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
-        cachedTopic.incrementPublished();
     }
 
     public void bufferedButDelayedProcessing(HttpServerExchange exchange, AttachmentContent attachment) {

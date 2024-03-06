@@ -61,7 +61,10 @@ class PublishingHandler implements HttpHandler {
 
             @Override
             public void onEachPublished(Message message, Topic topic, String datacenter) {
-                exchange.getConnection().getWorker().execute(() -> messageEndProcessor.eachSent(exchange, attachment, datacenter));
+                exchange.getConnection().getWorker().execute(() -> {
+                    attachment.getCachedTopic().incrementPublished(datacenter);
+                    messageEndProcessor.eachSent(exchange, attachment, datacenter);
+                });
             }
 
             @Override

@@ -255,12 +255,12 @@ public class BackupMessagesLoader {
 
             @Override
             public void onPublished(Message message, Topic topic) {
-                cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
             }
 
             @Override
             public void onEachPublished(Message message, Topic topic, String datacenter) {
+                cachedTopic.incrementPublished(datacenter);
                 trackers.get(topic).logPublished(message.getId(), topic.getName(), "", datacenter, Collections.emptyMap());
             }
         });

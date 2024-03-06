@@ -40,7 +40,6 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.speculativeSendDelay = speculativeSendDelay;
         this.adminReadinessService = adminReadinessService;
-        // TODO: producers.registerGauges(metricsFacade);
     }
 
     @Override

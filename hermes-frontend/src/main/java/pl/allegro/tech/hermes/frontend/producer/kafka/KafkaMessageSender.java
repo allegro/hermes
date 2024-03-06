@@ -32,11 +32,17 @@ public class KafkaMessageSender<K, V> {
 
     private final Producer<K, V> producer;
     private final BrokerLatencyReporter brokerLatencyReporter;
+    private final MetricsFacade metricsFacade;
     private final String datacenter;
 
-    public KafkaMessageSender(Producer<K, V> kafkaProducer, BrokerLatencyReporter brokerLatencyReporter, String datacenter) {
+    public KafkaMessageSender(
+            Producer<K, V> kafkaProducer,
+            BrokerLatencyReporter brokerLatencyReporter,
+            MetricsFacade metricsFacade,
+            String datacenter) {
         this.producer = kafkaProducer;
         this.brokerLatencyReporter = brokerLatencyReporter;
+        this.metricsFacade = metricsFacade;
         this.datacenter = datacenter;
     }
 
@@ -108,7 +114,7 @@ public class KafkaMessageSender<K, V> {
     }
 
 
-    public void registerGauges(MetricsFacade metricsFacade, Topic.Ack ack) {
+    public void registerGauges(Topic.Ack ack, String sender) {
         MetricName bufferTotalBytes = producerMetric("buffer-total-bytes", "producer-metrics", "buffer total bytes");
         MetricName bufferAvailableBytes = producerMetric("buffer-available-bytes", "producer-metrics", "buffer available bytes");
         MetricName compressionRate = producerMetric("compression-rate-avg", "producer-metrics", "average compression rate");
@@ -116,21 +122,20 @@ public class KafkaMessageSender<K, V> {
         MetricName metadataAge = producerMetric("metadata-age", "producer-metrics", "age [s] of metadata");
         MetricName queueTimeMax = producerMetric("record-queue-time-max", "producer-metrics", "maximum time [ms] that batch spent in the send buffer");
 
-        // TODO: add 'datacenter' label
         if (ack == Topic.Ack.ALL) {
-            metricsFacade.producer().registerAckAllTotalBytesGauge(producer, producerGauge(bufferTotalBytes));
-            metricsFacade.producer().registerAckAllAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes));
-            metricsFacade.producer().registerAckAllCompressionRateGauge(producer, producerGauge(compressionRate));
-            metricsFacade.producer().registerAckAllFailedBatchesGauge(producer, producerGauge(failedBatches));
-            metricsFacade.producer().registerAckAllMetadataAgeGauge(producer, producerGauge(metadataAge));
-            metricsFacade.producer().registerAckAllRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax));
+            metricsFacade.producer().registerAckAllTotalBytesGauge(producer, producerGauge(bufferTotalBytes), sender, datacenter);
+            metricsFacade.producer().registerAckAllAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes), sender, datacenter);
+            metricsFacade.producer().registerAckAllCompressionRateGauge(producer, producerGauge(compressionRate), sender, datacenter);
+            metricsFacade.producer().registerAckAllFailedBatchesGauge(producer, producerGauge(failedBatches), sender, datacenter);
+            metricsFacade.producer().registerAckAllMetadataAgeGauge(producer, producerGauge(metadataAge), sender, datacenter);
+            metricsFacade.producer().registerAckAllRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax), sender, datacenter);
         } else if (ack == Topic.Ack.LEADER) {
-            metricsFacade.producer().registerAckLeaderTotalBytesGauge(producer, producerGauge(bufferTotalBytes));
-            metricsFacade.producer().registerAckLeaderAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes));
-            metricsFacade.producer().registerAckLeaderCompressionRateGauge(producer, producerGauge(compressionRate));
-            metricsFacade.producer().registerAckLeaderFailedBatchesGauge(producer, producerGauge(failedBatches));
-            metricsFacade.producer().registerAckLeaderMetadataAgeGauge(producer, producerGauge(metadataAge));
-            metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax));
+            metricsFacade.producer().registerAckLeaderTotalBytesGauge(producer, producerGauge(bufferTotalBytes), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderCompressionRateGauge(producer, producerGauge(compressionRate), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderFailedBatchesGauge(producer, producerGauge(failedBatches), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderMetadataAgeGauge(producer, producerGauge(metadataAge), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax), sender, datacenter);
         }
     }
 

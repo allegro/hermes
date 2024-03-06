@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,9 +30,11 @@ public class KafkaMessageSenders {
         return topic.isReplicationConfirmRequired() ? remoteAckLeader : remoteAckAll;
     }
 
-    public void registerLocalSenderMetrics(MetricsFacade metricsFacade) {
-        ackLeader.registerGauges(metricsFacade, Topic.Ack.LEADER);
-        ackAll.registerGauges(metricsFacade, Topic.Ack.ALL);
+    public void registerSenderMetrics(String name) {
+        ackLeader.registerGauges(Topic.Ack.LEADER, name);
+        ackAll.registerGauges(Topic.Ack.ALL, name);
+        remoteAckLeader.forEach(sender -> sender.registerGauges(Topic.Ack.LEADER, name));
+        remoteAckAll.forEach(sender -> sender.registerGauges(Topic.Ack.ALL, name));
     }
 
     public static class Tuple {
