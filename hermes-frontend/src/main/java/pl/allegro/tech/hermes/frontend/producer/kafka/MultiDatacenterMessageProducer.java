@@ -127,6 +127,8 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
             return new SendCallback(callback, 1);
         }
 
+        // guarantees that 'onUnpublished' will be called exactly once but two concurrent calls may result
+        // it to be called with one error only
         private void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception exception) {
             int triesLeft = tries.decrementAndGet();
             errors.set(Math.max(triesLeft, 0), new DatacenterError(datacenter, exception));
@@ -157,7 +159,9 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
             StringBuilder builder = new StringBuilder();
             for (var i = 0; i < errors.length(); i++) {
                 var error = errors.get(i);
-                builder.append(String.format("[%s]: %s, ", error.datacenter, getRootCauseMessage(error.e)));
+                if (error != null) {
+                    builder.append(String.format("[%s]: %s, ", error.datacenter, getRootCauseMessage(error.e)));
+                }
             }
             return builder.toString();
         }
