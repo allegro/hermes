@@ -77,7 +77,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             BrokerStorage storage = brokersStorage(brokerAdminClient);
             BrokerTopicManagement brokerTopicManagement =
                     new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
-            KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBootstrapKafkaServer());
+            KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBrokerList());
             KafkaRawMessageReader kafkaRawMessageReader =
                     new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());
             SubscriptionOffsetChangeIndicator subscriptionOffsetChangeIndicator = getRepository(repositories, kafkaProperties);
@@ -112,13 +112,13 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     private ConsumerGroupManager createConsumerGroupManager(KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
         return subscriptionProperties.isCreateConsumerGroupManuallyEnabled()
                 ? new KafkaConsumerGroupManager(kafkaNamesMapper, kafkaProperties.getQualifiedClusterName(),
-                        kafkaProperties.getBootstrapKafkaServer(), kafkaProperties)
+                        kafkaProperties.getBrokerList(), kafkaProperties)
                 : new NoOpConsumerGroupManager();
     }
 
     private KafkaConsumerManager createKafkaConsumerManager(KafkaProperties kafkaProperties,
                                                             KafkaNamesMapper kafkaNamesMapper) {
-        return new KafkaConsumerManager(kafkaProperties, kafkaNamesMapper, kafkaProperties.getBootstrapKafkaServer());
+        return new KafkaConsumerManager(kafkaProperties, kafkaNamesMapper, kafkaProperties.getBrokerList());
     }
 
     private SubscriptionOffsetChangeIndicator getRepository(
@@ -161,10 +161,10 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                 kafkaProperties.getKafkaConsumer().getFetchMinBytes(),
                 kafkaProperties.getKafkaConsumer().getNamePrefix(),
                 kafkaProperties.getKafkaConsumer().getConsumerGroupName(),
-                kafkaProperties.getSasl().isEnabled(),
-                kafkaProperties.getSasl().getMechanism(),
-                kafkaProperties.getSasl().getProtocol(),
-                kafkaProperties.getSasl().getJaasConfig());
+                kafkaProperties.getAuthentication().isEnabled(),
+                kafkaProperties.getAuthentication().getMechanism(),
+                kafkaProperties.getAuthentication().getProtocol(),
+                kafkaProperties.getAuthentication().getJaasConfig());
 
         return new KafkaConsumerPool(config, brokerStorage, configuredBootstrapServers);
     }

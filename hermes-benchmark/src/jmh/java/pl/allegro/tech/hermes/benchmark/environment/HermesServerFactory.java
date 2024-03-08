@@ -9,12 +9,13 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
 import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
-import pl.allegro.tech.hermes.frontend.config.HeaderPropagationProperties;
 import pl.allegro.tech.hermes.frontend.config.HermesServerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.config.SslProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -25,6 +26,7 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersEx
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
+import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
@@ -69,6 +71,7 @@ class HermesServerFactory {
                 hermesServerProperties,
                 metricsFacade,
                 httpHandler,
+                new HealthCheckService(),
                 new DisabledReadinessChecker(false),
                 new NoOpMessagePreviewPersister(),
                 throughputLimiter,
@@ -81,15 +84,18 @@ class HermesServerFactory {
     private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,
         TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
         RawSchemaClient rawSchemaClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
-        HeaderPropagationProperties headerPropagationProperties = new HeaderPropagationProperties();
+        HTTPHeadersProperties httpHeadersProperties = new HTTPHeadersProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
         SchemaProperties schemaProperties = new SchemaProperties();
+        BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(
+                false, null, null, null
+        );
 
         return new HandlersChainFactory(
                 topicsCache,
                 new MessageErrorProcessor(new ObjectMapper(), trackers, trackingHeadersExtractor),
-                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor),
+                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor, "dc"),
                 new MessageFactory(
                         new MessageValidators(Collections.emptyList()),
                         new MessageContentTypeEnforcer(),
@@ -97,7 +103,7 @@ class HermesServerFactory {
                                 new DirectSchemaVersionsRepository(rawSchemaClient),
                                 new DirectCompiledSchemaRepository<>(rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler())
                         ),
-                        new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter()),
+                        new DefaultHeadersPropagator(httpHeadersProperties),
                         new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
                         Clock.systemDefaultZone(),
                         schemaProperties.isIdHeaderEnabled()
@@ -107,7 +113,8 @@ class HermesServerFactory {
                 throughputLimiter,
                 null,
                 false,
-                handlersChainProperties
+                handlersChainProperties,
+                brokerLatencyReporter
         ).provide();
     }
 }

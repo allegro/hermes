@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import com.google.common.collect.ImmutableList;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;

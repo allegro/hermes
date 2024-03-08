@@ -11,7 +11,7 @@ public class NoOperationPublishingTracker implements PublishingTracker {
     }
 
     @Override
-    public void logPublished(String messageId, TopicName topicName, String hostname, Map<String, String> extraRequestHeaders) {
+    public void logPublished(String messageId, TopicName topicName, String hostname, String storageDatacenter, Map<String, String> extraRequestHeaders) {
     }
 
     @Override

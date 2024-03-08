@@ -54,6 +54,7 @@ public class BackupMessagesLoader {
     private final int maxResendRetries;
     private final Duration resendSleep;
     private final Duration readTopicInfoSleep;
+    private final String datacenter;
 
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
@@ -64,7 +65,9 @@ public class BackupMessagesLoader {
                                 SchemaRepository schemaRepository,
                                 SchemaExistenceEnsurer schemaExistenceEnsurer,
                                 Trackers trackers,
-                                BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
+                                BackupMessagesLoaderParameters backupMessagesLoaderParameters,
+                                String datacenter
+                                ) {
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
@@ -75,6 +78,7 @@ public class BackupMessagesLoader {
         this.resendSleep = backupMessagesLoaderParameters.getLoadingPauseBetweenResend();
         this.readTopicInfoSleep = backupMessagesLoaderParameters.getLoadingWaitForBrokerTopicInfo();
         this.maxResendRetries = backupMessagesLoaderParameters.getMaxResendRetries();
+        this.datacenter = datacenter;
     }
 
     public void loadMessages(List<BackupMessage> messages) {
@@ -189,12 +193,12 @@ public class BackupMessagesLoader {
 
     private Message createAvroMessage(BackupMessage backupMessage, CompiledSchema<Schema> schema) {
         return new AvroMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(), schema,
-                backupMessage.getPartitionKey());
+                backupMessage.getPartitionKey(), backupMessage.getPropagatedHTTPHeaders());
     }
 
     private Message createJsonMessage(BackupMessage backupMessage) {
         return new JsonMessage(backupMessage.getMessageId(), backupMessage.getData(), backupMessage.getTimestamp(),
-                backupMessage.getPartitionKey());
+                backupMessage.getPartitionKey(), backupMessage.getPropagatedHTTPHeaders());
     }
 
     private boolean sendMessageIfNeeded(Message message, String topicQualifiedName, Optional<CachedTopic> cachedTopic, String contextName) {
@@ -261,7 +265,7 @@ public class BackupMessagesLoader {
                 brokerTimer.close();
                 cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
-                trackers.get(topic).logPublished(message.getId(), topic.getName(), "", Collections.emptyMap());
+                trackers.get(topic).logPublished(message.getId(), topic.getName(), "", datacenter, Collections.emptyMap());
             }
         });
     }

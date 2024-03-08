@@ -29,6 +29,7 @@ import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 import java.io.File;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.time.LocalDateTime.now;
@@ -64,6 +65,8 @@ public class BackupMessagesLoaderTest {
     private File tempDir;
 
     private final Topic topic = TopicBuilder.topic("pl.allegro.tech.hermes.test").build();
+
+    private final String datacenter = "dc1";
 
     @Before
     public void setUp() {
@@ -103,7 +106,8 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties
+                localMessageStorageProperties,
+                datacenter
             );
 
         messageRepository.save(messageOfAge(1), topic);
@@ -146,7 +150,8 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties
+                localMessageStorageProperties,
+                datacenter
             );
 
         messageRepository.save(messageOfAge(1), topic);
@@ -175,7 +180,8 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties
+                localMessageStorageProperties,
+                datacenter
             );
         MessageRepository messageRepository = new ChronicleMapMessageRepository(
                 new File(tempDir.getAbsoluteFile(), "messages.dat"),
@@ -213,7 +219,8 @@ public class BackupMessagesLoaderTest {
                 schemaRepository,
                 schemaExistenceEnsurer,
                 trackers,
-                localMessageStorageProperties
+                localMessageStorageProperties,
+                datacenter
             );
 
         messageRepository.save(messageOfAge(1), topic);
@@ -231,6 +238,7 @@ public class BackupMessagesLoaderTest {
         assertThat(sendMessage.getData()).isEqualTo(backupMessages.get(0).getData());
         assertThat(sendMessage.getId()).isEqualTo(backupMessages.get(0).getMessageId());
         assertThat(sendMessage.getTimestamp()).isEqualTo(backupMessages.get(0).getTimestamp());
+        assertThat(sendMessage.getHTTPHeaders().get("propagated-http-header")).isEqualTo("example-value");
     }
 
     private Message messageOfAge(int ageHours) {
@@ -238,7 +246,8 @@ public class BackupMessagesLoaderTest {
                 MessageIdGenerator.generate(),
                 "{'a':'b'}".getBytes(),
                 now().minusHours(ageHours).toInstant(UTC).toEpochMilli(),
-                "partition-key"
+                "partition-key",
+                Map.of("propagated-http-header", "example-value")
         );
     }
 }

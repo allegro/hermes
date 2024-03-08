@@ -27,6 +27,7 @@ import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.REASON
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.REMOTE_HOSTNAME;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.SOURCE_HOSTNAME;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.STATUS;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.STORAGE_DATACENTER;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.SUBSCRIPTION;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TIMESTAMP;
 import static pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware.TIMESTAMP_SECONDS;
@@ -142,6 +143,7 @@ public class SchemaManager {
                             .startObject(SOURCE_HOSTNAME).field("type", "keyword").field("norms", false).endObject()
                             .startObject(REMOTE_HOSTNAME).field("type", "keyword").field("norms", false).endObject()
                             .startObject(REASON).field("type", "text").field("norms", false).endObject()
+                            .startObject(STORAGE_DATACENTER).field("type", "text").field("norms", false).endObject()
                             .startObject(EXTRA_REQUEST_HEADERS).field("type", "text").field("norms", false).endObject();
 
             return additionalMapping.apply(jsonBuilder).endObject().endObject().endObject();

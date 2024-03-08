@@ -59,7 +59,7 @@ public class AvroUser {
     }
 
     public int getAge() {
-        return Integer.valueOf(record.get(AGE_FIELD).toString());
+        return Integer.parseInt(record.get(AGE_FIELD).toString());
     }
 
     public String getFavoriteColor() {

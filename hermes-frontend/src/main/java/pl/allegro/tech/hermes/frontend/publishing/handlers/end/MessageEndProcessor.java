@@ -23,24 +23,32 @@ public class MessageEndProcessor {
     private final Trackers trackers;
     private final BrokerListeners brokerListeners;
     private final TrackingHeadersExtractor trackingHeadersExtractor;
+    private final String datacenter;
 
-    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersExtractor trackingHeadersExtractor) {
+    public MessageEndProcessor(Trackers trackers, BrokerListeners brokerListeners, TrackingHeadersExtractor trackingHeadersExtractor, String datacenter) {
         this.trackers = trackers;
         this.brokerListeners = brokerListeners;
         this.trackingHeadersExtractor = trackingHeadersExtractor;
+        this.datacenter = datacenter;
     }
 
     public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
         trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(),
-                attachment.getTopic().getName(), readHostAndPort(exchange),
+                attachment.getTopic().getName(),
+                readHostAndPort(exchange),
+                datacenter,
                 trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
         sendResponse(exchange, attachment, StatusCodes.CREATED);
         attachment.getCachedTopic().incrementPublished();
     }
 
     public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
-        trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(),
-                readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
+        trackers.get(cachedTopic.getTopic()).logPublished(
+                message.getId(),
+                cachedTopic.getTopic().getName(),
+                readHostAndPort(exchange),
+                datacenter,
+                trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
         cachedTopic.incrementPublished();
     }

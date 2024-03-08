@@ -28,7 +28,6 @@ import java.time.Clock;
 @Configuration
 @EnableConfigurationProperties({
         TopicProperties.class,
-        MetricsProperties.class,
         HttpClientProperties.class,
         ConsistencyCheckerProperties.class,
         PrometheusProperties.class,

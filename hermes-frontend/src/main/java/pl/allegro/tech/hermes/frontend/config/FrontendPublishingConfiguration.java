@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -28,6 +29,7 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewFactory;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewLog;
 import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
@@ -38,7 +40,6 @@ import java.util.Optional;
 @EnableConfigurationProperties({
         ThroughputProperties.class,
         MessagePreviewProperties.class,
-        HeaderPropagationProperties.class,
         HandlersChainProperties.class,
         SchemaProperties.class
 })
@@ -49,10 +50,11 @@ public class FrontendPublishingConfiguration {
                                    MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
                                    BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                    ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig,
-                                   MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties) {
+                                   MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties,
+                                   BrokerLatencyReporter brokerLatencyReporter) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,
                 brokerMessageProducer, messagePreviewLog, throughputLimiter, authConfig, messagePreviewProperties.isEnabled(),
-                handlersChainProperties).provide();
+                handlersChainProperties, brokerLatencyReporter).provide();
     }
 
     @Bean
@@ -62,8 +64,9 @@ public class FrontendPublishingConfiguration {
 
     @Bean
     public MessageEndProcessor messageEndProcessor(Trackers trackers, BrokerListeners brokerListeners,
-                                                   TrackingHeadersExtractor trackingHeadersExtractor) {
-        return new MessageEndProcessor(trackers, brokerListeners, trackingHeadersExtractor);
+                                                   TrackingHeadersExtractor trackingHeadersExtractor,
+                                                   DatacenterNameProvider datacenterNameProvider) {
+        return new MessageEndProcessor(trackers, brokerListeners, trackingHeadersExtractor, datacenterNameProvider.getDatacenterName());
     }
 
     @Bean
@@ -95,8 +98,8 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public HeadersPropagator defaultHeadersPropagator(HeaderPropagationProperties headerPropagationProperties) {
-        return new DefaultHeadersPropagator(headerPropagationProperties.isEnabled(), headerPropagationProperties.getAllowFilter());
+    public HeadersPropagator defaultHeadersPropagator(HTTPHeadersProperties httpHeadersProperties) {
+        return new DefaultHeadersPropagator(httpHeadersProperties);
     }
 
     @Bean

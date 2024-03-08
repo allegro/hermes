@@ -37,6 +37,10 @@ public class KafkaConsumerRecordToMessageConverter {
     public Message convertToMessage(ConsumerRecord<byte[], byte[]> record, long partitionAssignmentTerm) {
         KafkaTopic kafkaTopic = topics.get(record.topic());
         UnwrappedMessageContent unwrappedContent = messageContentReader.read(record, kafkaTopic.contentType());
+
+        Map<String, String> externalMetadataFromBody = unwrappedContent.getMessageMetadata().getExternalMetadata();
+        Map<String, String> externalMetadata = kafkaHeaderExtractor.extractExternalMetadata(record.headers(), externalMetadataFromBody);
+
         return new Message(
                 kafkaHeaderExtractor.extractMessageId(record.headers()),
                 topic.getQualifiedName(),
@@ -47,7 +51,7 @@ public class KafkaConsumerRecordToMessageConverter {
                 clock.millis(),
                 new PartitionOffset(kafkaTopic.name(), record.offset(), record.partition()),
                 partitionAssignmentTerm,
-                unwrappedContent.getMessageMetadata().getExternalMetadata(),
+                externalMetadata,
                 subscription.getHeaders(),
                 subscription.getName(),
                 subscription.isSubscriptionIdentityHeadersEnabled()

@@ -9,7 +9,10 @@ import org.xnio.SslClientAuthMode;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
-import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
+
+import java.net.InetSocketAddress;
 
 import static io.undertow.UndertowOptions.ALWAYS_SET_KEEP_ALIVE;
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
@@ -44,6 +47,7 @@ public class HermesServer {
             HermesServerParameters hermesServerParameters,
             MetricsFacade metricsFacade,
             HttpHandler publishingHandler,
+            HealthCheckService healthCheckService,
             ReadinessChecker readinessChecker,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
@@ -57,7 +61,7 @@ public class HermesServer {
         this.metricsFacade = metricsFacade;
         this.publishingHandler = publishingHandler;
         this.prometheusMeterRegistry = prometheusMeterRegistry;
-        this.healthCheckService = new HealthCheckService();
+        this.healthCheckService = healthCheckService;
         this.readinessChecker = readinessChecker;
         this.messagePreviewPersister = messagePreviewPersister;
         this.topicMetadataLoadingJob = topicMetadataLoadingJob;
@@ -151,4 +155,22 @@ public class HermesServer {
     private boolean isFrontendRequestDumperEnabled() {
         return hermesServerParameters.isRequestDumperEnabled();
     }
+
+    public int getPort() {
+        InetSocketAddress socketAddress = (InetSocketAddress) undertow.getListenerInfo().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No port available yet."))
+                .getAddress();
+        return socketAddress.getPort();
+    }
+
+    public int getSSLPort() {
+        InetSocketAddress socketAddress = (InetSocketAddress) undertow.getListenerInfo().stream()
+                .filter(listener -> listener.getSslContext() != null)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No SSL port available yet."))
+                .getAddress();
+        return socketAddress.getPort();
+    }
+
 }

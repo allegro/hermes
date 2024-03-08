@@ -118,6 +118,9 @@ public class SerialConsumer implements Consumer {
             } else {
                 inflightSemaphore.release();
             }
+        } catch (InterruptedException e) {
+            logger.info("Restoring interrupted status {}", subscription.getQualifiedName(), e);
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             logger.error("Consumer loop failed for {}", subscription.getQualifiedName(), e);
         }

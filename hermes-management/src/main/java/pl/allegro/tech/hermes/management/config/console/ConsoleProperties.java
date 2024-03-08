@@ -25,6 +25,7 @@ public class ConsoleProperties {
     private SubscriptionView subscription = new SubscriptionView();
     private ConsistencyView consistency = new ConsistencyView();
     private GroupView group = new GroupView();
+    private Costs costs = new Costs();
 
     public Dashboard getDashboard() {
         return dashboard;
@@ -82,9 +83,17 @@ public class ConsoleProperties {
         this.group = group;
     }
 
+    public Costs getCosts() {
+        return costs;
+    }
+
+    public void setCosts(Costs costs) {
+        this.costs = costs;
+    }
+
     public static final class Console {
         private String title = "hermes console";
-        private String footer = "";
+        private String contactLink = "";
         private String environmentName = "LOCAL";
 
         private boolean criticalEnvironment = false;
@@ -97,12 +106,12 @@ public class ConsoleProperties {
             this.title = title;
         }
 
-        public String getFooter() {
-            return footer;
+        public String getContactLink() {
+            return contactLink;
         }
 
-        public void setFooter(String footer) {
-            this.footer = footer;
+        public void setContactLink(String contactLink) {
+            this.contactLink = contactLink;
         }
 
         public boolean isCriticalEnvironment() {
@@ -213,44 +222,14 @@ public class ConsoleProperties {
     }
 
     public static final class Metrics {
-        private String type = "graphite";
-        private Graphite graphite = new Graphite();
+        private boolean fetchingDashboardUrlEnabled = false;
 
-        public String getType() {
-            return type;
+        public boolean isFetchingDashboardUrlEnabled() {
+            return fetchingDashboardUrlEnabled;
         }
 
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public Graphite getGraphite() {
-            return graphite;
-        }
-
-        public void setGraphite(Graphite graphite) {
-            this.graphite = graphite;
-        }
-    }
-
-    public static final class Graphite {
-        private String url = "localhost:8082";
-        private String prefix = "hermes";
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public void setPrefix(String prefix) {
-            this.prefix = prefix;
+        public void setFetchingDashboardUrlEnabled(boolean fetchingDashboardUrlEnabled) {
+            this.fetchingDashboardUrlEnabled = fetchingDashboardUrlEnabled;
         }
     }
 
@@ -277,7 +256,9 @@ public class ConsoleProperties {
 
     public static final class OAuth {
         private boolean enabled = false;
-        private String url = "localhost:8092/auth";
+        private String url = "localhost:8092";
+        private String authorizationEndpoint = "/auth/oauth/authorize";
+        private String tokenEndpoint = "/auth/oauth/token";
         private String clientId = "hermes";
         private String scope = "hermes";
 
@@ -295,6 +276,22 @@ public class ConsoleProperties {
 
         public void setUrl(String url) {
             this.url = url;
+        }
+
+        public String getAuthorizationEndpoint() {
+            return authorizationEndpoint;
+        }
+
+        public void setAuthorizationEndpoint(String authorizationEndpoint) {
+            this.authorizationEndpoint = authorizationEndpoint;
+        }
+
+        public String getTokenEndpoint() {
+            return tokenEndpoint;
+        }
+
+        public void setTokenEndpoint(String tokenEndpoint) {
+            this.tokenEndpoint = tokenEndpoint;
         }
 
         public String getClientId() {
@@ -832,6 +829,63 @@ public class ConsoleProperties {
 
         public void setMaxGroupBatchSize(int maxGroupBatchSize) {
             this.maxGroupBatchSize = maxGroupBatchSize;
+        }
+    }
+
+    public static final class Costs {
+        private boolean enabled = false;
+        private String globalDetailsUrl = "";
+        private String topicIframeUrl = "";
+        private String topicDetailsUrl = "";
+        private String subscriptionIframeUrl = "";
+        private String subscriptionDetailsUrl = "";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getTopicIframeUrl() {
+            return topicIframeUrl;
+        }
+
+        public void setTopicIframeUrl(String topicIframeUrl) {
+            this.topicIframeUrl = topicIframeUrl;
+        }
+
+        public String getGlobalDetailsUrl() {
+            return globalDetailsUrl;
+        }
+
+        public void setGlobalDetailsUrl(String globalDetailsUrl) {
+            this.globalDetailsUrl = globalDetailsUrl;
+        }
+
+        public String getTopicDetailsUrl() {
+            return topicDetailsUrl;
+        }
+
+        public void setTopicDetailsUrl(String topicDetailsUrl) {
+            this.topicDetailsUrl = topicDetailsUrl;
+        }
+
+        public String getSubscriptionIframeUrl() {
+            return subscriptionIframeUrl;
+        }
+
+        public void setSubscriptionIframeUrl(String subscriptionIframeUrl) {
+            this.subscriptionIframeUrl = subscriptionIframeUrl;
+        }
+
+        public String getSubscriptionDetailsUrl() {
+            return subscriptionDetailsUrl;
+        }
+
+        public void setSubscriptionDetailsUrl(String subscriptionDetailsUrl) {
+            this.subscriptionDetailsUrl = subscriptionDetailsUrl;
         }
     }
 }

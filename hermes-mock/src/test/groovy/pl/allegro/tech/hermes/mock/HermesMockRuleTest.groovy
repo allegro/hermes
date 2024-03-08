@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.mock
 
 import org.junit.Rule
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
+import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
@@ -14,7 +14,7 @@ class HermesMockRuleTest extends Specification {
     @Rule
     HermesMockRule hermes = new HermesMockRule(port)
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
+    FrontendTestClient publisher = new FrontendTestClient(port)
 
     def 'simple publish-expect test'() {
         given:
