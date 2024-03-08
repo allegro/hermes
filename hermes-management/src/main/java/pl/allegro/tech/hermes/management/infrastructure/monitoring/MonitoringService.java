@@ -55,13 +55,13 @@ public class MonitoringService {
         }
 
         int topicPartitions = getTopicPartitions(kafkaTopics);
-        int partitionsInConsumerGroups = getPartitionsInConsumerGroups(consumerGroupDescription.get());
+        int consumerGroupPartitions = getConsumerGroupPartitions(consumerGroupDescription.get());
 
-        if (topicPartitions != partitionsInConsumerGroups) {
+        if (topicPartitions != consumerGroupPartitions) {
             logger.error("Unassigned partitions in consumer groups for subscription {} in cluster {}. "
                             + "Expected number of assigned partitions: {}, but was {}.",
                             consumerGroupId.asString(), clusterName,
-                            topicPartitions, partitionsInConsumerGroups);
+                            topicPartitions, consumerGroupPartitions);
             return false;
         }
         return true;
@@ -87,7 +87,7 @@ public class MonitoringService {
         return topicPartitions;
     }
 
-    private static int getPartitionsInConsumerGroups(ConsumerGroupDescription consumerGroupDescription) {
+    private static int getConsumerGroupPartitions(ConsumerGroupDescription consumerGroupDescription) {
         return consumerGroupDescription.members().stream()
                 .mapToInt(member -> member.assignment().topicPartitions().size()).sum();
     }

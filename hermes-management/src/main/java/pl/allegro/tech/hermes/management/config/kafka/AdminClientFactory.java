@@ -15,13 +15,13 @@ public class AdminClientFactory {
 
     public static AdminClient brokerAdminClient(KafkaProperties kafkaProperties) {
         Properties props = new Properties();
-        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapKafkaServer());
+        props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBrokerList());
         props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getKafkaServerRequestTimeoutMillis());
-        if (kafkaProperties.getSasl().isEnabled()) {
-            props.put(SASL_MECHANISM, kafkaProperties.getSasl().getMechanism());
-            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getSasl().getProtocol());
-            props.put(SASL_JAAS_CONFIG, kafkaProperties.getSasl().getJaasConfig());
+        if (kafkaProperties.getAuthentication().isEnabled()) {
+            props.put(SASL_MECHANISM, kafkaProperties.getAuthentication().getMechanism());
+            props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getAuthentication().getProtocol());
+            props.put(SASL_JAAS_CONFIG, kafkaProperties.getAuthentication().getJaasConfig());
         }
         return AdminClient.create(props);
     }

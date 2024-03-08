@@ -53,22 +53,22 @@ public class MonitoringCache {
     }
 
     private void monitorSubscriptionsPartitions() {
-        List<List<TopicAndSubscription>> splitSubscriptions = getSplitActiveSubscriptions();
+        List<List<TopicAndSubscription>> subscriptionsPartitioned = getPartitionedActiveSubscriptions();
 
         List<TopicAndSubscription> subscriptionsWithUnassignedPartitions =
-                getFreshListOfSubscriptionsWithUnassignedPartitions(splitSubscriptions);
+                getFreshSubscriptionsWithUnassignedPartitions(subscriptionsPartitioned);
         updateSubscriptionsWithUnassignedPartitionsCache(subscriptionsWithUnassignedPartitions);
     }
 
-    private List<TopicAndSubscription> getFreshListOfSubscriptionsWithUnassignedPartitions(
-                List<List<TopicAndSubscription>> splitSubscriptions) {
+    private List<TopicAndSubscription> getFreshSubscriptionsWithUnassignedPartitions(
+            List<List<TopicAndSubscription>> splitSubscriptions) {
         ExecutorService executorService = Executors.newFixedThreadPool(monitoringProperties.getNumberOfThreads());
 
         List<Future<List<TopicAndSubscription>>> futures = splitSubscriptions.stream().map(it -> executorService.submit(() -> {
             try {
                 List<MonitoringService> monitoringServices = monitoringServicesCreator.createMonitoringServices();
                 logger.info("Monitoring started for {} subscriptions", it.size());
-                return checkIfAllPartitionsAreAssignedToSubscriptions(it, monitoringServices);
+                return findSubscriptionsWithUnassignedPartitions(it, monitoringServices);
             } catch (Exception e) {
                 logger.error("Error in monitoring: ", e);
                 return new ArrayList<TopicAndSubscription>();
@@ -107,15 +107,15 @@ public class MonitoringCache {
         }
     }
 
-    private List<List<TopicAndSubscription>> getSplitActiveSubscriptions() {
-        return splitSubscriptions(getAllActiveSubscriptions());
+    private List<List<TopicAndSubscription>> getPartitionedActiveSubscriptions() {
+        return partitionSubscriptions(getAllActiveSubscriptions());
     }
 
-    private List<List<TopicAndSubscription>> splitSubscriptions(List<TopicAndSubscription> topicAndSubscriptions) {
+    private List<List<TopicAndSubscription>> partitionSubscriptions(List<TopicAndSubscription> topicAndSubscriptions) {
         return Lists.partition(topicAndSubscriptions, (topicAndSubscriptions.size() / monitoringProperties.getNumberOfThreads()) + 1);
     }
 
-    private List<TopicAndSubscription> checkIfAllPartitionsAreAssignedToSubscriptions(List<TopicAndSubscription> subscriptions,
+    private List<TopicAndSubscription> findSubscriptionsWithUnassignedPartitions(List<TopicAndSubscription> subscriptions,
                                                                 List<MonitoringService> monitoringServices) {
         List<TopicAndSubscription> subscriptionsWithUnassignedPartitions = new ArrayList<>();
 
