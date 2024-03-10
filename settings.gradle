@@ -1,3 +1,6 @@
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
+}
 rootProject.name='hermes'
 
 include 'hermes-common',
@@ -13,5 +16,6 @@ include 'hermes-common',
         'hermes-schema',
         'hermes-benchmark',
         'hermes-mock',
-        'integration-tests'
+        'integration-tests',
+        'hermes-mock-kotest-extension'
 
