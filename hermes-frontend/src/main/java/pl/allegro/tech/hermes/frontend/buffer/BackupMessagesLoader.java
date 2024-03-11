@@ -71,7 +71,6 @@ public class BackupMessagesLoader {
                                 BackupMessagesLoaderParameters backupMessagesLoaderParameters,
                                 String datacenter
                                 ) {
-        this.brokerTopicMetadataFetcher = brokerTopicMetadataFetcher;
         this.brokerTopicAvailabilityChecker = brokerTopicAvailabilityChecker;
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
