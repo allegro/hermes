@@ -15,21 +15,11 @@ public class TopicLoadingProperties {
 
     public static class MetadataLoadingProperties {
 
-        private boolean enabled = false;
-
         private Duration retryInterval = Duration.ofSeconds(1);
 
         private int retryCount = 5;
 
         private int threadPoolSize = 16;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
 
         public Duration getRetryInterval() {
             return retryInterval;

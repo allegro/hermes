@@ -1,11 +1,13 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import com.google.common.collect.ImmutableMap;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.admin.AdminClient;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
+import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
@@ -29,24 +31,57 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
 
-public class KafkaMessageProducerFactory {
+public class KafkaMessageSendersFactory {
 
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
+    private final TopicMetadataLoadingExecutor topicMetadataLoadingExecutor;
+    private final MinInSyncReplicasLoader localMinInSyncReplicasLoader;
     private final KafkaParameters kafkaParameters;
-    private final KafkaProducerParameters kafkaProducerParameters;
+    private final List<KafkaParameters> remoteKafkaParameters;
+    private final BrokerLatencyReporter brokerLatencyReporter;
     private final long bufferedSizeBytes;
 
-    public KafkaMessageProducerFactory(KafkaParameters kafkaParameters,
-                                       KafkaProducerParameters kafkaProducerParameters,
-                                       long bufferedSizeBytes) {
-        this.kafkaProducerParameters = kafkaProducerParameters;
+    public KafkaMessageSendersFactory(KafkaParameters kafkaParameters,
+                                      List<KafkaParameters> remoteKafkaParameters,
+                                      BrokerLatencyReporter brokerLatencyReporter,
+                                      AdminClient localAdminClient,
+                                      TopicsCache topicsCache,
+                                      int retryCount,
+                                      Duration retryInterval,
+                                      int threadPoolSize,
+                                      long bufferedSizeBytes,
+                                      Duration metadataMaxAge) {
+        this.topicMetadataLoadingExecutor = new TopicMetadataLoadingExecutor(topicsCache, retryCount, retryInterval, threadPoolSize);
+        this.localMinInSyncReplicasLoader = new MinInSyncReplicasLoader(localAdminClient, metadataMaxAge);
+        this.brokerLatencyReporter = brokerLatencyReporter;
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;
+        this.remoteKafkaParameters = remoteKafkaParameters;
     }
 
-    public Producers provide() {
+    public KafkaMessageSenders provide(KafkaProducerParameters kafkaProducerParameters) {
+        KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
+                sender(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
+                sender(kafkaParameters, kafkaProducerParameters, ACK_ALL)
+        );
+
+        List<KafkaMessageSenders.Tuple> remoteProducers = remoteKafkaParameters.stream().map(
+                kafkaProperties -> new KafkaMessageSenders.Tuple(
+                        sender(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
+                        sender(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
+        return new KafkaMessageSenders(
+                topicMetadataLoadingExecutor,
+                localMinInSyncReplicasLoader,
+                localProducers,
+                remoteProducers
+        );
+    }
+
+    private KafkaMessageSender<byte[], byte[]> sender(KafkaParameters kafkaParameters,
+                                                      KafkaProducerParameters kafkaProducerParameters,
+                                                      String acks) {
         Map<String, Object> props = new HashMap<>();
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
         props.put(MAX_BLOCK_MS_CONFIG, (int) kafkaProducerParameters.getMaxBlock().toMillis());
@@ -64,19 +99,20 @@ public class KafkaMessageProducerFactory {
         props.put(LINGER_MS_CONFIG, (int) kafkaProducerParameters.getLinger().toMillis());
         props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaProducerParameters.getMetricsSampleWindow().toMillis());
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
+        props.put(ACKS_CONFIG, acks);
 
         if (kafkaParameters.isAuthenticationEnabled()) {
             props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
-
-        Producer<byte[], byte[]> leaderConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_LEADER));
-        Producer<byte[], byte[]> everyoneConfirms = new KafkaProducer<>(copyWithEntryAdded(props, ACKS_CONFIG, ACK_ALL));
-        return new Producers(leaderConfirms, everyoneConfirms, kafkaProducerParameters.isReportNodeMetricsEnabled());
+        return new KafkaMessageSender<>(
+                new org.apache.kafka.clients.producer.KafkaProducer<>(props),
+                kafkaParameters.getDatacenter()
+        );
     }
 
-    private ImmutableMap<String, Object> copyWithEntryAdded(Map<String, Object> common, String key, String value) {
-        return ImmutableMap.<String, Object>builder().putAll(common).put(key, value).build();
+    public void close() throws Exception {
+        topicMetadataLoadingExecutor.close();
     }
 }
