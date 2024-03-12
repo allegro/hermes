@@ -38,12 +38,13 @@ class TopicMetadataLoadingExecutorTest extends Specification {
         def executor = new TopicMetadataLoadingExecutor(topicsCache, 2, Duration.ofSeconds(10), 2)
 
         when:
-        executor.execute([loader])
+        boolean status = executor.execute([loader])
 
         then:
         for (String topic : topics) {
             1 * loader.load(cachedTopics.get(topic)) >> success(topic)
         }
+        status
     }
 
     def "should retry loading topic metadata"() {
@@ -52,7 +53,7 @@ class TopicMetadataLoadingExecutorTest extends Specification {
         def executor = new TopicMetadataLoadingExecutor(topicsCache, 2, Duration.ofSeconds(10), 4)
 
         when:
-        executor.execute([loader])
+        boolean status = executor.execute([loader])
 
         then:
         1 * loader.load(cachedTopics.get("g1.topicA")) >> failure("g1.topicA")
@@ -62,6 +63,8 @@ class TopicMetadataLoadingExecutorTest extends Specification {
 
         2 * loader.load(cachedTopics.get("g2.topicC")) >> failure("g2.topicC")
         1 * loader.load(cachedTopics.get("g2.topicC")) >> success("g2.topicC")
+
+        status
     }
 
     def "should leave retry loop when reached max retries and failed to load metadata"() {
@@ -70,12 +73,14 @@ class TopicMetadataLoadingExecutorTest extends Specification {
         def executor = new TopicMetadataLoadingExecutor(topicsCache, 2, Duration.ofSeconds(10), 4)
 
         when:
-        executor.execute([loader])
+        boolean status = executor.execute([loader])
 
         then:
         3 * loader.load(cachedTopics.get("g1.topicA")) >> failure("g1.topicA")
         1 * loader.load(cachedTopics.get("g1.topicB")) >> success("g1.topicB")
         1 * loader.load(cachedTopics.get("g2.topicC")) >> success("g2.topicC")
+
+        !status
     }
 
     def "should not throw exception when no topics exist"() {
@@ -87,10 +92,11 @@ class TopicMetadataLoadingExecutorTest extends Specification {
         def executor = new TopicMetadataLoadingExecutor(emptyCache, 2, Duration.ofSeconds(10), 4)
 
         when:
-        executor.execute([loader])
+        boolean status = executor.execute([loader])
 
         then:
         noExceptionThrown()
+        status
     }
 
     private MetadataLoadingResult success(String topicName) {
