@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import org.apache.kafka.clients.admin.AdminClient;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -40,12 +39,10 @@ public class KafkaMessageSendersFactory {
     private final MinInSyncReplicasLoader localMinInSyncReplicasLoader;
     private final KafkaParameters kafkaParameters;
     private final List<KafkaParameters> remoteKafkaParameters;
-    private final BrokerLatencyReporter brokerLatencyReporter;
     private final long bufferedSizeBytes;
 
     public KafkaMessageSendersFactory(KafkaParameters kafkaParameters,
                                       List<KafkaParameters> remoteKafkaParameters,
-                                      BrokerLatencyReporter brokerLatencyReporter,
                                       AdminClient localAdminClient,
                                       TopicsCache topicsCache,
                                       int retryCount,
@@ -55,7 +52,6 @@ public class KafkaMessageSendersFactory {
                                       Duration metadataMaxAge) {
         this.topicMetadataLoadingExecutor = new TopicMetadataLoadingExecutor(topicsCache, retryCount, retryInterval, threadPoolSize);
         this.localMinInSyncReplicasLoader = new MinInSyncReplicasLoader(localAdminClient, metadataMaxAge);
-        this.brokerLatencyReporter = brokerLatencyReporter;
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;
         this.remoteKafkaParameters = remoteKafkaParameters;
@@ -114,5 +110,6 @@ public class KafkaMessageSendersFactory {
 
     public void close() throws Exception {
         topicMetadataLoadingExecutor.close();
+        localMinInSyncReplicasLoader.close();
     }
 }

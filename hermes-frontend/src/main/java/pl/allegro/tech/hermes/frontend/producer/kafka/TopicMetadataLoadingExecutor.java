@@ -22,7 +22,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static pl.allegro.tech.hermes.frontend.producer.kafka.TopicMetadataLoader.*;
+import static pl.allegro.tech.hermes.frontend.producer.kafka.TopicMetadataLoader.MetadataLoadingResult;
+import static pl.allegro.tech.hermes.frontend.producer.kafka.TopicMetadataLoader.Type;
 import static pl.allegro.tech.hermes.frontend.utils.CompletableFuturesHelper.allComplete;
 
 class TopicMetadataLoadingExecutor {

@@ -63,14 +63,12 @@ public class FrontendProducerConfiguration {
                                                                  TopicLoadingProperties topicLoadingProperties,
                                                                  TopicsCache topicsCache,
                                                                  LocalMessageStorageProperties localMessageStorageProperties,
-                                                                 DatacenterNameProvider datacenterNameProvider,
-                                                                 BrokerLatencyReporter brokerLatencyReporter) {
+                                                                 DatacenterNameProvider datacenterNameProvider) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         List<KafkaParameters> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
         return new KafkaMessageSendersFactory(
                 kafkaProperties,
                 remoteKafkaProperties,
-                brokerLatencyReporter,
                 createAdminClient(kafkaProperties),
                 topicsCache,
                 topicLoadingProperties.getMetadata().getRetryCount(),
@@ -85,7 +83,7 @@ public class FrontendProducerConfiguration {
         Properties props = new Properties();
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBrokerList());
         props.put(SECURITY_PROTOCOL_CONFIG, DEFAULT_SECURITY_PROTOCOL);
-        props.put(REQUEST_TIMEOUT_MS_CONFIG, kafkaProperties.getAdminRequestTimeout().toMillis());
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, (int) kafkaProperties.getAdminRequestTimeout().toMillis());
         if (kafkaProperties.isAuthenticationEnabled()) {
             props.put(SASL_MECHANISM, kafkaProperties.getAuthenticationMechanism());
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaProperties.getAuthenticationProtocol());
