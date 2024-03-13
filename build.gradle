@@ -52,7 +52,7 @@ allprojects {
             guava             : '23.0',
             jackson           : '2.15.2',
             jersey            : '3.1.2',
-            jetty             : '12.0.5',
+            jetty             : '12.0.7',
             curator           : '5.4.0',
             dropwizard_metrics: '4.1.0',
             micrometer_metrics: '1.11.1',
