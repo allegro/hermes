@@ -44,4 +44,10 @@
     <!-- Classes repackaged from external libraries -->
     <suppress checks="[a-zA-Z0-9]*"
               files="(DirectBufferPool|LinkedHashSetBlockingQueue)\.java" />
+
+    <suppress checks="MethodName"
+              files="ChronicleMapMessageRepositoryTest\.java" />
+
+    <suppress checks="LocalVariableName"
+              files="ChronicleMapMessageRepositoryTest\.java" />
 </suppressions>

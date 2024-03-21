@@ -16,9 +16,9 @@ import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -54,9 +54,11 @@ public class FrontendConfiguration {
                                                      TopicsCache topicsCache,
                                                      SchemaRepository schemaRepository,
                                                      Trackers trackers,
-                                                     LocalMessageStorageProperties localMessageStorageProperties) {
+                                                     LocalMessageStorageProperties localMessageStorageProperties,
+                                                     DatacenterNameProvider datacenterNameProvider
+                                                     ) {
         return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, schemaRepository,
-                new SchemaExistenceEnsurer(schemaRepository), trackers, localMessageStorageProperties);
+                new SchemaExistenceEnsurer(schemaRepository), trackers, localMessageStorageProperties, datacenterNameProvider.getDatacenterName());
     }
 
     @Bean(initMethod = "extend")
@@ -73,11 +75,6 @@ public class FrontendConfiguration {
     public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(CuratorFramework curator,
                                                                              ZookeeperPaths zookeeperPaths) {
         return new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
-    }
-
-    @Bean(initMethod = "startup")
-    public HealthCheckService healthCheckService() {
-        return new HealthCheckService();
     }
 
     @Bean

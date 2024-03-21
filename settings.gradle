@@ -6,12 +6,12 @@ include 'hermes-common',
         'hermes-consumers',
         'hermes-api',
         'hermes-client',
-        'integration',
         'hermes-test-helper',
         'hermes-tracker',
         'hermes-metrics',
         'hermes-tracker-elasticsearch',
         'hermes-schema',
         'hermes-benchmark',
-        'hermes-mock'
+        'hermes-mock',
+        'integration-tests'
 

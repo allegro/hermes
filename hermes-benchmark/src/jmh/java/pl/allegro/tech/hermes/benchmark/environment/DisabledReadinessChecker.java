@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.benchmark.environment;
 
-import pl.allegro.tech.hermes.frontend.server.ReadinessChecker;
+import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
 
 class DisabledReadinessChecker implements ReadinessChecker {
 

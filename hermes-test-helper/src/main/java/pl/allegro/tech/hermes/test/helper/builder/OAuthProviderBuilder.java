@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 
 public class OAuthProviderBuilder {
 
-    private String name;
+    private final String name;
 
     private String tokenEndpoint = "http://example.com/token";
 

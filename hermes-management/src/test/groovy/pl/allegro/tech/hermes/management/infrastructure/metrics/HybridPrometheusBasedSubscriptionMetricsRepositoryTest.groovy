@@ -28,14 +28,14 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)
 
-    private static final String query = "sum by (__name__,group,topic,subscription,status_code)" +
+    private static final String query = "sum by (__name__, group, topic, subscription, status_code) " +
             "(irate({__name__=~'hermes_consumers_subscription_delivered_total" +
             "|hermes_consumers_subscription_timeouts_total" +
             "|hermes_consumers_subscription_throughput_bytes_total" +
             "|hermes_consumers_subscription_other_errors_total" +
             "|hermes_consumers_subscription_batches_total" +
-            "|hermes_consumers_subscription_http_status_codes_total'," +
-            "group='group',topic='topic',subscription='subscription', service=~'hermes'}[1m]) keep_metric_names)"
+            "|hermes_consumers_subscription_http_status_codes_total', " +
+            "group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]) keep_metric_names)"
 
     def "should read subscription metrics from multiple places"() {
         given:
