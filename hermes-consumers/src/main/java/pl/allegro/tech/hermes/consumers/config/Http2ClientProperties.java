@@ -20,6 +20,8 @@ public class Http2ClientProperties implements Http2ClientParameters {
 
     private Duration connectionTimeout = Duration.ofSeconds(15);
 
+    private boolean requestProcessingMonitoringEnabled = false;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -80,5 +82,14 @@ public class Http2ClientProperties implements Http2ClientParameters {
 
     public void setConnectionTimeout(Duration connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+
+    @Override
+    public boolean isRequestProcessingMonitoringEnabled() {
+        return this.requestProcessingMonitoringEnabled;
+    }
+
+    public void setRequestProcessingMonitoringEnabled(boolean requestProcessingMonitoringEnabled) {
+        this.requestProcessingMonitoringEnabled = requestProcessingMonitoringEnabled;
     }
 }

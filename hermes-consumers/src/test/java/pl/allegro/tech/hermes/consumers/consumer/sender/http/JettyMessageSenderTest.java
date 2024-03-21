@@ -8,6 +8,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration;
@@ -55,6 +56,8 @@ public class JettyMessageSenderTest {
 
     private final HttpHeadersProvider headersProvider = new HermesHeadersProvider(Collections.singleton(new Http1HeadersProvider()));
 
+    private static final MetricsFacade metricsFacade = TestMetricsFacadeFactory.create();
+
     @BeforeClass
     public static void setupEnvironment() throws Exception {
         wireMockServer = new WireMockServer(ENDPOINT_PORT);
@@ -68,7 +71,8 @@ public class JettyMessageSenderTest {
                                 new ThreadPoolMetrics(TestMetricsFacadeFactory.create())
                         ),
                         sslContextFactoryProvider),
-                new Http1ClientProperties()
+                new Http1ClientProperties(),
+                metricsFacade
         );
         client.start();
     }

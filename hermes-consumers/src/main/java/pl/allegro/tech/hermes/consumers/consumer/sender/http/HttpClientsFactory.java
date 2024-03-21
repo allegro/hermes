@@ -16,8 +16,9 @@ public class HttpClientsFactory {
     private final SslContextFactoryProvider sslContextFactoryProvider;
 
     public HttpClientsFactory(
-            InstrumentedExecutorServiceFactory executorFactory,
-            SslContextFactoryProvider sslContextFactoryProvider) {
+        InstrumentedExecutorServiceFactory executorFactory,
+        SslContextFactoryProvider sslContextFactoryProvider
+    ) {
         this.executorFactory = executorFactory;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
     }
@@ -25,14 +26,14 @@ public class HttpClientsFactory {
     public HttpClient createClientForHttp1(String name, Http1ClientParameters http1ClientParameters) {
         ClientConnector clientConnector = new ClientConnector();
         sslContextFactoryProvider.provideSslContextFactory()
-                .ifPresent(clientConnector::setSslContextFactory);
+            .ifPresent(clientConnector::setSslContextFactory);
         HttpClientTransportOverHTTP transport = new HttpClientTransportOverHTTP(clientConnector);
         HttpClient client = new HttpClient(transport);
 
         ExecutorService executor = executorFactory.getExecutorService(
-                name,
-                http1ClientParameters.getThreadPoolSize(),
-                http1ClientParameters.isThreadPoolMonitoringEnabled());
+            name,
+            http1ClientParameters.getThreadPoolSize(),
+            http1ClientParameters.isThreadPoolMonitoringEnabled());
         client.setExecutor(executor);
         client.setMaxConnectionsPerDestination(http1ClientParameters.getMaxConnectionsPerDestination());
         client.setMaxRequestsQueuedPerDestination(http1ClientParameters.getMaxRequestsQueuedPerDestination());
@@ -46,16 +47,16 @@ public class HttpClientsFactory {
     public HttpClient createClientForHttp2(String name, Http2ClientParameters http2ClientParameters) {
         ClientConnector clientConnector = new ClientConnector();
         sslContextFactoryProvider.provideSslContextFactory()
-                .ifPresentOrElse(clientConnector::setSslContextFactory,
-                        () -> {
-                            throw new  IllegalStateException("Cannot create http/2 client due to lack of ssl context factory");
-                        });
+            .ifPresentOrElse(clientConnector::setSslContextFactory,
+                () -> {
+                    throw new IllegalStateException("Cannot create http/2 client due to lack of ssl context factory");
+                });
         HTTP2Client http2Client = new HTTP2Client(clientConnector);
 
         ExecutorService executor = executorFactory.getExecutorService(
-                name,
-                http2ClientParameters.getThreadPoolSize(),
-                http2ClientParameters.isThreadPoolMonitoringEnabled());
+            name,
+            http2ClientParameters.getThreadPoolSize(),
+            http2ClientParameters.isThreadPoolMonitoringEnabled());
         http2Client.setExecutor(executor);
 
         HttpClientTransportOverHTTP2 transport = new HttpClientTransportOverHTTP2(http2Client);
