@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.schema.BadSchemaRequestException
 import pl.allegro.tech.hermes.schema.InternalSchemaRepositoryException
-import pl.allegro.tech.hermes.schema.RawSchemaClient
+import pl.allegro.tech.hermes.schema.RawSchemaAdminClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.schema.SubjectNamingStrategy
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver
@@ -29,8 +29,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import static pl.allegro.tech.hermes.schema.SubjectNamingStrategy.qualifiedName
 
-@Subject(SchemaRegistryRawSchemaClient.class)
-class SchemaRegistryRawSchemaClientTest extends Specification {
+@Subject(SchemaRegistryRawSchemaAdminClient.class)
+class SchemaRegistryRawSchemaAdminClientTest extends Specification {
 
     @Shared String schemaRegistryContentType = "application/vnd.schemaregistry.v1+json"
 
@@ -46,7 +46,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     @Shared SubjectNamingStrategy[] subjectNamingStrategies
 
-    @Shared RawSchemaClient[] clients
+    @Shared RawSchemaAdminClient[] clients
 
     def setupSpec() {
         port = Ports.nextAvailable()
@@ -60,7 +60,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
                 qualifiedName.withNamespacePrefixIf(true, namespace),
                 qualifiedName.withValueSuffixIf(true).withNamespacePrefixIf(true, namespace)
         ]
-        clients = subjectNamingStrategies.collect { new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), it) }
+        clients = subjectNamingStrategies.collect { new SchemaRegistryRawSchemaAdminClient(resolver, new ObjectMapper(), it) }
     }
 
     def cleanupSpec() {
@@ -244,13 +244,13 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     def "should delete all schema versions"() {
         given:
-        wireMock.stubFor(WireMock.delete(versionsUrl(topicName, subjectNamingStrategy)).willReturn(okResponse()))
+        wireMock.stubFor(WireMock.delete(deleteUrl(topicName, subjectNamingStrategy)).willReturn(okResponse()))
 
         when:
         client.deleteAllSchemaVersions(topicName)
 
         then:
-        wireMock.verify(1, deleteRequestedFor(versionsUrl(topicName, subjectNamingStrategy)))
+        wireMock.verify(1, deleteRequestedFor(deleteUrl(topicName, subjectNamingStrategy)))
 
         where:
         client << clients
@@ -347,7 +347,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         boolean validationEnabled = true
         String deleteSchemaPathSuffix = ""
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
-        def client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix, subjectNamingStrategy)
+        def client = new SchemaRegistryRawSchemaAdminClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix, subjectNamingStrategy)
 
         wireMock.stubFor(post(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .willReturn(okResponse()
@@ -374,7 +374,7 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
         boolean validationEnabled = true
         String deleteSchemaPathSuffix = ""
         resolver = new DefaultSchemaRepositoryInstanceResolver(ClientBuilder.newClient(), URI.create("http://localhost:$port"))
-        def client = new SchemaRegistryRawSchemaClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix, subjectNamingStrategy)
+        def client = new SchemaRegistryRawSchemaAdminClient(resolver, new ObjectMapper(), validationEnabled, deleteSchemaPathSuffix, subjectNamingStrategy)
 
         wireMock.stubFor(post(schemaCompatibilityUrl(topicName, subjectNamingStrategy))
                 .willReturn(okResponse()
@@ -407,6 +407,10 @@ class SchemaRegistryRawSchemaClientTest extends Specification {
 
     private UrlPattern versionsUrl(TopicName topic, SubjectNamingStrategy subjectNamingStrategy) {
         urlEqualTo("/subjects/${subjectNamingStrategy.apply(topic)}/versions")
+    }
+
+    private UrlPattern deleteUrl(TopicName topic, SubjectNamingStrategy subjectNamingStrategy) {
+        urlEqualTo("/subjects/${subjectNamingStrategy.apply(topic)}")
     }
 
     private UrlPattern schemaVersionUrl(TopicName topic, int version, SubjectNamingStrategy subjectNamingStrategy) {

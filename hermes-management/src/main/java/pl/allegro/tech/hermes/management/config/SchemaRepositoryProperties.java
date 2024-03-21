@@ -12,7 +12,7 @@ public class SchemaRepositoryProperties {
     private int connectionTimeoutMillis = 1000;
 
     private int socketTimeoutMillis = 3000;
-    private String deleteSchemaPathSuffix = "versions";
+    private String deleteSchemaPathSuffix = "";
 
     private boolean subjectSuffixEnabled = false;
 

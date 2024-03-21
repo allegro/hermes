@@ -37,13 +37,13 @@ Option                                   | Description                          
 
 ### Management
 
-Option                                   | Description                                                        | Default value
----------------------------------------- | ------------------------------------------------------------------ | -------------
-schema.repository.serverUrl              | URL of a repository                                                | `http://localhost:8888/`
-schema.repository.validationEnabled      | Allows to use validation API in schema repository                  | `false`
-schema.repository.connectionTimeoutMillis| Connection timeout used in http client (specified in milliseconds) | 1000
-schema.repository.socketTimeoutMillis    | Read socket timeout used in http client (specified in milliseconds)| 3000
-schema.repository.deleteSchemaPathSuffix | A suffix of the URL to delete all schema versions: `/subjects/{subject}/{deleteSchemaPathSuffix}| `versions`
-schema.repository.subjectSuffixEnabled   | Add `-value` suffix to every subject name                          | `false`
-schema.repository.subjectNamespaceEnabled| Add `kafka.defaultNamespace` property value as a prefix to every subject name | `false`
+Option                                   | Description                                                                                        | Default value
+---------------------------------------- |----------------------------------------------------------------------------------------------------| -------------
+schema.repository.serverUrl              | URL of a repository                                                                                | `http://localhost:8888/`
+schema.repository.validationEnabled      | Allows to use validation API in schema repository                                                  | `false`
+schema.repository.connectionTimeoutMillis| Connection timeout used in http client (specified in milliseconds)                                 | 1000
+schema.repository.socketTimeoutMillis    | Read socket timeout used in http client (specified in milliseconds)                                | 3000
+schema.repository.deleteSchemaPathSuffix | A suffix of the URL to delete all schema versions: `/subjects/{subject}/{deleteSchemaPathSuffix}`  | `""`
+schema.repository.subjectSuffixEnabled   | Add `-value` suffix to every subject name                                                          | `false`
+schema.repository.subjectNamespaceEnabled| Add `kafka.defaultNamespace` property value as a prefix to every subject name                      | `false`
 

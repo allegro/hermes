@@ -49,14 +49,17 @@ public class SchemaConfiguration {
 
     @Bean
     public RawSchemaClient rawSchemaClient(MetricsFacade metricsFacade,
-                                           ObjectMapper objectMapper,
                                            SchemaRepositoryInstanceResolver resolver,
                                            SchemaProperties schemaProperties,
                                            KafkaClustersProperties kafkaProperties) {
-        return new RawSchemaClientFactory(kafkaProperties.getNamespace(), kafkaProperties.getNamespaceSeparator(), metricsFacade,
-                objectMapper, resolver,
-                schemaProperties.getRepository().isSubjectSuffixEnabled(),
-                schemaProperties.getRepository().isSubjectNamespaceEnabled()).provide();
+        return new RawSchemaClientFactory(
+            kafkaProperties.getNamespace(),
+            kafkaProperties.getNamespaceSeparator(),
+            metricsFacade,
+            resolver,
+            schemaProperties.getRepository().isSubjectSuffixEnabled(),
+            schemaProperties.getRepository().isSubjectNamespaceEnabled()
+        ).provide();
     }
 
     @Bean
