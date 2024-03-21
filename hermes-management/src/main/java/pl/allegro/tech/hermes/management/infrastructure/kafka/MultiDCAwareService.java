@@ -31,16 +31,16 @@ public class MultiDCAwareService {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiDCAwareService.class);
 
-    private final List<BrokersClusterService> clusters;
+    private final ClustersProvider clustersProvider;
     private final Clock clock;
     private final Duration intervalBetweenCheckingIfOffsetsMoved;
     private final Duration offsetsMovedTimeout;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-    public MultiDCAwareService(List<BrokersClusterService> clusters, Clock clock,
+    public MultiDCAwareService(ClustersProvider clustersProvider, Clock clock,
                                Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
-        this.clusters = clusters;
+        this.clustersProvider = clustersProvider;
         this.clock = clock;
         this.intervalBetweenCheckingIfOffsetsMoved = intervalBetweenCheckingIfOffsetsMoved;
         this.offsetsMovedTimeout = offsetsMovedTimeout;
@@ -48,11 +48,11 @@ public class MultiDCAwareService {
     }
 
     public void manageTopic(Consumer<BrokerTopicManagement> manageFunction) {
-        clusters.forEach(kafkaService -> kafkaService.manageTopic(manageFunction));
+        clustersProvider.getClusters().forEach(kafkaService -> kafkaService.manageTopic(manageFunction));
     }
 
     public String readMessageFromPrimary(String clusterName, Topic topic, Integer partition, Long offset) {
-        return clusters.stream()
+        return clustersProvider.getClusters().stream()
                 .filter(cluster -> clusterName.equals(cluster.getClusterName()))
                 .findFirst()
                 .orElseThrow(() -> new BrokersClusterNotFoundException(clusterName))
@@ -66,7 +66,7 @@ public class MultiDCAwareService {
                                                  RequestUser requester) {
         MultiDCOffsetChangeSummary multiDCOffsetChangeSummary = new MultiDCOffsetChangeSummary();
 
-        clusters.forEach(cluster -> multiDCOffsetChangeSummary.addPartitionOffsetList(
+        clustersProvider.getClusters().forEach(cluster -> multiDCOffsetChangeSummary.addPartitionOffsetList(
                 cluster.getClusterName(),
                 cluster.indicateOffsetChange(topic, subscriptionName, timestamp, dryRun)));
 
@@ -74,7 +74,7 @@ public class MultiDCAwareService {
             logger.info("Starting retransmission for subscription {}. Requested by {}. Retransmission timestamp: {}",
                     topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
             multiDcExecutor.executeByUser(new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())), requester);
-            clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
+            clustersProvider.getClusters().forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
             logger.info(
                     "Successfully moved offsets for retransmission of subscription {}. Requested by user: {}. Retransmission timestamp: {}",
                     topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
@@ -84,26 +84,26 @@ public class MultiDCAwareService {
     }
 
     public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
-        return clusters.stream().allMatch(cluster -> cluster.areOffsetsAvailableOnAllKafkaTopics(topic));
+        return clustersProvider.getClusters().stream().allMatch(cluster -> cluster.areOffsetsAvailableOnAllKafkaTopics(topic));
     }
 
     public boolean topicExists(Topic topic) {
-        return clusters.stream().allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
+        return clustersProvider.getClusters().stream().allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
     }
 
     public Set<String> listTopicFromAllDC() {
-        return clusters.stream()
+        return clustersProvider.getClusters().stream()
                 .map(BrokersClusterService::listTopicsFromCluster)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toCollection(HashSet::new));
     }
 
     public void removeTopicByName(String topicName) {
-        clusters.forEach(brokersClusterService -> brokersClusterService.removeTopicByName(topicName));
+        clustersProvider.getClusters().forEach(brokersClusterService -> brokersClusterService.removeTopicByName(topicName));
     }
 
     public void createConsumerGroups(Topic topic, Subscription subscription) {
-        clusters.forEach(clusterService -> clusterService.createConsumerGroup(topic, subscription));
+        clustersProvider.getClusters().forEach(clusterService -> clusterService.createConsumerGroup(topic, subscription));
     }
 
     private void waitUntilOffsetsAreMoved(Topic topic, String subscriptionName) {
@@ -122,7 +122,7 @@ public class MultiDCAwareService {
     }
 
     private boolean areOffsetsMoved(Topic topic, String subscriptionName) {
-        return clusters.stream()
+        return clustersProvider.getClusters().stream()
                 .allMatch(cluster -> cluster.areOffsetsMoved(topic, subscriptionName));
     }
 
@@ -135,18 +135,19 @@ public class MultiDCAwareService {
     }
 
     public boolean allSubscriptionsHaveConsumersAssigned(Topic topic, List<Subscription> subscriptions) {
-        return clusters.stream().allMatch(brokersClusterService ->
+        return clustersProvider.getClusters().stream().allMatch(brokersClusterService ->
                 brokersClusterService.allSubscriptionsHaveConsumersAssigned(topic, subscriptions));
     }
 
     public List<ConsumerGroup> describeConsumerGroups(Topic topic, String subscriptionName) {
-        return clusters.stream().map(brokersClusterService -> brokersClusterService.describeConsumerGroup(topic, subscriptionName))
+        return clustersProvider.getClusters().stream()
+                .map(brokersClusterService -> brokersClusterService.describeConsumerGroup(topic, subscriptionName))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());
     }
 
     public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-        clusters.forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
+        clustersProvider.getClusters().forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
     }
 }
