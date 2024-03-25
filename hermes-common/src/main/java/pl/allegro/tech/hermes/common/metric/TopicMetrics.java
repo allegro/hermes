@@ -76,9 +76,9 @@ public class TopicMetrics {
         );
     }
 
-    public HermesCounter topicPublished(TopicName topicName) {
+    public HermesCounter topicPublished(TopicName topicName, String datacenter) {
         return HermesCounters.from(
-                micrometerCounter(TopicMetricsNames.TOPIC_PUBLISHED, topicName),
+                micrometerCounter(TopicMetricsNames.TOPIC_PUBLISHED, topicName, Tag.of("storageDc", datacenter)),
                 hermesMetrics.counter(Counters.PUBLISHED, topicName)
         );
     }
@@ -154,8 +154,8 @@ public class TopicMetrics {
         return meterRegistry.timer(metricName, topicTags(topicName));
     }
 
-    private Counter micrometerCounter(String metricName, TopicName topicName) {
-        return meterRegistry.counter(metricName, topicTags(topicName));
+    private Counter micrometerCounter(String metricName, TopicName topicName, Tag ... tags) {
+        return meterRegistry.counter(metricName, topicTags(topicName).and(tags));
     }
 
     private Tags topicTags(TopicName topicName) {

@@ -46,7 +46,6 @@ public class FrontendProducerConfiguration {
     @Bean
     public BrokerMessageProducer kafkaBrokerMessageProducer(@Named("localDatacenterBrokerProducer") BrokerMessageProducer localDatacenterBrokerProducer,
                                                             @Named("multiDatacenterBrokerProducer") BrokerMessageProducer multiDatacenterBrokerProducer) {
-
         return new FallbackToRemoteDatacenterAwareMessageProducer(
                 localDatacenterBrokerProducer,
                 multiDatacenterBrokerProducer
@@ -55,9 +54,8 @@ public class FrontendProducerConfiguration {
 
     @Bean
     public BrokerMessageProducer localDatacenterBrokerProducer(@Named("kafkaMessageSenders") KafkaMessageSenders kafkaMessageSenders,
-                                                               MetricsFacade metricsFacade,
                                                                MessageToKafkaProducerRecordConverter messageConverter) {
-        return new LocalDatacenterMessageProducer(kafkaMessageSenders, metricsFacade, messageConverter);
+        return new LocalDatacenterMessageProducer(kafkaMessageSenders, messageConverter);
     }
 
     @Bean
@@ -82,13 +80,13 @@ public class FrontendProducerConfiguration {
     @Bean(destroyMethod = "close")
     public KafkaMessageSenders kafkaMessageSenders(KafkaProducerProperties kafkaProducerProperties,
                                                    KafkaMessageSendersFactory kafkaMessageSendersFactory) {
-        return kafkaMessageSendersFactory.provide(kafkaProducerProperties);
+        return kafkaMessageSendersFactory.provide(kafkaProducerProperties, "default");
     }
 
     @Bean(destroyMethod = "close")
     public KafkaMessageSenders failFastKafkaMessageSenders(FailFastKafkaProducerProperties kafkaProducerProperties,
                                                            KafkaMessageSendersFactory kafkaMessageSendersFactory) {
-        return kafkaMessageSendersFactory.provide(kafkaProducerProperties);
+        return kafkaMessageSendersFactory.provide(kafkaProducerProperties, "failFast");
     }
 
     @Bean(destroyMethod = "close")
@@ -98,13 +96,15 @@ public class FrontendProducerConfiguration {
                                                                  TopicsCache topicsCache,
                                                                  LocalMessageStorageProperties localMessageStorageProperties,
                                                                  DatacenterNameProvider datacenterNameProvider,
-                                                                 BrokerLatencyReporter brokerLatencyReporter) {
+                                                                 BrokerLatencyReporter brokerLatencyReporter,
+                                                                 MetricsFacade metricsFacade) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         List<KafkaParameters> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
         return new KafkaMessageSendersFactory(
                 kafkaProperties,
                 remoteKafkaProperties,
                 brokerLatencyReporter,
+                metricsFacade,
                 createAdminClient(kafkaProperties),
                 topicsCache,
                 topicLoadingProperties.getMetadata().getRetryCount(),

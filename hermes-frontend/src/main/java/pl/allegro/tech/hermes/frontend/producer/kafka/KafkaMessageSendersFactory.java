@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 
@@ -42,11 +43,13 @@ public class KafkaMessageSendersFactory {
     private final KafkaParameters kafkaParameters;
     private final List<KafkaParameters> remoteKafkaParameters;
     private final BrokerLatencyReporter brokerLatencyReporter;
+    private final MetricsFacade metricsFacade;
     private final long bufferedSizeBytes;
 
     public KafkaMessageSendersFactory(KafkaParameters kafkaParameters,
                                       List<KafkaParameters> remoteKafkaParameters,
                                       BrokerLatencyReporter brokerLatencyReporter,
+                                      MetricsFacade metricsFacade,
                                       AdminClient localAdminClient,
                                       TopicsCache topicsCache,
                                       int retryCount,
@@ -59,11 +62,12 @@ public class KafkaMessageSendersFactory {
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;
         this.remoteKafkaParameters = remoteKafkaParameters;
+        this.metricsFacade = metricsFacade;
         this.brokerLatencyReporter = brokerLatencyReporter;
     }
 
-    public KafkaMessageSenders provide(KafkaProducerParameters kafkaProducerParameters) {
-        KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
+    public KafkaMessageSenders provide(KafkaProducerParameters kafkaProducerParameters, String senderName) {
+            KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
                 sender(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
                 sender(kafkaParameters, kafkaProducerParameters, ACK_ALL)
         );
@@ -72,12 +76,14 @@ public class KafkaMessageSendersFactory {
                 kafkaProperties -> new KafkaMessageSenders.Tuple(
                         sender(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
                         sender(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
-        return new KafkaMessageSenders(
+        KafkaMessageSenders senders = new KafkaMessageSenders(
                 topicMetadataLoadingExecutor,
                 localMinInSyncReplicasLoader,
                 localProducers,
                 remoteProducers
         );
+        senders.registerSenderMetrics(senderName);
+        return senders;
     }
 
     private KafkaMessageSender<byte[], byte[]> sender(KafkaParameters kafkaParameters,
@@ -111,6 +117,7 @@ public class KafkaMessageSendersFactory {
         return new KafkaMessageSender<>(
                 new org.apache.kafka.clients.producer.KafkaProducer<>(props),
                 brokerLatencyReporter,
+                metricsFacade,
                 kafkaParameters.getDatacenter()
         );
     }

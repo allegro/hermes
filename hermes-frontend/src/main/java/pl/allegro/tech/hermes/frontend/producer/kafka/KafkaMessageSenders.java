@@ -95,9 +95,11 @@ public class KafkaMessageSenders {
         return partitionInfos.stream().anyMatch(p -> p.inSyncReplicas().length < minInSyncReplicas);
     }
 
-    public void registerLocalSenderMetrics(MetricsFacade metricsFacade) {
-        ackLeader.registerGauges(metricsFacade, Topic.Ack.LEADER);
-        ackAll.registerGauges(metricsFacade, Topic.Ack.ALL);
+    public void registerSenderMetrics(String name) {
+        ackLeader.registerGauges(Topic.Ack.LEADER, name);
+        ackAll.registerGauges(Topic.Ack.ALL, name);
+        remoteAckLeader.forEach(sender -> sender.registerGauges(Topic.Ack.LEADER, name));
+        remoteAckAll.forEach(sender -> sender.registerGauges(Topic.Ack.ALL, name));
     }
 
     static class Tuple {

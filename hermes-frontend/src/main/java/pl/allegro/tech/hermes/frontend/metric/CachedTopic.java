@@ -41,7 +41,7 @@ public class CachedTopic {
 
     private final HermesCounter topicDuplicatedMessageCounter;
 
-    private final HermesCounter published;
+    private final Map<String, HermesCounter> published = new ConcurrentHashMap<>();
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
@@ -65,8 +65,6 @@ public class CachedTopic {
 
         globalMessageContentSize = metricsFacade.topics().topicGlobalMessageContentSizeHistogram();
         topicMessageContentSize = metricsFacade.topics().topicMessageContentSizeHistogram(topic.getName());
-
-        published = metricsFacade.topics().topicPublished(topic.getName());
 
         globalThroughputMeter = metricsFacade.topics().topicGlobalThroughputBytes();
         topicThroughputMeter = metricsFacade.topics().topicThroughputBytes(topic.getName());
@@ -126,8 +124,11 @@ public class CachedTopic {
         return topicBrokerLatencyTimer.time();
     }
 
-    public void incrementPublished() {
-        published.increment(1L);
+    public void incrementPublished(String datacenter) {
+        published.computeIfAbsent(
+                datacenter,
+                dc ->  metricsFacade.topics().topicPublished(topic.getName(), datacenter)
+        ).increment();
     }
 
     public void reportMessageContentSize(int size) {

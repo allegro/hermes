@@ -36,6 +36,9 @@
     <suppress checks="VisibilityModifier"
               files="[/\\]src[/\\](test|integration)[/\\]java[/\\]"
             />
+    <suppress checks="VariableDeclarationUsageDistance"
+              files="[/\\]src[/\\](test|slowIntegrationTest)[/\\]java[/\\]"
+    />
 
     <!-- Build dirs -->
     <suppress checks="[a-zA-Z0-9]*"

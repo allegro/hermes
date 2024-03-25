@@ -90,6 +90,12 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     @Shared
     String datacenter = "dc";
 
+    @Shared
+    MetricsFacade metricsFacade = new MetricsFacade(
+            new SimpleMeterRegistry(),
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
+    )
+
     def setupSpec() {
         kafkaContainer.start()
         kafkaContainer.waitingFor(Wait.forHealthcheck())
@@ -111,14 +117,13 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
                 topicMetadataLoadingExecutor,
                 minInSyncReplicasLoader,
                 new KafkaMessageSenders.Tuple(
-                        new KafkaMessageSender<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, datacenter),
-                        new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, datacenter)
+                        new KafkaMessageSender<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, metricsFacade, datacenter),
+                        new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, metricsFacade, datacenter)
                 ),
                 emptyList()
         )
         brokerMessageProducer = new LocalDatacenterMessageProducer(
                 producers,
-                new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(
                             kafkaHeaderNameProperties,
                             new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties()),

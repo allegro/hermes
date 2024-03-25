@@ -4,7 +4,6 @@ import jakarta.inject.Singleton;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
@@ -17,11 +16,9 @@ public class LocalDatacenterMessageProducer implements BrokerMessageProducer {
     private final MessageToKafkaProducerRecordConverter messageConverter;
 
     public LocalDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
-                                          MetricsFacade metricsFacade,
                                           MessageToKafkaProducerRecordConverter messageConverter) {
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.messageConverter = messageConverter;
-        kafkaMessageSenders.registerLocalSenderMetrics(metricsFacade);
     }
 
     @Override

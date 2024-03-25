@@ -19,53 +19,53 @@ public class ProducerMetrics {
         this.gaugeRegistrar = new GaugeRegistrar(meterRegistry, hermesMetrics);
     }
 
-    public <T> void registerAckAllTotalBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_TOTAL_BYTES, stateObj, f);
+    public <T> void registerAckAllTotalBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_TOTAL_BYTES, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckLeaderTotalBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_TOTAL_BYTES, stateObj, f);
+    public <T> void registerAckLeaderTotalBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_TOTAL_BYTES, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckAllAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_AVAILABLE_BYTES, stateObj, f);
+    public <T> void registerAckAllAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_AVAILABLE_BYTES, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckLeaderAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_AVAILABLE_BYTES, stateObj, f);
+    public <T> void registerAckLeaderAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_AVAILABLE_BYTES, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckAllCompressionRateGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_ALL_COMPRESSION_RATE, stateObj, f);
+    public <T> void registerAckAllCompressionRateGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_ALL_COMPRESSION_RATE, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckLeaderCompressionRateGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_COMPRESSION_RATE, stateObj, f);
+    public <T> void registerAckLeaderCompressionRateGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_LEADER_COMPRESSION_RATE, stateObj, f,tags(sender, datacenter));
     }
 
-    public <T> void registerAckAllFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_ALL_FAILED_BATCHES_TOTAL, stateObj, f);
+    public <T> void registerAckAllFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_ALL_FAILED_BATCHES_TOTAL, stateObj, f,tags(sender, datacenter));
     }
 
-    public <T> void registerAckLeaderFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_FAILED_BATCHES_TOTAL, stateObj, f);
+    public <T> void registerAckLeaderFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_LEADER_FAILED_BATCHES_TOTAL, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckAllMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
-        registerTimeGauge(stateObj, f, ACK_ALL_METADATA_AGE, ACK_ALL_METADATA_AGE, Tags.empty(), TimeUnit.SECONDS);
+    public <T> void registerAckAllMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerTimeGauge(stateObj, f, ACK_ALL_METADATA_AGE, ACK_ALL_METADATA_AGE, tags(sender, datacenter), TimeUnit.SECONDS);
     }
 
-    public <T> void registerAckLeaderMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
-        registerTimeGauge(stateObj, f, ACK_LEADER_METADATA_AGE, ACK_LEADER_METADATA_AGE, Tags.empty(), TimeUnit.SECONDS);
+    public <T> void registerAckLeaderMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerTimeGauge(stateObj, f, ACK_LEADER_METADATA_AGE, ACK_LEADER_METADATA_AGE, tags(sender, datacenter), TimeUnit.SECONDS);
     }
 
-    public <T> void registerAckAllRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
-        registerTimeGauge(stateObj, f, ACK_ALL_RECORD_QUEUE_TIME_MAX, ACK_ALL_RECORD_QUEUE_TIME_MAX, Tags.empty(), TimeUnit.MILLISECONDS);
+    public <T> void registerAckAllRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerTimeGauge(stateObj, f, ACK_ALL_RECORD_QUEUE_TIME_MAX, ACK_ALL_RECORD_QUEUE_TIME_MAX, tags(sender, datacenter), TimeUnit.MILLISECONDS);
     }
 
-    public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
+    public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
         registerTimeGauge(stateObj, f, ACK_LEADER_RECORD_QUEUE_TIME_MAX,
-                ACK_LEADER_RECORD_QUEUE_TIME_MAX, Tags.empty(), TimeUnit.MILLISECONDS);
+                ACK_LEADER_RECORD_QUEUE_TIME_MAX, tags(sender, datacenter), TimeUnit.MILLISECONDS);
     }
 
     public double getBufferTotalBytes() {
@@ -81,6 +81,10 @@ public class ProducerMetrics {
     public <T> void registerProducerInflightRequestGauge(T stateObj, ToDoubleFunction<T> f) {
         meterRegistry.gauge(INFLIGHT_REQUESTS, stateObj, f);
         hermesMetrics.registerProducerInflightRequest(() -> (int) f.applyAsDouble(stateObj));
+    }
+    
+    private static Tags tags(String sender, String datacenter) {
+        return  Tags.of("storageDc", datacenter, "sender", sender);
     }
 
 

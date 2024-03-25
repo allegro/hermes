@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusEndpoint;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
@@ -22,6 +24,8 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -40,6 +44,7 @@ public class RemoteDatacenterProduceFallbackTest {
     private static HermesFrontendTestApp frontendDC1;
     private static HermesConsumersTestApp consumerDC1;
     private static HermesConsumersTestApp consumerDC2;
+    private static PrometheusEndpoint prometheusEndpoint;
 
     private static HermesTestClient DC1;
 
@@ -69,6 +74,7 @@ public class RemoteDatacenterProduceFallbackTest {
 
         DC1 = new HermesTestClient(management.getPort(), frontendDC1.getPort(), consumerDC1.getPort());
         initHelper = new HermesInitHelper(management.getPort());
+        prometheusEndpoint = new PrometheusEndpoint(frontendDC1.getPort());
     }
 
     @AfterAll
@@ -98,6 +104,7 @@ public class RemoteDatacenterProduceFallbackTest {
         initHelper.createSubscription(
                 subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
         );
+        Double publishedBefore = publishedToRemoteCount();
 
         // when dc1 is not available
         dc1.kafka.cutOffConnectionsBetweenBrokersAndClients();
@@ -108,6 +115,11 @@ public class RemoteDatacenterProduceFallbackTest {
 
         // then message is received in dc2
         subscriber.waitUntilReceived(message.body());
+
+        // and metrics that message was published to remote dc is incremented
+        waitAtMost(Duration.FIVE_SECONDS).until(() -> {
+            assertThat(publishedToRemoteCount()).isGreaterThan(publishedBefore);
+        });
     }
 
     @Test
@@ -150,6 +162,11 @@ public class RemoteDatacenterProduceFallbackTest {
 
         // then no messages are received
         subscriber.noMessagesReceived();
+    }
+
+    private static double publishedToRemoteCount() {
+        return prometheusEndpoint.getMetricValue("hermes_frontend_topic_published_total", Map.of("storageDc", "dc2"))
+                .orElse(0.0);
     }
 
     private static class HermesDatacenter {
