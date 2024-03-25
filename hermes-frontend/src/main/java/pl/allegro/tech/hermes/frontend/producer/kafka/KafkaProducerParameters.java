@@ -22,6 +22,8 @@ public interface KafkaProducerParameters {
 
     int getMaxRequestSize();
 
+    Duration getDeliveryTimeout();
+
     Duration getLinger();
 
     Duration getMetricsSampleWindow();

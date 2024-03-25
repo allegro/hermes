@@ -33,8 +33,16 @@ public class PrometheusMetricsAssertion {
         }
 
         public PrometheusMetricAssertion withLabels(String label0, String value0,
-                                                            String label1, String value1,
-                                                            String label2, String value2) {
+                                                    String label1, String value1) {
+            return withLabels(
+                    new String[]{label0, label1},
+                    new String[]{value0, value1}
+            );
+        }
+
+        public PrometheusMetricAssertion withLabels(String label0, String value0,
+                                                    String label1, String value1,
+                                                    String label2, String value2) {
             return withLabels(
                     new String[]{label0, label1, label2},
                     new String[]{value0, value1, value2}
@@ -42,9 +50,9 @@ public class PrometheusMetricsAssertion {
         }
 
         public PrometheusMetricAssertion withLabels(String label0, String value0,
-                                                            String label1, String value1,
-                                                            String label2, String value2,
-                                                            String label3, String value3) {
+                                                    String label1, String value1,
+                                                    String label2, String value2,
+                                                    String label3, String value3) {
             return withLabels(
                     new String[]{label0, label1, label2, label3},
                     new String[]{value0, value1, value2, value3}
@@ -84,11 +92,20 @@ public class PrometheusMetricsAssertion {
         }
 
         public void withValue(double expectedValue) {
+            double actualValue = extractValue();
+            assertThat(actualValue).isEqualTo(expectedValue);
+        }
+
+        public void withValueGreaterThan(double expectedValue) {
+            double actualValue = extractValue();
+            assertThat(actualValue).isGreaterThan(expectedValue);
+        }
+
+        private double extractValue() {
             Matcher matcher = METRIC_LINE_PATTERN.matcher(actualLine);
             if (matcher.matches()) {
                 String valueStr = matcher.group(2);
-                double actualValue = Double.parseDouble(valueStr);
-                assertThat(actualValue).isEqualTo(expectedValue);
+                return Double.parseDouble(valueStr);
             } else {
                 throw new IllegalStateException("Unexpected line: " + actualLine);
             }

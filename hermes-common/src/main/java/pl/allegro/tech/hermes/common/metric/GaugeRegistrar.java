@@ -36,5 +36,12 @@ public class GaugeRegistrar {
                                   ToDoubleFunction<T> f) {
         registerGauge(name, name, stateObj, f);
     }
+
+    public <T> void registerGauge(String name,
+                                  T stateObj,
+                                  ToDoubleFunction<T> f,
+                                  Iterable<Tag> tags) {
+        registerGauge(name, name, stateObj, f, tags);
+    }
 }
 

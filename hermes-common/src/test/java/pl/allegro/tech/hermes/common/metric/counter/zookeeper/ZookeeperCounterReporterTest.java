@@ -51,7 +51,7 @@ public class ZookeeperCounterReporterTest {
     @Test
     public void shouldReportPublishedMessages() {
         // given
-        metricsFacade.topics().topicPublished(topic).increment(COUNT);
+        metricsFacade.topics().topicPublished(topic, "dc1").increment(COUNT);
 
         // when
         zookeeperCounterReporter.report();

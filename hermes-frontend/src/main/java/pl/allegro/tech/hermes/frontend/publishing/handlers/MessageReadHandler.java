@@ -6,6 +6,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
@@ -29,11 +30,12 @@ class MessageReadHandler implements HttpHandler {
     private final ContentLengthChecker contentLengthChecker;
     private final Duration defaultAsyncTimeout;
     private final Duration longAsyncTimeout;
+    private final Duration maxPublishRequestDuration;
     private final ThroughputLimiter throughputLimiter;
 
     MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler,
                        MessageErrorProcessor messageErrorProcessor, ThroughputLimiter throughputLimiter,
-                       boolean forceMaxMessageSizePerTopic, Duration idleTime, Duration longIdleTime) {
+                       boolean forceMaxMessageSizePerTopic, Duration idleTime, Duration longIdleTime, Duration maxPublishRequestDuration) {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
         this.messageErrorProcessor = messageErrorProcessor;
@@ -41,13 +43,14 @@ class MessageReadHandler implements HttpHandler {
         this.defaultAsyncTimeout = idleTime;
         this.longAsyncTimeout = longIdleTime;
         this.throughputLimiter = throughputLimiter;
+        this.maxPublishRequestDuration = maxPublishRequestDuration;
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) {
         AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
 
-        Duration timeout = attachment.getTopic().isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout;
+        Duration timeout = calculateTimeout(attachment.getTopic());
 
         attachment.setTimeoutHolder(new TimeoutHolder(
                 (int) timeout.toMillis(),
@@ -64,6 +67,13 @@ class MessageReadHandler implements HttpHandler {
         } else {
             respondWithQuotaViolation(exchange, attachment, quotaInsight.getReason());
         }
+    }
+
+    private Duration calculateTimeout(Topic topic) {
+        if (topic.isFallbackToRemoteDatacenterEnabled()) {
+            return maxPublishRequestDuration;
+        }
+        return topic.isReplicationConfirmRequired() ? longAsyncTimeout : defaultAsyncTimeout;
     }
 
     private void runTimeoutHandler(HttpServerExchange exchange, AttachmentContent attachment) {

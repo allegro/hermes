@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.BATCH_SIZE_CONFIG
 import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.BUFFER_MEMORY_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.COMPRESSION_TYPE_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.MAX_BLOCK_MS_CONFIG;
@@ -39,10 +42,14 @@ public class KafkaMessageSendersFactory {
     private final MinInSyncReplicasLoader localMinInSyncReplicasLoader;
     private final KafkaParameters kafkaParameters;
     private final List<KafkaParameters> remoteKafkaParameters;
+    private final BrokerLatencyReporter brokerLatencyReporter;
+    private final MetricsFacade metricsFacade;
     private final long bufferedSizeBytes;
 
     public KafkaMessageSendersFactory(KafkaParameters kafkaParameters,
                                       List<KafkaParameters> remoteKafkaParameters,
+                                      BrokerLatencyReporter brokerLatencyReporter,
+                                      MetricsFacade metricsFacade,
                                       AdminClient localAdminClient,
                                       TopicsCache topicsCache,
                                       int retryCount,
@@ -55,10 +62,12 @@ public class KafkaMessageSendersFactory {
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;
         this.remoteKafkaParameters = remoteKafkaParameters;
+        this.metricsFacade = metricsFacade;
+        this.brokerLatencyReporter = brokerLatencyReporter;
     }
 
-    public KafkaMessageSenders provide(KafkaProducerParameters kafkaProducerParameters) {
-        KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
+    public KafkaMessageSenders provide(KafkaProducerParameters kafkaProducerParameters, String senderName) {
+            KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
                 sender(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
                 sender(kafkaParameters, kafkaProducerParameters, ACK_ALL)
         );
@@ -67,12 +76,14 @@ public class KafkaMessageSendersFactory {
                 kafkaProperties -> new KafkaMessageSenders.Tuple(
                         sender(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
                         sender(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
-        return new KafkaMessageSenders(
+        KafkaMessageSenders senders = new KafkaMessageSenders(
                 topicMetadataLoadingExecutor,
                 localMinInSyncReplicasLoader,
                 localProducers,
                 remoteProducers
         );
+        senders.registerSenderMetrics(senderName);
+        return senders;
     }
 
     private KafkaMessageSender<byte[], byte[]> sender(KafkaParameters kafkaParameters,
@@ -84,6 +95,7 @@ public class KafkaMessageSendersFactory {
         props.put(COMPRESSION_TYPE_CONFIG, kafkaProducerParameters.getCompressionCodec());
         props.put(BUFFER_MEMORY_CONFIG, bufferedSizeBytes);
         props.put(REQUEST_TIMEOUT_MS_CONFIG, (int) kafkaProducerParameters.getRequestTimeout().toMillis());
+        props.put(DELIVERY_TIMEOUT_MS_CONFIG, (int) kafkaProducerParameters.getDeliveryTimeout().toMillis());
         props.put(BATCH_SIZE_CONFIG, kafkaProducerParameters.getBatchSize());
         props.put(SEND_BUFFER_CONFIG, kafkaProducerParameters.getTcpSendBuffer());
         props.put(RETRIES_CONFIG, kafkaProducerParameters.getRetries());
@@ -104,6 +116,8 @@ public class KafkaMessageSendersFactory {
         }
         return new KafkaMessageSender<>(
                 new org.apache.kafka.clients.producer.KafkaProducer<>(props),
+                brokerLatencyReporter,
+                metricsFacade,
                 kafkaParameters.getDatacenter()
         );
     }

@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryComm
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,9 @@ public class ReadinessService {
             toSave.put(datacenter, current.get(datacenter));
         }
         toSave.put(datacenterReadiness.getDatacenter(), datacenterReadiness);
-        List<DatacenterReadiness> readiness = toSave.values().stream().toList();
+        List<DatacenterReadiness> readiness = toSave.values().stream()
+                .filter(Objects::nonNull)
+                .toList();
         commandExecutor.execute(new SetReadinessCommand(readiness));
     }
 
