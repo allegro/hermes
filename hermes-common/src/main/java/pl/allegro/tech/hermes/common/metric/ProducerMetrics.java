@@ -40,11 +40,11 @@ public class ProducerMetrics {
     }
 
     public <T> void registerAckLeaderCompressionRateGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_COMPRESSION_RATE, stateObj, f,tags(sender, datacenter));
+        gaugeRegistrar.registerGauge(ACK_LEADER_COMPRESSION_RATE, stateObj, f, tags(sender, datacenter));
     }
 
     public <T> void registerAckAllFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
-        gaugeRegistrar.registerGauge(ACK_ALL_FAILED_BATCHES_TOTAL, stateObj, f,tags(sender, datacenter));
+        gaugeRegistrar.registerGauge(ACK_ALL_FAILED_BATCHES_TOTAL, stateObj, f, tags(sender, datacenter));
     }
 
     public <T> void registerAckLeaderFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
@@ -82,9 +82,9 @@ public class ProducerMetrics {
         meterRegistry.gauge(INFLIGHT_REQUESTS, stateObj, f);
         hermesMetrics.registerProducerInflightRequest(() -> (int) f.applyAsDouble(stateObj));
     }
-    
+
     private static Tags tags(String sender, String datacenter) {
-        return  Tags.of("storageDc", datacenter, "sender", sender);
+        return Tags.of("storageDc", datacenter, "sender", sender);
     }
 
 
