@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.BrokerTopicAvailabilityChecker;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -44,6 +45,7 @@ public class BackupMessagesLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupMessagesLoader.class);
 
+    private final BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker;
     private final BrokerMessageProducer brokerMessageProducer;
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
@@ -59,7 +61,8 @@ public class BackupMessagesLoader {
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
 
-    public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
+    public BackupMessagesLoader(BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
+                                BrokerMessageProducer brokerMessageProducer,
                                 BrokerListeners brokerListeners,
                                 TopicsCache topicsCache,
                                 SchemaRepository schemaRepository,
@@ -68,6 +71,7 @@ public class BackupMessagesLoader {
                                 BackupMessagesLoaderParameters backupMessagesLoaderParameters,
                                 String datacenter
                                 ) {
+        this.brokerTopicAvailabilityChecker = brokerTopicAvailabilityChecker;
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
@@ -235,7 +239,7 @@ public class BackupMessagesLoader {
             return true;
         }
 
-        if (brokerMessageProducer.isTopicAvailable(cachedTopic)) {
+        if (brokerTopicAvailabilityChecker.isTopicAvailable(cachedTopic)) {
             topicsAvailabilityCache.add(cachedTopic.getTopic());
             logger.info("Broker topic {} is available.", cachedTopic.getTopic().getQualifiedName());
             return true;

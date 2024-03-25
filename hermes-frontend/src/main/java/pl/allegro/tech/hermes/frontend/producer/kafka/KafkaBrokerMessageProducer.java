@@ -22,20 +22,15 @@ import java.util.function.Supplier;
 public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerMessageProducer.class);
-    private final Producers producers;
-    private final KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
-    private final MetricsFacade metricsFacade;
+    private final KafkaMessageSenders kafkaMessageSenders;
     private final MessageToKafkaProducerRecordConverter messageConverter;
 
-    public KafkaBrokerMessageProducer(Producers producers,
-                                      KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher,
+    public KafkaBrokerMessageProducer(KafkaMessageSenders kafkaMessageSenders,
                                       MetricsFacade metricsFacade,
                                       MessageToKafkaProducerRecordConverter messageConverter) {
-        this.producers = producers;
-        this.kafkaTopicMetadataFetcher = kafkaTopicMetadataFetcher;
-        this.metricsFacade = metricsFacade;
+        this.kafkaMessageSenders = kafkaMessageSenders;
         this.messageConverter = messageConverter;
-        producers.registerGauges(metricsFacade);
+        kafkaMessageSenders.registerLocalSenderMetrics(metricsFacade);
     }
 
     @Override
@@ -44,44 +39,19 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
                 messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
         try {
-            producers.get(cachedTopic.getTopic()).send(producerRecord, new SendCallback(message, cachedTopic, callback));
+            var producer = kafkaMessageSenders.get(cachedTopic.getTopic());
+            producer.send(producerRecord, new SendCallback(message, cachedTopic, callback));
         } catch (Exception e) {
             // message didn't get to internal producer buffer and it will not be send to a broker
             callback.onUnpublished(message, cachedTopic.getTopic(), e);
         }
     }
 
-    @Override
-    public boolean isTopicAvailable(CachedTopic cachedTopic) {
-        String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
-
-        try {
-            List<PartitionInfo> partitionInfos = producers.get(cachedTopic.getTopic()).partitionsFor(kafkaTopicName);
-            if (anyPartitionWithoutLeader(partitionInfos)) {
-                logger.warn("Topic {} has partitions without a leader.", kafkaTopicName);
-                return false;
-            }
-            if (anyUnderReplicatedPartition(partitionInfos, kafkaTopicName)) {
-                logger.warn("Topic {} has under replicated partitions.", kafkaTopicName);
-                return false;
-            }
-            if (partitionInfos.size() > 0) {
-                return true;
-            }
-        } catch (Exception e) {
-            logger.warn("Could not read information about partitions for topic {}. {}", kafkaTopicName, e.getMessage());
-            return false;
-        }
-
-        logger.warn("No information about partitions for topic {}", kafkaTopicName);
-        return false;
-    }
-
     private Supplier<ProduceMetadata> produceMetadataSupplier(CachedTopic topic, RecordMetadata recordMetadata) {
         return () -> {
             String kafkaTopicName = topic.getKafkaTopics().getPrimary().name().asString();
             try {
-                List<PartitionInfo> topicPartitions = producers.get(topic.getTopic()).partitionsFor(kafkaTopicName);
+                List<PartitionInfo> topicPartitions = kafkaMessageSenders.get(topic.getTopic()).loadPartitionMetadataFor(kafkaTopicName);
 
                 Optional<PartitionInfo> partitionInfo = topicPartitions.stream()
                         .filter(p -> p.partition() == recordMetadata.partition())
@@ -99,13 +69,14 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
         };
     }
 
-    private boolean anyPartitionWithoutLeader(List<PartitionInfo> partitionInfos) {
-        return partitionInfos.stream().anyMatch(p -> p.leader() == null);
+    @Override
+    public boolean areAllTopicsAvailable() {
+        return kafkaMessageSenders.areAllTopicsAvailable();
     }
 
-    private boolean anyUnderReplicatedPartition(List<PartitionInfo> partitionInfos, String kafkaTopicName) throws Exception {
-        int minInSyncReplicas = kafkaTopicMetadataFetcher.fetchMinInSyncReplicas(kafkaTopicName);
-        return partitionInfos.stream().anyMatch(p -> p.inSyncReplicas().length < minInSyncReplicas);
+    @Override
+    public boolean isTopicAvailable(CachedTopic cachedTopic) {
+        return kafkaMessageSenders.isTopicAvailable(cachedTopic);
     }
 
     private class SendCallback implements org.apache.kafka.clients.producer.Callback {
@@ -125,7 +96,6 @@ public class KafkaBrokerMessageProducer implements BrokerMessageProducer {
             Supplier<ProduceMetadata> produceMetadata = produceMetadataSupplier(topic, recordMetadata);
             if (e == null) {
                 callback.onPublished(message, topic.getTopic(), produceMetadata);
-                producers.maybeRegisterNodeMetricsGauges(metricsFacade);
             } else {
                 callback.onUnpublished(message, topic.getTopic(), produceMetadata, e);
             }

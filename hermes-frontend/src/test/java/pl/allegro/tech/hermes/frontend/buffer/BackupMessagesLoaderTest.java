@@ -101,6 +101,7 @@ public class BackupMessagesLoaderTest {
         final BackupMessagesLoader backupMessagesLoader =
             new BackupMessagesLoader(
                 producer,
+                producer,
                 listeners,
                 topicsCache,
                 schemaRepository,
@@ -145,6 +146,7 @@ public class BackupMessagesLoaderTest {
         BackupMessagesLoader backupMessagesLoader =
             new BackupMessagesLoader(
                 producer,
+                producer,
                 listeners,
                 topicsCache,
                 schemaRepository,
@@ -174,6 +176,7 @@ public class BackupMessagesLoaderTest {
 
         BackupMessagesLoader backupMessagesLoader =
             new BackupMessagesLoader(
+                producer,
                 producer,
                 listeners,
                 topicsCache,
@@ -213,6 +216,7 @@ public class BackupMessagesLoaderTest {
 
         BackupMessagesLoader backupMessagesLoader =
             new BackupMessagesLoader(
+                producer,
                 producer,
                 listeners,
                 topicsCache,

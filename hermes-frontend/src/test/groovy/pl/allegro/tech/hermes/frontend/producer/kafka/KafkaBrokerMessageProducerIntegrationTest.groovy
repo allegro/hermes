@@ -24,9 +24,8 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties
-import pl.allegro.tech.hermes.frontend.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
-import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
+import pl.allegro.tech.hermes.frontend.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
@@ -69,7 +68,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("", "_")
 
     @Shared
-    Producers producers
+    KafkaMessageSenders producers
 
     @Shared
     String containerId
@@ -84,7 +83,7 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
 
     @Shared
-    KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties()
+    String datacenter = "dc";
 
     def setupSpec() {
         kafkaContainer.start()
@@ -101,9 +100,18 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     }
 
     def setup() {
-        producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
+        TopicMetadataLoadingExecutor topicMetadataLoadingExecutor = Mock()
+        MinInSyncReplicasLoader minInSyncReplicasLoader = Mock()
+        producers = new KafkaMessageSenders(
+                topicMetadataLoadingExecutor,
+                minInSyncReplicasLoader,
+                new KafkaMessageSenders.Tuple(
+                        new KafkaMessageSender<byte[], byte[]>(leaderConfirms, datacenter),
+                        new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, datacenter)
+                ),
+                Collections.emptyList()
+        )
         brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
-                new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
                 new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(
                             kafkaHeaderNameProperties,
