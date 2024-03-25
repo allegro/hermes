@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.inject.Named;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,7 @@ public class ReadinessConfiguration {
 
     @Bean
     public DefaultReadinessChecker readinessChecker(ReadinessCheckProperties readinessCheckProperties,
-                                                    BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
+                                                    @Named("localDatacenterBrokerProducer") BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
                                                     AdminReadinessService adminReadinessService) {
         return new DefaultReadinessChecker(
                 brokerTopicAvailabilityChecker,

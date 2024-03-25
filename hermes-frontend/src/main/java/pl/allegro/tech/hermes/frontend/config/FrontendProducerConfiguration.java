@@ -129,10 +129,10 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    public ProducerMetadataLoadingJob producerMetadataLoadingJob(KafkaMessageSenders kafkaMessageSenders,
+    public ProducerMetadataLoadingJob producerMetadataLoadingJob(List<KafkaMessageSenders> kafkaMessageSendersList,
                                                                  TopicLoadingProperties topicLoadingProperties) {
         return new ProducerMetadataLoadingJob(
-                kafkaMessageSenders,
+                kafkaMessageSendersList,
                 topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
                 topicLoadingProperties.getMetadataRefreshJob().getInterval()
         );

@@ -105,7 +105,6 @@ public class KafkaMessageSender<K, V> {
         }
     }
 
-
     public void registerGauges(MetricsFacade metricsFacade, Topic.Ack ack) {
         MetricName bufferTotalBytes = producerMetric("buffer-total-bytes", "producer-metrics", "buffer total bytes");
         MetricName bufferAvailableBytes = producerMetric("buffer-available-bytes", "producer-metrics", "buffer available bytes");

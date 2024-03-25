@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -20,17 +21,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class ProducerMetadataLoadingJob implements Runnable {
 
-    private final KafkaMessageSenders kafkaMessageSenders;
+    private final List<KafkaMessageSenders> kafkaMessageSendersList;
     private final ScheduledExecutorService executorService;
     private final boolean enabled;
     private final Duration interval;
 
     private ScheduledFuture<?> job;
 
-    public ProducerMetadataLoadingJob(KafkaMessageSenders kafkaMessageSenders,
+    public ProducerMetadataLoadingJob(List<KafkaMessageSenders> kafkaMessageSendersList,
                                       boolean enabled,
                                       Duration interval) {
-        this.kafkaMessageSenders = kafkaMessageSenders;
+        this.kafkaMessageSendersList = kafkaMessageSendersList;
         this.enabled = enabled;
         this.interval = interval;
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
@@ -40,12 +41,12 @@ public class ProducerMetadataLoadingJob implements Runnable {
 
     @Override
     public void run() {
-        kafkaMessageSenders.refreshTopicMetadata();
+        refreshTopicMetadata();
     }
 
     public void start() {
         if (enabled) {
-            kafkaMessageSenders.refreshTopicMetadata();
+            refreshTopicMetadata();
             job = executorService.scheduleAtFixedRate(this, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
         }
     }
@@ -55,6 +56,12 @@ public class ProducerMetadataLoadingJob implements Runnable {
             job.cancel(false);
             executorService.shutdown();
             executorService.awaitTermination(1, TimeUnit.MINUTES);
+        }
+    }
+
+    private void refreshTopicMetadata() {
+        for (KafkaMessageSenders kafkaMessageSenders : kafkaMessageSendersList) {
+            kafkaMessageSenders.refreshTopicMetadata();
         }
     }
 }
