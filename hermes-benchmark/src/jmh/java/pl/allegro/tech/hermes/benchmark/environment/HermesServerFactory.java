@@ -75,8 +75,6 @@ class HermesServerFactory {
                 new NoOpMessagePreviewPersister(),
                 throughputLimiter,
                 null,
-                false,
-                null,
                 null);
     }
 

@@ -35,11 +35,10 @@ public class KafkaMessageSender<K, V> {
     private final MetricsFacade metricsFacade;
     private final String datacenter;
 
-    public KafkaMessageSender(
-            Producer<K, V> kafkaProducer,
-            BrokerLatencyReporter brokerLatencyReporter,
-            MetricsFacade metricsFacade,
-            String datacenter) {
+    KafkaMessageSender(Producer<K, V> kafkaProducer,
+                       BrokerLatencyReporter brokerLatencyReporter,
+                       MetricsFacade metricsFacade,
+                       String datacenter) {
         this.producer = kafkaProducer;
         this.brokerLatencyReporter = brokerLatencyReporter;
         this.metricsFacade = metricsFacade;
@@ -53,21 +52,19 @@ public class KafkaMessageSender<K, V> {
     public void send(ProducerRecord<K, V> producerRecord,
                      CachedTopic cachedTopic,
                      Message message,
-                     Callback callback
-    ) {
+                     Callback callback) {
         HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
         Callback meteredCallback = new MeteredCallback(timer, message, cachedTopic, callback);
         producer.send(producerRecord, meteredCallback);
     }
 
-    public List<PartitionInfo> partitionsFor(String topic) {
+    List<PartitionInfo> loadPartitionMetadataFor(String topic) {
         return producer.partitionsFor(topic);
     }
 
     public void close() {
         producer.close();
     }
-
 
     private Supplier<ProduceMetadata> produceMetadataSupplier(RecordMetadata recordMetadata) {
         return () -> {
@@ -113,7 +110,6 @@ public class KafkaMessageSender<K, V> {
         }
     }
 
-
     public void registerGauges(Topic.Ack ack, String sender) {
         MetricName bufferTotalBytes = producerMetric("buffer-total-bytes", "producer-metrics", "buffer total bytes");
         MetricName bufferAvailableBytes = producerMetric("buffer-available-bytes", "producer-metrics", "buffer available bytes");
@@ -139,7 +135,6 @@ public class KafkaMessageSender<K, V> {
         }
     }
 
-
     private double findProducerMetric(Producer<K, V> producer,
                                       Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
         Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
@@ -147,7 +142,6 @@ public class KafkaMessageSender<K, V> {
         double value = first.map(metricNameEntry -> metricNameEntry.getValue().value()).orElse(0.0);
         return value < 0 ? 0.0 : value;
     }
-
 
     private ToDoubleFunction<Producer<K, V>> producerGauge(MetricName producerMetricName) {
         Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group())
@@ -158,5 +152,4 @@ public class KafkaMessageSender<K, V> {
     private static MetricName producerMetric(String name, String group, String description) {
         return new MetricName(name, group, description, Collections.emptyMap());
     }
-
 }

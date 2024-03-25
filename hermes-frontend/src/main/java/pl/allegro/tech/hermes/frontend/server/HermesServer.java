@@ -35,8 +35,6 @@ public class HermesServer {
     private final ReadinessChecker readinessChecker;
     private final MessagePreviewPersister messagePreviewPersister;
     private final ThroughputLimiter throughputLimiter;
-    private final TopicMetadataLoadingJob topicMetadataLoadingJob;
-    private final boolean topicMetadataLoadingJobEnabled;
     private final SslContextFactoryProvider sslContextFactoryProvider;
     private final PrometheusMeterRegistry prometheusMeterRegistry;
     private Undertow undertow;
@@ -51,8 +49,6 @@ public class HermesServer {
             ReadinessChecker readinessChecker,
             MessagePreviewPersister messagePreviewPersister,
             ThroughputLimiter throughputLimiter,
-            TopicMetadataLoadingJob topicMetadataLoadingJob,
-            boolean topicMetadataLoadingJobEnabled,
             SslContextFactoryProvider sslContextFactoryProvider,
             PrometheusMeterRegistry prometheusMeterRegistry) {
 
@@ -64,8 +60,6 @@ public class HermesServer {
         this.healthCheckService = healthCheckService;
         this.readinessChecker = readinessChecker;
         this.messagePreviewPersister = messagePreviewPersister;
-        this.topicMetadataLoadingJob = topicMetadataLoadingJob;
-        this.topicMetadataLoadingJobEnabled = topicMetadataLoadingJobEnabled;
         this.sslContextFactoryProvider = sslContextFactoryProvider;
         this.throughputLimiter = throughputLimiter;
     }
@@ -74,10 +68,6 @@ public class HermesServer {
         configureServer().start();
         messagePreviewPersister.start();
         throughputLimiter.start();
-
-        if (topicMetadataLoadingJobEnabled) {
-            topicMetadataLoadingJob.start();
-        }
         healthCheckService.startup();
         readinessChecker.start();
     }
@@ -101,10 +91,6 @@ public class HermesServer {
         undertow.stop();
         messagePreviewPersister.shutdown();
         throughputLimiter.stop();
-
-        if (topicMetadataLoadingJobEnabled) {
-            topicMetadataLoadingJob.stop();
-        }
         readinessChecker.stop();
     }
 

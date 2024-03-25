@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static pl.allegro.tech.hermes.frontend.server.CompletableFuturesHelper.allComplete;
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.FAILURE;
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.MISSING;
 import static pl.allegro.tech.hermes.frontend.server.SchemaLoadingResult.Type.SUCCESS;
+import static pl.allegro.tech.hermes.frontend.utils.CompletableFuturesHelper.allComplete;
 
 public class TopicSchemaLoadingStartupHook {
 

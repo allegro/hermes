@@ -30,12 +30,10 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     //TODO: tune number of threads, prevent OOM
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(16);
 
-
     public MultiDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
                                           AdminReadinessService adminReadinessService,
                                           MessageToKafkaProducerRecordConverter messageConverter,
-                                          Duration speculativeSendDelay
-    ) {
+                                          Duration speculativeSendDelay) {
         this.messageConverter = messageConverter;
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.speculativeSendDelay = speculativeSendDelay;
@@ -44,7 +42,6 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
     @Override
     public void send(Message message, CachedTopic cachedTopic, PublishingCallback callback) {
-
         var producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
         Optional<KafkaMessageSender<byte[], byte[]>> remoteSender = getRemoteSender(cachedTopic);
@@ -62,7 +59,6 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                         message);
             }
         }, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
-
 
         send(kafkaMessageSenders.get(cachedTopic.getTopic()), producerRecord, sendCallback, cachedTopic, message);
     }
@@ -108,7 +104,6 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     private static class SendCallback {
 
         private final PublishingCallback callback;
-
         private final AtomicBoolean sent = new AtomicBoolean(false);
         private final AtomicInteger tries;
         private final ConcurrentHashMap<String, Exception> errors;
@@ -159,10 +154,13 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
     }
 
+    @Override
+    public boolean areAllTopicsAvailable() {
+        return kafkaMessageSenders.areAllTopicsAvailable();
+    }
 
-    // TODO: maybe implementation this should be moved to KafkaProducer to make it easier for BrokerMessageProducer implementations
     @Override
     public boolean isTopicAvailable(CachedTopic topic) {
-        return false;
+        return kafkaMessageSenders.isTopicAvailable(topic);
     }
 }
