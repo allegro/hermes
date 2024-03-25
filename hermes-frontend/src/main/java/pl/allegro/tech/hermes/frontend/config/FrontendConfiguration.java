@@ -54,10 +54,17 @@ public class FrontendConfiguration {
                                                      TopicsCache topicsCache,
                                                      SchemaRepository schemaRepository,
                                                      Trackers trackers,
-                                                     LocalMessageStorageProperties localMessageStorageProperties
-                                                     ) {
-        return new BackupMessagesLoader(brokerMessageProducer, brokerListeners, topicsCache, schemaRepository,
-                new SchemaExistenceEnsurer(schemaRepository), trackers, localMessageStorageProperties);
+                                                     LocalMessageStorageProperties localMessageStorageProperties) {
+        return new BackupMessagesLoader(
+                brokerMessageProducer,
+                brokerMessageProducer,
+                brokerListeners,
+                topicsCache,
+                schemaRepository,
+                new SchemaExistenceEnsurer(schemaRepository),
+                trackers,
+                localMessageStorageProperties
+        );
     }
 
     @Bean(initMethod = "extend")

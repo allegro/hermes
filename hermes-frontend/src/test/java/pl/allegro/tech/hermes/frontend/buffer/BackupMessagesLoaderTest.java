@@ -66,8 +66,6 @@ public class BackupMessagesLoaderTest {
 
     private final Topic topic = TopicBuilder.topic("pl.allegro.tech.hermes.test").build();
 
-    private final String datacenter = "dc1";
-
     @Before
     public void setUp() {
         tempDir = Files.createTempDir();
@@ -100,6 +98,7 @@ public class BackupMessagesLoaderTest {
 
         final BackupMessagesLoader backupMessagesLoader =
             new BackupMessagesLoader(
+                producer,
                 producer,
                 listeners,
                 topicsCache,
@@ -144,6 +143,7 @@ public class BackupMessagesLoaderTest {
         BackupMessagesLoader backupMessagesLoader =
             new BackupMessagesLoader(
                 producer,
+                producer,
                 listeners,
                 topicsCache,
                 schemaRepository,
@@ -172,6 +172,7 @@ public class BackupMessagesLoaderTest {
 
         BackupMessagesLoader backupMessagesLoader =
             new BackupMessagesLoader(
+                producer,
                 producer,
                 listeners,
                 topicsCache,
@@ -210,6 +211,7 @@ public class BackupMessagesLoaderTest {
 
         BackupMessagesLoader backupMessagesLoader =
             new BackupMessagesLoader(
+                producer,
                 producer,
                 listeners,
                 topicsCache,

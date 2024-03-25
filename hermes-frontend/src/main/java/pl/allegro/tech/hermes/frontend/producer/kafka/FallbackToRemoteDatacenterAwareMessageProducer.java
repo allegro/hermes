@@ -10,7 +10,8 @@ public class FallbackToRemoteDatacenterAwareMessageProducer implements BrokerMes
     private final BrokerMessageProducer localDatacenterMessageProducer;
     private final BrokerMessageProducer multiDatacenterMessageProducer;
 
-    public FallbackToRemoteDatacenterAwareMessageProducer(BrokerMessageProducer localDatacenterMessageProducer, BrokerMessageProducer multiDatacenterMessageProducer) {
+    public FallbackToRemoteDatacenterAwareMessageProducer(BrokerMessageProducer localDatacenterMessageProducer,
+                                                          BrokerMessageProducer multiDatacenterMessageProducer) {
         this.localDatacenterMessageProducer = localDatacenterMessageProducer;
         this.multiDatacenterMessageProducer = multiDatacenterMessageProducer;
     }
@@ -22,6 +23,11 @@ public class FallbackToRemoteDatacenterAwareMessageProducer implements BrokerMes
         } else {
             this.localDatacenterMessageProducer.send(message, topic, callback);
         }
+    }
+
+    @Override
+    public boolean areAllTopicsAvailable() {
+        return localDatacenterMessageProducer.areAllTopicsAvailable();
     }
 
     @Override

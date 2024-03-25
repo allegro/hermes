@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import org.apache.kafka.clients.admin.AdminClient;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
-import pl.allegro.tech.hermes.frontend.config.KafkaProperties;
+import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,26 +37,32 @@ public class KafkaMessageSendersFactory {
     private static final String ACK_ALL = "-1";
     private static final String ACK_LEADER = "1";
 
+    private final TopicMetadataLoadingExecutor topicMetadataLoadingExecutor;
+    private final MinInSyncReplicasLoader localMinInSyncReplicasLoader;
     private final KafkaParameters kafkaParameters;
-    private final List<KafkaProperties> remoteKafkaParameters;
-    private final KafkaProducerParameters kafkaProducerParameters;
+    private final List<KafkaParameters> remoteKafkaParameters;
     private final BrokerLatencyReporter brokerLatencyReporter;
     private final long bufferedSizeBytes;
 
     public KafkaMessageSendersFactory(KafkaParameters kafkaParameters,
-                                      List<KafkaProperties> remoteKafkaParameters,
-                                      KafkaProducerParameters kafkaProducerParameters,
+                                      List<KafkaParameters> remoteKafkaParameters,
                                       BrokerLatencyReporter brokerLatencyReporter,
-                                      long bufferedSizeBytes) {
-        this.kafkaProducerParameters = kafkaProducerParameters;
-        this.brokerLatencyReporter = brokerLatencyReporter;
+                                      AdminClient localAdminClient,
+                                      TopicsCache topicsCache,
+                                      int retryCount,
+                                      Duration retryInterval,
+                                      int threadPoolSize,
+                                      long bufferedSizeBytes,
+                                      Duration metadataMaxAge) {
+        this.topicMetadataLoadingExecutor = new TopicMetadataLoadingExecutor(topicsCache, retryCount, retryInterval, threadPoolSize);
+        this.localMinInSyncReplicasLoader = new MinInSyncReplicasLoader(localAdminClient, metadataMaxAge);
         this.bufferedSizeBytes = bufferedSizeBytes;
         this.kafkaParameters = kafkaParameters;
         this.remoteKafkaParameters = remoteKafkaParameters;
-
+        this.brokerLatencyReporter = brokerLatencyReporter;
     }
 
-    public KafkaMessageSenders provide() {
+    public KafkaMessageSenders provide(KafkaProducerParameters kafkaProducerParameters) {
         KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
                 sender(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
                 sender(kafkaParameters, kafkaProducerParameters, ACK_ALL)
@@ -65,6 +73,8 @@ public class KafkaMessageSendersFactory {
                         sender(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
                         sender(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
         return new KafkaMessageSenders(
+                topicMetadataLoadingExecutor,
+                localMinInSyncReplicasLoader,
                 localProducers,
                 remoteProducers
         );
@@ -103,5 +113,10 @@ public class KafkaMessageSendersFactory {
                 brokerLatencyReporter,
                 kafkaParameters.getDatacenter()
         );
+    }
+
+    public void close() throws Exception {
+        topicMetadataLoadingExecutor.close();
+        localMinInSyncReplicasLoader.close();
     }
 }
