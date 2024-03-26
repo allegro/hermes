@@ -1,18 +1,14 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper.cache;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.cache.queue.LinkedHashSetBlockingQueue;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 public class ModelAwareZookeeperNotifyingCache {
@@ -26,15 +22,13 @@ public class ModelAwareZookeeperNotifyingCache {
     private static final int SUBSCRIPTION_LEVEL = 2;
 
     private final HierarchicalCache cache;
-    private final ThreadPoolExecutor executor;
+    private final ExecutorService executor;
 
-    public ModelAwareZookeeperNotifyingCache(CuratorFramework curator, String rootPath, int processingThreadPoolSize) {
+    public ModelAwareZookeeperNotifyingCache(CuratorFramework curator, ExecutorService executor, String rootPath) {
         List<String> levelPrefixes = Arrays.asList(
                 ZookeeperPaths.GROUPS_PATH, ZookeeperPaths.TOPICS_PATH, ZookeeperPaths.SUBSCRIPTIONS_PATH
         );
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(rootPath + "-zk-cache-%d").build();
-        executor = new ThreadPoolExecutor(1, processingThreadPoolSize,
-                Integer.MAX_VALUE, TimeUnit.SECONDS, new LinkedHashSetBlockingQueue<>(), threadFactory);
+        this.executor = executor;
         this.cache = new HierarchicalCache(
                 curator,
                 executor,

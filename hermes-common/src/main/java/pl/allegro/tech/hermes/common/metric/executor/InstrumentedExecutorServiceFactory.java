@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.metric.executor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -11,14 +12,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-
 public class InstrumentedExecutorServiceFactory {
 
-    private final ThreadPoolMetrics threadPoolMetrics;
+    private final MetricsFacade metricsFacade;
     private final RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.AbortPolicy();
 
-    public InstrumentedExecutorServiceFactory(ThreadPoolMetrics threadPoolMetrics) {
-        this.threadPoolMetrics = threadPoolMetrics;
+    public InstrumentedExecutorServiceFactory(MetricsFacade metricsFacade) {
+        this.metricsFacade = metricsFacade;
     }
 
     public ExecutorService getExecutorService(String name, int size, boolean monitoringEnabled) {
@@ -30,11 +30,7 @@ public class InstrumentedExecutorServiceFactory {
         ThreadPoolExecutor executor = newFixedThreadPool(name, size, threadFactory, queueCapacity);
         executor.prestartAllCoreThreads();
 
-        if (monitoringEnabled) {
-            monitor(name, executor);
-        }
-
-        return executor;
+        return monitoringEnabled ? monitor(name, executor) : executor;
     }
 
     public ScheduledExecutorService getScheduledExecutorService(
@@ -42,18 +38,16 @@ public class InstrumentedExecutorServiceFactory {
     ) {
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-scheduled-executor-%d").build();
-
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(size, threadFactory);
-
-        if (monitoringEnabled) {
-            monitor(name, executor);
-        }
-
-        return executor;
+        return monitoringEnabled ? monitor(name, executor) : executor;
     }
 
-    private void monitor(String threadPoolName, ThreadPoolExecutor executor) {
-        threadPoolMetrics.createGauges(threadPoolName, executor);
+    private ExecutorService monitor(String threadPoolName, ExecutorService executor) {
+        return metricsFacade.executor().monitor(executor, threadPoolName);
+    }
+
+    private ScheduledExecutorService monitor(String threadPoolName, ScheduledExecutorService executor) {
+        return metricsFacade.executor().monitor(executor, threadPoolName);
     }
 
     /**
@@ -68,16 +62,8 @@ public class InstrumentedExecutorServiceFactory {
                 TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(queueCapacity),
                 threadFactory,
-                getMeteredRejectedExecutionHandler(executorName)
+                rejectedExecutionHandler
         );
         return executor;
     }
-
-    RejectedExecutionHandler getMeteredRejectedExecutionHandler(String executorName) {
-        return (r, executor) -> {
-            threadPoolMetrics.markRequestRejected(executorName);
-            rejectedExecutionHandler.rejectedExecution(r, executor);
-        };
-    }
-
 }

@@ -138,7 +138,7 @@ class ConsumerTestRuntimeEnvironment {
         workloadProperties.setMonitorScanInterval(Duration.ofSeconds(1));
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
-                curator, zookeeperProperties
+                curator, metricsSupplier.get(), zookeeperProperties
         ).provide();
 
         InternalNotificationsBus notificationsBus =
@@ -239,7 +239,7 @@ class ConsumerTestRuntimeEnvironment {
                                     Duration monitorScanInterval) {
         CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
         ModelAwareZookeeperNotifyingCache modelAwareCache =
-                new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties).provide();
+                new ModelAwareZookeeperNotifyingCacheFactory(curator, metricsSupplier.get(), zookeeperProperties).provide();
         InternalNotificationsBus notificationsBus =
                 new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
         SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(
