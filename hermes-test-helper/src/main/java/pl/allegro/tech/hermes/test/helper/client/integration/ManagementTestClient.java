@@ -58,6 +58,8 @@ public class ManagementTestClient {
 
     private static final String SET_READINESS = "/readiness/datacenters/{dc}";
 
+    private static final String GET_READINESS = "/readiness/datacenters";
+
     private static final String TOPIC_SCHEMA = "/topics/{topicName}/schema";
 
     private static final String ALL_TOPIC_CLIENTS = "/topics/{topicName}/clients";
@@ -334,6 +336,14 @@ public class ManagementTestClient {
                         .path(SET_READINESS)
                         .build(dc))
                 .body(Mono.just(new Readiness(state)), Readiness.class)
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getReadiness() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(managementContainerUrl)
+                        .path(GET_READINESS)
+                        .build())
                 .exchange();
     }
 
