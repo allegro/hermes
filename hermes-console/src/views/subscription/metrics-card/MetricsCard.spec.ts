@@ -99,4 +99,79 @@ describe('MetricsCard', () => {
     )!;
     expect(within(deliveryRateRow).getByText('9,055,513')).toBeVisible();
   });
+
+  it('should render subscription otherErrors', () => {
+    // when
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(MetricsCard, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    const deliveryRateRow = getByText(
+      'subscription.metricsCard.otherErrors',
+    ).closest('tr')!;
+    expect(within(deliveryRateRow).getByText('1.40')).toBeVisible();
+  });
+
+  it('should render subscription codes2xx', () => {
+    // when
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(MetricsCard, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    const deliveryRateRow = getByText(
+      'subscription.metricsCard.codes2xx',
+    ).closest('tr')!;
+    expect(within(deliveryRateRow).getByText('123.00')).toBeVisible();
+  });
+
+  it('should render subscription codes4xx', () => {
+    // when
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(MetricsCard, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    const deliveryRateRow = getByText(
+      'subscription.metricsCard.codes4xx',
+    ).closest('tr')!;
+    expect(within(deliveryRateRow).getByText('2.00')).toBeVisible();
+  });
+
+  it('should render subscription codes5xx', () => {
+    // when
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(MetricsCard, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    const deliveryRateRow = getByText(
+      'subscription.metricsCard.codes5xx',
+    ).closest('tr')!;
+    expect(within(deliveryRateRow).getByText('1.32')).toBeVisible();
+  });
+
+  it('should render subscription retries', () => {
+    // when
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(MetricsCard, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    const deliveryRateRow = getByText(
+      'subscription.metricsCard.retries',
+    ).closest('tr')!;
+    expect(within(deliveryRateRow).getByText('2.03')).toBeVisible();
+  });
 });

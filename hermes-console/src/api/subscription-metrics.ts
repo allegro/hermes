@@ -7,6 +7,7 @@ export interface SubscriptionMetrics {
   codes2xx: string;
   codes4xx: string;
   codes5xx: string;
+  retries: string;
   lag: string;
   rate: string;
   throughput: string;

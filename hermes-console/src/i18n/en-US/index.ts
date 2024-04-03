@@ -472,6 +472,12 @@ const en_US = {
       subscriberLatency: 'Subscriber latency',
       delivered: 'Delivered',
       discarded: 'Discarded',
+      timeouts: 'Timeouts',
+      otherErrors: 'Other errors',
+      codes2xx: 'Codes 2xx',
+      codes4xx: 'Codes 4xx',
+      codes5xx: 'Codes 5xx',
+      retries: 'Retries',
       lag: 'Lag',
       outputRate: 'Output rate',
       tooltips: {
@@ -485,6 +491,8 @@ const en_US = {
           'Maximum sending rate calculated based on receiving service ' +
           'performance. For well-performing service output rate should be ' +
           'equal to rate limit.',
+        retries:
+          'Total number of message sending retries. Retrying messages significantly reduces the rate on subscriptions.',
       },
     },
     propertiesCard: {

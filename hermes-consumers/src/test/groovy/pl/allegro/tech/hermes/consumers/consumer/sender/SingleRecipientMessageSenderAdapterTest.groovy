@@ -49,7 +49,6 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
     def "should register successful send in rate limiter"() {
         given:
         ConsumerRateLimiter consumerRateLimiter = Mock(ConsumerRateLimiter) {
-            1 * acquire()
             1 * registerSuccessfulSending()
         }
         ResilientMessageSender rateLimitingMessageSender = rateLimitingMessageSender(consumerRateLimiter)
@@ -65,7 +64,6 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
     def "should register unsuccessful send in rate limiter"() {
         given:
         ConsumerRateLimiter consumerRateLimiter = Mock(ConsumerRateLimiter) {
-            1 * acquire()
             1 * registerFailedSending()
         }
         ResilientMessageSender rateLimitingMessageSender = rateLimitingMessageSender(consumerRateLimiter)
@@ -77,7 +75,5 @@ class SingleRecipientMessageSenderAdapterTest extends Specification {
 
         then:
         !future.get().succeeded()
-
     }
-
 }
