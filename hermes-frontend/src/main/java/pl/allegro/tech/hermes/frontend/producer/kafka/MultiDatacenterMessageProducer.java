@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,17 +26,18 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     private final MessageToKafkaProducerRecordConverter messageConverter;
     private final Duration speculativeSendDelay;
     private final AdminReadinessService adminReadinessService;
-    //TODO: tune number of threads, prevent OOM
-    private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(16);
+    private final ScheduledExecutorService fallbackScheduler;
 
     public MultiDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
                                           AdminReadinessService adminReadinessService,
                                           MessageToKafkaProducerRecordConverter messageConverter,
-                                          Duration speculativeSendDelay) {
+                                          Duration speculativeSendDelay,
+                                          ScheduledExecutorService fallbackScheduler) {
         this.messageConverter = messageConverter;
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.speculativeSendDelay = speculativeSendDelay;
         this.adminReadinessService = adminReadinessService;
+        this.fallbackScheduler = fallbackScheduler;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 ? SendCallback.withFallback(callback)
                 : SendCallback.withoutFallback(callback);
 
-        scheduler.schedule(() -> {
+        fallbackScheduler.schedule(() -> {
             if (!sendCallback.sent.get() && remoteSender.isPresent()) {
                 send(remoteSender.get(),
                         producerRecord,

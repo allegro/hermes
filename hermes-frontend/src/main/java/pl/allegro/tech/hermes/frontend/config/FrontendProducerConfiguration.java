@@ -7,7 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.FailFastKafkaProducerProperties.FallbackSchedulerProperties;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.FallbackToRemoteDatacenterAwareMessageProducer;
@@ -23,6 +25,7 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL;
@@ -62,12 +65,20 @@ public class FrontendProducerConfiguration {
     public BrokerMessageProducer multiDatacenterBrokerProducer(@Named("failFastKafkaMessageSenders") KafkaMessageSenders kafkaMessageSenders,
                                                                MessageToKafkaProducerRecordConverter messageConverter,
                                                                FailFastKafkaProducerProperties kafkaProducerProperties,
-                                                               AdminReadinessService adminReadinessService) {
+                                                               AdminReadinessService adminReadinessService,
+                                                               InstrumentedExecutorServiceFactory executorServiceFactory) {
+        FallbackSchedulerProperties fallbackSchedulerProperties = kafkaProducerProperties.getFallbackScheduler();
+        ScheduledExecutorService fallbackScheduler = executorServiceFactory.getScheduledExecutorService(
+                "fallback-to-remote",
+                fallbackSchedulerProperties.getThreadPoolSize(),
+                fallbackSchedulerProperties.isThreadPoolMonitoringEnabled()
+        );
         return new MultiDatacenterMessageProducer(
                 kafkaMessageSenders,
                 adminReadinessService,
                 messageConverter,
-                kafkaProducerProperties.getSpeculativeSendDelay()
+                kafkaProducerProperties.getSpeculativeSendDelay(),
+                fallbackScheduler
         );
     }
 

@@ -10,6 +10,8 @@ public class FailFastKafkaProducerProperties implements KafkaProducerParameters 
 
     private Duration speculativeSendDelay = Duration.ofMillis(250);
 
+    private FallbackSchedulerProperties fallbackScheduler = new FallbackSchedulerProperties();
+
     private Duration maxBlock = Duration.ofMillis(500);
 
     private Duration metadataMaxAge = Duration.ofMinutes(5);
@@ -170,5 +172,37 @@ public class FailFastKafkaProducerProperties implements KafkaProducerParameters 
 
     public void setDeliveryTimeout(Duration deliveryTimeout) {
         this.deliveryTimeout = deliveryTimeout;
+    }
+
+    public FallbackSchedulerProperties getFallbackScheduler() {
+        return fallbackScheduler;
+    }
+
+    public void setFallbackScheduler(FallbackSchedulerProperties fallbackScheduler) {
+        this.fallbackScheduler = fallbackScheduler;
+    }
+
+    public static class FallbackSchedulerProperties {
+
+        private int threadPoolSize = 16;
+
+        private boolean threadPoolMonitoringEnabled = false;
+
+
+        public int getThreadPoolSize() {
+            return threadPoolSize;
+        }
+
+        public void setThreadPoolSize(int threadPoolSize) {
+            this.threadPoolSize = threadPoolSize;
+        }
+
+        public boolean isThreadPoolMonitoringEnabled() {
+            return threadPoolMonitoringEnabled;
+        }
+
+        public void setThreadPoolMonitoringEnabled(boolean threadPoolMonitoringEnabled) {
+            this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
+        }
     }
 }
