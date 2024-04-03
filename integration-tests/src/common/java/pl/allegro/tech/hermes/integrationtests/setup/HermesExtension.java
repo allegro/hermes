@@ -158,11 +158,6 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
         return this;
     }
 
-    public HermesExtension withCrowd(CrowdExtension crowd) {
-        management.withCrowd(crowd);
-        return this;
-    }
-
     public HermesExtension withFrontendProperty(String name, Object value) {
         frontend.withProperty(name, value);
         return this;

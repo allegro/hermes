@@ -156,11 +156,6 @@
       "deprecated": false
     },
     {
-      "name": "Crowd Catalog",
-      "autocomplete": false,
-      "deprecated": false
-    },
-    {
       "name": "Deprecated catalog",
       "autocomplete": true,
       "deprecated": true
@@ -591,10 +586,6 @@
     },
     "owner": {
       "sources": [
-        {
-          "name": "Crowd Catalog",
-          "placeholder": "Crowd group (or groups separated by ',')"
-        },
         {
           "name": "Service Catalog",
           "placeholder": "Service name from Service Catalog"
