@@ -76,7 +76,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                     datacenter,
                     callback));
         } catch (Exception e) {
-            // message didn't get to internal producer buffer and it will not be send to a broker
+            // message didn't get to internal producer buffer and it will not be sent to a broker
             callback.onUnpublished(message, cachedTopic, datacenter, e);
         }
     }
