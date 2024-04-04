@@ -67,11 +67,6 @@
       :value="formatNumber(props.subscriptionMetrics.lag)"
       :tooltip="$t('subscription.metricsCard.tooltips.lag')"
     />
-    <key-value-card-item
-      :name="$t('subscription.metricsCard.outputRate')"
-      value="?"
-      :tooltip="$t('subscription.metricsCard.tooltips.outputRate')"
-    />
   </key-value-card>
 </template>
 
