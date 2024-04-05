@@ -283,6 +283,10 @@ public class HermesTestClient {
     }
 
     public WebTestClient.ResponseSpec getReadiness() {
+        return managementTestClient.getReadiness();
+    }
+
+    public WebTestClient.ResponseSpec getFrontendReadiness() {
         return frontendTestClient.getStatusReady();
     }
 
