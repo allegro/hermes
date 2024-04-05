@@ -136,9 +136,7 @@ public class ConsumerMessageSender {
      */
     private void sendMessage(final Message message) {
         loadRecorder.recordSingleOperation();
-        HermesTimerContext acquireTimer = rateLimiterAcquireTimer.time();
-        rateLimiter.acquire();
-        acquireTimer.close();
+        acquireRateLimiterWithTimer();
         HermesTimerContext timer = consumerLatencyTimer.time();
         CompletableFuture<MessageSendingResult> response = messageSender.send(message);
 
@@ -149,6 +147,12 @@ public class ConsumerMessageSender {
                             subscription.getQualifiedName(), message.getPartition(), message.getOffset(), message.getId(), e);
                     return null;
                 });
+    }
+
+    private void acquireRateLimiterWithTimer() {
+        HermesTimerContext acquireTimer = rateLimiterAcquireTimer.time();
+        rateLimiter.acquire();
+        acquireTimer.close();
     }
 
     private MessageSender messageSender(Subscription subscription) {
