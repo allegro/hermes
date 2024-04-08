@@ -36,11 +36,6 @@
       :name="$t('topicView.metrics.published')"
       :value="formatNumber(props.metrics.published)"
     />
-    <key-value-card-item :name="$t('topicView.metrics.latency')" value="?" />
-    <key-value-card-item
-      :name="$t('topicView.metrics.messageSize')"
-      value="?"
-    />
   </key-value-card>
 </template>
 

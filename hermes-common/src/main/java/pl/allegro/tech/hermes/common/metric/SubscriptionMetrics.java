@@ -57,10 +57,27 @@ public class SubscriptionMetrics {
         };
     }
 
+    public HermesCounter retries(SubscriptionName subscription) {
+        return size -> {
+            hermesMetrics.meter(Meters.RETRIES_METER).mark(size);
+            hermesMetrics.meter(Meters.RETRIES_TOPIC_METER, subscription.getTopicName()).mark(size);
+            hermesMetrics.meter(Meters.RETRIES_SUBSCRIPTION_METER, subscription.getTopicName(), subscription.getName()).mark(size);
+            hermesMetrics.counter(Counters.RETRIES, subscription.getTopicName(), subscription.getName()).inc(size);
+            micrometerCounter(SubscriptionMetricsNames.SUBSCRIPTION_RETRIES, subscription).increment(size);
+        };
+    }
+
     public HermesTimer latency(SubscriptionName subscription) {
         return HermesTimer.from(
                 meterRegistry.timer(SubscriptionMetricsNames.SUBSCRIPTION_LATENCY, subscriptionTags(subscription)),
                 hermesMetrics.timer(Timers.SUBSCRIPTION_LATENCY, subscription.getTopicName(), subscription.getName())
+        );
+    }
+
+    public HermesTimer rateLimiterAcquire(SubscriptionName subscription) {
+        return HermesTimer.from(
+                meterRegistry.timer(SubscriptionMetricsNames.SUBSCRIPTION_RATE_LIMITER_ACQUIRE, subscriptionTags(subscription)),
+                hermesMetrics.timer(Timers.RATE_LIMITER_ACQUIRE, subscription.getTopicName(), subscription.getName())
         );
     }
 
@@ -133,7 +150,9 @@ public class SubscriptionMetrics {
         public static final String SUBSCRIPTION_THROUGHPUT = "subscription.throughput-bytes";
         public static final String SUBSCRIPTION_BATCHES = "subscription.batches";
         public static final String SUBSCRIPTION_DISCARDED = "subscription.discarded";
+        public static final String SUBSCRIPTION_RETRIES = "subscription.retries";
         public static final String SUBSCRIPTION_LATENCY = "subscription.latency";
+        public static final String SUBSCRIPTION_RATE_LIMITER_ACQUIRE = "subscription.rate-limiter-acquire";
         public static final String SUBSCRIPTION_INFLIGHT = "subscription.inflight";
         public static final String SUBSCRIPTION_IDLE_DURATION = "subscription.idle-duration";
         public static final String SUBSCRIPTION_FILTERED_OUT = "subscription.filtered-out";

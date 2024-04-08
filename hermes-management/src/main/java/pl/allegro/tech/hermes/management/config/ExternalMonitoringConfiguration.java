@@ -15,7 +15,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.CachingGraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
-import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteMetricsProvider;
 import pl.allegro.tech.hermes.management.infrastructure.graphite.RestTemplateGraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.CachingPrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient;
@@ -28,13 +27,6 @@ import static com.google.common.base.Ticker.systemTicker;
 
 @Configuration
 public class ExternalMonitoringConfiguration {
-
-    @Bean
-    @ConditionalOnProperty(value = "graphite.client.enabled", havingValue = "true")
-    public GraphiteMetricsProvider graphiteMetricsProvider(GraphiteClient graphiteClient,
-                                                           GraphiteMonitoringMetricsProperties properties) {
-        return new GraphiteMetricsProvider(graphiteClient, properties.getPrefix());
-    }
 
     @Bean
     @ConditionalOnProperty(value = "graphite.client.enabled", havingValue = "true")
