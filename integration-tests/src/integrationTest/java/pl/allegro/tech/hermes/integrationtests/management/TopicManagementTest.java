@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
@@ -22,6 +23,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -673,6 +675,93 @@ public class TopicManagementTest {
         Topic topic = hermes.initHelper().createTopic(
                 topicWithRandomName()
                         .withFallbackToRemoteDatacenterEnabled()
+                        .build()
+        );
+        TestSecurityProvider.setUserIsAdmin(false);
+        PatchData patchData = PatchData.from(ImmutableMap.of("description", "new description"));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+        //then
+        response.expectStatus().isOk();
+    }
+
+    @Test
+    public void shouldNotAllowNonAdminUserCreateTopicWithChaosEnabled() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(false);
+        TopicWithSchema topic = topicWithSchema(
+                topicWithRandomName()
+                        .withPublishingChaosPolicy(new PublishingChaosPolicy(true, Map.of()))
+                        .build()
+        );
+        hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().createTopic(topic);
+
+        //then
+        response.expectStatus().isBadRequest();
+        assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+                .contains("User is not allowed to set chaos policy for this topic");
+    }
+
+    @Test
+    public void shouldAllowAdminUserCreateTopicWithChaosEnabled() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(true);
+        TopicWithSchema topic = topicWithSchema(
+                topicWithRandomName()
+                        .withPublishingChaosPolicy(new PublishingChaosPolicy(true, Map.of()))
+                        .build()
+        );
+        hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().createTopic(topic);
+
+        //then
+        response.expectStatus().isCreated();
+    }
+
+    @Test
+    public void shouldNotAllowNonAdminUserToEnableChaos() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        TestSecurityProvider.setUserIsAdmin(false);
+        PatchData patchData = PatchData.from(ImmutableMap.of("chaos", ImmutableMap.of("enabled", true)));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+        //then
+        response.expectStatus().isBadRequest();
+        assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+                .contains("User is not allowed to update chaos policy for this topic");
+    }
+
+    @Test
+    public void shouldAllowAdminUserToEnableChaos() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        TestSecurityProvider.setUserIsAdmin(true);
+        PatchData patchData = PatchData.from(ImmutableMap.of("chaos", ImmutableMap.of("enabled", true)));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+        //then
+        response.expectStatus().isOk();
+    }
+
+    @Test
+    public void shouldAllowNonAdminUserToModifyTopicWithChaosEnabled() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(true);
+        Topic topic = hermes.initHelper().createTopic(
+                topicWithRandomName()
+                        .withPublishingChaosPolicy(new PublishingChaosPolicy(true, Map.of()))
                         .build()
         );
         TestSecurityProvider.setUserIsAdmin(false);

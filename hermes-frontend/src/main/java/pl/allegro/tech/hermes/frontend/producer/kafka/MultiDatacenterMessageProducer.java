@@ -3,6 +3,9 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
@@ -13,7 +16,9 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,22 +27,27 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMess
 
 public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
+    private static final Logger logger = LoggerFactory.getLogger(MultiDatacenterMessageProducer.class);
+
     private final KafkaMessageSenders kafkaMessageSenders;
     private final MessageToKafkaProducerRecordConverter messageConverter;
     private final Duration speculativeSendDelay;
     private final AdminReadinessService adminReadinessService;
     private final ScheduledExecutorService fallbackScheduler;
+    private final ScheduledExecutorService chaosScheduler;
 
     public MultiDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
                                           AdminReadinessService adminReadinessService,
                                           MessageToKafkaProducerRecordConverter messageConverter,
                                           Duration speculativeSendDelay,
-                                          ScheduledExecutorService fallbackScheduler) {
+                                          ScheduledExecutorService fallbackScheduler,
+                                          ScheduledExecutorService chaosScheduler) {
         this.messageConverter = messageConverter;
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.speculativeSendDelay = speculativeSendDelay;
         this.adminReadinessService = adminReadinessService;
         this.fallbackScheduler = fallbackScheduler;
+        this.chaosScheduler = chaosScheduler;
     }
 
     @Override
@@ -52,7 +62,8 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
         fallbackScheduler.schedule(() -> {
             if (!sendCallback.sent.get() && remoteSender.isPresent()) {
-                send(remoteSender.get(),
+                sendOrScheduleChaosExperiment(
+                        remoteSender.get(),
                         producerRecord,
                         sendCallback,
                         cachedTopic,
@@ -60,7 +71,57 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
             }
         }, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
 
-        send(kafkaMessageSenders.get(cachedTopic.getTopic()), producerRecord, sendCallback, cachedTopic, message);
+        sendOrScheduleChaosExperiment(
+                kafkaMessageSenders.get(cachedTopic.getTopic()),
+                producerRecord,
+                sendCallback,
+                cachedTopic,
+                message
+        );
+    }
+
+    private void sendOrScheduleChaosExperiment(KafkaMessageSender<byte[], byte[]> sender,
+                                               ProducerRecord<byte[], byte[]> producerRecord,
+                                               SendCallback callback,
+                                               CachedTopic cachedTopic,
+                                               Message message) {
+        var chaos = cachedTopic.getTopic().getChaos();
+        if (chaos.enabled()) {
+            var datacenterChaosPolicies = chaos.datacenterChaosPolicies();
+            var policy = datacenterChaosPolicies.get(sender.getDatacenter());
+            if (policy != null) {
+                scheduleChaosExperiment(policy, sender, producerRecord, callback, cachedTopic, message);
+            } else {
+                send(sender, producerRecord, callback, cachedTopic, message);
+            }
+        } else {
+            send(sender, producerRecord, callback, cachedTopic, message);
+        }
+    }
+
+    private void scheduleChaosExperiment(PublishingChaosPolicy.DatacenterChaosPolicy policy,
+                                         KafkaMessageSender<byte[], byte[]> sender,
+                                         ProducerRecord<byte[], byte[]> producerRecord,
+                                         SendCallback callback,
+                                         CachedTopic cachedTopic,
+                                         Message message) {
+        long delayMillisTo = policy.delayTo();
+        long delayMillisFrom = policy.delayFrom();
+        long delayMillis = ThreadLocalRandom.current().nextLong(delayMillisTo - delayMillisFrom) + delayMillisTo;
+
+        try {
+            chaosScheduler.schedule(() -> {
+                if (policy.completeWithError()) {
+                    var datacenter = sender.getDatacenter();
+                    callback.onUnpublished(message, cachedTopic, datacenter, new ChaosException(datacenter, delayMillis, message.getId()));
+                } else {
+                    send(sender, producerRecord, callback, cachedTopic, message);
+                }
+            }, delayMillis, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
+            send(sender, producerRecord, callback, cachedTopic, message);
+        }
     }
 
     private void send(KafkaMessageSender<byte[], byte[]> sender,

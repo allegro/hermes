@@ -44,6 +44,10 @@ public class TopicValidator {
             throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
         }
 
+        if (created.getChaos().enabled() && !createdBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to set chaos policy for this topic");
+        }
+
         if (created.wasMigratedFromJsonType()) {
             throw new TopicValidationException("Newly created topic cannot have migratedFromJsonType flag set to true");
         }
@@ -60,6 +64,10 @@ public class TopicValidator {
 
         if (!previous.isFallbackToRemoteDatacenterEnabled() && updated.isFallbackToRemoteDatacenterEnabled() && !modifiedBy.isAdmin()) {
             throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        }
+
+        if (!previous.getChaos().equals(updated.getChaos()) && !modifiedBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to update chaos policy for this topic");
         }
 
         if (migrationFromJsonTypeFlagChangedToTrue(updated, previous)) {

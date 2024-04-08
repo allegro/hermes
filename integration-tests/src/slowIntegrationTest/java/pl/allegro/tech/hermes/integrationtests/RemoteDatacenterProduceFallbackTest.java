@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.testcontainers.lifecycle.Startable;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.DatacenterChaosPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
@@ -166,6 +168,54 @@ public class RemoteDatacenterProduceFallbackTest {
 
         // then no messages are received
         subscriber.noMessagesReceived();
+    }
+
+    @Test
+    public void shouldPublishAndConsumeViaRemoteDCWhenChaosExperimentIsEnabledForLocalKafka() {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriber();
+
+        Topic topic = initHelper.createTopic(
+                topicWithRandomName()
+                        .withFallbackToRemoteDatacenterEnabled()
+                        .withPublishingChaosPolicy(completeWithErrorForDatacenter(DEFAULT_DC_NAME))
+                        .build()
+        );
+        initHelper.createSubscription(
+                subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
+        );
+
+        // and message is published to dc1
+        TestMessage message = TestMessage.of("key1", "value1");
+        DC1.publishUntilSuccess(topic.getQualifiedName(), message.body());
+
+        // then message is received in dc2
+        subscriber.waitUntilReceived(message.body());
+
+        // and metrics that message was published to remote dc is incremented
+        DC1.getFrontendMetrics()
+                .expectStatus()
+                .isOk()
+                .expectBody(String.class)
+                .value((body) -> assertThatMetrics(body)
+                        .contains("hermes_frontend_topic_published_total")
+                        .withLabels(
+                                "group", topic.getName().getGroupName(),
+                                "topic", topic.getName().getName(),
+                                "storageDc", "dc2"
+                        )
+                        .withValue(1.0)
+                );
+    }
+
+    private static PublishingChaosPolicy completeWithErrorForDatacenter(String datacenter) {
+        int delayFrom = 100;
+        int delayTo = 200;
+        boolean completeWithError = true;
+        return new PublishingChaosPolicy(
+                true,
+                Map.of(datacenter, new DatacenterChaosPolicy(delayFrom, delayTo, completeWithError))
+        );
     }
 
     private static class HermesDatacenter {
