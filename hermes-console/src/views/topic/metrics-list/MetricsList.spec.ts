@@ -40,8 +40,6 @@ describe('MetricsList', () => {
     { property: 'topicView.metrics.rate', value: '3.40' },
     { property: 'topicView.metrics.deliveryRate', value: '3.50' },
     { property: 'topicView.metrics.published', value: 100 },
-    { property: 'topicView.metrics.latency', value: '?' },
-    { property: 'topicView.metrics.messageSize', value: '?' },
   ])('should render all metrics properties %s', ({ property, value }) => {
     // given
     vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);

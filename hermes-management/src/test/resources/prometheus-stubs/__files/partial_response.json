@@ -18,6 +18,19 @@
       },
       {
         "metric": {
+          "__name__": "hermes_consumers_subscription_retries_total",
+          "group": "pl.allegro.tech.hermes",
+          "subscription": "hermesSubscription",
+          "topic": "hermesTopic"
+        },
+        "value": [
+          1692281425.609,
+          "1"
+        ],
+        "group": 1
+      },
+      {
+        "metric": {
           "__name__": "hermes_consumers_subscription_throughput_bytes_total",
           "group": "pl.allegro.tech.hermes",
           "subscription": "hermesSubscription",

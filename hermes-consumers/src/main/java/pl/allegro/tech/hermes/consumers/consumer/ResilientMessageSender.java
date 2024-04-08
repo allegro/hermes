@@ -46,7 +46,6 @@ public class ResilientMessageSender {
             Function<Throwable, T> exceptionMapper
     ) {
         try {
-            rateLimiter.acquire();
             CompletableFuture<T> resultFuture = new CompletableFuture<>();
             resultFutureConsumer.accept(resultFuture);
             CompletableFuture<T> timeoutGuardedResultFuture = async.within(

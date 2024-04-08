@@ -12,6 +12,7 @@ public class SubscriptionMetrics {
     private MetricDecimalValue codes2xx;
     private MetricDecimalValue codes4xx;
     private MetricDecimalValue codes5xx;
+    private MetricDecimalValue retries;
     private MetricLongValue lag;
     private Subscription.State state;
     private MetricDecimalValue rate;
@@ -30,6 +31,7 @@ public class SubscriptionMetrics {
                                @JsonProperty("codes2xx") MetricDecimalValue codes2xx,
                                @JsonProperty("codes4xx") MetricDecimalValue codes4xx,
                                @JsonProperty("codes5xx") MetricDecimalValue codes5xx,
+                               @JsonProperty("retries") MetricDecimalValue retries,
                                @JsonProperty("Subscription") Subscription.State state,
                                @JsonProperty("rate") MetricDecimalValue rate,
                                @JsonProperty("throughput") MetricDecimalValue throughput,
@@ -42,6 +44,7 @@ public class SubscriptionMetrics {
         this.codes2xx = codes2xx;
         this.codes4xx = codes4xx;
         this.codes5xx = codes5xx;
+        this.retries = retries;
         this.state = state;
         this.rate = rate;
         this.throughput = throughput;
@@ -82,6 +85,10 @@ public class SubscriptionMetrics {
 
     public MetricDecimalValue getCodes5xx() {
         return codes5xx;
+    }
+
+    public MetricDecimalValue getRetries() {
+        return retries;
     }
 
     public Subscription.State getState() {
@@ -144,6 +151,11 @@ public class SubscriptionMetrics {
 
         public Builder withCodes5xx(MetricDecimalValue count) {
             subscriptionMetrics.codes5xx = count;
+            return this;
+        }
+
+        public Builder withRetries(MetricDecimalValue retries) {
+            subscriptionMetrics.retries = retries;
             return this;
         }
 

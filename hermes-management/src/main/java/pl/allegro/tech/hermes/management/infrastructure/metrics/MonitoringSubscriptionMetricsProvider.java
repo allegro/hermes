@@ -13,6 +13,7 @@ public interface MonitoringSubscriptionMetricsProvider {
                                                 MetricDecimalValue codes2xx,
                                                 MetricDecimalValue code4xx,
                                                 MetricDecimalValue code5xx,
+                                                MetricDecimalValue retries,
                                                 MetricDecimalValue metricPathBatchRate) {
     }
 
@@ -28,6 +29,7 @@ public interface MonitoringSubscriptionMetricsProvider {
         private MetricDecimalValue codes2xx;
         private MetricDecimalValue code4xx;
         private MetricDecimalValue code5xx;
+        private MetricDecimalValue retries;
         private MetricDecimalValue metricPathBatchRate;
 
         public MetricsBuilder withRate(MetricDecimalValue rate) {
@@ -65,6 +67,11 @@ public interface MonitoringSubscriptionMetricsProvider {
             return this;
         }
 
+        public MetricsBuilder withRetries(MetricDecimalValue retries) {
+            this.retries = retries;
+            return this;
+        }
+
         public MetricsBuilder withMetricPathBatchRate(MetricDecimalValue metricPathBatchRate) {
             this.metricPathBatchRate = metricPathBatchRate;
             return this;
@@ -72,7 +79,7 @@ public interface MonitoringSubscriptionMetricsProvider {
 
         public MonitoringSubscriptionMetrics build() {
             return new MonitoringSubscriptionMetrics(rate, timeouts, throughput, otherErrors, codes2xx,
-                    code4xx, code5xx, metricPathBatchRate);
+                    code4xx, code5xx, retries, metricPathBatchRate);
         }
     }
 }
