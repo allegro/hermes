@@ -607,7 +607,7 @@ public class ConsoleProperties {
 
     public static final class Owner {
         private List<OwnerSource> sources = Lists.newArrayList(
-                new OwnerSource("Crowd", "Crowd group (or groups separated by ',')"));
+                new OwnerSource("Plaintext", "Name of the owner"));
 
         public List<OwnerSource> getSources() {
             return sources;
