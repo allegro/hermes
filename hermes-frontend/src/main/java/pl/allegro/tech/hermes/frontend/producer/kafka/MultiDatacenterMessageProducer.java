@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
@@ -137,7 +138,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                     datacenter,
                     callback));
         } catch (Exception e) {
-            // message didn't get to internal producer buffer and it will not be send to a broker
+            // message didn't get to internal producer buffer and it will not be sent to a broker
             callback.onUnpublished(message, cachedTopic, datacenter, e);
         }
     }

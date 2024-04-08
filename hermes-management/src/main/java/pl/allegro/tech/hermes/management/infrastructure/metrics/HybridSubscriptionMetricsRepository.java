@@ -47,6 +47,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
                 .withCodes2xx(monitoringMetrics.codes2xx())
                 .withCodes4xx(monitoringMetrics.code4xx())
                 .withCodes5xx(monitoringMetrics.code5xx())
+                .withRetries(monitoringMetrics.retries())
                 .withTimeouts(monitoringMetrics.timeouts())
                 .withOtherErrors(monitoringMetrics.otherErrors())
                 .withThroughput(monitoringMetrics.throughput())

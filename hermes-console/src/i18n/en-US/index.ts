@@ -472,8 +472,13 @@ const en_US = {
       subscriberLatency: 'Subscriber latency',
       delivered: 'Delivered',
       discarded: 'Discarded',
+      timeouts: 'Timeouts',
+      otherErrors: 'Other errors',
+      codes2xx: 'Codes 2xx',
+      codes4xx: 'Codes 4xx',
+      codes5xx: 'Codes 5xx',
+      retries: 'Retries',
       lag: 'Lag',
-      outputRate: 'Output rate',
       tooltips: {
         subscriberLatency:
           'Latency of acknowledging messages by subscribing service as ' +
@@ -481,10 +486,8 @@ const en_US = {
         lag:
           'Total number of events waiting to be delivered. Each subscription ' +
           'has a "natural" lag, which depends on production rate.',
-        outputRate:
-          'Maximum sending rate calculated based on receiving service ' +
-          'performance. For well-performing service output rate should be ' +
-          'equal to rate limit.',
+        retries:
+          'Total number of message sending retries. Retrying messages significantly reduces the rate on subscriptions.',
       },
     },
     propertiesCard: {

@@ -20,6 +20,7 @@ public class Timers {
 
     public static final String LATENCY = "latency";
     public static final String SUBSCRIPTION_LATENCY = LATENCY + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
+    public static final String RATE_LIMITER_ACQUIRE = "rate-limiter-acquire" + "." + GROUP + "." + TOPIC + "." + SUBSCRIPTION;
 
     public static final String SCHEMA = "schema." + SCHEMA_REPO_TYPE;
     public static final String GET_SCHEMA_LATENCY = SCHEMA + ".get-schema";

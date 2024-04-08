@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.FailFastKafkaProducerProperties.FallbackSchedulerProperties;
 import pl.allegro.tech.hermes.frontend.config.FailFastKafkaProducerProperties.ChaosSchedulerProperties;
 import pl.allegro.tech.hermes.frontend.config.FailFastKafkaProducerProperties.FallbackSchedulerProperties;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;

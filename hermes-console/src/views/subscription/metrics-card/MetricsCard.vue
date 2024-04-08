@@ -30,11 +30,6 @@
       :value="formatNumber(props.subscriptionMetrics.rate, 2)"
     />
     <key-value-card-item
-      :name="$t('subscription.metricsCard.subscriberLatency')"
-      value="?"
-      :tooltip="$t('subscription.metricsCard.tooltips.subscriberLatency')"
-    />
-    <key-value-card-item
       :name="$t('subscription.metricsCard.delivered')"
       :value="formatNumber(props.subscriptionMetrics.delivered)"
     />
@@ -43,14 +38,34 @@
       :value="formatNumber(props.subscriptionMetrics.discarded)"
     />
     <key-value-card-item
+      :name="$t('subscription.metricsCard.timeouts')"
+      :value="formatNumber(props.subscriptionMetrics.timeouts, 2)"
+    />
+    <key-value-card-item
+      :name="$t('subscription.metricsCard.otherErrors')"
+      :value="formatNumber(props.subscriptionMetrics.otherErrors, 2)"
+    />
+    <key-value-card-item
+      :name="$t('subscription.metricsCard.codes2xx')"
+      :value="formatNumber(props.subscriptionMetrics.codes2xx, 2)"
+    />
+    <key-value-card-item
+      :name="$t('subscription.metricsCard.codes4xx')"
+      :value="formatNumber(props.subscriptionMetrics.codes4xx, 2)"
+    />
+    <key-value-card-item
+      :name="$t('subscription.metricsCard.codes5xx')"
+      :value="formatNumber(props.subscriptionMetrics.codes5xx, 2)"
+    />
+    <key-value-card-item
+      :name="$t('subscription.metricsCard.retries')"
+      :value="formatNumber(props.subscriptionMetrics.retries, 2)"
+      :tooltip="$t('subscription.metricsCard.tooltips.retries')"
+    />
+    <key-value-card-item
       :name="$t('subscription.metricsCard.lag')"
       :value="formatNumber(props.subscriptionMetrics.lag)"
       :tooltip="$t('subscription.metricsCard.tooltips.lag')"
-    />
-    <key-value-card-item
-      :name="$t('subscription.metricsCard.outputRate')"
-      value="?"
-      :tooltip="$t('subscription.metricsCard.tooltips.outputRate')"
     />
   </key-value-card>
 </template>

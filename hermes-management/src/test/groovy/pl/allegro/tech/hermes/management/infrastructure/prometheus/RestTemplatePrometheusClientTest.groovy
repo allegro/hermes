@@ -21,6 +21,7 @@ class RestTemplatePrometheusClientTest extends Specification {
     private static final String query = "sum by (__name__,group,topic,subscription,status_code)" +
             "(irate({__name__=~'hermes_consumers_subscription_delivered_total" +
             "|hermes_consumers_subscription_timeouts_total" +
+            "|hermes_consumers_subscription_retries_total" +
             "|hermes_consumers_subscription_throughput_bytes_total" +
             "|hermes_consumers_subscription_other_errors_total" +
             "|hermes_consumers_subscription_batches_total" +
@@ -34,13 +35,13 @@ class RestTemplatePrometheusClientTest extends Specification {
     private RestTemplatePrometheusClient client
 
     void setup() {
-        RestTemplate restTemplate = new RestTemplate();
-        client = new RestTemplatePrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"),);
+        RestTemplate restTemplate = new RestTemplate()
+        client = new RestTemplatePrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"))
     }
 
     def "should get metrics for path"() {
         given:
-        mockPrometheus(query, "full_response.json");
+        mockPrometheus(query, "full_response.json")
 
         when:
         MonitoringMetricsContainer metrics = client.readMetrics(query)
@@ -48,6 +49,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         then:
         metrics.metricValue("hermes_consumers_subscription_delivered_total") == of("1.0")
         metrics.metricValue("hermes_consumers_subscription_timeouts_total") == of("2.0")
+        metrics.metricValue("hermes_consumers_subscription_retries_total") == of("1.0")
         metrics.metricValue("hermes_consumers_subscription_throughput_bytes_total") == of("3.0")
         metrics.metricValue("hermes_consumers_subscription_other_errors_total") == of("4.0")
         metrics.metricValue("hermes_consumers_subscription_batches_total") == of("5.0")
@@ -66,6 +68,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         then:
         metrics.metricValue("hermes_consumers_subscription_delivered_total") == of("0.0")
         metrics.metricValue("hermes_consumers_subscription_timeouts_total") == of("2.0")
+        metrics.metricValue("hermes_consumers_subscription_retries_total") == of("1.0")
         metrics.metricValue("hermes_consumers_subscription_throughput_bytes_total") == of("3.0")
         metrics.metricValue("hermes_consumers_subscription_other_errors_total") == of("4.0")
         metrics.metricValue("hermes_consumers_subscription_batches_total") == of("5.0")

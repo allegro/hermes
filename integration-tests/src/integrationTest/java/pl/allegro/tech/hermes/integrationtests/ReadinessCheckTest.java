@@ -21,7 +21,7 @@ public class ReadinessCheckTest {
         // then
         waitAtMost(Duration.FIVE_SECONDS).until(() ->
                 hermes.api()
-                        .getReadiness()
+                        .getFrontendReadiness()
                         .expectStatus().is5xxServerError()
                         .expectBody(String.class).isEqualTo("NOT_READY")
         );
@@ -32,7 +32,7 @@ public class ReadinessCheckTest {
         // then
         waitAtMost(Duration.FIVE_SECONDS).until(() ->
                 hermes.api()
-                        .getReadiness()
+                        .getFrontendReadiness()
                         .expectStatus().isOk()
                         .expectBody(String.class).isEqualTo("READY")
         );

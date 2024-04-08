@@ -30,7 +30,9 @@ public class Meters {
     public static final String DISCARDED_METER = "discarded-meter";
     public static final String DISCARDED_TOPIC_METER = DISCARDED_METER + "." + GROUP + "." + TOPIC;
     public static final String DISCARDED_SUBSCRIPTION_METER = DISCARDED_TOPIC_METER + "." + SUBSCRIPTION;
-
+    public static final String RETRIES_METER = "retries-meter";
+    public static final String RETRIES_TOPIC_METER = RETRIES_METER + "." + GROUP + "." + TOPIC;
+    public static final String RETRIES_SUBSCRIPTION_METER = RETRIES_TOPIC_METER + "." + SUBSCRIPTION;
     public static final String DELAYED_PROCESSING = "delayed-processing";
     public static final String TOPIC_DELAYED_PROCESSING = DELAYED_PROCESSING + "." + GROUP + "." + TOPIC;
 
