@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.frontend.config.HermesServerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.config.SslProperties;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
-import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -86,14 +85,11 @@ class HermesServerFactory {
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
         SchemaProperties schemaProperties = new SchemaProperties();
-        BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(
-                false, null, null, null
-        );
 
         return new HandlersChainFactory(
                 topicsCache,
                 new MessageErrorProcessor(new ObjectMapper(), trackers, trackingHeadersExtractor),
-                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor, "dc"),
+                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor),
                 new MessageFactory(
                         new MessageValidators(Collections.emptyList()),
                         new MessageContentTypeEnforcer(),
@@ -111,8 +107,7 @@ class HermesServerFactory {
                 throughputLimiter,
                 null,
                 false,
-                handlersChainProperties,
-                brokerLatencyReporter
+                handlersChainProperties
         ).provide();
     }
 }

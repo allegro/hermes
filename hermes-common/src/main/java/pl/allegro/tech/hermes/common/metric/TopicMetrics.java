@@ -76,9 +76,9 @@ public class TopicMetrics {
         );
     }
 
-    public HermesCounter topicPublished(TopicName topicName) {
+    public HermesCounter topicPublished(TopicName topicName, String datacenter) {
         return HermesCounters.from(
-                micrometerCounter(TopicMetricsNames.TOPIC_PUBLISHED, topicName),
+                micrometerCounter(TopicMetricsNames.TOPIC_PUBLISHED, topicName, Tag.of("storageDc", datacenter)),
                 hermesMetrics.counter(Counters.PUBLISHED, topicName)
         );
     }
@@ -126,6 +126,13 @@ public class TopicMetrics {
         );
     }
 
+    public HermesCounter topicDuplicatedMessageCounter(TopicName topicName) {
+        return HermesCounters.from(
+                micrometerCounter(TopicMetricsNames.TOPIC_DUPLICATED_MESSAGE, topicName),
+                hermesMetrics.meter(Meters.TOPIC_DUPLICATED_MESSAGE, topicName)
+        );
+    }
+
     public HermesHistogram topicGlobalMessageContentSizeHistogram() {
         return DefaultHermesHistogram.of(
                 DistributionSummary.builder(TopicMetricsNames.TOPIC_GLOBAL_MESSAGE_SIZE_BYTES)
@@ -147,8 +154,8 @@ public class TopicMetrics {
         return meterRegistry.timer(metricName, topicTags(topicName));
     }
 
-    private Counter micrometerCounter(String metricName, TopicName topicName) {
-        return meterRegistry.counter(metricName, topicTags(topicName));
+    private Counter micrometerCounter(String metricName, TopicName topicName, Tag ... tags) {
+        return meterRegistry.counter(metricName, topicTags(topicName).and(tags));
     }
 
     private Tags topicTags(TopicName topicName) {
@@ -176,5 +183,6 @@ public class TopicMetrics {
         public static final String TOPIC_HTTP_STATUS_CODES = "topic-http-status-codes";
         public static final String TOPIC_GLOBAL_MESSAGE_SIZE_BYTES = "topic-global-message-size-bytes";
         public static final String TOPIC_MESSAGE_SIZE_BYTES = "topic-message-size-bytes";
+        public static final String TOPIC_DUPLICATED_MESSAGE = "topic-duplicated-message";
     }
 }

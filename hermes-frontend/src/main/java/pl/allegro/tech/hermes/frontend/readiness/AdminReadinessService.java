@@ -81,6 +81,6 @@ public class AdminReadinessService implements NodeCacheListener {
     }
 
     public boolean isDatacenterReady(String datacenter) {
-        return readinessPerDatacenter.getOrDefault(datacenter, true);
+        return readinessPerDatacenter != null && readinessPerDatacenter.getOrDefault(datacenter, true);
     }
 }

@@ -36,6 +36,8 @@ public class Meters {
     public static final String DELAYED_PROCESSING = "delayed-processing";
     public static final String TOPIC_DELAYED_PROCESSING = DELAYED_PROCESSING + "." + GROUP + "." + TOPIC;
 
+    public static final String TOPIC_DUPLICATED_MESSAGE = "duplicated-message" + "." + GROUP + "." + TOPIC;
+
     public static final String OAUTH_SUBSCRIPTION_TOKEN_REQUEST = "oauth.subscription." + GROUP + "." + TOPIC + "." + SUBSCRIPTION
             + ".token-request." + OAUTH_PROVIDER_NAME;
 

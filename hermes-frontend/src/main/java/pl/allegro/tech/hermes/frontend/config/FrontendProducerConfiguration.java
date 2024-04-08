@@ -1,24 +1,31 @@
 package pl.allegro.tech.hermes.frontend.config;
 
+import jakarta.inject.Named;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
+import pl.allegro.tech.hermes.frontend.config.FailFastKafkaProducerProperties.FallbackSchedulerProperties;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
-import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaBrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.kafka.FallbackToRemoteDatacenterAwareMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageSenders;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageSendersFactory;
+import pl.allegro.tech.hermes.frontend.producer.kafka.LocalDatacenterMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.MessageToKafkaProducerRecordConverter;
+import pl.allegro.tech.hermes.frontend.producer.kafka.MultiDatacenterMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.ProducerMetadataLoadingJob;
+import pl.allegro.tech.hermes.frontend.readiness.AdminReadinessService;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL;
@@ -33,16 +40,46 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
         SchemaProperties.class,
         KafkaHeaderNameProperties.class,
         KafkaProducerProperties.class,
+        FailFastKafkaProducerProperties.class,
         KafkaClustersProperties.class,
         HTTPHeadersProperties.class
 })
 public class FrontendProducerConfiguration {
 
     @Bean
-    public BrokerMessageProducer kafkaBrokerMessageProducer(KafkaMessageSenders kafkaMessageSenders,
-                                                            MetricsFacade metricsFacade,
-                                                            MessageToKafkaProducerRecordConverter messageConverter) {
-        return new KafkaBrokerMessageProducer(kafkaMessageSenders, metricsFacade, messageConverter);
+    public BrokerMessageProducer kafkaBrokerMessageProducer(@Named("localDatacenterBrokerProducer") BrokerMessageProducer localDatacenterBrokerProducer,
+                                                            @Named("multiDatacenterBrokerProducer") BrokerMessageProducer multiDatacenterBrokerProducer) {
+        return new FallbackToRemoteDatacenterAwareMessageProducer(
+                localDatacenterBrokerProducer,
+                multiDatacenterBrokerProducer
+        );
+    }
+
+    @Bean
+    public BrokerMessageProducer localDatacenterBrokerProducer(@Named("kafkaMessageSenders") KafkaMessageSenders kafkaMessageSenders,
+                                                               MessageToKafkaProducerRecordConverter messageConverter) {
+        return new LocalDatacenterMessageProducer(kafkaMessageSenders, messageConverter);
+    }
+
+    @Bean
+    public BrokerMessageProducer multiDatacenterBrokerProducer(@Named("failFastKafkaMessageSenders") KafkaMessageSenders kafkaMessageSenders,
+                                                               MessageToKafkaProducerRecordConverter messageConverter,
+                                                               FailFastKafkaProducerProperties kafkaProducerProperties,
+                                                               AdminReadinessService adminReadinessService,
+                                                               InstrumentedExecutorServiceFactory executorServiceFactory) {
+        FallbackSchedulerProperties fallbackSchedulerProperties = kafkaProducerProperties.getFallbackScheduler();
+        ScheduledExecutorService fallbackScheduler = executorServiceFactory.getScheduledExecutorService(
+                "fallback-to-remote",
+                fallbackSchedulerProperties.getThreadPoolSize(),
+                fallbackSchedulerProperties.isThreadPoolMonitoringEnabled()
+        );
+        return new MultiDatacenterMessageProducer(
+                kafkaMessageSenders,
+                adminReadinessService,
+                messageConverter,
+                kafkaProducerProperties.getSpeculativeSendDelay(),
+                fallbackScheduler
+        );
     }
 
     @Bean
@@ -54,7 +91,13 @@ public class FrontendProducerConfiguration {
     @Bean(destroyMethod = "close")
     public KafkaMessageSenders kafkaMessageSenders(KafkaProducerProperties kafkaProducerProperties,
                                                    KafkaMessageSendersFactory kafkaMessageSendersFactory) {
-        return kafkaMessageSendersFactory.provide(kafkaProducerProperties);
+        return kafkaMessageSendersFactory.provide(kafkaProducerProperties, "default");
+    }
+
+    @Bean(destroyMethod = "close")
+    public KafkaMessageSenders failFastKafkaMessageSenders(FailFastKafkaProducerProperties kafkaProducerProperties,
+                                                           KafkaMessageSendersFactory kafkaMessageSendersFactory) {
+        return kafkaMessageSendersFactory.provide(kafkaProducerProperties, "failFast");
     }
 
     @Bean(destroyMethod = "close")
@@ -63,12 +106,16 @@ public class FrontendProducerConfiguration {
                                                                  TopicLoadingProperties topicLoadingProperties,
                                                                  TopicsCache topicsCache,
                                                                  LocalMessageStorageProperties localMessageStorageProperties,
-                                                                 DatacenterNameProvider datacenterNameProvider) {
+                                                                 DatacenterNameProvider datacenterNameProvider,
+                                                                 BrokerLatencyReporter brokerLatencyReporter,
+                                                                 MetricsFacade metricsFacade) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         List<KafkaParameters> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
         return new KafkaMessageSendersFactory(
                 kafkaProperties,
                 remoteKafkaProperties,
+                brokerLatencyReporter,
+                metricsFacade,
                 createAdminClient(kafkaProperties),
                 topicsCache,
                 topicLoadingProperties.getMetadata().getRetryCount(),
@@ -93,10 +140,10 @@ public class FrontendProducerConfiguration {
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    public ProducerMetadataLoadingJob producerMetadataLoadingJob(KafkaMessageSenders kafkaMessageSenders,
+    public ProducerMetadataLoadingJob producerMetadataLoadingJob(List<KafkaMessageSenders> kafkaMessageSendersList,
                                                                  TopicLoadingProperties topicLoadingProperties) {
         return new ProducerMetadataLoadingJob(
-                kafkaMessageSenders,
+                kafkaMessageSendersList,
                 topicLoadingProperties.getMetadataRefreshJob().isEnabled(),
                 topicLoadingProperties.getMetadataRefreshJob().getInterval()
         );
