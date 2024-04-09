@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
@@ -154,14 +153,14 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                                    SendCallback callback) implements Callback {
 
         @Override
-            public void onCompletion(RecordMetadata metadata, Exception exception) {
-                if (exception == null) {
-                    callback.onPublished(message, cachedTopic, datacenter);
-                } else {
-                    callback.onUnpublished(message, cachedTopic, datacenter, exception);
-                }
+        public void onCompletion(RecordMetadata metadata, Exception exception) {
+            if (exception == null) {
+                callback.onPublished(message, cachedTopic, datacenter);
+            } else {
+                callback.onUnpublished(message, cachedTopic, datacenter, exception);
             }
         }
+    }
 
     private static class SendCallback {
 
