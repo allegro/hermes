@@ -105,9 +105,9 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                                          SendCallback callback,
                                          CachedTopic cachedTopic,
                                          Message message) {
-        long delayMillisTo = policy.delayTo();
         long delayMillisFrom = policy.delayFrom();
-        long delayMillis = ThreadLocalRandom.current().nextLong(delayMillisTo - delayMillisFrom) + delayMillisTo;
+        long delayMillisTo = policy.delayTo();
+        long delayMillis = ThreadLocalRandom.current().nextLong(delayMillisTo - delayMillisFrom) + delayMillisFrom;
 
         try {
             chaosScheduler.schedule(() -> {
