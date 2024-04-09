@@ -42,6 +42,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkload
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactoryProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpClientMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
@@ -52,6 +53,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 import java.io.IOException;
 import java.util.List;
@@ -61,10 +63,10 @@ import javax.jms.Message;
 
 @Configuration
 @EnableConfigurationProperties({
-        SslContextProperties.class,
-        HttpClientsMonitoringProperties.class,
-        SenderAsyncTimeoutProperties.class,
-        BatchProperties.class
+    SslContextProperties.class,
+    HttpClientsMonitoringProperties.class,
+    SenderAsyncTimeoutProperties.class,
+    BatchProperties.class
 })
 public class ConsumerSenderConfiguration {
 
@@ -76,9 +78,19 @@ public class ConsumerSenderConfiguration {
 
     @Bean(name = "http1-serial-client")
     public HttpClient http1SerialClient(
-            HttpClientsFactory httpClientsFactory,
-            @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters) {
-        return httpClientsFactory.createClientForHttp1("jetty-http1-serial-client", http1ClientParameters);
+        HttpClientsFactory httpClientsFactory,
+        @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters,
+        MetricsFacade metricsFacade
+    ) {
+        HttpClient client = httpClientsFactory.createClientForHttp1("jetty-http1-serial-client", http1ClientParameters);
+        if (http1ClientParameters.isRequestProcessingMonitoringEnabled()) {
+            var metrics = metricsFacade.consumerSender();
+            enrichWithMetrics(
+                client, metrics.http1SerialClientRequestQueueWaitingTimer(),
+                metrics.http1SerialClientRequestProcessingTimer()
+            );
+        }
+        return client;
     }
 
     @Bean(name = "http2-serial-client-parameters")
@@ -89,12 +101,22 @@ public class ConsumerSenderConfiguration {
 
     @Bean
     public Http2ClientHolder http2ClientHolder(
-            HttpClientsFactory httpClientsFactory,
-            @Named("http2-serial-client-parameters") Http2ClientProperties http2ClientProperties) {
+        HttpClientsFactory httpClientsFactory,
+        @Named("http2-serial-client-parameters") Http2ClientProperties http2ClientProperties,
+        MetricsFacade metricsFacade
+    ) {
         if (!http2ClientProperties.isEnabled()) {
             return new Http2ClientHolder(null);
         } else {
-            return new Http2ClientHolder(httpClientsFactory.createClientForHttp2("jetty-http2-serial-client", http2ClientProperties));
+            HttpClient client = httpClientsFactory.createClientForHttp2("jetty-http2-serial-client", http2ClientProperties);
+            if (http2ClientProperties.isRequestProcessingMonitoringEnabled()) {
+                var metrics = metricsFacade.consumerSender();
+                enrichWithMetrics(
+                    client, metrics.http2SerialClientRequestQueueWaitingTimer(),
+                    metrics.http2SerialClientRequestProcessingTimer()
+                );
+            }
+            return new Http2ClientHolder(client);
         }
     }
 
@@ -106,9 +128,18 @@ public class ConsumerSenderConfiguration {
 
     @Bean(name = "http1-batch-client")
     public HttpClient http1BatchClient(
-            HttpClientsFactory httpClientsFactory,
-            @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters) {
-        return httpClientsFactory.createClientForHttp1("jetty-http1-batch-client", http1ClientParameters);
+        HttpClientsFactory httpClientsFactory,
+        @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters,
+        MetricsFacade metricsFacade) {
+        HttpClient client = httpClientsFactory.createClientForHttp1("jetty-http1-batch-client", http1ClientParameters);
+        if (http1ClientParameters.isRequestProcessingMonitoringEnabled()) {
+            var metrics = metricsFacade.consumerSender();
+            enrichWithMetrics(
+                client, metrics.http1BatchClientRequestQueueWaitingTimer(),
+                metrics.http1BatchClientRequestProcessingTimer()
+            );
+        }
+        return client;
     }
 
     @Bean(name = "oauth-http-client")
@@ -128,8 +159,8 @@ public class ConsumerSenderConfiguration {
                                                                    BatchHttpRequestFactory batchHttpRequestFactory
     ) {
         return new HttpMessageBatchSenderFactory(
-                resultHandlers,
-                batchHttpRequestFactory);
+            resultHandlers,
+            batchHttpRequestFactory);
     }
 
     @Bean(initMethod = "start")
@@ -139,12 +170,12 @@ public class ConsumerSenderConfiguration {
                                                                    Http2ClientHolder http2ClientHolder,
                                                                    HttpClientsMonitoringProperties monitoringProperties) {
         return new HttpClientsWorkloadReporter(
-                metrics,
-                http1SerialClient,
-                http1BatchClient,
-                http2ClientHolder,
-                monitoringProperties.isRequestQueueMonitoringEnabled(),
-                monitoringProperties.isConnectionPoolMonitoringEnabled());
+            metrics,
+            http1SerialClient,
+            http1BatchClient,
+            http2ClientHolder,
+            monitoringProperties.isRequestQueueMonitoringEnabled(),
+            monitoringProperties.isConnectionPoolMonitoringEnabled());
     }
 
     @Bean(destroyMethod = "closeProviders")
@@ -162,15 +193,15 @@ public class ConsumerSenderConfiguration {
                                                                         SendingResultHandlers sendingResultHandlers,
                                                                         HttpRequestFactoryProvider requestFactoryProvider) {
         return new JettyHttpMessageSenderProvider(
-                httpClient,
-                http2ClientHolder,
-                endpointAddressResolver,
-                metadataAppender,
-                authorizationProviderFactory,
-                httpHeadersProviderFactory,
-                sendingResultHandlers,
-                requestFactoryProvider,
-                ImmutableSet.of("http", "https")
+            httpClient,
+            http2ClientHolder,
+            endpointAddressResolver,
+            metadataAppender,
+            authorizationProviderFactory,
+            httpHeadersProviderFactory,
+            sendingResultHandlers,
+            requestFactoryProvider,
+            ImmutableSet.of("http", "https")
         );
     }
 
@@ -224,21 +255,21 @@ public class ConsumerSenderConfiguration {
 
     @Bean(name = "defaultPubSubMessageSenderProvider")
     public ProtocolMessageSenderProvider pubSubMessageSenderProvider(
-            GooglePubSubSenderTargetResolver targetResolver,
-            CredentialsProvider credentialsProvider,
-            ExecutorProvider executorProvider,
-            RetrySettings retrySettings,
-            BatchingSettings batchingSettings,
-            GooglePubSubMessageTransformerCreator googlePubSubMessageTransformerCreator,
-            TransportChannelProvider transportChannelProvider) {
+        GooglePubSubSenderTargetResolver targetResolver,
+        CredentialsProvider credentialsProvider,
+        ExecutorProvider executorProvider,
+        RetrySettings retrySettings,
+        BatchingSettings batchingSettings,
+        GooglePubSubMessageTransformerCreator googlePubSubMessageTransformerCreator,
+        TransportChannelProvider transportChannelProvider) {
         return new GooglePubSubMessageSenderProvider(
-                targetResolver,
-                credentialsProvider,
-                executorProvider,
-                retrySettings,
-                batchingSettings,
-                transportChannelProvider,
-                googlePubSubMessageTransformerCreator
+            targetResolver,
+            credentialsProvider,
+            executorProvider,
+            retrySettings,
+            batchingSettings,
+            transportChannelProvider,
+            googlePubSubMessageTransformerCreator
         );
     }
 
@@ -263,10 +294,18 @@ public class ConsumerSenderConfiguration {
     public FutureAsyncTimeout futureAsyncTimeoutFactory(InstrumentedExecutorServiceFactory executorFactory,
                                                         SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
         ScheduledExecutorService timeoutExecutorService = executorFactory.getScheduledExecutorService(
-                "async-timeout",
-                senderAsyncTimeoutProperties.getThreadPoolSize(),
-                senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled()
+            "async-timeout",
+            senderAsyncTimeoutProperties.getThreadPoolSize(),
+            senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled()
         );
         return new FutureAsyncTimeout(timeoutExecutorService);
+    }
+
+    private static void enrichWithMetrics(
+        HttpClient client, HermesTimer requestQueueWaitingTimer, HermesTimer requestProcessingTimer
+    ) {
+        client.getRequestListeners().addListener(
+            new JettyHttpClientMetrics(requestQueueWaitingTimer, requestProcessingTimer)
+        );
     }
 }

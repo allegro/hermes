@@ -20,6 +20,7 @@ public class Http1ClientProperties implements Http1ClientParameters {
 
     private Duration connectionTimeout = Duration.ofSeconds(15);
 
+    private boolean requestProcessingMonitoringEnabled = false;
 
     @Override
     public int getThreadPoolSize() {
@@ -82,5 +83,14 @@ public class Http1ClientProperties implements Http1ClientParameters {
 
     public void setConnectionTimeout(Duration connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+
+    @Override
+    public boolean isRequestProcessingMonitoringEnabled() {
+        return requestProcessingMonitoringEnabled;
+    }
+
+    public void setRequestProcessingMonitoringEnabled(boolean requestProcessingMonitoringEnabled) {
+        this.requestProcessingMonitoringEnabled = requestProcessingMonitoringEnabled;
     }
 }
