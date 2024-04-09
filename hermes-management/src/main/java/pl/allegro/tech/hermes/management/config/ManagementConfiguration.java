@@ -31,7 +31,8 @@ import java.time.Clock;
         HttpClientProperties.class,
         ConsistencyCheckerProperties.class,
         PrometheusProperties.class,
-        MicrometerRegistryProperties.class
+        MicrometerRegistryProperties.class,
+        MonitoringProperties.class
 })
 public class ManagementConfiguration {
 
