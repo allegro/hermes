@@ -94,9 +94,13 @@ public class MultiMessageSendingResult implements MessageSendingResult {
 
     @Override
     public String getRootCause() {
-        return children.stream()
-                .map(child -> child.getRequestUri().map(Object::toString).orElse("") + ":" + child.getRootCause())
-                .collect(joining(";"));
+        if (children.isEmpty()) {
+            return "Empty children message results";
+        } else {
+            return children.stream()
+                    .map(child -> child.getRequestUri().map(Object::toString).orElse("") + ":" + child.getRootCause())
+                    .collect(joining(";"));
+        }
     }
 }
 
