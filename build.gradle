@@ -56,7 +56,7 @@ allprojects {
             curator           : '5.4.0',
             dropwizard_metrics: '4.1.0',
             micrometer_metrics: '1.11.1',
-            wiremock          : '3.3.1',
+            wiremock          : '3.5.2',
             spock             : '2.4-M1-groovy-4.0',
             groovy            : '4.0.12',
             avro              : '1.9.1',
