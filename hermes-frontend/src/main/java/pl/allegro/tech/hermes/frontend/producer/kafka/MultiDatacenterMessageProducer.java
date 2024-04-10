@@ -80,6 +80,24 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         );
     }
 
+    private void send(KafkaMessageSender<byte[], byte[]> sender,
+                      ProducerRecord<byte[], byte[]> producerRecord,
+                      SendCallback callback,
+                      CachedTopic cachedTopic,
+                      Message message) {
+        String datacenter = sender.getDatacenter();
+        try {
+            sender.send(producerRecord, cachedTopic, message, new DCAwareCallback(
+                    message,
+                    cachedTopic,
+                    datacenter,
+                    callback));
+        } catch (Exception e) {
+            // message didn't get to internal producer buffer and it will not be sent to a broker
+            callback.onUnpublished(message, cachedTopic, datacenter, e);
+        }
+    }
+
     private void sendOrScheduleChaosExperiment(KafkaMessageSender<byte[], byte[]> sender,
                                                ProducerRecord<byte[], byte[]> producerRecord,
                                                SendCallback callback,
@@ -121,24 +139,6 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         } catch (RejectedExecutionException e) {
             logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
             send(sender, producerRecord, callback, cachedTopic, message);
-        }
-    }
-
-    private void send(KafkaMessageSender<byte[], byte[]> sender,
-                      ProducerRecord<byte[], byte[]> producerRecord,
-                      SendCallback callback,
-                      CachedTopic cachedTopic,
-                      Message message) {
-        String datacenter = sender.getDatacenter();
-        try {
-            sender.send(producerRecord, cachedTopic, message, new DCAwareCallback(
-                    message,
-                    cachedTopic,
-                    datacenter,
-                    callback));
-        } catch (Exception e) {
-            // message didn't get to internal producer buffer and it will not be sent to a broker
-            callback.onUnpublished(message, cachedTopic, datacenter, e);
         }
     }
 
