@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.DatacenterChaosPolicy;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
@@ -726,6 +727,28 @@ public class TopicManagementTest {
     }
 
     @Test
+    public void shouldNotCreateTopicWithInvalidChaosPolicy() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(true);
+        TopicWithSchema topic = topicWithSchema(
+                topicWithRandomName()
+                        .withPublishingChaosPolicy(
+                                new PublishingChaosPolicy(true, Map.of("dc1", new DatacenterChaosPolicy(100, 99, false)))
+                        )
+                        .build()
+        );
+        hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().createTopic(topic);
+
+        //then
+        response.expectStatus().isBadRequest();
+        assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+                .contains("Invalid chaos policy: 'delayFrom' and 'delayTo' must be >= 0, and 'delayFrom' <= 'delayTo'.");
+    }
+
+    @Test
     public void shouldNotAllowNonAdminUserToEnableChaos() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
@@ -772,6 +795,36 @@ public class TopicManagementTest {
 
         //then
         response.expectStatus().isOk();
+    }
+
+    @Test
+    public void shouldNotUpdateTopicWithInvalidChaosPolicy() {
+        // given
+        TestSecurityProvider.setUserIsAdmin(true);
+        Topic topic = hermes.initHelper().createTopic(
+                topicWithRandomName()
+                        .withPublishingChaosPolicy(
+                                new PublishingChaosPolicy(true, Map.of("dc1", new DatacenterChaosPolicy(100, 100, false)))
+                        )
+                        .build()
+        );
+        PatchData patchData = PatchData.from(
+                ImmutableMap.of(
+                        "chaos",
+                        ImmutableMap.of(
+                                "datacenterChaosPolicies",
+                                ImmutableMap.of("dc1", ImmutableMap.of("delayTo", 99))
+                        )
+                )
+        );
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+        //then
+        response.expectStatus().isBadRequest();
+        assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+                .contains("Invalid chaos policy: 'delayFrom' and 'delayTo' must be >= 0, and 'delayFrom' <= 'delayTo'.");
     }
 
     private static List<String> getGroupTopicsList(String groupName) {

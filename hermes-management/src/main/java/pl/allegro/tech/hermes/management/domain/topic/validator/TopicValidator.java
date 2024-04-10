@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.topic.validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
@@ -47,6 +48,7 @@ public class TopicValidator {
         if (created.getChaos().enabled() && !createdBy.isAdmin()) {
             throw new TopicValidationException("User is not allowed to set chaos policy for this topic");
         }
+        validateChaosPolicy(created.getChaos());
 
         if (created.wasMigratedFromJsonType()) {
             throw new TopicValidationException("Newly created topic cannot have migratedFromJsonType flag set to true");
@@ -69,6 +71,7 @@ public class TopicValidator {
         if (!previous.getChaos().equals(updated.getChaos()) && !modifiedBy.isAdmin()) {
             throw new TopicValidationException("User is not allowed to update chaos policy for this topic");
         }
+        validateChaosPolicy(updated.getChaos());
 
         if (migrationFromJsonTypeFlagChangedToTrue(updated, previous)) {
             if (updated.getContentType() != ContentType.AVRO) {
@@ -110,5 +113,18 @@ public class TopicValidator {
 
     private void checkTopicLabels(Topic checked) {
         topicLabelsValidator.check(checked.getLabels());
+    }
+
+    private void validateChaosPolicy(PublishingChaosPolicy chaosPolicy) {
+        boolean anyInvalid = chaosPolicy.datacenterChaosPolicies().values().stream()
+                .anyMatch(datacenterChaosPolicy -> {
+                    if (datacenterChaosPolicy.delayFrom() < 0 || datacenterChaosPolicy.delayTo() < 0) {
+                        return true;
+                    }
+                    return datacenterChaosPolicy.delayFrom() > datacenterChaosPolicy.delayTo();
+                });
+        if (anyInvalid) {
+            throw new TopicValidationException("Invalid chaos policy: 'delayFrom' and 'delayTo' must be >= 0, and 'delayFrom' <= 'delayTo'.");
+        }
     }
 }
