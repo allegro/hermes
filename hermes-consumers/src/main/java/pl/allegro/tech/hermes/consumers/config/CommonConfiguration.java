@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.common.concurrent.DefaultExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
@@ -83,7 +82,6 @@ import static java.util.Collections.emptyList;
 @EnableConfigurationProperties({
         MetricsProperties.class,
         MicrometerRegistryProperties.class,
-        GraphiteProperties.class,
         PrometheusProperties.class,
         SchemaProperties.class,
         ZookeeperClustersProperties.class,
@@ -238,23 +236,13 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public HermesMetrics hermesMetrics(MetricRegistry metricRegistry,
-                                       PathsCompiler pathsCompiler) {
-        return new HermesMetrics(metricRegistry, pathsCompiler);
+    public HermesMetrics hermesMetrics(PathsCompiler pathsCompiler) {
+        return new HermesMetrics(new MetricRegistry(), pathsCompiler);
     }
 
     @Bean
     public MetricsFacade metricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
         return new MetricsFacade(meterRegistry, hermesMetrics);
-    }
-
-    @Bean
-    public MetricRegistry metricRegistry(MetricsProperties metricsProperties,
-                                         GraphiteProperties graphiteProperties,
-                                         InstanceIdResolver instanceIdResolver,
-                                         @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(metricsProperties, graphiteProperties, instanceIdResolver, moduleName)
-                .provide();
     }
 
     @Bean
