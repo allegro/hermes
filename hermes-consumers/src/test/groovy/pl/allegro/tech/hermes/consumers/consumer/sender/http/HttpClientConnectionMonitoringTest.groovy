@@ -28,8 +28,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
 
     HttpClient client
     HttpClient batchClient
-    MetricRegistry metricRegistry = new MetricRegistry()
-    HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
+    HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
     MetricsFacade metrics = new MetricsFacade(meterRegistry, hermesMetrics)
     ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(metrics)
@@ -61,13 +60,10 @@ class HttpClientConnectionMonitoringTest extends Specification {
         client.POST("http://localhost:${port}/hello").send()
 
         and:
-        def idleDropwizard = metricRegistry.gauges['http-clients.serial.http1.idle-connections'].value
-        def activeDropwizard = metricRegistry.gauges['http-clients.serial.http1.active-connections'].value
         def idleMicrometer = Search.in(meterRegistry).name("http-clients.serial.http1.idle-connections").gauge().value()
         def activeMicrometer = Search.in(meterRegistry).name("http-clients.serial.http1.active-connections").gauge().value()
 
         then:
-        idleDropwizard + activeDropwizard > 0
         idleMicrometer + activeMicrometer > 0
     }
 
@@ -79,7 +75,6 @@ class HttpClientConnectionMonitoringTest extends Specification {
         reporter.start()
 
         then:
-        metricRegistry.gauges.size() == 0
         Search.in(meterRegistry).gauges().size() == 0
     }
 }

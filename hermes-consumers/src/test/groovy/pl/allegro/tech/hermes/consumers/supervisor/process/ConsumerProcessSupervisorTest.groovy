@@ -26,12 +26,7 @@ import java.time.ZoneId
 import java.util.function.Consumer
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.RETRANSMIT
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.*
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 
@@ -52,7 +47,6 @@ class ConsumerProcessSupervisorTest extends Specification {
 
     ConsumerProcessSupervisor supervisor
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
-    MetricRegistry metricRegistry = new MetricRegistry()
     MetricsFacade metrics
     ConsumerStub consumer
 
@@ -72,7 +66,7 @@ class ConsumerProcessSupervisorTest extends Specification {
 
         metrics = new MetricsFacade(
                 meterRegistry,
-                new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
+                new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))
         )
 
         supervisor = new ConsumerProcessSupervisor(
@@ -176,7 +170,6 @@ class ConsumerProcessSupervisorTest extends Specification {
         then:
         signalsToDrop.forEach {
             String signal = it.type.name()
-            assert metricRegistry.counter("supervisor.signal.dropped." + signal).getCount() == 1
             assert Search.in(meterRegistry)
                     .name {it.startsWith("signals.dropped")}
                     .tag("signal", signal)
