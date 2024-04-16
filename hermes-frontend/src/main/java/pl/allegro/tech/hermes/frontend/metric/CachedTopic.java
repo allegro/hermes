@@ -37,7 +37,7 @@ public class CachedTopic {
     private final HermesHistogram globalMessageContentSize;
 
     private final MeterBackedHermesCounter topicThroughputMeter;
-    private final MeterBackedHermesCounter globalThroughputMeter;
+    private final HermesCounter globalThroughputMeter;
 
     private final HermesCounter topicDuplicatedMessageCounter;
 
