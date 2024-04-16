@@ -66,7 +66,7 @@ public class WorkloadMetrics {
     }
 
     public <T> void registerRunningSubscriptionsGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge( "workload.subscriptions.running", obj, f);
+        gaugeRegistrar.registerGauge("workload.subscriptions.running", obj, f);
     }
 
     public <T> void registerAssignedSubscriptionsGauge(T obj, ToDoubleFunction<T> f) {
@@ -74,19 +74,19 @@ public class WorkloadMetrics {
     }
 
     public <T> void registerMissingSubscriptionsGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge( "workload.subscriptions.missing", obj, f);
+        gaugeRegistrar.registerGauge("workload.subscriptions.missing", obj, f);
     }
 
     public <T> void registerOversubscribedGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge( "workload.subscriptions.oversubscribed", obj, f);
+        gaugeRegistrar.registerGauge("workload.subscriptions.oversubscribed", obj, f);
     }
 
     public <T> void registerOperationsPerSecondGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge( "workload.weighted.ops", obj, f);
+        gaugeRegistrar.registerGauge("workload.weighted.ops", obj, f);
     }
 
     public <T> void registerCpuUtilizationGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge( "workload.weighted.cpu-utilization", obj, f);
+        gaugeRegistrar.registerGauge("workload.weighted.cpu-utilization", obj, f);
     }
 
     public <T> void registerCurrentScoreGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
