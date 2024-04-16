@@ -54,7 +54,7 @@ public class MetricsFacade {
         this.subscriptionMetrics = new SubscriptionMetrics(hermesMetrics, meterRegistry);
         this.consumerMetrics = new ConsumerMetrics(meterRegistry);
         this.trackerElasticSearchMetrics = new TrackerElasticSearchMetrics(hermesMetrics, meterRegistry);
-        this.persistentBufferMetrics = new PersistentBufferMetrics(hermesMetrics, meterRegistry);
+        this.persistentBufferMetrics = new PersistentBufferMetrics(meterRegistry);
         this.producerMetrics = new ProducerMetrics(meterRegistry);
         this.executorMetrics = new ExecutorMetrics(meterRegistry);
         this.schemaClientMetrics = new SchemaClientMetrics(meterRegistry);
