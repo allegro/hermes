@@ -58,7 +58,7 @@ public class MetricsFacade {
         this.producerMetrics = new ProducerMetrics(hermesMetrics, meterRegistry);
         this.executorMetrics = new ExecutorMetrics(hermesMetrics, meterRegistry);
         this.schemaClientMetrics = new SchemaClientMetrics(hermesMetrics, meterRegistry);
-        this.undeliveredMessagesMetrics = new UndeliveredMessagesMetrics(hermesMetrics, meterRegistry);
+        this.undeliveredMessagesMetrics = new UndeliveredMessagesMetrics(meterRegistry);
         this.deserializationMetrics = new DeserializationMetrics(meterRegistry);
         this.workloadMetrics = new WorkloadMetrics(meterRegistry);
         this.consumerSenderMetrics = new ConsumerSenderMetrics(meterRegistry);
