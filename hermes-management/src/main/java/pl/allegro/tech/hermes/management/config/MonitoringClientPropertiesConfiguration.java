@@ -11,12 +11,6 @@ avoiding circular dependencies between beans.
  */
 @Configuration
 public class MonitoringClientPropertiesConfiguration {
-    @Bean
-    @ConfigurationProperties("graphite.client")
-    @ConditionalOnProperty(value = "graphite.client.enabled", havingValue = "true")
-    public GraphiteMonitoringMetricsProperties graphiteMonitoringClientProperties() {
-        return new GraphiteMonitoringMetricsProperties();
-    }
 
     @Bean
     @ConfigurationProperties("prometheus.client")
