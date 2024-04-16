@@ -9,14 +9,12 @@ import java.util.function.ToDoubleFunction;
 import static pl.allegro.tech.hermes.common.metric.Gauges.INFLIGHT_REQUESTS;
 
 public class ProducerMetrics {
-    private final HermesMetrics hermesMetrics;
     private final MeterRegistry meterRegistry;
     private final GaugeRegistrar gaugeRegistrar;
 
-    public ProducerMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
-        this.hermesMetrics = hermesMetrics;
+    public ProducerMetrics(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
-        this.gaugeRegistrar = new GaugeRegistrar(meterRegistry, hermesMetrics);
+        this.gaugeRegistrar = new GaugeRegistrar(meterRegistry);
     }
 
     public <T> void registerAckAllTotalBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
@@ -52,20 +50,19 @@ public class ProducerMetrics {
     }
 
     public <T> void registerAckAllMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
-        registerTimeGauge(stateObj, f, ACK_ALL_METADATA_AGE, ACK_ALL_METADATA_AGE, tags(sender, datacenter), TimeUnit.SECONDS);
+        registerTimeGauge(stateObj, f, ACK_ALL_METADATA_AGE, tags(sender, datacenter), TimeUnit.SECONDS);
     }
 
     public <T> void registerAckLeaderMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
-        registerTimeGauge(stateObj, f, ACK_LEADER_METADATA_AGE, ACK_LEADER_METADATA_AGE, tags(sender, datacenter), TimeUnit.SECONDS);
+        registerTimeGauge(stateObj, f, ACK_LEADER_METADATA_AGE, tags(sender, datacenter), TimeUnit.SECONDS);
     }
 
     public <T> void registerAckAllRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
-        registerTimeGauge(stateObj, f, ACK_ALL_RECORD_QUEUE_TIME_MAX, ACK_ALL_RECORD_QUEUE_TIME_MAX, tags(sender, datacenter), TimeUnit.MILLISECONDS);
+        registerTimeGauge(stateObj, f, ACK_ALL_RECORD_QUEUE_TIME_MAX, tags(sender, datacenter), TimeUnit.MILLISECONDS);
     }
 
     public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
-        registerTimeGauge(stateObj, f, ACK_LEADER_RECORD_QUEUE_TIME_MAX,
-                ACK_LEADER_RECORD_QUEUE_TIME_MAX, tags(sender, datacenter), TimeUnit.MILLISECONDS);
+        registerTimeGauge(stateObj, f, ACK_LEADER_RECORD_QUEUE_TIME_MAX, tags(sender, datacenter), TimeUnit.MILLISECONDS);
     }
 
     public double getBufferTotalBytes() {
@@ -80,7 +77,6 @@ public class ProducerMetrics {
 
     public <T> void registerProducerInflightRequestGauge(T stateObj, ToDoubleFunction<T> f) {
         meterRegistry.gauge(INFLIGHT_REQUESTS, stateObj, f);
-        hermesMetrics.registerProducerInflightRequest(() -> (int) f.applyAsDouble(stateObj));
     }
 
     private static Tags tags(String sender, String datacenter) {
@@ -90,12 +86,10 @@ public class ProducerMetrics {
 
     private <T> void registerTimeGauge(T stateObj,
                                        ToDoubleFunction<T> f,
-                                       String graphiteName,
-                                       String prometheusName,
+                                       String name,
                                        Tags tags,
                                        TimeUnit timeUnit) {
-        hermesMetrics.registerGauge(graphiteName, () -> f.applyAsDouble(stateObj));
-        meterRegistry.more().timeGauge(prometheusName, tags, stateObj, timeUnit, f);
+        meterRegistry.more().timeGauge(name, tags, stateObj, timeUnit, f);
     }
 
     private static final String KAFKA_PRODUCER = "kafka-producer.";
