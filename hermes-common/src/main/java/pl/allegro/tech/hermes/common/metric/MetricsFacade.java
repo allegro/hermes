@@ -57,7 +57,7 @@ public class MetricsFacade {
         this.persistentBufferMetrics = new PersistentBufferMetrics(hermesMetrics, meterRegistry);
         this.producerMetrics = new ProducerMetrics(hermesMetrics, meterRegistry);
         this.executorMetrics = new ExecutorMetrics(hermesMetrics, meterRegistry);
-        this.schemaClientMetrics = new SchemaClientMetrics(hermesMetrics, meterRegistry);
+        this.schemaClientMetrics = new SchemaClientMetrics(meterRegistry);
         this.undeliveredMessagesMetrics = new UndeliveredMessagesMetrics(meterRegistry);
         this.deserializationMetrics = new DeserializationMetrics(meterRegistry);
         this.workloadMetrics = new WorkloadMetrics(meterRegistry);
