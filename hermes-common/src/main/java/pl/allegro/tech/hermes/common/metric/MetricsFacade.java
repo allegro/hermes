@@ -52,7 +52,7 @@ public class MetricsFacade {
         this.hermesMetrics = hermesMetrics;
         this.topicMetrics = new TopicMetrics(hermesMetrics, meterRegistry);
         this.subscriptionMetrics = new SubscriptionMetrics(hermesMetrics, meterRegistry);
-        this.consumerMetrics = new ConsumerMetrics(hermesMetrics, meterRegistry);
+        this.consumerMetrics = new ConsumerMetrics(meterRegistry);
         this.trackerElasticSearchMetrics = new TrackerElasticSearchMetrics(hermesMetrics, meterRegistry);
         this.persistentBufferMetrics = new PersistentBufferMetrics(hermesMetrics, meterRegistry);
         this.producerMetrics = new ProducerMetrics(hermesMetrics, meterRegistry);
