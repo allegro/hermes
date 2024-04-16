@@ -9,9 +9,6 @@ import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
 import java.util.function.ToDoubleFunction;
 
-import static pl.allegro.tech.hermes.common.metric.Gauges.BATCH_BUFFER_AVAILABLE_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.BATCH_BUFFER_TOTAL_BYTES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.THREADS;
 import static pl.allegro.tech.hermes.common.metric.SubscriptionTagsFactory.subscriptionTags;
 
 public class ConsumerMetrics {
@@ -37,7 +34,7 @@ public class ConsumerMetrics {
     }
 
     public <T> void registerConsumerProcessesThreadsGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(THREADS, "consumer-processes.threads", obj, f);
+        gaugeRegistrar.registerGauge( "consumer-processes.threads", obj, f);
     }
 
     public <T> void registerRunningConsumerProcessesGauge(T obj, ToDoubleFunction<T> f) {
@@ -51,11 +48,11 @@ public class ConsumerMetrics {
     }
 
     public <T> void registerBatchBufferTotalBytesGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(BATCH_BUFFER_TOTAL_BYTES, "batch-buffer.total-bytes", obj, f);
+        gaugeRegistrar.registerGauge( "batch-buffer.total-bytes", obj, f);
     }
 
     public <T> void registerBatchBufferAvailableBytesGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(BATCH_BUFFER_AVAILABLE_BYTES, "batch-buffer.available-bytes", obj, f);
+        gaugeRegistrar.registerGauge( "batch-buffer.available-bytes", obj, f);
     }
 
     public HermesCounter oAuthSubscriptionTokenRequestCounter(Subscription subscription, String providerName) {

@@ -20,7 +20,6 @@ public class TrackerElasticSearchMetrics {
 
     public <T> void registerProducerTrackerElasticSearchQueueSizeGauge(T stateObj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_QUEUE_SIZE,
                 Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE,
                 stateObj, f
         );
@@ -28,7 +27,6 @@ public class TrackerElasticSearchMetrics {
 
     public <T> void registerProducerTrackerElasticSearchRemainingCapacity(T stateObj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                Gauges.Graphite.PRODUCER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY,
                 Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY,
                 stateObj, f
         );
@@ -36,7 +34,6 @@ public class TrackerElasticSearchMetrics {
 
     public <T> void registerConsumerTrackerElasticSearchQueueSizeGauge(T stateObj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_QUEUE_SIZE,
                 Gauges.Prometheus.TRACKER_ELASTICSEARCH_QUEUE_SIZE,
                 stateObj, f
         );
@@ -44,7 +41,6 @@ public class TrackerElasticSearchMetrics {
 
     public <T> void registerConsumerTrackerElasticSearchRemainingCapacity(T stateObj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                Gauges.Graphite.CONSUMER_TRACKER_ELASTICSEARCH_REMAINING_CAPACITY,
                 Gauges.Prometheus.TRACKER_ELASTICSEARCH_REMAINING_CAPACITY,
                 stateObj, f
         );

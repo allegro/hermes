@@ -60,8 +60,8 @@ public class MetricsFacade {
         this.schemaClientMetrics = new SchemaClientMetrics(hermesMetrics, meterRegistry);
         this.undeliveredMessagesMetrics = new UndeliveredMessagesMetrics(hermesMetrics, meterRegistry);
         this.deserializationMetrics = new DeserializationMetrics(hermesMetrics, meterRegistry);
-        this.workloadMetrics = new WorkloadMetrics(hermesMetrics, meterRegistry);
-        this.consumerSenderMetrics = new ConsumerSenderMetrics(hermesMetrics, meterRegistry);
+        this.workloadMetrics = new WorkloadMetrics(meterRegistry);
+        this.consumerSenderMetrics = new ConsumerSenderMetrics(meterRegistry);
         this.offsetCommitsMetrics = new OffsetCommitsMetrics(meterRegistry);
         this.maxRateMetrics = new MaxRateMetrics(meterRegistry);
         this.brokerMetrics = new BrokerMetrics(meterRegistry);
