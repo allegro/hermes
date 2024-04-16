@@ -6,8 +6,6 @@ import io.micrometer.core.instrument.Tags;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
-import static com.codahale.metrics.MetricRegistry.name;
-
 public class DeserializationMetrics {
     private final MeterRegistry meterRegistry;
 
@@ -49,7 +47,7 @@ public class DeserializationMetrics {
 
     public HermesCounter missingSchemaIdInPayload() {
         return HermesCounters.from(
-                meterRegistry.counter(name(BASE_PATH, "missing_schemaIdInPayload"))
+                meterRegistry.counter(BASE_PATH +  ".missing_schemaIdInPayload")
         );
     }
 

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -11,9 +10,7 @@ import org.apache.avro.Schema;
 import org.apache.commons.collections4.map.HashedMap;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaId;
@@ -48,8 +45,7 @@ public class MessageContentWrapperTest {
     private static final int ID_FIVE = 5;
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private final HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
-    private final MetricsFacade metricsFacade = new MetricsFacade(meterRegistry, hermesMetrics);
+    private final MetricsFacade metricsFacade = new MetricsFacade(meterRegistry);
     private final JsonMessageContentWrapper jsonWrapper = new JsonMessageContentWrapper("message", "metadata", new ObjectMapper());
     private final AvroMessageContentWrapper avroWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
 

@@ -7,7 +7,6 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "frontend.metrics.metric-registry")
 public class MetricRegistryProperties {
 
-
     private Duration counterExpireAfterAccess = Duration.ofHours(72);
 
     public Duration getCounterExpireAfterAccess() {

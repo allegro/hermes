@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka
 
-import com.codahale.metrics.MetricRegistry
 import com.jayway.awaitility.Awaitility
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -13,15 +12,10 @@ import org.apache.kafka.common.TopicPartition
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.spock.Testcontainers
-import pl.allegro.tech.hermes.api.ContentType
-import pl.allegro.tech.hermes.api.DeliveryType
-import pl.allegro.tech.hermes.api.Subscription
-import pl.allegro.tech.hermes.api.SubscriptionMode
-import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.*
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
@@ -30,7 +24,6 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Shared
@@ -42,10 +35,7 @@ import java.util.stream.Collectors
 import static java.util.Collections.emptyList
 import static java.util.Collections.emptyMap
 import static java.util.concurrent.TimeUnit.MILLISECONDS
-import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG
-import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG
-import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG
-import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
 
@@ -91,10 +81,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     String datacenter = "dc";
 
     @Shared
-    MetricsFacade metricsFacade = new MetricsFacade(
-            new SimpleMeterRegistry(),
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
-    )
+    MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry())
 
     def setupSpec() {
         kafkaContainer.start()

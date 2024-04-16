@@ -6,8 +6,7 @@ public class HermesCounters {
         return new DefaultHermesCounter(micrometerCounter);
     }
 
-    public static MeterBackedHermesCounter from(io.micrometer.core.instrument.Counter micrometerCounter,
-                                             com.codahale.metrics.Meter graphiteMeter) {
-        return new MeterBackedHermesCounter(micrometerCounter, graphiteMeter);
+    public static MeterBackedHermesCounter withEWMA(io.micrometer.core.instrument.Counter micrometerCounter) {
+        return new MeterBackedHermesCounter(micrometerCounter);
     }
 }

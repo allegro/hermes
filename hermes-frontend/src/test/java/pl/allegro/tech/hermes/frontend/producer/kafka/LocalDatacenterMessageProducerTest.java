@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import com.codahale.metrics.MetricRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.producer.MockProducer;
@@ -16,7 +15,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.HTTPHeadersPropagationAsKafkaHeadersProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
@@ -27,7 +25,6 @@ import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.time.Duration;
 import java.util.List;
@@ -53,9 +50,7 @@ public class LocalDatacenterMessageProducerTest {
     private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, PARTITION_KEY, emptyMap());
 
     private final ByteArraySerializer serializer = new ByteArraySerializer();
-    @Mock
-    private HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
-    private final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
+    private final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry());
 
     private final BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(false, metricsFacade, Duration.ZERO, Executors.newSingleThreadExecutor());
 

@@ -28,9 +28,9 @@ public class MetricsFacade {
     private final MaxRateMetrics maxRateMetrics;
     private final BrokerMetrics brokerMetrics;
 
-    public MetricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+    public MetricsFacade(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
-        this.topicMetrics = new TopicMetrics(hermesMetrics, meterRegistry);
+        this.topicMetrics = new TopicMetrics(meterRegistry);
         this.subscriptionMetrics = new SubscriptionMetrics(meterRegistry);
         this.consumerMetrics = new ConsumerMetrics(meterRegistry);
         this.trackerElasticSearchMetrics = new TrackerElasticSearchMetrics(meterRegistry);

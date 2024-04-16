@@ -15,11 +15,9 @@ import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 import pl.allegro.tech.hermes.metrics.counters.MeterBackedHermesCounter;
 
 public class TopicMetrics {
-    private final HermesMetrics hermesMetrics;
     private final MeterRegistry meterRegistry;
 
-    public TopicMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
-        this.hermesMetrics = hermesMetrics;
+    public TopicMetrics(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
     }
 
@@ -55,16 +53,14 @@ public class TopicMetrics {
     }
 
     public MeterBackedHermesCounter topicThroughputBytes(TopicName topicName) {
-        return HermesCounters.from(
-                micrometerCounter(TopicMetricsNames.TOPIC_THROUGHPUT, topicName),
-                hermesMetrics.meter(Meters.TOPIC_THROUGHPUT_BYTES, topicName)
+        return HermesCounters.withEWMA(
+                micrometerCounter(TopicMetricsNames.TOPIC_THROUGHPUT, topicName)
         );
     }
 
     public MeterBackedHermesCounter topicGlobalThroughputBytes() {
-        return HermesCounters.from(
-                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_THROUGHPUT),
-                hermesMetrics.meter(Meters.THROUGHPUT_BYTES)
+        return HermesCounters.withEWMA(
+                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_THROUGHPUT)
         );
     }
 

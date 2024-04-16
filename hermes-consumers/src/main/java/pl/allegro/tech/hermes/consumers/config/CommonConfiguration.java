@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
@@ -34,7 +33,6 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareCon
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
@@ -236,13 +234,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public HermesMetrics hermesMetrics(PathsCompiler pathsCompiler) {
-        return new HermesMetrics(new MetricRegistry(), pathsCompiler);
-    }
-
-    @Bean
-    public MetricsFacade metricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
-        return new MetricsFacade(meterRegistry, hermesMetrics);
+    public MetricsFacade metricsFacade(MeterRegistry meterRegistry) {
+        return new MetricsFacade(meterRegistry);
     }
 
     @Bean

@@ -1,14 +1,11 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted
 
 
-import com.codahale.metrics.MetricRegistry
 import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkDistributionChanges
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock
 import spock.lang.Specification
 import spock.lang.Subject
@@ -28,8 +25,7 @@ class WeightedWorkBalancingListenerTest extends Specification {
     def meterRegistry = new SimpleMeterRegistry()
     def metrics = new WeightedWorkloadMetricsReporter(
             new MetricsFacade(
-                    meterRegistry,
-                    new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
+                    meterRegistry
             )
     )
 
