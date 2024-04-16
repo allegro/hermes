@@ -7,30 +7,11 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.Collection;
 
-import static pl.allegro.tech.hermes.common.metric.Counters.DELIVERED;
-import static pl.allegro.tech.hermes.common.metric.Counters.DISCARDED;
-import static pl.allegro.tech.hermes.common.metric.Counters.MAXRATE_FETCH_FAILURES;
-import static pl.allegro.tech.hermes.common.metric.Counters.MAXRATE_RATE_HISTORY_FAILURES;
-import static pl.allegro.tech.hermes.common.metric.Counters.RETRIES;
-import static pl.allegro.tech.hermes.common.metric.Gauges.MAX_RATE_ACTUAL_RATE_VALUE;
-import static pl.allegro.tech.hermes.common.metric.Gauges.MAX_RATE_VALUE;
-import static pl.allegro.tech.hermes.common.metric.Gauges.OUTPUT_RATE;
-import static pl.allegro.tech.hermes.common.metric.Meters.DISCARDED_SUBSCRIPTION_METER;
-import static pl.allegro.tech.hermes.common.metric.Meters.FAILED_METER_SUBSCRIPTION;
-import static pl.allegro.tech.hermes.common.metric.Meters.FILTERED_METER;
-import static pl.allegro.tech.hermes.common.metric.Meters.RETRIES_SUBSCRIPTION_METER;
-import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_BATCH_METER;
-import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_METER;
-import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_THROUGHPUT_BYTES;
 import static pl.allegro.tech.hermes.common.metric.SubscriptionTagsFactory.subscriptionTags;
-import static pl.allegro.tech.hermes.common.metric.Timers.CONSUMER_IDLE_TIME;
-import static pl.allegro.tech.hermes.common.metric.Timers.RATE_LIMITER_ACQUIRE;
-import static pl.allegro.tech.hermes.common.metric.Timers.SUBSCRIPTION_LATENCY;
 
 public class MetricsFacade {
 
     private final MeterRegistry meterRegistry;
-    private final HermesMetrics hermesMetrics;
     private final TopicMetrics topicMetrics;
     private final SubscriptionMetrics subscriptionMetrics;
     private final ConsumerMetrics consumerMetrics;
@@ -49,7 +30,6 @@ public class MetricsFacade {
 
     public MetricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
         this.meterRegistry = meterRegistry;
-        this.hermesMetrics = hermesMetrics;
         this.topicMetrics = new TopicMetrics(hermesMetrics, meterRegistry);
         this.subscriptionMetrics = new SubscriptionMetrics(meterRegistry);
         this.consumerMetrics = new ConsumerMetrics(meterRegistry);
@@ -134,28 +114,5 @@ public class MetricsFacade {
         for (Meter meter : meters) {
             meterRegistry.remove(meter);
         }
-        hermesMetrics.unregister(DISCARDED_SUBSCRIPTION_METER, subscription);
-        hermesMetrics.unregister(RETRIES_SUBSCRIPTION_METER, subscription);
-        hermesMetrics.unregister(FAILED_METER_SUBSCRIPTION, subscription);
-        hermesMetrics.unregister(SUBSCRIPTION_BATCH_METER, subscription);
-        hermesMetrics.unregister(SUBSCRIPTION_METER, subscription);
-        hermesMetrics.unregister(DELIVERED, subscription);
-        hermesMetrics.unregister(DISCARDED, subscription);
-        hermesMetrics.unregister(RETRIES, subscription);
-        hermesMetrics.unregisterInflightGauge(subscription);
-        hermesMetrics.unregisterInflightTimeHistogram(subscription);
-        hermesMetrics.unregisterConsumerErrorsTimeoutMeter(subscription);
-        hermesMetrics.unregisterConsumerErrorsOtherMeter(subscription);
-        hermesMetrics.unregisterStatusMeters(subscription);
-        hermesMetrics.unregister(OUTPUT_RATE, subscription);
-        hermesMetrics.unregister(MAX_RATE_ACTUAL_RATE_VALUE, subscription);
-        hermesMetrics.unregister(MAX_RATE_VALUE, subscription);
-        hermesMetrics.unregister(MAXRATE_FETCH_FAILURES, subscription);
-        hermesMetrics.unregister(MAXRATE_RATE_HISTORY_FAILURES, subscription);
-        hermesMetrics.unregister(CONSUMER_IDLE_TIME, subscription);
-        hermesMetrics.unregister(FILTERED_METER, subscription);
-        hermesMetrics.unregister(SUBSCRIPTION_LATENCY, subscription);
-        hermesMetrics.unregister(RATE_LIMITER_ACQUIRE, subscription);
-        hermesMetrics.unregister(SUBSCRIPTION_THROUGHPUT_BYTES, subscription);
     }
 }

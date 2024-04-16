@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
-import pl.allegro.tech.hermes.common.metric.Timers
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
@@ -91,17 +90,15 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
     }
 
     private long getSchemaCounterValue() {
-        return getCounterValue("schema.get-schema", Timers.GET_SCHEMA_LATENCY)
+        return getCounterValue("schema.get-schema")
     }
 
     private long getVersionsCounterValue() {
-        return getCounterValue("schema.get-versions", Timers.GET_SCHEMA_VERSIONS_LATENCY)
+        return getCounterValue("schema.get-versions")
     }
 
-    private long getCounterValue(String meterRegistryName, String hermesMetricsName) {
+    private long getCounterValue(String meterRegistryName) {
         def meterRegistryCount = MicrometerUtils.metricValue(meterRegistry, meterRegistryName, Search.&timer, Timer.&count).orElse(0L);
-        def hermesMetricsCount = hermesMetrics.schemaTimer(hermesMetricsName).count
-        assert meterRegistryCount == hermesMetricsCount
         return meterRegistryCount
     }
 }

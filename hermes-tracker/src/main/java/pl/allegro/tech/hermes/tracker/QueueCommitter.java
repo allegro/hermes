@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.tracker;
 
-import com.codahale.metrics.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
