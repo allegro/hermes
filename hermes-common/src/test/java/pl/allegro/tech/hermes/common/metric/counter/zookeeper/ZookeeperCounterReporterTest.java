@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -17,7 +17,6 @@ import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZookeeperCounterReporterTest {
@@ -44,7 +43,6 @@ public class ZookeeperCounterReporterTest {
 
     @Before
     public void before() {
-        when(instanceIdResolver.resolve()).thenReturn("localhost.domain");
         zookeeperCounterReporter = new ZookeeperCounterReporter(meterRegistry, counterStorage, "");
     }
 
