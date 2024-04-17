@@ -25,7 +25,7 @@ dependencies {
     api group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     api group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
-    implementation group: 'commons-codec', name: 'commons-codec', version: '1.9'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.16.1'
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 
     api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson

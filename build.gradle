@@ -59,16 +59,16 @@ allprojects {
             wiremock          : '3.5.2',
             spock             : '2.4-M4-groovy-4.0',
             groovy            : '4.0.21',
-            avro              : '1.9.1',
+            avro              : '1.11.3',
             json2avro         : '0.2.14',
             okhttp            : '4.12.0',
             undertow          : '2.3.12.Final',
             spring_web        : '6.1.6',
             failsafe          : '2.4.4',
-            junit_jupiter     : '5.9.1',
+            junit_jupiter     : '5.10.2',
             testcontainers    : '1.19.8',
-            spring            : '3.2.1',
-            assertj           : '3.24.2'
+            spring            : '3.2.4',
+            assertj           : '3.25.3'
     ]
 
     repositories {
