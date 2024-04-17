@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper.cache
 
 import com.jayway.awaitility.Duration
-import com.jayway.awaitility.groovy.AwaitilityTrait
 import pl.allegro.tech.hermes.test.IntegrationTest
 
 import java.util.concurrent.Executors
@@ -10,7 +9,7 @@ import static com.jayway.awaitility.Awaitility.await
 import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.CHILD_ADDED
 import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.CHILD_REMOVED
 
-class HierarchicalCacheTest extends IntegrationTest implements AwaitilityTrait {
+class HierarchicalCacheTest extends IntegrationTest {
 
     private HierarchicalCache cache = new HierarchicalCache(
             zookeeper(),
