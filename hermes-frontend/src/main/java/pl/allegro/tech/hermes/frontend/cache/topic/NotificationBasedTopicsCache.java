@@ -31,7 +31,7 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
     private final TopicRepository topicRepository;
     private final MetricsFacade metricsFacade;
     private final KafkaNamesMapper kafkaNamesMapper;
-    private final ThroughputRegistry throughputRegistry;;
+    private final ThroughputRegistry throughputRegistry;
 
     public NotificationBasedTopicsCache(InternalNotificationsBus notificationsBus,
                                         BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache,
