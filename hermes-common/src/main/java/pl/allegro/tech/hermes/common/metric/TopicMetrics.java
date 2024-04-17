@@ -12,7 +12,6 @@ import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
-import pl.allegro.tech.hermes.metrics.counters.MeterBackedHermesCounter;
 
 public class TopicMetrics {
     private final MeterRegistry meterRegistry;
@@ -52,14 +51,14 @@ public class TopicMetrics {
                 meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_LEADER_BROKER_LATENCY));
     }
 
-    public MeterBackedHermesCounter topicThroughputBytes(TopicName topicName) {
-        return HermesCounters.withEWMA(
+    public HermesCounter topicThroughputBytes(TopicName topicName) {
+        return HermesCounters.from(
                 micrometerCounter(TopicMetricsNames.TOPIC_THROUGHPUT, topicName)
         );
     }
 
-    public MeterBackedHermesCounter topicGlobalThroughputBytes() {
-        return HermesCounters.withEWMA(
+    public HermesCounter topicGlobalThroughputBytes() {
+        return HermesCounters.from(
                 meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_THROUGHPUT)
         );
     }

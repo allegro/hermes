@@ -21,6 +21,7 @@ import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
+import pl.allegro.tech.hermes.frontend.metric.ThroughputRegistry;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
@@ -86,9 +87,12 @@ public class LocalDatacenterMessageProducerTest {
 
     private final SchemaProperties schemaProperties = new SchemaProperties();
 
+    @Mock
+    private ThroughputRegistry throughputRegistry;
+
     @Before
     public void before() {
-        cachedTopic = new CachedTopic(TOPIC, metricsFacade, kafkaNamesMapper.toKafkaTopics(TOPIC));
+        cachedTopic = new CachedTopic(TOPIC, metricsFacade, throughputRegistry, kafkaNamesMapper.toKafkaTopics(TOPIC));
         MessageToKafkaProducerRecordConverter messageConverter =
             new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
         producer = new LocalDatacenterMessageProducer(kafkaMessageSenders, messageConverter);
@@ -155,7 +159,7 @@ public class LocalDatacenterMessageProducerTest {
     public void shouldUseEveryoneConfirmProducerForTopicWithAckAll() {
         //given
         Topic topic = topic("group.all").withAck(Topic.Ack.ALL).build();
-        CachedTopic cachedTopic = new CachedTopic(topic, metricsFacade,
+        CachedTopic cachedTopic = new CachedTopic(topic, metricsFacade, throughputRegistry,
                 kafkaNamesMapper.toKafkaTopics(topic));
 
         //when

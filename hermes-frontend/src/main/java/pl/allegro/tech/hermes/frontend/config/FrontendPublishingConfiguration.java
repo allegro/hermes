@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.config;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
 import jakarta.inject.Named;
@@ -11,6 +12,7 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.metric.ThroughputRegistry;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -56,8 +58,13 @@ public class FrontendPublishingConfiguration {
     }
 
     @Bean
-    public ThroughputLimiter throughputLimiter(ThroughputProperties throughputProperties, MetricsFacade metricsFacade) {
-        return new ThroughputLimiterFactory(throughputProperties, metricsFacade).provide();
+    public ThroughputRegistry throughputRegistry(MetricsFacade metricsFacade) {
+        return new ThroughputRegistry(metricsFacade, new MetricRegistry());
+    }
+
+    @Bean
+    public ThroughputLimiter throughputLimiter(ThroughputProperties throughputProperties, ThroughputRegistry throughputRegistry) {
+        return new ThroughputLimiterFactory(throughputProperties, throughputRegistry).provide();
     }
 
     @Bean
