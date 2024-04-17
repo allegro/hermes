@@ -38,7 +38,6 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
-import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
@@ -160,10 +159,11 @@ public class CommonConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(CuratorFramework curator,
+                                                                               MetricsFacade metricsFacade,
                                                                                ZookeeperClustersProperties zookeeperClustersProperties,
                                                                                DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-        return new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties).provide();
+        return new ModelAwareZookeeperNotifyingCacheFactory(curator, metricsFacade, zookeeperProperties).provide();
     }
 
     @Bean
@@ -175,13 +175,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ThreadPoolMetrics threadPoolMetrics(MetricsFacade metricsFacade) {
-        return new ThreadPoolMetrics(metricsFacade);
-    }
-
-    @Bean
-    public InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory(ThreadPoolMetrics threadPoolMetrics) {
-        return new InstrumentedExecutorServiceFactory(threadPoolMetrics);
+    public InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory(MetricsFacade metricsFacade) {
+        return new InstrumentedExecutorServiceFactory(metricsFacade);
     }
 
     @Bean
