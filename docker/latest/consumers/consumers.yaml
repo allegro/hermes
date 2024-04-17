@@ -8,11 +8,6 @@ consumer:
     clusters:
       - datacenter: "dc"
         brokerList: "kafka:29092"
-  graphite:
-    host: "graphite"
-  metrics:
-    metric-registry:
-      graphiteReporterEnabled: true
   workload:
     consumerPerSubscription: 1
   schema:
