@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.domain.filtering.avro;
 
+import jakarta.annotation.Nullable;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericRecord;
@@ -62,7 +63,7 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
     }
 
     private List<Object> select(final FilterableMessage message) throws IOException {
-        CompiledSchema<Schema> compiledSchema = message.<Schema>getSchema().get();
+        CompiledSchema<Schema> compiledSchema = message.getSchema().get();
         return select(bytesToRecord(message.getData(), compiledSchema.getSchema()));
     }
 
@@ -82,7 +83,7 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
                 if (arrayMatcher.matches()) {
                     selector = arrayMatcher.group(GROUP_SELECTOR);
 
-                    current = currentRecord.get(selector);
+                    current = recordFieldValueOrNull(selector, currentRecord);
                     if (!(current instanceof GenericArray)) {
                         return emptyList();
                     }
@@ -97,7 +98,7 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
                     }
 
                 } else {
-                    current = currentRecord.get(selector);
+                    current = recordFieldValueOrNull(selector, currentRecord);
                 }
             } else if (current instanceof HashMap) {
                 Map<Utf8, Object> currentRecord = (HashMap<Utf8, Object>) current;
@@ -115,9 +116,9 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
 
     private List<Object> selectMultipleArrayItems(ListIterator<String> iter, GenericArray<Object> currentArray) {
         return currentArray.stream()
-            .map(item -> select(item, iter.hasNext() ? path.listIterator(iter.nextIndex()) : emptyListIterator()))
-            .flatMap(List::stream)
-            .collect(Collectors.toList());
+                .map(item -> select(item, iter.hasNext() ? path.listIterator(iter.nextIndex()) : emptyListIterator()))
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     private Object selectSingleArrayItem(int idx, GenericArray<Object> currentArray) {
@@ -137,6 +138,14 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
             default:
                 throw new UnsupportedMatchingStrategyException("avropath", matchingStrategy);
         }
+    }
+
+    @Nullable
+    private Object recordFieldValueOrNull(String selector, GenericRecord record) {
+        Schema.Field field = record.getSchema().getField(selector);
+        if (field == null)
+            return null;
+        return record.get(field.pos());
     }
 
     private boolean matches(String value) {

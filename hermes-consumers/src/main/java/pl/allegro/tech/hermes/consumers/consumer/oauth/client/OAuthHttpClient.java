@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.entity.ContentType;
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Request;
@@ -14,6 +13,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static jakarta.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
 
 public class OAuthHttpClient implements OAuthClient {
 
@@ -42,7 +43,7 @@ public class OAuthHttpClient implements OAuthClient {
                 .method(HttpMethod.POST)
                 .headers(headers -> {
                     headers.add(HttpHeader.KEEP_ALIVE, "true");
-                    headers.add(HttpHeader.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.toString());
+                    headers.add(HttpHeader.CONTENT_TYPE, APPLICATION_FORM_URLENCODED);
                 });
         addParamIfNotNull(httpRequest, OAuthTokenRequest.Param.GRANT_TYPE, request.getGrantType());
         addParamIfNotNull(httpRequest, OAuthTokenRequest.Param.SCOPE, request.getScope());
