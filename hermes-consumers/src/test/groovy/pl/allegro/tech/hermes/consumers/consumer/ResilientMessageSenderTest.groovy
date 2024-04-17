@@ -14,8 +14,8 @@ import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
 
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
@@ -63,7 +63,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should report successful sending"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerSuccessfulSending()
         }
         ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
@@ -84,7 +83,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should asynchronously time out send future and report failed sending"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerFailedSending()
         }
         ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
@@ -105,7 +103,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should treat 4xx response for subscription with no 4xx retry as success"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerSuccessfulSending()
         }
 
@@ -127,7 +124,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should report failed sending on error response other than 4xx for subscription with no 4xx retry"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerFailedSending()
         }
 
@@ -149,7 +145,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should report failed sending on 4xx response for subscription with 4xx retry"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerFailedSending()
         }
         def subscription = subscription(SubscriptionName.fromString("group.topic\$subscription"))
@@ -175,7 +170,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should report successful sending on retry after"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerSuccessfulSending()
         }
 
@@ -197,7 +191,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should report failed sending on service unavailable without retry after"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerFailedSending()
         }
 
@@ -219,7 +212,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should not report failed sending on too many requests without retry after"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerSuccessfulSending()
         }
 
@@ -241,7 +233,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should report failed sending when future completes exceptionally"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerFailedSending()
         }
         ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(
@@ -266,7 +257,6 @@ class ResilientMessageSenderTest extends Specification {
     def "should report failed sending when consumer throws exception"() {
         given:
         SerialConsumerRateLimiter serialConsumerRateLimiter = Mock(SerialConsumerRateLimiter) {
-            1 * acquire()
             1 * registerFailedSending()
         }
         ResilientMessageSender rateLimitingMessageSender = new ResilientMessageSender(

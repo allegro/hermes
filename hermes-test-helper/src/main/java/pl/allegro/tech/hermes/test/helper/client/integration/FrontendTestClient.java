@@ -28,6 +28,7 @@ public class FrontendTestClient {
     private static final String STATUS_HEALTH_PATH = "/status/health";
     private static final String STATUS_READY_PATH = "/status/ready";
     private static final String STATUS_PING_PATH = "/status/ping";
+    private static final String METRICS_PATH = "/status/prometheus";
 
     private final WebTestClient webTestClient;
     private final FrontendSlowClient slowTestClient;
@@ -169,7 +170,7 @@ public class FrontendTestClient {
     }
 
     String publishSlowly(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData,
-                         String topicName, boolean chunkedEncoding) throws IOException, InterruptedException{
+                         String topicName, boolean chunkedEncoding) throws IOException, InterruptedException {
         return slowTestClient.slowEvent(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, chunkedEncoding);
     }
 
@@ -193,6 +194,14 @@ public class FrontendTestClient {
         return webTestClient.get().uri(UriBuilder
                         .fromUri(frontendContainerUrl)
                         .path(STATUS_PING_PATH)
+                        .build())
+                .exchange();
+    }
+
+    public WebTestClient.ResponseSpec getMetrics() {
+        return webTestClient.get().uri(UriBuilder
+                        .fromUri(frontendContainerUrl)
+                        .path(METRICS_PATH)
                         .build())
                 .exchange();
     }

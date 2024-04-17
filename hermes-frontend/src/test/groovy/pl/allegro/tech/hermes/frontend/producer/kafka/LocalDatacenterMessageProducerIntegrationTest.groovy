@@ -24,10 +24,10 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties
-import pl.allegro.tech.hermes.frontend.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
-import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties
+import pl.allegro.tech.hermes.frontend.config.SchemaProperties
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
 import pl.allegro.tech.hermes.metrics.PathsCompiler
@@ -39,6 +39,7 @@ import spock.lang.Specification
 import java.time.Duration
 import java.util.stream.Collectors
 
+import static java.util.Collections.emptyList
 import static java.util.Collections.emptyMap
 import static java.util.concurrent.TimeUnit.MILLISECONDS
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG
@@ -49,9 +50,12 @@ import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CL
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
 
 @Testcontainers
-class KafkaBrokerMessageProducerIntegrationTest extends Specification {
+class LocalDatacenterMessageProducerIntegrationTest extends Specification {
 
     static Integer NUMBER_OF_PARTITION = 3
+
+    @Shared
+    BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(false, null, null, null)
 
     @Shared
     KafkaContainer kafkaContainer = new KafkaContainer()
@@ -63,13 +67,13 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaProducer<byte[], byte[]> everyoneConfirms
 
     @Shared
-    KafkaBrokerMessageProducer brokerMessageProducer
+    LocalDatacenterMessageProducer brokerMessageProducer
 
     @Shared
     KafkaNamesMapper kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper("", "_")
 
     @Shared
-    Producers producers
+    KafkaMessageSenders producers
 
     @Shared
     String containerId
@@ -84,7 +88,13 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
 
     @Shared
-    KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties()
+    String datacenter = "dc";
+
+    @Shared
+    MetricsFacade metricsFacade = new MetricsFacade(
+            new SimpleMeterRegistry(),
+            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
+    )
 
     def setupSpec() {
         kafkaContainer.start()
@@ -101,10 +111,19 @@ class KafkaBrokerMessageProducerIntegrationTest extends Specification {
     }
 
     def setup() {
-        producers = new Producers(leaderConfirms, everyoneConfirms, kafkaProducerProperties.isReportNodeMetricsEnabled())
-        brokerMessageProducer = new KafkaBrokerMessageProducer(producers,
-                new KafkaTopicMetadataFetcher(adminClient, kafkaProducerProperties.getMetadataMaxAge()),
-                new MetricsFacade(new SimpleMeterRegistry(), new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost"))),
+        TopicMetadataLoadingExecutor topicMetadataLoadingExecutor = Mock()
+        MinInSyncReplicasLoader minInSyncReplicasLoader = Mock()
+        producers = new KafkaMessageSenders(
+                topicMetadataLoadingExecutor,
+                minInSyncReplicasLoader,
+                new KafkaMessageSenders.Tuple(
+                        new KafkaMessageSender<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, metricsFacade, datacenter),
+                        new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, metricsFacade, datacenter)
+                ),
+                emptyList()
+        )
+        brokerMessageProducer = new LocalDatacenterMessageProducer(
+                producers,
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(
                             kafkaHeaderNameProperties,
                             new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties()),

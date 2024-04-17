@@ -265,6 +265,10 @@ public class HermesTestClient {
         return consumerTestClient.getMetrics();
     }
 
+    public WebTestClient.ResponseSpec getFrontendMetrics() {
+        return frontendTestClient.getMetrics();
+    }
+
     public WebTestClient.ResponseSpec verifyFilters(String qualifiedTopicName,
                                                     MessageFiltersVerificationInput input) {
         return managementTestClient.verifyFilters(qualifiedTopicName, input);
@@ -283,6 +287,10 @@ public class HermesTestClient {
     }
 
     public WebTestClient.ResponseSpec getReadiness() {
+        return managementTestClient.getReadiness();
+    }
+
+    public WebTestClient.ResponseSpec getFrontendReadiness() {
         return frontendTestClient.getStatusReady();
     }
 

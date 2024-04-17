@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import com.codahale.metrics.MetricRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -17,57 +18,74 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties;
-import pl.allegro.tech.hermes.frontend.config.KafkaProducerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
+import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.jayway.awaitility.Awaitility.await;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
-public class KafkaBrokerMessageProducerTest {
+public class LocalDatacenterMessageProducerTest {
 
     private static final Long TIMESTAMP = 1L;
     private static final String PARTITION_KEY = "partition-key";
     private static final String MESSAGE_ID = "id";
+    private static final String datacenter = "dc";
     private static final Topic TOPIC = topic("group.topic").build();
     private static final byte[] CONTENT = "{\"data\":\"json\"}".getBytes(UTF_8);
     private static final Message MESSAGE = new JsonMessage(MESSAGE_ID, CONTENT, TIMESTAMP, PARTITION_KEY, emptyMap());
 
     private final ByteArraySerializer serializer = new ByteArraySerializer();
+    @Mock
+    private HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
+    private final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
+
+    private final BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(false, metricsFacade, Duration.ZERO, Executors.newSingleThreadExecutor());
+
     private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
     private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
+    private final KafkaMessageSender<byte[], byte[]> leaderConfirmsProduceWrapper = new KafkaMessageSender<>(leaderConfirmsProducer, brokerLatencyReporter, metricsFacade, datacenter);
+    private final KafkaMessageSender<byte[], byte[]> everyoneConfirmsProduceWrapper = new KafkaMessageSender<>(everyoneConfirmProducer, brokerLatencyReporter, metricsFacade, datacenter);
+
     private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
     private final HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties =
         new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties();
-    private final KafkaProducerProperties kafkaProducerProperties = new KafkaProducerProperties();
-    private final Producers producers =
-        new Producers(leaderConfirmsProducer, everyoneConfirmProducer, kafkaProducerProperties.isReportNodeMetricsEnabled());
+    @Mock
+    private TopicsCache topicsCache;
+    private final TopicMetadataLoadingExecutor topicMetadataLoadingExecutor = new TopicMetadataLoadingExecutor(
+            topicsCache, 2, Duration.ofSeconds(10), 2
+    );
+    @Mock
+    private AdminClient adminClient;
+    private final MinInSyncReplicasLoader localMinInSyncReplicasLoader = new MinInSyncReplicasLoader(adminClient, Duration.ofMinutes(1));
+    private final KafkaMessageSenders kafkaMessageSenders = new KafkaMessageSenders(
+            topicMetadataLoadingExecutor,
+            localMinInSyncReplicasLoader,
+            new KafkaMessageSenders.Tuple(leaderConfirmsProduceWrapper, everyoneConfirmsProduceWrapper),
+            emptyList()
+    );
 
-    private KafkaBrokerMessageProducer producer;
+    private LocalDatacenterMessageProducer producer;
     private final KafkaNamesMapper kafkaNamesMapper = new NamespaceKafkaNamesMapper("ns", "_");
     private final KafkaHeaderFactory kafkaHeaderFactory = new KafkaHeaderFactory(kafkaHeaderNameProperties,
         httpHeadersPropagationAsKafkaHeadersProperties);
-
-    @Mock
-    private HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
-
-    private final MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
-
-    @Mock
-    private KafkaTopicMetadataFetcher kafkaTopicMetadataFetcher;
 
     private CachedTopic cachedTopic;
 
@@ -78,7 +96,7 @@ public class KafkaBrokerMessageProducerTest {
         cachedTopic = new CachedTopic(TOPIC, metricsFacade, kafkaNamesMapper.toKafkaTopics(TOPIC));
         MessageToKafkaProducerRecordConverter messageConverter =
             new MessageToKafkaProducerRecordConverter(kafkaHeaderFactory, schemaProperties.isIdHeaderEnabled());
-        producer = new KafkaBrokerMessageProducer(producers, kafkaTopicMetadataFetcher, metricsFacade, messageConverter);
+        producer = new LocalDatacenterMessageProducer(kafkaMessageSenders, messageConverter);
     }
 
     @After
@@ -127,6 +145,11 @@ public class KafkaBrokerMessageProducerTest {
             public void onPublished(Message message, Topic topic) {
                 callbackCalled.set(true);
             }
+
+            @Override
+            public void onEachPublished(Message message, Topic topic, String datacenter) {
+                callbackCalled.set(true);
+            }
         });
 
         //then
@@ -154,6 +177,11 @@ public class KafkaBrokerMessageProducerTest {
         }
 
         public void onPublished(Message message, Topic topic) {
+        }
+
+        @Override
+        public void onEachPublished(Message message, Topic topic, String datacenter) {
+
         }
     }
 

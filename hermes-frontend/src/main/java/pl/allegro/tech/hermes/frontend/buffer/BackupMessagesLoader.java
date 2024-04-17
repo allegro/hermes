@@ -11,11 +11,11 @@ import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.BrokerTopicAvailabilityChecker;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
-import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaId;
@@ -44,6 +44,7 @@ public class BackupMessagesLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupMessagesLoader.class);
 
+    private final BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker;
     private final BrokerMessageProducer brokerMessageProducer;
     private final BrokerListeners brokerListeners;
     private final TopicsCache topicsCache;
@@ -58,13 +59,15 @@ public class BackupMessagesLoader {
     private final Set<Topic> topicsAvailabilityCache = new HashSet<>();
     private final AtomicReference<ConcurrentLinkedQueue<Pair<Message, CachedTopic>>> toResend = new AtomicReference<>();
 
-    public BackupMessagesLoader(BrokerMessageProducer brokerMessageProducer,
+    public BackupMessagesLoader(BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
+                                BrokerMessageProducer brokerMessageProducer,
                                 BrokerListeners brokerListeners,
                                 TopicsCache topicsCache,
                                 SchemaRepository schemaRepository,
                                 SchemaExistenceEnsurer schemaExistenceEnsurer,
                                 Trackers trackers,
                                 BackupMessagesLoaderParameters backupMessagesLoaderParameters) {
+        this.brokerTopicAvailabilityChecker = brokerTopicAvailabilityChecker;
         this.brokerMessageProducer = brokerMessageProducer;
         this.brokerListeners = brokerListeners;
         this.topicsCache = topicsCache;
@@ -231,7 +234,7 @@ public class BackupMessagesLoader {
             return true;
         }
 
-        if (brokerMessageProducer.isTopicAvailable(cachedTopic)) {
+        if (brokerTopicAvailabilityChecker.isTopicAvailable(cachedTopic)) {
             topicsAvailabilityCache.add(cachedTopic.getTopic());
             logger.info("Broker topic {} is available.", cachedTopic.getTopic().getQualifiedName());
             return true;
@@ -246,11 +249,9 @@ public class BackupMessagesLoader {
     }
 
     private void sendMessage(Message message, CachedTopic cachedTopic) {
-        HermesTimerContext brokerTimer = cachedTopic.startBrokerLatencyTimer();
         brokerMessageProducer.send(message, cachedTopic, new PublishingCallback() {
             @Override
             public void onUnpublished(Message message, Topic topic, Exception exception) {
-                brokerTimer.close();
                 brokerListeners.onError(message, topic, exception);
                 trackers.get(topic).logError(message.getId(), topic.getName(), exception.getMessage(), "", Collections.emptyMap());
                 toResend.get().add(ImmutablePair.of(message, cachedTopic));
@@ -258,10 +259,13 @@ public class BackupMessagesLoader {
 
             @Override
             public void onPublished(Message message, Topic topic) {
-                brokerTimer.close();
-                cachedTopic.incrementPublished();
                 brokerListeners.onAcknowledge(message, topic);
-                trackers.get(topic).logPublished(message.getId(), topic.getName(), "", Collections.emptyMap());
+            }
+
+            @Override
+            public void onEachPublished(Message message, Topic topic, String datacenter) {
+                cachedTopic.incrementPublished(datacenter);
+                trackers.get(topic).logPublished(message.getId(), topic.getName(), "", datacenter, Collections.emptyMap());
             }
         });
     }

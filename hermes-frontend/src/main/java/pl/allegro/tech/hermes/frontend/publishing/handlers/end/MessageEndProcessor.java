@@ -30,19 +30,18 @@ public class MessageEndProcessor {
         this.trackingHeadersExtractor = trackingHeadersExtractor;
     }
 
-    public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
+    public void eachSent(HttpServerExchange exchange, AttachmentContent attachment, String datacenter) {
         trackers.get(attachment.getTopic()).logPublished(attachment.getMessageId(),
-                attachment.getTopic().getName(), readHostAndPort(exchange),
+                attachment.getTopic().getName(), readHostAndPort(exchange), datacenter,
                 trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
-        sendResponse(exchange, attachment, StatusCodes.CREATED);
-        attachment.getCachedTopic().incrementPublished();
     }
 
-    public void delayedSent(HttpServerExchange exchange, CachedTopic cachedTopic, Message message) {
-        trackers.get(cachedTopic.getTopic()).logPublished(message.getId(), cachedTopic.getTopic().getName(),
-                readHostAndPort(exchange), trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
+    public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
+        sendResponse(exchange, attachment, StatusCodes.CREATED);
+    }
+
+    public void delayedSent(CachedTopic cachedTopic, Message message) {
         brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
-        cachedTopic.incrementPublished();
     }
 
     public void bufferedButDelayedProcessing(HttpServerExchange exchange, AttachmentContent attachment) {

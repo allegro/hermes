@@ -12,6 +12,8 @@ public class HandlersChainProperties implements HandlersChainParameters {
 
     private Duration longIdleTimeout = Duration.ofMillis(400);
 
+    private Duration maxPublishRequestDuration = Duration.ofMillis(500);
+
     private boolean forceTopicMaxMessageSize = false;
 
     @Override
@@ -59,6 +61,15 @@ public class HandlersChainProperties implements HandlersChainParameters {
 
     public void setForceTopicMaxMessageSize(boolean forceTopicMaxMessageSize) {
         this.forceTopicMaxMessageSize = forceTopicMaxMessageSize;
+    }
+
+    @Override
+    public Duration getMaxPublishRequestDuration() {
+        return maxPublishRequestDuration;
+    }
+
+    public void setMaxPublishRequestDuration(Duration maxPublishRequestDuration) {
+        this.maxPublishRequestDuration = maxPublishRequestDuration;
     }
 
     private AuthenticationProperties authentication = new AuthenticationProperties();

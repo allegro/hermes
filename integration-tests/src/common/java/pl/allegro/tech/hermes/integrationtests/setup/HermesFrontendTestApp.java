@@ -30,7 +30,6 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FR
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_FIXED_MAX;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_TYPE;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_BROKER_LIST;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_NAMESPACE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_PRODUCER_METADATA_MAX_AGE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_MICROMETER_REPORT_PERIOD;
@@ -42,7 +41,7 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.ZO
 public class HermesFrontendTestApp implements HermesTestApp {
 
     private final ZookeeperContainer hermesZookeeper;
-    private final KafkaContainerCluster kafka;
+    private final Map<String, KafkaContainerCluster> kafkaClusters;
     private final ConfluentSchemaRegistryContainer schemaRegistry;
     private SpringApplicationBuilder app;
 
@@ -58,8 +57,20 @@ public class HermesFrontendTestApp implements HermesTestApp {
                                  KafkaContainerCluster kafka,
                                  ConfluentSchemaRegistryContainer schemaRegistry) {
         this.hermesZookeeper = hermesZookeeper;
-        this.kafka = kafka;
         this.schemaRegistry = schemaRegistry;
+        this.kafkaClusters = Map.of("dc", kafka);
+
+    }
+    public HermesFrontendTestApp(ZookeeperContainer hermesZookeeper,
+                                 Map<String, KafkaContainerCluster> kafkaClusters,
+                                 ConfluentSchemaRegistryContainer schemaRegistry) {
+        this.hermesZookeeper = hermesZookeeper;
+        this.schemaRegistry = schemaRegistry;
+        this.kafkaClusters = kafkaClusters;
+    }
+
+    private String kafkaClusterProperty(int index, String name) {
+        return String.format("frontend.kafka.clusters[%d].%s", index, name);
     }
 
     public HermesFrontendTestApp withProperty(String name, Object value) {
@@ -78,7 +89,13 @@ public class HermesFrontendTestApp implements HermesTestApp {
         args.put(FRONTEND_PORT, 0);
 
         args.put(KAFKA_NAMESPACE, "itTest");
-        args.put(KAFKA_BROKER_LIST, kafka.getBootstrapServersForExternalClients());
+
+        var i = 0;
+        for (var entry : kafkaClusters.entrySet()) {
+            args.put(kafkaClusterProperty(i, "datacenter"), entry.getKey());
+            args.put(kafkaClusterProperty(i, "brokerList"), entry.getValue().getBootstrapServersForExternalClients());
+            i++;
+        }
 
         args.put(ZOOKEEPER_CONNECTION_STRING, hermesZookeeper.getConnectionString());
 

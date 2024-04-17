@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
@@ -45,7 +46,9 @@ public class ConsumerMessageSender {
     private final InflightsPool inflight;
     private final SubscriptionLoadRecorder loadRecorder;
     private final HermesTimer consumerLatencyTimer;
+    private final HermesCounter retries;
     private final SerialConsumerRateLimiter rateLimiter;
+    private final HermesTimer rateLimiterAcquireTimer;
     private final FutureAsyncTimeout async;
     private final int asyncTimeoutMs;
     private final LongAdder inflightCount = new LongAdder();
@@ -82,6 +85,8 @@ public class ConsumerMessageSender {
         this.inflight = inflight;
         this.consumerLatencyTimer = metrics.subscriptions().latency(subscription.getQualifiedName());
         metrics.subscriptions().registerInflightGauge(subscription.getQualifiedName(), this, sender -> sender.inflightCount.doubleValue());
+        this.retries = metrics.subscriptions().retries(subscription.getQualifiedName());
+        this.rateLimiterAcquireTimer = metrics.subscriptions().rateLimiterAcquire(subscription.getQualifiedName());
     }
 
     public void initialize() {
@@ -131,6 +136,7 @@ public class ConsumerMessageSender {
      */
     private void sendMessage(final Message message) {
         loadRecorder.recordSingleOperation();
+        acquireRateLimiterWithTimer();
         HermesTimerContext timer = consumerLatencyTimer.time();
         CompletableFuture<MessageSendingResult> response = messageSender.send(message);
 
@@ -141,6 +147,12 @@ public class ConsumerMessageSender {
                             subscription.getQualifiedName(), message.getPartition(), message.getOffset(), message.getId(), e);
                     return null;
                 });
+    }
+
+    private void acquireRateLimiterWithTimer() {
+        HermesTimerContext acquireTimer = rateLimiterAcquireTimer.time();
+        rateLimiter.acquire();
+        acquireTimer.close();
     }
 
     private MessageSender messageSender(Subscription subscription) {
@@ -200,6 +212,7 @@ public class ConsumerMessageSender {
 
         long retryDelay = extractRetryDelay(message, result);
         if (shouldAttemptResending(message, result, retryDelay)) {
+            retries.increment();
             retrySingleThreadExecutor.schedule(() -> resend(message, result), retryDelay, TimeUnit.MILLISECONDS);
         } else {
             handleMessageDiscarding(message, result);

@@ -12,24 +12,25 @@ import org.apache.kafka.common.config.ConfigResource;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.kafka.common.config.ConfigResource.Type.TOPIC;
 import static org.apache.kafka.common.config.TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG;
 
-public class KafkaTopicMetadataFetcher {
-    private final LoadingCache<String, Integer> minInSyncReplicasCache;
-    private final AdminClient adminClient;
+class MinInSyncReplicasLoader {
 
-    KafkaTopicMetadataFetcher(AdminClient adminClient, Duration metadataMaxAge) {
+    private final AdminClient adminClient;
+    private final LoadingCache<String, Integer> minInSyncReplicasCache;
+
+    MinInSyncReplicasLoader(AdminClient adminClient, Duration metadataMaxAge) {
         this.adminClient = adminClient;
-        this.minInSyncReplicasCache = CacheBuilder
-                .newBuilder()
+        this.minInSyncReplicasCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(metadataMaxAge.toMillis(), MILLISECONDS)
-                .build(new MinInSyncReplicasLoader());
+                .build(new MinInSyncReplicasCacheLoader());
     }
 
-    int fetchMinInSyncReplicas(String kafkaTopicName) throws Exception {
+    int get(String kafkaTopicName) throws ExecutionException {
         return minInSyncReplicasCache.get(kafkaTopicName);
     }
 
@@ -37,7 +38,7 @@ public class KafkaTopicMetadataFetcher {
         adminClient.close();
     }
 
-    private class MinInSyncReplicasLoader extends CacheLoader<String, Integer> {
+    private class MinInSyncReplicasCacheLoader extends CacheLoader<String, Integer> {
 
         @Override
         public Integer load(String kafkaTopicName) throws Exception {
