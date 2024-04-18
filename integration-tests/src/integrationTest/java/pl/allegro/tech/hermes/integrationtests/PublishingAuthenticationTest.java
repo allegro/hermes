@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import com.jayway.awaitility.Duration;
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +11,7 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.utils.Headers;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
@@ -90,7 +90,7 @@ public class PublishingAuthenticationTest {
     private static HttpHeaders createAuthorizationHeader(String username, String password) {
         String credentials = username + ":" + password;
         Map<String, String> headers = Map.of(
-                "Authorization", "Basic " + Base64.encodeBase64String(credentials.getBytes(StandardCharsets.UTF_8))
+                "Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8))
         );
         return Headers.createHeaders(headers);
     }

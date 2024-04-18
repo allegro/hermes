@@ -27,6 +27,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
  *
  */
 
+
 import org.apache.http.annotation.Contract;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ContentType;
