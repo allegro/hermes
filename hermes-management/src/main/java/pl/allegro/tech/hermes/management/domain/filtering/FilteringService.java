@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.filtering;
 
 import org.apache.avro.Schema;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationResult;

@@ -1,13 +1,14 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper.cache
 
-import com.jayway.awaitility.Duration
+import org.awaitility.Awaitility
 import pl.allegro.tech.hermes.test.IntegrationTest
 
+import java.time.Duration
 import java.util.concurrent.Executors
 
-import static com.jayway.awaitility.Awaitility.await
 import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.CHILD_ADDED
 import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.CHILD_REMOVED
+import static org.awaitility.Awaitility.await
 
 class HierarchicalCacheTest extends IntegrationTest {
 
@@ -47,7 +48,7 @@ class HierarchicalCacheTest extends IntegrationTest {
                 .and().commit()
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({
+        await().atMost(Duration.ofSeconds(5)).until({
             calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupA', 'groupA'))
         })
 
@@ -58,7 +59,7 @@ class HierarchicalCacheTest extends IntegrationTest {
                 .and().commit()
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({
+        await().atMost(Duration.ofSeconds(5)).until({
             calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupA/topics/topicA', 'topicA'))
         })
 
@@ -66,7 +67,7 @@ class HierarchicalCacheTest extends IntegrationTest {
         zookeeper().create().forPath('/hierarchicalCacheTest/groups/groupA/topics/topicA/subscriptions/subA', 'subA'.bytes)
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({
+        await().atMost(Duration.ofSeconds(5)).until({
             calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupA/topics/topicA/subscriptions/subA', 'subA'))
         })
 
@@ -88,7 +89,7 @@ class HierarchicalCacheTest extends IntegrationTest {
         cache.start()
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({
+        await().atMost(Duration.ofSeconds(5)).until({
             calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupB', 'groupB')) &&
             calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupB/topics/topicB', 'topicB')) &&
             calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions/subB', 'subB'))
@@ -109,7 +110,7 @@ class HierarchicalCacheTest extends IntegrationTest {
                 '/hierarchicalCacheTest/groups/groupC/topics/topicC/metrics/published', '123'.bytes)
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({
+        await().atMost(Duration.ofSeconds(5)).until({
             calledCallbacks.contains(
                     new Tuple(CHILD_REMOVED, '/hierarchicalCacheTest/groups/groupC/topics/topicC', ''))
         })
@@ -142,7 +143,7 @@ class HierarchicalCacheTest extends IntegrationTest {
                 '/hierarchicalCacheTest/workload/runtime/topic$subscription/hs-consumer1', 'AUTO_ASSIGNED'.bytes)
 
         then:
-        await().atMost(Duration.FIVE_SECONDS).until({
+        await().atMost(Duration.ofSeconds(5)).until({
             calledCallbacks.contains(new Tuple(CHILD_ADDED, '/hierarchicalCacheTest/workload/runtime/topic$subscription', '')) &&
                     !calledCallbacks.contains(new Tuple(CHILD_REMOVED, '/hierarchicalCacheTest/workload/runtime/topic$subscription', ''))
         })

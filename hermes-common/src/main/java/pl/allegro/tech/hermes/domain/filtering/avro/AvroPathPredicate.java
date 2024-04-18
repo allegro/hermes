@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyListIterator;
 import static java.util.Collections.singletonList;
-import static org.apache.commons.lang.StringUtils.strip;
+import static org.apache.commons.lang3.StringUtils.strip;
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
 import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
 

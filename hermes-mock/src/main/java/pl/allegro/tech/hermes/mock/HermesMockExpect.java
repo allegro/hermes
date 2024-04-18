@@ -1,15 +1,15 @@
 package pl.allegro.tech.hermes.mock;
 
-import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.avro.Schema;
+import org.awaitility.core.ConditionTimeoutException;
 
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
+import static org.awaitility.Awaitility.await;
 
 public class HermesMockExpect {
     private final HermesMockHelper hermesMockHelper;
@@ -64,7 +64,7 @@ public class HermesMockExpect {
 
     private void expectMessages(String topicName, int count) {
         try {
-            await().atMost(awaitSeconds, SECONDS).until(() -> hermesMockHelper.verifyRequest(count, topicName));
+            await().atMost(awaitSeconds, SECONDS).untilAsserted(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
             throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
         }

@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.integrationtests;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -21,15 +20,16 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
@@ -155,7 +155,7 @@ public class KafkaRetransmissionServiceTest {
 
     private void waitUntilConsumerCommitsOffset(String topicQualifiedName, String subscription) {
         long currentTime = clock.millis();
-        until(Duration.ONE_MINUTE, topicQualifiedName, subscription, sub ->
+        until(Duration.ofMinutes(1), topicQualifiedName, subscription, sub ->
                 sub.getSignalTimesheet().getOrDefault(COMMIT, 0L) > currentTime);
     }
 

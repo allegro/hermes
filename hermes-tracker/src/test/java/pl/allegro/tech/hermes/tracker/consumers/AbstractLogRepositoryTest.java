@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.tracker.consumers;
 
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
-import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -21,7 +21,7 @@ public abstract class AbstractLogRepositoryTest {
 
     private LogRepository logRepository;
 
-    @BeforeSuite
+    @BeforeClass
     public void setUpRetry(ITestContext context) {
         for (ITestNGMethod method : context.getAllTestMethods()) {
             method.setRetryAnalyzerClass(Retry.class);

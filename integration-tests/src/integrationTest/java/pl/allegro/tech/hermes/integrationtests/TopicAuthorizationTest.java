@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -13,11 +12,12 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.utils.Headers;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_PASSWORD;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_USERNAME;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
@@ -46,7 +46,7 @@ public class TopicAuthorizationTest {
         // given
         hermes.initHelper().createTopic(topic);
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().publish(
                     topic.getQualifiedName(),
@@ -92,7 +92,7 @@ public class TopicAuthorizationTest {
         // given
         hermes.initHelper().createTopic(topic);
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), MESSAGE);
 
@@ -121,7 +121,7 @@ public class TopicAuthorizationTest {
         // given
         hermes.initHelper().createTopic(topic);
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), MESSAGE);
 
@@ -150,7 +150,7 @@ public class TopicAuthorizationTest {
         // given
         hermes.initHelper().createTopic(topic);
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().publish(
                     topic.getQualifiedName(),

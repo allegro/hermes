@@ -4,7 +4,9 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -17,12 +19,12 @@ import pl.allegro.tech.hermes.tracker.frontend.AbstractLogRepositoryTest;
 import pl.allegro.tech.hermes.tracker.frontend.LogRepository;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.ONE_MINUTE;
+import static org.awaitility.Awaitility.await;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
@@ -42,13 +44,13 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
 
     private SchemaManager schemaManager;
 
-    @BeforeSuite
+    @BeforeClass
     public void before() throws Throwable {
         elasticsearch.before();
         schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, false);
     }
 
-    @AfterSuite
+    @AfterClass
     public void after() {
         elasticsearch.after();
     }
@@ -110,7 +112,7 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
     }
 
     private void awaitUntilMessageIsIndexed(QueryBuilder query) {
-        await().atMost(ONE_MINUTE).until(() -> {
+        await().atMost(Duration.ofMinutes(1)).until(() -> {
             SearchResponse response = elasticsearch.client().prepareSearch(frontendIndexFactory.createIndex())
                     .setTypes(SchemaManager.PUBLISHED_TYPE)
                     .setQuery(query)

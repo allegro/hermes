@@ -27,12 +27,12 @@ import java.io.File;
 import java.time.Clock;
 import java.util.Collections;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
 import static java.nio.charset.Charset.defaultCharset;
 import static java.time.Instant.now;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.MESSAGES_LOCAL_STORAGE_DIRECTORY;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.MESSAGES_LOCAL_STORAGE_ENABLED;
@@ -92,7 +92,7 @@ public class MessageBufferLoadingTest {
             publisher.publishUntilStatus(topic.getQualifiedName(), "message", ACCEPTED.getStatusCode());
 
             // then
-            await().atMost(10, SECONDS).until(() -> assertThat(backupRepository.findAll()).hasSize(1));
+            await().atMost(10, SECONDS).untilAsserted(() -> assertThat(backupRepository.findAll()).hasSize(1));
 
         } finally {
             // after
