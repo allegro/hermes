@@ -143,8 +143,9 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
     @Nullable
     private Object recordFieldValueOrNull(String selector, GenericRecord record) {
         Schema.Field field = record.getSchema().getField(selector);
-        if (field == null)
+        if (field == null) {
             return null;
+        }
         return record.get(field.pos());
     }
 

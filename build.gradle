@@ -61,7 +61,7 @@ allprojects {
             groovy            : '4.0.21',
             avro              : '1.11.3',
             json2avro         : '0.2.14',
-            okhttp            : '4.12.0',
+            okhttp            : '3.9.1',
             undertow          : '2.3.12.Final',
             spring_web        : '6.1.6',
             failsafe          : '2.4.4',

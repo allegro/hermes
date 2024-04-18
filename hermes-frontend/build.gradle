@@ -23,9 +23,7 @@ dependencies {
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
 
-    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0') {
-        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-    }
+    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0')
 
     testImplementation project(':hermes-test-helper')
     testImplementation(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
