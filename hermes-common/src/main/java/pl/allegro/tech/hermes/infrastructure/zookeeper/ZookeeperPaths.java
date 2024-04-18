@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.google.common.base.Joiner;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;

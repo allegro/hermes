@@ -14,7 +14,8 @@ import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscr
 
 import java.util.function.Supplier;
 
-import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
+
 
 @Component
 public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsRepository {

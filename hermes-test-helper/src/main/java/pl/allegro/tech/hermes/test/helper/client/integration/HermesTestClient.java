@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.client.integration;
 
-import com.jayway.awaitility.Duration;
 import jakarta.ws.rs.core.Response;
+import java.time.Duration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
@@ -21,7 +21,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionSt
 import java.io.IOException;
 import java.util.List;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesTestClient {
@@ -61,7 +61,7 @@ public class HermesTestClient {
     public void ensureSchemaSaved(String topicQualifiedName, boolean validate, String schema) {
         managementTestClient.saveSchema(topicQualifiedName, validate, schema)
                 .expectStatus().isCreated();
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() ->
                 managementTestClient.getSchema(topicQualifiedName).expectStatus().isOk()
         );
     }
@@ -106,8 +106,8 @@ public class HermesTestClient {
     }
 
     public void waitUntilSubscriptionActivated(String topicQualifiedName, String subscriptionName) {
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> {
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
                             managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
                                     .expectStatus()
                                     .is2xxSuccessful()
@@ -122,8 +122,8 @@ public class HermesTestClient {
     }
 
     public void waitUntilSubscriptionSuspended(String topicQualifiedName, String subscriptionName) {
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> {
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
                             managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
                                     .expectStatus()
                                     .is2xxSuccessful()

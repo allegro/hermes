@@ -5,7 +5,9 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.common.metric.HermesMetrics;
@@ -20,12 +22,12 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendDailyIndexF
 import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.ONE_MINUTE;
+import static org.awaitility.Awaitility.await;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
@@ -45,13 +47,13 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     private static ElasticsearchResource elasticsearch = new ElasticsearchResource();
     private SchemaManager schemaManager;
 
-    @BeforeSuite
+    @BeforeClass
     public void before() throws Throwable {
         elasticsearch.before();
         schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory, false);
     }
 
-    @AfterSuite
+    @AfterClass
     public void after() {
         elasticsearch.after();
     }
@@ -77,7 +79,7 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     }
 
     private void awaitUntilPersisted(QueryBuilder query) {
-        await().atMost(ONE_MINUTE).until(() -> {
+        await().atMost(Duration.ofMinutes(1)).until(() -> {
             SearchResponse response = elasticsearch.client().prepareSearch(indexFactory.createIndex())
                     .setTypes(SchemaManager.SENT_TYPE)
                     .setQuery(query)

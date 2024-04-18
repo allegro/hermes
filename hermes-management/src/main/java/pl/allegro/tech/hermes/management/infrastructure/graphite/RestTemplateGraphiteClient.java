@@ -17,7 +17,7 @@ import java.net.URI;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.apache.commons.lang.exception.ExceptionUtils.getRootCauseMessage;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 
 public class RestTemplateGraphiteClient implements GraphiteClient {
 

@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 
 public class HealthCheckTest {
 
@@ -20,7 +20,7 @@ public class HealthCheckTest {
         WebTestClient.ResponseSpec response = hermes.api().getManagementHealth();
 
         // when & then
-        await().atMost(5, TimeUnit.SECONDS).until(() ->
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
                 response.expectStatus().isOk());
     }
 }

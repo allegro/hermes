@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests.management;
 
-import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
@@ -22,16 +21,17 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.time.Duration.ofMinutes;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
@@ -236,7 +236,7 @@ public class QueryEndpointTest {
             .map(topicName -> group.getGroupName() + "." + topicName)
             .collect(toList());
 
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() -> {
                     // when
                     List<TopicNameWithMetrics> found = hermes.api().queryTopicMetrics(query)
                             .expectStatus().isOk()
@@ -280,7 +280,7 @@ public class QueryEndpointTest {
                         .build()
         );
 
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() -> {
             // when
             final List<SubscriptionNameWithMetrics> allSubscriptions = hermes.api()
                     .querySubscriptionMetrics(queryGetAllSubscriptionsMetrics)
@@ -323,7 +323,7 @@ public class QueryEndpointTest {
         String queryGetSubscriptionsMetricsWithPositiveRate = "{\"query\": {\"rate\": {\"gt\": 0}}}";
         prometheus.stubDelay(ofMinutes(10));
 
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() -> {
             // when
             List<SubscriptionNameWithMetrics> allSubscriptions = hermes.api()
                     .querySubscriptionMetrics(queryGetAllSubscriptionsMetrics)

@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.http.HttpStatus;

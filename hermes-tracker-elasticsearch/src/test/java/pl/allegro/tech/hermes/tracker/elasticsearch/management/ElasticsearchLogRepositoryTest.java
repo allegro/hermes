@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTrace;
@@ -28,6 +28,7 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactor
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -35,9 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
 import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 
@@ -60,7 +60,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private FrontendElasticsearchLogRepository frontendLogRepository;
     private ConsumersElasticsearchLogRepository consumersLogRepository;
 
-    @BeforeSuite
+    @BeforeClass
     public void before() throws Throwable {
         elasticsearch.before();
         SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, false);
@@ -77,7 +77,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
                 .build();
     }
 
-    @AfterSuite
+    @AfterClass
     public void after() {
         elasticsearch.after();
     }
@@ -124,7 +124,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private List<SentMessageTrace> fetchLastUndelivered(String topic, String subscription) {
         final List<SentMessageTrace> lastUndelivered = new ArrayList<>();
 
-        await().atMost(ONE_MINUTE).until(() -> {
+        await().atMost(Duration.ofMinutes(1)).until(() -> {
             lastUndelivered.clear();
             lastUndelivered.addAll(logRepository.getLastUndeliveredMessages(topic, subscription, 1));
             return lastUndelivered.size() == 1;
@@ -135,7 +135,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private List<MessageTrace> fetchMessageStatus(MessageMetadata messageMetadata) {
         List<MessageTrace> status = new ArrayList<>();
 
-        await().atMost(ONE_MINUTE).until(() -> {
+        await().atMost(Duration.ofMinutes(1)).until(() -> {
             status.clear();
             status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(),
                     messageMetadata.getMessageId()));

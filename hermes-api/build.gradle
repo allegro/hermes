@@ -14,9 +14,9 @@ dependencies {
     api group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.1.8'
     api group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '4.0.0'
 
-    implementation group: 'com.sun.xml.bind', name: 'jaxb-core', version: '4.0.3'
-    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '4.0.3'
-    implementation group: 'jakarta.annotation', name: 'jakarta.annotation-api', version: '2.1.1'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-core', version: '4.0.5'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '4.0.5'
+    implementation group: 'jakarta.annotation', name: 'jakarta.annotation-api', version: '3.0.0'
 
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock

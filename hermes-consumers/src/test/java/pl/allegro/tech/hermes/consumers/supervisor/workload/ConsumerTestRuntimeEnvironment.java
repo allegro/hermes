@@ -56,9 +56,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static java.util.stream.Collectors.toList;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -285,7 +284,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void waitForRegistration(String consumerId) {
-        await().atMost(adjust(ONE_SECOND)).until(() -> isRegistered(consumerId));
+        await().atMost(adjust(Duration.ofSeconds(1))).until(() -> isRegistered(consumerId));
     }
 
     private boolean isRegistered(String nodeId) {
@@ -297,7 +296,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void awaitUntilAssignmentExists(SubscriptionName subscription, WorkloadSupervisor node) {
-        await().atMost(adjust(ONE_SECOND)).until(() -> {
+        await().atMost(adjust(Duration.ofSeconds(1))).untilAsserted(() -> {
             node.assignedSubscriptions().contains(subscription);
         });
     }
@@ -321,7 +320,7 @@ class ConsumerTestRuntimeEnvironment {
             topicRepository.createTopic(topic(subscription.getTopicName()).build());
         }
         subscriptionRepository.createSubscription(subscription);
-        await().atMost(adjust(ONE_SECOND)).until(
+        await().atMost(adjust(Duration.ofSeconds(1))).untilAsserted(
                 () -> {
                     subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName());
                     subscriptionsCaches.forEach(subscriptionsCache ->

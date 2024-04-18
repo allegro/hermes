@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process
 
 import com.codahale.metrics.MetricRegistry
-import com.jayway.awaitility.Awaitility
-import com.jayway.awaitility.core.ConditionFactory
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import org.awaitility.Awaitility
+import org.awaitility.core.ConditionFactory
 import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
@@ -118,7 +118,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         }
 
         then:
-        await().until {
+        await().untilAsserted {
             supervisor.run()
             assert !supervisor.runningSubscriptionsStatus().isEmpty()
             assert supervisor.runningSubscriptionsStatus().first().signalTimesheet[signals.start.type] == currentTime
@@ -137,7 +137,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         }
 
         then:
-        await().until {
+        await().untilAsserted {
             assert consumer.tearDownCount > 0
             assert consumer.wasInterrupted
         }
@@ -153,7 +153,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         runAndWait(supervisor)
 
         then:
-        await().until {
+        await().untilAsserted {
             assert !supervisor.runningSubscriptionsStatus().isEmpty()
             signalsToPass.forEach {
                 assert supervisor.runningSubscriptionsStatus().first().signalTimesheet[it.type] == currentTime

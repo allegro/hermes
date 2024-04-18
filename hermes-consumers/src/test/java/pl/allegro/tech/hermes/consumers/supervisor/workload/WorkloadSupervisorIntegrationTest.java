@@ -14,9 +14,8 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 import java.time.Duration;
 import java.util.List;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.FIVE_SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -67,8 +66,8 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
         runtime.kill(leader);
 
         // then
-        await().atMost(adjust(FIVE_SECONDS)).until(() -> runtime.findLeader(supervisors) != leader);
-        await().atMost(adjust(FIVE_SECONDS)).until(() -> !leader.isLeader());
+        await().atMost(adjust(Duration.ofSeconds(5))).until(() -> runtime.findLeader(supervisors) != leader);
+        await().atMost(adjust(Duration.ofSeconds(5))).until(() -> !leader.isLeader());
     }
 
     @Test
@@ -137,7 +136,7 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
         monitor.start();
 
         // then
-        await().atMost(FIVE_SECONDS).until(
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(
                 () -> verify(consumerFactory, times(2)).createConsumer(any()));
 
         shutdown(supervisor);

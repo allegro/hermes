@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests.management;
 
-import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -10,10 +9,11 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
 
+import java.time.Duration;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NAME_IS_INVALID;
 import static pl.allegro.tech.hermes.api.ErrorCode.GROUP_NOT_EMPTY;
 import static pl.allegro.tech.hermes.integrationtests.management.TopicManagementTest.getErrorCode;
@@ -111,8 +111,8 @@ public class GroupManagementTest {
 
         // then
         response.expectStatus().isOk();
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> Assertions.assertThat(hermes.api().getGroups()).doesNotContain(group.getGroupName()));
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> Assertions.assertThat(hermes.api().getGroups()).doesNotContain(group.getGroupName()));
     }
 
     @Test
@@ -127,8 +127,8 @@ public class GroupManagementTest {
         // then
         response.expectStatus().isOk();
 
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> Assertions.assertThat(hermes.api().getGroups()).doesNotContain(group.getGroupName()));
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> Assertions.assertThat(hermes.api().getGroups()).doesNotContain(group.getGroupName()));
 
         // cleanup
         TestSecurityProvider.reset();

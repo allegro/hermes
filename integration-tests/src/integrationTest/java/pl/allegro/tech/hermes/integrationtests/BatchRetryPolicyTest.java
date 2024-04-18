@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.integrationtests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
-import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -17,6 +16,7 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtensi
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -91,7 +91,7 @@ public class BatchRetryPolicyTest {
         hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
 
         //then
-        subscriber.waitUntilReceived(Duration.FIVE_SECONDS, 1);
+        subscriber.waitUntilReceived(Duration.ofSeconds(5), 1);
     }
 
     @Test

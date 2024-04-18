@@ -61,6 +61,7 @@ allprojects {
             groovy            : '4.0.21',
             avro              : '1.11.3',
             json2avro         : '0.2.14',
+            // TODO: newest version requires subject alternative name in a certificate during host verification, current test cert does not have a one
             okhttp            : '3.9.1',
             undertow          : '2.3.12.Final',
             spring_web        : '6.1.6',
@@ -77,14 +78,14 @@ allprojects {
 
     dependencies {
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.4'
-        implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+        implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
 
         testImplementation group: 'junit', name: 'junit', version: '4.11'
         testImplementation group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
         testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
         testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
         testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
-        testImplementation group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
+        testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
 
         annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: versions.spring
     }

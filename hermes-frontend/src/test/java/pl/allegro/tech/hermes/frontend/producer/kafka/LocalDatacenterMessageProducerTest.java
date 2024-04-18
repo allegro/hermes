@@ -35,10 +35,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @RunWith(MockitoJUnitRunner.class)
