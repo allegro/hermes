@@ -22,8 +22,7 @@ export function useImportSubscription(): UseImportSubscription {
   ) {
     if (importedFile.value) {
       const reader = new FileReader();
-
-      reader.readAsText(importedFile.value[0]);
+      reader.readAsText(importedFile.value);
 
       reader.onload = function () {
         const subscription = JSON.parse(<string>reader.result);

@@ -68,7 +68,9 @@ function mapSerialSubscriptionPolicy(
   form: SubscriptionForm,
 ): SerialSubscriptionPolicyJson {
   return {
-    backoffMaxIntervalInSec: 600,
+    backoffMaxIntervalInSec: parseFloat(
+      String(form.subscriptionPolicy.backoffMaxIntervalInSec),
+    ),
     backoffMultiplier: parseFloat(
       String(form.subscriptionPolicy.retryBackoffMultiplier),
     ),

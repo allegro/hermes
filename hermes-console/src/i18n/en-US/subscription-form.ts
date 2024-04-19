@@ -77,6 +77,12 @@ const messages = {
       placeholder:
         'Delay multiplier between consecutive send attempts of failed requests',
     },
+    backoffMaxIntervalInSec: {
+      label: 'Retry backoff max interval',
+      placeholder:
+        'Max delay between consecutive send attempts of failed requests',
+      suffix: 'seconds',
+    },
     messageDeliveryTrackingMode: {
       label: 'Message delivery tracking mode',
     },

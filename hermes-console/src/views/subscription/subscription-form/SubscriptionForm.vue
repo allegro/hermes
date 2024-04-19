@@ -286,6 +286,18 @@
       "
     />
 
+    <text-field
+      v-if="isSerialDeliveryTypeSelected"
+      v-model="form.subscriptionPolicy.backoffMaxIntervalInSec"
+      :rules="validators.backoffMaxIntervalInSec"
+      type="number"
+      :suffix="$t('subscriptionForm.fields.backoffMaxIntervalInSec.suffix')"
+      :label="$t('subscriptionForm.fields.backoffMaxIntervalInSec.label')"
+      :placeholder="
+        $t('subscriptionForm.fields.backoffMaxIntervalInSec.placeholder')
+      "
+    />
+
     <v-divider />
 
     <select-field
