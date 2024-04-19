@@ -31,7 +31,7 @@ dependencies {
     }
     api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
     // TODO: upgrade this to httpcore5
-    api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.16'
+    api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
 
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
@@ -39,7 +39,7 @@ dependencies {
 
     testImplementation project(':hermes-common')
 
-    testImplementation (group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
+    testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
     testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
@@ -84,6 +84,6 @@ sourceSets {
     }
 }
 
-compileJava{
+compileJava {
     dependsOn(generateSbeStubs)
 }
