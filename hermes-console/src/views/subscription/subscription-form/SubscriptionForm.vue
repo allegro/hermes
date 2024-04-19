@@ -374,7 +374,9 @@
     />
 
     <div
-      v-for="([propertyName, propertyValue]) in Object.entries(configStore.appConfig!.subscription.endpointAddressResolverMetadata)"
+      v-for="[propertyName, propertyValue] in Object.entries(
+        configStore.appConfig!.subscription.endpointAddressResolverMetadata,
+      )"
       :key="propertyName"
       class="d-flex flex-row"
     >

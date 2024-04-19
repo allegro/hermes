@@ -1,9 +1,9 @@
 import { encode as base64encode } from 'base64-arraybuffer';
 import { defineStore } from 'pinia';
 import { fetchToken } from '@/api/hermes-client';
+import { jwtDecode } from 'jwt-decode';
 import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 import axios from '@/utils/axios/axios-instance';
-import decode from 'jwt-decode';
 import qs from 'query-string';
 import type { AuthStoreState } from '@/store/auth/types';
 
@@ -79,7 +79,7 @@ export const useAuthStore = defineStore('auth', {
   },
   getters: {
     userData(state: AuthStoreState): { exp: number } {
-      return state.accessToken ? decode(state.accessToken) : { exp: 0 };
+      return state.accessToken ? jwtDecode(state.accessToken) : { exp: 0 };
     },
     isUserAuthorized(state: AuthStoreState): boolean {
       const expiresAt = this.userData.exp * 1000;
