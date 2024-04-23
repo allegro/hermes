@@ -123,6 +123,8 @@ configure(subprojects - project(':integration-tests')) {
         withSourcesJar()
     }
 
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
     publishing {
         publications {
             mavenJava(MavenPublication) {
