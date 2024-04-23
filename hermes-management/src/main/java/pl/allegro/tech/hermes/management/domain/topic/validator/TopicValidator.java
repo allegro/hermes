@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
@@ -45,7 +47,7 @@ public class TopicValidator {
             throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
         }
 
-        if (created.getChaos().enabled() && !createdBy.isAdmin()) {
+        if (created.getChaos().mode() != ChaosMode.DISABLED && !createdBy.isAdmin()) {
             throw new TopicValidationException("User is not allowed to set chaos policy for this topic");
         }
         validateChaosPolicy(created.getChaos());
@@ -116,15 +118,21 @@ public class TopicValidator {
     }
 
     private void validateChaosPolicy(PublishingChaosPolicy chaosPolicy) {
-        boolean anyInvalid = chaosPolicy.datacenterChaosPolicies().values().stream()
-                .anyMatch(datacenterChaosPolicy -> {
-                    if (datacenterChaosPolicy.delayFrom() < 0 || datacenterChaosPolicy.delayTo() < 0) {
-                        return true;
-                    }
-                    return datacenterChaosPolicy.delayFrom() > datacenterChaosPolicy.delayTo();
-                });
-        if (anyInvalid) {
+        for (ChaosPolicy policy : chaosPolicy.datacenterPolicies().values()) {
+            validate(policy);
+        }
+        validate(chaosPolicy.globalPolicy());
+    }
+
+    private void validate(ChaosPolicy chaosPolicy) {
+        if (chaosPolicy == null) {
+            return;
+        }
+        if (chaosPolicy.delayFrom() < 0 || chaosPolicy.delayTo() < 0 || chaosPolicy.delayFrom() > chaosPolicy.delayTo()) {
             throw new TopicValidationException("Invalid chaos policy: 'delayFrom' and 'delayTo' must be >= 0, and 'delayFrom' <= 'delayTo'.");
+        }
+        if (chaosPolicy.probability() < 0 || chaosPolicy.probability() > 100) {
+            throw new TopicValidationException("Invalid chaos policy: 'probability' must be within the range 0 to 100");
         }
     }
 }

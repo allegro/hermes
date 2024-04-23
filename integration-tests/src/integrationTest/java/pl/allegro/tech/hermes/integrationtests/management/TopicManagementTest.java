@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
-import pl.allegro.tech.hermes.api.PublishingChaosPolicy.DatacenterChaosPolicy;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicLabel;
@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
+import static pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode.DATACENTER;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.auditEvents;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.brokerOperations;
@@ -694,7 +695,7 @@ public class TopicManagementTest {
         TestSecurityProvider.setUserIsAdmin(false);
         TopicWithSchema topic = topicWithSchema(
                 topicWithRandomName()
-                        .withPublishingChaosPolicy(new PublishingChaosPolicy(true, Map.of()))
+                        .withPublishingChaosPolicy(new PublishingChaosPolicy(DATACENTER, null, Map.of()))
                         .build()
         );
         hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
@@ -714,7 +715,7 @@ public class TopicManagementTest {
         TestSecurityProvider.setUserIsAdmin(true);
         TopicWithSchema topic = topicWithSchema(
                 topicWithRandomName()
-                        .withPublishingChaosPolicy(new PublishingChaosPolicy(true, Map.of()))
+                        .withPublishingChaosPolicy(new PublishingChaosPolicy(DATACENTER, null, Map.of()))
                         .build()
         );
         hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
@@ -733,7 +734,7 @@ public class TopicManagementTest {
         TopicWithSchema topic = topicWithSchema(
                 topicWithRandomName()
                         .withPublishingChaosPolicy(
-                                new PublishingChaosPolicy(true, Map.of("dc1", new DatacenterChaosPolicy(100, 99, false)))
+                                new PublishingChaosPolicy(DATACENTER, null, Map.of("dc1", new ChaosPolicy(100, 100, 99, false)))
                         )
                         .build()
         );
@@ -753,7 +754,7 @@ public class TopicManagementTest {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestSecurityProvider.setUserIsAdmin(false);
-        PatchData patchData = PatchData.from(ImmutableMap.of("chaos", ImmutableMap.of("enabled", true)));
+        PatchData patchData = PatchData.from(ImmutableMap.of("chaos", ImmutableMap.of("mode", DATACENTER)));
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
@@ -769,7 +770,7 @@ public class TopicManagementTest {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestSecurityProvider.setUserIsAdmin(true);
-        PatchData patchData = PatchData.from(ImmutableMap.of("chaos", ImmutableMap.of("enabled", true)));
+        PatchData patchData = PatchData.from(ImmutableMap.of("chaos", ImmutableMap.of("mode", DATACENTER)));
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
@@ -784,7 +785,7 @@ public class TopicManagementTest {
         TestSecurityProvider.setUserIsAdmin(true);
         Topic topic = hermes.initHelper().createTopic(
                 topicWithRandomName()
-                        .withPublishingChaosPolicy(new PublishingChaosPolicy(true, Map.of()))
+                        .withPublishingChaosPolicy(new PublishingChaosPolicy(DATACENTER, null, Map.of()))
                         .build()
         );
         TestSecurityProvider.setUserIsAdmin(false);
@@ -804,7 +805,7 @@ public class TopicManagementTest {
         Topic topic = hermes.initHelper().createTopic(
                 topicWithRandomName()
                         .withPublishingChaosPolicy(
-                                new PublishingChaosPolicy(true, Map.of("dc1", new DatacenterChaosPolicy(100, 100, false)))
+                                new PublishingChaosPolicy(DATACENTER, null, Map.of("dc1", new ChaosPolicy(100, 100, 100, false)))
                         )
                         .build()
         );
@@ -812,7 +813,7 @@ public class TopicManagementTest {
                 ImmutableMap.of(
                         "chaos",
                         ImmutableMap.of(
-                                "datacenterChaosPolicies",
+                                "datacenterPolicies",
                                 ImmutableMap.of("dc1", ImmutableMap.of("delayTo", 99))
                         )
                 )

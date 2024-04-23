@@ -6,6 +6,8 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
@@ -13,8 +15,10 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.readiness.AdminReadinessService;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,6 +39,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     private final AdminReadinessService adminReadinessService;
     private final ScheduledExecutorService fallbackScheduler;
     private final ScheduledExecutorService chaosScheduler;
+    private final Random random = new Random();
 
     public MultiDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
                                           AdminReadinessService adminReadinessService,
@@ -54,11 +59,14 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     public void send(Message message, CachedTopic cachedTopic, PublishingCallback callback) {
         var producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
+        KafkaMessageSender<byte[], byte[]> localSender = kafkaMessageSenders.get(cachedTopic.getTopic());
         Optional<KafkaMessageSender<byte[], byte[]>> remoteSender = getRemoteSender(cachedTopic);
 
         final SendCallback sendCallback = remoteSender.isPresent()
                 ? SendCallback.withFallback(callback)
                 : SendCallback.withoutFallback(callback);
+
+        Map<String, ChaosExperiment> experiments = createChaosExperimentsPerDatacenter(cachedTopic.getTopic());
 
         fallbackScheduler.schedule(() -> {
             if (!sendCallback.sent.get() && remoteSender.isPresent()) {
@@ -67,16 +75,19 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                         producerRecord,
                         sendCallback,
                         cachedTopic,
-                        message);
+                        message,
+                        experiments.getOrDefault(remoteSender.get().getDatacenter(), ChaosExperiment.DISABLED)
+                );
             }
         }, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
 
         sendOrScheduleChaosExperiment(
-                kafkaMessageSenders.get(cachedTopic.getTopic()),
+                localSender,
                 producerRecord,
                 sendCallback,
                 cachedTopic,
-                message
+                message,
+                experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED)
         );
     }
 
@@ -102,44 +113,84 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                                                ProducerRecord<byte[], byte[]> producerRecord,
                                                SendCallback callback,
                                                CachedTopic cachedTopic,
-                                               Message message) {
-        var chaos = cachedTopic.getTopic().getChaos();
-        if (chaos.enabled()) {
-            var datacenterChaosPolicies = chaos.datacenterChaosPolicies();
-            var policy = datacenterChaosPolicies.get(sender.getDatacenter());
-            if (policy != null) {
-                scheduleChaosExperiment(policy, sender, producerRecord, callback, cachedTopic, message);
-            } else {
-                send(sender, producerRecord, callback, cachedTopic, message);
-            }
+                                               Message message,
+                                               ChaosExperiment experiment) {
+        if (experiment.enabled()) {
+            scheduleChaosExperiment(experiment, sender, producerRecord, callback, cachedTopic, message);
         } else {
             send(sender, producerRecord, callback, cachedTopic, message);
         }
     }
 
-    private void scheduleChaosExperiment(PublishingChaosPolicy.DatacenterChaosPolicy policy,
+    private void scheduleChaosExperiment(ChaosExperiment experiment,
                                          KafkaMessageSender<byte[], byte[]> sender,
                                          ProducerRecord<byte[], byte[]> producerRecord,
                                          SendCallback callback,
                                          CachedTopic cachedTopic,
                                          Message message) {
-        long delayMillisFrom = policy.delayFrom();
-        long delayMillisTo = policy.delayTo();
-        long delayMillis = ThreadLocalRandom.current().nextLong(delayMillisTo - delayMillisFrom) + delayMillisFrom;
-
         try {
             chaosScheduler.schedule(() -> {
-                if (policy.completeWithError()) {
+                if (experiment.completeWithError()) {
                     var datacenter = sender.getDatacenter();
-                    callback.onUnpublished(message, cachedTopic, datacenter, new ChaosException(datacenter, delayMillis, message.getId()));
+                    var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
+                    callback.onUnpublished(message, cachedTopic, datacenter, exception);
                 } else {
                     send(sender, producerRecord, callback, cachedTopic, message);
                 }
-            }, delayMillis, TimeUnit.MILLISECONDS);
+            }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException e) {
             logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
             send(sender, producerRecord, callback, cachedTopic, message);
         }
+    }
+
+    private Map<String, ChaosExperiment> createChaosExperimentsPerDatacenter(Topic topic) {
+        PublishingChaosPolicy chaos = topic.getChaos();
+        return switch (chaos.mode()) {
+            case DISABLED -> Map.of();
+            case GLOBAL -> {
+                Map<String, ChaosExperiment> experiments = new HashMap<>();
+                ChaosPolicy policy = chaos.globalPolicy();
+                boolean enabled = computeIfShouldBeEnabled(policy);
+                for (String datacenter : kafkaMessageSenders.getDatacenters()) {
+                    experiments.put(datacenter, createChaosExperimentForDatacenter(policy, enabled));
+                }
+                yield experiments;
+            }
+            case DATACENTER -> {
+                Map<String, ChaosExperiment> experiments = new HashMap<>();
+                Map<String, ChaosPolicy> policies = chaos.datacenterPolicies();
+                for (String datacenter : kafkaMessageSenders.getDatacenters()) {
+                    ChaosPolicy policy = policies.get(datacenter);
+                    boolean enabled = computeIfShouldBeEnabled(policy);
+                    experiments.put(datacenter, createChaosExperimentForDatacenter(policy, enabled));
+                }
+                yield experiments;
+            }
+        };
+    }
+
+    private boolean computeIfShouldBeEnabled(ChaosPolicy policy) {
+        if (policy == null) {
+            return false;
+        }
+        return random.nextInt(100) < policy.probability();
+    }
+
+    private ChaosExperiment createChaosExperimentForDatacenter(ChaosPolicy policy, boolean enabled) {
+        if (!enabled) {
+            return ChaosExperiment.DISABLED;
+        }
+        long delayMillisFrom = policy.delayFrom();
+        long delayMillisTo = policy.delayTo();
+        long delayMillis = ThreadLocalRandom.current().nextLong(delayMillisTo - delayMillisFrom) + delayMillisFrom;
+        return new ChaosExperiment(true, policy.completeWithError(), delayMillis);
+    }
+
+    private record ChaosExperiment(boolean enabled, boolean completeWithError, long delayInMillis) {
+
+        private static final ChaosExperiment DISABLED = new ChaosExperiment(false, false, 0);
+
     }
 
     private Optional<KafkaMessageSender<byte[], byte[]>> getRemoteSender(CachedTopic cachedTopic) {

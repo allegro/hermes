@@ -5,9 +5,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
-import pl.allegro.tech.hermes.api.PublishingChaosPolicy.DatacenterChaosPolicy;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
@@ -208,13 +210,50 @@ public class RemoteDatacenterProduceFallbackTest {
                 );
     }
 
+    @Test
+    public void shouldReturnErrorWhenChaosExperimentIsEnabledForAllDatacenters() {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriber();
+
+        Topic topic = initHelper.createTopic(
+                topicWithRandomName()
+                        .withFallbackToRemoteDatacenterEnabled()
+                        .withPublishingChaosPolicy(completeWithErrorForAllDatacenters())
+                        .build()
+        );
+        initHelper.createSubscription(
+                subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
+        );
+        TestMessage message = TestMessage.of("key1", "value1");
+
+        // when
+        DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 500);
+
+        // then
+        subscriber.noMessagesReceived();
+    }
+
+    private static PublishingChaosPolicy completeWithErrorForAllDatacenters() {
+        int delayFrom = 100;
+        int delayTo = 200;
+        int probability = 100;
+        boolean completeWithError = true;
+        return new PublishingChaosPolicy(
+                ChaosMode.GLOBAL,
+                new ChaosPolicy(probability, delayFrom, delayTo, completeWithError),
+                null
+        );
+    }
+
     private static PublishingChaosPolicy completeWithErrorForDatacenter(String datacenter) {
         int delayFrom = 100;
         int delayTo = 200;
+        int probability = 100;
         boolean completeWithError = true;
         return new PublishingChaosPolicy(
-                true,
-                Map.of(datacenter, new DatacenterChaosPolicy(delayFrom, delayTo, completeWithError))
+                ChaosMode.DATACENTER,
+                null,
+                Map.of(datacenter, new ChaosPolicy(probability, delayFrom, delayTo, completeWithError))
         );
     }
 
