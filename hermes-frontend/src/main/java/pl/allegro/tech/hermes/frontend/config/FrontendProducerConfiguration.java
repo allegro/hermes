@@ -105,7 +105,10 @@ public class FrontendProducerConfiguration {
     @Bean(destroyMethod = "close")
     public KafkaMessageSenders failFastKafkaMessageSenders(FailFastKafkaProducerProperties kafkaProducerProperties,
                                                            KafkaMessageSendersFactory kafkaMessageSendersFactory) {
-        return kafkaMessageSendersFactory.provide(kafkaProducerProperties, "failFast");
+        return kafkaMessageSendersFactory.provide(
+                kafkaProducerProperties.getLocal(),
+                kafkaProducerProperties.getRemote(),
+                "failFast");
     }
 
     @Bean(destroyMethod = "close")

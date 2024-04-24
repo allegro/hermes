@@ -96,6 +96,10 @@ public class PrometheusMetricsAssertion {
             assertThat(actualValue).isEqualTo(expectedValue);
         }
 
+        public double withInitialValue() {
+            return extractValue();
+        }
+
         public void withValueGreaterThan(double expectedValue) {
             double actualValue = extractValue();
             assertThat(actualValue).isGreaterThan(expectedValue);
