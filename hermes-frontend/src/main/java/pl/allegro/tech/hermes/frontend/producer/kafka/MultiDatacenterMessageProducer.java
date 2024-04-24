@@ -18,7 +18,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -39,7 +38,6 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     private final AdminReadinessService adminReadinessService;
     private final ScheduledExecutorService fallbackScheduler;
     private final ScheduledExecutorService chaosScheduler;
-    private final Random random = new Random();
 
     public MultiDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
                                           AdminReadinessService adminReadinessService,
@@ -174,7 +172,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         if (policy == null) {
             return false;
         }
-        return random.nextInt(100) < policy.probability();
+        return ThreadLocalRandom.current().nextInt(100) < policy.probability();
     }
 
     private ChaosExperiment createChaosExperimentForDatacenter(ChaosPolicy policy, boolean enabled) {
