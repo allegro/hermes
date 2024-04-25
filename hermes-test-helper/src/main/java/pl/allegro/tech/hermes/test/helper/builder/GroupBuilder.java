@@ -23,6 +23,14 @@ public class GroupBuilder {
     }
 
     public static GroupBuilder groupWithRandomName() {
-        return group(GroupBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet());
+        return groupWithRandomNameEndedWith("");
+    }
+
+    public static GroupBuilder groupWithRandomNameEndedWith(String suffix) {
+        return group(GroupBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet() + suffix);
+    }
+
+    public static GroupBuilder groupWithRandomNameContaining(String string) {
+        return group(GroupBuilder.class.getSimpleName() + "Group" + string + sequence.incrementAndGet());
     }
 }
