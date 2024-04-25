@@ -66,9 +66,20 @@ public class TopicBuilder {
     }
 
     public static TopicBuilder topicWithRandomName() {
+        return topicWithRandomNameEndedWith("");
+    }
+
+    public static TopicBuilder topicWithRandomNameContaining(String string) {
         return topic(
                 TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
-                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet()
+                TopicBuilder.class.getSimpleName() + "Topic" + string + sequence.incrementAndGet()
+        );
+    }
+
+    public static TopicBuilder topicWithRandomNameEndedWith(String suffix) {
+        return topic(
+                TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
+                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet() + suffix
         );
     }
 
