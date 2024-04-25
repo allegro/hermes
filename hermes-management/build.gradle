@@ -92,3 +92,6 @@ tasks.register('prepareIndexTemplate') {
 }
 
 jar.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+
+run.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+
