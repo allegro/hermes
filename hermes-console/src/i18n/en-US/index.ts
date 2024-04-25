@@ -510,7 +510,7 @@ const en_US = {
       retryClientErrors: 'Retry on 4xx status',
       retryBackoff: 'Retry backoff',
       backoffMultiplier: 'Retry backoff multiplier',
-      backoffMaxInterval: 'Retry backoff max interval',
+      backoffMaxIntervalInSec: 'Retry backoff max interval',
       monitoringSeverity: 'Monitoring severity',
       monitoringReaction: 'Monitoring reaction',
       http2: 'Deliver using http/2',
