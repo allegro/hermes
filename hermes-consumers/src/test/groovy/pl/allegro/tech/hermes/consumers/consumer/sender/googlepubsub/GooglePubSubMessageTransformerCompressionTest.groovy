@@ -31,8 +31,8 @@ class GooglePubSubMessageTransformerCompressionTest extends Specification {
         Map<String, String> attributes = pubsubMessage.getAttributesMap()
 
         then:
-        ByteString.copyFrom(MessageBuilder.TEST_MESSAGE_CONTENT, StandardCharsets.UTF_8).toByteArray() ==
-                compressor.decompress(pubsubMessage.getData().toByteArray())
+        ByteString.copyFrom(MessageBuilder.TEST_MESSAGE_CONTENT, StandardCharsets.UTF_8) ==
+                ByteString.copyFrom(compressor.decompress(pubsubMessage.getData().toByteArray()))
 
         assert attributes["cn"] == header
 

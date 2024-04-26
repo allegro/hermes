@@ -13,22 +13,15 @@ class MessageCompressor {
         this.codecFactory = codecFactory;
     }
 
-    byte[] compress(byte[] data) throws IOException {
+    ByteBuffer compress(byte[] data) throws IOException {
         Codec codec = codecFactory.createInstance();
 
-        ByteBuffer compressed = codec.compress(ByteBuffer.wrap(data));
-        byte[] compressedBytes = new byte[compressed.limit()];
-        compressed.get(compressedBytes);
-
-        return compressedBytes;
+        return codec.compress(ByteBuffer.wrap(data));
     }
 
-    byte[] decompress(byte[] data) throws IOException {
+    ByteBuffer decompress(byte[] data) throws IOException {
         Codec codec = codecFactory.createInstance();
 
-        ByteBuffer decompressed = codec.decompress(ByteBuffer.wrap(data));
-        byte[] decompressedBytes = new byte[decompressed.limit()];
-        decompressed.get(decompressedBytes);
-        return decompressedBytes;
+        return codec.decompress(ByteBuffer.wrap(data));
     }
 }
