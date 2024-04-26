@@ -31,4 +31,6 @@ public interface KafkaProducerParameters {
     int getMaxInflightRequestsPerConnection();
 
     boolean isReportNodeMetricsEnabled();
+
+    boolean enableIdempotence();
 }

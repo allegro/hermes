@@ -36,6 +36,8 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
 
     private boolean reportNodeMetricsEnabled = false;
 
+    private boolean enableIdempotence = false;
+
     @Override
     public Duration getMaxBlock() {
         return maxBlock;
@@ -160,5 +162,13 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
 
     public void setDeliveryTimeout(Duration deliveryTimeout) {
         this.deliveryTimeout = deliveryTimeout;
+    }
+
+    public boolean enableIdempotence() {
+        return enableIdempotence;
+    }
+
+    public void setEnableIdempotence(boolean enableIdempotence) {
+        this.enableIdempotence = enableIdempotence;
     }
 }
