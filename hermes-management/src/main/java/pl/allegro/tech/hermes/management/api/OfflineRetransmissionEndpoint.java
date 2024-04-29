@@ -49,8 +49,8 @@ public class OfflineRetransmissionEndpoint {
     public Response createRetransmissionTask(@Valid OfflineRetransmissionRequest request, @Context ContainerRequestContext requestContext) {
         retransmissionService.validateRequest(request);
         permissions.ensurePermissionsToBothTopics(request, requestContext);
-        retransmissionService.createTask(request);
-        auditor.auditRetransmissionCreation(request, requestContext);
+        OfflineRetransmissionTask task = retransmissionService.createTask(request);
+        auditor.auditRetransmissionCreation(request, requestContext, task);
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -91,9 +91,9 @@ public class OfflineRetransmissionEndpoint {
     private static class OfflineRetransmissionAuditor {
         private static final Logger logger = LoggerFactory.getLogger(OfflineRetransmissionAuditor.class);
 
-        public void auditRetransmissionCreation(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
+        public void auditRetransmissionCreation(OfflineRetransmissionRequest request, ContainerRequestContext requestContext, OfflineRetransmissionTask task) {
             String username = extractUsername(requestContext);
-            logger.info("User {} created retransmission task: {}", username, request);
+            logger.info("User {} created offline retransmission task: {}, taskId: {}", username, request, task.getTaskId());
         }
 
         private String extractUsername(ContainerRequestContext requestContext) {
