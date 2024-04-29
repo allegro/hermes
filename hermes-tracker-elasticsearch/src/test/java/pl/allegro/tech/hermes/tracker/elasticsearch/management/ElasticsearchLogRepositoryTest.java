@@ -2,9 +2,11 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
 import com.google.common.collect.ImmutableMap;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
@@ -57,8 +59,17 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private ConsumersElasticsearchLogRepository consumersLogRepository;
 
     @BeforeClass
-    public void before() throws Throwable {
+    public static void beforeAll() throws Throwable {
         elasticsearch.before();
+    }
+
+    @AfterClass
+    public static void afterAll() {
+        elasticsearch.after();
+    }
+
+    @Before
+    public void setUp() {
         SchemaManager schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, false);
         logRepository = new ElasticsearchLogRepository(elasticsearch.client(), schemaManager);
 
@@ -73,13 +84,9 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
                 .build();
     }
 
-    @AfterClass
-    public void after() {
-        elasticsearch.after();
-    }
-
     // TODO: figure out why this test sometimes *consistently* fails on CI
-    @Test(enabled = false)
+    @Ignore
+    @Test
     public void shouldGetLastUndelivered() throws Exception {
         //given
         String topic = "elasticsearch.lastUndelivered";

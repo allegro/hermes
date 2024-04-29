@@ -2,11 +2,10 @@ package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
 import com.google.common.collect.ImmutableMap;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
@@ -17,7 +16,6 @@ import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.TestMessageMetadata;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
-import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
 import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersDailyIndexFactory;
 import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersElasticsearchLogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersIndexFactory;
@@ -61,11 +59,19 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     private ConsumersElasticsearchLogRepository consumersLogRepository;
 
     @BeforeClass
-    public void before() throws Throwable {
+    public static void beforeAll() throws Throwable {
         elasticsearch1.before();
         elasticsearch2.before();
+    }
 
-        SchemaManager schemaManager = new SchemaManager(elasticsearch1.client(), frontendIndexFactory, consumersIndexFactory, false);
+    @AfterClass
+    public static void afterAll() {
+        elasticsearch1.after();
+        elasticsearch2.after();
+    }
+
+    @Before
+    public void setUp() {
         logRepository = new MultiElasticsearchLogRepository(Arrays.asList(elasticsearch1.client(), elasticsearch2.client()));
 
         frontendLogRepository = new FrontendElasticsearchLogRepository.Builder(
@@ -77,12 +83,6 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
                 elasticsearch2.client(), metricsFacade)
                 .withIndexFactory(consumersIndexFactory)
                 .build();
-    }
-
-    @AfterClass
-    public void after() {
-        elasticsearch1.after();
-        elasticsearch2.after();
     }
 
     @Test

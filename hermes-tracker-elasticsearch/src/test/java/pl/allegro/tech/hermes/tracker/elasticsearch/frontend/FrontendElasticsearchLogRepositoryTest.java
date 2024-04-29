@@ -4,10 +4,8 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeSuite;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
@@ -42,16 +40,16 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
 
     private static final ElasticsearchResource elasticsearch = new ElasticsearchResource();
 
-    private SchemaManager schemaManager;
+    private static SchemaManager schemaManager;
 
     @BeforeClass
-    public void before() throws Throwable {
+    public static void beforeAll() throws Throwable {
         elasticsearch.before();
         schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, consumersIndexFactory, false);
     }
 
     @AfterClass
-    public void after() {
+    public static void afterAll() {
         elasticsearch.after();
     }
 

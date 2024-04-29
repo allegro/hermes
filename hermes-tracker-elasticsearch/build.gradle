@@ -17,5 +17,3 @@ dependencies {
     testImplementation 'pl.allegro.tech:embedded-elasticsearch:2.10.0'
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }
-
-test.useTestNG()
