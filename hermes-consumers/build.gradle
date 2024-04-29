@@ -30,7 +30,6 @@ dependencies {
         exclude module: 'hornetq-native'
     }
     api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
-    // TODO: upgrade this to httpcore5
     api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
 
     testImplementation project(':hermes-test-helper')

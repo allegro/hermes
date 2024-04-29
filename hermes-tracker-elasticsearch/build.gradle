@@ -13,6 +13,7 @@ dependencies {
     testImplementation project(path: ":hermes-test-helper")
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
+    // this should be migrated to testcontainers
     testImplementation 'pl.allegro.tech:embedded-elasticsearch:2.10.0'
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }

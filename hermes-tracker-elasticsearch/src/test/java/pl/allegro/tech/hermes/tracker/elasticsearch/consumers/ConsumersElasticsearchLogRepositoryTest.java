@@ -40,7 +40,7 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     );
 
 
-    private static ElasticsearchResource elasticsearch = new ElasticsearchResource();
+    private static final ElasticsearchResource elasticsearch = new ElasticsearchResource();
     private SchemaManager schemaManager;
 
     @BeforeClass

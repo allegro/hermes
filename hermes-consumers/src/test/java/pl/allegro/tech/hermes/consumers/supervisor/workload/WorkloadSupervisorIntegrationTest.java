@@ -29,7 +29,7 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
 
     @Before
     public void setup() throws Exception {
-        runtime.killAll();
+        runtime.cleanState();
         deleteData("/hermes");
         createPath("/hermes/groups");
     }
