@@ -115,7 +115,7 @@ public class KafkaMessageSendersFactory {
         props.put(LINGER_MS_CONFIG, (int) kafkaProducerParameters.getLinger().toMillis());
         props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaProducerParameters.getMetricsSampleWindow().toMillis());
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
-        props.put(ENABLE_IDEMPOTENCE_CONFIG, kafkaProducerParameters.enableIdempotence());
+        props.put(ENABLE_IDEMPOTENCE_CONFIG, kafkaProducerParameters.isIdempotenceEnabled());
         props.put(ACKS_CONFIG, acks);
 
         if (kafkaParameters.isAuthenticationEnabled()) {

@@ -32,5 +32,5 @@ public interface KafkaProducerParameters {
 
     boolean isReportNodeMetricsEnabled();
 
-    boolean enableIdempotence();
+    boolean isIdempotenceEnabled();
 }
