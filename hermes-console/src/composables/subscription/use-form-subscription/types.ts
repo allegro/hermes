@@ -41,6 +41,7 @@ export interface FormSubscriptionPolicy {
   retryBackoff: number;
   sendingDelay: number;
   retryBackoffMultiplier: number;
+  backoffMaxIntervalInSec: number;
   requestTimeout: number;
   batchSize: number | null;
   batchTime: number | null;
@@ -70,6 +71,7 @@ export interface FormValidators {
   inflightMessageTTL: FieldValidator<number>[];
   retryBackoff: FieldValidator<number>[];
   retryBackoffMultiplier: FieldValidator<number>[];
+  backoffMaxIntervalInSec: FieldValidator<number>[];
   messageDeliveryTrackingMode: FieldValidator<string>[];
   monitoringSeverity: FieldValidator<string>[];
 }

@@ -286,6 +286,18 @@
       "
     />
 
+    <text-field
+      v-if="isSerialDeliveryTypeSelected"
+      v-model="form.subscriptionPolicy.backoffMaxIntervalInSec"
+      :rules="validators.backoffMaxIntervalInSec"
+      type="number"
+      :suffix="$t('subscriptionForm.fields.backoffMaxIntervalInSec.suffix')"
+      :label="$t('subscriptionForm.fields.backoffMaxIntervalInSec.label')"
+      :placeholder="
+        $t('subscriptionForm.fields.backoffMaxIntervalInSec.placeholder')
+      "
+    />
+
     <v-divider />
 
     <select-field
@@ -374,7 +386,9 @@
     />
 
     <div
-      v-for="([propertyName, propertyValue]) in Object.entries(configStore.appConfig!.subscription.endpointAddressResolverMetadata)"
+      v-for="[propertyName, propertyValue] in Object.entries(
+        configStore.appConfig!.subscription.endpointAddressResolverMetadata,
+      )"
       :key="propertyName"
       class="d-flex flex-row"
     >

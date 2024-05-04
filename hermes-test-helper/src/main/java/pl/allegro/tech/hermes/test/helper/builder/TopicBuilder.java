@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.OfflineRetentionTime;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PublishingAuth;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicDataOfflineStorage;
@@ -34,6 +35,8 @@ public class TopicBuilder {
 
     private boolean fallbackToRemoteDatacenterEnabled = false;
 
+    private PublishingChaosPolicy chaos = PublishingChaosPolicy.disabled();
+
     private ContentType contentType = ContentType.JSON;
 
     private RetentionTime retentionTime = RetentionTime.of(1, TimeUnit.DAYS);
@@ -63,9 +66,20 @@ public class TopicBuilder {
     }
 
     public static TopicBuilder topicWithRandomName() {
+        return topicWithRandomNameEndedWith("");
+    }
+
+    public static TopicBuilder topicWithRandomNameContaining(String string) {
         return topic(
                 TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
-                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet()
+                TopicBuilder.class.getSimpleName() + "Topic" + string + sequence.incrementAndGet()
+        );
+    }
+
+    public static TopicBuilder topicWithRandomNameEndedWith(String suffix) {
+        return topic(
+                TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
+                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet() + suffix
         );
     }
 
@@ -88,7 +102,7 @@ public class TopicBuilder {
     public Topic build() {
         return new Topic(
                 name, description, owner, retentionTime, migratedFromJsonType, ack, fallbackToRemoteDatacenterEnabled,
-                trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
+                chaos, trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
                 offlineStorage, labels, null, null
         );
@@ -181,6 +195,11 @@ public class TopicBuilder {
 
     public TopicBuilder withLabels(Set<TopicLabel> labels) {
         this.labels = labels;
+        return this;
+    }
+
+    public TopicBuilder withPublishingChaosPolicy(PublishingChaosPolicy chaos) {
+        this.chaos = chaos;
         return this;
     }
 }

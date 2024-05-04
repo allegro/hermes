@@ -111,27 +111,30 @@ public class KafkaMessageSender<K, V> {
     }
 
     public void registerGauges(Topic.Ack ack, String sender) {
-        MetricName bufferTotalBytes = producerMetric("buffer-total-bytes", "producer-metrics", "buffer total bytes");
-        MetricName bufferAvailableBytes = producerMetric("buffer-available-bytes", "producer-metrics", "buffer available bytes");
-        MetricName compressionRate = producerMetric("compression-rate-avg", "producer-metrics", "average compression rate");
-        MetricName failedBatches = producerMetric("record-error-total", "producer-metrics", "failed publishing batches");
-        MetricName metadataAge = producerMetric("metadata-age", "producer-metrics", "age [s] of metadata");
-        MetricName queueTimeMax = producerMetric("record-queue-time-max", "producer-metrics", "maximum time [ms] that batch spent in the send buffer");
+        MetricName bufferTotalBytes = producerMetricMame("buffer-total-bytes", "producer-metrics", "buffer total bytes");
+        MetricName bufferAvailableBytes = producerMetricMame("buffer-available-bytes", "producer-metrics", "buffer available bytes");
+        MetricName compressionRate = producerMetricMame("compression-rate-avg", "producer-metrics", "average compression rate");
+        MetricName failedBatches = producerMetricMame("record-error-total", "producer-metrics", "failed publishing batches");
+        MetricName metadataAge = producerMetricMame("metadata-age", "producer-metrics", "age [s] of metadata");
+        MetricName queueTimeMax = producerMetricMame("record-queue-time-max", "producer-metrics", "maximum time [ms] that batch spent in the send buffer");
+        MetricName recordSendTotal = producerMetricMame("record-send-total", "producer-metrics", "total number of records sent - including retries");
 
         if (ack == Topic.Ack.ALL) {
-            metricsFacade.producer().registerAckAllTotalBytesGauge(producer, producerGauge(bufferTotalBytes), sender, datacenter);
-            metricsFacade.producer().registerAckAllAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes), sender, datacenter);
-            metricsFacade.producer().registerAckAllCompressionRateGauge(producer, producerGauge(compressionRate), sender, datacenter);
-            metricsFacade.producer().registerAckAllFailedBatchesGauge(producer, producerGauge(failedBatches), sender, datacenter);
-            metricsFacade.producer().registerAckAllMetadataAgeGauge(producer, producerGauge(metadataAge), sender, datacenter);
-            metricsFacade.producer().registerAckAllRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax), sender, datacenter);
+            metricsFacade.producer().registerAckAllTotalBytesGauge(producer, producerMetric(bufferTotalBytes), sender, datacenter);
+            metricsFacade.producer().registerAckAllAvailableBytesGauge(producer, producerMetric(bufferAvailableBytes), sender, datacenter);
+            metricsFacade.producer().registerAckAllCompressionRateGauge(producer, producerMetric(compressionRate), sender, datacenter);
+            metricsFacade.producer().registerAckAllFailedBatchesGauge(producer, producerMetric(failedBatches), sender, datacenter);
+            metricsFacade.producer().registerAckAllMetadataAgeGauge(producer, producerMetric(metadataAge), sender, datacenter);
+            metricsFacade.producer().registerAckAllRecordQueueTimeMaxGauge(producer, producerMetric(queueTimeMax), sender, datacenter);
+            metricsFacade.producer().registerAckAllRecordSendCounter(producer, producerMetric(recordSendTotal), sender, datacenter);
         } else if (ack == Topic.Ack.LEADER) {
-            metricsFacade.producer().registerAckLeaderTotalBytesGauge(producer, producerGauge(bufferTotalBytes), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderAvailableBytesGauge(producer, producerGauge(bufferAvailableBytes), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderCompressionRateGauge(producer, producerGauge(compressionRate), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderFailedBatchesGauge(producer, producerGauge(failedBatches), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderMetadataAgeGauge(producer, producerGauge(metadataAge), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(producer, producerGauge(queueTimeMax), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderTotalBytesGauge(producer, producerMetric(bufferTotalBytes), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderAvailableBytesGauge(producer, producerMetric(bufferAvailableBytes), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderCompressionRateGauge(producer, producerMetric(compressionRate), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderFailedBatchesGauge(producer, producerMetric(failedBatches), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderMetadataAgeGauge(producer, producerMetric(metadataAge), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(producer, producerMetric(queueTimeMax), sender, datacenter);
+            metricsFacade.producer().registerAckLeaderRecordSendCounter(producer, producerMetric(recordSendTotal), sender, datacenter);
         }
     }
 
@@ -143,13 +146,13 @@ public class KafkaMessageSender<K, V> {
         return value < 0 ? 0.0 : value;
     }
 
-    private ToDoubleFunction<Producer<K, V>> producerGauge(MetricName producerMetricName) {
+    private ToDoubleFunction<Producer<K, V>> producerMetric(MetricName producerMetricName) {
         Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group())
                 && entry.getKey().name().equals(producerMetricName.name());
         return producer -> findProducerMetric(producer, predicate);
     }
 
-    private static MetricName producerMetric(String name, String group, String description) {
+    private static MetricName producerMetricMame(String name, String group, String description) {
         return new MetricName(name, group, description, Collections.emptyMap());
     }
 }

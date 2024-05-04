@@ -66,16 +66,23 @@ public class KafkaMessageSendersFactory {
         this.brokerLatencyReporter = brokerLatencyReporter;
     }
 
+
     public KafkaMessageSenders provide(KafkaProducerParameters kafkaProducerParameters, String senderName) {
-            KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
-                sender(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
-                sender(kafkaParameters, kafkaProducerParameters, ACK_ALL)
+        return provide(kafkaProducerParameters, kafkaProducerParameters, senderName);
+    }
+
+    public KafkaMessageSenders provide(KafkaProducerParameters localKafkaProducerParameters,
+                                       KafkaProducerParameters remoteKafkaProducerParameters,
+                                       String senderName) {
+        KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
+                sender(kafkaParameters, localKafkaProducerParameters, ACK_LEADER),
+                sender(kafkaParameters, localKafkaProducerParameters, ACK_ALL)
         );
 
         List<KafkaMessageSenders.Tuple> remoteProducers = remoteKafkaParameters.stream().map(
                 kafkaProperties -> new KafkaMessageSenders.Tuple(
-                        sender(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
-                        sender(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
+                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_LEADER),
+                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_ALL))).toList();
         KafkaMessageSenders senders = new KafkaMessageSenders(
                 topicMetadataLoadingExecutor,
                 localMinInSyncReplicasLoader,

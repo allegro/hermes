@@ -4,7 +4,6 @@ import org.apache.kafka.common.PartitionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
 import java.util.List;
@@ -26,6 +25,7 @@ public class KafkaMessageSenders {
     private final TopicMetadataLoadingExecutor topicMetadataLoadingExecutor;
     private final List<TopicMetadataLoader> localDatacenterTopicMetadataLoaders;
     private final List<TopicMetadataLoader> kafkaProducerMetadataRefreshers;
+    private final List<String> datacenters;
 
     KafkaMessageSenders(TopicMetadataLoadingExecutor topicMetadataLoadingExecutor,
                         MinInSyncReplicasLoader localMinInSyncReplicasLoader,
@@ -43,6 +43,10 @@ public class KafkaMessageSenders {
         this.kafkaProducerMetadataRefreshers = Stream.concat(Stream.of(localSenders), remoteSenders.stream())
                 .map(KafkaProducerMetadataRefresher::new)
                 .collect(Collectors.toList());
+        this.datacenters = Stream.concat(Stream.of(localSenders), remoteSenders.stream())
+                .map(tuple -> tuple.ackAll)
+                .map(KafkaMessageSender::getDatacenter)
+                .toList();
     }
 
     KafkaMessageSender<byte[], byte[]> get(Topic topic) {
@@ -51,6 +55,10 @@ public class KafkaMessageSenders {
 
     List<KafkaMessageSender<byte[], byte[]>> getRemote(Topic topic) {
         return topic.isReplicationConfirmRequired() ? remoteAckLeader : remoteAckAll;
+    }
+
+    List<String> getDatacenters() {
+        return datacenters;
     }
 
     void refreshTopicMetadata() {

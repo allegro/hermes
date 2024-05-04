@@ -16,7 +16,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - name: Run linter
         run: yarn && yarn lint
       - name: Run frontend tests

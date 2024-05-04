@@ -126,20 +126,20 @@ describe('ConfirmationDialog', () => {
     ).toBeEnabled();
 
     //when
-    await userEvent.type(getAllByRole('textbox')[1], 'not matching text');
+    await userEvent.type(getAllByRole('textbox')[0], 'not matching text');
 
     //then
-    expect(getAllByRole('textbox')[1]).toHaveValue('not matching text');
+    expect(getAllByRole('textbox')[0]).toHaveValue('not matching text');
     expect(
       getByText('confirmationDialog.confirm').closest('button'),
     ).toBeDisabled();
 
     //when
-    await userEvent.clear(getAllByRole('textbox')[1]);
-    await userEvent.type(getAllByRole('textbox')[1], 'prod');
+    await userEvent.clear(getAllByRole('textbox')[0]);
+    await userEvent.type(getAllByRole('textbox')[0], 'prod');
 
     //then
-    expect(getAllByRole('textbox')[1]).toHaveValue('prod');
+    expect(getAllByRole('textbox')[0]).toHaveValue('prod');
     expect(
       getByText('confirmationDialog.confirm').closest('button'),
     ).toBeEnabled();
