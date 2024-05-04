@@ -2,18 +2,18 @@
 
 ## HTTP Sender
 
-Option                                               | Description                                                 | Default value
----------------------------------------------------- | ----------------------------------------------------------- | -------------
-consumer.http-client.serial.http1.threadPoolSize                  | size of thread pool for sender threads (global)             | 30
-consumer.http-client.serial.http1.maxConnectionsPerDestination    | max connections per remote host                             | 100
+| Option                                                         | Description                                     | Default value |
+|----------------------------------------------------------------|-------------------------------------------------|---------------|
+| consumer.http-client.serial.http1.threadPoolSize               | size of thread pool for sender threads (global) | 30            |
+| consumer.http-client.serial.http1.maxConnectionsPerDestination | max connections per remote host                 | 100           |
 
 ## Consumers core
 
-Option                        | Description                                                              | Default value
------------------------------ | ------------------------------------------------------------------------ | -------------
-consumer.commit.offset.period | interval between committing offsets to Kafka                             | 60s
-consumer.threadPoolSize       | thread pool for threads involved in consuming, 1 thread per subscription | 500
-consumer.serialConsumer.inflightSize         | how many messages can be kept in send queue, per subscription            | 100
+| Option                               | Description                                                              | Default value |
+|--------------------------------------|--------------------------------------------------------------------------|---------------|
+| consumer.commit.offset.period        | interval between committing offsets to Kafka                             | 60s           |
+| consumer.threadPoolSize              | thread pool for threads involved in consuming, 1 thread per subscription | 500           |
+| consumer.serialConsumer.inflightSize | how many messages can be kept in send queue, per subscription            | 100           |
 
 ## Workload constraints management
 

@@ -52,6 +52,7 @@ public class Subscription implements Anonymizable {
     private boolean trackingEnabled = false;
     private TrackingMode trackingMode = TrackingMode.TRACKING_OFF;
     private boolean http2Enabled = false;
+    private boolean profilingEnabled = false;
     @Valid
     @NotNull
     private OwnerId owner;
@@ -94,6 +95,7 @@ public class Subscription implements Anonymizable {
                          EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                          SubscriptionOAuthPolicy oAuthPolicy,
                          boolean http2Enabled,
+                         boolean profilingEnabled,
                          boolean subscriptionIdentityHeadersEnabled,
                          boolean autoDeleteWithTopicEnabled) {
         this.topicName = topicName;
@@ -112,6 +114,7 @@ public class Subscription implements Anonymizable {
         this.filters = filters;
         this.mode = mode;
         this.http2Enabled = http2Enabled;
+        this.profilingEnabled = profilingEnabled;
         this.subscriptionName = new SubscriptionName(name, topicName);
         this.headers = headers;
         this.endpointAddressResolverMetadata = endpointAddressResolverMetadata;
@@ -137,11 +140,12 @@ public class Subscription implements Anonymizable {
                                                         EndpointAddressResolverMetadata endpointAddressResolverMetadata,
                                                         SubscriptionOAuthPolicy oAuthPolicy,
                                                         boolean http2Enabled,
+                                                        boolean profilingEnabled,
                                                         boolean subscriptionIdentityHeadersEnabled,
                                                         boolean autoDeleteWithTopicEnabled) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
                 owner, monitoringDetails, contentType, DeliveryType.SERIAL, filters, mode, headers,
-                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled, autoDeleteWithTopicEnabled);
+                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, profilingEnabled, subscriptionIdentityHeadersEnabled, autoDeleteWithTopicEnabled);
     }
 
     public static Subscription createBatchSubscription(TopicName topicName,
@@ -164,7 +168,7 @@ public class Subscription implements Anonymizable {
                                                        boolean autoDeleteWithTopicEnabled) {
         return new Subscription(topicName, name, endpoint, state, description, subscriptionPolicy, trackingEnabled, trackingMode,
                 owner, monitoringDetails, contentType, DeliveryType.BATCH, filters, SubscriptionMode.ANYCAST, headers,
-                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, subscriptionIdentityHeadersEnabled, autoDeleteWithTopicEnabled);
+                endpointAddressResolverMetadata, oAuthPolicy, http2Enabled, false, subscriptionIdentityHeadersEnabled, autoDeleteWithTopicEnabled);
     }
 
     @JsonCreator
@@ -187,6 +191,7 @@ public class Subscription implements Anonymizable {
             @JsonProperty("endpointAddressResolverMetadata") EndpointAddressResolverMetadata endpointAddressResolverMetadata,
             @JsonProperty("oAuthPolicy") SubscriptionOAuthPolicy oAuthPolicy,
             @JsonProperty("http2Enabled") boolean http2Enabled,
+            @JsonProperty("profilingEnabled") boolean profilingEnabled,
             @JsonProperty("subscriptionIdentityHeadersEnabled") boolean subscriptionIdentityHeadersEnabled,
             @JsonProperty("autoDeleteWithTopicEnabled") boolean autoDeleteWithTopicEnabled) {
 
@@ -219,6 +224,7 @@ public class Subscription implements Anonymizable {
                 endpointAddressResolverMetadata == null ? EndpointAddressResolverMetadata.empty() : endpointAddressResolverMetadata,
                 oAuthPolicy,
                 http2Enabled,
+                profilingEnabled,
                 subscriptionIdentityHeadersEnabled,
                 autoDeleteWithTopicEnabled
         );
@@ -257,6 +263,7 @@ public class Subscription implements Anonymizable {
                 && Objects.equals(this.headers, other.headers)
                 && Objects.equals(this.endpointAddressResolverMetadata, other.endpointAddressResolverMetadata)
                 && Objects.equals(this.http2Enabled, other.http2Enabled)
+                && Objects.equals(this.profilingEnabled, other.profilingEnabled)
                 && Objects.equals(this.oAuthPolicy, other.oAuthPolicy)
                 && Objects.equals(this.subscriptionIdentityHeadersEnabled, other.subscriptionIdentityHeadersEnabled)
                 && Objects.equals(this.autoDeleteWithTopicEnabled, other.autoDeleteWithTopicEnabled);
@@ -391,6 +398,10 @@ public class Subscription implements Anonymizable {
         return http2Enabled;
     }
 
+    public boolean isProfilingEnabled() {
+        return profilingEnabled;
+    }
+
     public boolean isSubscriptionIdentityHeadersEnabled() {
         return subscriptionIdentityHeadersEnabled;
     }
@@ -437,6 +448,7 @@ public class Subscription implements Anonymizable {
                     endpointAddressResolverMetadata,
                     oAuthPolicy != null ? oAuthPolicy.anonymize() : null,
                     http2Enabled,
+                    profilingEnabled,
                     subscriptionIdentityHeadersEnabled,
                     autoDeleteWithTopicEnabled
             );
