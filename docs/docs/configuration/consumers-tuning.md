@@ -26,10 +26,10 @@ subscriptions assigned to itself.
 
 These numbers can be configured:
 
-Option                                              | Description                               | Default value
---------------------------------------------------- | ----------------------------------------- | ---------------------
-consumer.workload.consumersPerSubscription          | Number of consumers to which the subscription will be assigned. If this value is greater than the number of available consumers, Hermes will assign the subscription to all available consumers. | 2
-consumer.workload.maxSubscriptionsPerConsumer       | The maximum number of subscriptions assigned to a single consumer. If all consumers have the maximum number of subscriptions assigned, a new subscription will not be activated until a new consumer is added or another subscription is unassigned. | 200
+| Option                                        | Description                                                                                                                                                                                                                                          | Default value |
+|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| consumer.workload.consumersPerSubscription    | Number of consumers to which the subscription will be assigned. If this value is greater than the number of available consumers, Hermes will assign the subscription to all available consumers.                                                     | 2             |
+| consumer.workload.maxSubscriptionsPerConsumer | The maximum number of subscriptions assigned to a single consumer. If all consumers have the maximum number of subscriptions assigned, a new subscription will not be activated until a new consumer is added or another subscription is unassigned. | 200           |
 
 Additionally, Hermes allows to configure the property `consumer.workload.consumersPerSubscription` for specific
 topics or subscriptions in the runtime via REST API.

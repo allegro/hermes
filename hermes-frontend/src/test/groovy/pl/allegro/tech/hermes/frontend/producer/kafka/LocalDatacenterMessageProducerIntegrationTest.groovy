@@ -88,7 +88,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
 
     @Shared
-    String datacenter = "dc";
+    String datacenter = "dc"
 
     @Shared
     MetricsFacade metricsFacade = new MetricsFacade(

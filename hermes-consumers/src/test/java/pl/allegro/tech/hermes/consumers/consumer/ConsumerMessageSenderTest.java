@@ -91,7 +91,7 @@ public class ConsumerMessageSenderTest {
 
     private AdjustableSemaphore inflightSemaphore;
 
-    private ConsumerProfiler profiler = new NoOpConsumerProfiler();
+    private final ConsumerProfiler profiler = new NoOpConsumerProfiler();
 
     private ConsumerMessageSender sender;
 
