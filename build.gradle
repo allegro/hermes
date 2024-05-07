@@ -48,7 +48,7 @@ allprojects {
     targetCompatibility = JavaVersion.VERSION_17
 
     project.ext.versions = [
-            kafka             : '2.8.2',
+            kafka             : '3.6.2',
             guava             : '23.0',
             jackson           : '2.15.2',
             jersey            : '3.1.2',

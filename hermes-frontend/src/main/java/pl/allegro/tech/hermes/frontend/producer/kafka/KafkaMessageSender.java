@@ -142,8 +142,12 @@ public class KafkaMessageSender<K, V> {
                                       Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
         Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                 producer.metrics().entrySet().stream().filter(predicate).findFirst();
-        double value = first.map(metricNameEntry -> metricNameEntry.getValue().value()).orElse(0.0);
-        return value < 0 ? 0.0 : value;
+        Object value = first.map(metricNameEntry -> metricNameEntry.getValue().metricValue()).orElse(0.0d);
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        } else {
+            return 0.0;
+        }
     }
 
     private ToDoubleFunction<Producer<K, V>> producerMetric(MetricName producerMetricName) {
