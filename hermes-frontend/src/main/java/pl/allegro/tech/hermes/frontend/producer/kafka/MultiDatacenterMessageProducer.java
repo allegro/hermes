@@ -72,17 +72,24 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                                      PublishingCallback callback,
                                      CachedTopic cachedTopic,
                                      Message message) {
-        SendWithoutFallbackCallback sendWithoutFallbackCallback = new SendWithoutFallbackCallback(callback);
+        send(sender, producerRecord, new SendWithoutFallbackCallback(callback), cachedTopic, message);
+    }
+
+    private void send(KafkaMessageSender<byte[], byte[]> sender,
+                      ProducerRecord<byte[], byte[]> producerRecord,
+                      SendCallback callback,
+                      CachedTopic cachedTopic,
+                      Message message) {
         String datacenter = sender.getDatacenter();
         try {
             sender.send(producerRecord, cachedTopic, message, new DCAwareCallback(
                     message,
                     cachedTopic,
                     datacenter,
-                    sendWithoutFallbackCallback));
+                    callback));
         } catch (Exception e) {
             // message didn't get to internal producer buffer and it will not be sent to a broker
-            sendWithoutFallbackCallback.onUnpublished(message, cachedTopic, datacenter, e);
+            callback.onUnpublished(message, cachedTopic, datacenter, e);
         }
     }
 
@@ -243,17 +250,15 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
             errors.put(datacenter, exception);
             if (tries.decrementAndGet() == 0) { // todo: <= (?)
                 callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(errors));
-            } else if (experiment.enabled()) {
+            } else {
                 sendOrScheduleChaosExperiment(
                         remoteSender,
                         producerRecord,
-                        new SendWithoutFallbackCallback(callback),
+                        this,
                         cachedTopic,
                         message,
                         experiment
                 );
-            } else {
-                sendWithoutFallback(remoteSender, producerRecord, callback, cachedTopic, message);
             }
         }
 
