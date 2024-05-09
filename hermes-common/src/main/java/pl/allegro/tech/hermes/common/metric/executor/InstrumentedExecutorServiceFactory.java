@@ -34,11 +34,12 @@ public class InstrumentedExecutorServiceFactory {
     }
 
     public ScheduledExecutorService getScheduledExecutorService(
-            String name, int size, boolean monitoringEnabled
+            String name, int size, boolean monitoringEnabled, boolean removeOnCancel
     ) {
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-scheduled-executor-%d").build();
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(size, threadFactory);
+        executor.setRemoveOnCancelPolicy(removeOnCancel);
         return monitoringEnabled ? monitor(name, executor) : executor;
     }
 

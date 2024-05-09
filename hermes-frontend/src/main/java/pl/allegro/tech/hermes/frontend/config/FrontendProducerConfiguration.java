@@ -72,13 +72,16 @@ public class FrontendProducerConfiguration {
         ScheduledExecutorService fallbackScheduler = executorServiceFactory.getScheduledExecutorService(
                 "fallback-to-remote",
                 fallbackSchedulerProperties.getThreadPoolSize(),
-                fallbackSchedulerProperties.isThreadPoolMonitoringEnabled()
+                fallbackSchedulerProperties.isThreadPoolMonitoringEnabled(),
+                true
         );
+
         ChaosSchedulerProperties chaosSchedulerProperties = kafkaProducerProperties.getChaosScheduler();
         ScheduledExecutorService chaosScheduler = executorServiceFactory.getScheduledExecutorService(
                 "chaos",
                 chaosSchedulerProperties.getThreadPoolSize(),
-                chaosSchedulerProperties.isThreadPoolMonitoringEnabled()
+                chaosSchedulerProperties.isThreadPoolMonitoringEnabled(),
+                false
         );
         return new MultiDatacenterMessageProducer(
                 kafkaMessageSenders,

@@ -18,7 +18,9 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
@@ -65,13 +67,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         if (remoteSender.isPresent()) {
             sendWithFallback(localSender, remoteSender.get(), producerRecord, SendCallback.withFallback(callback), cachedTopic, message, experiments);
         } else {
-            sendOrScheduleChaosExperiment(
+            send(
                     localSender,
                     producerRecord,
                     SendCallback.withoutFallback(callback),
                     cachedTopic,
-                    message,
-                    experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED)
+                    message
             );
         }
     }
@@ -280,6 +281,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         private final ChaosExperiment experiment;
         private final SendCallback callback;
         private final AtomicBoolean executed = new AtomicBoolean(false);
+        private volatile Future<?> scheduledExecutionHandle = CompletableFuture.completedFuture(null);
 
         public Fallback(KafkaMessageSender<byte[], byte[]> remoteSender, ProducerRecord<byte[], byte[]> producerRecord, CachedTopic cachedTopic, Message message, ChaosExperiment experiment, SendCallback callback) {
             this.remoteSender = remoteSender;
@@ -305,18 +307,25 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
         public void runNow() {
             try {
+                cancelScheduled();
                 fallbackScheduler.execute(this::run);
             } catch (RejectedExecutionException rejectedExecutionException) {
                 logger.warn("Failed to run immediate fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
             }
         }
 
+
         public void schedule(Duration delay) {
             try {
-                fallbackScheduler.schedule(this::run, delay.toMillis(), TimeUnit.MILLISECONDS);
+                scheduledExecutionHandle = fallbackScheduler.schedule(this::run, delay.toMillis(), TimeUnit.MILLISECONDS);
             } catch (RejectedExecutionException rejectedExecutionException) {
                 logger.warn("Failed to run schedule fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
             }
+        }
+
+        // if the scheduled fallback has not yet run - cancel it
+        public void cancelScheduled() {
+            scheduledExecutionHandle.cancel(false);
         }
     }
 
@@ -327,6 +336,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             if (exception == null) {
                 callback.onPublished(message, cachedTopic, datacenter);
+                fallback.cancelScheduled();
             } else {
                 // Run fallback immediately after sending to Kafka failed. It will
                 // run concurrently with scheduled fallback
