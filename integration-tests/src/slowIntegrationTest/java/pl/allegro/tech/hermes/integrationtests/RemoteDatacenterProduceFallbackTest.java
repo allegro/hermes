@@ -5,12 +5,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.integrationtests.assertions.PrometheusMetricsAssertion;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
@@ -104,6 +104,8 @@ public class RemoteDatacenterProduceFallbackTest {
                 subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
         );
 
+        double remoteDCInitialSendTotal = assertRemoteDCSendTotalMetric().withInitialValue();
+
         // when dc1 is not available
         dc1.kafka.cutOffConnectionsBetweenBrokersAndClients();
 
@@ -119,14 +121,17 @@ public class RemoteDatacenterProduceFallbackTest {
                 .expectStatus()
                 .isOk()
                 .expectBody(String.class)
-                .value((body) -> assertThatMetrics(body)
-                        .contains("hermes_frontend_topic_published_total")
-                        .withLabels(
-                                "group", topic.getName().getGroupName(),
-                                "topic", topic.getName().getName(),
-                                "storageDc", "dc2"
-                        )
-                        .withValue(1.0)
+                .value((body) -> {
+                            assertThatMetrics(body)
+                                    .contains("hermes_frontend_topic_published_total")
+                                    .withLabels(
+                                            "group", topic.getName().getGroupName(),
+                                            "topic", topic.getName().getName(),
+                                            "storageDc", "dc2"
+                                    )
+                                    .withValue(1.0);
+                            assertRemoteDCSendTotalMetric().withValueGreaterThan(remoteDCInitialSendTotal);
+                        }
                 );
     }
 
@@ -278,5 +283,16 @@ public class RemoteDatacenterProduceFallbackTest {
                     .parallel()
                     .forEach(Startable::stop);
         }
+    }
+
+    PrometheusMetricsAssertion.PrometheusMetricAssertion assertRemoteDCSendTotalMetric() {
+        return assertThatMetrics(DC1
+                .getFrontendMetrics().expectStatus().isOk()
+                .expectBody(String.class).returnResult().getResponseBody())
+                .contains("hermes_frontend_kafka_producer_ack_leader_record_send_total")
+                .withLabels(
+                        "storageDc", "dc2",
+                        "sender", "failFast"
+                );
     }
 }

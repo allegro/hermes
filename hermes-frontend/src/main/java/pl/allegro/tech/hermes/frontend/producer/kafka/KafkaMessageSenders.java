@@ -54,7 +54,7 @@ public class KafkaMessageSenders {
     }
 
     List<KafkaMessageSender<byte[], byte[]>> getRemote(Topic topic) {
-        return topic.isReplicationConfirmRequired() ? remoteAckLeader : remoteAckAll;
+        return topic.isReplicationConfirmRequired() ? remoteAckAll : remoteAckLeader;
     }
 
     List<String> getDatacenters() {
