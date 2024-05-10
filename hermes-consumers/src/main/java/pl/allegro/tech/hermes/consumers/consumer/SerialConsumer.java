@@ -149,7 +149,7 @@ public class SerialConsumer implements Consumer {
     }
 
     private void initializeMessageReceiver() {
-        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter, loadRecorder, metrics);
+        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter, loadRecorder, metrics, offsetQueue);
     }
 
     /**

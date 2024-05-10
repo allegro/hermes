@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jctools.queues.MessagePassingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
@@ -59,11 +60,11 @@ import java.util.function.Function;
  *
  * <p>Second phase is calculating the offsets:</p>
  * <ul>
- * <li>calculate maximal committed offset for each subscription and partition,</li>
- * <li>calculate minimal inflight offset for each subscription and partition.</li>
+ * <li>calculate maximal committed offset for each partition,</li>
+ * <li>calculate minimal inflight offset for each partition.</li>
  * </ul>
  *
- * <p>Third phase is choosing which offset to commit for each subscription/partition. This is the minimal value of:</p>
+ * <p>Third phase is choosing which offset to commit for each partition. This is the minimal value of:</p>
  * <ul>
  * <li>maximum committed offset,</li>
  * <li>minimum inflight offset.</li>
@@ -75,10 +76,11 @@ public class OffsetCommitter implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(OffsetCommitter.class);
 
-    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setNameFormat("offset-committer-%d").build());
+    private final ScheduledExecutorService scheduledExecutor;
 
     private final int offsetCommitPeriodSeconds;
+
+    private final SubscriptionName subscriptionName;
 
     private final OffsetQueue offsetQueue;
 
@@ -97,7 +99,8 @@ public class OffsetCommitter implements Runnable {
             ConsumerPartitionAssignmentState partitionAssignmentState,
             MessageCommitter messageCommitter,
             int offsetCommitPeriodSeconds,
-            MetricsFacade metrics
+            MetricsFacade metrics,
+            SubscriptionName subscriptionName
     ) {
         this.offsetQueue = offsetQueue;
         this.partitionAssignmentState = partitionAssignmentState;
@@ -106,6 +109,9 @@ public class OffsetCommitter implements Runnable {
         this.obsoleteCounter = metrics.offsetCommits().obsoleteCounter();
         this.committedCounter = metrics.offsetCommits().committedCounter();
         this.timer = metrics.offsetCommits().duration();
+        this.subscriptionName = subscriptionName;
+        this.scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setNameFormat(subscriptionName + "-offset-committer-%d").build());
     }
 
     @Override
@@ -127,7 +133,7 @@ public class OffsetCommitter implements Runnable {
 
             Set<SubscriptionPartition> committedOffsetToBeRemoved = new HashSet<>();
 
-            OffsetsToCommit offsetsToCommit = new OffsetsToCommit();
+            OffsetsToCommit offsetsToCommit = new OffsetsToCommit(subscriptionName);
             for (SubscriptionPartition partition : Sets.union(minInflightOffsets.keySet(), maxCommittedOffsets.keySet())) {
                 if (partitionAssignmentState.isAssignedPartitionAtCurrentTerm(partition)) {
                     long minInflight = minInflightOffsets.getOrDefault(partition, Long.MAX_VALUE);
@@ -151,7 +157,10 @@ public class OffsetCommitter implements Runnable {
                 }
             }
             committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
-            messageCommitter.commitOffsets(offsetsToCommit);
+
+            if (offsetsToCommit.getOffsets() != null) {
+                messageCommitter.commitOffsets(offsetsToCommit);
+            }
 
             obsoleteCounter.increment(obsoleteCount);
             committedCounter.increment(scheduledToCommitCount);

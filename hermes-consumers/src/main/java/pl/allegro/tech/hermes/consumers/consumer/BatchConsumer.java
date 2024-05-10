@@ -135,7 +135,8 @@ public class BatchConsumer implements Consumer {
                 subscription,
                 new BatchConsumerRateLimiter(),
                 loadRecorder,
-                metricsFacade
+                metricsFacade,
+                offsetQueue
         );
 
         logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());

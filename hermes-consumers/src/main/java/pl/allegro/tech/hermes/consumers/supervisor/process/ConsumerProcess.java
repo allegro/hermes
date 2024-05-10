@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -26,6 +27,8 @@ public class ConsumerProcess implements Runnable {
 
     private final Consumer consumer;
 
+    private final OffsetCommitter offsetCommitter;
+
     private final Retransmitter retransmitter;
 
     private final java.util.function.Consumer<SubscriptionName> onConsumerStopped;
@@ -41,12 +44,14 @@ public class ConsumerProcess implements Runnable {
     public ConsumerProcess(
             Signal startSignal,
             Consumer consumer,
+            OffsetCommitter offsetCommitter,
             Retransmitter retransmitter,
             Clock clock,
             Duration unhealthyAfter,
             java.util.function.Consumer<SubscriptionName> onConsumerStopped) {
         this.consumer = consumer;
         this.retransmitter = retransmitter;
+        this.offsetCommitter = offsetCommitter;
         this.onConsumerStopped = onConsumerStopped;
         this.clock = clock;
         this.healthcheckRefreshTime = clock.millis();
@@ -140,10 +145,11 @@ public class ConsumerProcess implements Runnable {
     }
 
     private void start(Signal signal) {
-        long startTime = clock.millis();
+        final long startTime = clock.millis();
         logger.info("Starting consumer for subscription {}. {}",
                 getSubscriptionName(), signal.getLogWithIdAndType());
 
+        offsetCommitter.start();
         consumer.initialize();
 
         long initializationTime = clock.millis();
@@ -153,9 +159,10 @@ public class ConsumerProcess implements Runnable {
     }
 
     private void stop() {
-        long startTime = clock.millis();
+        final long startTime = clock.millis();
         logger.info("Stopping consumer for subscription {}", getSubscriptionName());
 
+        offsetCommitter.shutdown();
         consumer.tearDown();
 
         logger.info("Stopped consumer for subscription {} in {}ms", getSubscriptionName(), clock.millis() - startTime);
