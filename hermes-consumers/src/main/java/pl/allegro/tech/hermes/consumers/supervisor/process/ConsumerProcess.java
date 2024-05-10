@@ -145,7 +145,7 @@ public class ConsumerProcess implements Runnable {
     }
 
     private void start(Signal signal) {
-        long startTime = clock.millis();
+        final long startTime = clock.millis();
         logger.info("Starting consumer for subscription {}. {}",
                 getSubscriptionName(), signal.getLogWithIdAndType());
 
@@ -159,7 +159,7 @@ public class ConsumerProcess implements Runnable {
     }
 
     private void stop() {
-        long startTime = clock.millis();
+        final long startTime = clock.millis();
         logger.info("Stopping consumer for subscription {}", getSubscriptionName());
 
         offsetCommitter.shutdown();
