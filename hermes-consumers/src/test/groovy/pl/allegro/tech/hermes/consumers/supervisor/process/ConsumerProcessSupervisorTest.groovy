@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
@@ -66,8 +67,8 @@ class ConsumerProcessSupervisorTest extends Specification {
         clock = new CurrentTimeClock()
         consumer = new ConsumerStub(subscription1)
         ConsumerProcessSupplier processFactory = {
-            Subscription subscription, Signal startSignal, Consumer<SubscriptionName> onConsumerStopped ->
-                return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
+            Subscription subscription, Signal startSignal, Consumer<SubscriptionName> onConsumerStopped, messageCommitter ->
+                return new ConsumerProcess(startSignal, consumer, Stub(OffsetCommitter), Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
         }
 
         metrics = new MetricsFacade(

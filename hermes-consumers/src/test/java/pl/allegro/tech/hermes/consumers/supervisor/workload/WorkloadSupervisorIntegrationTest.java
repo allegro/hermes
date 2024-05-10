@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumerFactory;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
 import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonitor;
@@ -118,7 +119,7 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
         // given
         ConsumerFactory consumerFactory = mock(ConsumerFactory.class);
 
-        when(consumerFactory.createConsumer(any(Subscription.class)))
+        when(consumerFactory.createConsumer(any(Subscription.class), any(OffsetQueue.class)))
                 .thenThrow(
                         new InternalProcessingException("failed to create consumer"))
                 .thenReturn(
@@ -138,7 +139,7 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
 
         // then
         await().atMost(FIVE_SECONDS).until(
-                () -> verify(consumerFactory, times(2)).createConsumer(any()));
+                () -> verify(consumerFactory, times(2)).createConsumer(any(), any()));
 
         shutdown(supervisor);
         shutdown(node);

@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.process
 
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder
 import spock.lang.Specification
 
@@ -23,6 +24,8 @@ class ConsumerProcessTest extends Specification {
 
     private Retransmitter retransmitter = Mock(Retransmitter)
 
+    private OffsetCommitter offsetCommitter = Mock(OffsetCommitter)
+
     private Subscription subscription = SubscriptionBuilder
             .subscription(SubscriptionName.fromString('group.topic$sub')).build()
 
@@ -31,6 +34,7 @@ class ConsumerProcessTest extends Specification {
     private ConsumerProcess process = new ConsumerProcess(
             Signal.of(Signal.SignalType.START, subscription.qualifiedName, subscription),
             consumer,
+            offsetCommitter,
             retransmitter,
             Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault()),
             UNHEALTHY_AFTER_MS,
@@ -81,6 +85,7 @@ class ConsumerProcessTest extends Specification {
         ConsumerProcess process = new ConsumerProcess(
                 Signal.of(Signal.SignalType.START, subscription.qualifiedName, subscription),
                 consumer,
+                offsetCommitter,
                 retransmitter,
                 Clock.fixed(Instant.ofEpochMilli(1024), ZoneId.systemDefault()),
                 unhealthyAfter,

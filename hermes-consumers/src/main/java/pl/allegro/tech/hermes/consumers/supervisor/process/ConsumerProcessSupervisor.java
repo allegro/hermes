@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP;
@@ -111,7 +110,7 @@ public class ConsumerProcessSupervisor implements Runnable {
     private void restartUnhealthy() {
         runningConsumerProcesses.stream()
                 .filter(process -> !process.getConsumerProcess().isHealthy())
-                .collect(toList())
+                .toList()
                 .forEach(process -> {
                     logger.info("Lost contact with consumer {} (last seen {}ms ago). Attempting to kill this process and spawn new one.",
                             process.getConsumerProcess(), process.getConsumerProcess().lastSeen());
@@ -215,9 +214,7 @@ public class ConsumerProcessSupervisor implements Runnable {
                         subscription,
                         start,
                         processKiller::cleanup,
-                        (offsets) -> offsets.subscriptionNames().forEach(subscriptionName ->
-                                this.accept(Signal.of(COMMIT, subscriptionName, offsets.batchFor(subscriptionName)))
-                        ));
+                        (offsets) -> this.accept(Signal.of(COMMIT, offsets.getSubscriptionName(), offsets.getOffsets())));
                 logger.info("Created consumer for {}. {}", subscription.getQualifiedName(), start.getLogWithIdAndType());
 
                 logger.info("Starting consumer process for subscription {}. {}", start.getTarget(), start.getLogWithIdAndType());

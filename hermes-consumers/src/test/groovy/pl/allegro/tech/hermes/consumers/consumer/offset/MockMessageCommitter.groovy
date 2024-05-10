@@ -15,8 +15,8 @@ class MockMessageCommitter implements MessageCommitter {
     boolean wereCommitted(int iteration, SubscriptionPartitionOffset... expectedOffsets) {
         OffsetsToCommit offsetsToCommit = recordedValues[iteration - 1]
         Set<SubscriptionPartitionOffset> allOffsets = [] as Set
-        offsetsToCommit.subscriptionNames().each { subscription ->
-            allOffsets.addAll(offsetsToCommit.batchFor(subscription))
+        offsetsToCommit.each { subscription ->
+            allOffsets.addAll(offsetsToCommit.offsets)
         }
 
         Set<SubscriptionPartitionOffset> expectedOffsetsSet = [] as Set

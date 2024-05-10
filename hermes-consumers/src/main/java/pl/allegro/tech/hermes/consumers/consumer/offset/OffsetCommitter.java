@@ -60,11 +60,11 @@ import java.util.function.Function;
  *
  * <p>Second phase is calculating the offsets:</p>
  * <ul>
- * <li>calculate maximal committed offset for each subscription and partition,</li>
- * <li>calculate minimal inflight offset for each subscription and partition.</li>
+ * <li>calculate maximal committed offset for each partition,</li>
+ * <li>calculate minimal inflight offset for each partition.</li>
  * </ul>
  *
- * <p>Third phase is choosing which offset to commit for each subscription/partition. This is the minimal value of:</p>
+ * <p>Third phase is choosing which offset to commit for each partition. This is the minimal value of:</p>
  * <ul>
  * <li>maximum committed offset,</li>
  * <li>minimum inflight offset.</li>
@@ -133,7 +133,7 @@ public class OffsetCommitter implements Runnable {
 
             Set<SubscriptionPartition> committedOffsetToBeRemoved = new HashSet<>();
 
-            OffsetsToCommit offsetsToCommit = new OffsetsToCommit();
+            OffsetsToCommit offsetsToCommit = new OffsetsToCommit(subscriptionName);
             for (SubscriptionPartition partition : Sets.union(minInflightOffsets.keySet(), maxCommittedOffsets.keySet())) {
                 if (partitionAssignmentState.isAssignedPartitionAtCurrentTerm(partition)) {
                     long minInflight = minInflightOffsets.getOrDefault(partition, Long.MAX_VALUE);
@@ -158,8 +158,7 @@ public class OffsetCommitter implements Runnable {
             }
             committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
 
-            // temporary check
-            if (offsetsToCommit.subscriptionNames().contains(subscriptionName)) {
+            if (offsetsToCommit.getOffsets() != null) {
                 messageCommitter.commitOffsets(offsetsToCommit);
             }
 

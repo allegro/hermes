@@ -2,30 +2,32 @@ package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class OffsetsToCommit {
 
-    private final Map<SubscriptionName, Set<SubscriptionPartitionOffset>> offsets = new HashMap<>();
+    private Set<SubscriptionPartitionOffset> offsets;
+
+    private final SubscriptionName subscriptionName;
+
+    public OffsetsToCommit(SubscriptionName subscriptionName) {
+        this.subscriptionName = subscriptionName;
+    }
 
     public OffsetsToCommit add(SubscriptionPartitionOffset offset) {
-        Set<SubscriptionPartitionOffset> subscriptionOffsets = offsets.get(offset.getSubscriptionName());
-        if (subscriptionOffsets == null) {
-            subscriptionOffsets = new HashSet<>();
-            offsets.put(offset.getSubscriptionName(), subscriptionOffsets);
+        if (offsets == null) {
+            offsets = new HashSet<>();
         }
-        subscriptionOffsets.add(offset);
+        offsets.add(offset);
         return this;
     }
 
-    public Set<SubscriptionName> subscriptionNames() {
-        return offsets.keySet();
+    public SubscriptionName getSubscriptionName() {
+        return subscriptionName;
     }
 
-    public Set<SubscriptionPartitionOffset> batchFor(SubscriptionName subscriptionName) {
-        return offsets.get(subscriptionName);
+    public Set<SubscriptionPartitionOffset> getOffsets() {
+        return offsets;
     }
 }

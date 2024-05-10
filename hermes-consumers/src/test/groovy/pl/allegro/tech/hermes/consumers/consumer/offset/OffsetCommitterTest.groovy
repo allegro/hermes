@@ -26,7 +26,7 @@ class OffsetCommitterTest extends Specification {
         state = new ConsumerPartitionAssignmentState()
         def commitInterval = 10
 
-        committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval, TestMetricsFacadeFactory.create())
+        committer = new OffsetCommitter(queue, state, messageCommitter, commitInterval, TestMetricsFacadeFactory.create(), SUBSCRIPTION_NAME)
     }
 
     def "should not commit offsets with negative values"() {
