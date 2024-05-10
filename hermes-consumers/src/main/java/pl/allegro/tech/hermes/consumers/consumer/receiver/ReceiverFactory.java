@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 
 public interface ReceiverFactory {
@@ -12,6 +13,6 @@ public interface ReceiverFactory {
                                           Subscription subscription,
                                           ConsumerRateLimiter consumerRateLimiter,
                                           SubscriptionLoadRecorder subscriptionLoadRecorder,
-                                          MetricsFacade metrics);
-
+                                          MetricsFacade metrics,
+                                          OffsetQueue offsetQueue);
 }

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.jctools.queues.MessagePassingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
@@ -75,10 +76,11 @@ public class OffsetCommitter implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(OffsetCommitter.class);
 
-    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setNameFormat("offset-committer-%d").build());
+    private final ScheduledExecutorService scheduledExecutor;
 
     private final int offsetCommitPeriodSeconds;
+
+    private final SubscriptionName subscriptionName;
 
     private final OffsetQueue offsetQueue;
 
@@ -97,7 +99,8 @@ public class OffsetCommitter implements Runnable {
             ConsumerPartitionAssignmentState partitionAssignmentState,
             MessageCommitter messageCommitter,
             int offsetCommitPeriodSeconds,
-            MetricsFacade metrics
+            MetricsFacade metrics,
+            SubscriptionName subscriptionName
     ) {
         this.offsetQueue = offsetQueue;
         this.partitionAssignmentState = partitionAssignmentState;
@@ -106,6 +109,9 @@ public class OffsetCommitter implements Runnable {
         this.obsoleteCounter = metrics.offsetCommits().obsoleteCounter();
         this.committedCounter = metrics.offsetCommits().committedCounter();
         this.timer = metrics.offsetCommits().duration();
+        this.subscriptionName = subscriptionName;
+        this.scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setNameFormat(subscriptionName + "-offset-committer-%d").build());
     }
 
     @Override
@@ -151,7 +157,11 @@ public class OffsetCommitter implements Runnable {
                 }
             }
             committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
-            messageCommitter.commitOffsets(offsetsToCommit);
+
+            // temporary check
+            if (offsetsToCommit.subscriptionNames().contains(subscriptionName)) {
+                messageCommitter.commitOffsets(offsetsToCommit);
+            }
 
             obsoleteCounter.increment(obsoleteCount);
             committedCounter.increment(scheduledToCommitCount);

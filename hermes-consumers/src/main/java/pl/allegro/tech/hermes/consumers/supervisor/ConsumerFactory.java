@@ -33,7 +33,6 @@ public class ConsumerFactory {
     private final MetricsFacade metrics;
     private final CommonConsumerParameters commonConsumerParameters;
     private final Trackers trackers;
-    private final OffsetQueue offsetQueue;
     private final ConsumerMessageSenderFactory consumerMessageSenderFactory;
     private final TopicRepository topicRepository;
     private final MessageConverterResolver messageConverterResolver;
@@ -50,7 +49,6 @@ public class ConsumerFactory {
                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                            OutputRateCalculatorFactory outputRateCalculatorFactory,
                            Trackers trackers,
-                           OffsetQueue offsetQueue,
                            ConsumerMessageSenderFactory consumerMessageSenderFactory,
                            TopicRepository topicRepository,
                            MessageConverterResolver messageConverterResolver,
@@ -66,7 +64,6 @@ public class ConsumerFactory {
         this.consumerRateLimitSupervisor = consumerRateLimitSupervisor;
         this.outputRateCalculatorFactory = outputRateCalculatorFactory;
         this.trackers = trackers;
-        this.offsetQueue = offsetQueue;
         this.consumerMessageSenderFactory = consumerMessageSenderFactory;
         this.topicRepository = topicRepository;
         this.messageConverterResolver = messageConverterResolver;
@@ -78,7 +75,7 @@ public class ConsumerFactory {
         this.subscriptionLoadRecordersRegistry = subscriptionLoadRecordersRegistry;
     }
 
-    public Consumer createConsumer(Subscription subscription) {
+    public Consumer createConsumer(Subscription subscription, OffsetQueue offsetQueue) {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
         SubscriptionLoadRecorder loadRecorder = subscriptionLoadRecordersRegistry.register(subscription.getQualifiedName());
         if (subscription.isBatchSubscription()) {

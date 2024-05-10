@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import static java.util.stream.Collectors.toList;
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP;
 
@@ -210,7 +211,13 @@ public class ConsumerProcessSupervisor implements Runnable {
         if (!hasProcess(start.getTarget())) {
             try {
                 logger.info("Creating consumer for {}", subscription.getQualifiedName());
-                ConsumerProcess process = processFactory.createProcess(subscription, start, processKiller::cleanup);
+                ConsumerProcess process = processFactory.createProcess(
+                        subscription,
+                        start,
+                        processKiller::cleanup,
+                        (offsets) -> offsets.subscriptionNames().forEach(subscriptionName ->
+                                this.accept(Signal.of(COMMIT, subscriptionName, offsets.batchFor(subscriptionName)))
+                        ));
                 logger.info("Created consumer for {}. {}", subscription.getQualifiedName(), start.getLogWithIdAndType());
 
                 logger.info("Starting consumer process for subscription {}. {}", start.getTarget(), start.getLogWithIdAndType());
