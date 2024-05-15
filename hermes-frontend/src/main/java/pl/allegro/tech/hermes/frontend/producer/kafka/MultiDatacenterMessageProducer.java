@@ -102,13 +102,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 experiments.getOrDefault(remoteSender.getDatacenter(), ChaosExperiment.DISABLED),
                 callback);
 
-        Future<?> scheduledFallback;
+        Future<?> scheduledFallback = null;
         try {
             scheduledFallback = fallbackScheduler.schedule(fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException rejectedExecutionException) {
             logger.warn("Failed to run schedule fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
         }
-
 
         send(
                 localSender,
@@ -116,7 +115,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 cachedTopic,
                 message,
                 experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED),
-                new FallbackAwareCallback(message, cachedTopic, localSender.getDatacenter(), callback, fallback)
+                new FallbackAwareCallback(message, cachedTopic, localSender.getDatacenter(), callback, fallback, scheduledFallback)
         );
 
     }
