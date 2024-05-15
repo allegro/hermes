@@ -21,6 +21,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 
 public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback, ExtensionContext.Store.CloseableResource {
 
+    private static final String bearerToken = "secretToken";
     private static final WireMockServer wiremock = new WireMockServer(0);
     private static boolean started = false;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -63,6 +64,7 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
         wiremock.addStubMapping(
                 get(urlPathEqualTo("/api/v1/query"))
                         .withQueryParam("query", equalTo(query))
+                        .withHeader("Authorization", equalTo("Bearer " + bearerToken))
                         .willReturn(
                                 aResponse()
                                         .withStatus(200)
@@ -89,6 +91,7 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
         wiremock.addStubMapping(
                 get(urlPathEqualTo("/api/v1/query"))
                         .withQueryParam("query", equalTo(query))
+                        .withHeader("Authorization", equalTo("Bearer " + bearerToken))
                         .willReturn(
                                 aResponse()
                                         .withStatus(200)
@@ -104,6 +107,7 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
         wiremock.addStubMapping(
                 get(urlPathEqualTo("/api/v1/query"))
                         .withQueryParam("query", new AnythingPattern())
+                        .withHeader("Authorization", equalTo("Bearer " + bearerToken))
                         .willReturn(
                                 aResponse()
                                         .withStatus(200)
@@ -119,6 +123,7 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
         wiremock.addStubMapping(
                 get(urlPathEqualTo("/api/v1/query"))
                         .withQueryParam("query", new AnythingPattern())
+                        .withHeader("Authorization", equalTo("Bearer " + bearerToken))
                         .willReturn(
                                 aResponse()
                                         .withStatus(500)

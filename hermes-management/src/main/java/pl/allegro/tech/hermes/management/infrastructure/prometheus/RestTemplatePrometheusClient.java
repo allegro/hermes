@@ -5,6 +5,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -27,11 +28,15 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
     private static final Logger logger = LoggerFactory.getLogger(RestTemplatePrometheusClient.class);
 
     private final URI prometheusUri;
+    // https://docs.victoriametrics.com/vmauth/#auth-config
+    private final String bearerToken;
     private final RestTemplate restTemplate;
 
-    public RestTemplatePrometheusClient(RestTemplate restTemplate, URI prometheusUri) {
+    public RestTemplatePrometheusClient(RestTemplate restTemplate, URI prometheusUri,
+                                        String bearerToken) {
         this.restTemplate = restTemplate;
         this.prometheusUri = prometheusUri;
+        this.bearerToken = bearerToken;
     }
 
     @Override
@@ -51,9 +56,12 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
 
     private PrometheusResponse queryPrometheus(String query) {
         URI queryUri = URI.create(prometheusUri.toString() + "/api/v1/query?query=" + encode(query, UTF_8));
+        HttpHeaders headers = new HttpHeaders();
+        headers.put(HttpHeaders.AUTHORIZATION, List.of("Bearer " + bearerToken));
+        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
 
         ResponseEntity<PrometheusResponse> response = restTemplate.exchange(queryUri,
-                HttpMethod.GET, HttpEntity.EMPTY, PrometheusResponse.class);
+                HttpMethod.GET, httpEntity, PrometheusResponse.class);
         return response.getBody();
     }
 

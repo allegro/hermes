@@ -56,7 +56,8 @@ public class ExternalMonitoringConfiguration {
     public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate graphiteRestTemplate,
                                              PrometheusMonitoringClientProperties clientProperties) {
         RestTemplatePrometheusClient underlyingPrometheusClient =
-                new RestTemplatePrometheusClient(graphiteRestTemplate, URI.create(clientProperties.getExternalMonitoringUrl()));
+                new RestTemplatePrometheusClient(graphiteRestTemplate, URI.create(clientProperties.getExternalMonitoringUrl()),
+                        clientProperties.getBearerToken());
         return new CachingPrometheusClient(
                 underlyingPrometheusClient,
                 systemTicker(),

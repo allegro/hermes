@@ -4,6 +4,7 @@ public class PrometheusMonitoringClientProperties extends ExternalMonitoringClie
     private String consumersMetricsPrefix = "hermes_consumers";
     private String frontendMetricsPrefix = "hermes_frontend";
     private String additionalFilters = "";
+    private String bearerToken = "";
 
     public String getConsumersMetricsPrefix() {
         return consumersMetricsPrefix;
@@ -27,5 +28,13 @@ public class PrometheusMonitoringClientProperties extends ExternalMonitoringClie
 
     public void setAdditionalFilters(String additionalFilters) {
         this.additionalFilters = additionalFilters;
+    }
+
+    public String getBearerToken() {
+        return bearerToken;
+    }
+
+    public void setBearerToken(String bearerToken) {
+        this.bearerToken = bearerToken;
     }
 }

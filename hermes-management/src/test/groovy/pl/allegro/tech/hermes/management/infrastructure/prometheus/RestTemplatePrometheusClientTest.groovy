@@ -11,6 +11,7 @@ import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
@@ -35,8 +36,10 @@ class RestTemplatePrometheusClientTest extends Specification {
     private RestTemplatePrometheusClient client
 
     void setup() {
+        String bearerToken = "secretToken"
         RestTemplate restTemplate = new RestTemplate()
-        client = new RestTemplatePrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"))
+        client = new RestTemplatePrometheusClient(
+                restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"), bearerToken)
     }
 
     def "should get metrics for path"() {
@@ -77,9 +80,10 @@ class RestTemplatePrometheusClientTest extends Specification {
         metrics.metricValue("hermes_consumers_subscription_http_status_codes_total_5xx") == of("0.0")
     }
 
-    private void mockPrometheus(String query, String responseFile) {
+    private static void mockPrometheus(String query, String responseFile) {
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8)
         WireMock.stubFor(WireMock.get(urlEqualTo(String.format("/api/v1/query?query=%s", encodedQuery)))
+                .withHeader("Authorization", equalTo("Bearer secretToken"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON)

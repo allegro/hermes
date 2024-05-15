@@ -133,6 +133,7 @@ public class HermesManagementTestApp implements HermesTestApp {
         args.add("--server.port=0");
         args.add("--prometheus.client.enabled=true");
         args.add("--prometheus.client.socketTimeoutMillis=500");
+        args.add("--prometheus.client.bearerToken=secretToken");
         if (prometheus != null) {
             args.add("--prometheus.client.externalMonitoringUrl=" + prometheus.getEndpoint());
             args.add("--prometheus.client.cacheTtlSeconds=0");
@@ -178,7 +179,6 @@ public class HermesManagementTestApp implements HermesTestApp {
         args.add("--group.nonAdminCreationEnabled=" + true);
         args.add("--schema.repository.type=schema_registry");
         args.add("--schema.repository.deleteSchemaPathSuffix=");
-
         return args;
     }
 
