@@ -33,12 +33,12 @@ public class ConsumerPrototype {
                 }
                 // should be atomic
                 // throttling semaphore
-            } while (!hasSpace());
+            } while (!hasSpace() && offsetsSlots.hasFreeSlots());
 
             Optional<ConsumerRecord<String, String>> record = messageReceiver.next();
             record.ifPresentOrElse(
                     r -> {
-                        if (!offsetsSlots.tryAddSlot(r.offset())) {
+                        if (!offsetsSlots.addSlot(r.offset())) {
                             client.send(new SentCallback() {
                                 @Override
                                 public void onFinished(int offset) {
@@ -46,8 +46,6 @@ public class ConsumerPrototype {
                                     offsetsSlots.markAsSent(offset);
                                 }
                             }, r); // non blocking
-                        } else {
-                            // release semaphore
                         }
                     }, () -> {
                         // release semaphore
@@ -80,6 +78,10 @@ public class ConsumerPrototype {
         }
 
         boolean hasFreeSlots() {
+            return true;
+        }
+
+        boolean addSlot(long offset) {
             return true;
         }
     }
