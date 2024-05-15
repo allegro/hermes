@@ -22,6 +22,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
@@ -34,6 +38,7 @@ public class KafkaMessageSender<K, V> {
     private final BrokerLatencyReporter brokerLatencyReporter;
     private final MetricsFacade metricsFacade;
     private final String datacenter;
+    private final ScheduledExecutorService chaosScheduler = Executors.newSingleThreadScheduledExecutor();
 
     KafkaMessageSender(Producer<K, V> kafkaProducer,
                        BrokerLatencyReporter brokerLatencyReporter,
@@ -47,6 +52,31 @@ public class KafkaMessageSender<K, V> {
 
     public String getDatacenter() {
         return datacenter;
+    }
+
+    public void send(ProducerRecord<K, V> producerRecord,
+                     CachedTopic cachedTopic,
+                     Message message,
+                     Callback callback,
+                     MultiDatacenterMessageProducer.ChaosExperiment experiment) {
+        try {
+            chaosScheduler.schedule(() -> {
+                if (experiment.completeWithError()) {
+                    var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
+                    callback.onCompletion(new RecordMetadata(null, 0L, 0, 0L, 0, 0), exception);
+                } else {
+                    send(producerRecord, cachedTopic, message, callback);
+                }
+            }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
+            send(producerRecord, cachedTopic, message, callback);
+        }
+
+
+        HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
+        Callback meteredCallback = new MeteredCallback(timer, message, cachedTopic, callback);
+        producer.send(producerRecord, meteredCallback);
     }
 
     public void send(ProducerRecord<K, V> producerRecord,
