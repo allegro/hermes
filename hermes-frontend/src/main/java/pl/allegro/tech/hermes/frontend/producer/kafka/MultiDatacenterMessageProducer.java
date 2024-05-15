@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -59,25 +60,52 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         KafkaMessageSender<byte[], byte[]> localSender = kafkaMessageSenders.get(cachedTopic.getTopic());
         Optional<KafkaMessageSender<byte[], byte[]>> remoteSender = getRemoteSender(cachedTopic);
 
-        final SendCallback sendCallback = remoteSender.isPresent()
-                ? SendCallback.withFallback(callback)
-                : SendCallback.withoutFallback(callback);
-
         Map<String, ChaosExperiment> experiments = createChaosExperimentsPerDatacenter(cachedTopic.getTopic());
 
-        fallbackScheduler.schedule(() -> {
-            if (!sendCallback.sent.get() && remoteSender.isPresent()) {
-                send(
-                        remoteSender.get(),
-                        producerRecord,
-                        cachedTopic,
-                        message,
-                        experiments.getOrDefault(remoteSender.get().getDatacenter(), ChaosExperiment.DISABLED),
-                        new DCAwareCallback(message, cachedTopic, remoteSender.get().getDatacenter(), sendCallback)
+        if (remoteSender.isPresent()) {
+            sendWithFallback(
+                    localSender,
+                    remoteSender.get(),
+                    producerRecord,
+                    cachedTopic,
+                    message,
+                    experiments,
+                    SendCallback.withFallback(callback)
+            );
+        } else {
+            sendWithoutFallback(
+                    localSender,
+                    producerRecord,
+                    cachedTopic,
+                    message,
+                    experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED),
+                    SendCallback.withoutFallback(callback)
+            );
+        }
+    }
 
-                );
-            }
-        }, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
+    private void sendWithFallback(KafkaMessageSender<byte[], byte[]> localSender,
+                                  KafkaMessageSender<byte[], byte[]> remoteSender,
+                                  ProducerRecord<byte[], byte[]> producerRecord,
+                                  CachedTopic cachedTopic,
+                                  Message message,
+                                  Map<String, ChaosExperiment> experiments,
+                                  SendCallback callback) {
+
+        Fallback fallback = new Fallback(
+                remoteSender,
+                producerRecord,
+                cachedTopic,
+                message,
+                experiments.getOrDefault(remoteSender.getDatacenter(), ChaosExperiment.DISABLED),
+                callback);
+
+        try {
+            fallbackScheduler.schedule(fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException rejectedExecutionException) {
+            logger.warn("Failed to run schedule fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
+        }
+
 
         send(
                 localSender,
@@ -85,7 +113,24 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 cachedTopic,
                 message,
                 experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED),
-                new FallbackAwareCallback(message, cachedTopic, localSender.getDatacenter(), sendCallback)
+                new FallbackAwareCallback(message, cachedTopic, localSender.getDatacenter(), callback, fallback)
+        );
+
+    }
+
+    private void sendWithoutFallback(KafkaMessageSender<byte[], byte[]> sender,
+                                     ProducerRecord<byte[], byte[]> producerRecord,
+                                     CachedTopic cachedTopic,
+                                     Message message,
+                                     ChaosExperiment experiment,
+                                     SendCallback callback) {
+        send(
+                sender,
+                producerRecord,
+                cachedTopic,
+                message,
+                experiment,
+                new DCAwareCallback(message, cachedTopic, sender.getDatacenter(), callback)
         );
     }
 
@@ -181,21 +226,43 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
     }
 
-    private record FallbackAwareCallback(Message message, CachedTopic cachedTopic, String datacenter,
-                                         SendCallback callback) implements OnErrorCallback {
+    private class FallbackAwareCallback implements OnErrorCallback {
+
+        private final Message message;
+        private final CachedTopic cachedTopic;
+        private final String datacenter;
+        private final SendCallback callback;
+        private final Fallback fallback;
+
+        public FallbackAwareCallback(Message message, CachedTopic cachedTopic, String datacenter, SendCallback callback, Fallback fallback) {
+            this.message = message;
+            this.cachedTopic = cachedTopic;
+            this.datacenter = datacenter;
+            this.callback = callback;
+            this.fallback = fallback;
+        }
+
+        public void fallback() {
+            try {
+                fallbackScheduler.execute(fallback);
+            } catch (RejectedExecutionException rejectedExecutionException) {
+                logger.warn("Failed to run immediate fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
+            }
+        }
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             if (exception == null) {
                 callback.onPublished(message, cachedTopic, datacenter);
             } else {
+                fallback();
                 callback.onUnpublished(message, cachedTopic, datacenter, exception);
             }
         }
 
         @Override
         public void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e) {
-            // fallback - run!
+            fallback();
             callback.onUnpublished(message, cachedTopic, datacenter, e);
         }
     }
@@ -234,6 +301,44 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 callback.onPublished(message, cachedTopic.getTopic());
             } else {
                 cachedTopic.markMessageDuplicated();
+            }
+        }
+    }
+
+    private class Fallback implements Runnable {
+        private final KafkaMessageSender<byte[], byte[]> remoteSender;
+        private final ProducerRecord<byte[], byte[]> producerRecord;
+        private final CachedTopic cachedTopic;
+        private final Message message;
+        private final ChaosExperiment experiment;
+        private final SendCallback callback;
+        private final AtomicBoolean executed = new AtomicBoolean(false);
+
+        public Fallback(KafkaMessageSender<byte[], byte[]> remoteSender,
+                        ProducerRecord<byte[], byte[]> producerRecord,
+                        CachedTopic cachedTopic,
+                        Message message,
+                        ChaosExperiment experiment,
+                        SendCallback callback
+        ) {
+            this.remoteSender = remoteSender;
+            this.producerRecord = producerRecord;
+            this.cachedTopic = cachedTopic;
+            this.message = message;
+            this.experiment = experiment;
+            this.callback = callback;
+        }
+
+        public void run() {
+            if (executed.compareAndSet(false, true) && !callback.sent.get()) {
+                sendWithoutFallback(
+                        remoteSender,
+                        producerRecord,
+                        cachedTopic,
+                        message,
+                        experiment,
+                        callback
+                );
             }
         }
     }
