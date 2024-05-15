@@ -10,6 +10,8 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.ACKS_CONFIG;
@@ -123,11 +125,24 @@ public class KafkaMessageSendersFactory {
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
+
+        // TODO:
+        /*
+                ChaosSchedulerProperties chaosSchedulerProperties = kafkaProducerProperties.getChaosScheduler();
+        ScheduledExecutorService chaosScheduler = executorServiceFactory.getScheduledExecutorService(
+                "chaos",
+                chaosSchedulerProperties.getThreadPoolSize(),
+                chaosSchedulerProperties.isThreadPoolMonitoringEnabled()
+        );
+         */
+        ScheduledExecutorService chaosScheduler = Executors.newSingleThreadScheduledExecutor();
+
         return new KafkaMessageSender<>(
                 new org.apache.kafka.clients.producer.KafkaProducer<>(props),
                 brokerLatencyReporter,
                 metricsFacade,
-                kafkaParameters.getDatacenter()
+                kafkaParameters.getDatacenter(),
+                chaosScheduler
         );
     }
 

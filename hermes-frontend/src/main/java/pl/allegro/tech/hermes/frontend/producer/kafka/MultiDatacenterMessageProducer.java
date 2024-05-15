@@ -39,20 +39,17 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     private final Duration speculativeSendDelay;
     private final AdminReadinessService adminReadinessService;
     private final ScheduledExecutorService fallbackScheduler;
-    private final ScheduledExecutorService chaosScheduler;
 
     public MultiDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
                                           AdminReadinessService adminReadinessService,
                                           MessageToKafkaProducerRecordConverter messageConverter,
                                           Duration speculativeSendDelay,
-                                          ScheduledExecutorService fallbackScheduler,
-                                          ScheduledExecutorService chaosScheduler) {
+                                          ScheduledExecutorService fallbackScheduler) {
         this.messageConverter = messageConverter;
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.speculativeSendDelay = speculativeSendDelay;
         this.adminReadinessService = adminReadinessService;
         this.fallbackScheduler = fallbackScheduler;
-        this.chaosScheduler = chaosScheduler;
     }
 
     @Override

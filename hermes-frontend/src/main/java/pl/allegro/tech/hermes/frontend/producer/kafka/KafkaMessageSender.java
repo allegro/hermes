@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,16 +37,18 @@ public class KafkaMessageSender<K, V> {
     private final BrokerLatencyReporter brokerLatencyReporter;
     private final MetricsFacade metricsFacade;
     private final String datacenter;
-    private final ScheduledExecutorService chaosScheduler = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService chaosScheduler;
 
     KafkaMessageSender(Producer<K, V> kafkaProducer,
                        BrokerLatencyReporter brokerLatencyReporter,
                        MetricsFacade metricsFacade,
-                       String datacenter) {
+                       String datacenter,
+                       ScheduledExecutorService chaosScheduler) {
         this.producer = kafkaProducer;
         this.brokerLatencyReporter = brokerLatencyReporter;
         this.metricsFacade = metricsFacade;
         this.datacenter = datacenter;
+        this.chaosScheduler = chaosScheduler;
     }
 
     public String getDatacenter() {
@@ -59,29 +60,24 @@ public class KafkaMessageSender<K, V> {
                      Message message,
                      Callback callback,
                      MultiDatacenterMessageProducer.ChaosExperiment experiment) {
+
         if (experiment.enabled()) {
             send(producerRecord, cachedTopic, message, callback);
-            return;
+        } else {
+            try {
+                chaosScheduler.schedule(() -> {
+                    if (experiment.completeWithError()) {
+                        var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
+                        callback.onCompletion(new RecordMetadata(null, 0L, 0, 0L, 0, 0), exception);
+                    } else {
+                        send(producerRecord, cachedTopic, message, callback);
+                    }
+                }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
+            } catch (RejectedExecutionException e) {
+                logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
+                send(producerRecord, cachedTopic, message, callback);
+            }
         }
-
-        try {
-            chaosScheduler.schedule(() -> {
-                if (experiment.completeWithError()) {
-                    var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
-                    callback.onCompletion(new RecordMetadata(null, 0L, 0, 0L, 0, 0), exception);
-                } else {
-                    send(producerRecord, cachedTopic, message, callback);
-                }
-            }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
-        } catch (RejectedExecutionException e) {
-            logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
-            send(producerRecord, cachedTopic, message, callback);
-        }
-
-
-        HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
-        Callback meteredCallback = new MeteredCallback(timer, message, cachedTopic, callback);
-        producer.send(producerRecord, meteredCallback);
     }
 
     public void send(ProducerRecord<K, V> producerRecord,
