@@ -12,40 +12,47 @@ ustalonego magiczną liczbą w stylu 10K.
  */
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
 public class ConsumerPrototype {
-    private final NewMessageSender client;
-    private final KafkaConsumer<String, String> consumer;
+    private final NewMessageSender client = new NewMessageSender();
+    private final KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Map.of());
     private final OffsetsSlots offsetsSlots = new OffsetsSlots(); // should be data structure
-    private int largerThreshold = 20_000;
-    private int concurrentRequests = 0;
-    private KafkaMessageReceiver messageReceiver = new KafkaMessageReceiver();
+    private final int largerThreshold = 20_000;
+    private final KafkaMessageReceiver messageReceiver = new KafkaMessageReceiver();
 
     public void run() {
         while (true) {
-            // throttling from layers above
             do {
-                // should sleep to not exhaust CPU
+                // sleep to not exhaust CPU
                 if (isReadyToCommit()) {
                     consumer.commitSync(offsetsToBeCommitted);
                 }
-                // should be atomic, maybe just check if hasSpace and call offsetsSlots.add(record.offset()
-            } while (!hasSpace() || !offsetsSlots.tryAddSlot(record.offset()));
+                // should be atomic
+                // throttling semaphore
+            } while (!hasSpace());
 
             Optional<ConsumerRecord<String, String>> record = messageReceiver.next();
-            record.ifPresent(r -> offsetsSlots.add(r.offset()));
-            client.send(new SentCallback() {
-                @Override
-                public void onFinished(int offset) {
-                    // can't be blocking
-                    offsetsSlots.markAsSent(offset);
-                }
-            }, record); // non blocking
-            break;
+            record.ifPresentOrElse(
+                    r -> {
+                        if (!offsetsSlots.tryAddSlot(r.offset())) {
+                            client.send(new SentCallback() {
+                                @Override
+                                public void onFinished(int offset) {
+                                    // can't be blocking
+                                    offsetsSlots.markAsSent(offset);
+                                }
+                            }, r); // non blocking
+                        } else {
+                            // release semaphore
+                        }
+                    }, () -> {
+                        // release semaphore
+                    }
+            );
         }
     }
 
@@ -68,13 +75,13 @@ public class ConsumerPrototype {
 
         }
 
-        void add(int offset) {
-
+        boolean tryAddSlot(long offset) {
+            return true;
         }
 
         boolean hasFreeSlots() {
+            return true;
         }
     }
 
 }
-        }
