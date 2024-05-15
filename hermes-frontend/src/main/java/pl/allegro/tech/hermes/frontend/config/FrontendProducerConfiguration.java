@@ -71,7 +71,8 @@ public class FrontendProducerConfiguration {
         ScheduledExecutorService fallbackScheduler = executorServiceFactory.getScheduledExecutorService(
                 "fallback-to-remote",
                 fallbackSchedulerProperties.getThreadPoolSize(),
-                fallbackSchedulerProperties.isThreadPoolMonitoringEnabled()
+                fallbackSchedulerProperties.isThreadPoolMonitoringEnabled(),
+                true
         );
         return new MultiDatacenterMessageProducer(
                 kafkaMessageSenders,
