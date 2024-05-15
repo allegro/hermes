@@ -162,6 +162,9 @@ public class OffsetCommitter implements Runnable {
         }
     }
 
+    // | 1 | 2 | 3 | 7 | 10 | 11
+    // | 3 | 7 | 10 | 11
+
     private ReducingConsumer processCommittedOffsets() {
         ReducingConsumer committedOffsetsReducer = new ReducingConsumer(Math::max, c -> c + 1);
         offsetQueue.drainCommittedOffsets(committedOffsetsReducer);
@@ -231,14 +234,27 @@ public class OffsetCommitter implements Runnable {
             this.modifier = Function.identity();
         }
 
+        // new ReducingConsumer(Math::max, c -> c + 1);
+        // | 1 | 2 | 10 | 11 | 12 | 13
         @Override
         public void accept(SubscriptionPartitionOffset p) {
+            // p = 1
+            // p = 2
+            // p = 10
             all.add(p);
             reduced.compute(
                     p.getSubscriptionPartition(),
                     (k, v) -> {
+                        // offset = 2
+
+                        // v = 2
+                        // modifier =  c -> c + 1
                         long offset = modifier.apply(p.getOffset());
+                        // offset = 3
+                        // offset = 11
+                        // reductor = Math::max
                         return v == null ? offset : reductor.apply(v, offset);
+                        // reduced = 11
                     }
             );
         }

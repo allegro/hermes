@@ -11,11 +11,16 @@ ustalonego magiczną liczbą w stylu 10K.
 5. Konfigurowalny delay pomiędzy commitami (nie każdy obrót pętli robi commit).
  */
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class ConsumerPrototype {
     private final NewMessageSender client = new NewMessageSender();
@@ -24,12 +29,15 @@ public class ConsumerPrototype {
     private final int largerThreshold = 20_000;
     private final KafkaMessageReceiver messageReceiver = new KafkaMessageReceiver();
 
+    // todo: fill this map on start
+    private final Map<TopicPartition, Long> lastCommitted = new HashMap<>();
+
     public void run() {
         while (true) {
             do {
                 // sleep to not exhaust CPU
                 if (isReadyToCommit()) {
-                    consumer.commitSync(offsetsToBeCommitted);
+                    consumer.commitSync(calculateOffsetsToBeCommitted());
                 }
                 // should be atomic
                 // throttling semaphore
@@ -38,12 +46,12 @@ public class ConsumerPrototype {
             Optional<ConsumerRecord<String, String>> record = messageReceiver.next();
             record.ifPresentOrElse(
                     r -> {
-                        if (!offsetsSlots.addSlot(r.offset())) {
+                        if (!offsetsSlots.addSlot(r.partition(), r.offset())) {
                             client.send(new SentCallback() {
                                 @Override
-                                public void onFinished(int offset) {
+                                public void onFinished(int partition, long offset) {
                                     // can't be blocking
-                                    offsetsSlots.markAsSent(offset);
+                                    offsetsSlots.markAsSent(partition, offset);
                                 }
                             }, r); // non blocking
                         }
@@ -54,10 +62,61 @@ public class ConsumerPrototype {
         }
     }
 
+    private Map<TopicPartition, OffsetAndMetadata> calculateOffsetsToBeCommitted() {
+        Map<TopicPartition, OffsetAndMetadata> result = new HashMap<>();
 
-    private boolean weAreTooFarInFutureOffsets() {
-        // if the collection is concurrent be careful about size() method as it is approximate value
-        return (offsetsToBeCommitted.size()) < largerThreshold;
+        Map<Integer, List<Long>> sentOffsets = offsetsSlots.getSent();
+
+        for (Map.Entry<Integer, List<Long>> entry : sentOffsets.entrySet()) {
+            // lastCommitted = 0
+            // [ 1 | 2 | 3 | 4 | 5 ]
+
+            // lastCommitted = 5
+            // []
+
+            // todo: is this case possible? perhaps ConsumerPartitionAssignmentState is important here
+            // lastCommitted = 5
+            // [ 1 | 2 | 3 | ... ]
+
+            // lastCommitted = 5
+            // [ 7 | 8 | 9 ]
+
+            // lastCommitted = 5
+            // [ 6 | 7 | 10 ]
+            TopicPartition partition = new TopicPartition("<topic>", entry.getKey());
+            // 1 | 2 | 3 | 4 | 5
+            // []
+            // [ 7 | 8 | 9 ]
+            // [ 6 | 7 | 10 ]
+            List<Long> offsets = entry.getValue();
+
+            // todo: compress to offset ranges
+            // | offset_1 | offset_2 | offset_10 | offset_11 | offset_12 |
+            // | offset_10 - offset_12 |
+
+            // 0
+            // prev = 5
+            // prev = 5
+            // prev = 5
+            long prev = lastCommitted.get(partition);
+            for (long current : offsets) {
+                if (current > prev + 1) {
+                    break;
+                } else {
+                    prev = current;
+                }
+            }
+
+            // prev = 5
+            // prev = 7
+            if (prev != lastCommitted.get(partition)) {
+                result.put(partition, new OffsetAndMetadata(prev));
+                offsetsSlots.free(partition, prev);
+                lastCommitted.put(partition, prev);
+            }
+        }
+
+        return result;
     }
 
     private boolean hasSpace() {
@@ -69,21 +128,35 @@ public class ConsumerPrototype {
     }
 
     static class OffsetsSlots {
-        void markAsSent(int offset) {
+
+        // used by sender thread
+        void markAsSent(int partition, long offset) {
 
         }
 
-        boolean tryAddSlot(long offset) {
-            return true;
-        }
-
+        // used by consumer thread
         boolean hasFreeSlots() {
             return true;
         }
 
-        boolean addSlot(long offset) {
+        // used by consumer thread
+        boolean addSlot(int partition, long offset) {
             return true;
         }
-    }
 
+        // used by consumer thread
+        public void free(TopicPartition partition, long prev) {
+
+        }
+
+        // used by consumer thread
+        // lists have to be sorted in ascending order
+        public Map<Integer, List<Long>> getSent() {
+            return null;
+        }
+
+        void compress() {
+
+        }
+    }
 }
