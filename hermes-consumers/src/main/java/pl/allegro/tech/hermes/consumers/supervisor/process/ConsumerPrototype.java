@@ -90,10 +90,6 @@ public class ConsumerPrototype {
             // [ 6 | 7 | 10 ]
             List<Long> offsets = entry.getValue();
 
-            // todo: compress to offset ranges
-            // | offset_1 | offset_2 | offset_10 | offset_11 | offset_12 |
-            // | offset_10 - offset_12 |
-
             // 0
             // prev = 5
             // prev = 5
@@ -153,10 +149,6 @@ public class ConsumerPrototype {
         // lists have to be sorted in ascending order
         public Map<Integer, List<Long>> getSent() {
             return null;
-        }
-
-        void compress() {
-
         }
     }
 }
