@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import jakarta.annotation.Nullable;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
@@ -100,8 +102,9 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 experiments.getOrDefault(remoteSender.getDatacenter(), ChaosExperiment.DISABLED),
                 callback);
 
+        Future<?> scheduledFallback;
         try {
-            fallbackScheduler.schedule(fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
+            scheduledFallback = fallbackScheduler.schedule(fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException rejectedExecutionException) {
             logger.warn("Failed to run schedule fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
         }
@@ -233,17 +236,22 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         private final String datacenter;
         private final SendCallback callback;
         private final Fallback fallback;
+        private final Future<?> scheduledFallback;
 
-        public FallbackAwareCallback(Message message, CachedTopic cachedTopic, String datacenter, SendCallback callback, Fallback fallback) {
+        public FallbackAwareCallback(Message message, CachedTopic cachedTopic, String datacenter, SendCallback callback, Fallback fallback, @Nullable Future<?> scheduledFallback) {
             this.message = message;
             this.cachedTopic = cachedTopic;
             this.datacenter = datacenter;
             this.callback = callback;
             this.fallback = fallback;
+            this.scheduledFallback = scheduledFallback;
         }
 
         public void fallback() {
             try {
+                if (scheduledFallback != null) {
+                    scheduledFallback.cancel(false);
+                }
                 fallbackScheduler.execute(fallback);
             } catch (RejectedExecutionException rejectedExecutionException) {
                 logger.warn("Failed to run immediate fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
