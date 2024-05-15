@@ -59,6 +59,11 @@ public class KafkaMessageSender<K, V> {
                      Message message,
                      Callback callback,
                      MultiDatacenterMessageProducer.ChaosExperiment experiment) {
+        if (experiment.enabled()) {
+            send(producerRecord, cachedTopic, message, callback);
+            return;
+        }
+
         try {
             chaosScheduler.schedule(() -> {
                 if (experiment.completeWithError()) {

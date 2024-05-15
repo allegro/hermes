@@ -67,22 +67,21 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
         fallbackScheduler.schedule(() -> {
             if (!sendCallback.sent.get() && remoteSender.isPresent()) {
-                sendOrScheduleChaosExperiment(
+                send(
                         remoteSender.get(),
                         producerRecord,
-                        sendCallback,
                         cachedTopic,
                         message,
                         experiments.getOrDefault(remoteSender.get().getDatacenter(), ChaosExperiment.DISABLED),
                         new DCAwareCallback(message, cachedTopic, remoteSender.get().getDatacenter(), sendCallback)
+
                 );
             }
         }, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
 
-        sendOrScheduleChaosExperiment(
+        send(
                 localSender,
                 producerRecord,
-                sendCallback,
                 cachedTopic,
                 message,
                 experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED),
@@ -92,48 +91,15 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
     private void send(KafkaMessageSender<byte[], byte[]> sender,
                       ProducerRecord<byte[], byte[]> producerRecord,
-                      SendCallback callback,
-                      CachedTopic cachedTopic,
-                      Message message, Callback callback2) {
-        String datacenter = sender.getDatacenter();
-        try {
-            sender.send(producerRecord, cachedTopic, message, callback2);
-        } catch (Exception e) {
-            // message didn't get to internal producer buffer and it will not be sent to a broker
-            callback2.onCompletion(null, e);
-//            callback.onUnpublished(message, cachedTopic, datacenter, e);
-        }
-    }
-
-    private void send(KafkaMessageSender<byte[], byte[]> sender,
-                      ProducerRecord<byte[], byte[]> producerRecord,
-                      SendCallback callback,
                       CachedTopic cachedTopic,
                       Message message,
                       ChaosExperiment experiment,
-                      Callback callback2) {
+                      OnErrorCallback callback) {
         String datacenter = sender.getDatacenter();
         try {
-            sender.send(producerRecord, cachedTopic, message, callback2, experiment);
+            sender.send(producerRecord, cachedTopic, message, callback, experiment);
         } catch (Exception e) {
-            // fallback - run !
-            // message didn't get to internal producer buffer and it will not be sent to a broker
             callback.onUnpublished(message, cachedTopic, datacenter, e);
-        }
-    }
-
-    private void sendOrScheduleChaosExperiment(KafkaMessageSender<byte[], byte[]> sender,
-                                               ProducerRecord<byte[], byte[]> producerRecord,
-                                               SendCallback callback,
-                                               CachedTopic cachedTopic,
-                                               Message message,
-                                               ChaosExperiment experiment,
-                                               Callback nowyCallback
-    ) {
-        if (experiment.enabled()) {
-            send(sender, producerRecord, callback, cachedTopic, message, experiment, nowyCallback);
-        } else {
-            send(sender, producerRecord, callback, cachedTopic, message, nowyCallback);
         }
     }
 
@@ -193,8 +159,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 .findFirst();
     }
 
+    interface OnErrorCallback extends Callback {
+        void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e);
+    }
+
     private record DCAwareCallback(Message message, CachedTopic cachedTopic, String datacenter,
-                                   SendCallback callback) implements Callback {
+                                   SendCallback callback) implements OnErrorCallback {
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
@@ -204,19 +174,29 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 callback.onUnpublished(message, cachedTopic, datacenter, exception);
             }
         }
+
+        @Override
+        public void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e) {
+            callback.onUnpublished(message, cachedTopic, datacenter, e);
+        }
     }
 
     private record FallbackAwareCallback(Message message, CachedTopic cachedTopic, String datacenter,
-                                         SendCallback callback) implements Callback {
+                                         SendCallback callback) implements OnErrorCallback {
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             if (exception == null) {
                 callback.onPublished(message, cachedTopic, datacenter);
             } else {
-                // fallback - run!
                 callback.onUnpublished(message, cachedTopic, datacenter, exception);
             }
+        }
+
+        @Override
+        public void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e) {
+            // fallback - run!
+            callback.onUnpublished(message, cachedTopic, datacenter, e);
         }
     }
 
