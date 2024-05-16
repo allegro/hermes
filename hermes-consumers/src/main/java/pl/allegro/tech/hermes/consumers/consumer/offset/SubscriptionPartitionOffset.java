@@ -79,4 +79,5 @@ public class SubscriptionPartitionOffset {
     public int hashCode() {
         return Objects.hash(subscriptionPartition, offset);
     }
+
 }

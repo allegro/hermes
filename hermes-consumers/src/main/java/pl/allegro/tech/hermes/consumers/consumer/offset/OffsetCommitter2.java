@@ -2,15 +2,6 @@ package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.jctools.queues.MessagePassingQueue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
-import pl.allegro.tech.hermes.metrics.HermesCounter;
-import pl.allegro.tech.hermes.metrics.HermesTimer;
-import pl.allegro.tech.hermes.metrics.HermesTimerContext;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,6 +11,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.jctools.queues.MessagePassingQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
+import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 /**
  * <p>Note on algorithm used to calculate offsets to actually commit.
@@ -70,17 +70,15 @@ import java.util.function.Function;
  * </ul>
  * <p>This algorithm is very simple, memory efficient, can be performed in single thread and introduces no locks.</p>
  */
-public class OffsetCommitter implements Runnable {
+public class OffsetCommitter2 implements Runnable {
 
 
-    private static final Logger logger = LoggerFactory.getLogger(OffsetCommitter.class);
+    private static final Logger logger = LoggerFactory.getLogger(OffsetCommitter2.class);
 
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder().setNameFormat("offset-committer-%d").build());
 
     private final int offsetCommitPeriodSeconds;
-
-    private final OffsetQueue offsetQueue;
 
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
     private final MessageCommitter messageCommitter;
@@ -92,14 +90,13 @@ public class OffsetCommitter implements Runnable {
     private final Set<SubscriptionPartitionOffset> inflightOffsets = new HashSet<>();
     private final Map<SubscriptionPartition, Long> maxCommittedOffsets = new HashMap<>();
 
-    public OffsetCommitter(
+    public OffsetCommitter2(
             OffsetQueue offsetQueue,
             ConsumerPartitionAssignmentState partitionAssignmentState,
             MessageCommitter messageCommitter,
             int offsetCommitPeriodSeconds,
             MetricsFacade metrics
     ) {
-        this.offsetQueue = offsetQueue;
         this.partitionAssignmentState = partitionAssignmentState;
         this.messageCommitter = messageCommitter;
         this.offsetCommitPeriodSeconds = offsetCommitPeriodSeconds;
@@ -108,18 +105,18 @@ public class OffsetCommitter implements Runnable {
         this.timer = metrics.offsetCommits().duration();
     }
 
-    @Override
-    public void run() {
+    public void calculateOffsetsToBeCommitted(MpscQueue<SubscriptionPartitionOffset> inflightOffsetsQueue,
+                                              MpscQueue<SubscriptionPartitionOffset> deliveredOffsetsQueue) {
         try (HermesTimerContext ignored = timer.time()) {
             // committed offsets need to be drained first so that there is no possibility of new committed offsets
             // showing up after inflight queue is drained - this would lead to stall in committing offsets
-            ReducingConsumer committedOffsetsReducer = processCommittedOffsets();
+            ReducingConsumer committedOffsetsReducer = processCommittedOffsets(deliveredOffsetsQueue);
 
             // update stored max committed offsets with offsets drained from queue
             Map<SubscriptionPartition, Long> maxDrainedCommittedOffsets = committedOffsetsReducer.reduced;
             updateMaxCommittedOffsets(maxDrainedCommittedOffsets);
 
-            ReducingConsumer inflightOffsetReducer = processInflightOffsets(committedOffsetsReducer.all);
+            ReducingConsumer inflightOffsetReducer = processInflightOffsets(committedOffsetsReducer.all, inflightOffsetsQueue);
             Map<SubscriptionPartition, Long> minInflightOffsets = inflightOffsetReducer.reduced;
 
             int scheduledToCommitCount = 0;
@@ -165,9 +162,9 @@ public class OffsetCommitter implements Runnable {
     // | 1 | 2 | 3 | 7 | 10 | 11
     // | 3 | 7 | 10 | 11
 
-    private ReducingConsumer processCommittedOffsets() {
+    private ReducingConsumer processCommittedOffsets(MpscQueue<SubscriptionPartitionOffset> deliveredOffsetsQueue) {
         ReducingConsumer committedOffsetsReducer = new ReducingConsumer(Math::max, c -> c + 1);
-        offsetQueue.drainCommittedOffsets(committedOffsetsReducer);
+        deliveredOffsetsQueue.drain(committedOffsetsReducer);
         committedOffsetsReducer.resetModifierFunction();
         return committedOffsetsReducer;
     }
@@ -179,12 +176,13 @@ public class OffsetCommitter implements Runnable {
         );
     }
 
-    private ReducingConsumer processInflightOffsets(Set<SubscriptionPartitionOffset> deliveredOffsets) {
+    private ReducingConsumer processInflightOffsets(Set<SubscriptionPartitionOffset> deliveredOffsets,
+                                                    MpscQueue<SubscriptionPartitionOffset> inflightOffsetsQueue) {
         ReducingConsumer inflightOffsetReducer = new ReducingConsumer(Math::min);
         // najmniejsza niewysłana wiadomość
 
         // process inflights z obecnej iteracji
-        offsetQueue.drainInflightOffsets(o -> reduceIfNotDelivered(o, inflightOffsetReducer, deliveredOffsets));
+        inflightOffsetsQueue.drain(o -> reduceIfNotDelivered(o, inflightOffsetReducer, deliveredOffsets));
         // process inflights z poprzedniej iteracji
         inflightOffsets.forEach(o -> reduceIfNotDelivered(o, inflightOffsetReducer, deliveredOffsets));
 
