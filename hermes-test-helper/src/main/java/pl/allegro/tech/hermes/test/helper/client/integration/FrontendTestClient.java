@@ -40,9 +40,6 @@ public class FrontendTestClient {
         this.webTestClient = WebTestClient
                 .bindToServer(new JdkClientHttpConnector())
                 .baseUrl(frontendContainerUrl)
-                .codecs(configurer -> configurer
-                        .defaultCodecs()
-                        .maxInMemorySize(16 * 1024 * 1024))
                 .build();
         this.slowTestClient = new FrontendSlowClient("localhost", frontendPort);
         this.chunkedClient = newClient(new ClientConfig().property(REQUEST_ENTITY_PROCESSING, CHUNKED));

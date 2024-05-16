@@ -50,8 +50,6 @@ public class SubscriptionBuilder {
 
     private boolean http2Enabled = false;
 
-    private boolean profilingEnabled = false;
-
     private OwnerId owner = new OwnerId("Plaintext", "some team");
 
     private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
@@ -128,7 +126,7 @@ public class SubscriptionBuilder {
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy, trackingEnabled,
                     trackingMode, owner, monitoringDetails, contentType,
-                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled, profilingEnabled,
+                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled,
                     attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
             );
         } else {
@@ -195,11 +193,6 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withHttp2Enabled(boolean http2Enabled) {
         this.http2Enabled = http2Enabled;
-        return this;
-    }
-
-    public SubscriptionBuilder withProfilingEnabled(boolean profilingEnabled) {
-        this.profilingEnabled = profilingEnabled;
         return this;
     }
 

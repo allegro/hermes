@@ -82,7 +82,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
 
     @Shared
-    String datacenter = "dc"
+    String datacenter = "dc";
 
     @Shared
     MetricsFacade metricsFacade = new MetricsFacade(
@@ -163,7 +163,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
 
     private static def createTestSubscription(Topic topic, String subscriptionName) {
         Subscription.create(topic.getQualifiedName(), subscriptionName, null, Subscription.State.PENDING, "test", [:], false, null, null,
-                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, false, false
+                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, false
         )
     }
 

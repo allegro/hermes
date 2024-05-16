@@ -8,8 +8,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.SubscriptionMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
-import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
@@ -91,8 +89,6 @@ public class ConsumerMessageSenderTest {
 
     private AdjustableSemaphore inflightSemaphore;
 
-    private final ConsumerProfiler profiler = new NoOpConsumerProfiler();
-
     private ConsumerMessageSender sender;
 
     @Mock
@@ -127,7 +123,7 @@ public class ConsumerMessageSenderTest {
         when(messageSender.send(message)).thenReturn(success());
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
@@ -147,7 +143,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
@@ -166,7 +162,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
 
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
@@ -185,7 +181,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
 
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
@@ -206,7 +202,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(403)).doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscriptionWith4xxRetry), any(MessageSendingResult.class));
 
         // then
@@ -231,7 +227,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(401)).doReturn(failure(401)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
 
         // then
         verifyErrorHandlerHandleFailed(message, subscription, expectedNumbersOfFailures);
@@ -254,7 +250,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(500)).when(messageSender).send(message);
 
         //when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
 
         //then
         Thread.sleep(executionTime);
@@ -271,7 +267,7 @@ public class ConsumerMessageSenderTest {
         doReturn(backoff(retrySeconds + 1)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
 
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
@@ -296,7 +292,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.updateSubscription(subscriptionWithModfiedEndpoint);
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
 
         // then
         verify(otherMessageSender, timeout(1000)).send(message);
@@ -317,7 +313,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.updateSubscription(subscriptionWithModifiedTimeout);
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
 
         // then
         verify(otherMessageSender, timeout(1000)).send(message);
@@ -341,7 +337,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         long sendingStartTime = System.currentTimeMillis();
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
@@ -367,7 +363,7 @@ public class ConsumerMessageSenderTest {
 
         // when
         long sendingStartTime = System.currentTimeMillis();
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
         verify(successHandler, timeout(500)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
@@ -390,7 +386,7 @@ public class ConsumerMessageSenderTest {
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
         Thread.sleep(backoff + (long) multiplier * backoff - 100);
 
         // then
@@ -413,7 +409,7 @@ public class ConsumerMessageSenderTest {
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
 
         //then
         verify(successHandler, timeout(retrySeconds * 1000 * 2 + 500))
@@ -434,7 +430,7 @@ public class ConsumerMessageSenderTest {
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
-        sender.sendAsync(message, profiler);
+        sender.sendAsync(message);
         Thread.sleep(backoff + (long) multiplier * backoff + 1000);
 
         //then
