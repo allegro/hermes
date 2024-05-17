@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 
+// TODO: add unit tests for this class (include multithreading)
 public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiDatacenterMessageProducer.class);
