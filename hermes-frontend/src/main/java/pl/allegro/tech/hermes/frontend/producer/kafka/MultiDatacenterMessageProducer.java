@@ -82,7 +82,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
     }
 
-    private class SendWithFallbackExecutionContext {
+    private static class SendWithFallbackExecutionContext {
 
         private final AtomicBoolean fallbackExecuted = new AtomicBoolean(false);
         private final AtomicBoolean sent = new AtomicBoolean(false);
@@ -136,35 +136,15 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
             scheduledFallback = CompletableFuture.completedFuture(null);
         }
 
-        sendToLocal(
-                localSender,
+        localSender.send(
                 producerRecord,
                 cachedTopic,
                 message,
-                experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED),
-                context,
-                publishingCallback,
-                fallback,
-                scheduledFallback
-        );
-    }
-
-    private void sendToLocal(KafkaMessageSender<byte[], byte[]> sender,
-                             ProducerRecord<byte[], byte[]> producerRecord,
-                             CachedTopic cachedTopic,
-                             Message message,
-                             ChaosExperiment experiment,
-                             SendWithFallbackExecutionContext context,
-                             PublishingCallback publishingCallback,
-                             FallbackRunnable fallback,
-                             Future<?> scheduledFallback) {
-        send(
-                sender,
-                producerRecord,
-                cachedTopic,
-                message,
-                experiment,
-                new FallbackAwareLocalSendCallback(message, cachedTopic, sender.getDatacenter(), context, publishingCallback, fallback, scheduledFallback)
+                new FallbackAwareLocalSendCallback(
+                        message, cachedTopic, localSender.getDatacenter(),
+                        context, publishingCallback, fallback, scheduledFallback
+                ),
+                experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED)
         );
     }
 
@@ -173,23 +153,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                                      CachedTopic cachedTopic,
                                      Message message,
                                      PublishingCallback callback) {
-        send(
-                sender,
+        sender.send(
                 producerRecord,
                 cachedTopic,
                 message,
-                ChaosExperiment.DISABLED,
                 new LocalSendCallback(message, cachedTopic, sender.getDatacenter(), callback)
         );
-    }
-
-    private void send(KafkaMessageSender<byte[], byte[]> sender,
-                      ProducerRecord<byte[], byte[]> producerRecord,
-                      CachedTopic cachedTopic,
-                      Message message,
-                      ChaosExperiment experiment,
-                      Callback callback) {
-        sender.send(producerRecord, cachedTopic, message, callback, experiment);
     }
 
     private Map<String, ChaosExperiment> createChaosExperimentsPerDatacenter(Topic topic) {
@@ -367,13 +336,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
         public void run() {
             if (context.tryTransitionToFallback()) {
-                send(
-                        remoteSender,
+                remoteSender.send(
                         producerRecord,
                         cachedTopic,
                         message,
-                        experiment,
-                        new RemoteSendCallback(message, cachedTopic, remoteSender.getDatacenter(), callback, context)
+                        new RemoteSendCallback(message, cachedTopic, remoteSender.getDatacenter(), callback, context),
+                        experiment
                 );
             }
         }
