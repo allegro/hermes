@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
-import jakarta.annotation.Nullable;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -83,6 +82,32 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
     }
 
+    private class SendWithFallbackExecutionContext {
+
+        private final AtomicBoolean executed = new AtomicBoolean(false);
+        private final AtomicBoolean sent = new AtomicBoolean(false);
+        private final AtomicInteger tries;
+        private final ConcurrentHashMap<String, Exception> errors;
+
+        private SendWithFallbackExecutionContext() {
+            this.tries = new AtomicInteger(2);
+            this.errors = new ConcurrentHashMap<>(2);
+        }
+
+        public boolean acquireExecute() {
+            return executed.compareAndSet(false, true) && !sent.get();
+        }
+
+        boolean acquireTry(String datacenter, Exception exception) {
+            errors.put(datacenter, exception);
+            return tries.decrementAndGet() == 0;
+        }
+
+        public boolean acquireSend() {
+            return sent.compareAndSet(false, true);
+        }
+    }
+
     private void sendWithFallback(KafkaMessageSender<byte[], byte[]> localSender,
                                   KafkaMessageSender<byte[], byte[]> remoteSender,
                                   ProducerRecord<byte[], byte[]> producerRecord,
@@ -90,15 +115,17 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                                   Message message,
                                   Map<String, ChaosExperiment> experiments,
                                   PublishingCallback publishingCallback) {
-        SendCallback callback = SendCallback.withFallback(publishingCallback);
 
-        Fallback fallback = new Fallback(
+        SendWithFallbackExecutionContext context = new SendWithFallbackExecutionContext();
+
+        FallbackRunnable fallback = new FallbackRunnable(
                 remoteSender,
                 producerRecord,
                 cachedTopic,
                 message,
                 experiments.getOrDefault(remoteSender.getDatacenter(), ChaosExperiment.DISABLED),
-                callback);
+                publishingCallback,
+                context);
 
         Future<?> scheduledFallback;
         try {
@@ -114,7 +141,8 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 cachedTopic,
                 message,
                 experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED),
-                new FallbackAwareCallback(message, cachedTopic, localSender.getDatacenter(), callback, fallback, scheduledFallback)
+                new FallbackAwareLocalSendCallback(message, cachedTopic, localSender.getDatacenter(), context, publishingCallback,
+                        fallback, scheduledFallback)
         );
 
     }
@@ -130,7 +158,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 cachedTopic,
                 message,
                 ChaosExperiment.DISABLED,
-                new DCAwareCallback(message, cachedTopic, sender.getDatacenter(), SendCallback.withoutFallback(callback))
+                new LocalSendCallback(message, cachedTopic, sender.getDatacenter(), callback)
         );
     }
 
@@ -208,58 +236,80 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e);
     }
 
-    private record DCAwareCallback(Message message, CachedTopic cachedTopic, String datacenter,
-                                   SendCallback callback) implements OnErrorCallback {
+    private record RemoteSendCallback(Message message, CachedTopic cachedTopic, String datacenter,
+                                      PublishingCallback callback, SendWithFallbackExecutionContext context) implements OnErrorCallback {
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             if (exception == null) {
-                callback.onPublished(message, cachedTopic, datacenter);
+                callback.onEachPublished(message, cachedTopic.getTopic(), datacenter);
+                if (context.acquireSend()) {
+                    callback.onPublished(message, cachedTopic.getTopic());
+                } else {
+                    cachedTopic.markMessageDuplicated();
+                }
             } else {
-                callback.onUnpublished(message, cachedTopic, datacenter, exception);
+                if (context.acquireTry(datacenter, exception)) {
+                    callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(context.errors));
+                }
             }
         }
 
         @Override
         public void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e) {
-            callback.onUnpublished(message, cachedTopic, datacenter, e);
+            if (context.acquireTry(datacenter, e)) {
+                callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(context.errors));
+            }
         }
     }
 
-    private class FallbackAwareCallback implements OnErrorCallback {
+    private class FallbackAwareLocalSendCallback implements OnErrorCallback {
 
         private final Message message;
         private final CachedTopic cachedTopic;
         private final String datacenter;
-        private final SendCallback callback;
-        private final Fallback fallback;
+        private final PublishingCallback callback;
+        private final FallbackRunnable fallback;
         private final Future<?> scheduledFallback;
+        private final SendWithFallbackExecutionContext context;
 
-        public FallbackAwareCallback(Message message, CachedTopic cachedTopic, String datacenter, SendCallback callback,
-                                     Fallback fallback, Future<?> scheduledFallback) {
+        public FallbackAwareLocalSendCallback(Message message, CachedTopic cachedTopic, String datacenter,
+                                              SendWithFallbackExecutionContext context,
+                                              PublishingCallback callback,
+                                              FallbackRunnable fallback, Future<?> scheduledFallback) {
             this.message = message;
             this.cachedTopic = cachedTopic;
             this.datacenter = datacenter;
             this.callback = callback;
             this.fallback = fallback;
             this.scheduledFallback = scheduledFallback;
+            this.context = context;
         }
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             if (exception == null) {
                 cancel();
-                callback.onPublished(message, cachedTopic, datacenter);
+                callback.onEachPublished(message, cachedTopic.getTopic(), datacenter);
+                if (context.acquireSend()) {
+                    callback.onPublished(message, cachedTopic.getTopic());
+                } else {
+                    cachedTopic.markMessageDuplicated();
+                }
             } else {
                 fallback();
-                callback.onUnpublished(message, cachedTopic, datacenter, exception);
+                if (context.acquireTry(datacenter, exception)) {
+                    callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(context.errors));
+                }
             }
         }
 
         @Override
         public void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e) {
             fallback();
-            callback.onUnpublished(message, cachedTopic, datacenter, e);
+            if (context.acquireTry(datacenter, e)) {
+                callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(context.errors));
+            }
         }
 
         private void fallback() {
@@ -276,59 +326,41 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
     }
 
-    private static class SendCallback {
+    private record LocalSendCallback(Message message, CachedTopic cachedTopic, String datacenter,
+                                     PublishingCallback callback) implements OnErrorCallback {
 
-        private final PublishingCallback callback;
-        private final AtomicBoolean sent = new AtomicBoolean(false);
-        private final AtomicInteger tries;
-        private final ConcurrentHashMap<String, Exception> errors;
-
-        private SendCallback(PublishingCallback callback, int tries) {
-            this.callback = callback;
-            this.tries = new AtomicInteger(tries);
-            this.errors = new ConcurrentHashMap<>(tries);
+        @Override
+        public void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e) {
+            callback.onUnpublished(message, cachedTopic.getTopic(), e);
         }
 
-        static SendCallback withFallback(PublishingCallback callback) {
-            return new SendCallback(callback, 2);
-        }
-
-        static SendCallback withoutFallback(PublishingCallback callback) {
-            return new SendCallback(callback, 1);
-        }
-
-        private void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception exception) {
-            errors.put(datacenter, exception);
-            if (tries.decrementAndGet() == 0) {
-                callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(errors));
-            }
-        }
-
-        private void onPublished(Message message, CachedTopic cachedTopic, String datacenter) {
-            callback.onEachPublished(message, cachedTopic.getTopic(), datacenter);
-            if (sent.compareAndSet(false, true)) {
-                callback.onPublished(message, cachedTopic.getTopic());
+        @Override
+        public void onCompletion(RecordMetadata metadata, Exception exception) {
+            if (exception != null) {
+                callback.onUnpublished(message, cachedTopic.getTopic(), exception);
             } else {
-                cachedTopic.markMessageDuplicated();
+                callback.onEachPublished(message, cachedTopic.getTopic(), datacenter);
+                callback.onPublished(message, cachedTopic.getTopic());
             }
         }
     }
 
-    private class Fallback implements Runnable {
+    private class FallbackRunnable implements Runnable {
         private final KafkaMessageSender<byte[], byte[]> remoteSender;
         private final ProducerRecord<byte[], byte[]> producerRecord;
         private final CachedTopic cachedTopic;
         private final Message message;
         private final ChaosExperiment experiment;
-        private final SendCallback callback;
-        private final AtomicBoolean executed = new AtomicBoolean(false);
+        private final PublishingCallback callback;
+        private final SendWithFallbackExecutionContext context;
 
-        public Fallback(KafkaMessageSender<byte[], byte[]> remoteSender,
-                        ProducerRecord<byte[], byte[]> producerRecord,
-                        CachedTopic cachedTopic,
-                        Message message,
-                        ChaosExperiment experiment,
-                        SendCallback callback
+        public FallbackRunnable(KafkaMessageSender<byte[], byte[]> remoteSender,
+                                ProducerRecord<byte[], byte[]> producerRecord,
+                                CachedTopic cachedTopic,
+                                Message message,
+                                ChaosExperiment experiment,
+                                PublishingCallback callback,
+                                SendWithFallbackExecutionContext context
         ) {
             this.remoteSender = remoteSender;
             this.producerRecord = producerRecord;
@@ -336,17 +368,18 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
             this.message = message;
             this.experiment = experiment;
             this.callback = callback;
+            this.context = context;
         }
 
         public void run() {
-            if (executed.compareAndSet(false, true) && !callback.sent.get()) {
+            if (context.acquireExecute()) {
                 send(
                         remoteSender,
                         producerRecord,
                         cachedTopic,
                         message,
                         experiment,
-                        new DCAwareCallback(message, cachedTopic, remoteSender.getDatacenter(), callback)
+                        new RemoteSendCallback(message, cachedTopic, remoteSender.getDatacenter(), callback, context)
                 );
             }
         }
