@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
@@ -69,7 +70,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                     cachedTopic,
                     message,
                     experiments,
-                    SendCallback.withFallback(callback)
+                    callback
             );
         } else {
             sendWithoutFallback(
@@ -77,8 +78,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                     producerRecord,
                     cachedTopic,
                     message,
-                    experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED),
-                    SendCallback.withoutFallback(callback)
+                    callback
             );
         }
     }
@@ -89,7 +89,8 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                                   CachedTopic cachedTopic,
                                   Message message,
                                   Map<String, ChaosExperiment> experiments,
-                                  SendCallback callback) {
+                                  PublishingCallback publishingCallback) {
+        SendCallback callback = SendCallback.withFallback(publishingCallback);
 
         Fallback fallback = new Fallback(
                 remoteSender,
@@ -99,11 +100,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 experiments.getOrDefault(remoteSender.getDatacenter(), ChaosExperiment.DISABLED),
                 callback);
 
-        Future<?> scheduledFallback = null;
+        Future<?> scheduledFallback;
         try {
             scheduledFallback = fallbackScheduler.schedule(fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException rejectedExecutionException) {
             logger.warn("Failed to run schedule fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
+            scheduledFallback = CompletableFuture.completedFuture(null);
         }
 
         send(
@@ -121,15 +123,14 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                                      ProducerRecord<byte[], byte[]> producerRecord,
                                      CachedTopic cachedTopic,
                                      Message message,
-                                     ChaosExperiment experiment,
-                                     SendCallback callback) {
+                                     PublishingCallback callback) {
         send(
                 sender,
                 producerRecord,
                 cachedTopic,
                 message,
-                experiment,
-                new DCAwareCallback(message, cachedTopic, sender.getDatacenter(), callback)
+                ChaosExperiment.DISABLED,
+                new DCAwareCallback(message, cachedTopic, sender.getDatacenter(), SendCallback.withoutFallback(callback))
         );
     }
 
@@ -234,7 +235,8 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         private final Fallback fallback;
         private final Future<?> scheduledFallback;
 
-        public FallbackAwareCallback(Message message, CachedTopic cachedTopic, String datacenter, SendCallback callback, Fallback fallback, @Nullable Future<?> scheduledFallback) {
+        public FallbackAwareCallback(Message message, CachedTopic cachedTopic, String datacenter, SendCallback callback,
+                                     Fallback fallback, Future<?> scheduledFallback) {
             this.message = message;
             this.cachedTopic = cachedTopic;
             this.datacenter = datacenter;
@@ -243,20 +245,10 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
             this.scheduledFallback = scheduledFallback;
         }
 
-        public void fallback() {
-            try {
-                if (scheduledFallback != null) {
-                    scheduledFallback.cancel(false);
-                }
-                fallbackScheduler.execute(fallback);
-            } catch (RejectedExecutionException rejectedExecutionException) {
-                logger.warn("Failed to run immediate fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
-            }
-        }
-
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             if (exception == null) {
+                cancel();
                 callback.onPublished(message, cachedTopic, datacenter);
             } else {
                 fallback();
@@ -268,6 +260,19 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         public void onUnpublished(Message message, CachedTopic cachedTopic, String datacenter, Exception e) {
             fallback();
             callback.onUnpublished(message, cachedTopic, datacenter, e);
+        }
+
+        private void fallback() {
+            try {
+                cancel();
+                fallbackScheduler.execute(fallback);
+            } catch (RejectedExecutionException rejectedExecutionException) {
+                logger.warn("Failed to run immediate fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
+            }
+        }
+
+        private void cancel() {
+            scheduledFallback.cancel(false);
         }
     }
 
@@ -335,13 +340,13 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
         public void run() {
             if (executed.compareAndSet(false, true) && !callback.sent.get()) {
-                sendWithoutFallback(
+                send(
                         remoteSender,
                         producerRecord,
                         cachedTopic,
                         message,
                         experiment,
-                        callback
+                        new DCAwareCallback(message, cachedTopic, remoteSender.getDatacenter(), callback)
                 );
             }
         }
