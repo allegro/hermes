@@ -20,18 +20,15 @@ public class DefaultSuccessHandler implements SuccessHandler {
 
     private final Trackers trackers;
     private final SubscriptionName subscriptionName;
-    private final OffsetQueue offsetQueue;
     private final MetricsFacade metrics;
     private final Map<Integer, HermesCounter> httpStatusCodes = new ConcurrentHashMap<>();
     private final HermesCounter throughputInBytes;
     private final HermesCounter successes;
     private final HermesHistogram inflightTime;
 
-    public DefaultSuccessHandler(OffsetQueue offsetQueue,
-                                 MetricsFacade metrics,
+    public DefaultSuccessHandler(MetricsFacade metrics,
                                  Trackers trackers,
                                  SubscriptionName subscriptionName) {
-        this.offsetQueue = offsetQueue;
         this.metrics = metrics;
         this.trackers = trackers;
         this.subscriptionName = subscriptionName;
@@ -42,8 +39,6 @@ public class DefaultSuccessHandler implements SuccessHandler {
 
     @Override
     public void handleSuccess(Message message, Subscription subscription, MessageSendingResult result) {
-        offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
-                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         markSuccess(message, result);
         trackers.get(subscription).logSent(toMessageMetadata(message, subscription), result.getHostname());
     }

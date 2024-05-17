@@ -273,7 +273,8 @@ public class SupervisorConfiguration {
                                            MessageBatchSenderFactory batchSenderFactory,
                                            ConsumerAuthorizationHandler consumerAuthorizationHandler,
                                            Clock clock,
-                                           SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry) {
+                                           SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry,
+                                           ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
         return new ConsumerFactory(
                 messageReceiverFactory,
                 metrics,
@@ -290,7 +291,8 @@ public class SupervisorConfiguration {
                 batchSenderFactory,
                 consumerAuthorizationHandler,
                 clock,
-                subscriptionLoadRecordersRegistry
+                subscriptionLoadRecordersRegistry,
+                consumerPartitionAssignmentState
         );
     }
 
