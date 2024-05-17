@@ -60,23 +60,26 @@ public class KafkaMessageSender<K, V> {
                      Message message,
                      Callback callback,
                      MultiDatacenterMessageProducer.ChaosExperiment experiment) {
-
-        if (experiment.enabled()) {
-            send(producerRecord, cachedTopic, message, callback);
-        } else {
-            try {
-                chaosScheduler.schedule(() -> {
-                    if (experiment.completeWithError()) {
-                        var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
-                        callback.onCompletion(new RecordMetadata(null, 0L, 0, 0L, 0, 0), exception);
-                    } else {
-                        send(producerRecord, cachedTopic, message, callback);
-                    }
-                }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
-            } catch (RejectedExecutionException e) {
-                logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
+        try {
+            if (experiment.enabled()) {
                 send(producerRecord, cachedTopic, message, callback);
+            } else {
+                try {
+                    chaosScheduler.schedule(() -> {
+                        if (experiment.completeWithError()) {
+                            var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
+                            callback.onCompletion(new RecordMetadata(null, 0L, 0, 0L, 0, 0), exception);
+                        } else {
+                            send(producerRecord, cachedTopic, message, callback);
+                        }
+                    }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
+                } catch (RejectedExecutionException e) {
+                    logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
+                    send(producerRecord, cachedTopic, message, callback);
+                }
             }
+        } catch (Exception e) {
+            callback.onCompletion(new RecordMetadata(, -1), e);
         }
     }
 
