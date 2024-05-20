@@ -26,14 +26,9 @@ public class LocalDatacenterMessageProducer implements BrokerMessageProducer {
         ProducerRecord<byte[], byte[]> producerRecord =
                 messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
 
-        try {
-            var producer = kafkaMessageSenders.get(cachedTopic.getTopic());
-            Callback wrappedCallback = new SendCallback(message, cachedTopic, callback, producer.getDatacenter());
-            producer.send(producerRecord, cachedTopic, message, wrappedCallback);
-        } catch (Exception e) {
-            // message didn't get to internal producer buffer and it will not be send to a broker
-            callback.onUnpublished(message, cachedTopic.getTopic(), e);
-        }
+        var producer = kafkaMessageSenders.get(cachedTopic.getTopic());
+        Callback wrappedCallback = new SendCallback(message, cachedTopic, callback, producer.getDatacenter());
+        producer.send(producerRecord, cachedTopic, message, wrappedCallback);
     }
 
     @Override

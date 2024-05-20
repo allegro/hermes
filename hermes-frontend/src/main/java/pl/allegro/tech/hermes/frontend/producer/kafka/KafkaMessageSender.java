@@ -7,7 +7,9 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.InterruptException;
+import org.apache.kafka.common.record.RecordBatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -60,26 +62,22 @@ public class KafkaMessageSender<K, V> {
                      Message message,
                      Callback callback,
                      MultiDatacenterMessageProducer.ChaosExperiment experiment) {
-        try {
-            if (experiment.enabled()) {
+        if (experiment.enabled()) {
+            try {
+                chaosScheduler.schedule(() -> {
+                    if (experiment.completeWithError()) {
+                        var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
+                        callback.onCompletion(exceptionalRecordMetadata(cachedTopic), exception);
+                    } else {
+                        send(producerRecord, cachedTopic, message, callback);
+                    }
+                }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
+            } catch (RejectedExecutionException e) {
+                logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
                 send(producerRecord, cachedTopic, message, callback);
-            } else {
-                try {
-                    chaosScheduler.schedule(() -> {
-                        if (experiment.completeWithError()) {
-                            var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
-                            callback.onCompletion(new RecordMetadata(null, 0L, 0, 0L, 0, 0), exception);
-                        } else {
-                            send(producerRecord, cachedTopic, message, callback);
-                        }
-                    }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
-                } catch (RejectedExecutionException e) {
-                    logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
-                    send(producerRecord, cachedTopic, message, callback);
-                }
             }
-        } catch (Exception e) {
-            callback.onCompletion(new RecordMetadata(, -1), e);
+        } else {
+            send(producerRecord, cachedTopic, message, callback);
         }
     }
 
@@ -89,7 +87,16 @@ public class KafkaMessageSender<K, V> {
                      Callback callback) {
         HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
         Callback meteredCallback = new MeteredCallback(timer, message, cachedTopic, callback);
-        producer.send(producerRecord, meteredCallback);
+        try {
+            producer.send(producerRecord, meteredCallback);
+        } catch (Exception e) {
+            callback.onCompletion(exceptionalRecordMetadata(cachedTopic), e);
+        }
+    }
+
+    private static RecordMetadata exceptionalRecordMetadata(CachedTopic cachedTopic) {
+        var tp = new TopicPartition(cachedTopic.getKafkaTopics().getPrimary().name().asString(), RecordMetadata.UNKNOWN_PARTITION);
+        return new RecordMetadata(tp, -1, -1, RecordBatch.NO_TIMESTAMP, -1, -1);
     }
 
     List<PartitionInfo> loadPartitionMetadataFor(String topic) {

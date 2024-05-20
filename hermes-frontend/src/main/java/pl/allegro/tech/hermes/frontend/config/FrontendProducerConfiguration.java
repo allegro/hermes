@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.frontend.config.FailFastKafkaProducerProperties.Fa
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.producer.kafka.FallbackToRemoteDatacenterAwareMessageProducer;
+import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaChaosProperties;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaHeaderFactory;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageSenders;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaMessageSendersFactory;
@@ -41,6 +42,7 @@ import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
         KafkaHeaderNameProperties.class,
         KafkaProducerProperties.class,
         FailFastKafkaProducerProperties.class,
+        KafkaChaosProperties.class,
         KafkaClustersProperties.class,
         HTTPHeadersProperties.class
 })
@@ -104,6 +106,17 @@ public class FrontendProducerConfiguration {
                 "failFast");
     }
 
+    @Bean
+    public ScheduledExecutorService chaosScheduler(KafkaChaosProperties chaosProperties, InstrumentedExecutorServiceFactory executorServiceFactory) {
+        KafkaChaosProperties.ChaosSchedulerProperties chaosSchedulerProperties = chaosProperties.getChaosScheduler();
+        return executorServiceFactory.getScheduledExecutorService(
+                "chaos",
+                chaosSchedulerProperties.getThreadPoolSize(),
+                chaosSchedulerProperties.isThreadPoolMonitoringEnabled(),
+                false
+        );
+    }
+
     @Bean(destroyMethod = "close")
     public KafkaMessageSendersFactory kafkaMessageSendersFactory(KafkaClustersProperties kafkaClustersProperties,
                                                                  KafkaProducerProperties kafkaProducerProperties,
@@ -112,9 +125,12 @@ public class FrontendProducerConfiguration {
                                                                  LocalMessageStorageProperties localMessageStorageProperties,
                                                                  DatacenterNameProvider datacenterNameProvider,
                                                                  BrokerLatencyReporter brokerLatencyReporter,
-                                                                 MetricsFacade metricsFacade) {
+                                                                 MetricsFacade metricsFacade,
+                                                                 @Named("chaosScheduler") ScheduledExecutorService chaosScheduler
+                                                                 ) {
         KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         List<KafkaParameters> remoteKafkaProperties = kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
+
         return new KafkaMessageSendersFactory(
                 kafkaProperties,
                 remoteKafkaProperties,
@@ -126,7 +142,8 @@ public class FrontendProducerConfiguration {
                 topicLoadingProperties.getMetadata().getRetryInterval(),
                 topicLoadingProperties.getMetadata().getThreadPoolSize(),
                 localMessageStorageProperties.getBufferedSizeBytes(),
-                kafkaProducerProperties.getMetadataMaxAge()
+                kafkaProducerProperties.getMetadataMaxAge(),
+                chaosScheduler
         );
     }
 
