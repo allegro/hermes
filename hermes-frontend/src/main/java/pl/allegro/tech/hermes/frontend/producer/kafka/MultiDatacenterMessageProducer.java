@@ -108,6 +108,15 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
     }
 
+    /*
+    We first try to send message to local DC. If the local send fails we perform 'immediate' fallback to remote DC.
+
+    Additionally, we schedule a 'speculative' fallback to remote DC to execute after 'speculativeSendDelay' elapses.
+    Speculative fallback decreases publication latency but may result in messages being duplicated across DCs.
+
+    If local DC send succeeds or fails before 'speculativeSendDelay' elapses we try to cancel the 'speculative' fallback if
+    it has not been executed yet. We guarantee that only one fallback executes - either 'immediate' or 'speculative'.
+     */
     private void sendWithFallback(KafkaMessageSender<byte[], byte[]> localSender,
                                   KafkaMessageSender<byte[], byte[]> remoteSender,
                                   ProducerRecord<byte[], byte[]> producerRecord,
@@ -128,12 +137,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 context
         );
 
-        Future<?> scheduledFallback;
+        Future<?> speculativeFallback;
         try {
-            scheduledFallback = fallbackScheduler.schedule(fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
+            speculativeFallback = fallbackScheduler.schedule(fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException rejectedExecutionException) {
             logger.warn("Failed to run schedule fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
-            scheduledFallback = CompletableFuture.completedFuture(null);
+            speculativeFallback = CompletableFuture.completedFuture(null);
         }
 
         localSender.send(
@@ -142,7 +151,7 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 message,
                 new FallbackAwareLocalSendCallback(
                         message, cachedTopic, localSender.getDatacenter(),
-                        context, publishingCallback, fallback, scheduledFallback
+                        context, publishingCallback, fallback, speculativeFallback
                 ),
                 experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED)
         );
@@ -245,26 +254,26 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         private final String datacenter;
         private final PublishingCallback callback;
         private final FallbackRunnable fallback;
-        private final Future<?> scheduledFallback;
+        private final Future<?> speculativeFallback;
         private final SendWithFallbackExecutionContext state;
 
         private FallbackAwareLocalSendCallback(Message message, CachedTopic cachedTopic, String datacenter,
                                                SendWithFallbackExecutionContext state,
                                                PublishingCallback callback,
-                                               FallbackRunnable fallback, Future<?> scheduledFallback) {
+                                               FallbackRunnable fallback, Future<?> speculativeFallback) {
             this.message = message;
             this.cachedTopic = cachedTopic;
             this.datacenter = datacenter;
             this.callback = callback;
             this.fallback = fallback;
-            this.scheduledFallback = scheduledFallback;
+            this.speculativeFallback = speculativeFallback;
             this.state = state;
         }
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             if (exception == null) {
-                cancelScheduledFallback();
+                cancelSpeculativeFallback();
                 callback.onEachPublished(message, cachedTopic.getTopic(), datacenter);
                 if (state.tryTransitionToFirstSent()) {
                     callback.onPublished(message, cachedTopic.getTopic());
@@ -282,15 +291,15 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
         private void fallback() {
             try {
-                scheduledFallback.cancel(false);
+                speculativeFallback.cancel(false);
                 fallbackScheduler.execute(fallback);
             } catch (RejectedExecutionException rejectedExecutionException) {
                 logger.warn("Failed to run immediate fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
             }
         }
 
-        private void cancelScheduledFallback() {
-            scheduledFallback.cancel(false);
+        private void cancelSpeculativeFallback() {
+            speculativeFallback.cancel(false);
         }
     }
 
