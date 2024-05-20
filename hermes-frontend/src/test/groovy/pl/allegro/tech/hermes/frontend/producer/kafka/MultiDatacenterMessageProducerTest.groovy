@@ -177,9 +177,9 @@ class MultiDatacenterMessageProducerTest extends Specification {
             callback.publishedToRemote.get() == 0
             callback.onPublished.get() == 0
             callback.onUnpublished.get() == 1
+            callback.exception.contains("[LOCAL]: RuntimeException: network error")
+            callback.exception.contains("[REMOTE]: RuntimeException: not leader or follower")
         }
-        callback.exception.contains("[LOCAL]: RuntimeException: network error")
-        callback.exception.contains("[REMOTE]: RuntimeException: not leader or follower")
     }
 
     def "should publish to remote DC once when both scheduled fallback (after speculativeSendDelay) and immediate fallback are run"() {
