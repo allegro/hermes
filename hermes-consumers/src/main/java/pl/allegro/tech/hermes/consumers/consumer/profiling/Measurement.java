@@ -1,24 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.profiling;
 
-public enum Measurement {
-    SIGNALS_AND_SEMAPHORE_ACQUIRE("signalsAndSemaphoreAcquire"),
-    SIGNALS_INTERRUPT_RUN("signalsInterrupt.run"),
-    SCHEDULE_RESEND("schedule.resend"),
-    MESSAGE_RECEIVER_NEXT("messageReceiver.next"),
-    MESSAGE_CONVERSION("messageConverter.convert"),
-    OFFER_INFLIGHT_OFFSET("offsetQueue.offerInflightOffset"),
-    TRACKERS_LOG_INFLIGHT("trackers.logInflight"),
-    ACQUIRE_RATE_LIMITER("acquireRateLimiter"),
-    MESSAGE_SENDER_SEND("messageSender.send"),
-    HANDLERS("handlers");
-
-    private final String description;
-
-    Measurement(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
+public class Measurement {
+    public static final String SIGNALS_AND_SEMAPHORE_ACQUIRE = "signalsAndSemaphoreAcquire";
+    public static final String SIGNALS_INTERRUPT_RUN = "signalsInterrupt.run";
+    public static final String SCHEDULE_RESEND = "schedule.resend";
+    public static final String MESSAGE_RECEIVER_NEXT = "messageReceiver.next";
+    public static final String MESSAGE_CONVERSION = "messageConverter.convert";
+    public static final String OFFER_INFLIGHT_OFFSET = "offsetQueue.offerInflightOffset";
+    public static final String TRACKERS_LOG_INFLIGHT = "trackers.logInflight";
+    public static final String ACQUIRE_RATE_LIMITER = "acquireRateLimiter";
+    public static final String MESSAGE_SENDER_SEND = "messageSender.send";
+    public static final String HANDLERS = "handlers";
 }

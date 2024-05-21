@@ -9,17 +9,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class is designed to be fully thread safe, except methods <code>startPartialMeasurement</code> and <code>stopPartialMeasurement</code>,
+ * since they are always used in a single thread. Also, method <code>saveRetryDelay</code> is designed to be thread safe,
+ * as <code>retryDelayMillis</code> is modified only by one thread, and it's volatile, so other threads always see updated value.
+ */
 public class DefaultConsumerProfiler implements ConsumerProfiler {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultConsumerProfiler.class);
 
     private final SubscriptionName subscriptionName;
-    private StopWatch stopWatch;
+    private final long profilingThresholdMs;
+    private volatile StopWatch stopWatch;
     private final Map<String, StopWatch> partialMeasurements;
-    private long retryDelayMillis = 0;
+    private volatile long retryDelayMillis = 0;
 
-    public DefaultConsumerProfiler(SubscriptionName subscriptionName) {
+    public DefaultConsumerProfiler(SubscriptionName subscriptionName, long profilingThresholdMs) {
         this.subscriptionName = subscriptionName;
+        this.profilingThresholdMs = profilingThresholdMs;
         this.partialMeasurements = new HashMap<>() {
             @Override
             public String toString() {
@@ -34,28 +41,28 @@ public class DefaultConsumerProfiler implements ConsumerProfiler {
     }
 
     @Override
-    public void startMeasurements(Measurement measurement) {
+    public synchronized void startMeasurements(String measurement) {
         this.stopWatch = new StopWatch();
-        this.stopWatch.start(measurement.getDescription());
+        this.stopWatch.start(measurement);
     }
 
     @Override
-    public void measure(Measurement measurement) {
+    public synchronized void measure(String measurement) {
         this.stopWatch.stop();
-        this.stopWatch.start(measurement.getDescription());
+        this.stopWatch.start(measurement);
     }
 
     @Override
-    public void startPartialMeasurement(Measurement measurement) {
-        if (!partialMeasurements.containsKey(measurement.getDescription())) {
-            partialMeasurements.put(measurement.getDescription(), new StopWatch(measurement.getDescription()));
-        }
-        partialMeasurements.get(measurement.getDescription()).start(measurement.getDescription());
+    public void startPartialMeasurement(String measurement) {
+        partialMeasurements.computeIfAbsent(
+                measurement,
+                (m) -> new StopWatch(measurement)
+        ).start(measurement);
     }
 
     @Override
-    public void stopPartialMeasurement(Measurement measurement) {
-        partialMeasurements.get(measurement.getDescription()).stop();
+    public void stopPartialMeasurement(String measurement) {
+        partialMeasurements.get(measurement).stop();
     }
 
     @Override
@@ -64,13 +71,19 @@ public class DefaultConsumerProfiler implements ConsumerProfiler {
     }
 
     @Override
-    public void flushMeasurements(ConsumerRun consumerRun) {
+    public synchronized void flushMeasurements(ConsumerRun consumerRun) {
         this.stopWatch.stop();
+        if (stopWatch.getTotalTimeMillis() > profilingThresholdMs) {
+            logMeasurements(consumerRun);
+        }
+    }
+
+    private void logMeasurements(ConsumerRun consumerRun) {
         if (retryDelayMillis != 0) {
-            logger.info("Flushing measurements for subscription {} and {} run: \n {} retryDelayMillis {}",
+            logger.info("Consumer profiler measurements for subscription {} and {} run: \n {} retryDelayMillis {}",
                     subscriptionName, consumerRun, stopWatch.prettyPrint(TimeUnit.MILLISECONDS), retryDelayMillis);
         } else {
-            logger.info("Flushing measurements for subscription {} and {} run: \n {} partialMeasurements: {}",
+            logger.info("Consumer profiler measurements for subscription {} and {} run: \n {} partialMeasurements: {}",
                     subscriptionName, consumerRun, stopWatch.prettyPrint(TimeUnit.MILLISECONDS), partialMeasurements);
         }
     }

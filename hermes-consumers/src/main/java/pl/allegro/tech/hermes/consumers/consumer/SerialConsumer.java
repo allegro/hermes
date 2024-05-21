@@ -100,7 +100,7 @@ public class SerialConsumer implements Consumer {
     @Override
     public void consume(Runnable signalsInterrupt) {
         try {
-            ConsumerProfiler profiler = subscription.isProfilingEnabled() ? new DefaultConsumerProfiler(subscription.getQualifiedName()) : new NoOpConsumerProfiler();
+            ConsumerProfiler profiler = subscription.isProfilingEnabled() ? new DefaultConsumerProfiler(subscription.getQualifiedName(), subscription.getProfilingThresholdMs()) : new NoOpConsumerProfiler();
             profiler.startMeasurements(Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE);
             do {
                 loadRecorder.recordSingleOperation();
@@ -166,7 +166,7 @@ public class SerialConsumer implements Consumer {
     }
 
     /**
-     * Try to keep shutdown order the same as initialization so nothing will leave to clean up when error occurs during initialization.
+     * Try to keep shutdown order the same as initialization so nothing will left to clean up when error occurs during initialization.
      */
     @Override
     public void tearDown() {

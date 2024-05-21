@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.jayway.awaitility.Duration;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,12 @@ public class ConsumerProfilingTest {
     @AfterEach
     void teardown() {
         ((Logger) LoggerFactory.getLogger(DefaultConsumerProfiler.class)).detachAndStopAllAppenders();
+        hermes.clearManagementData();
+    }
+
+    @AfterAll
+    static void teardownClass() {
+        hermes.clearManagementData();
     }
 
     @Test
@@ -85,14 +92,35 @@ public class ConsumerProfilingTest {
                     .filter(log -> log.getFormattedMessage().contains(subscription.getQualifiedName().toString())).toList();
             assertThat(logsList).hasSizeGreaterThan(0);
             assertThat(logsList.get(0).getFormattedMessage()).contains(
-                    String.format("Flushing measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.EMPTY),
-                    Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE.getDescription(),
-                    Measurement.MESSAGE_RECEIVER_NEXT.getDescription(),
-                    Measurement.MESSAGE_CONVERSION.getDescription(),
+                    String.format("Consumer profiler measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.EMPTY),
+                    Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE,
+                    Measurement.MESSAGE_RECEIVER_NEXT,
+                    Measurement.MESSAGE_CONVERSION,
                     "partialMeasurements",
-                    Measurement.SIGNALS_INTERRUPT_RUN.getDescription()
+                    Measurement.SIGNALS_INTERRUPT_RUN
             );
         });
+    }
+
+    @Test
+    public void shouldNotProfileRunsBelowThreshold() {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriber();
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
+                .withProfilingEnabled(true)
+                .withProfilingThresholdMs(100_000)
+                .build());
+        TestMessage message = TestMessage.random();
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
+
+        // when
+        subscriber.waitUntilReceived(message.body());
+
+        // then
+        List<ILoggingEvent> logsList = listAppender.list.stream()
+                .filter(log -> log.getFormattedMessage().contains(subscription.getQualifiedName().toString())).toList();
+        assertThat(logsList).hasSize(0);
     }
 
     @Test
@@ -109,21 +137,24 @@ public class ConsumerProfilingTest {
         subscriber.waitUntilReceived(message.body());
 
         // then
-        List<ILoggingEvent> logsList = listAppender.list.stream()
-                .filter(log -> log.getFormattedMessage().contains(ConsumerRun.PROCESSED.name())).toList();
-        assertThat(logsList.get(0).getFormattedMessage()).contains(
-                String.format("Flushing measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.PROCESSED),
-                Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE.getDescription(),
-                Measurement.MESSAGE_RECEIVER_NEXT.getDescription(),
-                Measurement.MESSAGE_CONVERSION.getDescription(),
-                Measurement.OFFER_INFLIGHT_OFFSET.getDescription(),
-                Measurement.TRACKERS_LOG_INFLIGHT.getDescription(),
-                Measurement.ACQUIRE_RATE_LIMITER.getDescription(),
-                Measurement.MESSAGE_SENDER_SEND.getDescription(),
-                Measurement.HANDLERS.getDescription(),
-                "partialMeasurements",
-                Measurement.SIGNALS_INTERRUPT_RUN.getDescription()
-        );
+        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+            List<ILoggingEvent> logsList = listAppender.list.stream()
+                    .filter(log -> log.getFormattedMessage().contains(ConsumerRun.DELIVERED.name())).toList();
+            assertThat(logsList).hasSizeGreaterThan(0);
+            assertThat(logsList.get(0).getFormattedMessage()).contains(
+                    String.format("Consumer profiler measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.DELIVERED),
+                    Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE,
+                    Measurement.MESSAGE_RECEIVER_NEXT,
+                    Measurement.MESSAGE_CONVERSION,
+                    Measurement.OFFER_INFLIGHT_OFFSET,
+                    Measurement.TRACKERS_LOG_INFLIGHT,
+                    Measurement.ACQUIRE_RATE_LIMITER,
+                    Measurement.MESSAGE_SENDER_SEND,
+                    Measurement.HANDLERS,
+                    "partialMeasurements",
+                    Measurement.SIGNALS_INTERRUPT_RUN
+            );
+        });
     }
 
     @Test
@@ -141,21 +172,24 @@ public class ConsumerProfilingTest {
         subscriber.waitUntilReceived(message.body());
 
         // then
-        List<ILoggingEvent> logsList = listAppender.list.stream()
-                .filter(log -> log.getFormattedMessage().contains(ConsumerRun.DISCARDED.name())).toList();
-        assertThat(logsList.get(0).getFormattedMessage()).contains(
-                String.format("Flushing measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.DISCARDED),
-                Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE.getDescription(),
-                Measurement.MESSAGE_RECEIVER_NEXT.getDescription(),
-                Measurement.MESSAGE_CONVERSION.getDescription(),
-                Measurement.OFFER_INFLIGHT_OFFSET.getDescription(),
-                Measurement.TRACKERS_LOG_INFLIGHT.getDescription(),
-                Measurement.ACQUIRE_RATE_LIMITER.getDescription(),
-                Measurement.MESSAGE_SENDER_SEND.getDescription(),
-                Measurement.HANDLERS.getDescription(),
-                "partialMeasurements",
-                Measurement.SIGNALS_INTERRUPT_RUN.getDescription()
-        );
+        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+            List<ILoggingEvent> logsList = listAppender.list.stream()
+                    .filter(log -> log.getFormattedMessage().contains(ConsumerRun.DISCARDED.name())).toList();
+            assertThat(logsList).hasSizeGreaterThan(0);
+            assertThat(logsList.get(0).getFormattedMessage()).contains(
+                    String.format("Consumer profiler measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.DISCARDED),
+                    Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE,
+                    Measurement.MESSAGE_RECEIVER_NEXT,
+                    Measurement.MESSAGE_CONVERSION,
+                    Measurement.OFFER_INFLIGHT_OFFSET,
+                    Measurement.TRACKERS_LOG_INFLIGHT,
+                    Measurement.ACQUIRE_RATE_LIMITER,
+                    Measurement.MESSAGE_SENDER_SEND,
+                    Measurement.HANDLERS,
+                    "partialMeasurements",
+                    Measurement.SIGNALS_INTERRUPT_RUN
+            );
+        });
     }
 
     @Test
@@ -173,31 +207,38 @@ public class ConsumerProfilingTest {
         subscriber.waitUntilReceived(Duration.FIVE_SECONDS, 2);
 
         // then
-        List<ILoggingEvent> retriedLogsList = listAppender.list.stream()
-                .filter(log -> log.getFormattedMessage().contains(ConsumerRun.RETRIED.name())).toList();
-        assertThat(retriedLogsList.get(0).getFormattedMessage()).contains(
-                String.format("Flushing measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.RETRIED),
-                Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE.getDescription(),
-                Measurement.MESSAGE_RECEIVER_NEXT.getDescription(),
-                Measurement.MESSAGE_CONVERSION.getDescription(),
-                Measurement.OFFER_INFLIGHT_OFFSET.getDescription(),
-                Measurement.TRACKERS_LOG_INFLIGHT.getDescription(),
-                Measurement.ACQUIRE_RATE_LIMITER.getDescription(),
-                Measurement.MESSAGE_SENDER_SEND.getDescription(),
-                Measurement.HANDLERS.getDescription(),
-                "partialMeasurements",
-                Measurement.SIGNALS_INTERRUPT_RUN.getDescription()
-        );
+        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+            List<ILoggingEvent> retriedLogsList = listAppender.list.stream()
+                    .filter(log -> log.getFormattedMessage().contains(ConsumerRun.RETRIED.name())).toList();
+            assertThat(retriedLogsList).hasSizeGreaterThan(0);
+            assertThat(retriedLogsList.get(0).getFormattedMessage()).contains(
+                    String.format("Consumer profiler measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.RETRIED),
+                    Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE,
+                    Measurement.MESSAGE_RECEIVER_NEXT,
+                    Measurement.MESSAGE_CONVERSION,
+                    Measurement.OFFER_INFLIGHT_OFFSET,
+                    Measurement.TRACKERS_LOG_INFLIGHT,
+                    Measurement.ACQUIRE_RATE_LIMITER,
+                    Measurement.MESSAGE_SENDER_SEND,
+                    Measurement.HANDLERS,
+                    "partialMeasurements",
+                    Measurement.SIGNALS_INTERRUPT_RUN
+            );
+        });
+
 
         // and
-        List<ILoggingEvent> processedLogsList = listAppender.list.stream()
-                .filter(log -> log.getFormattedMessage().contains(ConsumerRun.PROCESSED.name())).toList();
-        assertThat(processedLogsList.get(0).getFormattedMessage()).contains(
-                String.format("Flushing measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.PROCESSED),
-                Measurement.SCHEDULE_RESEND.getDescription(),
-                Measurement.MESSAGE_SENDER_SEND.getDescription(),
-                Measurement.HANDLERS.getDescription(),
-                "retryDelayMillis 1000"
-        );
+        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+            List<ILoggingEvent> processedLogsList = listAppender.list.stream()
+                    .filter(log -> log.getFormattedMessage().contains(ConsumerRun.DELIVERED.name())).toList();
+            assertThat(processedLogsList).hasSizeGreaterThan(0);
+            assertThat(processedLogsList.get(0).getFormattedMessage()).contains(
+                    String.format("Consumer profiler measurements for subscription %s and %s run:", subscription.getQualifiedName(), ConsumerRun.DELIVERED),
+                    Measurement.SCHEDULE_RESEND,
+                    Measurement.MESSAGE_SENDER_SEND,
+                    Measurement.HANDLERS,
+                    "retryDelayMillis 1000"
+            );
+        });
     }
 }
