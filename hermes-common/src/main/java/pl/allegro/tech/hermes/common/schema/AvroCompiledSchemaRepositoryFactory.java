@@ -27,8 +27,10 @@ public class AvroCompiledSchemaRepositoryFactory {
     }
 
     public CompiledSchemaRepository<Schema> provide() {
-        CompiledSchemaRepository<Schema> repository = new DirectCompiledSchemaRepository<>(rawSchemaClient,
-                SchemaCompilersFactory.avroSchemaCompiler());
+        CompiledSchemaRepository<Schema> repository = new DirectCompiledSchemaRepository<>(
+            rawSchemaClient,
+            SchemaCompilersFactory.avroSchemaCompiler()
+        );
 
         if (cacheEnabled) {
             return new CachedCompiledSchemaRepository<>(repository,

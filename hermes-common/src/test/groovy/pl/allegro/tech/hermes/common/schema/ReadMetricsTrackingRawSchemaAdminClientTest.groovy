@@ -11,14 +11,14 @@ import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.common.metric.Timers
 import pl.allegro.tech.hermes.metrics.PathsCompiler
-import pl.allegro.tech.hermes.schema.RawSchemaClient
+import pl.allegro.tech.hermes.schema.RawSchemaAdminClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.metrics.MicrometerUtils
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
 
-class ReadMetricsTrackingRawSchemaClientTest extends Specification {
+class ReadMetricsTrackingRawSchemaAdminClientTest extends Specification {
     @Shared
     TopicName topicName = TopicName.fromQualifiedName("someGroup.someTopic")
 
@@ -33,10 +33,10 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
 
     MetricsFacade metricsFacade = new MetricsFacade(meterRegistry, hermesMetrics)
 
-    RawSchemaClient rawSchemaClient = Mock()
+    RawSchemaAdminClient rawSchemaClient = Mock()
 
     @Subject
-    RawSchemaClient readMetricsTrackingClient = new ReadMetricsTrackingRawSchemaClient(rawSchemaClient, metricsFacade)
+    RawSchemaAdminClient readMetricsTrackingClient = new ReadMetricsTrackingRawSchemaAdminClient(rawSchemaClient, metricsFacade)
 
     def "should track latency metrics for schema retrieval"() {
         expect:

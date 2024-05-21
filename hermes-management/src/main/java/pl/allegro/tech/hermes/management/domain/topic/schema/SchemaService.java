@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidator;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
-import pl.allegro.tech.hermes.schema.RawSchemaClient;
+import pl.allegro.tech.hermes.schema.RawSchemaAdminClient;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
@@ -20,33 +20,33 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 @Component
 public class SchemaService {
 
-    private final RawSchemaClient rawSchemaClient;
+    private final RawSchemaAdminClient rawSchemaAdminClient;
     private final SchemaValidatorProvider validatorProvider;
     private final TopicProperties topicProperties;
 
     @Autowired
-    public SchemaService(RawSchemaClient rawSchemaClient,
+    public SchemaService(RawSchemaAdminClient rawSchemaAdminClient,
                          SchemaValidatorProvider validatorProvider,
                          TopicProperties topicProperties) {
-        this.rawSchemaClient = rawSchemaClient;
+        this.rawSchemaAdminClient = rawSchemaAdminClient;
         this.validatorProvider = validatorProvider;
         this.topicProperties = topicProperties;
     }
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName) {
-        return rawSchemaClient
+        return rawSchemaAdminClient
             .getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName))
             .map(RawSchemaWithMetadata::getSchema);
     }
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {
-        return rawSchemaClient
+        return rawSchemaAdminClient
                 .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), version)
                 .map(RawSchemaWithMetadata::getSchema);
     }
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaId id) {
-        return rawSchemaClient
+        return rawSchemaAdminClient
                 .getRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName), id)
                 .map(RawSchemaWithMetadata::getSchema);
     }
@@ -61,14 +61,14 @@ public class SchemaService {
             SchemaValidator validator = validatorProvider.provide(topic.getContentType());
             validator.check(schema);
         }
-        rawSchemaClient.registerSchema(topic.getName(), RawSchema.valueOf(schema));
+        rawSchemaAdminClient.registerSchema(topic.getName(), RawSchema.valueOf(schema));
     }
 
     public void deleteAllSchemaVersions(String qualifiedTopicName) {
         if (!topicProperties.isRemoveSchema()) {
             throw new SchemaRemovalDisabledException();
         }
-        rawSchemaClient.deleteAllSchemaVersions(fromQualifiedName(qualifiedTopicName));
+        rawSchemaAdminClient.deleteAllSchemaVersions(fromQualifiedName(qualifiedTopicName));
     }
 
     public void validateSchema(Topic topic, String schema) {
@@ -76,6 +76,6 @@ public class SchemaService {
             SchemaValidator validator = validatorProvider.provide(AVRO);
             validator.check(schema);
         }
-        rawSchemaClient.validateSchema(topic.getName(), RawSchema.valueOf(schema));
+        rawSchemaAdminClient.validateSchema(topic.getName(), RawSchema.valueOf(schema));
     }
 }

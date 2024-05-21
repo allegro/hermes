@@ -19,7 +19,7 @@ class CachedSchemaVersionsRepositoryTest extends Specification {
     static final SchemaVersion v1 = SchemaVersion.valueOf(1)
     static final SchemaVersion v0 = SchemaVersion.valueOf(0)
 
-    def rawSchemaClient = Stub(RawSchemaClient)
+    def rawSchemaClient = Stub(RawSchemaAdminClient)
     def ticker = new FakeTicker()
     def versionsRepository = new CachedSchemaVersionsRepository(rawSchemaClient, MoreExecutors.newDirectExecutorService(),
             REFRESH_TIME, EXPIRE_TIME, ticker)
