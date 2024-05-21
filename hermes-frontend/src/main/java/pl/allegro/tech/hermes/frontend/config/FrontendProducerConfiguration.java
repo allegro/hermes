@@ -70,12 +70,13 @@ public class FrontendProducerConfiguration {
                                                                AdminReadinessService adminReadinessService,
                                                                InstrumentedExecutorServiceFactory executorServiceFactory) {
         FallbackSchedulerProperties fallbackSchedulerProperties = kafkaProducerProperties.getFallbackScheduler();
-        ScheduledExecutorService fallbackScheduler = executorServiceFactory.getScheduledExecutorService(
+        ScheduledExecutorService fallbackScheduler = executorServiceFactory.scheduledExecutorBuilder(
                 "fallback-to-remote",
-                fallbackSchedulerProperties.getThreadPoolSize(),
-                fallbackSchedulerProperties.isThreadPoolMonitoringEnabled(),
-                true
-        );
+                        fallbackSchedulerProperties.getThreadPoolSize()
+                )
+                .withMonitoringEnabled(fallbackSchedulerProperties.isThreadPoolMonitoringEnabled())
+                .withRemoveOnCancel(true)
+                .create();
         return new MultiDatacenterMessageProducer(
                 kafkaMessageSenders,
                 adminReadinessService,
@@ -109,12 +110,12 @@ public class FrontendProducerConfiguration {
     @Bean
     public ScheduledExecutorService chaosScheduler(KafkaChaosProperties chaosProperties, InstrumentedExecutorServiceFactory executorServiceFactory) {
         KafkaChaosProperties.ChaosSchedulerProperties chaosSchedulerProperties = chaosProperties.getChaosScheduler();
-        return executorServiceFactory.getScheduledExecutorService(
+        return executorServiceFactory.scheduledExecutorBuilder(
                 "chaos",
-                chaosSchedulerProperties.getThreadPoolSize(),
-                chaosSchedulerProperties.isThreadPoolMonitoringEnabled(),
-                false
-        );
+                        chaosSchedulerProperties.getThreadPoolSize()
+                )
+                .withMonitoringEnabled(chaosSchedulerProperties.isThreadPoolMonitoringEnabled())
+                .create();
     }
 
     @Bean(destroyMethod = "close")
