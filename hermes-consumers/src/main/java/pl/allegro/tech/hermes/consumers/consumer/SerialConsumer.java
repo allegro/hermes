@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class SerialConsumer implements Consumer {
 
@@ -101,7 +102,10 @@ public class SerialConsumer implements Consumer {
                 loadRecorder.recordSingleOperation();
                 signalsInterrupt.run();
                 if (isReadyToCommit()) { // check if last commit was earlier than X, then commit
-                    commit(offsetCommitter.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()));
+                    Set<SubscriptionPartitionOffset> offsetsToCommit = offsetCommitter.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot());
+                    if (offsetsToCommit != null) {
+                        commit(offsetsToCommit);
+                    }
                 }
             } while (!offsetsSlots.hasSpace());
 
@@ -109,7 +113,11 @@ public class SerialConsumer implements Consumer {
 
             if (maybeMessage.isPresent()) {
                 Message message = maybeMessage.get();
-                offsetsSlots.addSlot(message.getPartition(), message.getOffset());
+                offsetsSlots.addSlot(
+                        subscriptionPartitionOffset(subscription.getQualifiedName(),
+                                message.getPartitionOffset(),
+                                message.getPartitionAssignmentTerm()
+                        ));
                 if (logger.isDebugEnabled()) {
                     logger.debug(
                             "Read message {} partition {} offset {}",

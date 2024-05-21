@@ -1,11 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
-import pl.allegro.tech.hermes.consumers.queue.FullDrainMpscQueue;
-import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -17,12 +12,9 @@ public class OffsetsSlots {
     private final Semaphore totalOffsetsCountSemaphore = new Semaphore(20_000);
 
     // used by sender thread
-    public void markAsSent(int partition, long offset) {
+    public void markAsSent(SubscriptionPartitionOffset subscriptionPartitionOffset) {
         inflightSemaphore.release();
-        SubscriptionPartitionOffset key = new SubscriptionPartitionOffset(
-                null, offset
-        );
-        slots.put(key, MessageState.DELIVERED);
+        slots.put(subscriptionPartitionOffset, MessageState.DELIVERED);
     }
 
     public boolean hasSpace() throws InterruptedException {
@@ -41,13 +33,10 @@ public class OffsetsSlots {
 //            deliveredSemaphore.acquire();
 
     // used by consumer thread
-    public void addSlot(int partition, long offset) throws InterruptedException {
+    public void addSlot(SubscriptionPartitionOffset subscriptionPartitionOffset) throws InterruptedException {
         totalOffsetsCountSemaphore.acquire();
         inflightSemaphore.acquire();
-        slots.put(new SubscriptionPartitionOffset(
-                new SubscriptionPartition(null, null, partition, 0),
-                offset
-        ), MessageState.INFLIGHT);
+        slots.put(subscriptionPartitionOffset, MessageState.INFLIGHT);
     }
 
 

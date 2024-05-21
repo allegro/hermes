@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class ConsumerMessageSender {
 
@@ -246,13 +247,15 @@ public class ConsumerMessageSender {
     }
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result) {
-        offsetsSlots.markAsSent(message.getPartition(), message.getOffset());
+        offsetsSlots.markAsSent(subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         inflightCount.decrement();
         errorHandlers.forEach(h -> h.handleDiscarded(message, subscription, result));
     }
 
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
-        offsetsSlots.markAsSent(message.getPartition(), message.getOffset());
+        offsetsSlots.markAsSent(subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         inflightCount.decrement();
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
     }
