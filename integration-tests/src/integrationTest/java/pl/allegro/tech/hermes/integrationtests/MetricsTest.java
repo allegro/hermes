@@ -240,19 +240,21 @@ public class MetricsTest {
 
         // then
         subscriber.waitUntilReceived(unfiltered.body());
-        hermes.api().getConsumersMetrics()
-                .expectStatus()
-                .isOk()
-                .expectBody(String.class)
-                .value((body) -> assertThatMetrics(body)
-                        .contains("hermes_consumers_subscription_filtered_out_total")
-                        .withLabels(
-                                "group", topic.getName().getGroupName(),
-                                "subscription", subscription.getName(),
-                                "topic", topic.getName().getName()
+        waitAtMost(Duration.TEN_SECONDS).until(() ->
+                hermes.api().getConsumersMetrics()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(String.class)
+                        .value((body) -> assertThatMetrics(body)
+                                .contains("hermes_consumers_subscription_filtered_out_total")
+                                .withLabels(
+                                        "group", topic.getName().getGroupName(),
+                                        "subscription", subscription.getName(),
+                                        "topic", topic.getName().getName()
+                                )
+                                .withValue(1.0)
                         )
-                        .withValue(1.0)
-                );
+        );
     }
 
     @Test
