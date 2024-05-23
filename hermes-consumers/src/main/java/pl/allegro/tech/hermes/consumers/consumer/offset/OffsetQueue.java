@@ -11,12 +11,12 @@ public class OffsetQueue {
 
     private final MpscQueue<SubscriptionPartitionOffset> inflightOffsetsQueue;
 
-    private final MpscQueue<SubscriptionPartitionOffset> commitOffsetsQueue;
+    private final MpscQueue<SubscriptionPartitionOffset> deliveredOffsetsQueue;
 
     public OffsetQueue(MetricsFacade metrics, int commitOffsetQueuesSize) {
         this.inflightOffsetsQueue =
                 new MonitoredMpscQueue<>(new FullDrainMpscQueue<>(commitOffsetQueuesSize), metrics, "inflightOffsets");
-        this.commitOffsetsQueue =
+        this.deliveredOffsetsQueue =
                 new MonitoredMpscQueue<>(new WaitFreeDrainMpscQueue<>(commitOffsetQueuesSize), metrics, "committedOffsets");
     }
 
@@ -25,7 +25,7 @@ public class OffsetQueue {
     }
 
     public void offerCommittedOffset(SubscriptionPartitionOffset offset) {
-        commitOffsetsQueue.offer(offset);
+        deliveredOffsetsQueue.offer(offset);
     }
 
     public void drainInflightOffsets(MessagePassingQueue.Consumer<SubscriptionPartitionOffset> consumer) {
@@ -33,6 +33,6 @@ public class OffsetQueue {
     }
 
     public void drainCommittedOffsets(MessagePassingQueue.Consumer<SubscriptionPartitionOffset> consumer) {
-        commitOffsetsQueue.drain(consumer);
+        deliveredOffsetsQueue.drain(consumer);
     }
 }
