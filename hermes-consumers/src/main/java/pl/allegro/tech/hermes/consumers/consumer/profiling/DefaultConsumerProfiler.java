@@ -8,9 +8,7 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This class is designed to be fully thread safe, except methods <code>startPartialMeasurement</code> and <code>stopPartialMeasurement</code>,
- * since they are always used in a single thread. Also, method <code>saveRetryDelay</code> is designed to be thread safe,
- * as <code>retryDelayMillis</code> is modified only by one thread, and it's volatile, so other threads always see updated value.
+ * This class is designed to be fully thread safe.
  */
 public class DefaultConsumerProfiler implements ConsumerProfiler {
 

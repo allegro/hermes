@@ -221,7 +221,8 @@ public class ConsumerMessageSender {
         if (shouldAttemptResending(message, result, retryDelay)) {
             retries.increment();
             profiler.flushMeasurements(ConsumerRun.RETRIED);
-            ConsumerProfiler resendProfiler = subscription.isProfilingEnabled() ? new DefaultConsumerProfiler(subscription.getQualifiedName(), subscription.getProfilingThresholdMs()) : new NoOpConsumerProfiler();
+            ConsumerProfiler resendProfiler = subscription.isProfilingEnabled() ?
+                    new DefaultConsumerProfiler(subscription.getQualifiedName(), subscription.getProfilingThresholdMs()) : new NoOpConsumerProfiler();
             resendProfiler.startMeasurements(Measurement.SCHEDULE_RESEND);
             resendProfiler.saveRetryDelay(retryDelay);
             retrySingleThreadExecutor.schedule(() -> resend(message, result, resendProfiler), retryDelay, TimeUnit.MILLISECONDS);
