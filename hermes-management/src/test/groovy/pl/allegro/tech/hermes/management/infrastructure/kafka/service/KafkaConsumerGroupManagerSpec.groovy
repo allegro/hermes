@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties
 import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
+import pl.allegro.tech.hermes.test.helper.containers.ImageTags
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -38,7 +39,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
     OutputCaptureRule output = new OutputCaptureRule()
 
     @Shared
-    KafkaContainer kafkaContainer = new KafkaContainer()
+    KafkaContainer kafkaContainer = new KafkaContainer(ImageTags.confluentImagesTag())
 
     @Shared
     String containerId
