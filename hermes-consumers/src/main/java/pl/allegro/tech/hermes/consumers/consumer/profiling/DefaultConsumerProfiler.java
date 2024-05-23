@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,24 +18,13 @@ public class DefaultConsumerProfiler implements ConsumerProfiler {
 
     private final SubscriptionName subscriptionName;
     private final long profilingThresholdMs;
-    private volatile StopWatch stopWatch;
-    private final Map<String, StopWatch> partialMeasurements;
-    private volatile long retryDelayMillis = 0;
+    private StopWatch stopWatch;
+    private StopWatch partialMeasurements;
+    private long retryDelayMillis = 0;
 
     public DefaultConsumerProfiler(SubscriptionName subscriptionName, long profilingThresholdMs) {
         this.subscriptionName = subscriptionName;
         this.profilingThresholdMs = profilingThresholdMs;
-        this.partialMeasurements = new HashMap<>() {
-            @Override
-            public String toString() {
-                StringBuilder stb = new StringBuilder("\n");
-                for (Map.Entry<String, StopWatch> entry : this.entrySet()) {
-                    stb.append(entry.getKey()).append(" = ")
-                            .append(entry.getValue().prettyPrint(TimeUnit.MILLISECONDS)).append("\n");
-                }
-                return stb.toString();
-            }
-        };
     }
 
     @Override
@@ -53,20 +40,20 @@ public class DefaultConsumerProfiler implements ConsumerProfiler {
     }
 
     @Override
-    public void startPartialMeasurement(String measurement) {
-        partialMeasurements.computeIfAbsent(
-                measurement,
-                (m) -> new StopWatch(measurement)
-        ).start(measurement);
+    public synchronized void startPartialMeasurement(String measurement) {
+        if (partialMeasurements == null) {
+            partialMeasurements = new StopWatch();
+        }
+        partialMeasurements.start(measurement);
     }
 
     @Override
-    public void stopPartialMeasurement(String measurement) {
-        partialMeasurements.get(measurement).stop();
+    public synchronized void stopPartialMeasurement() {
+        partialMeasurements.stop();
     }
 
     @Override
-    public void saveRetryDelay(long retryDelay) {
+    public synchronized void saveRetryDelay(long retryDelay) {
         this.retryDelayMillis = retryDelay;
     }
 
@@ -79,12 +66,14 @@ public class DefaultConsumerProfiler implements ConsumerProfiler {
     }
 
     private void logMeasurements(ConsumerRun consumerRun) {
-        if (retryDelayMillis != 0) {
-            logger.info("Consumer profiler measurements for subscription {} and {} run: \n {} retryDelayMillis {}",
-                    subscriptionName, consumerRun, stopWatch.prettyPrint(TimeUnit.MILLISECONDS), retryDelayMillis);
+        if (partialMeasurements != null) {
+            logger.info("Consumer profiler measurements for subscription {} and {} run: \n {} partialMeasurements: {} retryDelayMillis {}",
+                    subscriptionName, consumerRun, stopWatch.prettyPrint(TimeUnit.MILLISECONDS),
+                    partialMeasurements.prettyPrint(TimeUnit.MILLISECONDS), retryDelayMillis);
         } else {
-            logger.info("Consumer profiler measurements for subscription {} and {} run: \n {} partialMeasurements: {}",
-                    subscriptionName, consumerRun, stopWatch.prettyPrint(TimeUnit.MILLISECONDS), partialMeasurements);
+            logger.info("Consumer profiler measurements for subscription {} and {} run: \n {} partialMeasurements: {}, retryDelayMillis {}",
+                    subscriptionName, consumerRun, stopWatch.prettyPrint(TimeUnit.MILLISECONDS),
+                    null, retryDelayMillis);
         }
     }
 }

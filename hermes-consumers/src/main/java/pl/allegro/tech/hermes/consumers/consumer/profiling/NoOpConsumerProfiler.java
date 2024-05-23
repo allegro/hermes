@@ -18,7 +18,7 @@ public class NoOpConsumerProfiler implements ConsumerProfiler {
     }
 
     @Override
-    public void stopPartialMeasurement(String measurement) {
+    public void stopPartialMeasurement() {
 
     }
 

@@ -13,13 +13,13 @@ public interface ConsumerProfiler {
     void measure(String measurement);
 
     /**
-     * Created to be able to measure the same piece of code several times,
-     * for example, a method call in the middle of a loop. Default implementation stores individual measurements, as well as their sum.
+     * Measures the same piece of code several times, for example, a method call in the middle of a loop.
+     * Default implementation stores individual measurements, as well as their sum.
      * <code>stopPartialMeasurements</code> should be called before measuring again.
      */
     void startPartialMeasurement(String measurement);
 
-    void stopPartialMeasurement(String measurement);
+    void stopPartialMeasurement();
 
     void saveRetryDelay(long retryDelay);
 

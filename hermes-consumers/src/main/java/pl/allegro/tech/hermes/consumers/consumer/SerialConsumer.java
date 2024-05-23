@@ -106,7 +106,7 @@ public class SerialConsumer implements Consumer {
                 loadRecorder.recordSingleOperation();
                 profiler.startPartialMeasurement(Measurement.SIGNALS_INTERRUPT_RUN);
                 signalsInterrupt.run();
-                profiler.stopPartialMeasurement(Measurement.SIGNALS_INTERRUPT_RUN);
+                profiler.stopPartialMeasurement();
             } while (!inflightSemaphore.tryAcquire(signalProcessingInterval.toMillis(), TimeUnit.MILLISECONDS));
 
             profiler.measure(Measurement.MESSAGE_RECEIVER_NEXT);
