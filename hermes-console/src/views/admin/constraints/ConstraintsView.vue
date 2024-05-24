@@ -67,9 +67,8 @@
   };
 
   const onSubscriptionConstraintDeleted = async (subscriptionFqn: string) => {
-    const constraintChanged = await deleteSubscriptionConstraint(
-      subscriptionFqn,
-    );
+    const constraintChanged =
+      await deleteSubscriptionConstraint(subscriptionFqn);
     refreshOnMutation(constraintChanged);
   };
 </script>

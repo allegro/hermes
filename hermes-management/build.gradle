@@ -62,6 +62,16 @@ yarnSetup.dependsOn(nodeSetup)
 yarn.dependsOn(npmSetup)
 
 task buildHermesConsole(type: YarnTask, dependsOn: yarn) {
+    def tasksThatDontRequireConsole = [
+            'integrationTest',
+            'slowIntegrationTest',
+            'check'
+    ]
+
+    onlyIf {
+        tasksThatDontRequireConsole.intersect(gradle.startParameter.taskNames).isEmpty()
+    }
+
     args = ['build-only']
 }
 
@@ -82,3 +92,6 @@ tasks.register('prepareIndexTemplate') {
 }
 
 jar.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+
+run.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+

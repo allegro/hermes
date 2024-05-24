@@ -20,6 +20,7 @@ export const dummySubscriptionForm = {
     inflightMessageTTL: 3600,
     retryBackoff: 1000,
     retryBackoffMultiplier: 1.0,
+    backoffMaxIntervalInSec: 600,
     sendingDelay: 0,
     requestTimeout: 1000,
     batchSize: null,
@@ -60,6 +61,7 @@ export const dummySubscriptionFormValidator = {
   inflightMessageTTL: [required(), min(0), max(7200)],
   retryBackoff: [required(), min(0), max(1000000)],
   retryBackoffMultiplier: [required(), min(1), max(10)],
+  backoffMaxIntervalInSec: [required(), min(1), max(600)],
   messageDeliveryTrackingMode: [required()],
   monitoringSeverity: [required()],
 };
@@ -143,6 +145,7 @@ export const dummyInitializedSubscriptionForm = {
       3600,
     retryBackoff: 1000,
     retryBackoffMultiplier: 1.0,
+    backoffMaxIntervalInSec: 600,
     sendingDelay: 0,
     requestTimeout:
       dummyAppConfig.subscription.defaults.subscriptionPolicy.requestTimeout ||
@@ -183,6 +186,8 @@ export const dummyInitializedEditSubscriptionForm = {
     retryBackoff: dummySubscription.subscriptionPolicy.messageBackoff,
     retryBackoffMultiplier:
       dummySubscription.subscriptionPolicy.backoffMultiplier,
+    backoffMaxIntervalInSec:
+      dummySubscription.subscriptionPolicy.backoffMaxIntervalInSec,
     sendingDelay: dummySubscription.subscriptionPolicy.sendingDelay,
     requestTimeout: dummySubscription.subscriptionPolicy.requestTimeout,
     batchSize: null,

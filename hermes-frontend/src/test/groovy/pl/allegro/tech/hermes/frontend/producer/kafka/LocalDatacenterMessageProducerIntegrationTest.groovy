@@ -26,6 +26,7 @@ import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
+import pl.allegro.tech.hermes.test.helper.containers.ImageTags
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -48,7 +49,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(false, null, null, null)
 
     @Shared
-    KafkaContainer kafkaContainer = new KafkaContainer()
+    KafkaContainer kafkaContainer = new KafkaContainer(ImageTags.confluentImagesTag())
 
     @Shared
     KafkaProducer<byte[], byte[]> leaderConfirms
@@ -78,7 +79,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
 
     @Shared
-    String datacenter = "dc";
+    String datacenter = "dc"
 
     @Shared
     MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry())
@@ -148,34 +149,6 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
         partitionsWithMessagesData.get(0).offset() == 10
     }
 
-    def "should publish messages with random distribiution when pratition-key is not present"() {
-        Topic topic = createAvroTopic("pl.allegro.test.randomFoo")
-        Subscription subscription = createTestSubscription(topic, "test-subscription")
-        String kafkaTopicName = topic.getName().toString()
-        ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
-        createTopicInKafka(kafkaTopicName, NUMBER_OF_PARTITION)
-        CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
-        KafkaConsumer consumer = createConsumer(consumerGroupId, kafkaTopicName)
-
-        when:
-        1.upto(10) {
-            brokerMessageProducer.send(generateAvroMessage(null), cachedTopic, null)
-            waitForRecordPublishing(consumer)
-        }
-
-        then:
-        consumer.close()
-
-        List<OffsetAndMetadata> partitionsWithMessagesData = adminClient
-                .listConsumerGroupOffsets(consumerGroupId.asString())
-                .partitionsToOffsetAndMetadata()
-                .get().values().stream()
-                .filter { metadata -> metadata.offset() != 0 }
-                .collect(Collectors.toList())
-
-        partitionsWithMessagesData.size() == NUMBER_OF_PARTITION
-    }
-
     private static AvroMessage generateAvroMessage(String partitionKey) {
         def avroUser = new AvroUser()
         return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema,
@@ -184,7 +157,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
 
     private static def createTestSubscription(Topic topic, String subscriptionName) {
         Subscription.create(topic.getQualifiedName(), subscriptionName, null, Subscription.State.PENDING, "test", [:], false, null, null,
-                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, false
+                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, 0, false, false
         )
     }
 

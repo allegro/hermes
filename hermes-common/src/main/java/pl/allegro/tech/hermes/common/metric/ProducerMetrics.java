@@ -75,6 +75,14 @@ public class ProducerMetrics {
                 + meterRegistry.get(ACK_LEADER_BUFFER_AVAILABLE_BYTES).gauge().value();
     }
 
+    public <T> void registerAckLeaderRecordSendCounter(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerCounter(ACK_LEADER_RECORD_SEND_TOTAL, tags(sender, datacenter), stateObj, f);
+    }
+
+    public <T> void registerAckAllRecordSendCounter(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerCounter(ACK_ALL_RECORD_SEND_TOTAL, tags(sender, datacenter), stateObj, f);
+    }
+
     public <T> void registerProducerInflightRequestGauge(T stateObj, ToDoubleFunction<T> f) {
         meterRegistry.gauge(INFLIGHT_REQUESTS, stateObj, f);
     }
@@ -92,6 +100,10 @@ public class ProducerMetrics {
         meterRegistry.more().timeGauge(name, tags, stateObj, timeUnit, f);
     }
 
+    private <T> void registerCounter(String name, Tags tags, T stateObj, ToDoubleFunction<T> f) {
+        meterRegistry.more().counter(name, tags, stateObj, f);
+    }
+
     private static final String KAFKA_PRODUCER = "kafka-producer.";
     private static final String ACK_LEADER = "ack-leader.";
     private static final String ACK_ALL = "ack-all.";
@@ -102,6 +114,7 @@ public class ProducerMetrics {
     private static final String ACK_ALL_RECORD_QUEUE_TIME_MAX = KAFKA_PRODUCER + ACK_ALL + "record-queue-time-max";
     private static final String ACK_ALL_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_ALL + "compression-rate-avg";
     private static final String ACK_ALL_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_ALL + "failed-batches-total";
+    private static final String ACK_ALL_RECORD_SEND_TOTAL = KAFKA_PRODUCER + ACK_ALL + "record-send";
 
     private static final String ACK_LEADER_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_LEADER + "failed-batches-total";
     private static final String ACK_LEADER_BUFFER_TOTAL_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-total-bytes";
@@ -109,4 +122,6 @@ public class ProducerMetrics {
     private static final String ACK_LEADER_RECORD_QUEUE_TIME_MAX = KAFKA_PRODUCER + ACK_LEADER + "record-queue-time-max";
     private static final String ACK_LEADER_BUFFER_AVAILABLE_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-available-bytes";
     private static final String ACK_LEADER_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_LEADER + "compression-rate-avg";
+    private static final String ACK_LEADER_RECORD_SEND_TOTAL = KAFKA_PRODUCER + ACK_LEADER + "record-send";
+
 }

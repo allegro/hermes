@@ -1,13 +1,10 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducerParameters;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "frontend.kafka.producer")
-public class KafkaProducerProperties implements KafkaProducerParameters {
-
+public class FailFastLocalKafkaProducerProperties implements KafkaProducerParameters {
     private Duration maxBlock = Duration.ofMillis(500);
 
     private Duration metadataMaxAge = Duration.ofMinutes(5);
@@ -16,11 +13,11 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
 
     private int retries = Integer.MAX_VALUE;
 
-    private Duration retryBackoff = Duration.ofMillis(256);
+    private Duration retryBackoff = Duration.ofMillis(50);
 
-    private Duration requestTimeout = Duration.ofMinutes(30);
+    private Duration requestTimeout = Duration.ofMillis(500);
 
-    private Duration deliveryTimeout = Duration.ofMinutes(30);
+    private Duration deliveryTimeout = Duration.ofMillis(500);
 
     private int batchSize = 16 * 1024;
 

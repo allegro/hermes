@@ -29,8 +29,8 @@ public class OfflineRetransmissionService {
         ensureTopicIsNotStoredOffline(targetTopicName);
     }
 
-    public void createTask(OfflineRetransmissionRequest request) {
-        saveTask(request);
+    public OfflineRetransmissionTask createTask(OfflineRetransmissionRequest request) {
+        return saveTask(request);
     }
 
     public List<OfflineRetransmissionTask> getAllTasks() {
@@ -73,9 +73,10 @@ public class OfflineRetransmissionService {
         }
     }
 
-    private void saveTask(OfflineRetransmissionRequest request) {
+    private OfflineRetransmissionTask saveTask(OfflineRetransmissionRequest request) {
         OfflineRetransmissionTask task =
                 new OfflineRetransmissionTask(UUID.randomUUID().toString(), request, Instant.now());
         offlineRetransmissionRepository.saveTask(task);
+        return task;
     }
 }

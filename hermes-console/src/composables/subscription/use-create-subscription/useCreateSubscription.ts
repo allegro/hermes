@@ -128,6 +128,7 @@ function initializeForm(
           .messageTtl || 3600,
       retryBackoff: 1000,
       retryBackoffMultiplier: 1.0,
+      backoffMaxIntervalInSec: 600,
       sendingDelay: 0,
       requestTimeout:
         loadedConfig.value.subscription.defaults.subscriptionPolicy

@@ -48,7 +48,7 @@ allprojects {
     targetCompatibility = JavaVersion.VERSION_17
 
     project.ext.versions = [
-            kafka             : '2.8.2',
+            kafka             : '3.6.2',
             guava             : '23.0',
             jackson           : '2.15.2',
             jersey            : '3.1.2',
@@ -66,7 +66,7 @@ allprojects {
             spring_web        : '6.1.2',
             failsafe          : '2.3.1',
             junit_jupiter     : '5.9.1',
-            testcontainers    : '1.18.1',
+            testcontainers    : '1.19.8',
             spring            : '3.2.1',
             assertj           : '3.24.2'
     ]
@@ -122,6 +122,8 @@ configure(subprojects - project(':integration-tests')) {
         withJavadocJar()
         withSourcesJar()
     }
+
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 
     publishing {
         publications {

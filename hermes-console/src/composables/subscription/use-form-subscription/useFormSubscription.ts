@@ -70,6 +70,7 @@ function formValidators(form: Ref<SubscriptionForm>): FormValidators {
     inflightMessageTTL: [required(), min(0), max(7200)],
     retryBackoff: [required(), min(0), max(1000000)],
     retryBackoffMultiplier: [required(), min(1), max(10)],
+    backoffMaxIntervalInSec: [required(), min(1), max(600)],
     messageDeliveryTrackingMode: [required()],
     monitoringSeverity: [required()],
   };
@@ -179,6 +180,7 @@ function createEmptyForm(): Ref<SubscriptionForm> {
       inflightMessageTTL: 3600,
       retryBackoff: 1000,
       retryBackoffMultiplier: 1.0,
+      backoffMaxIntervalInSec: 600,
       sendingDelay: 0,
       requestTimeout: 1000,
       batchSize: null,
@@ -225,6 +227,10 @@ export function initializeFullyFilledForm(
         subscription.deliveryType === DeliveryType.SERIAL
           ? subscription.subscriptionPolicy.backoffMultiplier
           : 1.0,
+      backoffMaxIntervalInSec:
+        subscription.deliveryType === DeliveryType.SERIAL
+          ? subscription.subscriptionPolicy.backoffMaxIntervalInSec
+          : 600,
       sendingDelay:
         subscription.deliveryType === DeliveryType.SERIAL
           ? subscription.subscriptionPolicy.sendingDelay

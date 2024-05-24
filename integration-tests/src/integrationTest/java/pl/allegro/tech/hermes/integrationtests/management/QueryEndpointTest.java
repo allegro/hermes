@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.integrationtests.management;
 
 import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -16,12 +15,14 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.TrackingMode;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,10 +40,14 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.groupWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.groupWithRandomNameContaining;
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.groupWithRandomNameEndedWith;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomNameContaining;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomNameEndedWith;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class QueryEndpointTest {
@@ -58,80 +63,281 @@ public class QueryEndpointTest {
     public static final HermesExtension hermes = new HermesExtension()
             .withPrometheus(prometheus);
 
-    @BeforeEach
-    void cleanup() {
-        hermes.clearManagementData();
-    }
-
-    public static Stream<Arguments> groupData() {
-        return Stream.of(
-                arguments("{\"query\": {}}", asList(1, 2, 3, 4)),
-                arguments("{\"query\": {\"groupName\": \"testGroup1\"}}", asList(1)),
-                arguments("{\"query\": {\"groupName\": {\"like\": \".*Group2\"}}}", asList(3)),
-                arguments("{\"query\": {\"groupName\": {\"like\": \".*Group.*\"}}}", asList(1, 3, 4)));
-    }
-
-    @ParameterizedTest
-    @MethodSource("groupData")
-    public void shouldQueryGroup(String query, List<Integer> positions) {
+    @Test
+    public void shouldReturnAllGroupsWhenQueryIsEmpty() {
         // given
-        List<Group> groups = List.of(
-                new Group("testGroup1"),
-                new Group("testNot1"),
-                new Group("testGroup2"),
-                new Group("testGroup3")
-        );
-
-        groups.forEach(g -> hermes.initHelper().createGroup(g));
+        createGroupWithRandomName();
+        createGroupWithRandomName();
 
         // when
-        List<Group> found = hermes.api().queryGroups(query)
+        List<Group> found = hermes.api().queryGroups("{\"query\": {}}")
                 .expectStatus().isOk()
                 .expectBodyList(Group.class).returnResult().getResponseBody();
 
         // then
-        assertListMatches(groups, found, positions);
+        assertThat(found)
+                .extracting(Group::getGroupName)
+                .containsExactlyInAnyOrderElementsOf(hermes.api().getGroups());
     }
 
-    public static Stream<Arguments> topicData() {
-        return Stream.of(
-                arguments("{\"query\": {}}", asList(1, 2, 3, 4)),
-                arguments("{\"query\": {\"name\": \"testGroup1.testTopic1\"}}", asList(1)),
-                arguments("{\"query\": {\"name\": {\"like\": \".*testTopic1\"}}}", asList(1)),
-                arguments("{\"query\": {\"name\": {\"like\": \".*testTopic.*\"}}}", asList(1, 2, 3)),
-                arguments("{\"query\": {\"trackingEnabled\": \"true\", \"contentType\": \"AVRO\"}}", asList(3)),
-                arguments("{\"query\": {\"and\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(3)),
-                arguments("{\"query\": {\"or\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}", asList(1, 3, 4)),
-                arguments("{\"query\": {\"owner.id\": \"Team Alpha\"}}", asList(4)),
-                arguments("{\"query\": {\"owner.id\": {\"like\": \".*Alph.*\"}}}", asList(4)));
-    }
-
-    @ParameterizedTest
-    @MethodSource("topicData")
-    public void shouldQueryTopic(String query, List<Integer> positions) {
+    @Test
+    public void shouldReturnGroupsWithExactName() {
         // given
-        Topic topic1 = topic("testGroup1", "testTopic1").withContentType(AVRO).withTrackingEnabled(false).build();
-        Topic topic2 = topic("testGroup1", "testTopic2").withContentType(JSON).withTrackingEnabled(false).build();
-        Topic topic3 = topic("testGroup1", "testTopic3").withContentType(AVRO).withTrackingEnabled(true).build();
-        Topic topic4 = topic("testGroup2", "testOtherTopic").withContentType(JSON).withTrackingEnabled(true)
-                .withOwner(new OwnerId("Plaintext", "Team Alpha")).build();
-
-        hermes.initHelper().createTopicWithSchema(topicWithSchema(topic1, SCHEMA));
-        hermes.initHelper().createTopicWithSchema(topicWithSchema(topic3, SCHEMA));
-        hermes.initHelper().createTopic(topic2);
-        hermes.initHelper().createTopic(topic4);
-
-        List<Topic> topics = asList(topic1, topic2, topic3, topic4);
+        Group group = createGroupWithRandomName();
+        createGroupWithRandomName();
 
         // when
-        List<Topic> found = hermes.api().queryTopics(query)
+        List<Group> found = hermes.api().queryGroups("{\"query\": {\"groupName\": \"" + group.getGroupName() + "\"}}")
+                .expectStatus().isOk()
+                .expectBodyList(Group.class).returnResult().getResponseBody();
+
+        // then
+        assertThat(found)
+                .containsExactly(group);
+    }
+
+    @Test
+    public void shouldReturnGroupsWithNameSuffix() {
+        // given
+        String suffix = "GroupSuffix";
+        hermes.initHelper().createGroup(groupWithRandomNameEndedWith(suffix).build());
+        createGroupWithRandomName();
+
+        // when
+        List<Group> found = hermes.api().queryGroups("{\"query\": {\"groupName\": {\"like\": \".*" + suffix + "\"}}}")
+                .expectStatus().isOk()
+                .expectBodyList(Group.class).returnResult().getResponseBody();
+
+        // then
+        List<String> groupsWithSuffix = hermes.api().getGroups().stream()
+                .filter(name -> name.endsWith(suffix))
+                .toList();
+        assertThat(found)
+                .extracting(Group::getGroupName)
+                .containsExactlyInAnyOrderElementsOf(groupsWithSuffix);
+    }
+
+    @Test
+    public void shouldReturnGroupsWithNameContainingString() {
+        // given
+        String string = "SomeString";
+        hermes.initHelper().createGroup(groupWithRandomNameContaining(string).build());
+        createGroupWithRandomName();
+
+        // when
+        List<Group> found = hermes.api().queryGroups("{\"query\": {\"groupName\": {\"like\": \".*" + string + ".*\"}}}")
+                .expectStatus().isOk()
+                .expectBodyList(Group.class).returnResult().getResponseBody();
+
+        // then
+        List<String> groupsContainingString = hermes.api().getGroups().stream()
+                .filter(name -> name.contains(string))
+                .toList();
+        assertThat(found)
+                .extracting(Group::getGroupName)
+                .containsExactlyInAnyOrderElementsOf(groupsContainingString);
+    }
+
+    @Test
+    public void shouldReturnAllTopicsWhenQueryIsEmpty() {
+        // given
+        createTopicWithRandomName();
+        createTopicWithRandomName();
+
+        // when
+        List<Topic> found = hermes.api().queryTopics("{\"query\": {}}")
                 .expectStatus().isOk()
                 .expectBodyList(Topic.class).returnResult().getResponseBody();
 
         // then
-        assertListMatches(topics, found, positions);
+        assertThat(found)
+                .containsExactlyInAnyOrderElementsOf(listAllTopics());
     }
 
+    @Test
+    public void shouldReturnTopicsWithExactName() {
+        // given
+        Topic topic = createTopicWithRandomName();
+        createTopicWithRandomName();
+
+        // when
+        List<Topic> found = hermes.api().queryTopics("{\"query\": {\"name\": \"" + topic.getQualifiedName() + "\"}}")
+                .expectStatus().isOk()
+                .expectBodyList(Topic.class).returnResult().getResponseBody();
+
+        // then
+        assertThat(found)
+                .containsExactly(topic);
+    }
+
+    @Test
+    public void shouldReturnTopicsWithNameSuffix() {
+        // given
+        String suffix = "TopicSuffix";
+        hermes.initHelper().createTopic(topicWithRandomNameEndedWith(suffix).build());
+        createTopicWithRandomName();
+
+        // when
+        List<Topic> found = hermes.api().queryTopics("{\"query\": {\"name\": {\"like\": \".*" + suffix + "\"}}}")
+                .expectStatus().isOk()
+                .expectBodyList(Topic.class).returnResult().getResponseBody();
+
+        // then
+        List<Topic> topicsWithSuffix = listAllTopics().stream()
+                .filter(topic -> topic.getQualifiedName().endsWith(suffix))
+                .toList();
+        assertThat(found)
+                .containsExactlyInAnyOrderElementsOf(topicsWithSuffix);
+    }
+
+    @Test
+    public void shouldReturnTopicsWithNameContainingString() {
+        // given
+        String string = "SomeString";
+        hermes.initHelper().createTopic(topicWithRandomNameContaining(string).build());
+        createTopicWithRandomName();
+
+        // when
+        List<Topic> found = hermes.api().queryTopics("{\"query\": {\"name\": {\"like\": \".*" + string + ".*\"}}}")
+                .expectStatus().isOk()
+                .expectBodyList(Topic.class).returnResult().getResponseBody();
+
+        // then
+        List<Topic> topicsContainingString = listAllTopics().stream()
+                .filter(topic -> topic.getQualifiedName().contains(string))
+                .toList();
+        assertThat(found)
+                .containsExactlyInAnyOrderElementsOf(topicsContainingString);
+    }
+
+    @Test
+    public void shouldReturnTopicsWithAllMatchingProperties() {
+        // given
+        Topic topic1 = topicWithRandomName()
+                .withContentType(AVRO)
+                .withTrackingEnabled(false)
+                .build();
+        Topic topic2 = topicWithRandomName()
+                .withContentType(JSON)
+                .withTrackingEnabled(false)
+                .build();
+        Topic topic3 = topicWithRandomName()
+                .withContentType(AVRO)
+                .withTrackingEnabled(true)
+                .build();
+        hermes.initHelper().createTopicWithSchema(topicWithSchema(topic1, SCHEMA));
+        hermes.initHelper().createTopicWithSchema(topicWithSchema(topic3, SCHEMA));
+        hermes.initHelper().createTopic(topic2);
+
+        // when
+        List<Topic> found = hermes.api().queryTopics("{\"query\": {\"and\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}")
+                .expectStatus().isOk()
+                .expectBodyList(Topic.class).returnResult().getResponseBody();
+
+        // then
+        List<Topic> topicsWithAvroAndTracking = listAllTopics().stream()
+                .filter(topic -> topic.getContentType() == AVRO && topic.isTrackingEnabled())
+                .toList();
+        assertThat(found)
+                .containsExactlyInAnyOrderElementsOf(topicsWithAvroAndTracking);
+    }
+
+    @Test
+    public void shouldReturnTopicsWithAtLeastOneMatchingProperty() {
+        // given
+        Topic topic1 = topicWithRandomName()
+                .withContentType(AVRO)
+                .withTrackingEnabled(false)
+                .build();
+        Topic topic2 = topicWithRandomName()
+                .withContentType(JSON)
+                .withTrackingEnabled(false)
+                .build();
+        Topic topic3 = topicWithRandomName()
+                .withContentType(AVRO)
+                .withTrackingEnabled(true)
+                .build();
+        hermes.initHelper().createTopicWithSchema(topicWithSchema(topic1, SCHEMA));
+        hermes.initHelper().createTopicWithSchema(topicWithSchema(topic3, SCHEMA));
+        hermes.initHelper().createTopic(topic2);
+
+        // when
+        List<Topic> found = hermes.api().queryTopics("{\"query\": {\"or\": [{\"trackingEnabled\": \"true\"}, {\"contentType\": \"AVRO\"}]}}")
+                .expectStatus().isOk()
+                .expectBodyList(Topic.class).returnResult().getResponseBody();
+
+        // then
+        List<Topic> topicsWithAvroOrTracking = listAllTopics().stream()
+                .filter(topic -> topic.getContentType() == AVRO || topic.isTrackingEnabled())
+                .toList();
+        assertThat(found)
+                .containsExactlyInAnyOrderElementsOf(topicsWithAvroOrTracking);
+    }
+
+    @Test
+    public void shouldReturnTopicsWithExactOwnerId() {
+        // given
+        Topic topic = topicWithRandomName()
+                .withContentType(JSON)
+                .withTrackingEnabled(true)
+                .withOwner(new OwnerId("Plaintext", "Team Alpha"))
+                .build();
+        hermes.initHelper().createTopic(topic);
+        createTopicWithRandomName();
+
+        // when
+        List<Topic> found = hermes.api().queryTopics("{\"query\": {\"owner.id\": \"Team Alpha\"}}")
+                .expectStatus().isOk()
+                .expectBodyList(Topic.class).returnResult().getResponseBody();
+
+        // then
+        List<Topic> topicsOwnerId = listAllTopics().stream()
+                .filter(t -> t.getOwner().getId().equals("Team Alpha"))
+                .toList();
+        assertThat(found)
+                .containsExactlyInAnyOrderElementsOf(topicsOwnerId);
+    }
+
+    @Test
+    public void shouldReturnTopicsWithOwnerIdContainingString() {
+        // given
+        Topic topic = topicWithRandomName()
+                .withContentType(JSON)
+                .withTrackingEnabled(true)
+                .withOwner(new OwnerId("Plaintext", "Team Alpha"))
+                .build();
+        hermes.initHelper().createTopic(topic);
+        createTopicWithRandomName();
+
+        // when
+        List<Topic> found = hermes.api().queryTopics("{\"query\": {\"owner.id\": {\"like\": \".*Alph.*\"}}}")
+                .expectStatus().isOk()
+                .expectBodyList(Topic.class).returnResult().getResponseBody();
+
+        // then
+        List<Topic> topicsOwnerId = listAllTopics().stream()
+                .filter(t -> t.getOwner().getId().contains("Alph"))
+                .toList();
+        assertThat(found)
+                .containsExactlyInAnyOrderElementsOf(topicsOwnerId);
+    }
+
+    private List<Topic> listAllTopics() {
+        List<String> groups = hermes.api().getGroups();
+        List<Topic> topics = new ArrayList<>();
+        for (String groupName : groups) {
+            String[] topicNames = hermes.api().listTopics(groupName)
+                    .expectStatus()
+                    .isOk()
+                    .expectBody(String[].class).returnResult().getResponseBody();
+            for (String topicName : topicNames) {
+                TopicWithSchema topic = hermes.api().getTopicResponse(topicName)
+                        .expectBody(TopicWithSchema.class).returnResult().getResponseBody();
+                topics.add(topic.getTopic());
+            }
+        }
+        return topics;
+    }
 
     public static Stream<Arguments> subscriptionData() {
         return Stream.of(
@@ -233,8 +439,8 @@ public class QueryEndpointTest {
         hermes.api().publishUntilSuccess(group.getGroupName() + "." + topicName2, "testMessage5");
 
         List<String> qualifiedNames = topicNames.stream()
-            .map(topicName -> group.getGroupName() + "." + topicName)
-            .collect(toList());
+                .map(topicName -> group.getGroupName() + "." + topicName)
+                .collect(toList());
 
         waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
                     // when
@@ -340,7 +546,7 @@ public class QueryEndpointTest {
         });
     }
 
-    private static void assertThatRateIsUnavailable(List<SubscriptionNameWithMetrics> allSubscriptions, Subscription ... subscriptions) {
+    private static void assertThatRateIsUnavailable(List<SubscriptionNameWithMetrics> allSubscriptions, Subscription... subscriptions) {
         subscriptionsMatchesToNamesAndTheirTopicsNames(allSubscriptions, subscriptions);
         for (SubscriptionNameWithMetrics metrics : allSubscriptions) {
             assertThat(metrics.getRate().asString()).isEqualTo("unavailable");
@@ -348,7 +554,7 @@ public class QueryEndpointTest {
     }
 
     private static void subscriptionsMatchesToNamesAndTheirTopicsNames(List<SubscriptionNameWithMetrics> found,
-                                                                       Subscription ... expectedSubscriptions) {
+                                                                       Subscription... expectedSubscriptions) {
         assertThat(found).isNotNull();
         Map<String, String> foundSubscriptionsAndTheirTopicNames = found.stream()
                 .collect(Collectors.toMap(SubscriptionNameWithMetrics::getName, SubscriptionNameWithMetrics::getTopicName));
@@ -378,5 +584,13 @@ public class QueryEndpointTest {
                 .collect(toList());
 
         Assertions.assertThat(foundQualifiedNames).containsAll(expectedQualifiedNames);
+    }
+
+    private Topic createTopicWithRandomName() {
+        return hermes.initHelper().createTopic(topicWithRandomName().build());
+    }
+
+    private Group createGroupWithRandomName() {
+        return hermes.initHelper().createGroup(groupWithRandomName().build());
     }
 }

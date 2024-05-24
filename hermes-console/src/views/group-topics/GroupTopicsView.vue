@@ -102,7 +102,7 @@
     <v-row dense>
       <v-col>
         <v-card density="compact" class="d-flex flex-row justify-space-between">
-          <v-card-text>
+          <v-card-text style="min-width: 70%">
             <p class="text-overline">{{ $t('groupTopics.title') }}</p>
             <p class="text-h4 font-weight-bold mb-2">
               {{ groupId }}

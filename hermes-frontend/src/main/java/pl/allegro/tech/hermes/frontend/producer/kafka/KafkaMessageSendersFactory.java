@@ -18,6 +18,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS
 import static org.apache.kafka.clients.producer.ProducerConfig.BUFFER_MEMORY_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.COMPRESSION_TYPE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.MAX_BLOCK_MS_CONFIG;
@@ -66,16 +67,23 @@ public class KafkaMessageSendersFactory {
         this.brokerLatencyReporter = brokerLatencyReporter;
     }
 
+
     public KafkaMessageSenders provide(KafkaProducerParameters kafkaProducerParameters, String senderName) {
-            KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
-                sender(kafkaParameters, kafkaProducerParameters, ACK_LEADER),
-                sender(kafkaParameters, kafkaProducerParameters, ACK_ALL)
+        return provide(kafkaProducerParameters, kafkaProducerParameters, senderName);
+    }
+
+    public KafkaMessageSenders provide(KafkaProducerParameters localKafkaProducerParameters,
+                                       KafkaProducerParameters remoteKafkaProducerParameters,
+                                       String senderName) {
+        KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
+                sender(kafkaParameters, localKafkaProducerParameters, ACK_LEADER),
+                sender(kafkaParameters, localKafkaProducerParameters, ACK_ALL)
         );
 
         List<KafkaMessageSenders.Tuple> remoteProducers = remoteKafkaParameters.stream().map(
                 kafkaProperties -> new KafkaMessageSenders.Tuple(
-                        sender(kafkaProperties, kafkaProducerParameters, ACK_LEADER),
-                        sender(kafkaProperties, kafkaProducerParameters, ACK_ALL))).toList();
+                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_LEADER),
+                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_ALL))).toList();
         KafkaMessageSenders senders = new KafkaMessageSenders(
                 topicMetadataLoadingExecutor,
                 localMinInSyncReplicasLoader,
@@ -107,6 +115,7 @@ public class KafkaMessageSendersFactory {
         props.put(LINGER_MS_CONFIG, (int) kafkaProducerParameters.getLinger().toMillis());
         props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaProducerParameters.getMetricsSampleWindow().toMillis());
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
+        props.put(ENABLE_IDEMPOTENCE_CONFIG, kafkaProducerParameters.isIdempotenceEnabled());
         props.put(ACKS_CONFIG, acks);
 
         if (kafkaParameters.isAuthenticationEnabled()) {
