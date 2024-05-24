@@ -50,7 +50,7 @@ class InstrumentedExecutorServiceFactoryMetricsTest extends Specification {
     def "should record metrics for scheduled executor service (monitoring enabled: #monitoringEnabled)"() {
         given:
         ScheduledExecutorService executor = factory.scheduledExecutorBuilder("test-scheduled-executor", 10)
-                .withMonitoringEnabled(true).create()
+                .withMonitoringEnabled(monitoringEnabled).create()
 
         when:
         ScheduledFuture<?> task = executor.schedule({ println("scheduled task executed") }, 1, SECONDS)
